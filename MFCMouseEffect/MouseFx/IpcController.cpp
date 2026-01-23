@@ -23,12 +23,9 @@ namespace mousefx
 
 	void IpcController::Stop()
 	{
-		if (!running_) return;
-
 		running_ = false;
-		// detach is often cleaner for blocking I/O threads that we can't easily cancel
-		// without closing the stdin handle (which might affect the whole process).
-		// given the app is exiting, detach allows the thread to die with the process.
+		// Detach immediately - can't join because std::getline is blocking.
+		// The thread will die when the process exits or stdin closes.
 		if (worker_.joinable())
 		{
 			worker_.detach();

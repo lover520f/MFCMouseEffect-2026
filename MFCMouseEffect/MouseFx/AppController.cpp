@@ -36,17 +36,31 @@ static const wchar_t* kDispatchClassName = L"MouseFxDispatchWindow";
 static constexpr UINT_PTR kSelfTestTimerId = 0x4D46; // 'MF' - debug-only
 
 AppController::AppController() {
-    // Default effect
-    currentEffect_ = std::make_unique<RippleEffect>();
+    // Config and effect will be initialized in Start()
 }
 
 AppController::~AppController() {
     Stop();
 }
 
+// Helper: Get exe directory for config loading
+static std::wstring GetExeDirectory() {
+    wchar_t path[MAX_PATH] = {};
+    GetModuleFileNameW(nullptr, path, MAX_PATH);
+    std::wstring p(path);
+    size_t pos = p.find_last_of(L"\\/");
+    if (pos != std::wstring::npos) {
+        return p.substr(0, pos);
+    }
+    return L".";
+}
+
 bool AppController::Start() {
     if (dispatchHwnd_) return true;
     diag_ = {};
+
+    // Load config from EXE directory (defaults if file missing)
+    config_ = EffectConfig::Load(GetExeDirectory());
 
     diag_.stage = StartStage::GdiPlusStartup;
     if (!gdiplus_.Startup()) {
@@ -65,7 +79,9 @@ bool AppController::Start() {
         return false;
     }
 
+    // Set effect based on config
     diag_.stage = StartStage::EffectInit;
+    SetEffect(config_.defaultEffect);
     if (currentEffect_ && !currentEffect_->Initialize()) {
 #ifdef _DEBUG
         OutputDebugStringW(L"MouseFx: effect init failed.\n");

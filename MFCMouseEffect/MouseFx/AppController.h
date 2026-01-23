@@ -9,6 +9,7 @@
 #include "GdiPlusSession.h"
 #include "GlobalMouseHook.h"
 #include "IMouseEffect.h"
+#include "EffectConfig.h"
 
 namespace mousefx {
 
@@ -39,6 +40,8 @@ public:
     
     // Switch the active effect.
     // "ripple" -> RippleEffect
+    // "trail" -> TrailEffect
+    // "icon_star" -> IconEffect
     // "none" -> nullptr
     void SetEffect(const std::string& type);
 
@@ -46,6 +49,9 @@ public:
     void HandleCommand(const std::string& jsonCmd);
 
     StartDiagnostics Diagnostics() const { return diag_; }
+    
+    // Get current config (for effects to read)
+    const EffectConfig& Config() const { return config_; }
 
 private:
     static LRESULT CALLBACK DispatchWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -60,6 +66,7 @@ private:
     GlobalMouseHook hook_{};
     
     std::unique_ptr<IMouseEffect> currentEffect_;
+    EffectConfig config_{};
     StartDiagnostics diag_{};
 
 #ifdef _DEBUG

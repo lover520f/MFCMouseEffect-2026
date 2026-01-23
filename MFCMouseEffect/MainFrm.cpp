@@ -51,17 +51,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CFrameWndEx::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	// 创建托盘图标，右键/左键点击可退出
-	HICON hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-	m_trayIcon.cbSize = sizeof(NOTIFYICONDATA);
-	m_trayIcon.hWnd = GetSafeHwnd();
-	m_trayIcon.uID = 1;
-	m_trayIcon.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
-	m_trayIcon.uCallbackMessage = m_trayMsg;
-	m_trayIcon.hIcon = hIcon;
-	lstrcpyn(m_trayIcon.szTip, _T("MFCMouseEffect - 点击托盘退出"), _countof(m_trayIcon.szTip));
-	Shell_NotifyIcon(NIM_ADD, &m_trayIcon);
-
+	// 注意：托盘图标由 CTrayHostWnd 统一管理，这里不再创建。
 	return 0;
 }
 
@@ -108,7 +98,7 @@ LRESULT CMainFrame::OnTrayNotify(WPARAM wp, LPARAM lp)
 
 void CMainFrame::OnDestroy()
 {
-	Shell_NotifyIcon(NIM_DELETE, &m_trayIcon);
+	// 注意：托盘图标由 CTrayHostWnd 管理，这里不需要删除。
 	CFrameWndEx::OnDestroy();
 }
 

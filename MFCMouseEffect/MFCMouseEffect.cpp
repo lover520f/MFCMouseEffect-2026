@@ -205,7 +205,10 @@ BOOL CMFCMouseEffectApp::InitInstance()
 	}
 
 #ifdef _DEBUG
-	// Debug：创建一个可见主窗口，方便调试（不影响波纹窗口的独立渲染）。
+	// Debug：创建 CTrayHostWnd (完整托盘菜单) + CMainFrame (MDI调试窗口)
+	trayHost_ = std::make_unique<CTrayHostWnd>();
+	trayHost_->CreateHost(showTrayIcon);
+
 	CMainFrame* pMainFrame = new CMainFrame;
 	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
 	{
@@ -213,10 +216,10 @@ BOOL CMFCMouseEffectApp::InitInstance()
 		return FALSE;
 	}
 	m_pMainWnd = pMainFrame;
-	pMainFrame->ShowWindow(m_nCmdShow);
+	pMainFrame->ShowWindow(SW_SHOW);
 	pMainFrame->UpdateWindow();
 #else
-	// Release：仅创建一个隐藏宿主窗口用于托盘图标（完全不创建主框架窗口，避免任何闪现）。
+	// Release：仅创建隐藏宿主窗口用于托盘图标。
 	trayHost_ = std::make_unique<CTrayHostWnd>();
 	if (!trayHost_->CreateHost(showTrayIcon))
 	{
