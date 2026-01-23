@@ -61,6 +61,19 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
             button = MouseButton::Middle;
             fire = true;
             break;
+        case WM_MOUSEMOVE:
+        {
+            // Forward mouse move.
+            // Note: WH_MOUSE_LL callback is called in context of installing thread.
+            // PostMessage is safe.
+            // Pack coordinates into wParam (x) and lParam (y) since they fit in 64-bit pointers?
+            // Actually on x64, WPARAM and LPARAM are 64-bit.
+            // POINT.x is LONG (32-bit signed). 
+            if (s) {
+                 PostMessageW(instance_->dispatchHwnd_, WM_MFX_MOVE, (WPARAM)s->pt.x, (LPARAM)s->pt.y);
+            }
+            break;
+        }
         default:
             break;
         }

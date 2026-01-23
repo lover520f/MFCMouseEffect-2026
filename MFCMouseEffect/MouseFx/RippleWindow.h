@@ -23,6 +23,12 @@ public:
 
     void StartAt(const ClickEvent& ev);
 
+    enum class DrawMode {
+        Ripple,
+        IconStar
+    };
+    void SetDrawMode(DrawMode mode) { drawMode_ = mode; }
+
 private:
     static constexpr UINT_PTR kTimerId = 1;
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -48,6 +54,8 @@ private:
     HBITMAP dib_ = nullptr;
     void* bits_ = nullptr;
     int sizePx_ = 0;
+
+    DrawMode drawMode_ = DrawMode::Ripple;
 };
 
 } // namespace mousefx

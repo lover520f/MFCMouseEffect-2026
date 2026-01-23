@@ -23,9 +23,12 @@ protected:
 private:
 	static constexpr UINT kTrayMsg = WM_APP + 1;
 	static constexpr UINT kTrayIconId = 1;
-	static constexpr UINT kCmdTrayExit = 32772;
+    static const int kCmdTrayExit = 1001;
+    static const int kCmdTrayEffectRipple = 1002;
+    static const int kCmdTrayEffectNone = 1003;
+    static const int kCmdTrayEffectTrail = 1004;
+    static const int kCmdTrayEffectIconStar = 1005;
 
 	NOTIFYICONDATA m_trayIcon{};
 	bool m_showTrayIcon{ true };
 };
-

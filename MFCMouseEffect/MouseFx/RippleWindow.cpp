@@ -263,8 +263,36 @@ void RippleWindow::RenderFrame(float t) {
         g.DrawEllipse(&p, cx - radius, cy - radius, radius * 2.0f, radius * 2.0f);
     }
 
-    // Fill
-    {
+    if (drawMode_ == DrawMode::IconStar) {
+        // Draw Star Icon
+        Gdiplus::Color fill = ToGdiPlus(style_.fill);
+        // Fade out
+        BYTE alphaByte = ClampByte((int)(255 * alpha));
+        fill = Gdiplus::Color(alphaByte, fill.GetR(), fill.GetG(), fill.GetB());
+
+        // Simple Star Geometry
+        Gdiplus::PointF pts[10];
+        const float rOuter = radius;
+        const float rInner = radius * 0.4f;
+        const double PI = 3.14159265358979323846;
+        for (int i = 0; i < 10; i++) {
+            double angle = i * PI / 5.0 - PI / 2.0; // start at top
+            float r = (i % 2 == 0) ? rOuter : rInner;
+            pts[i] = Gdiplus::PointF(cx + r * (float)cos(angle), cy + r * (float)sin(angle));
+        }
+
+        Gdiplus::SolidBrush brush(fill);
+        g.FillPolygon(&brush, pts, 10);
+
+        Gdiplus::Color stroke = ToGdiPlus(style_.stroke);
+        stroke = Gdiplus::Color(alphaByte, stroke.GetR(), stroke.GetG(), stroke.GetB());
+        Gdiplus::Pen pen(stroke, style_.strokeWidth);
+        pen.SetLineJoin(Gdiplus::LineJoinRound);
+        g.DrawPolygon(&pen, pts, 10);
+    }
+    else {
+        // Draw Ripple (Circle)
+        // Fill
         Gdiplus::Color base = ToGdiPlus(style_.fill);
         const BYTE aCenter = ClampByte((int)(base.GetA() * alpha));
         const Gdiplus::Color center(aCenter, base.GetR(), base.GetG(), base.GetB());
@@ -280,14 +308,14 @@ void RippleWindow::RenderFrame(float t) {
         pgb.SetSurroundColors(surround, &count);
         pgb.SetCenterPoint(Gdiplus::PointF(cx, cy));
         g.FillPath(&pgb, &path);
-    }
 
-    // Stroke
-    Gdiplus::Color stroke = ToGdiPlus(style_.stroke);
-    stroke = Gdiplus::Color(ClampByte((int)(stroke.GetA() * alpha)), stroke.GetR(), stroke.GetG(), stroke.GetB());
-    Gdiplus::Pen pen(stroke, style_.strokeWidth);
-    pen.SetLineJoin(Gdiplus::LineJoinRound);
-    g.DrawEllipse(&pen, cx - radius, cy - radius, radius * 2.0f, radius * 2.0f);
+        // Stroke
+        Gdiplus::Color stroke = ToGdiPlus(style_.stroke);
+        stroke = Gdiplus::Color(ClampByte((int)(stroke.GetA() * alpha)), stroke.GetR(), stroke.GetG(), stroke.GetB());
+        Gdiplus::Pen pen(stroke, style_.strokeWidth);
+        pen.SetLineJoin(Gdiplus::LineJoinRound);
+        g.DrawEllipse(&pen, cx - radius, cy - radius, radius * 2.0f, radius * 2.0f);
+    }
 
     // Push to screen (per-pixel alpha).
     POINT ptSrc{ 0, 0 };

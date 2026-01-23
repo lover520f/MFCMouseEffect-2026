@@ -19,6 +19,9 @@ public:
 
     // Called on mouse click events.
     virtual void OnClick(const ClickEvent& event) = 0;
+
+    // Called on mouse move events (optional, default no-op).
+    virtual void OnMouseMove(const POINT& pt) { (void)pt; }
 };
 
 } // namespace mousefx

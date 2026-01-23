@@ -52,5 +52,11 @@ void RippleWindowPool::ShowRipple(const ClickEvent& ev) {
     }
 }
 
+void RippleWindowPool::SetDrawMode(RippleWindow::DrawMode mode) {
+    for (auto& w : windows_) {
+        w->SetDrawMode(mode);
+    }
+}
+
 } // namespace mousefx
 

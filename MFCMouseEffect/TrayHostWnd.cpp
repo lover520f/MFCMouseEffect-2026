@@ -77,10 +77,12 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 		// Effect Submenu
 		CMenu subMenu;
 		subMenu.CreatePopupMenu();
-		subMenu.AppendMenu(MF_STRING, 1001, _T("水波纹 (Ripple)"));
-		subMenu.AppendMenu(MF_STRING, 1002, _T("无特效 (None)"));
+		subMenu.AppendMenu(MF_STRING, kCmdTrayEffectRipple, _T("水波纹 (Ripple)"));
+		subMenu.AppendMenu(MF_STRING, kCmdTrayEffectTrail, _T("拖尾 (Trail)"));
+		subMenu.AppendMenu(MF_STRING, kCmdTrayEffectIconStar, _T("星星 (Star)"));
+		subMenu.AppendMenu(MF_STRING, kCmdTrayEffectNone, _T("无特效 (None)"));
 
-		menu.AppendMenu(MF_POPUP, (UINT_PTR)subMenu.GetSafeHmenu(), _T("切换特效"));
+		menu.AppendMenu(MF_POPUP, (UINT_PTR)subMenu.m_hMenu, _T("切换特效"));
 		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_STRING, kCmdTrayExit, _T("退出"));
 
@@ -90,19 +92,23 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 		
 		// TrackPopupMenu returns the selected command ID
 		int cmd = menu.TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, pt.x, pt.y, this);
-		if (cmd == kCmdTrayExit)
-		{
-			PostMessage(WM_COMMAND, kCmdTrayExit);
+		
+		CMFCMouseEffectApp* app = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
+
+		if (cmd == kCmdTrayExit) {
+			PostMessage(WM_CLOSE);
 		}
-		else if (cmd == 1001 || cmd == 1002)
-		{
-			// Forward to App
-			CMFCMouseEffectApp* pApp = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
-			if (pApp && pApp->mouseFx_)
-			{
-				if (cmd == 1001) pApp->mouseFx_->SetEffect("ripple");
-				if (cmd == 1002) pApp->mouseFx_->SetEffect("none");
-			}
+		else if (cmd == kCmdTrayEffectRipple) {
+			if (app && app->mouseFx_) app->mouseFx_->HandleCommand("{\"cmd\":\"set_effect\",\"type\":\"ripple\"}");
+		}
+		else if (cmd == kCmdTrayEffectTrail) {
+			if (app && app->mouseFx_) app->mouseFx_->HandleCommand("{\"cmd\":\"set_effect\",\"type\":\"trail\"}");
+		}
+		else if (cmd == kCmdTrayEffectIconStar) {
+			if (app && app->mouseFx_) app->mouseFx_->HandleCommand("{\"cmd\":\"set_effect\",\"type\":\"icon_star\"}");
+		}
+		else if (cmd == kCmdTrayEffectNone) {
+			if (app && app->mouseFx_) app->mouseFx_->HandleCommand("{\"cmd\":\"set_effect\",\"type\":\"none\"}");
 		}
 
 		PostMessage(WM_NULL);

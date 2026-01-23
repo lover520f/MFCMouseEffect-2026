@@ -203,6 +203,7 @@
     <ClInclude Include="MouseFx\AppController.h" />
     <ClInclude Include="MouseFx\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\GlobalMouseHook.h" />
+    <ClInclude Include="MouseFx\IconEffect.h" />
     <ClInclude Include="MouseFx\IMouseEffect.h" />
     <ClInclude Include="MouseFx\IpcController.h" />
     <ClInclude Include="MouseFx\MouseFxMessages.h" />
@@ -210,6 +211,8 @@
     <ClInclude Include="MouseFx\RippleStyle.h" />
     <ClInclude Include="MouseFx\RippleWindow.h" />
     <ClInclude Include="MouseFx\RippleWindowPool.h" />
+    <ClInclude Include="MouseFx\TrailEffect.h" />
+    <ClInclude Include="MouseFx\TrailWindow.h" />
     <ClInclude Include="OutputWnd.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PropertiesWnd.h" />
@@ -228,10 +231,13 @@
     <ClCompile Include="MFCMouseEffectView.cpp" />
     <ClCompile Include="MouseFx\AppController.cpp" />
     <ClCompile Include="MouseFx\GlobalMouseHook.cpp" />
+    <ClCompile Include="MouseFx\IconEffect.cpp" />
     <ClCompile Include="MouseFx\IpcController.cpp" />
     <ClCompile Include="MouseFx\RippleEffect.cpp" />
     <ClCompile Include="MouseFx\RippleWindow.cpp" />
     <ClCompile Include="MouseFx\RippleWindowPool.cpp" />
+    <ClCompile Include="MouseFx\TrailEffect.cpp" />
+    <ClCompile Include="MouseFx\TrailWindow.cpp" />
     <ClCompile Include="OutputWnd.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

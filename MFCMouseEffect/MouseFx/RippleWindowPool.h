@@ -19,6 +19,7 @@ public:
     void Shutdown();
 
     void ShowRipple(const ClickEvent& ev);
+    void SetDrawMode(RippleWindow::DrawMode mode);
 
 private:
     std::vector<std::unique_ptr<RippleWindow>> windows_;

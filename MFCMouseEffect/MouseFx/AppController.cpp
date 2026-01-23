@@ -5,6 +5,8 @@
 #include "AppController.h"
 #include "MouseFxMessages.h"
 #include "RippleEffect.h"
+#include "TrailEffect.h"
+#include "IconEffect.h"
 
 #include <new>
 
@@ -103,24 +105,33 @@ void AppController::Stop() {
 }
 
 void AppController::SetEffect(const std::string& type) {
-    // Stop old
+    // 1. Shutdown current
     if (currentEffect_) {
         currentEffect_->Shutdown();
+        currentEffect_.reset();
     }
 
-    // Create new
+    // 2. Create new
     if (type == "ripple") {
         currentEffect_ = std::make_unique<RippleEffect>();
+    } else if (type == "trail") {
+        currentEffect_ = std::make_unique<TrailEffect>();
+    } else if (type == "icon_star") {
+        currentEffect_ = std::make_unique<IconEffect>();
     } else if (type == "none") {
-        currentEffect_ = nullptr;
+        currentEffect_ = nullptr; // no effect
     } else {
-        // Unknown type, fallback or ignore.
-        OutputDebugStringA(("MouseFx: Unknown effect type: " + type + "\n").c_str());
-        currentEffect_ = nullptr;
+        // Fallback or log error
+        currentEffect_ = std::make_unique<RippleEffect>();
     }
 
-    // Init new
+    // 3. Initialize new
     if (currentEffect_) {
+        // Just in case we are already running (GlobalHook stage), we should Init immediately
+        // BUT SetEffect might be called before Start().
+        // If we are running (hook active), we must Init.
+        // Simple check: if (hook_.IsActive()?) or just always try Init if dispatch window exists.
+        // For now, simple approach:
         currentEffect_->Initialize();
     }
 }
@@ -209,6 +220,14 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
                 currentEffect_->OnClick(*ev);
             }
             delete ev;
+        }
+        return 0;
+    } else if (msg == mousefx::WM_MFX_MOVE) {
+        if (currentEffect_) {
+            POINT pt;
+            pt.x = (LONG)wParam;
+            pt.y = (LONG)lParam;
+            currentEffect_->OnMouseMove(pt);
         }
         return 0;
     }
