@@ -113,16 +113,43 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 	}
 	menu.AppendMenu(MF_POPUP, (UINT_PTR)trailMenu.m_hMenu, _T("拖尾特效 (Trail)"));
 
-	// === Other Categories (Coming Soon) ===
+	// === Scroll Category Submenu ===
+	CMenu scrollMenu;
+	scrollMenu.CreatePopupMenu();
+	scrollMenu.AppendMenu(MF_STRING, kCmdScrollArrow, _T("方向指示 (Arrow)"));
+	scrollMenu.AppendMenu(MF_STRING, kCmdScrollNone, _T("无 (None)"));
+	
+	if (mouseFx) {
+		auto* scrollEffect = mouseFx->GetEffect(mousefx::EffectCategory::Scroll);
+		if (scrollEffect) {
+			scrollMenu.CheckMenuItem(kCmdScrollArrow, MF_CHECKED);
+		} else {
+			scrollMenu.CheckMenuItem(kCmdScrollNone, MF_CHECKED);
+		}
+	}
+	menu.AppendMenu(MF_POPUP, (UINT_PTR)scrollMenu.m_hMenu, _T("滚轮特效 (Scroll)"));
+
+	// === Hold Category Submenu ===
+	CMenu holdMenu;
+	holdMenu.CreatePopupMenu();
+	holdMenu.AppendMenu(MF_STRING, kCmdHoldCharge, _T("蓄力 (Charge)"));
+	holdMenu.AppendMenu(MF_STRING, kCmdHoldNone, _T("无 (None)"));
+	
+	if (mouseFx) {
+		auto* holdEffect = mouseFx->GetEffect(mousefx::EffectCategory::Hold);
+		if (holdEffect) {
+			holdMenu.CheckMenuItem(kCmdHoldCharge, MF_CHECKED);
+		} else {
+			holdMenu.CheckMenuItem(kCmdHoldNone, MF_CHECKED);
+		}
+	}
+	menu.AppendMenu(MF_POPUP, (UINT_PTR)holdMenu.m_hMenu, _T("长按特效 (Hold)"));
+
+	// === Hover (Coming Soon) ===
 	CMenu hoverMenu;
 	hoverMenu.CreatePopupMenu();
 	hoverMenu.AppendMenu(MF_STRING | MF_GRAYED, kCmdHoverNone, _T("无 (None)"));
 	menu.AppendMenu(MF_POPUP, (UINT_PTR)hoverMenu.m_hMenu, _T("悬停特效 (Hover) - 待实现"));
-
-	CMenu scrollMenu;
-	scrollMenu.CreatePopupMenu();
-	scrollMenu.AppendMenu(MF_STRING | MF_GRAYED, kCmdScrollNone, _T("无 (None)"));
-	menu.AppendMenu(MF_POPUP, (UINT_PTR)scrollMenu.m_hMenu, _T("滚轮特效 (Scroll) - 待实现"));
 
 	menu.AppendMenu(MF_SEPARATOR);
 	menu.AppendMenu(MF_STRING, kCmdTrayExit, _T("退出"));
@@ -156,6 +183,20 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 			case kCmdTrailNone:
 				mouseFx->ClearEffect(mousefx::EffectCategory::Trail);
 				break;
+			// Scroll category
+			case kCmdScrollArrow:
+				mouseFx->SetEffect(mousefx::EffectCategory::Scroll, "arrow");
+				break;
+			case kCmdScrollNone:
+				mouseFx->ClearEffect(mousefx::EffectCategory::Scroll);
+				break;
+			// Hold category
+			case kCmdHoldCharge:
+				mouseFx->SetEffect(mousefx::EffectCategory::Hold, "charge");
+				break;
+			case kCmdHoldNone:
+				mouseFx->ClearEffect(mousefx::EffectCategory::Hold);
+				break;
 			default:
 				break;
 		}
@@ -163,6 +204,7 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 
 	PostMessage(WM_NULL);
 	return 0;
+
 }
 
 void CTrayHostWnd::OnTrayExit()

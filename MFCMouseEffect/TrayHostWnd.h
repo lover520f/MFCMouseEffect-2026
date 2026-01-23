@@ -37,11 +37,13 @@ private:
 		// Hover category
 		kCmdHoverNone = 4001,
 		// Scroll category
-		kCmdScrollNone = 5001,
+		kCmdScrollArrow = 5001,
+		kCmdScrollNone = 5002,
 		// Edge category
 		kCmdEdgeNone = 6001,
 		// Hold category
-		kCmdHoldNone = 7001,
+		kCmdHoldCharge = 7001,
+		kCmdHoldNone = 7002,
 	};
 
 	NOTIFYICONDATA m_trayIcon{};

@@ -7,9 +7,12 @@
 #include "RippleEffect.h"
 #include "TrailEffect.h"
 #include "IconEffect.h"
+#include "ScrollEffect.h"
+#include "HoldEffect.h"
 
 #include <new>
 #include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM
+
 
 
 // Helper: simplistic JSON-like parsing for extracting string values.
@@ -126,13 +129,18 @@ std::unique_ptr<IMouseEffect> AppController::CreateEffect(EffectCategory categor
         case EffectCategory::Trail:
             if (type == "line")   return std::make_unique<TrailEffect>();
             break;
-        case EffectCategory::Hover:
         case EffectCategory::Scroll:
-        case EffectCategory::Edge:
+            if (type == "arrow")  return std::make_unique<ScrollEffect>();
+            break;
         case EffectCategory::Hold:
+            if (type == "charge") return std::make_unique<HoldEffect>();
+            break;
+        case EffectCategory::Hover:
+        case EffectCategory::Edge:
             // TODO: implement these categories
             break;
         default:
+
             break;
     }
 
