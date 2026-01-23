@@ -47,38 +47,65 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
         const auto* s = reinterpret_cast<const MSLLHOOKSTRUCT*>(lParam);
 
         MouseButton button{};
-        bool fire = false;
+        bool fireClick = false;
+        bool fireButtonDown = false;
+
         switch (wParam) {
+        case WM_LBUTTONDOWN:
+            button = MouseButton::Left;
+            fireButtonDown = true;
+            break;
+        case WM_RBUTTONDOWN:
+            button = MouseButton::Right;
+            fireButtonDown = true;
+            break;
+        case WM_MBUTTONDOWN:
+            button = MouseButton::Middle;
+            fireButtonDown = true;
+            break;
         case WM_LBUTTONUP:
             button = MouseButton::Left;
-            fire = true;
+            fireClick = true;
             break;
         case WM_RBUTTONUP:
             button = MouseButton::Right;
-            fire = true;
+            fireClick = true;
             break;
         case WM_MBUTTONUP:
             button = MouseButton::Middle;
-            fire = true;
+            fireClick = true;
             break;
         case WM_MOUSEMOVE:
-        {
-            // Forward mouse move.
-            // Note: WH_MOUSE_LL callback is called in context of installing thread.
-            // PostMessage is safe.
-            // Pack coordinates into wParam (x) and lParam (y) since they fit in 64-bit pointers?
-            // Actually on x64, WPARAM and LPARAM are 64-bit.
-            // POINT.x is LONG (32-bit signed). 
             if (s) {
-                 PostMessageW(instance_->dispatchHwnd_, WM_MFX_MOVE, (WPARAM)s->pt.x, (LPARAM)s->pt.y);
+                PostMessageW(instance_->dispatchHwnd_, WM_MFX_MOVE, 
+                    (WPARAM)s->pt.x, (LPARAM)s->pt.y);
             }
             break;
-        }
+        case WM_MOUSEWHEEL:
+            if (s) {
+                // HIWORD of mouseData contains wheel delta
+                short delta = static_cast<short>(HIWORD(s->mouseData));
+                PostMessageW(instance_->dispatchHwnd_, WM_MFX_SCROLL,
+                    (WPARAM)delta, MAKELPARAM(s->pt.x, s->pt.y));
+            }
+            break;
         default:
             break;
         }
 
-        if (fire && s) {
+        // Button down event (for Hold detection)
+        if (fireButtonDown && s) {
+            PostMessageW(instance_->dispatchHwnd_, WM_MFX_BUTTON_DOWN,
+                (WPARAM)button, MAKELPARAM(s->pt.x, s->pt.y));
+        }
+
+        // Button up event (triggers click + ends hold)
+        if (fireClick && s) {
+            // Post button up for Hold end
+            PostMessageW(instance_->dispatchHwnd_, WM_MFX_BUTTON_UP,
+                (WPARAM)button, 0);
+
+            // Create click event
             auto* ev = new (std::nothrow) ClickEvent();
             if (ev) {
                 ev->pt = s->pt;
@@ -92,3 +119,4 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
 }
 
 } // namespace mousefx
+

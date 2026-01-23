@@ -20,11 +20,6 @@ void TrailEffect::Shutdown() {
     }
 }
 
-void TrailEffect::OnClick(const ClickEvent& event) {
-    // Optional: Trail effect could also react to clicks, but for now it just follows movement.
-    // Maybe add a burst point?
-}
-
 void TrailEffect::OnMouseMove(const POINT& pt) {
     if (window_) {
         window_->AddPoint(pt);

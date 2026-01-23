@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <memory>
 #include <cstdint>
-#include <vector>
+#include <array>
 #include <string>
 
 #include "GdiPlusSession.h"
@@ -13,7 +13,7 @@
 
 namespace mousefx {
 
-// Owns the subsystem lifecycle: message-only dispatcher, GDI+ init, hook, and current effect.
+// Owns the subsystem lifecycle: message-only dispatcher, GDI+ init, hook, and effects.
 class AppController final {
 public:
     AppController();
@@ -38,12 +38,15 @@ public:
     bool Start();
     void Stop();
     
-    // Switch the active effect.
-    // "ripple" -> RippleEffect
-    // "trail" -> TrailEffect
-    // "icon_star" -> IconEffect
-    // "none" -> nullptr
-    void SetEffect(const std::string& type);
+    // Set effect for a specific category.
+    // type = "ripple", "star", "line", etc. or "none" to disable.
+    void SetEffect(EffectCategory category, const std::string& type);
+    
+    // Clear (disable) effect for a category.
+    void ClearEffect(EffectCategory category);
+    
+    // Get the current effect for a category (may be null).
+    IMouseEffect* GetEffect(EffectCategory category) const;
 
     // Handle JSON command string.
     void HandleCommand(const std::string& jsonCmd);
@@ -58,14 +61,19 @@ private:
     LRESULT OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     bool CreateDispatchWindow();
     void DestroyDispatchWindow();
-    void ParseAndExecute(const std::string& line);
+    
+    // Factory method to create effect by category and type name.
+    std::unique_ptr<IMouseEffect> CreateEffect(EffectCategory category, const std::string& type);
 
     HWND dispatchHwnd_ = nullptr;
 
     GdiPlusSession gdiplus_{};
     GlobalMouseHook hook_{};
     
-    std::unique_ptr<IMouseEffect> currentEffect_;
+    // One effect slot per category.
+    static constexpr size_t kCategoryCount = static_cast<size_t>(EffectCategory::Count);
+    std::array<std::unique_ptr<IMouseEffect>, kCategoryCount> effects_{};
+    
     EffectConfig config_{};
     StartDiagnostics diag_{};
 

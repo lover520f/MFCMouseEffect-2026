@@ -23,11 +23,26 @@ protected:
 private:
 	static constexpr UINT kTrayMsg = WM_APP + 1;
 	static constexpr UINT kTrayIconId = 1;
-    static const int kCmdTrayExit = 1001;
-    static const int kCmdTrayEffectRipple = 1002;
-    static const int kCmdTrayEffectNone = 1003;
-    static const int kCmdTrayEffectTrail = 1004;
-    static const int kCmdTrayEffectIconStar = 1005;
+
+	// Menu command IDs
+	enum MenuCmd {
+		kCmdTrayExit = 1001,
+		// Click category
+		kCmdClickRipple = 2001,
+		kCmdClickStar = 2002,
+		kCmdClickNone = 2003,
+		// Trail category
+		kCmdTrailLine = 3001,
+		kCmdTrailNone = 3002,
+		// Hover category
+		kCmdHoverNone = 4001,
+		// Scroll category
+		kCmdScrollNone = 5001,
+		// Edge category
+		kCmdEdgeNone = 6001,
+		// Hold category
+		kCmdHoldNone = 7001,
+	};
 
 	NOTIFYICONDATA m_trayIcon{};
 	bool m_showTrayIcon{ true };

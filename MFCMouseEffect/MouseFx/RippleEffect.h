@@ -10,6 +10,9 @@ public:
     RippleEffect() = default;
     ~RippleEffect() override;
 
+    EffectCategory Category() const override { return EffectCategory::Click; }
+    const char* TypeName() const override { return "ripple"; }
+
     bool Initialize() override;
     void Shutdown() override;
     void OnClick(const ClickEvent& event) override;

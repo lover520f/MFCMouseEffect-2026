@@ -5,6 +5,7 @@
 #include "resource.h"
 #include "MFCMouseEffect.h"
 #include "MouseFx/AppController.h"
+#include "MouseFx/IMouseEffect.h"
 
 BEGIN_MESSAGE_MAP(CTrayHostWnd, CWnd)
 	ON_WM_CREATE()
@@ -18,7 +19,6 @@ BOOL CTrayHostWnd::CreateHost(bool showTrayIcon)
 {
 	m_showTrayIcon = showTrayIcon;
 	const CString className = AfxRegisterWndClass(0);
-	// Create a hidden tool window (never shown) to receive tray callbacks.
 	return CreateEx(WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
 		className,
 		_T("MFCMouseEffectTrayHost"),
@@ -42,7 +42,7 @@ int CTrayHostWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		m_trayIcon.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
 		m_trayIcon.uCallbackMessage = kTrayMsg;
 		m_trayIcon.hIcon = hIcon;
-		lstrcpyn(m_trayIcon.szTip, _T("MFCMouseEffect（托盘常驻）- 右键退出"), _countof(m_trayIcon.szTip));
+		lstrcpyn(m_trayIcon.szTip, _T("MFCMouseEffect - 右键菜单"), _countof(m_trayIcon.szTip));
 
 		Shell_NotifyIcon(NIM_ADD, &m_trayIcon);
 	}
@@ -67,61 +67,101 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 {
 	UNREFERENCED_PARAMETER(wp);
 
-	switch (lp)
-	{
-	case WM_RBUTTONUP:
-	{
-		CMenu menu;
-		menu.CreatePopupMenu();
-
-		// Effect Submenu
-		CMenu subMenu;
-		subMenu.CreatePopupMenu();
-		subMenu.AppendMenu(MF_STRING, kCmdTrayEffectRipple, _T("水波纹 (Ripple)"));
-		subMenu.AppendMenu(MF_STRING, kCmdTrayEffectTrail, _T("拖尾 (Trail)"));
-		subMenu.AppendMenu(MF_STRING, kCmdTrayEffectIconStar, _T("星星 (Star)"));
-		subMenu.AppendMenu(MF_STRING, kCmdTrayEffectNone, _T("无特效 (None)"));
-
-		menu.AppendMenu(MF_POPUP, (UINT_PTR)subMenu.m_hMenu, _T("切换特效"));
-		menu.AppendMenu(MF_SEPARATOR);
-		menu.AppendMenu(MF_STRING, kCmdTrayExit, _T("退出"));
-
-		POINT pt{};
-		GetCursorPos(&pt);
-		SetForegroundWindow();
-		
-		// TrackPopupMenu returns the selected command ID
-		int cmd = menu.TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, pt.x, pt.y, this);
-		
-		CMFCMouseEffectApp* app = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
-
-		if (cmd == kCmdTrayExit) {
-			PostMessage(WM_CLOSE);
-		}
-		else if (cmd == kCmdTrayEffectRipple) {
-			if (app && app->mouseFx_) app->mouseFx_->HandleCommand("{\"cmd\":\"set_effect\",\"type\":\"ripple\"}");
-		}
-		else if (cmd == kCmdTrayEffectTrail) {
-			if (app && app->mouseFx_) app->mouseFx_->HandleCommand("{\"cmd\":\"set_effect\",\"type\":\"trail\"}");
-		}
-		else if (cmd == kCmdTrayEffectIconStar) {
-			if (app && app->mouseFx_) app->mouseFx_->HandleCommand("{\"cmd\":\"set_effect\",\"type\":\"icon_star\"}");
-		}
-		else if (cmd == kCmdTrayEffectNone) {
-			if (app && app->mouseFx_) app->mouseFx_->HandleCommand("{\"cmd\":\"set_effect\",\"type\":\"none\"}");
-		}
-
-		PostMessage(WM_NULL);
-		break;
-	}
-	case WM_LBUTTONDBLCLK:
-		// Optional: double click also exits (simple behavior).
-		PostMessage(WM_COMMAND, kCmdTrayExit);
-		break;
-	default:
-		break;
+	if (lp != WM_RBUTTONUP) {
+		return 0;
 	}
 
+	CMFCMouseEffectApp* app = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
+	mousefx::AppController* mouseFx = app ? app->mouseFx_.get() : nullptr;
+
+	CMenu menu;
+	menu.CreatePopupMenu();
+
+	// === Click Category Submenu ===
+	CMenu clickMenu;
+	clickMenu.CreatePopupMenu();
+	clickMenu.AppendMenu(MF_STRING, kCmdClickRipple, _T("水波纹 (Ripple)"));
+	clickMenu.AppendMenu(MF_STRING, kCmdClickStar, _T("星星 (Star)"));
+	clickMenu.AppendMenu(MF_STRING, kCmdClickNone, _T("无 (None)"));
+	
+	// Check current selection
+	if (mouseFx) {
+		auto* clickEffect = mouseFx->GetEffect(mousefx::EffectCategory::Click);
+		if (clickEffect) {
+			std::string typeName = clickEffect->TypeName();
+			if (typeName == "ripple") clickMenu.CheckMenuItem(kCmdClickRipple, MF_CHECKED);
+			else if (typeName == "star") clickMenu.CheckMenuItem(kCmdClickStar, MF_CHECKED);
+		} else {
+			clickMenu.CheckMenuItem(kCmdClickNone, MF_CHECKED);
+		}
+	}
+	menu.AppendMenu(MF_POPUP, (UINT_PTR)clickMenu.m_hMenu, _T("点击特效 (Click)"));
+
+	// === Trail Category Submenu ===
+	CMenu trailMenu;
+	trailMenu.CreatePopupMenu();
+	trailMenu.AppendMenu(MF_STRING, kCmdTrailLine, _T("拖尾线 (Line)"));
+	trailMenu.AppendMenu(MF_STRING, kCmdTrailNone, _T("无 (None)"));
+	
+	if (mouseFx) {
+		auto* trailEffect = mouseFx->GetEffect(mousefx::EffectCategory::Trail);
+		if (trailEffect) {
+			trailMenu.CheckMenuItem(kCmdTrailLine, MF_CHECKED);
+		} else {
+			trailMenu.CheckMenuItem(kCmdTrailNone, MF_CHECKED);
+		}
+	}
+	menu.AppendMenu(MF_POPUP, (UINT_PTR)trailMenu.m_hMenu, _T("拖尾特效 (Trail)"));
+
+	// === Other Categories (Coming Soon) ===
+	CMenu hoverMenu;
+	hoverMenu.CreatePopupMenu();
+	hoverMenu.AppendMenu(MF_STRING | MF_GRAYED, kCmdHoverNone, _T("无 (None)"));
+	menu.AppendMenu(MF_POPUP, (UINT_PTR)hoverMenu.m_hMenu, _T("悬停特效 (Hover) - 待实现"));
+
+	CMenu scrollMenu;
+	scrollMenu.CreatePopupMenu();
+	scrollMenu.AppendMenu(MF_STRING | MF_GRAYED, kCmdScrollNone, _T("无 (None)"));
+	menu.AppendMenu(MF_POPUP, (UINT_PTR)scrollMenu.m_hMenu, _T("滚轮特效 (Scroll) - 待实现"));
+
+	menu.AppendMenu(MF_SEPARATOR);
+	menu.AppendMenu(MF_STRING, kCmdTrayExit, _T("退出"));
+
+	POINT pt{};
+	GetCursorPos(&pt);
+	SetForegroundWindow();
+	
+	int cmd = menu.TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, pt.x, pt.y, this);
+
+	// Handle commands
+	if (cmd == kCmdTrayExit) {
+		PostMessage(WM_CLOSE);
+	}
+	else if (mouseFx) {
+		switch (cmd) {
+			// Click category
+			case kCmdClickRipple:
+				mouseFx->SetEffect(mousefx::EffectCategory::Click, "ripple");
+				break;
+			case kCmdClickStar:
+				mouseFx->SetEffect(mousefx::EffectCategory::Click, "star");
+				break;
+			case kCmdClickNone:
+				mouseFx->ClearEffect(mousefx::EffectCategory::Click);
+				break;
+			// Trail category
+			case kCmdTrailLine:
+				mouseFx->SetEffect(mousefx::EffectCategory::Trail, "line");
+				break;
+			case kCmdTrailNone:
+				mouseFx->ClearEffect(mousefx::EffectCategory::Trail);
+				break;
+			default:
+				break;
+		}
+	}
+
+	PostMessage(WM_NULL);
 	return 0;
 }
 
@@ -129,4 +169,3 @@ void CTrayHostWnd::OnTrayExit()
 {
 	PostMessage(WM_CLOSE);
 }
-

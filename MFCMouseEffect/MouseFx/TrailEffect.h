@@ -11,9 +11,11 @@ public:
     TrailEffect();
     ~TrailEffect() override;
 
+    EffectCategory Category() const override { return EffectCategory::Trail; }
+    const char* TypeName() const override { return "line"; }
+
     bool Initialize() override;
     void Shutdown() override;
-    void OnClick(const ClickEvent& event) override;
     void OnMouseMove(const POINT& pt) override;
 
 private:

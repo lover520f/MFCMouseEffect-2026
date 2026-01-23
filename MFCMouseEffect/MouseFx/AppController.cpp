@@ -9,9 +9,10 @@
 #include "IconEffect.h"
 
 #include <new>
+#include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM
 
-// Helper: simplistic JSON-like parsing for "cmd" and "type".
-// We assume simple format: {"cmd":"set_effect", "type":"ripple"} (with quotes).
+
+// Helper: simplistic JSON-like parsing for extracting string values.
 static std::string ExtractJsonValue(const std::string& json, const std::string& key) {
 	std::string search = "\"" + key + "\"";
 	size_t keyPos = json.find(search);
@@ -19,7 +20,6 @@ static std::string ExtractJsonValue(const std::string& json, const std::string& 
 
 	size_t startQuote = json.find('"', keyPos + search.length());
 	if (startQuote == std::string::npos) {
-		// Maybe it's after a colon?
 		startQuote = json.find('"', keyPos + search.length() + 1);
 	}
 	if (startQuote == std::string::npos) return "";
@@ -33,11 +33,9 @@ static std::string ExtractJsonValue(const std::string& json, const std::string& 
 namespace mousefx {
 
 static const wchar_t* kDispatchClassName = L"MouseFxDispatchWindow";
-static constexpr UINT_PTR kSelfTestTimerId = 0x4D46; // 'MF' - debug-only
+static constexpr UINT_PTR kSelfTestTimerId = 0x4D46;
 
-AppController::AppController() {
-    // Config and effect will be initialized in Start()
-}
+AppController::AppController() = default;
 
 AppController::~AppController() {
     Stop();
@@ -59,7 +57,7 @@ bool AppController::Start() {
     if (dispatchHwnd_) return true;
     diag_ = {};
 
-    // Load config from EXE directory (defaults if file missing)
+    // Load config from EXE directory
     config_ = EffectConfig::Load(GetExeDirectory());
 
     diag_.stage = StartStage::GdiPlusStartup;
@@ -79,17 +77,11 @@ bool AppController::Start() {
         return false;
     }
 
-    // Set effect based on config
+    // Initialize effects based on config
     diag_.stage = StartStage::EffectInit;
-    SetEffect(config_.defaultEffect);
-    if (currentEffect_ && !currentEffect_->Initialize()) {
-#ifdef _DEBUG
-        OutputDebugStringW(L"MouseFx: effect init failed.\n");
-#endif
-        // We allow starting even if effect init fails (it might be fixed later by switching effect).
-        // But for diagnosing, we note it.
-        diag_.error = GetLastError();
-    }
+    // Default: set ripple for click and optionally trail
+    SetEffect(EffectCategory::Click, config_.defaultEffect);
+    // TODO: load per-category active effects from config
 
     diag_.stage = StartStage::GlobalHook;
     if (!hook_.Start(dispatchHwnd_)) {
@@ -104,8 +96,6 @@ bool AppController::Start() {
     }
 
 #ifdef _DEBUG
-    // One-shot self-test: shows a ripple at the current cursor position shortly after start.
-    // This helps diagnose "no ripple" issues (hook vs rendering vs wrong exe).
     SetTimer(dispatchHwnd_, kSelfTestTimerId, 250, nullptr);
 #endif
     return true;
@@ -113,53 +103,97 @@ bool AppController::Start() {
 
 void AppController::Stop() {
     hook_.Stop();
-    if (currentEffect_) {
-        currentEffect_->Shutdown();
+    for (auto& effect : effects_) {
+        if (effect) {
+            effect->Shutdown();
+            effect.reset();
+        }
     }
     DestroyDispatchWindow();
     gdiplus_.Shutdown();
 }
 
-void AppController::SetEffect(const std::string& type) {
-    // 1. Shutdown current
-    if (currentEffect_) {
-        currentEffect_->Shutdown();
-        currentEffect_.reset();
+std::unique_ptr<IMouseEffect> AppController::CreateEffect(EffectCategory category, const std::string& type) {
+    if (type == "none" || type.empty()) {
+        return nullptr;
     }
 
-    // 2. Create new
-    if (type == "ripple") {
-        currentEffect_ = std::make_unique<RippleEffect>();
-    } else if (type == "trail") {
-        currentEffect_ = std::make_unique<TrailEffect>();
-    } else if (type == "icon_star") {
-        currentEffect_ = std::make_unique<IconEffect>();
-    } else if (type == "none") {
-        currentEffect_ = nullptr; // no effect
-    } else {
-        // Fallback or log error
-        currentEffect_ = std::make_unique<RippleEffect>();
+    switch (category) {
+        case EffectCategory::Click:
+            if (type == "ripple") return std::make_unique<RippleEffect>();
+            if (type == "star")   return std::make_unique<IconEffect>();
+            break;
+        case EffectCategory::Trail:
+            if (type == "line")   return std::make_unique<TrailEffect>();
+            break;
+        case EffectCategory::Hover:
+        case EffectCategory::Scroll:
+        case EffectCategory::Edge:
+        case EffectCategory::Hold:
+            // TODO: implement these categories
+            break;
+        default:
+            break;
     }
 
-    // 3. Initialize new
-    if (currentEffect_) {
-        // Just in case we are already running (GlobalHook stage), we should Init immediately
-        // BUT SetEffect might be called before Start().
-        // If we are running (hook active), we must Init.
-        // Simple check: if (hook_.IsActive()?) or just always try Init if dispatch window exists.
-        // For now, simple approach:
-        currentEffect_->Initialize();
+    // Fallback for unknown type
+#ifdef _DEBUG
+    OutputDebugStringA(("MouseFx: unknown effect type: " + type + "\n").c_str());
+#endif
+    return nullptr;
+}
+
+void AppController::SetEffect(EffectCategory category, const std::string& type) {
+    size_t idx = static_cast<size_t>(category);
+    if (idx >= kCategoryCount) return;
+
+    // Shutdown existing effect for this category
+    if (effects_[idx]) {
+        effects_[idx]->Shutdown();
+        effects_[idx].reset();
     }
+
+    // Create and initialize new effect
+    effects_[idx] = CreateEffect(category, type);
+    if (effects_[idx]) {
+        effects_[idx]->Initialize();
+    }
+
+#ifdef _DEBUG
+    wchar_t buf[256]{};
+    wsprintfW(buf, L"MouseFx: SetEffect category=%hs type=%hs\n", 
+              CategoryToString(category), type.c_str());
+    OutputDebugStringW(buf);
+#endif
+}
+
+void AppController::ClearEffect(EffectCategory category) {
+    SetEffect(category, "none");
+}
+
+IMouseEffect* AppController::GetEffect(EffectCategory category) const {
+    size_t idx = static_cast<size_t>(category);
+    if (idx >= kCategoryCount) return nullptr;
+    return effects_[idx].get();
 }
 
 void AppController::HandleCommand(const std::string& jsonCmd) {
-    // In real app, use a JSON library (e.g. nlohmann/json).
-    // For now using manual extraction as per light-weight requirements.
     std::string cmd = ExtractJsonValue(jsonCmd, "cmd");
     
     if (cmd == "set_effect") {
+        std::string category = ExtractJsonValue(jsonCmd, "category");
         std::string type = ExtractJsonValue(jsonCmd, "type");
-        SetEffect(type);
+        
+        if (category.empty()) {
+            // Legacy format: {"cmd": "set_effect", "type": "ripple"}
+            // Assume click category for backward compatibility
+            SetEffect(EffectCategory::Click, type);
+        } else {
+            SetEffect(CategoryFromString(category), type);
+        }
+    } else if (cmd == "clear_effect") {
+        std::string category = ExtractJsonValue(jsonCmd, "category");
+        ClearEffect(CategoryFromString(category));
     }
 }
 
@@ -177,15 +211,10 @@ bool AppController::CreateDispatchWindow() {
     }
 
     dispatchHwnd_ = CreateWindowExW(
-        0,
-        kDispatchClassName,
-        L"",
-        0,
+        0, kDispatchClassName, L"", 0,
         0, 0, 0, 0,
-        HWND_MESSAGE,
-        nullptr,
-        GetModuleHandleW(nullptr),
-        this
+        HWND_MESSAGE, nullptr,
+        GetModuleHandleW(nullptr), this
     );
     if (!dispatchHwnd_) {
         diag_.error = GetLastError();
@@ -206,8 +235,6 @@ LRESULT CALLBACK AppController::DispatchWndProc(HWND hwnd, UINT msg, WPARAM wPar
         auto* cs = reinterpret_cast<CREATESTRUCTW*>(lParam);
         self = reinterpret_cast<AppController*>(cs->lpCreateParams);
         SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
-        // `CreateWindowExW` hasn't returned yet, so `dispatchHwnd_` isn't set.
-        // Ensure we never call DefWindowProc with a null/invalid HWND during creation.
         self->dispatchHwnd_ = hwnd;
     } else {
         self = reinterpret_cast<AppController*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
@@ -232,33 +259,78 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
                 OutputDebugStringW(buf);
             }
 #endif
-            if (currentEffect_) {
-                currentEffect_->OnClick(*ev);
+            // Dispatch to Click category effect
+            if (auto* effect = GetEffect(EffectCategory::Click)) {
+                effect->OnClick(*ev);
             }
             delete ev;
         }
         return 0;
-    } else if (msg == mousefx::WM_MFX_MOVE) {
-        if (currentEffect_) {
-            POINT pt;
-            pt.x = (LONG)wParam;
-            pt.y = (LONG)lParam;
-            currentEffect_->OnMouseMove(pt);
+    } 
+    
+    if (msg == WM_MFX_MOVE) {
+        POINT pt;
+        pt.x = static_cast<LONG>(wParam);
+        pt.y = static_cast<LONG>(lParam);
+        // Dispatch to Trail category effect
+        if (auto* effect = GetEffect(EffectCategory::Trail)) {
+            effect->OnMouseMove(pt);
         }
         return 0;
     }
+
+    if (msg == WM_MFX_SCROLL) {
+        short delta = static_cast<short>(wParam);
+        POINT pt;
+        pt.x = GET_X_LPARAM(lParam);
+        pt.y = GET_Y_LPARAM(lParam);
+        // Dispatch to Scroll category effect
+        if (auto* effect = GetEffect(EffectCategory::Scroll)) {
+            ScrollEvent ev{};
+            ev.pt = pt;
+            ev.delta = delta;
+            ev.horizontal = false;
+            effect->OnScroll(ev);
+        }
+        return 0;
+    }
+
+    if (msg == WM_MFX_BUTTON_DOWN) {
+        int button = static_cast<int>(wParam);
+        POINT pt;
+        pt.x = GET_X_LPARAM(lParam);
+        pt.y = GET_Y_LPARAM(lParam);
+        // Dispatch to Hold category effect
+        if (auto* effect = GetEffect(EffectCategory::Hold)) {
+            effect->OnHoldStart(pt, button);
+        }
+        return 0;
+    }
+
+    if (msg == WM_MFX_BUTTON_UP) {
+        // End hold effect
+        if (auto* effect = GetEffect(EffectCategory::Hold)) {
+            effect->OnHoldEnd();
+        }
+        return 0;
+    }
+
 #ifdef _DEBUG
     if (msg == WM_TIMER && wParam == kSelfTestTimerId) {
         KillTimer(dispatchHwnd_, kSelfTestTimerId);
         ClickEvent ev{};
         GetCursorPos(&ev.pt);
         ev.button = MouseButton::Left;
-        if (currentEffect_) currentEffect_->OnClick(ev);
+        if (auto* effect = GetEffect(EffectCategory::Click)) {
+            effect->OnClick(ev);
+        }
         OutputDebugStringW(L"MouseFx: self-test ripple fired.\n");
         return 0;
     }
 #endif
+
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
 } // namespace mousefx
+
