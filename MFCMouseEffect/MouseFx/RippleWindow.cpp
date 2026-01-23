@@ -96,9 +96,16 @@ bool RippleWindow::Create() {
 }
 
 void RippleWindow::StartAt(const ClickEvent& ev) {
+    StartContinuous(ev);
+    continuous_ = false; // Regular one-shot
+}
+
+void RippleWindow::StartContinuous(const ClickEvent& ev) {
     if (!hwnd_ && !Create()) return;
 
     current_ = ev;
+    continuous_ = true;
+
     // Slightly different accent by button, keeps the effect expressive but consistent.
     style_ = RippleStyle{};
     switch (ev.button) {
@@ -133,6 +140,26 @@ void RippleWindow::StartAt(const ClickEvent& ev) {
     // Render first frame immediately to avoid missing on fast clicks.
     RenderFrame(0.0f);
     SetTimer(hwnd_, kTimerId, 16, nullptr);
+}
+
+void RippleWindow::UpdatePosition(const POINT& pt) {
+    if (!active_ || !hwnd_) return;
+    
+    // Recalculate position based on new center pt
+    const int left = static_cast<int>(pt.x - (style_.windowSize / 2));
+    const int top = static_cast<int>(pt.y - (style_.windowSize / 2));
+    
+    // Move window (SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE)
+    SetWindowPos(hwnd_, nullptr, left, top, 0, 0,
+        SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE);
+}
+
+void RippleWindow::Stop() {
+    active_ = false;
+    if (hwnd_) {
+        KillTimer(hwnd_, kTimerId);
+        ShowWindow(hwnd_, SW_HIDE);
+    }
 }
 
 LRESULT CALLBACK RippleWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -177,19 +204,28 @@ LRESULT RippleWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
 
 void RippleWindow::OnTick() {
     if (!active_) {
-        KillTimer(hwnd_, kTimerId);
-        ShowWindow(hwnd_, SW_HIDE);
+        Stop();
         return;
     }
 
     const uint64_t elapsed = NowMs() - startTick_;
-    const float t = (style_.durationMs == 0) ? 1.0f : (float)elapsed / (float)style_.durationMs;
+    float t = (style_.durationMs == 0) ? 1.0f : (float)elapsed / (float)style_.durationMs;
 
-    if (t >= 1.0f) {
-        active_ = false;
-        KillTimer(hwnd_, kTimerId);
-        ShowWindow(hwnd_, SW_HIDE);
-        return;
+    if (continuous_) {
+        // Loop 0.0 -> 1.0 -> 0.0 ...
+        // Using fmod for simple repeat: 0->1, 0->1
+        // Or sin wave? EaseOutCubic is 0 to 1.
+        // Let's just repeat the ripple 0->1.
+        if (t > 1.0f) {
+            // Reset start tick to loop
+            startTick_ = NowMs();
+            t = 0.0f;
+        }
+    } else {
+        if (t >= 1.0f) {
+            Stop();
+            return;
+        }
     }
 
     RenderFrame(t);

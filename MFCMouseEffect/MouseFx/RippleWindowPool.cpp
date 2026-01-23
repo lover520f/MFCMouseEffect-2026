@@ -52,6 +52,31 @@ void RippleWindowPool::ShowRipple(const ClickEvent& ev) {
     }
 }
 
+RippleWindow* RippleWindowPool::ShowContinuous(const ClickEvent& ev) {
+    if (windows_.empty()) {
+        if (!Initialize(8)) return nullptr;
+    }
+
+    RippleWindow* best = nullptr;
+    uint64_t bestTick = UINT64_MAX;
+
+    for (auto& w : windows_) {
+        if (!w->IsActive()) {
+            best = w.get();
+            break;
+        }
+        if (w->StartTick() < bestTick) {
+            bestTick = w->StartTick();
+            best = w.get();
+        }
+    }
+
+    if (best) {
+        best->StartContinuous(ev);
+    }
+    return best;
+}
+
 void RippleWindowPool::SetDrawMode(RippleWindow::DrawMode mode) {
     for (auto& w : windows_) {
         w->SetDrawMode(mode);

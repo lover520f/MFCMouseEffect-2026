@@ -22,6 +22,9 @@ public:
     uint64_t StartTick() const { return startTick_; }
 
     void StartAt(const ClickEvent& ev);
+    void StartContinuous(const ClickEvent& ev);
+    void UpdatePosition(const POINT& pt);
+    void Stop();
 
     enum class DrawMode {
         Ripple,
@@ -44,6 +47,7 @@ private:
 
     HWND hwnd_ = nullptr;
     bool active_ = false;
+    bool continuous_ = false;
 
     RippleStyle style_{};
     ClickEvent current_{};

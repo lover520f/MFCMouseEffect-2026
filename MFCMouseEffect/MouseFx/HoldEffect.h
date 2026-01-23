@@ -17,12 +17,16 @@ public:
     bool Initialize() override;
     void Shutdown() override;
     void OnHoldStart(const POINT& pt, int button) override;
+    void OnHoldUpdate(const POINT& pt, DWORD durationMs) override;
     void OnHoldEnd() override;
 
 private:
     RippleWindowPool pool_{};
     POINT holdPoint_{};
     int holdButton_ = 0;
+    
+    // Track active window to stop looping
+    RippleWindow* currentRipple_ = nullptr;
 };
 
 } // namespace mousefx

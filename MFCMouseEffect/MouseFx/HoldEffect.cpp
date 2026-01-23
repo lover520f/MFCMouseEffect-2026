@@ -17,17 +17,31 @@ void HoldEffect::Shutdown() {
 }
 
 void HoldEffect::OnHoldStart(const POINT& pt, int button) {
+    if (holdButton_ != 0) return; // Already holding?
+
     holdPoint_ = pt;
     holdButton_ = button;
-    // Show initial ripple at hold start
+    
     ClickEvent ev{};
     ev.pt = pt;
     ev.button = static_cast<MouseButton>(button);
-    pool_.ShowRipple(ev);
+    
+    // Start looping animation
+    currentRipple_ = pool_.ShowContinuous(ev);
+}
+
+void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
+    holdPoint_ = pt;
+    if (currentRipple_) {
+        currentRipple_->UpdatePosition(pt);
+    }
 }
 
 void HoldEffect::OnHoldEnd() {
-    // Could show a "release" effect here
+    if (currentRipple_) {
+        currentRipple_->Stop();
+        currentRipple_ = nullptr;
+    }
     holdButton_ = 0;
 }
 

@@ -19,6 +19,8 @@ public:
     void Shutdown();
 
     void ShowRipple(const ClickEvent& ev);
+    // Returns active window handle for tracking (to stop it later)
+    RippleWindow* ShowContinuous(const ClickEvent& ev);
     void SetDrawMode(RippleWindow::DrawMode mode);
 
 private:

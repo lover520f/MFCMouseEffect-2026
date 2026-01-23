@@ -284,6 +284,11 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         if (auto* effect = GetEffect(EffectCategory::Trail)) {
             effect->OnMouseMove(pt);
         }
+        // Dispatch to Hold category effect (to update position if following mouse)
+        if (auto* effect = GetEffect(EffectCategory::Hold)) {
+             // Pass 0 duration for now as valid delta tracking requires more state
+            effect->OnHoldUpdate(pt, 0);
+        }
         return 0;
     }
 
