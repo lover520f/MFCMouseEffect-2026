@@ -13,6 +13,7 @@
 
 namespace mousefx {
 class AppController;
+class IpcController;
 }
 
 
@@ -42,9 +43,14 @@ public:
 	afx_msg void OnAppAbout();
 	DECLARE_MESSAGE_MAP()
 
-private:
+public:
+	// Public for TrayHostWnd access
 	std::unique_ptr<mousefx::AppController> mouseFx_;
+	std::unique_ptr<mousefx::IpcController> ipc_;
+
+private:
 	std::unique_ptr<class CTrayHostWnd> trayHost_;
 };
+
 
 extern CMFCMouseEffectApp theApp;

@@ -203,7 +203,10 @@
     <ClInclude Include="MouseFx\AppController.h" />
     <ClInclude Include="MouseFx\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\GlobalMouseHook.h" />
+    <ClInclude Include="MouseFx\IMouseEffect.h" />
+    <ClInclude Include="MouseFx\IpcController.h" />
     <ClInclude Include="MouseFx\MouseFxMessages.h" />
+    <ClInclude Include="MouseFx\RippleEffect.h" />
     <ClInclude Include="MouseFx\RippleStyle.h" />
     <ClInclude Include="MouseFx\RippleWindow.h" />
     <ClInclude Include="MouseFx\RippleWindowPool.h" />
@@ -225,6 +228,8 @@
     <ClCompile Include="MFCMouseEffectView.cpp" />
     <ClCompile Include="MouseFx\AppController.cpp" />
     <ClCompile Include="MouseFx\GlobalMouseHook.cpp" />
+    <ClCompile Include="MouseFx\IpcController.cpp" />
+    <ClCompile Include="MouseFx\RippleEffect.cpp" />
     <ClCompile Include="MouseFx\RippleWindow.cpp" />
     <ClCompile Include="MouseFx\RippleWindowPool.cpp" />
     <ClCompile Include="OutputWnd.cpp" />

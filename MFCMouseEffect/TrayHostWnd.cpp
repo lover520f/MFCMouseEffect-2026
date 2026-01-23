@@ -3,6 +3,8 @@
 
 #include "TrayHostWnd.h"
 #include "resource.h"
+#include "MFCMouseEffect.h"
+#include "MouseFx/AppController.h"
 
 BEGIN_MESSAGE_MAP(CTrayHostWnd, CWnd)
 	ON_WM_CREATE()
@@ -71,12 +73,38 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 	{
 		CMenu menu;
 		menu.CreatePopupMenu();
+
+		// Effect Submenu
+		CMenu subMenu;
+		subMenu.CreatePopupMenu();
+		subMenu.AppendMenu(MF_STRING, 1001, _T("水波纹 (Ripple)"));
+		subMenu.AppendMenu(MF_STRING, 1002, _T("无特效 (None)"));
+
+		menu.AppendMenu(MF_POPUP, (UINT_PTR)subMenu.GetSafeHmenu(), _T("切换特效"));
+		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_STRING, kCmdTrayExit, _T("退出"));
 
 		POINT pt{};
 		GetCursorPos(&pt);
 		SetForegroundWindow();
-		menu.TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY, pt.x, pt.y, this);
+		
+		// TrackPopupMenu returns the selected command ID
+		int cmd = menu.TrackPopupMenu(TPM_RIGHTBUTTON | TPM_NONOTIFY | TPM_RETURNCMD, pt.x, pt.y, this);
+		if (cmd == kCmdTrayExit)
+		{
+			PostMessage(WM_COMMAND, kCmdTrayExit);
+		}
+		else if (cmd == 1001 || cmd == 1002)
+		{
+			// Forward to App
+			CMFCMouseEffectApp* pApp = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
+			if (pApp && pApp->mouseFx_)
+			{
+				if (cmd == 1001) pApp->mouseFx_->SetEffect("ripple");
+				if (cmd == 1002) pApp->mouseFx_->SetEffect("none");
+			}
+		}
+
 		PostMessage(WM_NULL);
 		break;
 	}

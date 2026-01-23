@@ -3,17 +3,19 @@
 #include <windows.h>
 #include <memory>
 #include <cstdint>
+#include <vector>
+#include <string>
 
 #include "GdiPlusSession.h"
 #include "GlobalMouseHook.h"
-#include "RippleWindowPool.h"
+#include "IMouseEffect.h"
 
 namespace mousefx {
 
-// Owns the subsystem lifecycle: message-only dispatcher, GDI+ init, hook, and window pool.
+// Owns the subsystem lifecycle: message-only dispatcher, GDI+ init, hook, and current effect.
 class AppController final {
 public:
-    AppController() = default;
+    AppController();
     ~AppController();
 
     AppController(const AppController&) = delete;
@@ -23,7 +25,7 @@ public:
         None = 0,
         GdiPlusStartup,
         DispatchWindow,
-        WindowPool,
+        EffectInit,
         GlobalHook,
     };
 
@@ -34,6 +36,15 @@ public:
 
     bool Start();
     void Stop();
+    
+    // Switch the active effect.
+    // "ripple" -> RippleEffect
+    // "none" -> nullptr
+    void SetEffect(const std::string& type);
+
+    // Handle JSON command string.
+    void HandleCommand(const std::string& jsonCmd);
+
     StartDiagnostics Diagnostics() const { return diag_; }
 
 private:
@@ -41,12 +52,14 @@ private:
     LRESULT OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     bool CreateDispatchWindow();
     void DestroyDispatchWindow();
+    void ParseAndExecute(const std::string& line);
 
     HWND dispatchHwnd_ = nullptr;
 
     GdiPlusSession gdiplus_{};
     GlobalMouseHook hook_{};
-    RippleWindowPool pool_{};
+    
+    std::unique_ptr<IMouseEffect> currentEffect_;
     StartDiagnostics diag_{};
 
 #ifdef _DEBUG

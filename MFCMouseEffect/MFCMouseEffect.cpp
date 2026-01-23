@@ -14,6 +14,7 @@
 #include "MFCMouseEffectView.h"
 
 #include "MouseFx/AppController.h"
+#include "MouseFx/IpcController.h"
 
 #include <string>
 
@@ -75,11 +76,12 @@ static const wchar_t* StartStageToString(mousefx::AppController::StartStage stag
 	switch (stage) {
 	case S::GdiPlusStartup: return L"GDI+ startup";
 	case S::DispatchWindow: return L"dispatch window";
-	case S::WindowPool: return L"ripple window pool";
+	case S::EffectInit: return L"effect initialization";
 	case S::GlobalHook: return L"global mouse hook";
 	default: return L"(unknown)";
 	}
 }
+
 
 
 // CMFCMouseEffectApp
@@ -248,12 +250,26 @@ BOOL CMFCMouseEffectApp::InitInstance()
 		mouseFx_.reset();
 	}
 
+	// Start IPC listener (for parent process control)
+	ipc_ = std::make_unique<mousefx::IpcController>();
+	ipc_->Start([this](const std::string& cmd) {
+		if (mouseFx_)
+		{
+			mouseFx_->HandleCommand(cmd);
+		}
+	});
+
 	return TRUE;
 }
 
 int CMFCMouseEffectApp::ExitInstance()
 {
 	//TODO: 处理可能已添加的附加资源
+	if (ipc_)
+	{
+		ipc_->Stop();
+		ipc_.reset();
+	}
 	if (mouseFx_)
 	{
 		mouseFx_->Stop();

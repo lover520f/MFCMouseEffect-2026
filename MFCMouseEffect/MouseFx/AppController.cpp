@@ -4,13 +4,39 @@
 
 #include "AppController.h"
 #include "MouseFxMessages.h"
+#include "RippleEffect.h"
 
 #include <new>
+
+// Helper: simplistic JSON-like parsing for "cmd" and "type".
+// We assume simple format: {"cmd":"set_effect", "type":"ripple"} (with quotes).
+static std::string ExtractJsonValue(const std::string& json, const std::string& key) {
+	std::string search = "\"" + key + "\"";
+	size_t keyPos = json.find(search);
+	if (keyPos == std::string::npos) return "";
+
+	size_t startQuote = json.find('"', keyPos + search.length());
+	if (startQuote == std::string::npos) {
+		// Maybe it's after a colon?
+		startQuote = json.find('"', keyPos + search.length() + 1);
+	}
+	if (startQuote == std::string::npos) return "";
+
+	size_t endQuote = json.find('"', startQuote + 1);
+	if (endQuote == std::string::npos) return "";
+
+	return json.substr(startQuote + 1, endQuote - startQuote - 1);
+}
 
 namespace mousefx {
 
 static const wchar_t* kDispatchClassName = L"MouseFxDispatchWindow";
 static constexpr UINT_PTR kSelfTestTimerId = 0x4D46; // 'MF' - debug-only
+
+AppController::AppController() {
+    // Default effect
+    currentEffect_ = std::make_unique<RippleEffect>();
+}
 
 AppController::~AppController() {
     Stop();
@@ -37,14 +63,14 @@ bool AppController::Start() {
         return false;
     }
 
-    diag_.stage = StartStage::WindowPool;
-    if (!pool_.Initialize(10)) {
+    diag_.stage = StartStage::EffectInit;
+    if (currentEffect_ && !currentEffect_->Initialize()) {
 #ifdef _DEBUG
-        OutputDebugStringW(L"MouseFx: ripple window pool init failed.\n");
+        OutputDebugStringW(L"MouseFx: effect init failed.\n");
 #endif
+        // We allow starting even if effect init fails (it might be fixed later by switching effect).
+        // But for diagnosing, we note it.
         diag_.error = GetLastError();
-        Stop();
-        return false;
     }
 
     diag_.stage = StartStage::GlobalHook;
@@ -69,9 +95,45 @@ bool AppController::Start() {
 
 void AppController::Stop() {
     hook_.Stop();
-    pool_.Shutdown();
+    if (currentEffect_) {
+        currentEffect_->Shutdown();
+    }
     DestroyDispatchWindow();
     gdiplus_.Shutdown();
+}
+
+void AppController::SetEffect(const std::string& type) {
+    // Stop old
+    if (currentEffect_) {
+        currentEffect_->Shutdown();
+    }
+
+    // Create new
+    if (type == "ripple") {
+        currentEffect_ = std::make_unique<RippleEffect>();
+    } else if (type == "none") {
+        currentEffect_ = nullptr;
+    } else {
+        // Unknown type, fallback or ignore.
+        OutputDebugStringA(("MouseFx: Unknown effect type: " + type + "\n").c_str());
+        currentEffect_ = nullptr;
+    }
+
+    // Init new
+    if (currentEffect_) {
+        currentEffect_->Initialize();
+    }
+}
+
+void AppController::HandleCommand(const std::string& jsonCmd) {
+    // In real app, use a JSON library (e.g. nlohmann/json).
+    // For now using manual extraction as per light-weight requirements.
+    std::string cmd = ExtractJsonValue(jsonCmd, "cmd");
+    
+    if (cmd == "set_effect") {
+        std::string type = ExtractJsonValue(jsonCmd, "type");
+        SetEffect(type);
+    }
 }
 
 bool AppController::CreateDispatchWindow() {
@@ -143,7 +205,9 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
                 OutputDebugStringW(buf);
             }
 #endif
-            pool_.ShowRipple(*ev);
+            if (currentEffect_) {
+                currentEffect_->OnClick(*ev);
+            }
             delete ev;
         }
         return 0;
@@ -154,7 +218,7 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         ClickEvent ev{};
         GetCursorPos(&ev.pt);
         ev.button = MouseButton::Left;
-        pool_.ShowRipple(ev);
+        if (currentEffect_) currentEffect_->OnClick(ev);
         OutputDebugStringW(L"MouseFx: self-test ripple fired.\n");
         return 0;
     }
