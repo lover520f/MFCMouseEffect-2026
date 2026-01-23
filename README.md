@@ -1,5 +1,7 @@
 # MFCMouseEffect
 
+Language: [English](README.md) | [中文](README.zh-CN.md)
+
 Windows global mouse click ripple effect (similar to `keyviz` mouse click visualization), implemented in MFC + Win32.
 
 ## What It Does
