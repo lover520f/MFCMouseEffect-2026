@@ -8,6 +8,7 @@
 #include "afxdialogex.h"
 #include "MFCMouseEffect.h"
 #include "MainFrm.h"
+#include "TrayHostWnd.h"
 
 #include "MFCMouseEffectDoc.h"
 #include "MFCMouseEffectView.h"
@@ -150,7 +151,8 @@ BOOL CMFCMouseEffectApp::InitInstance()
 
 	AfxEnableControlContainer();
 
-	EnableTaskbarInteraction();
+	// 无需在任务栏显示主框架
+	EnableTaskbarInteraction(FALSE);
 
 	// 使用 RichEdit 控件需要 AfxInitRichEdit2()
 	// AfxInitRichEdit2();
@@ -176,7 +178,8 @@ BOOL CMFCMouseEffectApp::InitInstance()
 	theApp.GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,
 		RUNTIME_CLASS(CMFCToolTipCtrl), &ttParams);
 
-	// 简化为纯框架模式（不再使用 Doc/View），直接创建主框架窗口。
+#ifdef _DEBUG
+	// Debug：创建一个可见主窗口，方便调试（不影响波纹窗口的独立渲染）。
 	CMainFrame* pMainFrame = new CMainFrame;
 	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
 	{
@@ -186,6 +189,16 @@ BOOL CMFCMouseEffectApp::InitInstance()
 	m_pMainWnd = pMainFrame;
 	pMainFrame->ShowWindow(m_nCmdShow);
 	pMainFrame->UpdateWindow();
+#else
+	// Release：仅创建一个隐藏宿主窗口用于托盘图标（完全不创建主框架窗口，避免任何闪现）。
+	trayHost_ = std::make_unique<CTrayHostWnd>();
+	if (!trayHost_->CreateHost())
+	{
+		trayHost_.reset();
+		return FALSE;
+	}
+	m_pMainWnd = trayHost_.get();
+#endif
 
 	// Start global mouse click effects (non-blocking, click-through).
 	mouseFx_ = std::make_unique<mousefx::AppController>();
@@ -221,6 +234,11 @@ int CMFCMouseEffectApp::ExitInstance()
 	{
 		mouseFx_->Stop();
 		mouseFx_.reset();
+	}
+	if (trayHost_)
+	{
+		trayHost_->DestroyWindow();
+		trayHost_.reset();
 	}
 	AfxOleTerm(FALSE);
 

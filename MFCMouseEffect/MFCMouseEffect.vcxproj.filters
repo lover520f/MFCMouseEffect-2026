@@ -84,6 +84,9 @@
     <ClInclude Include="MouseFx\RippleWindowPool.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="TrayHostWnd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMouseEffect.cpp">
@@ -130,6 +133,9 @@
     </ClCompile>
     <ClCompile Include="MouseFx\RippleWindowPool.cpp">
       <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="TrayHostWnd.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

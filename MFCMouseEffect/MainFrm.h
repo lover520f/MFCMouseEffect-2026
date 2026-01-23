@@ -16,6 +16,7 @@ public:
 
 // 特性
 public:
+	virtual void ActivateFrame(int nCmdShow = -1);
 
 // 操作
 public:
@@ -42,6 +43,8 @@ protected:  // 控件条嵌入成员
 	CClassView        m_wndClassView;
 	COutputWnd        m_wndOutput;
 	CPropertiesWnd    m_wndProperties;
+	UINT              m_trayMsg{ WM_APP + 1 };
+	NOTIFYICONDATA    m_trayIcon{};
 
 // 生成的消息映射函数
 protected:
@@ -52,6 +55,8 @@ protected:
 	afx_msg void OnApplicationLook(UINT id);
 	afx_msg void OnUpdateApplicationLook(CCmdUI* pCmdUI);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
+	afx_msg LRESULT OnTrayNotify(WPARAM wp, LPARAM lp);
+	afx_msg void OnDestroy();
 	DECLARE_MESSAGE_MAP()
 
 	BOOL CreateDockingWindows();

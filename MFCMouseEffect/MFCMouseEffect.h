@@ -44,6 +44,7 @@ public:
 
 private:
 	std::unique_ptr<mousefx::AppController> mouseFx_;
+	std::unique_ptr<class CTrayHostWnd> trayHost_;
 };
 
 extern CMFCMouseEffectApp theApp;

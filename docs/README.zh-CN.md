@@ -13,6 +13,12 @@
 4. Debug 启动后 ~250ms 会在当前光标位置自动打一发“自检波纹”，之后任意点击都会有波纹。
 5. 如果要点击管理员/提权窗口，最好也以管理员身份运行本程序，保证完整的钩子权限。
 
+## 发布版无窗口（托盘常驻）
+Release 版本已改为“完全不创建主框架窗口”，只创建隐藏宿主窗口用于托盘图标，因此启动不会闪出管理窗口。
+- 入口：`x64\Release\MFCMouseEffect.exe`
+- 托盘图标：右键菜单“退出”（双击也可退出）
+- Debug 仍保留主窗口便于调试（不影响波纹渲染）
+
 ## 外观自定义
 - 主要文件：`MFCMouseEffect/MouseFx/RippleStyle.h`、`MFCMouseEffect/MouseFx/RippleWindow.cpp`。
 - 关键参数：

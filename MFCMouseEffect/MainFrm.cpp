@@ -22,6 +22,8 @@ const UINT uiLastUserToolBarId = uiFirstUserToolBarId + iMaxUserToolbars - 1;
 
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWndEx)
 	ON_WM_CREATE()
+	ON_MESSAGE(WM_APP + 1, &CMainFrame::OnTrayNotify)
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -49,7 +51,24 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CFrameWndEx::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
+	// 创建托盘图标，右键/左键点击可退出
+	HICON hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_trayIcon.cbSize = sizeof(NOTIFYICONDATA);
+	m_trayIcon.hWnd = GetSafeHwnd();
+	m_trayIcon.uID = 1;
+	m_trayIcon.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
+	m_trayIcon.uCallbackMessage = m_trayMsg;
+	m_trayIcon.hIcon = hIcon;
+	lstrcpyn(m_trayIcon.szTip, _T("MFCMouseEffect - 点击托盘退出"), _countof(m_trayIcon.szTip));
+	Shell_NotifyIcon(NIM_ADD, &m_trayIcon);
+
 	return 0;
+}
+
+void CMainFrame::ActivateFrame(int nCmdShow)
+{
+	// 强制保持隐藏，不让框架闪现
+	CFrameWndEx::ActivateFrame(SW_HIDE);
 }
 
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
@@ -58,6 +77,11 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 		return FALSE;
 	// TODO: 在此处通过修改
 	//  CREATESTRUCT cs 来修改窗口类或样式
+
+	// 托盘常驻：主框架从一开始就不要可见，避免启动闪现、避免任务栏按钮
+	cs.style &= ~WS_VISIBLE;
+	cs.dwExStyle &= ~WS_EX_APPWINDOW;
+	cs.dwExStyle |= (WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE);
 
 	return TRUE;
 }
@@ -70,6 +94,22 @@ BOOL CMainFrame::CreateDockingWindows()
 void CMainFrame::SetDockingWindowIcons(BOOL bHiColorIcons)
 {
 	UNREFERENCED_PARAMETER(bHiColorIcons);
+}
+
+LRESULT CMainFrame::OnTrayNotify(WPARAM wp, LPARAM lp)
+{
+	UNREFERENCED_PARAMETER(wp);
+	if (lp == WM_RBUTTONUP || lp == WM_LBUTTONUP)
+	{
+		PostMessage(WM_CLOSE);
+	}
+	return 0;
+}
+
+void CMainFrame::OnDestroy()
+{
+	Shell_NotifyIcon(NIM_DELETE, &m_trayIcon);
+	CFrameWndEx::OnDestroy();
 }
 
 // CMainFrame 诊断

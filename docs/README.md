@@ -13,6 +13,12 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 4. On launch (Debug), a one-shot self-test ripple should appear at the cursor within ~250 ms. Then every mouse click should ripple.
 5. If clicking admin/elevated windows, run the app as Administrator for matching integrity.
 
+## Release: Tray-Only (No Window)
+Release builds no longer create the main frame window. A hidden host window is used solely for the tray icon, so there is no startup flash.
+- Entry: `x64\Release\MFCMouseEffect.exe`
+- Tray icon: right-click menu “Exit” (double-click also exits)
+- Debug still shows a main window for convenience
+
 ## Customizing the Look
 - File: `MFCMouseEffect/MouseFx/RippleStyle.h` and `MFCMouseEffect/MouseFx/RippleWindow.cpp`.
 - Key knobs:
