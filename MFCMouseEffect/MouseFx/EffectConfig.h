@@ -79,6 +79,9 @@ struct ActiveEffectConfig {
 struct EffectConfig {
     std::string defaultEffect = "ripple";
     std::string theme = "neon";
+    // UI language for non-background settings window (persisted).
+    // Values: "zh-CN" (default) or "en-US".
+    std::string uiLanguage = "zh-CN";
     ActiveEffectConfig active;
     
     RippleConfig ripple;

@@ -19,6 +19,12 @@ Release 版本已改为“完全不创建主框架窗口”，只创建隐藏宿
 - 托盘图标：右键菜单“退出”（双击也可退出）
 - Debug 仍保留主窗口便于调试（不影响波纹渲染）
 
+## 设置窗口（非 background 模式）
+托盘菜单适合快速切换，但对复杂配置不友好。因此在非 background 模式下提供一个轻量设置窗口（从托盘菜单打开），用于集中配置：主题 + 各分类特效，并自动持久化到 `config.json`。
+注意：设置窗口关闭（右上角 X）只会关闭窗口本身，不影响托盘常驻与特效渲染。
+语言：设置窗口支持中/英切换，默认中文，选择会写入 `config.json`（`ui_language`）。
+主题：主题会影响点击/滚轮/长按/悬停等特效的整体配色与风格（非文本类特效）。
+
 ## 外观自定义
 - 主要文件：`MFCMouseEffect/MouseFx/RippleStyle.h`、`MFCMouseEffect/MouseFx/RippleWindow.cpp`。
 - 关键参数：
@@ -41,6 +47,7 @@ Release 版本已改为“完全不创建主框架窗口”，只创建隐藏宿
 - **钩子报错**：弹窗或 VS Output 有 `MouseFx: global hook start failed. GetLastError=...`。如果点击的是管理员窗口，请用“以管理员身份运行”启动本程序；安全软件可能拦截钩子。
 - **高 DPI 偏位**：启动时已启用 DPI 感知；确保用最新编译的二进制。
 - **运行错了二进制**：曾经生成过 `MFCMouseEffect\x64\Debug\...` 的旧输出，现已改为 `x64\Debug\...`。请 Clean + Rebuild 后运行新路径。
+- **虚拟副屏/平板副屏偏移**：部分虚拟显示器软件/驱动会导致坐标映射异常或 DPI 坐标系不一致，表现为特效偏移/消失。参见：`docs/issues/virtual-display-coordinates.zh-CN.md`。
 
 ## SDI/单窗口说明
 - 项目已改为 SDI：一个顶层主窗口承载视图；波纹渲染仍在独立的透明分层窗口中，与主框架解耦。

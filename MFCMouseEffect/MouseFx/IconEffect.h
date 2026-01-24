@@ -2,13 +2,14 @@
 
 #include "IMouseEffect.h"
 #include "RippleWindowPool.h"
+#include <string>
 
 namespace mousefx {
 
 // Click effect that draws a star icon instead of a circle.
 class IconEffect final : public IMouseEffect {
 public:
-    IconEffect() = default;
+    explicit IconEffect(const std::string& themeName);
     ~IconEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Click; }
@@ -20,6 +21,7 @@ public:
 
 private:
     RippleWindowPool pool_{};
+    RippleStyle style_{};
 };
 
 } // namespace mousefx

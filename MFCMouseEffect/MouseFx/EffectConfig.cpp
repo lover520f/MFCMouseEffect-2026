@@ -110,6 +110,7 @@ EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
     // Parse root level
     cfg.defaultEffect = GetOr<std::string>(root, "default_effect", cfg.defaultEffect);
     cfg.theme = GetOr<std::string>(root, "theme", cfg.theme);
+    cfg.uiLanguage = GetOr<std::string>(root, "ui_language", cfg.uiLanguage);
     if (root.contains("active_effects") && root["active_effects"].is_object()) {
         const auto& a = root["active_effects"];
         cfg.active.click = GetOr<std::string>(a, "click", cfg.active.click);
@@ -227,6 +228,7 @@ bool EffectConfig::Save(const std::wstring& exeDir, const EffectConfig& cfg) {
     json root;
     root["default_effect"] = cfg.defaultEffect;
     root["theme"] = cfg.theme;
+    root["ui_language"] = cfg.uiLanguage;
 
     json active;
     active["click"] = cfg.active.click;

@@ -19,6 +19,12 @@ Release builds no longer create the main frame window. A hidden host window is u
 - Tray icon: right-click menu “Exit” (double-click also exits)
 - Debug still shows a main window for convenience
 
+## Settings Window (Non-background Mode)
+Tray menus are fine for quick toggles, but not great for full configuration. In non-background mode, a lightweight settings window can be opened from the tray menu to configure theme + per-category effects, with persistence to `config.json`.
+Closing the window (X) only closes the settings UI; it does not stop the tray/background process.
+Language: the settings window supports Chinese/English switching (default Chinese) and persists to `config.json` (`ui_language`).
+Theme: the selected theme affects the overall look of click/scroll/hold/hover effects (non-text effects).
+
 ## Customizing the Look
 - File: `MFCMouseEffect/MouseFx/RippleStyle.h` and `MFCMouseEffect/MouseFx/RippleWindow.cpp`.
 - Key knobs:
@@ -41,6 +47,7 @@ Release builds no longer create the main frame window. A hidden host window is u
 - **Hook errors:** The dialog or VS Output window prints `MouseFx: global hook start failed. GetLastError=...`. If you click elevated windows, run this app elevated. Security software may also block hooks.
 - **Ripple off-position at >100% DPI:** DPI awareness is enabled at startup; rebuild and run the newest binary.
 - **Running wrong binary:** There was a duplicate output under `MFCMouseEffect\x64\Debug\...`. Current project outputs to `x64\Debug\...`. Clean + Rebuild to ensure you run the right one.
+- **Virtual secondary display offset:** some tablet/virtual display drivers can cause coordinate-space mismatch (DPI mapping). See: `docs/issues/virtual-display-coordinates.md`.
 
 ## SDI / Single-Window Notes
 - The app now uses an SDI frame: one top-level window hosts the view; ripples are still rendered in separate transparent layered windows, so UI and effect remain decoupled.

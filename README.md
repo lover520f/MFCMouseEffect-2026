@@ -18,6 +18,7 @@ Each category can have one active effect. Multiple categories work simultaneousl
 ## Tray Menu
 
 Right-click tray icon to access submenu per category with checkmarks.
+For full configuration in tray mode, use “Settings...” in the tray menu.
 
 ## IPC Commands
 
@@ -26,6 +27,7 @@ Right-click tray icon to access submenu per category with checkmarks.
 {"cmd": "set_effect", "category": "trail", "type": "line"}
 {"cmd": "clear_effect", "category": "trail"}
 {"cmd": "set_theme", "theme": "neon"}   // neon | scifi | minimal | game
+{"cmd": "set_ui_language", "lang": "zh-CN"}  // zh-CN | en-US
 {"cmd": "exit"}
 ```
 
@@ -52,6 +54,7 @@ Place `config.json` next to the exe. Built-in defaults used if missing.
 {
   "default_effect": "ripple",
   "theme": "neon",
+  "ui_language": "zh-CN",
   "active_effects": {
     "click": "ripple",
     "trail": "particle",

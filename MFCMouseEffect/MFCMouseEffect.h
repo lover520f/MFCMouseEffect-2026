@@ -47,10 +47,13 @@ public:
 	// Public for TrayHostWnd access
 	std::unique_ptr<mousefx::AppController> mouseFx_;
 	std::unique_ptr<mousefx::IpcController> ipc_;
+	void ShowSettingsWindow();
+	void NotifySettingsWndDestroyed(class CSettingsWnd* wnd);
 
 private:
 	std::unique_ptr<class CTrayHostWnd> trayHost_;
 	bool backgroundMode_ = false;
+	class CSettingsWnd* settingsWnd_ = nullptr; // owned by the window lifetime
 };
 
 

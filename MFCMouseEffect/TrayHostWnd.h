@@ -27,6 +27,7 @@ private:
 	// Menu command IDs
 	enum MenuCmd {
 		kCmdTrayExit = 1001,
+		kCmdTraySettings = 1002,
 		// Click category
 		kCmdClickRipple = 2001,
 		kCmdClickStar = 2002,

@@ -2,12 +2,13 @@
 
 #include "IMouseEffect.h"
 #include "RippleWindowPool.h"
+#include <string>
 
 namespace mousefx {
 
 class RippleEffect final : public IMouseEffect {
 public:
-    RippleEffect() = default;
+    explicit RippleEffect(const std::string& themeName);
     ~RippleEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Click; }
@@ -19,6 +20,7 @@ public:
 
 private:
     RippleWindowPool pool_{};
+    RippleStyle style_{};
 };
 
 } // namespace mousefx

@@ -47,6 +47,9 @@ public:
 
     // Set visual theme (affects themed effects).
     void SetTheme(const std::string& theme);
+
+    // Set settings window UI language (persisted).
+    void SetUiLanguage(const std::string& lang);
     
     // Get the current effect for a category (may be null).
     IMouseEffect* GetEffect(EffectCategory category) const;

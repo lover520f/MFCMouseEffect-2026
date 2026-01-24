@@ -90,6 +90,9 @@
     <ClInclude Include="TrayHostWnd.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="SettingsWnd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMouseEffect.cpp">
@@ -141,6 +144,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="TrayHostWnd.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SettingsWnd.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

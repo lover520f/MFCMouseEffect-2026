@@ -1,20 +1,21 @@
 #include "pch.h"
 #include "IconEffect.h"
+#include "ThemeStyle.h"
 
 namespace mousefx {
+
+IconEffect::IconEffect(const std::string& themeName) {
+    style_ = GetThemePalette(themeName).icon;
+}
 
 IconEffect::~IconEffect() {
     Shutdown();
 }
 
 bool IconEffect::Initialize() {
-    // Re-use RippleWindowPool logic, but we need to tell the pool 
-    // to use IconStar mode for its windows.
-    // Since RippleWindowPool encapsulates the windows, we should add a SetDrawMode method to it.
     if (!pool_.Initialize(8)) {
         return false;
     }
-    pool_.SetDrawMode(RippleWindow::DrawMode::IconStar);
     return true;
 }
 
@@ -23,7 +24,10 @@ void IconEffect::Shutdown() {
 }
 
 void IconEffect::OnClick(const ClickEvent& event) {
-    pool_.ShowRipple(event);
+    RippleWindow::RenderParams params;
+    params.loop = false;
+    params.intensity = 1.0f;
+    pool_.ShowRipple(event, style_, RippleWindow::DrawMode::IconStar, params);
 }
 
 } // namespace mousefx

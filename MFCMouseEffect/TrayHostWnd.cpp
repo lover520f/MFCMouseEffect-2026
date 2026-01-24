@@ -187,6 +187,7 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 	menu.AppendMenu(MF_POPUP, (UINT_PTR)themeMenu.m_hMenu, _T("主题 (Theme)"));
 
 	menu.AppendMenu(MF_SEPARATOR);
+	menu.AppendMenu(MF_STRING, kCmdTraySettings, _T("设置... (Settings...)"));
 	menu.AppendMenu(MF_STRING, kCmdTrayExit, _T("退出"));
 
 	POINT pt{};
@@ -198,6 +199,11 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 	// Handle commands
 	if (cmd == kCmdTrayExit) {
 		PostMessage(WM_CLOSE);
+	}
+	else if (cmd == kCmdTraySettings) {
+		if (app) {
+			app->ShowSettingsWindow();
+		}
 	}
 	else if (mouseFx) {
 		auto sendEffect = [mouseFx](const char* category, const char* type) {

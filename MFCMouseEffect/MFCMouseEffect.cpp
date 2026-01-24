@@ -9,6 +9,7 @@
 #include "MFCMouseEffect.h"
 #include "MainFrm.h"
 #include "TrayHostWnd.h"
+#include "SettingsWnd.h"
 
 #include "MFCMouseEffectDoc.h"
 #include "MFCMouseEffectView.h"
@@ -305,6 +306,32 @@ BOOL CMFCMouseEffectApp::InitInstance()
 	return TRUE;
 }
 
+void CMFCMouseEffectApp::ShowSettingsWindow()
+{
+	if (backgroundMode_) {
+		return; // background mode is IPC-only
+	}
+	if (settingsWnd_ && ::IsWindow(settingsWnd_->GetSafeHwnd())) {
+		settingsWnd_->ShowWindow(SW_SHOW);
+		settingsWnd_->SetForegroundWindow();
+		settingsWnd_->SyncFromApp();
+		return;
+	}
+	auto* w = new CSettingsWnd();
+	if (!w->CreateAndShow(m_pMainWnd)) {
+		delete w;
+		return;
+	}
+	settingsWnd_ = w;
+}
+
+void CMFCMouseEffectApp::NotifySettingsWndDestroyed(CSettingsWnd* wnd)
+{
+	if (settingsWnd_ == wnd) {
+		settingsWnd_ = nullptr;
+	}
+}
+
 int CMFCMouseEffectApp::ExitInstance()
 {
 	//TODO: 处理可能已添加的附加资源
@@ -393,5 +420,3 @@ void CMFCMouseEffectApp::SaveCustomState()
 }
 
 // CMFCMouseEffectApp 消息处理程序
-
-

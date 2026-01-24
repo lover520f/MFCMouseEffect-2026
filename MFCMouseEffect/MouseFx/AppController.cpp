@@ -135,8 +135,8 @@ std::unique_ptr<IMouseEffect> AppController::CreateEffect(EffectCategory categor
 
     switch (category) {
         case EffectCategory::Click:
-            if (type == "ripple") return std::make_unique<RippleEffect>();
-            if (type == "star")   return std::make_unique<IconEffect>();
+            if (type == "ripple") return std::make_unique<RippleEffect>(config_.theme);
+            if (type == "star")   return std::make_unique<IconEffect>(config_.theme);
             if (type == "text")   return std::make_unique<TextEffect>(config_.textClick);
             break;
         case EffectCategory::Trail:
@@ -207,6 +207,14 @@ void AppController::SetTheme(const std::string& theme) {
     }
 }
 
+void AppController::SetUiLanguage(const std::string& lang) {
+    if (lang.empty()) return;
+    config_.uiLanguage = lang;
+    if (!exeDir_.empty()) {
+        EffectConfig::Save(exeDir_, config_);
+    }
+}
+
 IMouseEffect* AppController::GetEffect(EffectCategory category) const {
     size_t idx = static_cast<size_t>(category);
     if (idx >= kCategoryCount) return nullptr;
@@ -258,6 +266,9 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
     } else if (cmd == "set_theme") {
         std::string theme = ExtractJsonValue(jsonCmd, "theme");
         SetTheme(theme);
+    } else if (cmd == "set_ui_language") {
+        std::string lang = ExtractJsonValue(jsonCmd, "lang");
+        SetUiLanguage(lang);
     }
 }
 

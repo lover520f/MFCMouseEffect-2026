@@ -6,6 +6,8 @@
 namespace mousefx {
 
 struct ThemePalette {
+    RippleStyle click;
+    RippleStyle icon;
     RippleStyle scroll;
     RippleStyle hold;
     RippleStyle hover;

@@ -224,6 +224,7 @@
     <ClInclude Include="MouseFx\HoverEffect.h" />
     <ClInclude Include="MouseFx\EffectConfig.h" />
     <ClInclude Include="MouseFx\json.hpp" />
+    <ClInclude Include="SettingsWnd.h" />
     <ClInclude Include="OutputWnd.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PropertiesWnd.h" />
@@ -259,6 +260,7 @@
     <ClCompile Include="MouseFx\HoldEffect.cpp" />
     <ClCompile Include="MouseFx\HoverEffect.cpp" />
     <ClCompile Include="MouseFx\EffectConfig.cpp" />
+    <ClCompile Include="SettingsWnd.cpp" />
     <ClCompile Include="OutputWnd.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -11,6 +11,22 @@ namespace mousefx {
 
 GlobalMouseHook* GlobalMouseHook::instance_ = nullptr;
 
+static POINT NormalizeScreenPoint(const POINT& hookPt) {
+    // Some virtual display/secondary-screen setups can produce coordinates in a different
+    // coordinate space than what our layered windows expect. As a best-effort fallback,
+    // prefer GetCursorPos() if the values diverge significantly.
+    POINT cursor{};
+    if (!GetCursorPos(&cursor)) return hookPt;
+
+    const int dx = cursor.x - hookPt.x;
+    const int dy = cursor.y - hookPt.y;
+    const int kMismatchPx = 64;
+    if ((dx > kMismatchPx) || (dx < -kMismatchPx) || (dy > kMismatchPx) || (dy < -kMismatchPx)) {
+        return cursor;
+    }
+    return hookPt;
+}
+
 bool GlobalMouseHook::Start(HWND dispatchHwnd) {
     if (hook_ != nullptr) return true;
     if (!IsWindow(dispatchHwnd)) return false;
@@ -77,16 +93,18 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
             break;
         case WM_MOUSEMOVE:
             if (s) {
+                const POINT pt = NormalizeScreenPoint(s->pt);
                 PostMessageW(instance_->dispatchHwnd_, WM_MFX_MOVE, 
-                    (WPARAM)s->pt.x, (LPARAM)s->pt.y);
+                    (WPARAM)pt.x, (LPARAM)pt.y);
             }
             break;
         case WM_MOUSEWHEEL:
             if (s) {
                 // HIWORD of mouseData contains wheel delta
                 short delta = static_cast<short>(HIWORD(s->mouseData));
+                const POINT pt = NormalizeScreenPoint(s->pt);
                 PostMessageW(instance_->dispatchHwnd_, WM_MFX_SCROLL,
-                    (WPARAM)delta, MAKELPARAM(s->pt.x, s->pt.y));
+                    (WPARAM)delta, MAKELPARAM(pt.x, pt.y));
             }
             break;
         default:
@@ -95,8 +113,9 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
 
         // Button down event (for Hold detection)
         if (fireButtonDown && s) {
+            const POINT pt = NormalizeScreenPoint(s->pt);
             PostMessageW(instance_->dispatchHwnd_, WM_MFX_BUTTON_DOWN,
-                (WPARAM)button, MAKELPARAM(s->pt.x, s->pt.y));
+                (WPARAM)button, MAKELPARAM(pt.x, pt.y));
         }
 
         // Button up event (triggers click + ends hold)
@@ -108,7 +127,7 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
             // Create click event
             auto* ev = new (std::nothrow) ClickEvent();
             if (ev) {
-                ev->pt = s->pt;
+                ev->pt = NormalizeScreenPoint(s->pt);
                 ev->button = button;
                 PostMessageW(instance_->dispatchHwnd_, WM_MFX_CLICK, 0, reinterpret_cast<LPARAM>(ev));
             }
@@ -119,4 +138,3 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
 }
 
 } // namespace mousefx
-
