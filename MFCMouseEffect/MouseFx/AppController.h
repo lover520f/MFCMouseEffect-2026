@@ -77,6 +77,11 @@ private:
     EffectConfig config_{};
     StartDiagnostics diag_{};
 
+    uint64_t lastInputTime_ = 0;
+    bool hovering_ = false;
+    static constexpr UINT_PTR kHoverTimerId = 2;
+    static constexpr DWORD kHoverThresholdMs = 2000;
+
 #ifdef _DEBUG
     uint32_t debugClickCount_ = 0;
 #endif

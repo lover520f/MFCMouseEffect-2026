@@ -35,7 +35,8 @@ private:
 		kCmdTrailLine = 3001,
 		kCmdTrailNone = 3002,
 		// Hover category
-		kCmdHoverNone = 4001,
+		kCmdHoverGlow = 4001,
+		kCmdHoverNone = 4002,
 		// Scroll category
 		kCmdScrollArrow = 5001,
 		kCmdScrollNone = 5002,

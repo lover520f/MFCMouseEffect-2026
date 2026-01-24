@@ -145,11 +145,21 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 	}
 	menu.AppendMenu(MF_POPUP, (UINT_PTR)holdMenu.m_hMenu, _T("长按特效 (Hold)"));
 
-	// === Hover (Coming Soon) ===
+	// === Hover Category Submenu ===
 	CMenu hoverMenu;
 	hoverMenu.CreatePopupMenu();
-	hoverMenu.AppendMenu(MF_STRING | MF_GRAYED, kCmdHoverNone, _T("无 (None)"));
-	menu.AppendMenu(MF_POPUP, (UINT_PTR)hoverMenu.m_hMenu, _T("悬停特效 (Hover) - 待实现"));
+	hoverMenu.AppendMenu(MF_STRING, kCmdHoverGlow, _T("呼吸灯 (Glow)"));
+	hoverMenu.AppendMenu(MF_STRING, kCmdHoverNone, _T("无 (None)"));
+	
+	if (mouseFx) {
+		auto* hoverEffect = mouseFx->GetEffect(mousefx::EffectCategory::Hover);
+		if (hoverEffect) {
+			hoverMenu.CheckMenuItem(kCmdHoverGlow, MF_CHECKED);
+		} else {
+			hoverMenu.CheckMenuItem(kCmdHoverNone, MF_CHECKED);
+		}
+	}
+	menu.AppendMenu(MF_POPUP, (UINT_PTR)hoverMenu.m_hMenu, _T("悬停特效 (Hover)"));
 
 	menu.AppendMenu(MF_SEPARATOR);
 	menu.AppendMenu(MF_STRING, kCmdTrayExit, _T("退出"));
@@ -196,6 +206,13 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 				break;
 			case kCmdHoldNone:
 				mouseFx->ClearEffect(mousefx::EffectCategory::Hold);
+				break;
+			// Hover category
+			case kCmdHoverGlow:
+				mouseFx->SetEffect(mousefx::EffectCategory::Hover, "glow");
+				break;
+			case kCmdHoverNone:
+				mouseFx->ClearEffect(mousefx::EffectCategory::Hover);
 				break;
 			default:
 				break;

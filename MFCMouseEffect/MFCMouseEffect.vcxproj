@@ -215,6 +215,7 @@
     <ClInclude Include="MouseFx\TrailWindow.h" />
     <ClInclude Include="MouseFx\ScrollEffect.h" />
     <ClInclude Include="MouseFx\HoldEffect.h" />
+    <ClInclude Include="MouseFx\HoverEffect.h" />
     <ClInclude Include="MouseFx\EffectConfig.h" />
     <ClInclude Include="MouseFx\json.hpp" />
     <ClInclude Include="OutputWnd.h" />
@@ -244,6 +245,7 @@
     <ClCompile Include="MouseFx\TrailWindow.cpp" />
     <ClCompile Include="MouseFx\ScrollEffect.cpp" />
     <ClCompile Include="MouseFx\HoldEffect.cpp" />
+    <ClCompile Include="MouseFx\HoverEffect.cpp" />
     <ClCompile Include="MouseFx\EffectConfig.cpp" />
     <ClCompile Include="OutputWnd.cpp" />
     <ClCompile Include="pch.cpp">

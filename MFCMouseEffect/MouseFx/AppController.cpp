@@ -9,6 +9,7 @@
 #include "IconEffect.h"
 #include "ScrollEffect.h"
 #include "HoldEffect.h"
+#include "HoverEffect.h"
 
 #include <new>
 #include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM
@@ -80,11 +81,16 @@ bool AppController::Start() {
         return false;
     }
 
-    // Initialize effects based on config
+    // Initialize effects with defaults
     diag_.stage = StartStage::EffectInit;
-    // Default: set ripple for click and optionally trail
-    SetEffect(EffectCategory::Click, config_.defaultEffect);
-    // TODO: load per-category active effects from config
+    SetEffect(EffectCategory::Click, config_.defaultEffect.empty() ? "ripple" : config_.defaultEffect);
+    SetEffect(EffectCategory::Trail, "line");
+    SetEffect(EffectCategory::Scroll, "arrow");
+    SetEffect(EffectCategory::Hold, "charge");
+    SetEffect(EffectCategory::Hover, "glow");
+
+    lastInputTime_ = GetTickCount64();
+    SetTimer(dispatchHwnd_, kHoverTimerId, 100, nullptr);
 
     diag_.stage = StartStage::GlobalHook;
     if (!hook_.Start(dispatchHwnd_)) {
@@ -136,6 +142,8 @@ std::unique_ptr<IMouseEffect> AppController::CreateEffect(EffectCategory categor
             if (type == "charge") return std::make_unique<HoldEffect>();
             break;
         case EffectCategory::Hover:
+            if (type == "glow")   return std::make_unique<HoverEffect>();
+            break;
         case EffectCategory::Edge:
             // TODO: implement these categories
             break;
@@ -255,6 +263,19 @@ LRESULT CALLBACK AppController::DispatchWndProc(HWND hwnd, UINT msg, WPARAM wPar
 }
 
 LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    // Reset idle timer on any mouse input
+    if (msg == WM_MFX_CLICK || msg == WM_MFX_MOVE || msg == WM_MFX_SCROLL || 
+        msg == WM_MFX_BUTTON_DOWN || msg == WM_MFX_BUTTON_UP) 
+    {
+        lastInputTime_ = GetTickCount64();
+        if (hovering_) {
+            hovering_ = false;
+            if (auto* effect = GetEffect(EffectCategory::Hover)) {
+                effect->OnHoverEnd();
+            }
+        }
+    }
+
     if (msg == WM_MFX_CLICK) {
         auto* ev = reinterpret_cast<ClickEvent*>(lParam);
         if (ev) {
@@ -328,19 +349,35 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         return 0;
     }
 
-#ifdef _DEBUG
-    if (msg == WM_TIMER && wParam == kSelfTestTimerId) {
-        KillTimer(dispatchHwnd_, kSelfTestTimerId);
-        ClickEvent ev{};
-        GetCursorPos(&ev.pt);
-        ev.button = MouseButton::Left;
-        if (auto* effect = GetEffect(EffectCategory::Click)) {
-            effect->OnClick(ev);
+    if (msg == WM_TIMER) {
+        if (wParam == kHoverTimerId) {
+            if (!hovering_) {
+                uint64_t elapsed = GetTickCount64() - lastInputTime_;
+                if (elapsed >= kHoverThresholdMs) {
+                    hovering_ = true;
+                    if (auto* effect = GetEffect(EffectCategory::Hover)) {
+                        POINT pt;
+                        GetCursorPos(&pt);
+                        effect->OnHoverStart(pt);
+                    }
+                }
+            }
+            return 0;
         }
-        OutputDebugStringW(L"MouseFx: self-test ripple fired.\n");
-        return 0;
-    }
+#ifdef _DEBUG
+        if (wParam == kSelfTestTimerId) {
+            KillTimer(dispatchHwnd_, kSelfTestTimerId);
+            ClickEvent ev{};
+            GetCursorPos(&ev.pt);
+            ev.button = MouseButton::Left;
+            if (auto* effect = GetEffect(EffectCategory::Click)) {
+                effect->OnClick(ev);
+            }
+            OutputDebugStringW(L"MouseFx: self-test ripple fired.\n");
+            return 0;
+        }
 #endif
+    }
 
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
