@@ -10,6 +10,7 @@
 #include "MainFrm.h"
 #include "TrayHostWnd.h"
 #include "SettingsWnd.h"
+#include "Settings/SettingsBackend.h"
 
 #include "MFCMouseEffectDoc.h"
 #include "MFCMouseEffectView.h"
@@ -314,11 +315,12 @@ void CMFCMouseEffectApp::ShowSettingsWindow()
 	if (settingsWnd_ && ::IsWindow(settingsWnd_->GetSafeHwnd())) {
 		settingsWnd_->ShowWindow(SW_SHOW);
 		settingsWnd_->SetForegroundWindow();
-		settingsWnd_->SyncFromApp();
+		settingsWnd_->SyncFromBackend();
 		return;
 	}
 	auto* w = new CSettingsWnd();
-	if (!w->CreateAndShow(m_pMainWnd)) {
+	auto backend = CreateSettingsBackend(mouseFx_.get());
+	if (!w->CreateAndShow(m_pMainWnd, std::move(backend))) {
 		delete w;
 		return;
 	}

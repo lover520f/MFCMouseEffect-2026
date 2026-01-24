@@ -93,6 +93,15 @@
     <ClInclude Include="SettingsWnd.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Settings\SettingsBackend.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings\SettingsModel.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings\SettingsOptions.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMouseEffect.cpp">
@@ -147,6 +156,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="SettingsWnd.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Settings\SettingsBackend.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,161 +1,81 @@
 #include "pch.h"
 #include "SettingsWnd.h"
 
+#include <gdiplus.h>
+#pragma comment(lib, "gdiplus.lib")
+
 #include "MFCMouseEffect.h"
-#include "MouseFx/AppController.h"
+#include "Settings/SettingsBackend.h"
+#include "Settings/SettingsOptions.h"
 
 namespace {
 
-struct UiUpdateGuard {
-    explicit UiUpdateGuard(int& depth) : depth_(depth) { ++depth_; }
-    ~UiUpdateGuard() { --depth_; }
-    UiUpdateGuard(const UiUpdateGuard&) = delete;
-    UiUpdateGuard& operator=(const UiUpdateGuard&) = delete;
-
-private:
-    int& depth_;
-};
-
-struct Option {
-    const wchar_t* display;
-    const char* value;
-};
-
-static CString W(const wchar_t* s) {
-    return CString(s);
+static Gdiplus::Color C(BYTE a, BYTE r, BYTE g, BYTE b) {
+    return Gdiplus::Color(a, r, g, b);
 }
 
-static const Option kLangOptions[] = {
-    {L"\u4E2D\u6587", "zh-CN"},
-    {L"English", "en-US"},
-};
+static int ClampInt(int v, int lo, int hi) {
+    if (v < lo) return lo;
+    if (v > hi) return hi;
+    return v;
+}
 
-static const Option kThemeOptionsZh[] = {
-    {L"\u9724\u8679", "neon"},
-    {L"\u79D1\u5E7B", "scifi"},
-    {L"\u6781\u7B80", "minimal"},
-    {L"\u6E38\u620F\u611F", "game"},
-};
-
-static const Option kThemeOptionsEn[] = {
-    {L"Neon", "neon"},
-    {L"Sci-Fi", "scifi"},
-    {L"Minimal", "minimal"},
-    {L"Game", "game"},
-};
-
-static const Option kClickOptionsZh[] = {
-    {L"\u6C34\u6CE2\u7EB9", "ripple"},
-    {L"\u661F\u661F", "star"},
-    {L"\u98D8\u6D6E\u6587\u5B57", "text"},
-    {L"\u65E0", "none"},
-};
-
-static const Option kClickOptionsEn[] = {
-    {L"Ripple", "ripple"},
-    {L"Star", "star"},
-    {L"Text", "text"},
-    {L"None", "none"},
-};
-
-static const Option kTrailOptionsZh[] = {
-    {L"\u5F69\u8679\u7C92\u5B50", "particle"},
-    {L"\u666E\u901A\u7EBF\u6761", "line"},
-    {L"\u65E0", "none"},
-};
-
-static const Option kTrailOptionsEn[] = {
-    {L"Particle", "particle"},
-    {L"Line", "line"},
-    {L"None", "none"},
-};
-
-static const Option kScrollOptionsZh[] = {
-    {L"\u65B9\u5411\u6307\u793A", "arrow"},
-    {L"\u65E0", "none"},
-};
-
-static const Option kScrollOptionsEn[] = {
-    {L"Arrow", "arrow"},
-    {L"None", "none"},
-};
-
-static const Option kHoldOptionsZh[] = {
-    {L"\u84C4\u529B", "charge"},
-    {L"\u65E0", "none"},
-};
-
-static const Option kHoldOptionsEn[] = {
-    {L"Charge", "charge"},
-    {L"None", "none"},
-};
-
-static const Option kHoverOptionsZh[] = {
-    {L"\u547C\u5438\u706F", "glow"},
-    {L"\u65E0", "none"},
-};
-
-static const Option kHoverOptionsEn[] = {
-    {L"Glow", "glow"},
-    {L"None", "none"},
-};
-
-static const Option* FindByValue(const Option* opts, size_t n, const std::string& value) {
+static const SettingOption* FindByValue(const SettingOption* opts, size_t n, const std::string& value) {
     for (size_t i = 0; i < n; ++i) {
         if (value == opts[i].value) return &opts[i];
     }
     return nullptr;
 }
 
-static const Option* FindByDisplay(const Option* opts, size_t n, const CString& display) {
-    for (size_t i = 0; i < n; ++i) {
-        if (display == opts[i].display) return &opts[i];
-    }
-    return nullptr;
-}
-
-static void AddOptions(CMFCPropertyGridProperty& p, const Option* opts, size_t n) {
-    p.RemoveAllOptions();
-    for (size_t i = 0; i < n; ++i) {
-        p.AddOption(opts[i].display);
-    }
-    p.AllowEdit(FALSE);
-}
-
-static void ApplyEffectCmd(mousefx::AppController* fx, const char* category, const std::string& type) {
-    if (!fx) return;
-    if (type == "none") {
-        std::string cmd = std::string("{\"cmd\":\"clear_effect\",\"category\":\"") + category + "\"}";
-        fx->HandleCommand(cmd);
-        return;
-    }
-    std::string cmd = std::string("{\"cmd\":\"set_effect\",\"category\":\"") + category +
-        "\",\"type\":\"" + type + "\"}";
-    fx->HandleCommand(cmd);
+static std::string GetValueFromItemData(DWORD_PTR data) {
+    const char* v = reinterpret_cast<const char*>(data);
+    return v ? std::string(v) : std::string();
 }
 
 } // namespace
 
-BEGIN_MESSAGE_MAP(CSettingsWnd, CFrameWnd)
+BEGIN_MESSAGE_MAP(CSettingsWnd, CWnd)
     ON_WM_CREATE()
+    ON_WM_PAINT()
+    ON_WM_ERASEBKGND()
+    ON_WM_LBUTTONDOWN()
+    ON_WM_LBUTTONUP()
+    ON_WM_MOUSEMOVE()
+    ON_WM_NCHITTEST()
     ON_WM_CLOSE()
-    ON_BN_CLICKED(10001, &CSettingsWnd::OnApply)
-    ON_BN_CLICKED(10002, &CSettingsWnd::OnCloseBtn)
-    ON_REGISTERED_MESSAGE(AFX_WM_PROPERTY_CHANGED, &CSettingsWnd::OnPropertyChanged)
+    ON_WM_DESTROY()
+    ON_BN_CLICKED(10001, &CSettingsWnd::OnCommandApply)
+    ON_BN_CLICKED(10002, &CSettingsWnd::OnCommandClose)
+    ON_CBN_SELCHANGE(11000, &CSettingsWnd::OnSelChange)
+    ON_CBN_SELCHANGE(11001, &CSettingsWnd::OnSelChange)
+    ON_CBN_SELCHANGE(11002, &CSettingsWnd::OnSelChange)
+    ON_CBN_SELCHANGE(11003, &CSettingsWnd::OnSelChange)
+    ON_CBN_SELCHANGE(11004, &CSettingsWnd::OnSelChange)
+    ON_CBN_SELCHANGE(11005, &CSettingsWnd::OnSelChange)
+    ON_CBN_SELCHANGE(11006, &CSettingsWnd::OnSelChange)
 END_MESSAGE_MAP()
 
-bool CSettingsWnd::CreateAndShow(CWnd* parent) {
-    if (GetSafeHwnd()) {
-        ShowWindow(SW_SHOW);
-        SetForegroundWindow();
-        SyncFromApp();
-        return true;
+bool CSettingsWnd::CreateAndShow(CWnd* parent, std::unique_ptr<ISettingsBackend> backend) {
+    backend_ = std::move(backend);
+    if (!backend_) return false;
+
+    const CString cls = AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW, LoadCursor(nullptr, IDC_ARROW));
+
+    // Custom frame only; internal controls use native styles.
+    DWORD style = WS_POPUP | WS_VISIBLE;
+    DWORD ex = WS_EX_APPWINDOW | WS_EX_COMPOSITED;
+
+    CRect rc(0, 0, 560, 520);
+    if (parent && ::IsWindow(parent->GetSafeHwnd())) {
+        parent->GetWindowRect(&rc);
+        rc.OffsetRect(40, 40);
+        rc.right = rc.left + 560;
+        rc.bottom = rc.top + 520;
+    } else {
+        rc = CRect(200, 160, 760, 680);
     }
 
-    const CString cls = AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW);
-
-    if (!CreateEx(WS_EX_APPWINDOW, cls, L"MFCMouseEffect", WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
-            CW_USEDEFAULT, CW_USEDEFAULT, 560, 520, parent ? parent->GetSafeHwnd() : nullptr, nullptr)) {
+    if (!CreateEx(ex, cls, L"", style, rc, parent, 0)) {
         return false;
     }
 
@@ -165,7 +85,10 @@ bool CSettingsWnd::CreateAndShow(CWnd* parent) {
 }
 
 int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
-    if (CFrameWnd::OnCreate(lpCreateStruct) == -1) return -1;
+    if (CWnd::OnCreate(lpCreateStruct) == -1) return -1;
+
+    model_ = backend_->Load();
+    if (model_.uiLanguage.empty()) model_.uiLanguage = "zh-CN";
 
     NONCLIENTMETRICS ncm{};
     ncm.cbSize = sizeof(ncm);
@@ -173,297 +96,389 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
         font_.CreateFontIndirect(&ncm.lfMessageFont);
     }
 
-    CreateControls();
-    SyncFromApp();
+    const CRect content = RcContent();
+    const int pad = S(14);
+    const int top = content.top;
+    const int labelW = S(120);
+    const int boxW = content.Width() - labelW - pad * 3;
+    const int sectionGap = S(10);
+    const int availableH = content.Height();
+    const int rowH = ClampInt(availableH / 7, S(26), S(34));
+
+    auto rowY = [&](int row) {
+        // Add a small gap after the general section (2 rows).
+        const int extra = (row >= 2) ? sectionGap : 0;
+        return top + row * rowH + extra;
+    };
+    const int left = content.left + pad;
+
+    auto mkLabel = [&](CStatic& s, int row) {
+        const int y = rowY(row);
+        CRect rc(left, y, left + labelW, y + rowH);
+        s.Create(L"", WS_CHILD | WS_VISIBLE, rc, this);
+        if (font_.GetSafeHandle()) s.SetFont(&font_);
+    };
+    auto mkCombo = [&](CComboBox& c, int row, UINT id) {
+        const int dropH = S(140);
+        const int y = rowY(row);
+        CRect rc(left + labelW + S(8), y - S(2),
+                 left + labelW + S(8) + boxW, y + rowH + dropH);
+        c.Create(WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP, rc, this, id);
+        if (font_.GetSafeHandle()) c.SetFont(&font_);
+    };
+
+    // General section (2 rows), then a small gap, then Effects (5 rows)
+    mkLabel(lblLang_, 0);   mkCombo(cmbLang_, 0, 11000);
+    mkLabel(lblTheme_, 1);  mkCombo(cmbTheme_, 1, 11001);
+    mkLabel(lblClick_, 2);  mkCombo(cmbClick_, 2, 11002);
+    mkLabel(lblTrail_, 3);  mkCombo(cmbTrail_, 3, 11003);
+    mkLabel(lblScroll_, 4); mkCombo(cmbScroll_, 4, 11004);
+    mkLabel(lblHold_, 5);   mkCombo(cmbHold_, 5, 11005);
+    mkLabel(lblHover_, 6);  mkCombo(cmbHover_, 6, 11006);
+
+    CRect footer = RcFooter();
+    const int btnW = S(120);
+    const int btnH = S(30);
+    CRect rcApply(footer.right - pad - btnW, footer.top + S(10), footer.right - pad, footer.top + S(10) + btnH);
+    CRect rcClose = rcApply;
+    rcClose.OffsetRect(-(btnW + S(12)), 0);
+    btnClose_.Create(L"", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, rcClose, this, 10002);
+    btnApply_.Create(L"", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, rcApply, this, 10001);
+    if (font_.GetSafeHandle()) {
+        btnClose_.SetFont(&font_);
+        btnApply_.SetFont(&font_);
+    }
+
+    ApplyLanguageToControls();
+    SetComboValue(cmbLang_, model_.uiLanguage);
+    SetComboValue(cmbTheme_, model_.theme);
+    SetComboValue(cmbClick_, model_.click);
+    SetComboValue(cmbTrail_, model_.trail);
+    SetComboValue(cmbScroll_, model_.scroll);
+    SetComboValue(cmbHold_, model_.hold);
+    SetComboValue(cmbHover_, model_.hover);
+
     return 0;
+}
+
+void CSettingsWnd::OnDestroy() {
+    CWnd::OnDestroy();
+    auto* app = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
+    if (app) {
+        app->NotifySettingsWndDestroyed((CSettingsWnd*)this);
+    }
 }
 
 void CSettingsWnd::OnClose() {
     DestroyWindow();
 }
 
-void CSettingsWnd::PostNcDestroy() {
-    auto* app = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
-    if (app) {
-        app->NotifySettingsWndDestroyed(this);
-    }
-    delete this;
+void CSettingsWnd::OnCommandApply() {
+    Apply();
 }
 
-void CSettingsWnd::OnApply() {
-    ApplyToApp();
-}
-
-void CSettingsWnd::OnCloseBtn() {
+void CSettingsWnd::OnCommandClose() {
     OnClose();
 }
 
-LRESULT CSettingsWnd::OnPropertyChanged(WPARAM, LPARAM lParam) {
-    if (updatingUiDepth_ > 0) return 0;
+void CSettingsWnd::OnSelChange() {
+    if (updating_) return;
+    model_.uiLanguage = GetComboValue(cmbLang_);
+    ApplyLanguageToControls();
 
-    auto* pProp = reinterpret_cast<CMFCPropertyGridProperty*>(lParam);
-    if (!pProp) return 0;
+    model_.theme = GetComboValue(cmbTheme_);
+    model_.click = GetComboValue(cmbClick_);
+    model_.trail = GetComboValue(cmbTrail_);
+    model_.scroll = GetComboValue(cmbScroll_);
+    model_.hold = GetComboValue(cmbHold_);
+    model_.hover = GetComboValue(cmbHover_);
 
-    // If language changes, rebuild the grid in the new language.
-    if (pProp == propLang_) {
-        const std::string lang = GetPropOptionValueAscii(*propLang_);
-        if (!lang.empty()) {
-            PersistUiLanguage(lang);
-            currentLang_ = lang;
-            ApplyLanguageToControls();
-        }
-    }
-
-    ApplyToApp();
-    return 0;
+    Apply();
 }
 
-void CSettingsWnd::CreateControls() {
-    if (controlsCreated_) return;
-    controlsCreated_ = true;
+int CSettingsWnd::Dpi() const {
+    HMODULE user32 = GetModuleHandleW(L"user32.dll");
+    if (user32) {
+        using GetDpiForWindowFn = UINT(WINAPI*)(HWND);
+        auto* fn = (GetDpiForWindowFn)GetProcAddress(user32, "GetDpiForWindow");
+        if (fn) {
+            return (int)fn(GetSafeHwnd());
+        }
+    }
+    return 96;
+}
 
+int CSettingsWnd::S(int px) const {
+    return (px * Dpi() + 48) / 96;
+}
+
+CRect CSettingsWnd::Client() const {
     CRect rc;
     GetClientRect(&rc);
+    return rc;
+}
 
-    const int pad = 14;
-    const int btnH = 30;
-    const int btnW = 96;
+CRect CSettingsWnd::RcHeader() const {
+    CRect rc = Client();
+    rc.bottom = S(64);
+    return rc;
+}
 
-    // Property grid
-    CRect rcGrid = rc;
-    rcGrid.DeflateRect(pad, pad, pad, pad + btnH + 10);
+CRect CSettingsWnd::RcCloseBtn() const {
+    CRect rc = RcHeader();
+    const int sz = S(28);
+    rc.left = rc.right - S(16) - sz;
+    rc.top = rc.top + S(12);
+    rc.right = rc.left + sz;
+    rc.bottom = rc.top + sz;
+    return rc;
+}
 
-    grid_.Create(WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER, rcGrid, this, 12001);
-    grid_.EnableHeaderCtrl(FALSE);
-    grid_.EnableDescriptionArea(TRUE);
-    grid_.SetVSDotNetLook(TRUE);
-    grid_.SetGroupNameFullWidth(TRUE);
-    if (font_.GetSafeHandle()) {
-        grid_.SetFont(&font_);
+CRect CSettingsWnd::RcContent() const {
+    CRect rc = Client();
+    rc.DeflateRect(S(16), S(72), S(16), S(72));
+    return rc;
+}
+
+CRect CSettingsWnd::RcFooter() const {
+    CRect rc = Client();
+    rc.top = rc.bottom - S(56);
+    return rc;
+}
+
+CRect CSettingsWnd::RcApplyBtn() const {
+    CRect rc = RcFooter();
+    const int w = S(120);
+    const int h = S(32);
+    rc.right -= S(16);
+    rc.left = rc.right - w;
+    rc.top = rc.top + S(12);
+    rc.bottom = rc.top + h;
+    rc.right = rc.left + w;
+    return rc;
+}
+
+CRect CSettingsWnd::RcCloseBtn2() const {
+    CRect rc = RcApplyBtn();
+    rc.OffsetRect(-(S(120) + S(12)), 0);
+    return rc;
+}
+
+CSettingsWnd::Hit CSettingsWnd::HitTest(const CPoint& pt) const {
+    Hit h;
+    const CRect close = RcCloseBtn();
+    if (close.PtInRect(pt)) {
+        h.kind = Hit::Close;
+        h.rc = close;
+        return h;
     }
-
-    // Buttons
-    const int y = rc.bottom - pad - btnH;
-    btnApply_.Create(L"", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, CRect(rc.right - pad - btnW * 2 - 10, y, rc.right - pad - btnW - 10, y + btnH), this, 10001);
-    btnClose_.Create(L"", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, CRect(rc.right - pad - btnW, y, rc.right - pad, y + btnH), this, 10002);
-    if (font_.GetSafeHandle()) {
-        btnApply_.SetFont(&font_);
-        btnClose_.SetFont(&font_);
-    }
-
-    ApplyLanguageToControls();
+    return h;
 }
 
 bool CSettingsWnd::IsZh() const {
-    return currentLang_.empty() || currentLang_ == "zh-CN";
+    return model_.uiLanguage.empty() || model_.uiLanguage == "zh-CN";
 }
 
-void CSettingsWnd::RebuildPropertyGrid() {
-    UiUpdateGuard guard(updatingUiDepth_);
-
-    grid_.RemoveAll();
-
-    const bool zh = IsZh();
-
-    // --- General ---
-    CMFCPropertyGridProperty* grpGeneral = new CMFCPropertyGridProperty(zh ? L"\u4E00\u822C" : L"General");
-
-    propLang_ = new CMFCPropertyGridProperty(zh ? L"\u8BED\u8A00" : L"Language", W(L""), zh ? L"\u8BBE\u7F6E\u7A97\u53E3\u8BED\u8A00" : L"Settings window language");
-    AddOptions(*propLang_, kLangOptions, _countof(kLangOptions));
-    grpGeneral->AddSubItem(propLang_);
-
-    propTheme_ = new CMFCPropertyGridProperty(zh ? L"\u4E3B\u9898" : L"Theme", W(L""), zh ? L"\u7279\u6548\u914D\u8272\u4E0E\u98CE\u683C" : L"Effect palette and style");
-    AddOptions(*propTheme_, zh ? kThemeOptionsZh : kThemeOptionsEn, zh ? _countof(kThemeOptionsZh) : _countof(kThemeOptionsEn));
-    grpGeneral->AddSubItem(propTheme_);
-
-    // --- Effects ---
-    CMFCPropertyGridProperty* grpFx = new CMFCPropertyGridProperty(zh ? L"\u7279\u6548" : L"Effects");
-
-    propClick_ = new CMFCPropertyGridProperty(zh ? L"\u70B9\u51FB" : L"Click", W(L""));
-    AddOptions(*propClick_, zh ? kClickOptionsZh : kClickOptionsEn, zh ? _countof(kClickOptionsZh) : _countof(kClickOptionsEn));
-    grpFx->AddSubItem(propClick_);
-
-    propTrail_ = new CMFCPropertyGridProperty(zh ? L"\u62D6\u5C3E" : L"Trail", W(L""));
-    AddOptions(*propTrail_, zh ? kTrailOptionsZh : kTrailOptionsEn, zh ? _countof(kTrailOptionsZh) : _countof(kTrailOptionsEn));
-    grpFx->AddSubItem(propTrail_);
-
-    propScroll_ = new CMFCPropertyGridProperty(zh ? L"\u6EDA\u8F6E" : L"Scroll", W(L""));
-    AddOptions(*propScroll_, zh ? kScrollOptionsZh : kScrollOptionsEn, zh ? _countof(kScrollOptionsZh) : _countof(kScrollOptionsEn));
-    grpFx->AddSubItem(propScroll_);
-
-    propHold_ = new CMFCPropertyGridProperty(zh ? L"\u957F\u6309" : L"Hold", W(L""));
-    AddOptions(*propHold_, zh ? kHoldOptionsZh : kHoldOptionsEn, zh ? _countof(kHoldOptionsZh) : _countof(kHoldOptionsEn));
-    grpFx->AddSubItem(propHold_);
-
-    propHover_ = new CMFCPropertyGridProperty(zh ? L"\u60AC\u505C" : L"Hover", W(L""));
-    AddOptions(*propHover_, zh ? kHoverOptionsZh : kHoverOptionsEn, zh ? _countof(kHoverOptionsZh) : _countof(kHoverOptionsEn));
-    grpFx->AddSubItem(propHover_);
-
-    grid_.AddProperty(grpGeneral);
-    grid_.AddProperty(grpFx);
-
-    // Expand for discoverability.
-    grpGeneral->Expand(TRUE);
-    grpFx->Expand(TRUE);
-
-    SyncToPropsFromConfig();
+void CSettingsWnd::FillCombo(CComboBox& box, const SettingOption* opts, size_t count, const std::string& current) {
+    box.ResetContent();
+    int sel = 0;
+    for (size_t i = 0; i < count; ++i) {
+        const int idx = box.AddString(opts[i].display);
+        box.SetItemDataPtr(idx, (void*)opts[i].value);
+        if (current == opts[i].value) sel = idx;
+    }
+    box.SetCurSel(sel);
 }
 
-void CSettingsWnd::SyncToPropsFromConfig() {
-    auto* app = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
-    auto* fx = app ? app->mouseFx_.get() : nullptr;
-    if (!fx) return;
-
-    const auto& cfg = fx->Config();
-
-    // Language
-    {
-        const std::string lang = cfg.uiLanguage.empty() ? std::string("zh-CN") : cfg.uiLanguage;
-        currentLang_ = lang;
-        const Option* o = FindByValue(kLangOptions, _countof(kLangOptions), lang);
-        if (o) propLang_->SetValue((_variant_t)o->display);
-    }
-
-    // Theme
-    {
-        const Option* opts = IsZh() ? kThemeOptionsZh : kThemeOptionsEn;
-        const size_t n = IsZh() ? _countof(kThemeOptionsZh) : _countof(kThemeOptionsEn);
-        const Option* o = FindByValue(opts, n, cfg.theme);
-        if (o) propTheme_->SetValue((_variant_t)o->display);
-    }
-
-    // Effects
-    {
-        const Option* opts = IsZh() ? kClickOptionsZh : kClickOptionsEn;
-        const size_t n = IsZh() ? _countof(kClickOptionsZh) : _countof(kClickOptionsEn);
-        const Option* o = FindByValue(opts, n, cfg.active.click);
-        if (o) propClick_->SetValue((_variant_t)o->display);
-    }
-    {
-        const Option* opts = IsZh() ? kTrailOptionsZh : kTrailOptionsEn;
-        const size_t n = IsZh() ? _countof(kTrailOptionsZh) : _countof(kTrailOptionsEn);
-        const Option* o = FindByValue(opts, n, cfg.active.trail);
-        if (o) propTrail_->SetValue((_variant_t)o->display);
-    }
-    {
-        const Option* opts = IsZh() ? kScrollOptionsZh : kScrollOptionsEn;
-        const size_t n = IsZh() ? _countof(kScrollOptionsZh) : _countof(kScrollOptionsEn);
-        const Option* o = FindByValue(opts, n, cfg.active.scroll);
-        if (o) propScroll_->SetValue((_variant_t)o->display);
-    }
-    {
-        const Option* opts = IsZh() ? kHoldOptionsZh : kHoldOptionsEn;
-        const size_t n = IsZh() ? _countof(kHoldOptionsZh) : _countof(kHoldOptionsEn);
-        const Option* o = FindByValue(opts, n, cfg.active.hold);
-        if (o) propHold_->SetValue((_variant_t)o->display);
-    }
-    {
-        const Option* opts = IsZh() ? kHoverOptionsZh : kHoverOptionsEn;
-        const size_t n = IsZh() ? _countof(kHoverOptionsZh) : _countof(kHoverOptionsEn);
-        const Option* o = FindByValue(opts, n, cfg.active.hover);
-        if (o) propHover_->SetValue((_variant_t)o->display);
-    }
+std::string CSettingsWnd::GetComboValue(const CComboBox& box) const {
+    const int i = box.GetCurSel();
+    if (i < 0) return {};
+    return GetValueFromItemData(box.GetItemData(i));
 }
 
-std::string CSettingsWnd::GetPropOptionValueAscii(const CMFCPropertyGridProperty& p) const {
-    const CString display = p.GetValue();
-
-    if (&p == propLang_) {
-        const Option* o = FindByDisplay(kLangOptions, _countof(kLangOptions), display);
-        return o ? std::string(o->value) : std::string();
+void CSettingsWnd::SetComboValue(CComboBox& box, const std::string& value) {
+    const int count = box.GetCount();
+    for (int i = 0; i < count; ++i) {
+        if (GetValueFromItemData(box.GetItemData(i)) == value) {
+            box.SetCurSel(i);
+            return;
+        }
     }
-
-    const bool zh = IsZh();
-
-    if (&p == propTheme_) {
-        const Option* o = FindByDisplay(zh ? kThemeOptionsZh : kThemeOptionsEn,
-            zh ? _countof(kThemeOptionsZh) : _countof(kThemeOptionsEn), display);
-        return o ? std::string(o->value) : std::string();
-    }
-    if (&p == propClick_) {
-        const Option* o = FindByDisplay(zh ? kClickOptionsZh : kClickOptionsEn,
-            zh ? _countof(kClickOptionsZh) : _countof(kClickOptionsEn), display);
-        return o ? std::string(o->value) : std::string();
-    }
-    if (&p == propTrail_) {
-        const Option* o = FindByDisplay(zh ? kTrailOptionsZh : kTrailOptionsEn,
-            zh ? _countof(kTrailOptionsZh) : _countof(kTrailOptionsEn), display);
-        return o ? std::string(o->value) : std::string();
-    }
-    if (&p == propScroll_) {
-        const Option* o = FindByDisplay(zh ? kScrollOptionsZh : kScrollOptionsEn,
-            zh ? _countof(kScrollOptionsZh) : _countof(kScrollOptionsEn), display);
-        return o ? std::string(o->value) : std::string();
-    }
-    if (&p == propHold_) {
-        const Option* o = FindByDisplay(zh ? kHoldOptionsZh : kHoldOptionsEn,
-            zh ? _countof(kHoldOptionsZh) : _countof(kHoldOptionsEn), display);
-        return o ? std::string(o->value) : std::string();
-    }
-    if (&p == propHover_) {
-        const Option* o = FindByDisplay(zh ? kHoverOptionsZh : kHoverOptionsEn,
-            zh ? _countof(kHoverOptionsZh) : _countof(kHoverOptionsEn), display);
-        return o ? std::string(o->value) : std::string();
-    }
-
-    return {};
+    box.SetCurSel(0);
 }
 
 void CSettingsWnd::ApplyLanguageToControls() {
-    UiUpdateGuard guard(updatingUiDepth_);
+    updating_ = true;
+    size_t n = 0;
 
-    // Update title/buttons.
-    if (IsZh()) {
-        SetWindowTextW(L"MFCMouseEffect \u8BBE\u7F6E");
-        btnApply_.SetWindowTextW(L"\u5E94\u7528");
-        btnClose_.SetWindowTextW(L"\u5173\u95ED");
-    } else {
-        SetWindowTextW(L"MFCMouseEffect Settings");
-        btnApply_.SetWindowTextW(L"Apply");
-        btnClose_.SetWindowTextW(L"Close");
-    }
+    const SettingsText& t = IsZh() ? TextZh() : TextEn();
 
-    RebuildPropertyGrid();
+    SetWindowTextW(t.title);
+
+    lblLang_.SetWindowTextW(t.labelLanguage);
+    lblTheme_.SetWindowTextW(t.labelTheme);
+    lblClick_.SetWindowTextW(t.labelClick);
+    lblTrail_.SetWindowTextW(t.labelTrail);
+    lblScroll_.SetWindowTextW(t.labelScroll);
+    lblHold_.SetWindowTextW(t.labelHold);
+    lblHover_.SetWindowTextW(t.labelHover);
+
+    btnClose_.SetWindowTextW(t.btnClose);
+    btnApply_.SetWindowTextW(t.btnApply);
+
+    const SettingOption* langOpts = LangOptions(n);
+    FillCombo(cmbLang_, langOpts, n, model_.uiLanguage);
+
+    const SettingOption* themeOpts = ThemeOptions(IsZh(), n);
+    FillCombo(cmbTheme_, themeOpts, n, model_.theme);
+
+    const SettingOption* clickOpts = ClickOptions(IsZh(), n);
+    FillCombo(cmbClick_, clickOpts, n, model_.click);
+
+    const SettingOption* trailOpts = TrailOptions(IsZh(), n);
+    FillCombo(cmbTrail_, trailOpts, n, model_.trail);
+
+    const SettingOption* scrollOpts = ScrollOptions(IsZh(), n);
+    FillCombo(cmbScroll_, scrollOpts, n, model_.scroll);
+
+    const SettingOption* holdOpts = HoldOptions(IsZh(), n);
+    FillCombo(cmbHold_, holdOpts, n, model_.hold);
+
+    const SettingOption* hoverOpts = HoverOptions(IsZh(), n);
+    FillCombo(cmbHover_, hoverOpts, n, model_.hover);
+    updating_ = false;
 }
 
-void CSettingsWnd::PersistUiLanguage(const std::string& lang) {
-    auto* app = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
-    auto* fx = app ? app->mouseFx_.get() : nullptr;
-    if (!fx) return;
-    fx->SetUiLanguage(lang);
+void CSettingsWnd::Apply() {
+    if (!backend_) return;
+    backend_->Apply(model_);
+    Invalidate(FALSE);
 }
 
-void CSettingsWnd::SyncFromApp() {
-    auto* app = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
-    auto* fx = app ? app->mouseFx_.get() : nullptr;
-    if (!fx) return;
-
-    const auto& cfg = fx->Config();
-    currentLang_ = cfg.uiLanguage.empty() ? std::string("zh-CN") : cfg.uiLanguage;
-
+void CSettingsWnd::SyncFromBackend() {
+    if (!backend_) return;
+    model_ = backend_->Load();
+    if (model_.uiLanguage.empty()) model_.uiLanguage = "zh-CN";
     ApplyLanguageToControls();
+    Invalidate(FALSE);
 }
 
-void CSettingsWnd::ApplyToApp() {
-    auto* app = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
-    auto* fx = app ? app->mouseFx_.get() : nullptr;
-    if (!fx) return;
-
-    const std::string lang = GetPropOptionValueAscii(*propLang_);
-    if (!lang.empty() && lang != currentLang_) {
-        currentLang_ = lang;
-        fx->SetUiLanguage(lang);
-    }
-
-    const std::string theme = GetPropOptionValueAscii(*propTheme_);
-    if (!theme.empty()) {
-        fx->SetTheme(theme);
-    }
-
-    ApplyEffectCmd(fx, "click", GetPropOptionValueAscii(*propClick_));
-    ApplyEffectCmd(fx, "trail", GetPropOptionValueAscii(*propTrail_));
-    ApplyEffectCmd(fx, "scroll", GetPropOptionValueAscii(*propScroll_));
-    ApplyEffectCmd(fx, "hold", GetPropOptionValueAscii(*propHold_));
-    ApplyEffectCmd(fx, "hover", GetPropOptionValueAscii(*propHover_));
+void CSettingsWnd::OnLButtonDown(UINT nFlags, CPoint point) {
+    CWnd::OnLButtonDown(nFlags, point);
+    down_ = HitTest(point).kind;
 }
 
+void CSettingsWnd::OnLButtonUp(UINT nFlags, CPoint point) {
+    CWnd::OnLButtonUp(nFlags, point);
+    const Hit h = HitTest(point);
+    if (h.kind == Hit::Close && down_ == Hit::Close) {
+        OnClose();
+    }
+    down_ = Hit::None;
+}
+
+void CSettingsWnd::OnMouseMove(UINT nFlags, CPoint point) {
+    CWnd::OnMouseMove(nFlags, point);
+    const Hit h = HitTest(point);
+    if (hover_ != h.kind) {
+        hover_ = h.kind;
+        Invalidate(FALSE);
+    }
+}
+
+LRESULT CSettingsWnd::OnNcHitTest(CPoint point) {
+    CPoint client = point;
+    ScreenToClient(&client);
+    if (RcCloseBtn().PtInRect(client)) {
+        return HTCLIENT;
+    }
+    if (RcHeader().PtInRect(client)) {
+        return HTCAPTION;
+    }
+    return CWnd::OnNcHitTest(point);
+}
+
+void CSettingsWnd::DrawRoundRect(Gdiplus::Graphics& g, const CRect& rc, int radius, const Gdiplus::Color& fill) {
+    const int r = ClampInt(radius, 0, 32);
+    Gdiplus::GraphicsPath path;
+    const int d = r * 2;
+
+    path.AddArc((float)rc.left, (float)rc.top, (float)d, (float)d, 180.0f, 90.0f);
+    path.AddArc((float)rc.right - d, (float)rc.top, (float)d, (float)d, 270.0f, 90.0f);
+    path.AddArc((float)rc.right - d, (float)rc.bottom - d, (float)d, (float)d, 0.0f, 90.0f);
+    path.AddArc((float)rc.left, (float)rc.bottom - d, (float)d, (float)d, 90.0f, 90.0f);
+    path.CloseFigure();
+
+    Gdiplus::SolidBrush b(fill);
+    g.FillPath(&b, &path);
+}
+
+void CSettingsWnd::DrawText(Gdiplus::Graphics& g, const wchar_t* text, const CRect& rc, int sizePx, bool bold, const Gdiplus::Color& c) {
+    if (!text) return;
+    Gdiplus::FontFamily ff(L"Segoe UI");
+    const int style = bold ? Gdiplus::FontStyleBold : Gdiplus::FontStyleRegular;
+    Gdiplus::Font font(&ff, (Gdiplus::REAL)sizePx, style, Gdiplus::UnitPixel);
+    Gdiplus::SolidBrush b(c);
+
+    Gdiplus::RectF r((Gdiplus::REAL)rc.left, (Gdiplus::REAL)rc.top, (Gdiplus::REAL)rc.Width(), (Gdiplus::REAL)rc.Height());
+    Gdiplus::StringFormat fmt;
+    fmt.SetTrimming(Gdiplus::StringTrimmingEllipsisCharacter);
+    fmt.SetFormatFlags(Gdiplus::StringFormatFlagsNoWrap);
+    fmt.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+
+    g.DrawString(text, -1, &font, r, &fmt, &b);
+}
+
+void CSettingsWnd::OnPaint() {
+    CPaintDC dc(this);
+    CRect rc = Client();
+
+    CDC mem;
+    mem.CreateCompatibleDC(&dc);
+    CBitmap bmp;
+    bmp.CreateCompatibleBitmap(&dc, rc.Width(), rc.Height());
+    auto* oldBmp = mem.SelectObject(&bmp);
+
+    Gdiplus::Graphics g(mem);
+    g.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
+    g.SetTextRenderingHint(Gdiplus::TextRenderingHintClearTypeGridFit);
+
+    // Background (system default)
+    const COLORREF sysWindow = ::GetSysColor(COLOR_WINDOW);
+    const COLORREF sysText = ::GetSysColor(COLOR_WINDOWTEXT);
+    const COLORREF sysMuted = ::GetSysColor(COLOR_GRAYTEXT);
+    const COLORREF sysFace = ::GetSysColor(COLOR_BTNFACE);
+    g.Clear(C(255, GetRValue(sysWindow), GetGValue(sysWindow), GetBValue(sysWindow)));
+
+    // Header
+    {
+        CRect h = RcHeader();
+        DrawRoundRect(g, CRect(h.left + S(8), h.top + S(8), h.right - S(8), h.bottom), S(14),
+            C(255, GetRValue(sysFace), GetGValue(sysFace), GetBValue(sysFace)));
+
+        const SettingsText& t = IsZh() ? TextZh() : TextEn();
+        CRect title = h;
+        title.left += S(18);
+        title.top += S(8);
+        title.bottom = title.top + S(34);
+        DrawText(g, t.title, title, S(16), true, C(255, GetRValue(sysText), GetGValue(sysText), GetBValue(sysText)));
+
+        CRect sub = h;
+        sub.left += S(18);
+        sub.top += S(40);
+        sub.bottom = h.bottom;
+        DrawText(g, t.subtitle, sub, S(11), false, C(255, GetRValue(sysMuted), GetGValue(sysMuted), GetBValue(sysMuted)));
+
+        CRect x = RcCloseBtn();
+        const bool hov = (hover_ == Hit::Close);
+        DrawRoundRect(g, x, S(10), hov ? C(255, 210, 215, 223) : C(255, 228, 233, 240));
+        DrawText(g, L"\u00D7", x, S(16), true, C(255, GetRValue(sysText), GetGValue(sysText), GetBValue(sysText)));
+    }
+
+    dc.BitBlt(0, 0, rc.Width(), rc.Height(), &mem, 0, 0, SRCCOPY);
+    mem.SelectObject(oldBmp);
+}
+
+BOOL CSettingsWnd::OnEraseBkgnd(CDC* /*pDC*/) {
+    return TRUE;
+}

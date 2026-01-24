@@ -24,6 +24,9 @@ Tray menus are fine for quick toggles, but not great for full configuration. In 
 Closing the window (X) only closes the settings UI; it does not stop the tray/background process.
 Language: the settings window supports Chinese/English switching (default Chinese) and persists to `config.json` (`ui_language`).
 Theme: the selected theme affects the overall look of click/scroll/hold/hover effects (non-text effects).
+Look: the settings window draws a custom frame/title and is decoupled from effect logic via a backend interface.
+Note: inner controls use native widgets for stability.
+Colors: no card/background fill; window and controls use system defaults, with only the title area and close button drawn.
 
 ## Customizing the Look
 - File: `MFCMouseEffect/MouseFx/RippleStyle.h` and `MFCMouseEffect/MouseFx/RippleWindow.cpp`.
