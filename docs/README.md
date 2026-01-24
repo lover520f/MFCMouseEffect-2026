@@ -27,6 +27,13 @@ Release builds no longer create the main frame window. A hidden host window is u
   - Window size: `windowSize`
   - Colors per button: `RippleWindow::StartAt(...)` switch (fill/stroke/glow)
 
+## Operational Notes (Macro-Level)
+- **UAC / admin windows:** hooks may not fully work inside elevated apps unless this app is also run elevated.
+- **Tray vs background mode:** tray mode is interactive; background mode is IPC-only (no tray UI).
+- **IPC control:** background mode is designed to be controlled by a parent process via stdin JSON; it exits when stdin closes.
+- **Persistence:** `config.json` lives next to the exe; theme and active effects are persisted there when changed via tray/IPC.
+- **Security software:** some endpoint/security tools may block global hooks or layered windows.
+
 ## Troubleshooting
 - **No ripple at all (Debug):** the self-test ripple did not show. Start likely failed. Check the dialog for `Stage/Error/Message`.
   - Stage `dispatch window`, Error `1400 (invalid window handle)`: fixed in code; rebuild and run `x64\Debug\MFCMouseEffect.exe`.

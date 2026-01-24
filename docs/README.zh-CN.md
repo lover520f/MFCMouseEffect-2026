@@ -27,6 +27,13 @@ Release 版本已改为“完全不创建主框架窗口”，只创建隐藏宿
   - 窗口大小：`windowSize`
   - 按键配色：在 `RippleWindow::StartAt(...)` 的 switch 中调整 fill/stroke/glow
 
+## 运行说明（宏观点）
+- **UAC/管理员窗口**：如果需要在管理员应用（高权限窗口）里也完整生效，建议本程序同样“以管理员身份运行”。
+- **托盘 vs 后台模式**：托盘模式可交互；后台模式不提供托盘 UI（完全由父进程/IPC 控制）。
+- **IPC 控制**：后台模式通过 stdin JSON 接收父进程命令；stdin 关闭时会自动退出（用于父进程生命周期托管）。
+- **配置持久化**：`config.json` 与 exe 同目录；主题与当前各分类特效会在 tray/IPC 修改时写回。
+- **安全软件影响**：部分安全软件可能会拦截全局钩子或分层窗口渲染，导致不生效或间歇性失效。
+
 ## 故障排查
 - **完全没波纹（Debug）**：连自检波纹都没有，说明启动失败。看弹窗里的 `Stage/Error/Message`。
   - `Stage: dispatch window`、`Error: 1400 (无效的窗口句柄)`：代码已修复，Clean+Rebuild 后运行 `x64\Debug\MFCMouseEffect.exe`。
