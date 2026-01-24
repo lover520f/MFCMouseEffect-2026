@@ -11,6 +11,7 @@
 #include "HoldEffect.h"
 #include "HoverEffect.h"
 #include "ParticleTrailEffect.h"
+#include "TextEffect.h"
 
 #include <new>
 #include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM
@@ -132,6 +133,7 @@ std::unique_ptr<IMouseEffect> AppController::CreateEffect(EffectCategory categor
         case EffectCategory::Click:
             if (type == "ripple") return std::make_unique<RippleEffect>();
             if (type == "star")   return std::make_unique<IconEffect>();
+            if (type == "text")   return std::make_unique<TextEffect>(config_.textClick);
             break;
         case EffectCategory::Trail:
             if (type == "line")     return std::make_unique<TrailEffect>();

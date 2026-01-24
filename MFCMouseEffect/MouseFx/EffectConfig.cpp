@@ -137,6 +137,7 @@ EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
         }
         
         // --- Icon/Star ---
+        // --- Icon/Star ---
         if (effects.contains("icon_star") && effects["icon_star"].is_object()) {
             const auto& i = effects["icon_star"];
             cfg.icon.durationMs = GetOr<int>(i, "duration_ms", cfg.icon.durationMs);
@@ -145,6 +146,47 @@ EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
             cfg.icon.strokeWidth = GetOr<float>(i, "stroke_width", cfg.icon.strokeWidth);
             cfg.icon.fillColor = GetColorOr(i, "fill", cfg.icon.fillColor);
             cfg.icon.strokeColor = GetColorOr(i, "stroke", cfg.icon.strokeColor);
+        }
+
+        // --- Text Click ---
+        if (effects.contains("text_click") && effects["text_click"].is_object()) {
+            const auto& t = effects["text_click"];
+            cfg.textClick.durationMs = GetOr<int>(t, "duration_ms", cfg.textClick.durationMs);
+            cfg.textClick.floatDistance = GetOr<int>(t, "float_distance", cfg.textClick.floatDistance);
+            cfg.textClick.fontSize = GetOr<float>(t, "font_size", cfg.textClick.fontSize);
+            
+            if (t.contains("font_family") && t["font_family"].is_string()) {
+                std::string font = t["font_family"].get<std::string>();
+                int len = MultiByteToWideChar(CP_UTF8, 0, font.c_str(), -1, nullptr, 0);
+                if (len > 0) {
+                    cfg.textClick.fontFamily.resize(len - 1);
+                    MultiByteToWideChar(CP_UTF8, 0, font.c_str(), -1, &cfg.textClick.fontFamily[0], len);
+                }
+            }
+
+            if (t.contains("texts") && t["texts"].is_array()) {
+                cfg.textClick.texts.clear();
+                for (const auto& item : t["texts"]) {
+                    if (item.is_string()) {
+                        std::string s = item.get<std::string>();
+                        int len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
+                        if (len > 0) {
+                            std::wstring ws(len - 1, L'\0');
+                            MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, &ws[0], len);
+                            cfg.textClick.texts.push_back(ws);
+                        }
+                    }
+                }
+            }
+
+            if (t.contains("colors") && t["colors"].is_array()) {
+                cfg.textClick.colors.clear();
+                for (const auto& item : t["colors"]) {
+                    if (item.is_string()) {
+                        cfg.textClick.colors.push_back(ArgbFromHex(item.get<std::string>()));
+                    }
+                }
+            }
         }
     }
     

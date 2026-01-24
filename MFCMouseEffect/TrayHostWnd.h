@@ -30,7 +30,8 @@ private:
 		// Click category
 		kCmdClickRipple = 2001,
 		kCmdClickStar = 2002,
-		kCmdClickNone = 2003,
+		kCmdClickText = 2003,
+		kCmdClickNone = 2004,
 		// Trail category
 		kCmdTrailLine = 3001,
 		kCmdTrailParticle = 3002,

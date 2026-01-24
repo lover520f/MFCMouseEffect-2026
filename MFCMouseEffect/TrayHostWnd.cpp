@@ -82,6 +82,7 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 	clickMenu.CreatePopupMenu();
 	clickMenu.AppendMenu(MF_STRING, kCmdClickRipple, _T("水波纹 (Ripple)"));
 	clickMenu.AppendMenu(MF_STRING, kCmdClickStar, _T("星星 (Star)"));
+	clickMenu.AppendMenu(MF_STRING, kCmdClickText, _T("飘浮文字 (Text)"));
 	clickMenu.AppendMenu(MF_STRING, kCmdClickNone, _T("无 (None)"));
 	
 	// Check current selection
@@ -91,6 +92,7 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 			std::string typeName = clickEffect->TypeName();
 			if (typeName == "ripple") clickMenu.CheckMenuItem(kCmdClickRipple, MF_CHECKED);
 			else if (typeName == "star") clickMenu.CheckMenuItem(kCmdClickStar, MF_CHECKED);
+			else if (typeName == "text") clickMenu.CheckMenuItem(kCmdClickText, MF_CHECKED);
 		} else {
 			clickMenu.CheckMenuItem(kCmdClickNone, MF_CHECKED);
 		}
@@ -185,6 +187,9 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 				break;
 			case kCmdClickStar:
 				mouseFx->SetEffect(mousefx::EffectCategory::Click, "star");
+				break;
+			case kCmdClickText:
+				mouseFx->SetEffect(mousefx::EffectCategory::Click, "text");
 				break;
 			case kCmdClickNone:
 				mouseFx->ClearEffect(mousefx::EffectCategory::Click);

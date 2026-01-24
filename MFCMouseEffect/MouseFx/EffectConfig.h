@@ -2,12 +2,31 @@
 
 #include "RippleStyle.h"  // For Argb
 #include <string>
+#include <vector>
 #include <cstdint>
 
 namespace mousefx {
 
 // Parse ARGB from "#AARRGGBB" or "#RRGGBB" hex string
 Argb ArgbFromHex(const std::string& hex);
+
+// Configuration for Floating Text effect
+struct TextConfig {
+    int durationMs = 800;
+    int floatDistance = 60;
+    std::wstring fontFamily = L"Microsoft YaHei";
+    float fontSize = 18.0f;
+    
+    // Random pool
+    std::vector<std::wstring> texts = { L"美丽", L"健康", L"幸福", L"民主", L"文明", L"和谐" };
+    std::vector<Argb> colors = { 
+        {0xFFFF69B4}, // HotPink
+        {0xFF87CEEB}, // SkyBlue
+        {0xFFFFD700}, // Gold
+        {0xFF32CD32}, // LimeGreen
+        {0xFFBA55D3}  // MediumOrchid
+    };
+};
 
 // Configuration for Ripple effect
 struct RippleConfig {
@@ -54,6 +73,7 @@ struct EffectConfig {
     RippleConfig ripple;
     TrailConfig trail;
     IconConfig icon;
+    TextConfig textClick;
     
     // Load config from file, merging with defaults.
     // If file doesn't exist or has errors, returns defaults (no crash).
