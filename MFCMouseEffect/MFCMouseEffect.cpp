@@ -156,6 +156,15 @@ CMFCMouseEffectApp theApp;
 
 BOOL CMFCMouseEffectApp::InitInstance()
 {
+	// Ensure only one instance runs.
+	hMutex_ = CreateMutexW(nullptr, TRUE, L"Global\\MFCMouseEffect_SingleInstance_Mutex");
+	if (hMutex_ && GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		CloseHandle(hMutex_);
+		hMutex_ = nullptr;
+		return FALSE; // Exit if another instance is already running
+	}
+
 	EnableDpiAwarenessForScreenCoords();
 	// 如果一个运行在 Windows XP 上的应用程序清单指定要
 	// 使用 ComCtl32.dll 版本 6 或更高版本来启用可视化方式，
@@ -336,6 +345,12 @@ void CMFCMouseEffectApp::NotifySettingsWndDestroyed(CSettingsWnd* wnd)
 
 int CMFCMouseEffectApp::ExitInstance()
 {
+	if (hMutex_)
+	{
+		ReleaseMutex(hMutex_);
+		CloseHandle(hMutex_);
+		hMutex_ = nullptr;
+	}
 	//TODO: 处理可能已添加的附加资源
 	if (ipc_)
 	{

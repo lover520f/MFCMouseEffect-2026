@@ -54,6 +54,7 @@ private:
 	std::unique_ptr<class CTrayHostWnd> trayHost_;
 	bool backgroundMode_ = false;
 	class CSettingsWnd* settingsWnd_ = nullptr; // owned by the window lifetime
+	HANDLE hMutex_ = nullptr;
 };
 
 
