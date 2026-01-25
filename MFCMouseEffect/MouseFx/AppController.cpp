@@ -235,6 +235,45 @@ void AppController::SetUiLanguage(const std::string& lang) {
     }
 }
 
+void AppController::SetTextEffectContent(const std::vector<std::wstring>& texts) {
+    config_.textClick.texts = texts;
+    if (!configDir_.empty()) {
+        EffectConfig::Save(configDir_, config_);
+    }
+    // Note: TextEffect pulls from config each click, so no need to "reload" the effect object
+    // unless we want to refresh its internal pool immediately.
+    // TextEffect::Initialize() builds the pool.
+    // We should probably re-initialize the text effect if it's active.
+    if (auto* effect = GetEffect(EffectCategory::Click)) {
+        // Simple way: re-set it to trigger re-init
+        if (config_.active.click == "text") {
+            SetEffect(EffectCategory::Click, "text");
+        }
+    }
+}
+
+void AppController::ResetConfig() {
+    // 1. Get default config
+    config_ = EffectConfig::GetDefault();
+    
+    // 2. Save it to disk
+    if (!configDir_.empty()) {
+        EffectConfig::Save(configDir_, config_);
+    }
+
+    // 3. Re-apply everything
+    SetEffect(EffectCategory::Click, config_.active.click);
+    SetEffect(EffectCategory::Trail, config_.active.trail);
+    SetEffect(EffectCategory::Scroll, config_.active.scroll);
+    SetEffect(EffectCategory::Hold, config_.active.hold);
+    SetEffect(EffectCategory::Hover, config_.active.hover);
+    
+    // Theme/Language rely on being pulled by UI or re-applied if needed?
+    // SettingsWnd calls sync, so it will pull new values.
+    // But existing effects might need theme re-apply.
+    SetTheme(config_.theme);
+}
+
 IMouseEffect* AppController::GetEffect(EffectCategory category) const {
     size_t idx = static_cast<size_t>(category);
     if (idx >= kCategoryCount) return nullptr;

@@ -14,6 +14,7 @@ public:
     virtual ~ISettingsBackend() = default;
     virtual SettingsModel Load() = 0;
     virtual void Apply(const SettingsModel& model) = 0;
+    virtual void ResetToDefaults() = 0;
 };
 
 std::unique_ptr<ISettingsBackend> CreateSettingsBackend(mousefx::AppController* controller);

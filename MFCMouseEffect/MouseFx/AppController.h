@@ -51,6 +51,9 @@ public:
     // Set settings window UI language (persisted).
     void SetUiLanguage(const std::string& lang);
     
+    // Set custom text content for Text Effect
+    void SetTextEffectContent(const std::vector<std::wstring>& texts);
+
     // Get the current effect for a category (may be null).
     IMouseEffect* GetEffect(EffectCategory category) const;
 
@@ -60,7 +63,11 @@ public:
     StartDiagnostics Diagnostics() const { return diag_; }
     
     // Get current config (for effects to read)
+    // Get current config (for effects to read)
     const EffectConfig& Config() const { return config_; }
+
+    // Reset settings to defaults
+    void ResetConfig();
 
 private:
     static LRESULT CALLBACK DispatchWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

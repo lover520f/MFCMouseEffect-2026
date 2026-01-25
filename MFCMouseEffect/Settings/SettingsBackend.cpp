@@ -22,6 +22,16 @@ public:
         m.scroll = cfg.active.scroll.empty() ? "arrow" : cfg.active.scroll;
         m.hold = cfg.active.hold.empty() ? "charge" : cfg.active.hold;
         m.hover = cfg.active.hover.empty() ? "glow" : cfg.active.hover;
+
+        // Flatten texts to comma-separated UTF-8 string
+        std::string s;
+        for (size_t i = 0; i < cfg.textClick.texts.size(); ++i) {
+            std::string utf8 = WStringToUtf8(cfg.textClick.texts[i]);
+            if (i > 0) s += ",";
+            s += utf8;
+        }
+        m.textContent = s;
+
         return m;
     }
 
@@ -31,6 +41,24 @@ public:
         // Persisted setters.
         c_->SetUiLanguage(m.uiLanguage);
         c_->SetTheme(m.theme);
+        
+        // Parse text content
+        {
+            std::vector<std::wstring> texts;
+            std::string raw = m.textContent;
+            size_t start = 0;
+            size_t end = raw.find(',');
+            while (end != std::string::npos) {
+                std::string token = raw.substr(start, end - start);
+                if (!token.empty()) texts.push_back(Utf8ToWString(token));
+                start = end + 1;
+                end = raw.find(',', start);
+            }
+            std::string last = raw.substr(start);
+            if (!last.empty()) texts.push_back(Utf8ToWString(last));
+            
+            c_->SetTextEffectContent(texts);
+        }
 
         auto applyEffect = [&](const char* category, const std::string& type) {
             if (type == "none") {
@@ -50,7 +78,29 @@ public:
         applyEffect("hover", m.hover);
     }
 
+    void ResetToDefaults() override {
+        if (c_) c_->ResetConfig();
+    }
+
 private:
+    static std::string WStringToUtf8(const std::wstring& ws) {
+        if (ws.empty()) return {};
+        int len = WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, nullptr, 0, nullptr, nullptr);
+        if (len <= 0) return {};
+        std::string out(len - 1, '\0');
+        WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, out.empty() ? nullptr : &out[0], len, nullptr, nullptr);
+        return out;
+    }
+
+    static std::wstring Utf8ToWString(const std::string& s) {
+        if (s.empty()) return {};
+        int len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
+        if (len <= 0) return {};
+        std::wstring out(len - 1, L'\0');
+        MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, &out[0], len);
+        return out;
+    }
+
     mousefx::AppController* c_ = nullptr;
 };
 

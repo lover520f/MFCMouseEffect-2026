@@ -23,9 +23,11 @@ struct SettingsText {
     const wchar_t* labelScroll;
     const wchar_t* labelHold;
     const wchar_t* labelHover;
+    const wchar_t* labelTextsEntry;
 
     const wchar_t* btnClose;
     const wchar_t* btnApply;
+    const wchar_t* btnReset;
 };
 
 inline const SettingsText& TextZh() {
@@ -41,8 +43,10 @@ inline const SettingsText& TextZh() {
         L"\u6EDA\u8F6E",
         L"\u957F\u6309",
         L"\u60AC\u505C",
+        L"\u6587\u5B57\u5185\u5BB9", // 文字内容
         L"\u5173\u95ED",
         L"\u5E94\u7528",
+        L"\u6062\u590D\u9ED8\u8BA4", // 恢复默认
     };
     return t;
 }
@@ -60,8 +64,10 @@ inline const SettingsText& TextEn() {
         L"Scroll",
         L"Hold",
         L"Hover",
+        L"Text Content",
         L"Close",
         L"Apply",
+        L"Reset",
     };
     return t;
 }

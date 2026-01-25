@@ -11,4 +11,6 @@ struct SettingsModel {
     std::string scroll = "arrow";     // arrow | none
     std::string hold = "charge";      // charge | none
     std::string hover = "glow";       // glow | none
+    
+    std::string textContent;          // Comma separated words for Text effect
 };

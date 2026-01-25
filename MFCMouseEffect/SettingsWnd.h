@@ -31,6 +31,7 @@ protected:
     afx_msg LRESULT OnNcHitTest(CPoint point);
     afx_msg void OnCommandApply();
     afx_msg void OnCommandClose();
+    afx_msg void OnCommandReset(); // New
     afx_msg void OnSelChange();
     afx_msg void OnClose();
     afx_msg void OnDestroy();
@@ -66,6 +67,7 @@ private:
     CRect RcContent() const;
     CRect RcFooter() const;
     CRect RcApplyBtn() const;
+    CRect RcResetBtn() const; // New
     CRect RcCloseBtn2() const;
 
     // Drawing
@@ -86,6 +88,7 @@ private:
     CStatic lblScroll_{};
     CStatic lblHold_{};
     CStatic lblHover_{};
+    CStatic lblTexts_{}; // New
 
     CComboBox cmbLang_{};
     CComboBox cmbTheme_{};
@@ -95,8 +98,13 @@ private:
     CComboBox cmbHold_{};
     CComboBox cmbHover_{};
 
+    CEdit edtTexts_{};   // New
+
     CButton btnApply_{};
     CButton btnClose_{};
+    CButton btnReset_{}; // New
 
     bool updating_ = false;
+
+    void CaptureUI(); // Helper
 };

@@ -23,7 +23,7 @@ struct TextConfig {
         L"\u5065\u5eb7",     // 健康
         L"\u5e78\u798f",     // 幸福
         L"\u8d22\u5bcc+1w",  // 财富+1w
-        L"\u7476\u7476"      // 瑶瑶
+        L"\u5f00\u5fc3"      // 开心
     };
     std::vector<Argb> colors = { 
         {0xFFFF69B4}, // HotPink
@@ -74,7 +74,7 @@ struct IconConfig {
 
 // Active effect selections per category (persisted).
 struct ActiveEffectConfig {
-    std::string click = "ripple";
+    std::string click = "text";
     std::string trail = "particle";
     std::string scroll = "arrow";
     std::string hover = "glow";

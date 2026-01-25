@@ -8,6 +8,8 @@
 #include "Settings/SettingsBackend.h"
 #include "Settings/SettingsOptions.h"
 
+#include <vector>
+
 namespace {
 
 static Gdiplus::Color C(BYTE a, BYTE r, BYTE g, BYTE b) {
@@ -46,6 +48,7 @@ BEGIN_MESSAGE_MAP(CSettingsWnd, CWnd)
     ON_WM_DESTROY()
     ON_BN_CLICKED(10001, &CSettingsWnd::OnCommandApply)
     ON_BN_CLICKED(10002, &CSettingsWnd::OnCommandClose)
+    ON_BN_CLICKED(10003, &CSettingsWnd::OnCommandReset) // Reset button
     ON_CBN_SELCHANGE(11000, &CSettingsWnd::OnSelChange)
     ON_CBN_SELCHANGE(11001, &CSettingsWnd::OnSelChange)
     ON_CBN_SELCHANGE(11002, &CSettingsWnd::OnSelChange)
@@ -65,14 +68,14 @@ bool CSettingsWnd::CreateAndShow(CWnd* parent, std::unique_ptr<ISettingsBackend>
     DWORD style = WS_POPUP | WS_VISIBLE;
     DWORD ex = WS_EX_APPWINDOW | WS_EX_COMPOSITED;
 
-    CRect rc(0, 0, 560, 520);
+    CRect rc(0, 0, 560, 560); // Increased height slightly to accommodate new row if needed
     if (parent && ::IsWindow(parent->GetSafeHwnd())) {
         parent->GetWindowRect(&rc);
         rc.OffsetRect(40, 40);
         rc.right = rc.left + 560;
-        rc.bottom = rc.top + 520;
+        rc.bottom = rc.top + 560;
     } else {
-        rc = CRect(200, 160, 760, 680);
+        rc = CRect(200, 160, 760, 720);
     }
 
     if (!CreateEx(ex, cls, L"", style, rc, parent, 0)) {
@@ -103,7 +106,7 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     const int boxW = content.Width() - labelW - pad * 3;
     const int sectionGap = S(10);
     const int availableH = content.Height();
-    const int rowH = ClampInt(availableH / 7, S(26), S(34));
+    const int rowH = ClampInt(availableH / 8, S(26), S(34)); // Divided by 8 rows now
 
     auto rowY = [&](int row) {
         // Add a small gap after the general section (2 rows).
@@ -121,37 +124,61 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     auto mkCombo = [&](CComboBox& c, int row, UINT id) {
         const int dropH = S(140);
         const int y = rowY(row);
-        // Slightly center the combo box vertically relative to the row height if needed, 
-        // but usually +S(2) or similar helps match the label's visual center.
         CRect rc(left + labelW + S(8), y + S(2),
                  left + labelW + S(8) + boxW, y + rowH + dropH);
         c.Create(WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP, rc, this, id);
         if (font_.GetSafeHandle()) c.SetFont(&font_);
     };
+    auto mkEdit = [&](CEdit& e, int row, UINT id) {
+        const int y = rowY(row);
+        CRect rc(left + labelW + S(8), y + S(2),
+                 left + labelW + S(8) + boxW, y + rowH);
+        e.Create(WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER | ES_AUTOHSCROLL, rc, this, id);
+        if (font_.GetSafeHandle()) e.SetFont(&font_);
+    };
 
-    // General section (2 rows), then a small gap, then Effects (5 rows)
+    // General section (2 rows)
     mkLabel(lblLang_, 0);   mkCombo(cmbLang_, 0, 11000);
     mkLabel(lblTheme_, 1);  mkCombo(cmbTheme_, 1, 11001);
+    
+    // Effects section
     mkLabel(lblClick_, 2);  mkCombo(cmbClick_, 2, 11002);
     mkLabel(lblTrail_, 3);  mkCombo(cmbTrail_, 3, 11003);
     mkLabel(lblScroll_, 4); mkCombo(cmbScroll_, 4, 11004);
     mkLabel(lblHold_, 5);   mkCombo(cmbHold_, 5, 11005);
     mkLabel(lblHover_, 6);  mkCombo(cmbHover_, 6, 11006);
+    
+    // Text content
+    mkLabel(lblTexts_, 7);  mkEdit(edtTexts_, 7, 11007);
 
     CRect footer = RcFooter();
     const int btnW = S(120);
     const int btnH = S(30);
+    
+    // Layout: Reset (Left), Close (Center), Apply (Right)
+    
+    // Left side: Reset
+    CRect rcReset(footer.left + pad, footer.top + S(10), footer.left + pad + btnW, footer.top + S(10) + btnH);
+
+    // Center: Close
+    int centerX = footer.CenterPoint().x;
+    CRect rcClose(centerX - btnW / 2, footer.top + S(10), centerX + btnW / 2, footer.top + S(10) + btnH);
+
+    // Right side: Apply
     CRect rcApply(footer.right - pad - btnW, footer.top + S(10), footer.right - pad, footer.top + S(10) + btnH);
-    CRect rcClose = rcApply;
-    rcClose.OffsetRect(-(btnW + S(12)), 0);
+
     btnClose_.Create(L"", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, rcClose, this, 10002);
     btnApply_.Create(L"", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, rcApply, this, 10001);
+    btnReset_.Create(L"", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, rcReset, this, 10003);
+
     if (font_.GetSafeHandle()) {
         btnClose_.SetFont(&font_);
         btnApply_.SetFont(&font_);
+        btnReset_.SetFont(&font_);
     }
 
     ApplyLanguageToControls();
+    
     SetComboValue(cmbLang_, model_.uiLanguage);
     SetComboValue(cmbTheme_, model_.theme);
     SetComboValue(cmbClick_, model_.click);
@@ -159,6 +186,16 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     SetComboValue(cmbScroll_, model_.scroll);
     SetComboValue(cmbHold_, model_.hold);
     SetComboValue(cmbHover_, model_.hover);
+    
+    // Set edit text from UTF-8 string model
+    CString wText;
+    int len = MultiByteToWideChar(CP_UTF8, 0, model_.textContent.c_str(), -1, nullptr, 0);
+    if (len > 0) {
+        std::vector<wchar_t> buf(len);
+        MultiByteToWideChar(CP_UTF8, 0, model_.textContent.c_str(), -1, buf.data(), len);
+        wText = buf.data();
+    }
+    edtTexts_.SetWindowTextW(wText);
 
     return 0;
 }
@@ -175,8 +212,43 @@ void CSettingsWnd::OnClose() {
     DestroyWindow();
 }
 
+// Helper: capture UI state to model
+void CSettingsWnd::CaptureUI() {
+    model_.uiLanguage = GetComboValue(cmbLang_);
+    model_.theme = GetComboValue(cmbTheme_);
+    model_.click = GetComboValue(cmbClick_);
+    model_.trail = GetComboValue(cmbTrail_);
+    model_.scroll = GetComboValue(cmbScroll_);
+    model_.hold = GetComboValue(cmbHold_);
+    model_.hover = GetComboValue(cmbHover_);
+    
+    // Capture text content
+    CString wText;
+    edtTexts_.GetWindowTextW(wText);
+    if (wText.IsEmpty()) {
+        model_.textContent.clear();
+    } else {
+        int len = WideCharToMultiByte(CP_UTF8, 0, wText, -1, nullptr, 0, nullptr, nullptr);
+        if (len > 0) {
+            std::string utf8(len - 1, 0);
+            WideCharToMultiByte(CP_UTF8, 0, wText, -1, &utf8[0], len, nullptr, nullptr);
+            model_.textContent = utf8;
+        } else {
+            model_.textContent.clear();
+        }
+    }
+}
+
 void CSettingsWnd::OnCommandApply() {
+    CaptureUI();
     Apply();
+}
+
+void CSettingsWnd::OnCommandReset() {
+    if (backend_) {
+        backend_->ResetToDefaults();
+        SyncFromBackend();
+    }
 }
 
 void CSettingsWnd::OnCommandClose() {
@@ -186,26 +258,14 @@ void CSettingsWnd::OnCommandClose() {
 void CSettingsWnd::OnSelChange() {
     if (updating_) return;
 
-    // 1. Capture all current values from UI to Model FIRST
-    //    Critical: Do this BEFORE ApplyLanguageToControls, because that function 
-    //    rebuilds the UI based on the current state of 'model_'.
     std::string oldLang = model_.uiLanguage;
 
-    model_.uiLanguage = GetComboValue(cmbLang_);
-    model_.theme = GetComboValue(cmbTheme_);
-    model_.click = GetComboValue(cmbClick_);
-    model_.trail = GetComboValue(cmbTrail_);
-    model_.scroll = GetComboValue(cmbScroll_);
-    model_.hold = GetComboValue(cmbHold_);
-    model_.hover = GetComboValue(cmbHover_);
+    CaptureUI();
 
-    // 2. Only refresh UI text/items if language actually changed
-    //    This prevents unnecessary flicker and potential state reset issues
     if (model_.uiLanguage != oldLang) {
         ApplyLanguageToControls();
     }
 
-    // 3. Save to backend and refresh screen
     Apply();
 }
 
@@ -262,18 +322,43 @@ CRect CSettingsWnd::RcFooter() const {
 CRect CSettingsWnd::RcApplyBtn() const {
     CRect rc = RcFooter();
     const int w = S(120);
-    const int h = S(32);
-    rc.right -= S(16);
+    const int h = S(32); // Note: OnCreate uses S(30), keeping this S(32) for hit/draw slightly larger is fine, or match it. Match S(30)? 
+                         // Previous code had S(32). Let's stick to OnCreate logic logic roughly but use helper logic.
+                         // Actually OnCreate uses pad S(14).
+    // Let's match OnCreate logic exactly for consistency. 
+    // OnCreate: top + S(10), height S(30).
+    // Helper: top + S(12), height S(32).
+    // Small discrepancy exists in original code. I will align them to the new logic.
+    const int pad = S(14);
+    
+    rc.right -= pad;
     rc.left = rc.right - w;
-    rc.top = rc.top + S(12);
-    rc.bottom = rc.top + h;
+    rc.top = rc.top + S(10);
+    rc.bottom = rc.top + S(30);
+    return rc;
+}
+
+CRect CSettingsWnd::RcResetBtn() const {
+    CRect rc = RcFooter();
+    const int w = S(120);
+    const int pad = S(14);
+    
+    rc.left += pad;
     rc.right = rc.left + w;
+    rc.top = rc.top + S(10);
+    rc.bottom = rc.top + S(30);
     return rc;
 }
 
 CRect CSettingsWnd::RcCloseBtn2() const {
-    CRect rc = RcApplyBtn();
-    rc.OffsetRect(-(S(120) + S(12)), 0);
+    CRect rc = RcFooter();
+    const int w = S(120);
+    int centerX = rc.CenterPoint().x;
+    
+    rc.left = centerX - w / 2;
+    rc.right = centerX + w / 2;
+    rc.top = rc.top + S(10);
+    rc.bottom = rc.top + S(30);
     return rc;
 }
 
@@ -335,9 +420,11 @@ void CSettingsWnd::ApplyLanguageToControls() {
     lblScroll_.SetWindowTextW(t.labelScroll);
     lblHold_.SetWindowTextW(t.labelHold);
     lblHover_.SetWindowTextW(t.labelHover);
+    lblTexts_.SetWindowTextW(t.labelTextsEntry);
 
     btnClose_.SetWindowTextW(t.btnClose);
     btnApply_.SetWindowTextW(t.btnApply);
+    btnReset_.SetWindowTextW(t.btnReset);
 
     const SettingOption* langOpts = LangOptions(n);
     FillCombo(cmbLang_, langOpts, n, model_.uiLanguage);
@@ -372,7 +459,19 @@ void CSettingsWnd::SyncFromBackend() {
     if (!backend_) return;
     model_ = backend_->Load();
     if (model_.uiLanguage.empty()) model_.uiLanguage = "zh-CN";
+    
     ApplyLanguageToControls();
+    
+    // Convert UTF-8 model.textContent to wstring
+    CString wText;
+    int len = MultiByteToWideChar(CP_UTF8, 0, model_.textContent.c_str(), -1, nullptr, 0);
+    if (len > 0) {
+        std::vector<wchar_t> buf(len);
+        MultiByteToWideChar(CP_UTF8, 0, model_.textContent.c_str(), -1, buf.data(), len);
+        wText = buf.data();
+    }
+    edtTexts_.SetWindowTextW(wText);
+
     Invalidate(FALSE);
 }
 
