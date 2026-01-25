@@ -21,7 +21,7 @@
 
 | | |
 | :---: | :---: |
-| <img src="./docs/images/settings_mockup.png" width="350"><br>**Settings Interface** | <img src="./docs/images/ripple_concept.png" width="350"><br>**Click Ripple** |
+| <img src="./docs/images/setting_en.png" width="350"><br>**Settings Interface** | <img src="./docs/images/ripple_concept.png" width="350"><br>**Click Ripple** |
 | <img src="./docs/images/trail_concept.png" width="350"><br>**Particle Trail** | <img src="./docs/images/scroll_concept.png" width="350"><br>**Scroll Feedback** |
 | <img src="./docs/images/hold_concept.png" width="350"><br>**Long Press (Hold)** | <img src="./docs/images/hover_concept.png" width="350"><br>**Hover Glow** |
 

@@ -21,7 +21,7 @@
 
 | | |
 | :---: | :---: |
-| <img src="./docs/images/settings_mockup.png" width="350"><br>**设置界面** | <img src="./docs/images/ripple_concept.png" width="350"><br>**点击波纹** |
+| <img src="./docs/images/setting_cn.png" width="350"><br>**设置界面** | <img src="./docs/images/ripple_concept.png" width="350"><br>**点击波纹** |
 | <img src="./docs/images/trail_concept.png" width="350"><br>**粒子拖尾** | <img src="./docs/images/scroll_concept.png" width="350"><br>**滚动反馈** |
 | <img src="./docs/images/hold_concept.png" width="350"><br>**长按蓄力** | <img src="./docs/images/hover_concept.png" width="350"><br>**悬停发光** |
 
