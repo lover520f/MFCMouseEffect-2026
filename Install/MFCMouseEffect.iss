@@ -28,11 +28,12 @@ WizardStyle=modern
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 
-; --- CRITICAL Singleton Logic ---
-; Using the mutex we implemented in the app to detect if it's currently running.
-AppMutex=Global\MFCMouseEffect_SingleInstance_Mutex
-; Ask the user to close the application if it is detected.
+; --- Close running instances automatically ---
+; Do NOT use AppMutex here, otherwise Inno will prompt the user to close the app.
+; We kill the process in [Code] before installing to avoid file-in-use prompts.
 CloseApplications=yes
+CloseApplicationsFilter={#MyAppExeName}
+RestartApplications=no
 
 [Languages]
 ; Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
@@ -62,13 +63,37 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\{#MyAppExeName}"" -mode tray"; Tasks: startup; Flags: uninsdeletevalue
 
 [Code]
-// Requirement 2: Delete existing installation files
-// Inno Setup handles overwriting files in the same {app} directory automatically.
-// If you want to force a clean uninstall before reinstalling, you can add custom logic here, 
-// but usually the standard behavior is sufficient for MFC apps.
+function KillAppIfRunning(): Boolean;
+var
+  ResultCode: Integer;
+begin
+  // Best-effort: ask Windows to terminate the running tray/background process.
+  // This avoids "please close the app" prompts and prevents file-in-use issues.
+  Result := True;
+
+  // First try graceful tree kill (no /F).
+  if Exec('taskkill', '/IM ' + '{#MyAppExeName}' + ' /T', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+  begin
+    if (ResultCode = 0) or (ResultCode = 128) then
+      Exit;
+  end;
+
+  // Fallback: force kill if still running.
+  if Exec('taskkill', '/F /IM ' + '{#MyAppExeName}' + ' /T', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+  begin
+    // 0 = killed, 128 = not found
+    Result := (ResultCode = 0) or (ResultCode = 128);
+  end;
+end;
 
 function InitializeSetup(): Boolean;
 begin
-  Result := True;
-  // Additional pre-install checks can be placed here if needed.
+  Result := KillAppIfRunning();
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  // Also stop it on uninstall, otherwise uninstall may fail due to file locks.
+  if CurUninstallStep = usUninstall then
+    KillAppIfRunning();
 end;
