@@ -4,55 +4,67 @@
   <img src="./MFCMouseEffect/res/logo_elegant.png" width="128" alt="MFCMouseEffect Logo">
 </p>
 
+<p align="center">
+  <a href="../../releases/latest"><img src="https://img.shields.io/badge/release-latest-blue" alt="release"></a>
+  <img src="https://img.shields.io/badge/status-beta-green" alt="status">
+  <img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="license">
+  <img src="https://img.shields.io/badge/platform-Windows%2010%2B-lightgrey" alt="platform">
+</p>
+
 **🇨🇳 中文** | **[🇬🇧 English](README.en.md)**
 
 ---
 
-**MFCMouseEffect** 是一款轻量级、高性能的 Windows 桌面增强工具，旨在通过实时视觉反馈（波纹、粒子轨迹、文字特效等）提升您的交互体验。
+一款轻量、高性能的 Windows 桌面特效工具，为点击、拖尾、滚轮、长按、悬停提供实时视觉反馈（波纹、粒子、文字等）。
 
-### 🌟 核心特性
-- **多种点击特效**：支持波纹动画、随机文字飘浮、点击爆破等多种点击反馈。
-- **动态鼠标拖尾**：优雅的粒子流随鼠标移动，支持多种颜色主题（如彩虹、极光等）。
-- **滚动与悬浮反馈**：不仅是点击，滚动滚轮和鼠标悬浮时也提供细腻的视觉指引。
-- **极致性能**：基于 C++/MFC 开发，利用 GDI+ 进行硬件加速绘制，低 CPU 和内存消耗。
-- **进程单例与托盘化**：自动确保单实例运行，支持系统托盘后台运行。
+## ✨ 特色
+- 全局低级鼠标钩子 + GDI+ 分层窗口，跟手流畅，资源占用低。
+- 主题可选（霓虹 / 极简 / 游戏感等），各特效独立切换与持久化。
+- 托盘模式常驻、后台模式（由父进程 stdin 控制），配置文件与 exe 同目录。
+- 设置窗口：自绘外框 + 原生控件，支持中英切换（默认中文）。
 
-### 📸 特效展示
-
+## 📸 效果预览
 | | |
 | :---: | :---: |
-| <img src="./docs/images/setting_cn.png" width="350"><br>**设置界面** | <img src="./docs/images/ripple_concept.png" width="350"><br>**点击波纹** |
-| <img src="./docs/images/trail_concept.png" width="350"><br>**粒子拖尾** | <img src="./docs/images/scroll_concept.png" width="350"><br>**滚动反馈** |
-| <img src="./docs/images/hold_concept.png" width="350"><br>**长按蓄力** | <img src="./docs/images/hover_concept.png" width="350"><br>**悬停发光** |
+| <img src="./docs/images/setting_cn.png" width="340"><br>设置窗口 | <img src="./docs/images/ripple_concept.png" width="340"><br>点击波纹 |
+| <img src="./docs/images/trail_concept.png" width="340"><br>粒子拖尾 | <img src="./docs/images/scroll_concept.png" width="340"><br>滚轮指引 |
+| <img src="./docs/images/hold_concept.png" width="340"><br>长按蓄力 | <img src="./docs/images/hover_concept.png" width="340"><br>悬停发光 |
 
-### 🎨 主题与自定义
-您可以在设置窗口中轻松切换不同的视觉主题（如彩虹、极光、霓虹等）。每种特效都可以独立开启或关闭，并根据您的个人喜好进行配置。
+## 🆕 最近修复/改进
+- 设置窗口默认居中、拖动不闪烁；内部控件改回原生样式，去除冗余底色。
+- 虚拟/平板副屏坐标偏移：已启用坐标归一化兜底（2026-01），大多数虚拟副屏场景已对齐。详见 `docs/issues/virtual-display-coordinates.zh-CN.md`。
 
----
+## ⬇️ 下载
+- 直接下载：`Releases`（最新版本）=> `../../releases/latest`
+- 历史版本：`../../releases`
 
-## 🛠 安装与使用
-
-### 编译构建
+## 📦 安装与运行
 1. 使用 Visual Studio 2022 打开 `MFCMouseEffect.sln`。
-2. 选择 `Release | x64` 配置。
-3. 执行 `生成 -> 重新生成解决方案`。
-4. 运行 `x64/Release/MFCMouseEffect.exe`。
+2. 选择 `Release | x64`，执行“重新生成解决方案”。
+3. 运行 `x64/Release/MFCMouseEffect.exe`。托盘模式下右键可退出，非 background 模式可打开设置窗口。
 
-### 安装包
-使用配套的 [Inno Setup 脚本](./Install/MFCMouseEffect.iss) 创建安装包。
+## 🖥️ 使用说明
+- 语言/主题/各特效切换：通过设置窗口；配置写入同目录 `config.json`。
+- 管理员窗口捕获：如需对管理员窗口生效，请以管理员身份运行本程序。
+- 背景模式：无托盘/界面，完全由父进程通过 stdin JSON 控制。
 
----
+## 📑 文档与演示
+- 详细文档：`./docs/README.zh-CN.md`
+- 虚拟副屏坐标问题：`./docs/issues/virtual-display-coordinates.zh-CN.md`
+- 示例截图：`./docs/images/setting_cn.png` 等
 
-## 📂 项目结构
-- **MFCMouseEffect/**: MFC 核心界面与应用逻辑。
-- **MouseFx/**: 特效引擎底层核心。
-- **docs/**: 技术文档 ([UI 优化记录](./docs/ui_refinement.md), [单例实现记录](./docs/singleton_implementation.md))。
-- **Install/**: Inno Setup 安装脚本。
+## 🧭 社区与推广（仓库维护建议）
+- 在仓库 About 中填写 Description 与 Topics（如：mouse-effect, ripple, tray, mfc, windows, overlay）。
+- 设置 Social Preview，并在 README 顶部保留徽章与示例图。
+- 开启 Discussions，准备 3~5 个 “good first issue”：
+  - 调整阈值/日志：为坐标归一化增加可配置阈值与调试输出。
+  - 新主题配色：添加一套科幻霓虹主题。
+  - 轻量化安装包：精简 Inno Setup 选项并新增便携版 ZIP。
+  - 性能对比：提供不同 DPI/帧率下的 CPU 占用基准。
+  - 文档补充：英文版 Troubleshooting 与 FAQ。
 
----
-
-## ⚖️ 开源协议
+## ⚖️ 许可
 [MIT License](./LICENSE)
 
 ---
-**⭐ 如果觉得有用，请给个 Star 支持一下！**
+**觉得有用请点个 Star ⭐，也欢迎在 Issues/Discussions 留言反馈。**

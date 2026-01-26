@@ -1,5 +1,8 @@
 # Virtual / Tablet Secondary Display: Cursor Coordinate Offset
 
+## Status
+- Fixed (Jan 2026): coordinate normalization now keeps effects aligned even on most virtual/tablet secondary displays. If you still see offsets, capture logs with the driver name and DPI scaling.
+
 ## Symptoms
 - When using a tablet as a secondary display via a "virtual display" app/driver:
   - click/scroll/trail/hover effects are visibly offset

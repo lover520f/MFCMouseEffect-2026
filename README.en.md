@@ -4,55 +4,67 @@
   <img src="./MFCMouseEffect/res/logo_elegant.png" width="128" alt="MFCMouseEffect Logo">
 </p>
 
+<p align="center">
+  <a href="../../releases/latest"><img src="https://img.shields.io/badge/release-latest-blue" alt="release"></a>
+  <img src="https://img.shields.io/badge/status-beta-green" alt="status">
+  <img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="license">
+  <img src="https://img.shields.io/badge/platform-Windows%2010%2B-lightgrey" alt="platform">
+</p>
+
 **[🇨🇳 中文](README.md)** | **🇬🇧 English**
 
 ---
 
-**MFCMouseEffect** is a lightweight, high-performance Windows desktop enhancement tool designed to provide real-time visual feedback (ripples, particle trails, text effects, etc.) to elevate your interaction experience.
+A lightweight, high-performance Windows desktop effect tool that adds real-time visual feedback (ripples, particle trails, text effects, etc.) to mouse clicks, trails, wheel, hold, and hover.
 
-### 🌟 Key Features
-- **Various Click Effects**: Support for ripple animations, random floating text, click bursts, and more.
-- **Dynamic Mouse Trails**: Elegant particle flows following mouse movement with various color themes (e.g., Rainbow, Aurora).
-- **Scroll & Hover Feedback**: Delicate visual guidance not just for clicks, but also for wheel scrolling and mouse hovering.
-- **Extreme Performance**: Built with C++/MFC and utilizing GDI+ for hardware-accelerated rendering, ensuring low CPU and memory usage.
-- **Process Singleton & Trayized**: Ensures a single instance automatically and supports running in the system tray.
+## ✨ Highlights
+- Global `WH_MOUSE_LL` hook + GDI+ layered windows; smooth, low CPU/memory.
+- Themes (neon / minimal / game feel) and per-effect toggles with persistence.
+- Tray mode for day-to-day use; background mode driven by parent process via stdin; `config.json` stored beside the exe.
+- Settings window: custom outer frame + native controls, bilingual (default Chinese).
 
-### 📸 Showcase of Effects
-
+## 📸 Showcase
 | | |
 | :---: | :---: |
-| <img src="./docs/images/setting_en.png" width="350"><br>**Settings Interface** | <img src="./docs/images/ripple_concept.png" width="350"><br>**Click Ripple** |
-| <img src="./docs/images/trail_concept.png" width="350"><br>**Particle Trail** | <img src="./docs/images/scroll_concept.png" width="350"><br>**Scroll Feedback** |
-| <img src="./docs/images/hold_concept.png" width="350"><br>**Long Press (Hold)** | <img src="./docs/images/hover_concept.png" width="350"><br>**Hover Glow** |
+| <img src="./docs/images/setting_en.png" width="340"><br>Settings window | <img src="./docs/images/ripple_concept.png" width="340"><br>Click ripple |
+| <img src="./docs/images/trail_concept.png" width="340"><br>Particle trail | <img src="./docs/images/scroll_concept.png" width="340"><br>Scroll indicator |
+| <img src="./docs/images/hold_concept.png" width="340"><br>Hold charge | <img src="./docs/images/hover_concept.png" width="340"><br>Hover glow |
 
-### 🎨 Themes & Customization
-You can easily switch between different visual themes (e.g., Rainbow, Aurora, Neon) in the settings window. Each effect can be independently toggled and configured to match your personal style.
+## 🆕 Recent fixes/improvements
+- Settings window now centers by default, drags without flicker; reverted to native control styling (no extra background fill).
+- Virtual/tablet secondary display offset: coordinate normalization fallback is enabled (Jan 2026), fixing most virtual display offsets. See `docs/issues/virtual-display-coordinates.md`.
 
----
+## ⬇️ Download
+- Latest release: `../../releases/latest`
+- All releases: `../../releases`
 
-## 🛠 Installation & Usage
-
-### Build
+## 📦 Build & Run
 1. Open `MFCMouseEffect.sln` with Visual Studio 2022.
-2. Select `Release | x64` configuration.
-3. Run `Build -> Rebuild Solution`.
-4. Run `x64/Release/MFCMouseEffect.exe`.
+2. Select `Release | x64`, then “Rebuild Solution”.
+3. Run `x64/Release/MFCMouseEffect.exe`. Tray mode offers an exit menu; in non-background mode you can open the settings window.
 
-### Installer
-Use our [Inno Setup Script](./Install/MFCMouseEffect.iss) to build a professional installer.
+## 🖥️ Usage
+- Language/theme/effects: configure in the settings window; saved to `config.json`.
+- Admin windows: run the app as Administrator if you need effects inside elevated apps.
+- Background mode: no tray/UI, fully controlled via stdin JSON by the parent process.
 
----
+## 📑 Docs & media
+- Full docs: `./docs/README.md`
+- Virtual display offset notes: `./docs/issues/virtual-display-coordinates.md`
+- Screenshots: `./docs/images/setting_en.png`, ripple/trail concept shots in `./docs/images/`.
 
-## 📂 Project Structure
-- **MFCMouseEffect/**: UI & App logic.
-- **MouseFx/**: Core effect engine.
-- **docs/**: Documentation ([UI Refinement](./docs/ui_refinement.md), [Implementation](./docs/singleton_implementation.md)).
-- **Install/**: Inno Setup scripts.
-
----
+## 🧭 Repo hygiene & community (suggested)
+- Fill repository About: Description + Topics (e.g., mouse-effect, ripple, tray, mfc, windows, overlay).
+- Add Social Preview and keep badges/screenshots visible in the README.
+- Enable Discussions and seed 3–5 “good first issues”:
+  - Make the normalization threshold configurable and add debug logging.
+  - Add a sci‑fi neon theme preset.
+  - Provide a lightweight portable ZIP build alongside the installer.
+  - Benchmark CPU usage across DPI/refresh scenarios.
+  - Expand Troubleshooting/FAQ (EN).
 
 ## ⚖️ License
 [MIT License](./LICENSE)
 
 ---
-**⭐ If you find this useful, please give it a Star!**
+**If it helps, please star ⭐ and share feedback in Issues/Discussions.**

@@ -68,15 +68,37 @@ bool CSettingsWnd::CreateAndShow(CWnd* parent, std::unique_ptr<ISettingsBackend>
     DWORD style = WS_POPUP | WS_VISIBLE;
     DWORD ex = WS_EX_APPWINDOW | WS_EX_COMPOSITED;
 
-    CRect rc(0, 0, 560, 560); // Increased height slightly to accommodate new row if needed
+    CRect rc(0, 0, 560, 560);
+    CPoint ptCenter(0, 0);
+
     if (parent && ::IsWindow(parent->GetSafeHwnd())) {
-        parent->GetWindowRect(&rc);
-        rc.OffsetRect(40, 40);
-        rc.right = rc.left + 560;
-        rc.bottom = rc.top + 560;
+        // Center relative to parent monitor
+        HMONITOR hMonitor = MonitorFromWindow(parent->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
+        MONITORINFO mi = { sizeof(mi) };
+        if (GetMonitorInfo(hMonitor, &mi)) {
+            ptCenter = CRect(mi.rcWork).CenterPoint();
+        } else {
+            parent->GetWindowRect(&rc);
+            ptCenter = rc.CenterPoint();
+        }
     } else {
-        rc = CRect(200, 160, 760, 720);
+        // Center on primary monitor or nearest to cursor
+        POINT cursorPt;
+        GetCursorPos(&cursorPt);
+        HMONITOR hMonitor = MonitorFromPoint(cursorPt, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO mi = { sizeof(mi) };
+        if (GetMonitorInfo(hMonitor, &mi)) {
+            ptCenter = CRect(mi.rcWork).CenterPoint();
+        } else {
+            ptCenter.x = GetSystemMetrics(SM_CXSCREEN) / 2;
+            ptCenter.y = GetSystemMetrics(SM_CYSCREEN) / 2;
+        }
     }
+
+    rc.left = ptCenter.x - 280;
+    rc.top = ptCenter.y - 280;
+    rc.right = rc.left + 560;
+    rc.bottom = rc.top + 560;
 
     if (!CreateEx(ex, cls, L"", style, rc, parent, 0)) {
         return false;
