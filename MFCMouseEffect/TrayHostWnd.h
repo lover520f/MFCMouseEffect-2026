@@ -51,8 +51,9 @@ private:
 		kCmdHoldLightning = 7002,
 		kCmdHoldHex = 7003,
 		kCmdHoldNone = 7004,
-		kCmdHoldSciFi3D = 7005,
-		// Theme
+		kCmdHoldHologram = 7005,
+		kCmdHoldSciFi3D = 7005, // Alias for backward compat
+		kCmdHoldTechRing = 7006,
 		// Theme
 		kCmdThemeSciFi = 8001,
 		kCmdThemeNeon = 8002,

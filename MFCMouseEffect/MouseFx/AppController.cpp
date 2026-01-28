@@ -170,7 +170,8 @@ std::unique_ptr<IMouseEffect> AppController::CreateEffect(EffectCategory categor
             if (type == "charge")     return std::make_unique<HoldEffect>(config_.theme, HoldEffect::Mode::Charge);
             if (type == "lightning")  return std::make_unique<HoldEffect>(config_.theme, HoldEffect::Mode::Lightning);
             if (type == "hex")        return std::make_unique<HoldEffect>(config_.theme, HoldEffect::Mode::Hex);
-            if (type == "scifi3d")    return std::make_unique<HoldEffect>(config_.theme, HoldEffect::Mode::SciFi3D);
+            if (type == "tech_ring")  return std::make_unique<HoldEffect>(config_.theme, HoldEffect::Mode::TechRing);
+            if (type == "hologram" || type == "scifi3d") return std::make_unique<HoldEffect>(config_.theme, HoldEffect::Mode::Hologram); // scifi3d legacy alias
             break;
         case EffectCategory::Hover:
             if (type == "glow")   return std::make_unique<HoverEffect>(config_.theme);

@@ -9,7 +9,7 @@ namespace mousefx {
 // Hold effect: shows growing ring while button is held down.
 class HoldEffect final : public IMouseEffect {
 public:
-    enum class Mode { Charge, Lightning, Hex, SciFi3D };
+    enum class Mode { Charge, Lightning, Hex, TechRing, Hologram };
     explicit HoldEffect(const std::string& themeName, Mode mode);
     ~HoldEffect() override;
 

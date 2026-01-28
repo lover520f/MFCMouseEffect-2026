@@ -38,10 +38,14 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
     params.intensity = 1.0f;
 
     std::unique_ptr<IRippleRenderer> renderer;
-    if (mode_ == Mode::Lightning) renderer = std::make_unique<LightningRenderer>();
-    else if (mode_ == Mode::Hex) renderer = std::make_unique<HexRenderer>();
-    else if (mode_ == Mode::SciFi3D) renderer = std::make_unique<PerspectiveRenderer>();
-    else renderer = std::make_unique<ChargeRenderer>();
+    switch (mode_) {
+    case Mode::Charge:    renderer = std::make_unique<ChargeRenderer>(); break;
+    case Mode::Lightning: renderer = std::make_unique<LightningRenderer>(); break;
+    case Mode::Hex:       renderer = std::make_unique<HexRenderer>(); break;
+    case Mode::TechRing:  renderer = std::make_unique<HologramRenderer>(); break; // Tech Ring = Complex Gyro
+    case Mode::Hologram:  renderer = std::make_unique<TechHudRenderer>(); break;  // Hologram  = Simple HUD
+    default:              renderer = std::make_unique<ChargeRenderer>(); break;
+    }
 
     RippleStyle finalStyle = style_;
     if (isChromatic_) {

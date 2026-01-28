@@ -247,33 +247,49 @@ public:
 };
 
 // 4. Perspective 3D HUD Renderer
-// 4. Perspective 3D HUD Renderer
-class PerspectiveRenderer : public IRippleRenderer {
+// 4. Hologram Renderer (Gyroscope style)
+class HologramRenderer : public IRippleRenderer {
 public:
     struct Vec3 { float x, y, z; };
     struct Particle { Vec3 pos; float speed; float life; };
     std::vector<Particle> particles_;
 
+    // 3D Rotation Helpers
+    Vec3 RotX(const Vec3& v, float angle) {
+        float c = cos(angle), s = sin(angle);
+        return { v.x, v.y * c - v.z * s, v.y * s + v.z * c };
+    }
+    Vec3 RotY(const Vec3& v, float angle) {
+        float c = cos(angle), s = sin(angle);
+        return { v.x * c + v.z * s, v.y, -v.x * s + v.z * c };
+    }
+    Vec3 RotZ(const Vec3& v, float angle) {
+        float c = cos(angle), s = sin(angle);
+        return { v.x * c - v.y * s, v.x * s + v.y * c, v.z };
+    }
+
     // Project 3D point to 2D
-    Gdiplus::PointF Project(const Vec3& v, float cx, float cy, float tiltRad) {
-        float cosT = cos(tiltRad);
-        float sinT = sin(tiltRad);
-        // Rotate X (Tilt)
-        float y_rot = v.y * cosT - v.z * sinT;
-        float z_rot = v.y * sinT + v.z * cosT;
-        float x_rot = v.x;
-        // Perspective
-        float dist = 400.0f;
-        float scale = dist / (dist + z_rot);
-        return Gdiplus::PointF(cx + x_rot * scale, cy + y_rot * scale);
+    Gdiplus::PointF Project(const Vec3& v, float cx, float cy) {
+        // Camera Setup
+        float dist = 500.0f; // Camera distance
+        float scale = dist / (dist + v.z); 
+        return Gdiplus::PointF(cx + v.x * scale, cy + v.y * scale);
     }
 
     void Start(const RippleStyle& style) override {
         particles_.clear();
-        for(int i=0; i<30; ++i) {
-            float angle = ((float)(rand() % 360) / 180.0f) * 3.14159f;
-            float r = style.endRadius * (0.2f + (float)(rand()%80)/100.0f);
-            particles_.push_back({ {r * cos(angle), 0.0f, r * sin(angle)}, 0.5f + (float)(rand()%100)/50.0f, 1.0f });
+        for(int i=0; i<40; ++i) {
+            // Sphere cloud
+            float theta = ((float)(rand() % 360) / 180.0f) * 3.14159f;
+            float phi = ((float)(rand() % 180) / 180.0f) * 3.14159f;
+            float r = style.endRadius * 0.5f * ((float)(rand() % 100) / 100.0f);
+            
+            Vec3 p;
+            p.x = r * sin(phi) * cos(theta);
+            p.y = r * sin(phi) * sin(theta);
+            p.z = r * cos(phi);
+            
+            particles_.push_back({ p, 1.0f + (float)(rand()%100)/50.0f, 1.0f });
         }
     }
 
@@ -281,88 +297,230 @@ public:
         using namespace render_utils;
         const float cx = sizePx / 2.0f;
         const float cy = sizePx / 2.0f;
-        const float radius = style.endRadius;
+        const float radius = style.endRadius * (0.8f + 0.2f * Clamp01(t)); // Slight expansion
         const float progress = Clamp01(t); 
         float timeSec = (float)elapsedMs / 1000.0f;
-        float tilt = 50.0f * 3.14159f / 180.0f; // Less steep tilt (50 deg)
+        
+        // Base Tilt for the whole structure to make it look 3D
+        float baseTiltX = 20.0f * 3.14159f / 180.0f; 
+        float baseTiltY = 10.0f * 3.14159f / 180.0f;
 
         Gdiplus::Color stroke = ToGdiPlus(style.stroke);
-        
-        // 1. Draw Ground Ring Segments (tech look)
-        auto DrawSegmentRing = [&](float r, float spin, float width, int count, float gapRatio) {
-             for (int i = 0; i < count; ++i) {
-                 float step = 2 * 3.14159f / count;
-                 float startAng = i * step + spin;
-                 float sweep = step * (1.0f - gapRatio);
+        Gdiplus::Color glow = ToGdiPlus(style.glow);
+        Gdiplus::Color fill = ToGdiPlus(style.fill);
+
+        // --- Helper: Draw 3D Ring ---
+        // rotAxis: 0=Flat(XY), 1=RotX, 2=RotY
+        auto DrawRing3D = [&](float r, float spin, float width, Gdiplus::Color color, float startArc, float sweepArc, int axisMode, float axisTilt) {
+             std::vector<Gdiplus::PointF> points;
+             int segments = 60;
+             // Only draw part of the arc?
+             for (int i = 0; i <= segments; ++i) {
+                 float pct = (float)i / segments;
+                 float ang = startArc + sweepArc * pct;
                  
-                 // Draw as thick line strip approximated arc
-                 std::vector<Gdiplus::PointF> points;
-                 int segs = 10;
-                 for(int j=0; j<=segs; ++j) {
-                     float ang = startAng + sweep * ((float)j/segs);
-                     points.push_back(Project({r * cos(ang), 0.0f, r * sin(ang)}, cx, cy, tilt));
-                 }
+                 // Base ring geometry (in XY plane initially)
+                 Vec3 v = { r * cos(ang), r * sin(ang), 0.0f };
                  
-                 // Glow pass
-                 BYTE a = ClampByte((int)(stroke.GetA() * (1.0f - progress * 0.5f))); 
-                 Gdiplus::Pen p(Gdiplus::Color(a, stroke.GetR(), stroke.GetG(), stroke.GetB()), width);
-                 g.DrawLines(&p, points.data(), (INT)points.size());
+                 // Apply local ring rotation (Spinning)
+                 // If axisMode=0 (Scanner), it just spins around Z
+                 if (axisMode == 0) v = RotZ(v, spin);
+                 else if (axisMode == 1) { v = RotZ(v, spin); v = RotX(v, axisTilt); } // Spin then tilt X
+                 else if (axisMode == 2) { v = RotZ(v, spin); v = RotY(v, axisTilt); } // Spin then tilt Y
+                 
+                 // Apply Global Camera Tilt
+                 v = RotX(v, baseTiltX);
+                 v = RotY(v, baseTiltY);
+                 
+                 points.push_back(Project(v, cx, cy));
              }
+             
+             Gdiplus::Pen p(color, width);
+             if (sweepArc < 6.28f) p.SetStartCap(Gdiplus::LineCapRound), p.SetEndCap(Gdiplus::LineCapRound);
+             g.DrawLines(&p, points.data(), (INT)points.size());
         };
 
-        float rMain = radius * (0.3f + 0.7f * progress);
-        DrawSegmentRing(rMain, timeSec * 0.5f, 4.0f, 3, 0.2f);
-        DrawSegmentRing(rMain * 0.7f, -timeSec, 2.0f, 4, 0.4f);
-
-        // 2. Rising Particles (Data Stream)
-        // Re-init if empty (or just checking simple loop)
-        if(particles_.empty()) Start(style);
-        
-        BYTE pAlpha = ClampByte((int)(stroke.GetA() * 0.7f));
-        Gdiplus::SolidBrush pb(Gdiplus::Color(pAlpha, stroke.GetR(), stroke.GetG(), stroke.GetB()));
-        
-        for(auto& p : particles_) {
-            // Animate up
-            p.pos.y -= p.speed * 2.0f; // Up is negative Y
-            if(p.pos.y < -radius * 1.5f) {
-                p.pos.y = 0; // Reset to ground
-                // Randomize pos again
-                float angle = ((float)(rand() % 360) / 180.0f) * 3.14159f;
-                float r = radius * (0.2f + (float)(rand()%80)/100.0f);
-                p.pos.x = r * cos(angle);
-                p.pos.z = r * sin(angle);
-            }
-            
-            // Draw particle
-            Gdiplus::PointF pt = Project(p.pos, cx, cy, tilt);
-            float distScale = 400.0f / (400.0f + p.pos.z);
-            float pSize = 3.0f * distScale;
-            g.FillEllipse(&pb, pt.X - pSize/2, pt.Y - pSize/2, pSize, pSize);
-            
-            // Draw trace line to ground
-            Gdiplus::Pen tracePen(Gdiplus::Color(ClampByte((int)(pAlpha*0.3f)), stroke.GetR(), stroke.GetG(), stroke.GetB()), 1.0f);
-            Gdiplus::PointF groundPt = Project({p.pos.x, 0, p.pos.z}, cx, cy, tilt);
-            g.DrawLine(&tracePen, pt, groundPt);
-        }
-
-        // 3. Central Core (Hologram Base)
+        // 1. Core Energy Orb
         {
+            float coreR = style.strokeWidth * 6.0f;
             Gdiplus::GraphicsPath path;
-            // Ellipse distorted by perspective? Or just screen space sphere?
-            // Let's do a screen space sphere at Project(0,0,0) with simple 2D gradient
-            Gdiplus::PointF center = Project({0,0,0}, cx, cy, tilt);
-            float coreR = style.strokeWidth * 4.0f;
-            path.AddEllipse(center.X - coreR, center.Y - coreR, coreR*2, coreR*2);
+            Vec3 center3D = {0,0,0};
+            Gdiplus::PointF center = Project(center3D, cx, cy); // Should be cx,cy roughly
             
+            path.AddEllipse(center.X - coreR, center.Y - coreR, coreR*2, coreR*2);
             Gdiplus::PathGradientBrush pgb(&path);
-            pgb.SetCenterPoint(center);
-            pgb.SetCenterColor(Gdiplus::Color(255, 255, 255, 255));
+            
+            // Bright White/Cyan Core
+            pgb.SetCenterColor(Gdiplus::Color(255, 220, 240, 255)); 
             Gdiplus::Color surround[] = { Gdiplus::Color(0, stroke.GetR(), stroke.GetG(), stroke.GetB()) };
             int n = 1;
             pgb.SetSurroundColors(surround, &n);
             g.FillPath(&pgb, &path);
         }
+
+        // 2. Inner Gyro Ring (Thin, fast spin)
+        {
+             BYTE a = ClampByte((int)(stroke.GetA() * 0.8f));
+             Gdiplus::Color c(a, stroke.GetR(), stroke.GetG(), stroke.GetB());
+             // Tilted 60 deg on X axis, spinning
+             DrawRing3D(radius * 0.6f, timeSec * 1.5f, 2.0f, c, 0, 6.28f, 1, 60.0f * 3.14159f / 180.0f);
+        }
+
+        // 3. Middle Gyro Ring (Thin, cross spin)
+        {
+             BYTE a = ClampByte((int)(stroke.GetA() * 0.6f));
+             Gdiplus::Color c(a, fill.GetR(), fill.GetG(), fill.GetB()); // Use Fill color (secondary)
+             // Tilted 45 deg on Y axis, spinning opposite
+             DrawRing3D(radius * 0.8f, -timeSec * 1.2f, 2.0f, c, 0, 6.28f, 2, 45.0f * 3.14159f / 180.0f);
+        }
+
+        // 4. Outer Scanner Ring (Thick, Loading Bar style)
+        {
+             // "Loading" arc: 75% complete
+             float sweep = 6.28f * 0.75f * progress; 
+             float spin = timeSec * 0.8f;
+             
+             BYTE a = ClampByte((int)(stroke.GetA()));
+             Gdiplus::Color c(a, stroke.GetR(), stroke.GetG(), stroke.GetB());
+             
+             // Flat on Z plane (Scanner), no local axis tilt, just base tilt
+             DrawRing3D(radius * 1.1f, spin, 5.0f * style.strokeWidth, c, 0.0f, sweep, 0, 0); // Thick
+             
+             // Counter-rotating thin ring segment
+             DrawRing3D(radius * 1.15f, -spin * 1.5f, 1.0f, c, 0.0f, 2.0f, 0, 0); 
+        }
+        
+        // 5. Particles (Electron Cloud)
+        if(particles_.empty()) Start(style);
+        
+        Gdiplus::SolidBrush pb(Gdiplus::Color(200, stroke.GetR(), stroke.GetG(), stroke.GetB()));
+        for(auto& p : particles_) {
+            // Orbit visuals
+            Vec3 pos = p.pos;
+            // Rotate particle cloud over time
+            pos = RotY(pos, timeSec * 0.5f);
+            pos = RotX(pos, baseTiltX); // Apply camera tilt
+            
+            Gdiplus::PointF pt = Project(pos, cx, cy);
+            float distScale = 500.0f / (500.0f + pos.z);
+            float pSize = 3.0f * distScale;
+            
+            g.FillEllipse(&pb, pt.X - pSize/2, pt.Y - pSize/2, pSize, pSize);
+        }
     }
 };
+
+// 5. Tech Ring Renderer (Previous "3D HUD" style with flat rings and particles)
+// Note: Inserting INSIDE namespace by reopening or just ensuring it's technically inside if I replace correctly
+// Wait, I should replace "} // namespace mousefx" with the class AND the closing brace.
+
+    // 5. Tech Ring Renderer (Previous "3D HUD" style with flat rings and particles)
+    class TechHudRenderer : public IRippleRenderer {
+    public:
+        struct Vec3 { float x, y, z; };
+        struct Particle { Vec3 pos; float speed; float life; };
+        std::vector<Particle> particles_;
+
+        // Project 3D point to 2D
+        Gdiplus::PointF Project(const Vec3& v, float cx, float cy, float tiltRad) {
+            float cosT = cos(tiltRad);
+            float sinT = sin(tiltRad);
+            // Rotate X (Tilt)
+            float y_rot = v.y * cosT - v.z * sinT;
+            float z_rot = v.y * sinT + v.z * cosT;
+            float x_rot = v.x;
+            // Perspective
+            float dist = 400.0f;
+            float scale = dist / (dist + z_rot);
+            return Gdiplus::PointF(cx + x_rot * scale, cy + y_rot * scale);
+        }
+
+        void Start(const RippleStyle& style) override {
+            particles_.clear();
+            for(int i=0; i<30; ++i) {
+                float angle = ((float)(rand() % 360) / 180.0f) * 3.14159f;
+                float r = style.endRadius * (0.2f + (float)(rand()%80)/100.0f);
+                particles_.push_back({ {r * cos(angle), 0.0f, r * sin(angle)}, 0.5f + (float)(rand()%100)/50.0f, 1.0f });
+            }
+        }
+
+        void Render(Gdiplus::Graphics& g, float t, uint64_t elapsedMs, int sizePx, const RippleStyle& style) override {
+            using namespace render_utils;
+            const float cx = sizePx / 2.0f;
+            const float cy = sizePx / 2.0f;
+            const float radius = style.endRadius;
+            const float progress = Clamp01(t); 
+            float timeSec = (float)elapsedMs / 1000.0f;
+            float tilt = 50.0f * 3.14159f / 180.0f; // Less steep tilt
+
+            Gdiplus::Color stroke = ToGdiPlus(style.stroke);
+            
+            // 1. Draw Ground Ring Segments (tech look)
+            auto DrawSegmentRing = [&](float r, float spin, float width, int count, float gapRatio) {
+                 for (int i = 0; i < count; ++i) {
+                     float step = 2 * 3.14159f / count;
+                     float startAng = i * step + spin;
+                     float sweep = step * (1.0f - gapRatio);
+                     
+                     std::vector<Gdiplus::PointF> points;
+                     int segs = 10;
+                     for(int j=0; j<=segs; ++j) {
+                         float ang = startAng + sweep * ((float)j/segs);
+                         points.push_back(Project({r * cos(ang), 0.0f, r * sin(ang)}, cx, cy, tilt));
+                     }
+                     
+                     BYTE a = ClampByte((int)(stroke.GetA() * (1.0f - progress * 0.5f))); 
+                     Gdiplus::Pen p(Gdiplus::Color(a, stroke.GetR(), stroke.GetG(), stroke.GetB()), width);
+                     g.DrawLines(&p, points.data(), (INT)points.size());
+                 }
+            };
+
+            float rMain = radius * (0.3f + 0.7f * progress);
+            DrawSegmentRing(rMain, timeSec * 0.5f, 4.0f, 3, 0.2f);
+            DrawSegmentRing(rMain * 0.7f, -timeSec, 2.0f, 4, 0.4f);
+
+            // 2. Rising Particles
+            if(particles_.empty()) Start(style);
+            
+            BYTE pAlpha = ClampByte((int)(stroke.GetA() * 0.7f));
+            Gdiplus::SolidBrush pb(Gdiplus::Color(pAlpha, stroke.GetR(), stroke.GetG(), stroke.GetB()));
+            
+            for(auto& p : particles_) {
+                p.pos.y -= p.speed * 2.0f; 
+                if(p.pos.y < -radius * 1.5f) {
+                    p.pos.y = 0; 
+                    float angle = ((float)(rand() % 360) / 180.0f) * 3.14159f;
+                    float r = radius * (0.2f + (float)(rand()%80)/100.0f);
+                    p.pos.x = r * cos(angle);
+                    p.pos.z = r * sin(angle);
+                }
+                
+                Gdiplus::PointF pt = Project(p.pos, cx, cy, tilt);
+                float distScale = 400.0f / (400.0f + p.pos.z);
+                float pSize = 3.0f * distScale;
+                g.FillEllipse(&pb, pt.X - pSize/2, pt.Y - pSize/2, pSize, pSize);
+                
+                Gdiplus::Pen tracePen(Gdiplus::Color(ClampByte((int)(pAlpha*0.3f)), stroke.GetR(), stroke.GetG(), stroke.GetB()), 1.0f);
+                Gdiplus::PointF groundPt = Project({p.pos.x, 0, p.pos.z}, cx, cy, tilt);
+                g.DrawLine(&tracePen, pt, groundPt);
+            }
+
+            // 3. Central Core
+            {
+                Gdiplus::GraphicsPath path;
+                Gdiplus::PointF center = Project({0,0,0}, cx, cy, tilt);
+                float coreR = style.strokeWidth * 4.0f;
+                path.AddEllipse(center.X - coreR, center.Y - coreR, coreR*2, coreR*2);
+                
+                Gdiplus::PathGradientBrush pgb(&path);
+                pgb.SetCenterPoint(center);
+                pgb.SetCenterColor(Gdiplus::Color(255, 255, 255, 255));
+                Gdiplus::Color surround[] = { Gdiplus::Color(0, stroke.GetR(), stroke.GetG(), stroke.GetB()) };
+                int n = 1;
+                pgb.SetSurroundColors(surround, &n);
+                g.FillPath(&pgb, &path);
+            }
+        }
+    };
 
 } // namespace mousefx
