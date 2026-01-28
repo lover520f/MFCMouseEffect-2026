@@ -31,6 +31,7 @@ protected:
     afx_msg LRESULT OnNcHitTest(CPoint point);
     afx_msg void OnCommandApply();
     afx_msg void OnCommandClose();
+    afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
     afx_msg void OnCommandReset(); // New
     afx_msg void OnSelChange();
     afx_msg void OnClose();
@@ -43,6 +44,7 @@ private:
         enum Kind {
             None,
             Close,
+            Star,
         } kind = None;
         CRect rc;
     };
@@ -62,7 +64,9 @@ private:
     CRect Client() const;
 
     CRect RcHeader() const;
+
     CRect RcCloseBtn() const;
+    CRect RcStarLink() const;
 
     CRect RcContent() const;
     CRect RcFooter() const;
@@ -72,7 +76,7 @@ private:
 
     // Drawing
     void DrawRoundRect(Gdiplus::Graphics& g, const CRect& rc, int radius, const Gdiplus::Color& fill);
-    void DrawText(Gdiplus::Graphics& g, const wchar_t* text, const CRect& rc, int sizePx, bool bold, const Gdiplus::Color& c);
+    void DrawText(Gdiplus::Graphics& g, const wchar_t* text, const CRect& rc, int sizePx, bool bold, const Gdiplus::Color& c, Gdiplus::StringAlignment align = Gdiplus::StringAlignmentCenter);
 
     std::unique_ptr<ISettingsBackend> backend_;
     SettingsModel model_;

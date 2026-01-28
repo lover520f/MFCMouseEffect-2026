@@ -28,6 +28,7 @@ private:
 	enum MenuCmd {
 		kCmdTrayExit = 1001,
 		kCmdTraySettings = 1002,
+		kCmdStarRepo = 1003,
 		// Click category
 		kCmdClickRipple = 2001,
 		kCmdClickStar = 2002,

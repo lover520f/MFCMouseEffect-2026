@@ -28,6 +28,7 @@ struct SettingsText {
     const wchar_t* btnClose;
     const wchar_t* btnApply;
     const wchar_t* btnReset;
+    const wchar_t* btnStar;
 };
 
 inline const SettingsText& TextZh() {
@@ -47,6 +48,7 @@ inline const SettingsText& TextZh() {
         L"\u5173\u95ED",
         L"\u5E94\u7528",
         L"\u6062\u590D\u9ED8\u8BA4", // 恢复默认
+        L"\u2605 Star \u9879\u76EE", // ★ Star 项目
     };
     return t;
 }
@@ -68,6 +70,7 @@ inline const SettingsText& TextEn() {
         L"Close",
         L"Apply",
         L"Reset",
+        L"\u2605 Star Repo",
     };
     return t;
 }

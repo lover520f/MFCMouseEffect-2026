@@ -31,8 +31,8 @@ Hi 大家好，我是 [你的ID]！👋
    https://github.com/sqmw/MFCMouseEffect
 
 2. **蓝奏云下载 (国内高速)**：
-   链接：https://sqmw.lanzouw.com/ilzET0z4nj6d
-   **提取码**：6zeb
+   链接：https://sqmw.lanzouw.com/iKdsH3gyv5id
+   **提取码**：6zyr
    *(应用体积仅 358KB，安装包 2MB)*
 
 ---

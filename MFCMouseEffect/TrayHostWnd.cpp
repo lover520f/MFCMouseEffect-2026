@@ -185,6 +185,9 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 		else themeMenu.CheckMenuItem(kCmdThemeNeon, MF_CHECKED);
 	}
 	menu.AppendMenu(MF_POPUP, (UINT_PTR)themeMenu.m_hMenu, _T("主题 (Theme)"));
+    
+    // Star link
+	menu.AppendMenu(MF_STRING, kCmdStarRepo, _T("项目地址 / 支持作者 (Project/Star)"));
 
 	menu.AppendMenu(MF_SEPARATOR);
 	menu.AppendMenu(MF_STRING, kCmdTraySettings, _T("设置... (Settings...)"));
@@ -204,6 +207,9 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 		if (app) {
 			app->ShowSettingsWindow();
 		}
+	}
+	else if (cmd == kCmdStarRepo) {
+		ShellExecute(nullptr, _T("open"), _T("https://github.com/sqmw/MFCMouseEffect"), nullptr, nullptr, SW_SHOWNORMAL);
 	}
 	else if (mouseFx) {
 		auto sendEffect = [mouseFx](const char* category, const char* type) {

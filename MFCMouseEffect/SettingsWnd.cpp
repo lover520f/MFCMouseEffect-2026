@@ -56,6 +56,7 @@ BEGIN_MESSAGE_MAP(CSettingsWnd, CWnd)
     ON_CBN_SELCHANGE(11004, &CSettingsWnd::OnSelChange)
     ON_CBN_SELCHANGE(11005, &CSettingsWnd::OnSelChange)
     ON_CBN_SELCHANGE(11006, &CSettingsWnd::OnSelChange)
+    ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
 bool CSettingsWnd::CreateAndShow(CWnd* parent, std::unique_ptr<ISettingsBackend> backend) {
@@ -329,6 +330,16 @@ CRect CSettingsWnd::RcCloseBtn() const {
     return rc;
 }
 
+CRect CSettingsWnd::RcStarLink() const {
+    CRect close = RcCloseBtn();
+    CRect rc = close;
+    const int w = S(120);
+    rc.right = close.left - S(10);
+    rc.left = rc.right - w;
+    // same top/bottom as close
+    return rc;
+}
+
 CRect CSettingsWnd::RcContent() const {
     CRect rc = Client();
     rc.DeflateRect(S(16), S(72), S(16), S(72));
@@ -390,6 +401,12 @@ CSettingsWnd::Hit CSettingsWnd::HitTest(const CPoint& pt) const {
     if (close.PtInRect(pt)) {
         h.kind = Hit::Close;
         h.rc = close;
+        return h;
+    }
+    const CRect star = RcStarLink();
+    if (star.PtInRect(pt)) {
+        h.kind = Hit::Star;
+        h.rc = star;
         return h;
     }
     return h;
@@ -507,6 +524,8 @@ void CSettingsWnd::OnLButtonUp(UINT nFlags, CPoint point) {
     const Hit h = HitTest(point);
     if (h.kind == Hit::Close && down_ == Hit::Close) {
         OnClose();
+    } else if (h.kind == Hit::Star && down_ == Hit::Star) {
+        ShellExecute(nullptr, L"open", L"https://github.com/sqmw/MFCMouseEffect", nullptr, nullptr, SW_SHOWNORMAL);
     }
     down_ = Hit::None;
 }
@@ -524,6 +543,9 @@ LRESULT CSettingsWnd::OnNcHitTest(CPoint point) {
     CPoint client = point;
     ScreenToClient(&client);
     if (RcCloseBtn().PtInRect(client)) {
+        return HTCLIENT;
+    }
+    if (RcStarLink().PtInRect(client)) {
         return HTCLIENT;
     }
     if (RcHeader().PtInRect(client)) {
@@ -547,7 +569,7 @@ void CSettingsWnd::DrawRoundRect(Gdiplus::Graphics& g, const CRect& rc, int radi
     g.FillPath(&b, &path);
 }
 
-void CSettingsWnd::DrawText(Gdiplus::Graphics& g, const wchar_t* text, const CRect& rc, int sizePx, bool bold, const Gdiplus::Color& c) {
+void CSettingsWnd::DrawText(Gdiplus::Graphics& g, const wchar_t* text, const CRect& rc, int sizePx, bool bold, const Gdiplus::Color& c, Gdiplus::StringAlignment align /*= Gdiplus::StringAlignmentCenter*/) {
     if (!text) return;
     Gdiplus::FontFamily ff(L"Segoe UI");
     const int style = bold ? Gdiplus::FontStyleBold : Gdiplus::FontStyleRegular;
@@ -558,8 +580,8 @@ void CSettingsWnd::DrawText(Gdiplus::Graphics& g, const wchar_t* text, const CRe
     Gdiplus::StringFormat fmt;
     fmt.SetTrimming(Gdiplus::StringTrimmingEllipsisCharacter);
     fmt.SetFormatFlags(Gdiplus::StringFormatFlagsNoWrap);
-    fmt.SetLineAlignment(Gdiplus::StringAlignmentCenter);
-    fmt.SetAlignment(Gdiplus::StringAlignmentCenter);
+    fmt.SetLineAlignment(Gdiplus::StringAlignmentCenter); // Vertical center always
+    fmt.SetAlignment(align);
 
     g.DrawString(text, -1, &font, r, &fmt, &b);
 }
@@ -596,18 +618,33 @@ void CSettingsWnd::OnPaint() {
         title.left += S(18);
         title.top += S(8);
         title.bottom = title.top + S(34);
-        DrawText(g, t.title, title, S(16), true, C(255, GetRValue(sysText), GetGValue(sysText), GetBValue(sysText)));
+        DrawText(g, t.title, title, S(16), true, C(255, GetRValue(sysText), GetGValue(sysText), GetBValue(sysText)), Gdiplus::StringAlignmentNear);
 
         CRect sub = h;
         sub.left += S(18);
         sub.top += S(44); // Lowered slightly for better gap from title
         sub.bottom = h.bottom;
-        DrawText(g, t.subtitle, sub, S(11), false, C(255, GetRValue(sysMuted), GetGValue(sysMuted), GetBValue(sysMuted)));
+        DrawText(g, t.subtitle, sub, S(11), false, C(255, GetRValue(sysMuted), GetGValue(sysMuted), GetBValue(sysMuted)), Gdiplus::StringAlignmentNear);
 
         CRect x = RcCloseBtn();
         const bool hov = (hover_ == Hit::Close);
         DrawRoundRect(g, x, S(10), hov ? C(255, 210, 215, 223) : C(255, 228, 233, 240));
         DrawText(g, L"\u00D7", x, S(16), true, C(255, GetRValue(sysText), GetGValue(sysText), GetBValue(sysText)));
+
+        // Star link
+        CRect star = RcStarLink();
+        const bool hoverStar = (hover_ == Hit::Star);
+        // Use a gold-ish color for the star, text color for text, or just a nice link color?
+        // Let's use Gold for the star icon part if we could separate, but we pass full string.
+        // Let's just use a distinct color.
+        // Gold: 255, 215, 0 (Web Gold).
+        // Blue link: 0, 102, 204.
+        Gdiplus::Color linkColor = hoverStar ? C(255, 0, 102, 204) : C(255, 120, 120, 120);
+        // Actually, maybe just keep it subtle until hover?
+        // Let's match the Close button style -> Text color but maybe styled?
+        // User wants attention. Let's make it Gold/Orange?
+        // C(255, 255, 140, 0) DarkOrange.
+        DrawText(g, t.btnStar, star, S(12), true, C(255, 255, 140, 0));
     }
 
     dc.BitBlt(0, 0, rc.Width(), rc.Height(), &mem, 0, 0, SRCCOPY);
@@ -616,4 +653,12 @@ void CSettingsWnd::OnPaint() {
 
 BOOL CSettingsWnd::OnEraseBkgnd(CDC* /*pDC*/) {
     return TRUE;
+}
+
+BOOL CSettingsWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) {
+    if (hover_ == Hit::Star) {
+        ::SetCursor(::LoadCursor(nullptr, IDC_HAND));
+        return TRUE;
+    }
+    return CWnd::OnSetCursor(pWnd, nHitTest, message);
 }
