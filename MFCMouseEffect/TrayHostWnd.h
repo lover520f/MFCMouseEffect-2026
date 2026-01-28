@@ -48,7 +48,9 @@ private:
 		kCmdEdgeNone = 6001,
 		// Hold category
 		kCmdHoldCharge = 7001,
-		kCmdHoldNone = 7002,
+		kCmdHoldLightning = 7002,
+		kCmdHoldNone = 7003,
+		// Theme
 		// Theme
 		kCmdThemeSciFi = 8001,
 		kCmdThemeNeon = 8002,

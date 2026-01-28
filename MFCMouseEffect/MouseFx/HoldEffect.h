@@ -9,11 +9,12 @@ namespace mousefx {
 // Hold effect: shows growing ring while button is held down.
 class HoldEffect final : public IMouseEffect {
 public:
-    explicit HoldEffect(const std::string& themeName);
+    enum class Mode { Charge, Lightning };
+    explicit HoldEffect(const std::string& themeName, Mode mode);
     ~HoldEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Hold; }
-    const char* TypeName() const override { return "charge"; }
+    const char* TypeName() const override { return mode_ == Mode::Lightning ? "lightning" : "charge"; }
 
     bool Initialize() override;
     void Shutdown() override;
@@ -29,6 +30,7 @@ private:
     // Track active window to stop looping
     RippleWindow* currentRipple_ = nullptr;
     RippleStyle style_{};
+    Mode mode_ = Mode::Charge;
 };
 
 } // namespace mousefx

@@ -164,11 +164,13 @@ inline const SettingOption* ScrollOptions(bool zh, size_t& n) {
 
 inline const SettingOption* HoldOptions(bool zh, size_t& n) {
     static const SettingOption zhOpts[] = {
-        {L"\u84C4\u529B", "charge"},
+        {L"\u84C4\u529B (\u80FD\u91CF\u73AF)", "charge"}, // 蓄力 (能量环)
+        {L"\u95EA\u7535 (\u5947\u70B9)", "lightning"},     // 闪电 (奇点)
         {L"\u65E0", "none"},
     };
     static const SettingOption enOpts[] = {
-        {L"Charge", "charge"},
+        {L"Energy Charge", "charge"},
+        {L"Lightning", "lightning"},
         {L"None", "none"},
     };
     if (zh) {

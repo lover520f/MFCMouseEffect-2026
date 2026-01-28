@@ -4,7 +4,7 @@
 
 namespace mousefx {
 
-HoldEffect::HoldEffect(const std::string& themeName) {
+HoldEffect::HoldEffect(const std::string& themeName, Mode mode) : mode_(mode) {
     style_ = GetThemePalette(themeName).hold;
 }
 
@@ -35,7 +35,10 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
     params.loop = false;
     params.intensity = 1.0f;
 
-    currentRipple_ = pool_.ShowContinuous(ev, style_, RippleWindow::DrawMode::ChargeRing, params);
+    auto drawMode = (mode_ == Mode::Lightning) 
+        ? RippleWindow::DrawMode::LightningSingularity 
+        : RippleWindow::DrawMode::ChargeRing;
+    currentRipple_ = pool_.ShowContinuous(ev, style_, drawMode, params);
 }
 
 void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {

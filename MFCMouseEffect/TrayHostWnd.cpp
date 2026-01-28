@@ -138,12 +138,15 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 	CMenu holdMenu;
 	holdMenu.CreatePopupMenu();
 	holdMenu.AppendMenu(MF_STRING, kCmdHoldCharge, _T("蓄力 (Charge)"));
+	holdMenu.AppendMenu(MF_STRING, kCmdHoldLightning, _T("闪电 (Lightning)"));
 	holdMenu.AppendMenu(MF_STRING, kCmdHoldNone, _T("无 (None)"));
 	
 	if (mouseFx) {
 		auto* holdEffect = mouseFx->GetEffect(mousefx::EffectCategory::Hold);
 		if (holdEffect) {
-			holdMenu.CheckMenuItem(kCmdHoldCharge, MF_CHECKED);
+			std::string typeName = holdEffect->TypeName();
+			if (typeName == "charge") holdMenu.CheckMenuItem(kCmdHoldCharge, MF_CHECKED);
+			else if (typeName == "lightning") holdMenu.CheckMenuItem(kCmdHoldLightning, MF_CHECKED);
 		} else {
 			holdMenu.CheckMenuItem(kCmdHoldNone, MF_CHECKED);
 		}
@@ -255,6 +258,9 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 			// Hold category
 			case kCmdHoldCharge:
 				sendEffect("hold", "charge");
+				break;
+			case kCmdHoldLightning:
+				sendEffect("hold", "lightning");
 				break;
 			case kCmdHoldNone:
 				clearEffect("hold");

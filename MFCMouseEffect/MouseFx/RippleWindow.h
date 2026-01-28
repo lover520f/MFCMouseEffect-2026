@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <gdiplus.h>
 #include <cstdint>
+#include <vector>
 
 #include "GlobalMouseHook.h"
 #include "RippleStyle.h"
@@ -22,7 +23,8 @@ public:
         IconStar,
         ScrollChevron,
         ChargeRing,
-        HoverCrosshair
+        HoverCrosshair,
+        LightningSingularity
     };
 
     struct RenderParams {
@@ -54,6 +56,17 @@ private:
     void RenderFrame(float t, uint64_t elapsedMs);
     void EnsureSurface(int sizePx);
     void DestroySurface();
+    
+    // For LightningSingularity
+    struct LightningParticle {
+        float angle;      // Approach angle
+        float speed;      // Approach speed
+        float phase;      // For flickering
+        float distOffset; // Random start distance offset
+        bool  active;
+    };
+    std::vector<LightningParticle> lightningParticles_;
+    void InitLightningParticles();
 
     static const wchar_t* ClassName();
     static bool EnsureClassRegistered();

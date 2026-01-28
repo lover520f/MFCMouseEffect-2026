@@ -15,6 +15,10 @@ static uint64_t NowMs() {
     return GetTickCount64();
 }
 
+static float fnmod(float x, float y) {
+    return x - y * floor(x / y);
+}
+
 static float Clamp01(float v) {
     return (v < 0.0f) ? 0.0f : (v > 1.0f ? 1.0f : v);
 }
@@ -159,6 +163,10 @@ void RippleWindow::StartContinuous(const ClickEvent& ev, const RippleStyle& styl
     render_ = params;
 
     EnsureSurface(style_.windowSize);
+    
+    if (drawMode_ == DrawMode::LightningSingularity) {
+        InitLightningParticles();
+    }
 
     int left = static_cast<int>(ev.pt.x - (style_.windowSize / 2));
     int top = static_cast<int>(ev.pt.y - (style_.windowSize / 2));
@@ -482,6 +490,71 @@ void RippleWindow::RenderFrame(float t, uint64_t elapsedMs) {
         const float dotY = cy + (float)sin(dotAngle) * (radius * 0.6f);
         Gdiplus::SolidBrush dotBrush(Gdiplus::Color(aStroke, stroke.GetR(), stroke.GetG(), stroke.GetB()));
         g.FillEllipse(&dotBrush, dotX - dotR, dotY - dotR, dotR * 2.0f, dotR * 2.0f);
+    } else if (drawMode_ == DrawMode::LightningSingularity) {
+        const float cx = sizePx_ / 2.0f;
+        const float cy = sizePx_ / 2.0f;
+        const float radius = style_.endRadius;
+        const float maxEnergy = 1.0f;
+        
+        // Central Core
+        // Grows as t increases to simulate energy buildup
+        float coreRadius = style_.strokeWidth * (2.0f + t * 4.0f); // 2x -> 6x
+        // Pulse the core
+        float pulse = 0.5f + 0.5f * (float)sin((double)elapsedMs * 0.05); // Fast pulse
+        float coreAlpha = 0.8f + 0.2f * pulse;
+        
+        Gdiplus::Color glow = ToGdiPlus(style_.glow);
+        Gdiplus::Color coreColor = ToGdiPlus(style_.stroke);
+        
+        // Core Glow
+        {
+             Gdiplus::GraphicsPath path;
+             path.AddEllipse(cx - coreRadius * 2.5f, cy - coreRadius * 2.5f, coreRadius * 5.0f, coreRadius * 5.0f);
+             Gdiplus::PathGradientBrush pgb(&path);
+             pgb.SetCenterColor(Gdiplus::Color(ClampByte((int)(glow.GetA() * 0.6f)), glow.GetR(), glow.GetG(), glow.GetB()));
+             Gdiplus::Color surround[1] = { Gdiplus::Color(0, glow.GetR(), glow.GetG(), glow.GetB()) };
+             int count = 1;
+             pgb.SetSurroundColors(surround, &count);
+             pgb.SetCenterPoint(Gdiplus::PointF(cx, cy));
+             g.FillPath(&pgb, &path);
+        }
+
+        // Draw Core
+        Gdiplus::SolidBrush coreBrush(Gdiplus::Color(ClampByte((int)(coreColor.GetA() * coreAlpha)), coreColor.GetR(), coreColor.GetG(), coreColor.GetB()));
+        g.FillEllipse(&coreBrush, cx - coreRadius, cy - coreRadius, coreRadius * 2.0f, coreRadius * 2.0f);
+        
+        // Draw Particles / Lightning streaks
+        srand((unsigned int)startTick_); // Deterministic for consistent flickering if needed, but here we update per frame maybe?
+        
+        Gdiplus::Pen boltPen(Gdiplus::Color(ClampByte((int)(coreColor.GetA() * 0.7f)), coreColor.GetR(), coreColor.GetG(), coreColor.GetB()), style_.strokeWidth * 0.5f);
+        
+        for (auto& p : lightningParticles_) {
+            // Particle moves from outside in
+            // Distance depends on t. t=0 -> far, t=1 -> center
+            // Let's cycle based on speed
+            
+            float linearProgress = (fnmod((float)elapsedMs * 0.001f * p.speed + p.phase, 1.0f)); 
+            // We want them to fly IN. 1.0 -> 0.0
+            float distFactor = 1.0f - linearProgress;
+            
+            float currentDist = radius * 0.3f + (radius * 0.8f) * distFactor + p.distOffset * 10.0f;
+            if (currentDist > radius) currentDist = radius; // Clamp
+            
+            float angle = p.angle;
+            
+            // Draw a little 'streak' or 'bolt'
+            float length = 15.0f * (1.0f + p.speed);
+            
+            float x1 = cx + (float)cos(angle) * currentDist;
+            float y1 = cy + (float)sin(angle) * currentDist;
+            float x2 = cx + (float)cos(angle) * (currentDist + length);
+            float y2 = cy + (float)sin(angle) * (currentDist + length);
+            
+            // Random jitter for lightning feel
+            float jitter = 2.0f * ((float)(rand() % 100) / 100.0f - 0.5f);
+            
+            g.DrawLine(&boltPen, x1 + jitter, y1 + jitter, x2, y2);
+        }
     } else {
         // Draw Ripple (Circle)
         // Fill
@@ -522,6 +595,20 @@ void RippleWindow::RenderFrame(float t, uint64_t elapsedMs) {
     bf.AlphaFormat = AC_SRC_ALPHA;
 
     UpdateLayeredWindow(hwnd_, nullptr, &ptDst, &sizeWnd, memDc_, &ptSrc, 0, &bf, ULW_ALPHA);
+}
+
+void RippleWindow::InitLightningParticles() {
+    lightningParticles_.clear();
+    // Create ~20 particles
+    for (int i = 0; i < 24; ++i) {
+        LightningParticle p;
+        p.angle = ((float)(rand() % 360) / 180.0f) * 3.14159f;
+        p.speed = 1.0f + ((float)(rand() % 100) / 50.0f); // 1.0 - 3.0
+        p.phase = ((float)(rand() % 100) / 100.0f);
+        p.distOffset = ((float)(rand() % 100) / 100.0f) * 5.0f;
+        p.active = true;
+        lightningParticles_.push_back(p);
+    }
 }
 
 } // namespace mousefx
