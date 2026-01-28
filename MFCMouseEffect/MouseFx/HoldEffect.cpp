@@ -35,9 +35,10 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
     params.loop = false;
     params.intensity = 1.0f;
 
-    auto drawMode = (mode_ == Mode::Lightning) 
-        ? RippleWindow::DrawMode::LightningSingularity 
-        : RippleWindow::DrawMode::ChargeRing;
+    auto drawMode = RippleWindow::DrawMode::ChargeRing;
+    if (mode_ == Mode::Lightning) drawMode = RippleWindow::DrawMode::LightningSingularity;
+    else if (mode_ == Mode::Hex)  drawMode = RippleWindow::DrawMode::HexForceField;
+
     currentRipple_ = pool_.ShowContinuous(ev, style_, drawMode, params);
 }
 

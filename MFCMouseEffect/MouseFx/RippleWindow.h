@@ -24,7 +24,8 @@ public:
         ScrollChevron,
         ChargeRing,
         HoverCrosshair,
-        LightningSingularity
+        LightningSingularity,
+        HexForceField
     };
 
     struct RenderParams {

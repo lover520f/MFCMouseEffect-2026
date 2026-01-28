@@ -166,11 +166,13 @@ inline const SettingOption* HoldOptions(bool zh, size_t& n) {
     static const SettingOption zhOpts[] = {
         {L"\u84C4\u529B (\u80FD\u91CF\u73AF)", "charge"}, // 蓄力 (能量环)
         {L"\u95EA\u7535 (\u5947\u70B9)", "lightning"},     // 闪电 (奇点)
+        {L"\u516D\u8FB9\u5F62 (\u62A4\u76FE)", "hex"},     // 六边形 (护盾)
         {L"\u65E0", "none"},
     };
     static const SettingOption enOpts[] = {
         {L"Energy Charge", "charge"},
         {L"Lightning", "lightning"},
+        {L"Hex Shield", "hex"},
         {L"None", "none"},
     };
     if (zh) {

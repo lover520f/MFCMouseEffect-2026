@@ -139,6 +139,7 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 	holdMenu.CreatePopupMenu();
 	holdMenu.AppendMenu(MF_STRING, kCmdHoldCharge, _T("蓄力 (Charge)"));
 	holdMenu.AppendMenu(MF_STRING, kCmdHoldLightning, _T("闪电 (Lightning)"));
+	holdMenu.AppendMenu(MF_STRING, kCmdHoldHex, _T("六边形 (Hex)"));
 	holdMenu.AppendMenu(MF_STRING, kCmdHoldNone, _T("无 (None)"));
 	
 	if (mouseFx) {
@@ -147,6 +148,7 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 			std::string typeName = holdEffect->TypeName();
 			if (typeName == "charge") holdMenu.CheckMenuItem(kCmdHoldCharge, MF_CHECKED);
 			else if (typeName == "lightning") holdMenu.CheckMenuItem(kCmdHoldLightning, MF_CHECKED);
+			else if (typeName == "hex") holdMenu.CheckMenuItem(kCmdHoldHex, MF_CHECKED);
 		} else {
 			holdMenu.CheckMenuItem(kCmdHoldNone, MF_CHECKED);
 		}
@@ -261,6 +263,9 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 				break;
 			case kCmdHoldLightning:
 				sendEffect("hold", "lightning");
+				break;
+			case kCmdHoldHex:
+				sendEffect("hold", "hex");
 				break;
 			case kCmdHoldNone:
 				clearEffect("hold");

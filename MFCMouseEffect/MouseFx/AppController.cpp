@@ -169,6 +169,7 @@ std::unique_ptr<IMouseEffect> AppController::CreateEffect(EffectCategory categor
         case EffectCategory::Hold:
             if (type == "charge")     return std::make_unique<HoldEffect>(config_.theme, HoldEffect::Mode::Charge);
             if (type == "lightning")  return std::make_unique<HoldEffect>(config_.theme, HoldEffect::Mode::Lightning);
+            if (type == "hex")        return std::make_unique<HoldEffect>(config_.theme, HoldEffect::Mode::Hex);
             break;
         case EffectCategory::Hover:
             if (type == "glow")   return std::make_unique<HoverEffect>(config_.theme);
