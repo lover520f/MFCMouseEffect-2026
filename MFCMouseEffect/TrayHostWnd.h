@@ -51,6 +51,7 @@ private:
 		kCmdHoldLightning = 7002,
 		kCmdHoldHex = 7003,
 		kCmdHoldNone = 7004,
+		kCmdHoldSciFi3D = 7005,
 		// Theme
 		// Theme
 		kCmdThemeSciFi = 8001,

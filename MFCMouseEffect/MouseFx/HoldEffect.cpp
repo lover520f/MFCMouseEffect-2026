@@ -40,6 +40,7 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
     std::unique_ptr<IRippleRenderer> renderer;
     if (mode_ == Mode::Lightning) renderer = std::make_unique<LightningRenderer>();
     else if (mode_ == Mode::Hex) renderer = std::make_unique<HexRenderer>();
+    else if (mode_ == Mode::SciFi3D) renderer = std::make_unique<PerspectiveRenderer>();
     else renderer = std::make_unique<ChargeRenderer>();
 
     RippleStyle finalStyle = style_;
