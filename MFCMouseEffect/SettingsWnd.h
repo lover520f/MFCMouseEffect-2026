@@ -8,6 +8,7 @@
 
 #include "Settings/SettingsModel.h"
 #include "Settings/SettingsOptions.h"
+#include "EmojiPreviewWnd.h"
 
 class ISettingsBackend;
 
@@ -39,6 +40,8 @@ protected:
     afx_msg void OnClose();
     afx_msg void OnDestroy();
     afx_msg void OnTextChange();
+    afx_msg void OnTextFocus();
+    afx_msg void OnTextKillFocus();
 
     DECLARE_MESSAGE_MAP()
 
@@ -81,6 +84,8 @@ private:
     void DrawRoundRect(Gdiplus::Graphics& g, const CRect& rc, int radius, const Gdiplus::Color& fill);
     void DrawText(Gdiplus::Graphics& g, const wchar_t* text, const CRect& rc, int sizePx, bool bold, const Gdiplus::Color& c, Gdiplus::StringAlignment align = Gdiplus::StringAlignmentCenter);
     void ApplyEmojiFormatting();
+    float GetEditFontPx() const;
+    void UpdatePreviewFromEdit();
 
     std::unique_ptr<ISettingsBackend> backend_;
     SettingsModel model_;
@@ -113,6 +118,7 @@ private:
     CButton btnClose_{};
     CButton btnReset_{}; // New
 
+    EmojiPreviewWnd emojiPreview_{};
     HMODULE richeditModule_ = nullptr;
     bool updating_ = false;
     bool updatingText_ = false;

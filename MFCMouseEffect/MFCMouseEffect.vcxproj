@@ -195,6 +195,7 @@
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="ClassView.h" />
     <ClInclude Include="FileView.h" />
+    <ClInclude Include="EmojiPreviewWnd.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MFCMouseEffect.h" />
@@ -240,6 +241,7 @@
     <ClCompile Include="ChildFrm.cpp" />
     <ClCompile Include="ClassView.cpp" />
     <ClCompile Include="FileView.cpp" />
+    <ClCompile Include="EmojiPreviewWnd.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MFCMouseEffect.cpp" />
     <ClCompile Include="MFCMouseEffectDoc.cpp" />

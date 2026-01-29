@@ -6,6 +6,7 @@
 - 市场/README 展示：`docs/marketing/readme_language_switch.md`（语言切换文案的文本渲染）
 - 问题记录：`docs/issues/emoji-support.md`（设置输入框与文本点击特效的表情渲染）
 - 问题记录：`docs/issues/text-effect-motion.md`（切换到 DWrite 后的飘散路径一致性）
+- 问题记录：`docs/issues/settings-emoji-preview.md`（设置页表情彩色预览叠层）
 
 ## 功能简介
 - 全局鼠标点击可视化（Windows）：低级鼠标钩子 `WH_MOUSE_LL` + GDI+ 分层窗口波纹。

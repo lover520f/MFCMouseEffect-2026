@@ -92,6 +92,8 @@ BEGIN_MESSAGE_MAP(CSettingsWnd, CWnd)
     ON_CBN_SELCHANGE(11005, &CSettingsWnd::OnSelChange)
     ON_CBN_SELCHANGE(11006, &CSettingsWnd::OnSelChange)
     ON_EN_CHANGE(11007, &CSettingsWnd::OnTextChange)
+    ON_EN_SETFOCUS(11007, &CSettingsWnd::OnTextFocus)
+    ON_EN_KILLFOCUS(11007, &CSettingsWnd::OnTextKillFocus)
     ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
@@ -229,6 +231,15 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     
     // Text content
     mkLabel(lblTexts_, 7);  mkEdit(edtTexts_, 7, 11007);
+    {
+        CRect rc;
+        edtTexts_.GetWindowRect(&rc);
+        ScreenToClient(&rc);
+        emojiPreview_.Create(this, rc);
+        emojiPreview_.SetFontSizePx(GetEditFontPx());
+        emojiPreview_.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+        emojiPreview_.ShowWindow(SW_HIDE);
+    }
 
     CRect footer = RcFooter();
     const int btnW = S(120);
@@ -283,6 +294,7 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     }
     edtTexts_.SetWindowTextW(wText);
     ApplyEmojiFormatting();
+    UpdatePreviewFromEdit();
 
     return 0;
 }
@@ -292,6 +304,9 @@ void CSettingsWnd::OnDestroy() {
     auto* app = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
     if (app) {
         app->NotifySettingsWndDestroyed((CSettingsWnd*)this);
+    }
+    if (::IsWindow(emojiPreview_.GetSafeHwnd())) {
+        emojiPreview_.DestroyWindow();
     }
     if (richeditModule_) {
         FreeLibrary(richeditModule_);
@@ -362,6 +377,20 @@ void CSettingsWnd::OnSelChange() {
 
 void CSettingsWnd::OnTextChange() {
     ApplyEmojiFormatting();
+    UpdatePreviewFromEdit();
+}
+
+void CSettingsWnd::OnTextFocus() {
+    if (::IsWindow(emojiPreview_.GetSafeHwnd())) {
+        emojiPreview_.ShowWindow(SW_HIDE);
+    }
+}
+
+void CSettingsWnd::OnTextKillFocus() {
+    UpdatePreviewFromEdit();
+    if (::IsWindow(emojiPreview_.GetSafeHwnd())) {
+        emojiPreview_.ShowWindow(SW_SHOW);
+    }
 }
 
 int CSettingsWnd::Dpi() const {
@@ -583,6 +612,7 @@ void CSettingsWnd::SyncFromBackend() {
     }
     edtTexts_.SetWindowTextW(wText);
     ApplyEmojiFormatting();
+    UpdatePreviewFromEdit();
 
     Invalidate(FALSE);
 }
@@ -706,6 +736,34 @@ void CSettingsWnd::ApplyEmojiFormatting() {
 
     edtTexts_.SetSel(sel);
     updatingText_ = false;
+}
+
+float CSettingsWnd::GetEditFontPx() const {
+    if (!::IsWindow(edtTexts_.GetSafeHwnd())) return 14.0f;
+    CClientDC dc((CWnd*)&edtTexts_);
+    CFont* old = nullptr;
+    if (fontEdit_.GetSafeHandle()) {
+        old = dc.SelectObject((CFont*)&fontEdit_);
+    } else if (font_.GetSafeHandle()) {
+        old = dc.SelectObject((CFont*)&font_);
+    }
+    TEXTMETRIC tm{};
+    dc.GetTextMetrics(&tm);
+    if (old) dc.SelectObject(old);
+    const int px = tm.tmHeight - tm.tmInternalLeading;
+    return (float)((px > 0) ? px : tm.tmHeight);
+}
+
+void CSettingsWnd::UpdatePreviewFromEdit() {
+    if (!::IsWindow(emojiPreview_.GetSafeHwnd())) return;
+    CString wText;
+    edtTexts_.GetWindowTextW(wText);
+    emojiPreview_.SetText(wText.GetString());
+    emojiPreview_.SetFontSizePx(GetEditFontPx());
+    CRect rc;
+    edtTexts_.GetWindowRect(&rc);
+    ScreenToClient(&rc);
+    emojiPreview_.SetTargetRect(rc);
 }
 
 void CSettingsWnd::OnPaint() {
