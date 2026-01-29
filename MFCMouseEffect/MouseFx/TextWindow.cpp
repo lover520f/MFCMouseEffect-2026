@@ -2,6 +2,7 @@
 #include "TextWindow.h"
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 namespace mousefx {
 
@@ -11,6 +12,82 @@ static uint64_t NowMs() {
 
 static Gdiplus::Color ToGdiPlus(Argb c, BYTE alpha) {
     return Gdiplus::Color(alpha, (BYTE)((c.value >> 16) & 0xFF), (BYTE)((c.value >> 8) & 0xFF), (BYTE)(c.value & 0xFF));
+}
+
+static uint32_t NextCodePoint(const std::wstring& text, size_t* i) {
+    if (!i || *i >= text.size()) return 0;
+    wchar_t lead = text[*i];
+    (*i)++;
+    if (lead >= 0xD800 && lead <= 0xDBFF) {
+        if (*i < text.size()) {
+            wchar_t trail = text[*i];
+            if (trail >= 0xDC00 && trail <= 0xDFFF) {
+                (*i)++;
+                return (((uint32_t)lead - 0xD800) << 10) + ((uint32_t)trail - 0xDC00) + 0x10000;
+            }
+        }
+    }
+    return (uint32_t)lead;
+}
+
+static bool IsEmojiCodePoint(uint32_t cp) {
+    if (cp >= 0x1F300 && cp <= 0x1F5FF) return true; // Misc Symbols & Pictographs
+    if (cp >= 0x1F600 && cp <= 0x1F64F) return true; // Emoticons
+    if (cp >= 0x1F680 && cp <= 0x1F6FF) return true; // Transport & Map
+    if (cp >= 0x1F700 && cp <= 0x1F77F) return true; // Alchemical Symbols
+    if (cp >= 0x1F900 && cp <= 0x1F9FF) return true; // Supplemental Symbols & Pictographs
+    if (cp >= 0x1FA70 && cp <= 0x1FAFF) return true; // Symbols & Pictographs Extended-A
+    if (cp >= 0x2600 && cp <= 0x27BF) return true;   // Misc symbols
+    if (cp >= 0x1F1E6 && cp <= 0x1F1FF) return true; // Flags
+    return false;
+}
+
+static bool IsEmojiComponent(uint32_t cp) {
+    if (IsEmojiCodePoint(cp)) return true;
+    if (cp == 0xFE0F || cp == 0xFE0E || cp == 0x200D) return true;
+    if (cp >= 0x1F3FB && cp <= 0x1F3FF) return true;
+    return false;
+}
+
+static bool IsEmojiOnlyText(const std::wstring& text) {
+    bool hasEmoji = false;
+    for (size_t i = 0; i < text.size(); ) {
+        uint32_t cp = NextCodePoint(text, &i);
+        if (cp == 0) break;
+        if (cp == 0xFE0F || cp == 0xFE0E || cp == 0x200D) continue; // VS16/VS15/ZWJ
+        if (cp >= 0x1F3FB && cp <= 0x1F3FF) continue; // skin tone modifiers
+        if (IsEmojiCodePoint(cp)) {
+            hasEmoji = true;
+            continue;
+        }
+        return false;
+    }
+    return hasEmoji;
+}
+
+static bool HasEmojiStarter(const std::wstring& text) {
+    for (size_t i = 0; i < text.size(); ) {
+        uint32_t cp = NextCodePoint(text, &i);
+        if (cp == 0) break;
+        if (IsEmojiCodePoint(cp)) return true;
+    }
+    return false;
+}
+
+static std::wstring ResolveFontFamilyName(const TextConfig& config, const std::wstring& text) {
+    if (IsEmojiOnlyText(text)) {
+        return L"Segoe UI Emoji";
+    }
+    if (!config.fontFamily.empty()) return config.fontFamily;
+    return L"Segoe UI";
+}
+
+static std::unique_ptr<Gdiplus::FontFamily> CreateAvailableFamily(const std::wstring& name) {
+    auto family = std::make_unique<Gdiplus::FontFamily>(name.c_str());
+    if (family->IsAvailable()) return family;
+    family = std::make_unique<Gdiplus::FontFamily>(L"Segoe UI");
+    if (family->IsAvailable()) return family;
+    return std::make_unique<Gdiplus::FontFamily>(L"Arial");
 }
 
 TextWindow::~TextWindow() {
@@ -202,13 +279,10 @@ void TextWindow::RenderFrame(float t) {
     if (t < 0.15f) alpha = t / 0.15f; 
     else if (t > 0.6f) alpha = 1.0f - (t - 0.6f) / 0.4f;
 
-    Gdiplus::FontFamily fontFamily(config_.fontFamily.c_str());
-    Gdiplus::Font font(&fontFamily, config_.fontSize * scale, Gdiplus::FontStyleBold);
-    Gdiplus::SolidBrush brush(ToGdiPlus(color_, (BYTE)(alpha * 255)));
+    const bool emojiOnly = IsEmojiOnlyText(text_);
+    const bool hasEmoji = HasEmojiStarter(text_);
 
-    Gdiplus::StringFormat format;
-    format.SetAlignment(Gdiplus::StringAlignmentCenter);
-    format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+    Gdiplus::SolidBrush brush(ToGdiPlus(color_, (BYTE)(alpha * 255)));
 
     // Center in window, apply curved path and a slight rotation
     float centerX = (float)width_ / 2.0f + xPos;
@@ -217,10 +291,91 @@ void TextWindow::RenderFrame(float t) {
     g.TranslateTransform(centerX, centerY);
     g.RotateTransform(xPos * 0.2f);
     g.TranslateTransform(-centerX, -centerY);
-    
-    Gdiplus::RectF rect(xPos, -yOffset, (float)width_, (float)height_);
-    g.DrawString(text_.c_str(), -1, &font, rect, &format, &brush);
-    
+
+    if (!hasEmoji) {
+        const std::wstring fontName = ResolveFontFamilyName(config_, text_);
+        auto fontFamily = CreateAvailableFamily(fontName);
+        const int fontStyle = emojiOnly ? Gdiplus::FontStyleRegular : Gdiplus::FontStyleBold;
+        Gdiplus::Font font(fontFamily.get(), config_.fontSize * scale, fontStyle);
+
+        Gdiplus::StringFormat format;
+        format.SetAlignment(Gdiplus::StringAlignmentCenter);
+        format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+
+        Gdiplus::RectF rect(xPos, -yOffset, (float)width_, (float)height_);
+        g.DrawString(text_.c_str(), -1, &font, rect, &format, &brush);
+    } else {
+        const std::wstring normalName = ResolveFontFamilyName(config_, L"");
+        auto normalFamily = CreateAvailableFamily(normalName);
+        auto emojiFamily = CreateAvailableFamily(L"Segoe UI Emoji");
+        Gdiplus::Font normalFont(normalFamily.get(), config_.fontSize * scale, Gdiplus::FontStyleBold);
+        Gdiplus::Font emojiFont(emojiFamily.get(), config_.fontSize * scale, Gdiplus::FontStyleRegular);
+
+        Gdiplus::StringFormat format(Gdiplus::StringFormat::GenericTypographic());
+        format.SetFormatFlags(Gdiplus::StringFormatFlagsNoWrap);
+        format.SetAlignment(Gdiplus::StringAlignmentNear);
+        format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+
+        struct Run {
+            size_t start;
+            size_t len;
+            bool emoji;
+        };
+        std::vector<Run> runs;
+        for (size_t i = 0; i < text_.size(); ) {
+            size_t runStart = i;
+            size_t next = i;
+            uint32_t cp = NextCodePoint(text_, &next);
+            if (cp == 0) break;
+            i = next;
+            if (IsEmojiCodePoint(cp)) {
+                size_t runEnd = i;
+                while (runEnd < text_.size()) {
+                    size_t probe = runEnd;
+                    uint32_t cp2 = NextCodePoint(text_, &probe);
+                    if (cp2 == 0) break;
+                    if (!IsEmojiComponent(cp2)) break;
+                    runEnd = probe;
+                }
+                runs.push_back({ runStart, runEnd - runStart, true });
+                i = runEnd;
+            } else {
+                size_t runEnd = i;
+                while (runEnd < text_.size()) {
+                    size_t probe = runEnd;
+                    uint32_t cp2 = NextCodePoint(text_, &probe);
+                    if (cp2 == 0) break;
+                    if (IsEmojiCodePoint(cp2)) break;
+                    runEnd = probe;
+                }
+                runs.push_back({ runStart, runEnd - runStart, false });
+                i = runEnd;
+            }
+        }
+
+        float totalW = 0.0f;
+        float maxH = 0.0f;
+        for (const auto& r : runs) {
+            std::wstring s = text_.substr(r.start, r.len);
+            Gdiplus::RectF bounds;
+            Gdiplus::Font* f = r.emoji ? &emojiFont : &normalFont;
+            g.MeasureString(s.c_str(), -1, f, Gdiplus::PointF(0.0f, 0.0f), &format, &bounds);
+            totalW += bounds.Width;
+            if (bounds.Height > maxH) maxH = bounds.Height;
+        }
+        float startX = centerX - (totalW / 2.0f);
+        float y = centerY - (maxH / 2.0f);
+        for (const auto& r : runs) {
+            std::wstring s = text_.substr(r.start, r.len);
+            Gdiplus::RectF bounds;
+            Gdiplus::Font* f = r.emoji ? &emojiFont : &normalFont;
+            g.MeasureString(s.c_str(), -1, f, Gdiplus::PointF(0.0f, 0.0f), &format, &bounds);
+            Gdiplus::RectF rect(startX, y, bounds.Width, maxH);
+            g.DrawString(s.c_str(), -1, f, rect, &format, &brush);
+            startX += bounds.Width;
+        }
+    }
+
     g.ResetTransform();
 
     // Push to screen

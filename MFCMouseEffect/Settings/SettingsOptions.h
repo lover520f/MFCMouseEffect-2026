@@ -44,11 +44,11 @@ inline const SettingsText& TextZh() {
         L"\u6EDA\u8F6E",
         L"\u957F\u6309",
         L"\u60AC\u505C",
-        L"\u6587\u5B57\u5185\u5BB9", // 文字内容
+        L"\u6587\u5B57\u5185\u5BB9",
         L"\u5173\u95ED",
         L"\u5E94\u7528",
-        L"\u6062\u590D\u9ED8\u8BA4", // 恢复默认
-        L"\u2605 Star \u9879\u76EE", // ★ Star 项目
+        L"\u6062\u590D\u9ED8\u8BA4",
+        L"\u2605 Star \u9879\u76EE",
     };
     return t;
 }
@@ -130,9 +130,9 @@ inline const SettingOption* ClickOptions(bool zh, size_t& n) {
 
 inline const SettingOption* TrailOptions(bool zh, size_t& n) {
     static const SettingOption zhOpts[] = {
-        {L"\u9713\u8679\u6D41\u5149", "streamer"}, // 霓虹流光
-        {L"\u8D5B\u535A\u7535\u5F27", "electric"}, // 赛博电弧
-        {L"\u79D1\u5E7B\u7BA1\u9053", "tubes"},    // 科幻管道
+        {L"\u9713\u8679\u6D41\u5149", "streamer"},
+        {L"\u8D5B\u535A\u7535\u5F27", "electric"},
+        {L"\u79D1\u5E7B\u7BA1\u9053", "tubes"},
         {L"\u5F69\u8679\u7C92\u5B50", "particle"},
         {L"\u666E\u901A\u7EBF\u6761", "line"},
         {L"\u65E0", "none"},
@@ -172,11 +172,11 @@ inline const SettingOption* ScrollOptions(bool zh, size_t& n) {
 
 inline const SettingOption* HoldOptions(bool zh, size_t& n) {
     static const SettingOption zhOpts[] = {
-        {L"\u84C4\u529B (\u80FD\u91CF\u73AF)", "charge"}, // 蓄力 (能量环)
-        {L"\u95EA\u7535 (\u5947\u70B9)", "lightning"},     // 闪电 (奇点)
-        {L"\u516D\u8FB9\u5F62 (\u62A4\u76FE)", "hex"},     // 六边形 (护盾)
-        {L"\u79D1\u6280\u5708 (3D)", "tech_ring"},         // 科技圈 (3D)
-        {L"\u5168\u606F\u6295\u5F71 (3D)", "hologram"},    // 全息投影 (3D)
+        {L"\u84C4\u529B (\u80FD\u91CF\u73AF)", "charge"},
+        {L"\u95EA\u7535 (\u5947\u70B9)", "lightning"},
+        {L"\u516D\u8FB9\u5F62 (\u62A4\u76FE)", "hex"},
+        {L"\u79D1\u6280\u5708 (3D)", "tech_ring"},
+        {L"\u5168\u606F\u6295\u5F71 (3D)", "hologram"},
         {L"\u65E0", "none"},
     };
     static const SettingOption enOpts[] = {
@@ -198,7 +198,7 @@ inline const SettingOption* HoldOptions(bool zh, size_t& n) {
 inline const SettingOption* HoverOptions(bool zh, size_t& n) {
     static const SettingOption zhOpts[] = {
         {L"\u547C\u5438\u706F", "glow"},
-        {L"\u87ba\u65cb\u60ac\u6d6e", "tubes"}, // 螺旋悬浮 (Helix Suspension)
+        {L"\u87ba\u65cb\u60ac\u6d6e", "tubes"},
         {L"\u65E0", "none"},
     };
     static const SettingOption enOpts[] = {

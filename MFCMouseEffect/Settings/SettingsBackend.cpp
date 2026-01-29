@@ -49,12 +49,12 @@ public:
             size_t start = 0;
             size_t end = raw.find(',');
             while (end != std::string::npos) {
-                std::string token = raw.substr(start, end - start);
+                std::string token = TrimAscii(raw.substr(start, end - start));
                 if (!token.empty()) texts.push_back(Utf8ToWString(token));
                 start = end + 1;
                 end = raw.find(',', start);
             }
-            std::string last = raw.substr(start);
+            std::string last = TrimAscii(raw.substr(start));
             if (!last.empty()) texts.push_back(Utf8ToWString(last));
             
             c_->SetTextEffectContent(texts);
@@ -83,6 +83,17 @@ public:
     }
 
 private:
+    static std::string TrimAscii(std::string s) {
+        auto is_space = [](unsigned char ch) {
+            return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
+        };
+        size_t b = 0;
+        while (b < s.size() && is_space((unsigned char)s[b])) b++;
+        size_t e = s.size();
+        while (e > b && is_space((unsigned char)s[e - 1])) e--;
+        if (b == 0 && e == s.size()) return s;
+        return s.substr(b, e - b);
+    }
     static std::string WStringToUtf8(const std::wstring& ws) {
         if (ws.empty()) return {};
         int len = WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, nullptr, 0, nullptr, nullptr);

@@ -3,6 +3,8 @@
 #include <afxwin.h>
 #include <memory>
 #include <gdiplus.h>
+#include <richedit.h>
+#include <afxrich.h>
 
 #include "Settings/SettingsModel.h"
 #include "Settings/SettingsOptions.h"
@@ -36,6 +38,7 @@ protected:
     afx_msg void OnSelChange();
     afx_msg void OnClose();
     afx_msg void OnDestroy();
+    afx_msg void OnTextChange();
 
     DECLARE_MESSAGE_MAP()
 
@@ -77,6 +80,7 @@ private:
     // Drawing
     void DrawRoundRect(Gdiplus::Graphics& g, const CRect& rc, int radius, const Gdiplus::Color& fill);
     void DrawText(Gdiplus::Graphics& g, const wchar_t* text, const CRect& rc, int sizePx, bool bold, const Gdiplus::Color& c, Gdiplus::StringAlignment align = Gdiplus::StringAlignmentCenter);
+    void ApplyEmojiFormatting();
 
     std::unique_ptr<ISettingsBackend> backend_;
     SettingsModel model_;
@@ -85,6 +89,7 @@ private:
     Hit::Kind down_ = Hit::None;
 
     CFont font_;
+    CFont fontEdit_;
     CStatic lblLang_{};
     CStatic lblTheme_{};
     CStatic lblClick_{};
@@ -102,13 +107,15 @@ private:
     CComboBox cmbHold_{};
     CComboBox cmbHover_{};
 
-    CEdit edtTexts_{};   // New
+    CRichEditCtrl edtTexts_{};   // New
 
     CButton btnApply_{};
     CButton btnClose_{};
     CButton btnReset_{}; // New
 
+    HMODULE richeditModule_ = nullptr;
     bool updating_ = false;
+    bool updatingText_ = false;
 
     void CaptureUI(); // Helper
 };

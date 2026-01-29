@@ -34,6 +34,41 @@ static std::string GetValueFromItemData(DWORD_PTR data) {
     return v ? std::string(v) : std::string();
 }
 
+static uint32_t NextCodePoint(const std::wstring& text, size_t* i) {
+    if (!i || *i >= text.size()) return 0;
+    wchar_t lead = text[*i];
+    (*i)++;
+    if (lead >= 0xD800 && lead <= 0xDBFF) {
+        if (*i < text.size()) {
+            wchar_t trail = text[*i];
+            if (trail >= 0xDC00 && trail <= 0xDFFF) {
+                (*i)++;
+                return (((uint32_t)lead - 0xD800) << 10) + ((uint32_t)trail - 0xDC00) + 0x10000;
+            }
+        }
+    }
+    return (uint32_t)lead;
+}
+
+static bool IsEmojiCodePoint(uint32_t cp) {
+    if (cp >= 0x1F300 && cp <= 0x1F5FF) return true;
+    if (cp >= 0x1F600 && cp <= 0x1F64F) return true;
+    if (cp >= 0x1F680 && cp <= 0x1F6FF) return true;
+    if (cp >= 0x1F700 && cp <= 0x1F77F) return true;
+    if (cp >= 0x1F900 && cp <= 0x1F9FF) return true;
+    if (cp >= 0x1FA70 && cp <= 0x1FAFF) return true;
+    if (cp >= 0x2600 && cp <= 0x27BF) return true;
+    if (cp >= 0x1F1E6 && cp <= 0x1F1FF) return true;
+    return false;
+}
+
+static bool IsEmojiComponent(uint32_t cp) {
+    if (IsEmojiCodePoint(cp)) return true;
+    if (cp == 0xFE0F || cp == 0xFE0E || cp == 0x200D) return true;
+    if (cp >= 0x1F3FB && cp <= 0x1F3FF) return true;
+    return false;
+}
+
 } // namespace
 
 BEGIN_MESSAGE_MAP(CSettingsWnd, CWnd)
@@ -56,6 +91,7 @@ BEGIN_MESSAGE_MAP(CSettingsWnd, CWnd)
     ON_CBN_SELCHANGE(11004, &CSettingsWnd::OnSelChange)
     ON_CBN_SELCHANGE(11005, &CSettingsWnd::OnSelChange)
     ON_CBN_SELCHANGE(11006, &CSettingsWnd::OnSelChange)
+    ON_EN_CHANGE(11007, &CSettingsWnd::OnTextChange)
     ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
@@ -113,6 +149,9 @@ bool CSettingsWnd::CreateAndShow(CWnd* parent, std::unique_ptr<ISettingsBackend>
 int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     if (CWnd::OnCreate(lpCreateStruct) == -1) return -1;
 
+    AfxInitRichEdit2();
+    richeditModule_ = LoadLibraryW(L"Msftedit.dll");
+
     model_ = backend_->Load();
     if (model_.uiLanguage.empty()) model_.uiLanguage = "zh-CN";
 
@@ -120,6 +159,9 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     ncm.cbSize = sizeof(ncm);
     if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0)) {
         font_.CreateFontIndirect(&ncm.lfMessageFont);
+        LOGFONT lf = ncm.lfMessageFont;
+        wcscpy_s(lf.lfFaceName, _countof(lf.lfFaceName), L"Segoe UI");
+        fontEdit_.CreateFontIndirect(&lf);
     }
 
     const CRect content = RcContent();
@@ -152,12 +194,27 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
         c.Create(WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP, rc, this, id);
         if (font_.GetSafeHandle()) c.SetFont(&font_);
     };
-    auto mkEdit = [&](CEdit& e, int row, UINT id) {
+    auto mkEdit = [&](CRichEditCtrl& e, int row, UINT id) {
         const int y = rowY(row);
         CRect rc(left + labelW + S(8), y + S(2),
                  left + labelW + S(8) + boxW, y + rowH);
-        e.Create(WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER | ES_AUTOHSCROLL, rc, this, id);
-        if (font_.GetSafeHandle()) e.SetFont(&font_);
+        HWND hEdit = CreateWindowExW(
+            0,
+            L"RICHEDIT50W",
+            L"",
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
+            rc.left, rc.top, rc.Width(), rc.Height(),
+            GetSafeHwnd(),
+            (HMENU)(UINT_PTR)id,
+            AfxGetInstanceHandle(),
+            nullptr);
+        if (hEdit) {
+            e.SubclassWindow(hEdit);
+            ::SendMessageW(hEdit, EM_SETEDITSTYLE, SES_USECTF, SES_USECTF);
+            ::SendMessageW(hEdit, EM_SETTEXTMODE, TM_PLAINTEXT, 0);
+        }
+        if (fontEdit_.GetSafeHandle()) e.SetFont(&fontEdit_);
+        else if (font_.GetSafeHandle()) e.SetFont(&font_);
     };
 
     // General section (2 rows)
@@ -218,7 +275,15 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
         MultiByteToWideChar(CP_UTF8, 0, model_.textContent.c_str(), -1, buf.data(), len);
         wText = buf.data();
     }
+    {
+        CHARFORMAT2W cf{};
+        cf.cbSize = sizeof(cf);
+        cf.dwMask = CFM_FACE;
+        wcscpy_s(cf.szFaceName, _countof(cf.szFaceName), L"Segoe UI");
+        edtTexts_.SetDefaultCharFormat(cf);
+    }
     edtTexts_.SetWindowTextW(wText);
+    ApplyEmojiFormatting();
 
     return 0;
 }
@@ -228,6 +293,10 @@ void CSettingsWnd::OnDestroy() {
     auto* app = dynamic_cast<CMFCMouseEffectApp*>(AfxGetApp());
     if (app) {
         app->NotifySettingsWndDestroyed((CSettingsWnd*)this);
+    }
+    if (richeditModule_) {
+        FreeLibrary(richeditModule_);
+        richeditModule_ = nullptr;
     }
 }
 
@@ -290,6 +359,10 @@ void CSettingsWnd::OnSelChange() {
     }
 
     Apply();
+}
+
+void CSettingsWnd::OnTextChange() {
+    ApplyEmojiFormatting();
 }
 
 int CSettingsWnd::Dpi() const {
@@ -510,6 +583,7 @@ void CSettingsWnd::SyncFromBackend() {
         wText = buf.data();
     }
     edtTexts_.SetWindowTextW(wText);
+    ApplyEmojiFormatting();
 
     Invalidate(FALSE);
 }
@@ -584,6 +658,55 @@ void CSettingsWnd::DrawText(Gdiplus::Graphics& g, const wchar_t* text, const CRe
     fmt.SetAlignment(align);
 
     g.DrawString(text, -1, &font, r, &fmt, &b);
+}
+
+void CSettingsWnd::ApplyEmojiFormatting() {
+    if (updatingText_) return;
+    updatingText_ = true;
+
+    CString wText;
+    edtTexts_.GetWindowTextW(wText);
+    const std::wstring text = wText.GetString();
+
+    CHARRANGE sel{};
+    edtTexts_.GetSel(sel);
+
+    CHARFORMAT2W normal{};
+    normal.cbSize = sizeof(normal);
+    normal.dwMask = CFM_FACE;
+    wcscpy_s(normal.szFaceName, _countof(normal.szFaceName), L"Segoe UI");
+
+    CHARFORMAT2W emoji{};
+    emoji.cbSize = sizeof(emoji);
+    emoji.dwMask = CFM_FACE;
+    wcscpy_s(emoji.szFaceName, _countof(emoji.szFaceName), L"Segoe UI Emoji");
+
+    edtTexts_.SetSel(0, -1);
+    edtTexts_.SetSelectionCharFormat(normal);
+
+    for (size_t i = 0; i < text.size(); ) {
+        size_t runStart = i;
+        size_t next = i;
+        uint32_t cp = NextCodePoint(text, &next);
+        if (cp == 0) break;
+        i = next;
+        if (!IsEmojiCodePoint(cp)) continue;
+
+        size_t runEnd = i;
+        while (runEnd < text.size()) {
+            size_t probe = runEnd;
+            uint32_t cp2 = NextCodePoint(text, &probe);
+            if (cp2 == 0) break;
+            if (!IsEmojiComponent(cp2)) break;
+            runEnd = probe;
+        }
+        edtTexts_.SetSel((long)runStart, (long)runEnd);
+        edtTexts_.SetSelectionCharFormat(emoji);
+        i = runEnd;
+    }
+
+    edtTexts_.SetSel(sel);
+    updatingText_ = false;
 }
 
 void CSettingsWnd::OnPaint() {

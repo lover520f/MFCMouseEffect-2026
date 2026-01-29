@@ -19,11 +19,11 @@ struct TextConfig {
     
     // Random pool
     std::vector<std::wstring> texts = { 
-        L"\u7f8e\u4e3d",     // 美丽
-        L"\u5065\u5eb7",     // 健康
-        L"\u5e78\u798f",     // 幸福
-        L"\u8d22\u5bcc+1w",  // 财富+1w
-        L"\u5f00\u5fc3"      // 开心
+        L"\u7f8e\u4e3d",
+        L"\u5065\u5eb7",
+        L"\u5e78\u798f",
+        L"\u8d22\u5bcc+1w",
+        L"\u5f00\u5fc3"
     };
     std::vector<Argb> colors = { 
         {0xFFFF69B4}, // HotPink
