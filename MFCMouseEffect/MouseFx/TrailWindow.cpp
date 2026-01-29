@@ -214,41 +214,45 @@ void TrailWindow::Render() {
     Gdiplus::Graphics g(&bmp);
     g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
-    // Draw curve through points
-    // Calculate alpha based on age
-    uint64_t now = NowMs();
+// ... Inside Render()
     
-    // Create Pen
-    // We want a tapering effect maybe? GDI+ doesn't do tapering lines easily without path gradient.
-    // Simple approach: Draw segments with varying opacity.
-    
-    for (size_t i = 0; i < points_.size() - 1; ++i) {
-        const auto& p1 = points_[i];
-        const auto& p2 = points_[i+1];
+    // Draw using strategy if available
+    if (renderer_) {
+        renderer_->Render(g, points_, width_, height_, color_, isChromatic_);
+    } else {
+        // Fallback or default line logic if no renderer set?
+        // Actually TrailEffect should always set one.
+        // But for safety, keep a simple line draw or just nothing.
+        // Let's implement simple line here as backup to prevent crash if renderer null.
         
-        uint64_t age = now - p1.addedTime;
-        float life = 1.0f - ((float)age / (float)durationMs_);
-        if (life < 0) life = 0;
-        
-        int alpha = (int)(life * 255);
-        Gdiplus::Color c(alpha, color_.GetR(), color_.GetG(), color_.GetB());
-        
-        if (isChromatic_) {
-             // Rainbow gradient based on time/index
-             // Shift hue along the trail
-             float hue = std::fmod((float)now * 0.1f + i * 10.0f, 360.0f);
-             c = HslToRgb(hue, 0.8f, 0.6f, alpha);
+        if (points_.size() < 2) {
+             UpdateLayered();
+             return;
         }
-
-        Gdiplus::Pen p(c, 4.0f); // Thickness
-        p.SetStartCap(Gdiplus::LineCapRound);
-        p.SetEndCap(Gdiplus::LineCapRound);
-
-        // Adjust coordinates from screen to window (0,0 if full screen overlay covers all)
+        
+        uint64_t now = NowMs();
         int x_offset = GetSystemMetrics(SM_XVIRTUALSCREEN);
         int y_offset = GetSystemMetrics(SM_YVIRTUALSCREEN);
 
-        g.DrawLine(&p, (int)p1.pt.x - x_offset, (int)p1.pt.y - y_offset, (int)p2.pt.x - x_offset, (int)p2.pt.y - y_offset);
+        for (size_t i = 0; i < points_.size() - 1; ++i) {
+            const auto& p1 = points_[i];
+            const auto& p2 = points_[i+1];
+            
+            uint64_t age = now - p1.addedTime;
+            float life = 1.0f - ((float)age / (float)durationMs_);
+            if (life < 0) life = 0;
+            
+            int alpha = (int)(life * 255);
+            Gdiplus::Color c(alpha, color_.GetR(), color_.GetG(), color_.GetB());
+             if (isChromatic_) {
+                 float hue = std::fmod((float)now * 0.1f + i * 10.0f, 360.0f);
+                 c = HslToRgb(hue, 0.8f, 0.6f, alpha);
+            }
+            Gdiplus::Pen p(c, 4.0f); 
+            p.SetStartCap(Gdiplus::LineCapRound);
+            p.SetEndCap(Gdiplus::LineCapRound);
+            g.DrawLine(&p, (int)p1.pt.x - x_offset, (int)p1.pt.y - y_offset, (int)p2.pt.x - x_offset, (int)p2.pt.y - y_offset);
+        }
     }
     
     UpdateLayered();

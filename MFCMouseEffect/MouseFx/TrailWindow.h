@@ -5,6 +5,9 @@
 #include <deque>
 #include <vector>
 
+#include "ITrailRenderer.h"
+#include <memory> 
+
 namespace mousefx {
 
 class TrailWindow final {
@@ -21,6 +24,11 @@ public:
     // Clear trail immediately.
     void Clear();
     void SetChromatic(bool b) { isChromatic_ = b; }
+    void SetColor(const Gdiplus::Color& c) { color_ = c; }
+
+    void SetRenderer(std::unique_ptr<ITrailRenderer> renderer) {
+        renderer_ = std::move(renderer);
+    }
 
 private:
     static constexpr UINT_PTR kTimerId = 2;
@@ -39,14 +47,11 @@ private:
 
     HWND hwnd_ = nullptr;
     
-    struct TrailPoint {
-        POINT pt;
-        uint64_t addedTime;
-    };
+    // Uses mousefx::TrailPoint from ITrailRenderer.h (namespace scope)
     std::deque<TrailPoint> points_;
     
     // Config
-    int maxPoints_ = 20;
+    int maxPoints_ = 40; // Increased for smoother trails
     int durationMs_ = 350; // trail lifetime
     Gdiplus::Color color_{ 220, 100, 255, 218 }; // Light Cyan/Greenish
 
@@ -56,6 +61,8 @@ private:
     void* bits_ = nullptr;
     int width_ = 0;
     int height_ = 0;
+
+    std::unique_ptr<ITrailRenderer> renderer_;
 };
 
 } // namespace mousefx

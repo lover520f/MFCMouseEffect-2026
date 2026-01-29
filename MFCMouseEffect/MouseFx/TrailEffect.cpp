@@ -1,18 +1,25 @@
 #include "pch.h"
 #include "TrailEffect.h"
 #include "ThemeStyle.h"
+#include "TrailRenderStrategies.h"
+#include <algorithm>
+#include <cctype>
+#include <string>
 
 namespace mousefx {
 
-// Assuming ToLowerAscii is defined elsewhere or will be added.
-// For now, I'll make a placeholder to ensure compilation.
-// This function is not part of the original code, but implied by the change.
-// If it's not defined, this will cause a compilation error.
-// For the purpose of this edit, I'll assume it's available or will be.
-// std::string ToLowerAscii(const std::string& s) { /* ... */ }
-
-TrailEffect::TrailEffect(const std::string& themeName) : window_(std::make_unique<TrailWindow>()) {
+TrailEffect::TrailEffect(const std::string& themeName, const std::string& type) : window_(std::make_unique<TrailWindow>()) {
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
+    
+    // Set appropriate renderer
+    if (type == "electric") {
+        window_->SetRenderer(std::make_unique<ElectricTrailRenderer>());
+    } else if (type == "streamer") {
+        window_->SetRenderer(std::make_unique<StreamerTrailRenderer>());
+    } else {
+        // Default Line
+        window_->SetRenderer(std::make_unique<LineTrailRenderer>());
+    }
 }
 
 TrailEffect::~TrailEffect() {

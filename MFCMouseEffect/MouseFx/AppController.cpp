@@ -160,8 +160,10 @@ std::unique_ptr<IMouseEffect> AppController::CreateEffect(EffectCategory categor
             if (type == "text")   return std::make_unique<TextEffect>(config_.textClick, config_.theme);
             break;
         case EffectCategory::Trail:
-            if (type == "line")     return std::make_unique<TrailEffect>(config_.theme);
+
             if (type == "particle") return std::make_unique<ParticleTrailEffect>(config_.theme);
+             // "line", "streamer", "electric" all handled by TrailEffect via strategy
+            return std::make_unique<TrailEffect>(config_.theme, type);
             break;
         case EffectCategory::Scroll:
             if (type == "arrow")  return std::make_unique<ScrollEffect>(config_.theme);
