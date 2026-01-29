@@ -350,8 +350,8 @@ public:
             path.AddEllipse(center.X - coreR, center.Y - coreR, coreR*2, coreR*2);
             Gdiplus::PathGradientBrush pgb(&path);
             
-            // Bright White/Cyan Core
-            pgb.SetCenterColor(Gdiplus::Color(255, 220, 240, 255)); 
+            // Reduced Alpha for center to show text behind (255 -> 25) - drastically reduced per user request
+            pgb.SetCenterColor(Gdiplus::Color(25, 220, 240, 255)); 
             Gdiplus::Color surround[] = { Gdiplus::Color(0, stroke.GetR(), stroke.GetG(), stroke.GetB()) };
             int n = 1;
             pgb.SetSurroundColors(surround, &n);
@@ -360,7 +360,7 @@ public:
 
         // 2. Inner Gyro Ring (Thin, fast spin)
         {
-             BYTE a = ClampByte((int)(stroke.GetA() * 0.8f));
+             BYTE a = ClampByte((int)(stroke.GetA() * 0.5f)); // Reduced from 0.8
              Gdiplus::Color c(a, stroke.GetR(), stroke.GetG(), stroke.GetB());
              // Tilted 60 deg on X axis, spinning
              DrawRing3D(radius * 0.6f, timeSec * 1.5f, 2.0f, c, 0, 6.28f, 1, 60.0f * 3.14159f / 180.0f);
@@ -368,7 +368,7 @@ public:
 
         // 3. Middle Gyro Ring (Thin, cross spin)
         {
-             BYTE a = ClampByte((int)(stroke.GetA() * 0.6f));
+             BYTE a = ClampByte((int)(stroke.GetA() * 0.4f)); // Reduced from 0.6
              Gdiplus::Color c(a, fill.GetR(), fill.GetG(), fill.GetB()); // Use Fill color (secondary)
              // Tilted 45 deg on Y axis, spinning opposite
              DrawRing3D(radius * 0.8f, -timeSec * 1.2f, 2.0f, c, 0, 6.28f, 2, 45.0f * 3.14159f / 180.0f);
@@ -380,11 +380,11 @@ public:
              float sweep = 6.28f * 0.75f * progress; 
              float spin = timeSec * 0.8f;
              
-             BYTE a = ClampByte((int)(stroke.GetA()));
+             BYTE a = ClampByte((int)(stroke.GetA() * 0.7f)); // Reduced from 1.0
              Gdiplus::Color c(a, stroke.GetR(), stroke.GetG(), stroke.GetB());
              
              // Flat on Z plane (Scanner), no local axis tilt, just base tilt
-             DrawRing3D(radius * 1.1f, spin, 5.0f * style.strokeWidth, c, 0.0f, sweep, 0, 0); // Thick
+             DrawRing3D(radius * 1.1f, spin, 3.0f * style.strokeWidth, c, 0.0f, sweep, 0, 0); // Thinner (5.0 -> 3.0)
              
              // Counter-rotating thin ring segment
              DrawRing3D(radius * 1.15f, -spin * 1.5f, 1.0f, c, 0.0f, 2.0f, 0, 0); 
@@ -393,7 +393,7 @@ public:
         // 5. Particles (Electron Cloud)
         if(particles_.empty()) Start(style);
         
-        Gdiplus::SolidBrush pb(Gdiplus::Color(200, stroke.GetR(), stroke.GetG(), stroke.GetB()));
+        Gdiplus::SolidBrush pb(Gdiplus::Color(120, stroke.GetR(), stroke.GetG(), stroke.GetB()));
         for(auto& p : particles_) {
             // Orbit visuals
             Vec3 pos = p.pos;
@@ -514,7 +514,7 @@ public:
                 
                 Gdiplus::PathGradientBrush pgb(&path);
                 pgb.SetCenterPoint(center);
-                pgb.SetCenterColor(Gdiplus::Color(255, 255, 255, 255));
+                pgb.SetCenterColor(Gdiplus::Color(40, 255, 255, 255));
                 Gdiplus::Color surround[] = { Gdiplus::Color(0, stroke.GetR(), stroke.GetG(), stroke.GetB()) };
                 int n = 1;
                 pgb.SetSurroundColors(surround, &n);
