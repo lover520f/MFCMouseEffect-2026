@@ -169,7 +169,7 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 	CMenu hoverMenu;
 	hoverMenu.CreatePopupMenu();
 	hoverMenu.AppendMenu(MF_STRING, kCmdHoverGlow, _T("呼吸灯 (Glow)"));
-    hoverMenu.AppendMenu(MF_STRING, kCmdHoverTubes, _T("机械悬浮 (Suspension)"));
+    hoverMenu.AppendMenu(MF_STRING, kCmdHoverTubes, _T("螺旋悬浮 (Helix)"));
 	hoverMenu.AppendMenu(MF_STRING, kCmdHoverNone, _T("无 (None)"));
 	
 	if (mouseFx) {

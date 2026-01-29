@@ -198,12 +198,12 @@ inline const SettingOption* HoldOptions(bool zh, size_t& n) {
 inline const SettingOption* HoverOptions(bool zh, size_t& n) {
     static const SettingOption zhOpts[] = {
         {L"\u547C\u5438\u706F", "glow"},
-        {L"\u673A\u68B0\u60AC\u6D6E", "tubes"},
+        {L"\u87ba\u65cb\u60ac\u6d6e", "tubes"}, // 螺旋悬浮 (Helix Suspension)
         {L"\u65E0", "none"},
     };
     static const SettingOption enOpts[] = {
         {L"Glow", "glow"},
-        {L"Suspension", "tubes"},
+        {L"Helix Suspension", "tubes"},
         {L"None", "none"},
     };
     if (zh) {

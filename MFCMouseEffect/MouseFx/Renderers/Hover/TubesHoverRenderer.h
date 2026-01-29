@@ -85,7 +85,8 @@ public:
 
         for (int c = 0; c < 3; ++c) {
             auto& chain = chains_[c];
-            float time = (float)elapsedMs * chain.speed;
+            // Use global time to avoid resets when RippleWindow loops
+            float time = (float)GetTickCount64() * chain.speed;
 
             for (size_t i = 0; i < chain.nodes.size(); ++i) {
                 const auto& node = chain.nodes[i];
@@ -111,7 +112,7 @@ public:
                 Gdiplus::Color base = chain.color;
                 
                 if (isChromatic_) {
-                   float hue = std::fmod((float)elapsedMs * 0.2f + c * 30.0f, 360.0f);
+                   float hue = std::fmod((float)GetTickCount64() * 0.2f + c * 30.0f, 360.0f);
                    base = HslToRgb(hue, 0.9f, 0.6f, 255);
                 }
                 
