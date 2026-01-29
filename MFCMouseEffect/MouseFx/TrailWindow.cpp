@@ -205,26 +205,14 @@ void TrailWindow::Render() {
     // Clear
     ZeroMemory(bits_, (size_t)width_ * (size_t)height_ * 4);
     
-    if (points_.size() < 2) {
-        UpdateLayered();
-        return;
-    }
-
+    // Draw using strategy if available
     Gdiplus::Bitmap bmp(width_, height_, width_ * 4, PixelFormat32bppPARGB, static_cast<BYTE*>(bits_));
     Gdiplus::Graphics g(&bmp);
     g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
-// ... Inside Render()
-    
-    // Draw using strategy if available
     if (renderer_) {
         renderer_->Render(g, points_, width_, height_, color_, isChromatic_);
     } else {
-        // Fallback or default line logic if no renderer set?
-        // Actually TrailEffect should always set one.
-        // But for safety, keep a simple line draw or just nothing.
-        // Let's implement simple line here as backup to prevent crash if renderer null.
-        
         if (points_.size() < 2) {
              UpdateLayered();
              return;

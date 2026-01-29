@@ -104,6 +104,7 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 	trailMenu.CreatePopupMenu();
 	trailMenu.AppendMenu(MF_STRING, kCmdTrailStreamer, _T("霓虹流光 (Streamer)"));
 	trailMenu.AppendMenu(MF_STRING, kCmdTrailElectric, _T("赛博电弧 (Electric)"));
+	trailMenu.AppendMenu(MF_STRING, kCmdTrailTubes, _T("科幻管道 (Tubes)"));
 	trailMenu.AppendMenu(MF_STRING, kCmdTrailParticle, _T("彩虹粒子 (Particle)"));
 	trailMenu.AppendMenu(MF_STRING, kCmdTrailLine, _T("普通线条 (Line)"));
 	trailMenu.AppendMenu(MF_STRING, kCmdTrailNone, _T("无 (None)"));
@@ -116,6 +117,7 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 			else if (typeName == "line") trailMenu.CheckMenuItem(kCmdTrailLine, MF_CHECKED);
 			else if (typeName == "streamer") trailMenu.CheckMenuItem(kCmdTrailStreamer, MF_CHECKED);
 			else if (typeName == "electric") trailMenu.CheckMenuItem(kCmdTrailElectric, MF_CHECKED);
+			else if (typeName == "tubes") trailMenu.CheckMenuItem(kCmdTrailTubes, MF_CHECKED);
 		} else {
 			trailMenu.CheckMenuItem(kCmdTrailNone, MF_CHECKED);
 		}
@@ -257,6 +259,9 @@ LRESULT CTrayHostWnd::OnTrayNotify(WPARAM wp, LPARAM lp)
 				break;
 			case kCmdTrailElectric:
 				sendEffect("trail", "electric");
+				break;
+			case kCmdTrailTubes:
+				sendEffect("trail", "tubes");
 				break;
 			case kCmdTrailParticle:
 				sendEffect("trail", "particle");

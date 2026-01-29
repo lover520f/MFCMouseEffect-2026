@@ -39,6 +39,7 @@ private:
 		kCmdTrailParticle = 3002,
 		kCmdTrailStreamer = 3004,
 		kCmdTrailElectric = 3005,
+		kCmdTrailTubes = 3006,
 		kCmdTrailNone = 3003,
 		// Hover category
 		kCmdHoverGlow = 4001,

@@ -132,6 +132,7 @@ inline const SettingOption* TrailOptions(bool zh, size_t& n) {
     static const SettingOption zhOpts[] = {
         {L"\u9713\u8679\u6D41\u5149", "streamer"}, // 霓虹流光
         {L"\u8D5B\u535A\u7535\u5F27", "electric"}, // 赛博电弧
+        {L"\u79D1\u5E7B\u7BA1\u9053", "tubes"},    // 科幻管道
         {L"\u5F69\u8679\u7C92\u5B50", "particle"},
         {L"\u666E\u901A\u7EBF\u6761", "line"},
         {L"\u65E0", "none"},
@@ -139,6 +140,7 @@ inline const SettingOption* TrailOptions(bool zh, size_t& n) {
     static const SettingOption enOpts[] = {
         {L"Neon Streamer", "streamer"},
         {L"Cyber Electric", "electric"},
+        {L"Sci-Fi Tubes", "tubes"},
         {L"Particle", "particle"},
         {L"Line", "line"},
         {L"None", "none"},

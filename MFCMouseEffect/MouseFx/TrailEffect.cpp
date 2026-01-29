@@ -2,13 +2,14 @@
 #include "TrailEffect.h"
 #include "ThemeStyle.h"
 #include "TrailRenderStrategies.h"
+#include "Renderers/Trail/TubesRenderer.h"
 #include <algorithm>
 #include <cctype>
 #include <string>
 
 namespace mousefx {
 
-TrailEffect::TrailEffect(const std::string& themeName, const std::string& type) : window_(std::make_unique<TrailWindow>()) {
+TrailEffect::TrailEffect(const std::string& themeName, const std::string& type) : window_(std::make_unique<TrailWindow>()), type_(type) {
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
     
     // Set appropriate renderer
@@ -16,6 +17,8 @@ TrailEffect::TrailEffect(const std::string& themeName, const std::string& type) 
         window_->SetRenderer(std::make_unique<ElectricTrailRenderer>());
     } else if (type == "streamer") {
         window_->SetRenderer(std::make_unique<StreamerTrailRenderer>());
+    } else if (type == "tubes" || type == "scifi") {
+        window_->SetRenderer(std::make_unique<TubesRenderer>());
     } else {
         // Default Line
         window_->SetRenderer(std::make_unique<LineTrailRenderer>());

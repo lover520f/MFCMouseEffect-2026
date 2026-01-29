@@ -12,7 +12,7 @@ public:
     ~TrailEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Trail; }
-    const char* TypeName() const override { return "line"; }
+    const char* TypeName() const override { return type_.c_str(); }
 
     bool Initialize() override;
     void Shutdown() override;
@@ -20,6 +20,7 @@ public:
 
 private:
     std::unique_ptr<TrailWindow> window_;
+    std::string type_;
     bool isChromatic_ = false;
 };
 
