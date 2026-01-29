@@ -55,6 +55,7 @@ private:
 	bool backgroundMode_ = false;
 	class CSettingsWnd* settingsWnd_ = nullptr; // owned by the window lifetime
 	HANDLE hMutex_ = nullptr;
+	HMODULE m_hRichEditModule = nullptr;
 };
 
 

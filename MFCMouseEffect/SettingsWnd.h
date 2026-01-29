@@ -39,6 +39,7 @@ protected:
     afx_msg void OnSelChange();
     afx_msg void OnClose();
     afx_msg void OnDestroy();
+    void PostNcDestroy() override;
     afx_msg void OnTextChange();
     afx_msg void OnTextFocus();
     afx_msg void OnTextKillFocus();
@@ -119,7 +120,6 @@ private:
     CButton btnReset_{}; // New
 
     EmojiPreviewWnd emojiPreview_{};
-    HMODULE richeditModule_ = nullptr;
     bool updating_ = false;
     bool updatingText_ = false;
 

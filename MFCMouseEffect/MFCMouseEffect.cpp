@@ -192,7 +192,8 @@ BOOL CMFCMouseEffectApp::InitInstance()
 	EnableTaskbarInteraction(FALSE);
 
 	// 使用 RichEdit 控件需要 AfxInitRichEdit2()
-	// AfxInitRichEdit2();
+	// Use RichEdit 5.0 (Msftedit.dll) for SettingsWnd
+	m_hRichEditModule = LoadLibrary(L"Msftedit.dll");
 
 	// 标准初始化
 	// 如果未使用这些功能并希望减小
@@ -366,6 +367,10 @@ int CMFCMouseEffectApp::ExitInstance()
 	{
 		trayHost_->DestroyWindow();
 		trayHost_.reset();
+	}
+	if (m_hRichEditModule) {
+		FreeLibrary(m_hRichEditModule);
+		m_hRichEditModule = nullptr;
 	}
 	AfxOleTerm(FALSE);
 

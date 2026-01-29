@@ -152,8 +152,8 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     if (CWnd::OnCreate(lpCreateStruct) == -1) return -1;
 
     AfxInitRichEdit2();
-    richeditModule_ = LoadLibraryW(L"Msftedit.dll");
 
+    
     model_ = backend_->Load();
     if (model_.uiLanguage.empty()) model_.uiLanguage = "zh-CN";
 
@@ -305,17 +305,17 @@ void CSettingsWnd::OnDestroy() {
     if (app) {
         app->NotifySettingsWndDestroyed((CSettingsWnd*)this);
     }
-    if (::IsWindow(emojiPreview_.GetSafeHwnd())) {
-        emojiPreview_.DestroyWindow();
-    }
-    if (richeditModule_) {
-        FreeLibrary(richeditModule_);
-        richeditModule_ = nullptr;
-    }
+    // emojiPreview_.DestroyWindow(); // Removed: Children destroyed automatically or in destructor
+    // richeditModule_ managed by App now
+
 }
 
 void CSettingsWnd::OnClose() {
     DestroyWindow();
+}
+
+void CSettingsWnd::PostNcDestroy() {
+    delete this;
 }
 
 // Helper: capture UI state to model
@@ -358,7 +358,7 @@ void CSettingsWnd::OnCommandReset() {
 }
 
 void CSettingsWnd::OnCommandClose() {
-    OnClose();
+    PostMessage(WM_CLOSE);
 }
 
 void CSettingsWnd::OnSelChange() {
@@ -626,7 +626,7 @@ void CSettingsWnd::OnLButtonUp(UINT nFlags, CPoint point) {
     CWnd::OnLButtonUp(nFlags, point);
     const Hit h = HitTest(point);
     if (h.kind == Hit::Close && down_ == Hit::Close) {
-        OnClose();
+        PostMessage(WM_CLOSE);
     } else if (h.kind == Hit::Star && down_ == Hit::Star) {
         ShellExecute(nullptr, L"open", L"https://github.com/sqmw/MFCMouseEffect", nullptr, nullptr, SW_SHOWNORMAL);
     }
