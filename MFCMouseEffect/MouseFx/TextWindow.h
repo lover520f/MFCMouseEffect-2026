@@ -4,6 +4,9 @@
 #include <gdiplus.h>
 #include <string>
 #include <cstdint>
+#include <wrl/client.h>
+#include <d2d1.h>
+#include <dwrite.h>
 
 #include "EffectConfig.h"
 
@@ -32,6 +35,8 @@ private:
     void RenderFrame(float t);
     void EnsureSurface(int w, int h);
     void DestroySurface();
+    bool EnsureD2DResources();
+    void DestroyD2DResources();
 
     static const wchar_t* ClassName();
     static bool EnsureClassRegistered();
@@ -54,6 +59,11 @@ private:
     void* bits_ = nullptr;
     int width_ = 0;
     int height_ = 0;
+
+    Microsoft::WRL::ComPtr<ID2D1Factory> d2dFactory_;
+    Microsoft::WRL::ComPtr<IDWriteFactory> dwriteFactory_;
+    Microsoft::WRL::ComPtr<ID2D1DCRenderTarget> d2dTarget_;
+    Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> d2dBrush_;
 };
 
 } // namespace mousefx

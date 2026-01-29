@@ -3,11 +3,26 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <vector>
+#include <dxgiformat.h>
 
 namespace mousefx {
 
+#pragma comment(lib, "d2d1.lib")
+#pragma comment(lib, "dwrite.lib")
+
 static uint64_t NowMs() {
     return GetTickCount64();
+}
+
+static float GetWindowDpi(HWND hwnd) {
+    HMODULE user32 = GetModuleHandleW(L"user32.dll");
+    if (user32) {
+        using GetDpiForWindowFn = UINT(WINAPI*)(HWND);
+        auto* fn = reinterpret_cast<GetDpiForWindowFn>(GetProcAddress(user32, "GetDpiForWindow"));
+        if (fn) return (float)fn(hwnd);
+    }
+    return 96.0f;
 }
 
 static Gdiplus::Color ToGdiPlus(Argb c, BYTE alpha) {
@@ -245,6 +260,7 @@ void TextWindow::DestroySurface() {
     if (dib_) DeleteObject(dib_);
     if (memDc_) DeleteDC(memDc_);
     dib_ = nullptr; memDc_ = nullptr; bits_ = nullptr;
+    DestroyD2DResources();
 }
 
 static float EaseOutCubic(float t) {
@@ -252,15 +268,59 @@ static float EaseOutCubic(float t) {
     return 1.0f - (u * u * u);
 }
 
+bool TextWindow::EnsureD2DResources() {
+    if (!memDc_) return false;
+    if (!d2dFactory_) {
+        if (FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, d2dFactory_.GetAddressOf()))) {
+            return false;
+        }
+    }
+    if (!dwriteFactory_) {
+        if (FAILED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+            reinterpret_cast<IUnknown**>(dwriteFactory_.GetAddressOf())))) {
+            return false;
+        }
+    }
+    if (!d2dTarget_) {
+        D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
+            D2D1_RENDER_TARGET_TYPE_DEFAULT,
+            D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
+            0.0f, 0.0f,
+            D2D1_RENDER_TARGET_USAGE_NONE,
+            D2D1_FEATURE_LEVEL_DEFAULT);
+        if (FAILED(d2dFactory_->CreateDCRenderTarget(&props, d2dTarget_.GetAddressOf()))) {
+            return false;
+        }
+        d2dTarget_->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE);
+    }
+    if (!d2dBrush_) {
+        if (FAILED(d2dTarget_->CreateSolidColorBrush(D2D1::ColorF(1, 1, 1, 1), d2dBrush_.GetAddressOf()))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void TextWindow::DestroyD2DResources() {
+    d2dBrush_.Reset();
+    d2dTarget_.Reset();
+}
+
 void TextWindow::RenderFrame(float t) {
     if (!hwnd_ || !memDc_ || !bits_) return;
 
     ZeroMemory(bits_, (size_t)width_ * (size_t)height_ * 4);
 
-    Gdiplus::Bitmap bmp(width_, height_, width_ * 4, PixelFormat32bppPARGB, static_cast<BYTE*>(bits_));
-    Gdiplus::Graphics g(&bmp);
-    g.SetSmoothingMode(Gdiplus::SmoothingModeHighQuality);
-    g.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
+    if (!EnsureD2DResources()) return;
+    const float dpi = GetWindowDpi(hwnd_);
+    const float pxToDip = 96.0f / dpi;
+    const float widthDip = (float)width_ * pxToDip;
+    const float heightDip = (float)height_ * pxToDip;
+    d2dTarget_->SetDpi(dpi, dpi);
+    const RECT rc = { 0, 0, width_, height_ };
+    if (FAILED(d2dTarget_->BindDC(memDc_, &rc))) return;
+    d2dTarget_->BeginDraw();
+    d2dTarget_->Clear(D2D1::ColorF(0, 0, 0, 0));
 
     // Elegant movement: Non-linear path
     float eased = EaseOutCubic(t);
@@ -282,54 +342,50 @@ void TextWindow::RenderFrame(float t) {
     const bool emojiOnly = IsEmojiOnlyText(text_);
     const bool hasEmoji = HasEmojiStarter(text_);
 
-    Gdiplus::SolidBrush brush(ToGdiPlus(color_, (BYTE)(alpha * 255)));
+    const std::wstring fontName = ResolveFontFamilyName(config_, text_);
+    const std::wstring emojiFontName = L"Segoe UI Emoji";
+    const float fontSize = (config_.fontSize * scale) * (96.0f / 72.0f);
+    const DWRITE_FONT_WEIGHT baseWeight = emojiOnly ? DWRITE_FONT_WEIGHT_REGULAR : DWRITE_FONT_WEIGHT_BOLD;
 
-    // Center in window, apply curved path and a slight rotation
-    float centerX = (float)width_ / 2.0f + xPos;
-    float centerY = (float)height_ / 2.0f - yOffset;
+    Microsoft::WRL::ComPtr<IDWriteTextFormat> format;
+    if (FAILED(dwriteFactory_->CreateTextFormat(
+        fontName.c_str(),
+        nullptr,
+        baseWeight,
+        DWRITE_FONT_STYLE_NORMAL,
+        DWRITE_FONT_STRETCH_NORMAL,
+        fontSize,
+        L"",
+        format.GetAddressOf()))) {
+        d2dTarget_->EndDraw();
+        return;
+    }
+    format->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+    format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+    format->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
-    g.TranslateTransform(centerX, centerY);
-    g.RotateTransform(xPos * 0.2f);
-    g.TranslateTransform(-centerX, -centerY);
+    Microsoft::WRL::ComPtr<IDWriteTextLayout> layout;
+    if (FAILED(dwriteFactory_->CreateTextLayout(
+        text_.c_str(),
+        (UINT32)text_.size(),
+        format.Get(),
+        (FLOAT)widthDip,
+        (FLOAT)heightDip,
+        layout.GetAddressOf()))) {
+        d2dTarget_->EndDraw();
+        return;
+    }
 
-    if (!hasEmoji) {
-        const std::wstring fontName = ResolveFontFamilyName(config_, text_);
-        auto fontFamily = CreateAvailableFamily(fontName);
-        const int fontStyle = emojiOnly ? Gdiplus::FontStyleRegular : Gdiplus::FontStyleBold;
-        Gdiplus::Font font(fontFamily.get(), config_.fontSize * scale, fontStyle);
-
-        Gdiplus::StringFormat format;
-        format.SetAlignment(Gdiplus::StringAlignmentCenter);
-        format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
-
-        Gdiplus::RectF rect(xPos, -yOffset, (float)width_, (float)height_);
-        g.DrawString(text_.c_str(), -1, &font, rect, &format, &brush);
-    } else {
-        const std::wstring normalName = ResolveFontFamilyName(config_, L"");
-        auto normalFamily = CreateAvailableFamily(normalName);
-        auto emojiFamily = CreateAvailableFamily(L"Segoe UI Emoji");
-        Gdiplus::Font normalFont(normalFamily.get(), config_.fontSize * scale, Gdiplus::FontStyleBold);
-        Gdiplus::Font emojiFont(emojiFamily.get(), config_.fontSize * scale, Gdiplus::FontStyleRegular);
-
-        Gdiplus::StringFormat format(Gdiplus::StringFormat::GenericTypographic());
-        format.SetFormatFlags(Gdiplus::StringFormatFlagsNoWrap);
-        format.SetAlignment(Gdiplus::StringAlignmentNear);
-        format.SetLineAlignment(Gdiplus::StringAlignmentCenter);
-
-        struct Run {
-            size_t start;
-            size_t len;
-            bool emoji;
-        };
-        std::vector<Run> runs;
-        for (size_t i = 0; i < text_.size(); ) {
-            size_t runStart = i;
-            size_t next = i;
+    if (hasEmoji) {
+        size_t pos = 0;
+        while (pos < text_.size()) {
+            size_t runStart = pos;
+            size_t next = pos;
             uint32_t cp = NextCodePoint(text_, &next);
             if (cp == 0) break;
-            i = next;
+            pos = next;
             if (IsEmojiCodePoint(cp)) {
-                size_t runEnd = i;
+                size_t runEnd = pos;
                 while (runEnd < text_.size()) {
                     size_t probe = runEnd;
                     uint32_t cp2 = NextCodePoint(text_, &probe);
@@ -337,10 +393,12 @@ void TextWindow::RenderFrame(float t) {
                     if (!IsEmojiComponent(cp2)) break;
                     runEnd = probe;
                 }
-                runs.push_back({ runStart, runEnd - runStart, true });
-                i = runEnd;
+                DWRITE_TEXT_RANGE range{ (UINT32)runStart, (UINT32)(runEnd - runStart) };
+                layout->SetFontFamilyName(emojiFontName.c_str(), range);
+                layout->SetFontWeight(DWRITE_FONT_WEIGHT_REGULAR, range);
+                pos = runEnd;
             } else {
-                size_t runEnd = i;
+                size_t runEnd = pos;
                 while (runEnd < text_.size()) {
                     size_t probe = runEnd;
                     uint32_t cp2 = NextCodePoint(text_, &probe);
@@ -348,35 +406,39 @@ void TextWindow::RenderFrame(float t) {
                     if (IsEmojiCodePoint(cp2)) break;
                     runEnd = probe;
                 }
-                runs.push_back({ runStart, runEnd - runStart, false });
-                i = runEnd;
+                DWRITE_TEXT_RANGE range{ (UINT32)runStart, (UINT32)(runEnd - runStart) };
+                layout->SetFontFamilyName(fontName.c_str(), range);
+                layout->SetFontWeight(DWRITE_FONT_WEIGHT_BOLD, range);
+                pos = runEnd;
             }
-        }
-
-        float totalW = 0.0f;
-        float maxH = 0.0f;
-        for (const auto& r : runs) {
-            std::wstring s = text_.substr(r.start, r.len);
-            Gdiplus::RectF bounds;
-            Gdiplus::Font* f = r.emoji ? &emojiFont : &normalFont;
-            g.MeasureString(s.c_str(), -1, f, Gdiplus::PointF(0.0f, 0.0f), &format, &bounds);
-            totalW += bounds.Width;
-            if (bounds.Height > maxH) maxH = bounds.Height;
-        }
-        float startX = centerX - (totalW / 2.0f);
-        float y = centerY - (maxH / 2.0f);
-        for (const auto& r : runs) {
-            std::wstring s = text_.substr(r.start, r.len);
-            Gdiplus::RectF bounds;
-            Gdiplus::Font* f = r.emoji ? &emojiFont : &normalFont;
-            g.MeasureString(s.c_str(), -1, f, Gdiplus::PointF(0.0f, 0.0f), &format, &bounds);
-            Gdiplus::RectF rect(startX, y, bounds.Width, maxH);
-            g.DrawString(s.c_str(), -1, f, rect, &format, &brush);
-            startX += bounds.Width;
         }
     }
 
-    g.ResetTransform();
+    d2dBrush_->SetColor(D2D1::ColorF(
+        (float)((color_.value >> 16) & 0xFF) / 255.0f,
+        (float)((color_.value >> 8) & 0xFF) / 255.0f,
+        (float)(color_.value & 0xFF) / 255.0f,
+        alpha));
+
+    const float xPosDip = xPos * pxToDip;
+    const float yOffsetDip = yOffset * pxToDip;
+    const float centerX = (widthDip / 2.0f) + xPosDip;
+    const float centerY = (heightDip / 2.0f) - yOffsetDip;
+    const float angle = xPos * 0.2f;
+    D2D1_MATRIX_3X2_F transform =
+        D2D1::Matrix3x2F::Translation(centerX, centerY) *
+        D2D1::Matrix3x2F::Rotation(angle) *
+        D2D1::Matrix3x2F::Translation(-centerX, -centerY);
+    d2dTarget_->SetTransform(transform);
+
+    d2dTarget_->DrawTextLayout(
+        D2D1::Point2F(xPosDip, -yOffsetDip),
+        layout.Get(),
+        d2dBrush_.Get(),
+        D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+
+    d2dTarget_->SetTransform(D2D1::Matrix3x2F::Identity());
+    d2dTarget_->EndDraw();
 
     // Push to screen
     POINT ptSrc{ 0, 0 };

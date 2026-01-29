@@ -5,6 +5,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 ## Doc Index
 - Marketing: `docs/marketing/readme_language_switch.md` (README language toggle rendering)
 - Issues: `docs/issues/emoji-support.md` (emoji rendering in settings + text click effect)
+- Issues: `docs/issues/text-effect-motion.md` (floating text motion parity after DWrite switch)
 
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

@@ -160,7 +160,7 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0)) {
         font_.CreateFontIndirect(&ncm.lfMessageFont);
         LOGFONT lf = ncm.lfMessageFont;
-        wcscpy_s(lf.lfFaceName, _countof(lf.lfFaceName), L"Segoe UI");
+        wcscpy_s(lf.lfFaceName, _countof(lf.lfFaceName), L"Segoe UI Emoji");
         fontEdit_.CreateFontIndirect(&lf);
     }
 
@@ -211,7 +211,6 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
         if (hEdit) {
             e.SubclassWindow(hEdit);
             ::SendMessageW(hEdit, EM_SETEDITSTYLE, SES_USECTF, SES_USECTF);
-            ::SendMessageW(hEdit, EM_SETTEXTMODE, TM_PLAINTEXT, 0);
         }
         if (fontEdit_.GetSafeHandle()) e.SetFont(&fontEdit_);
         else if (font_.GetSafeHandle()) e.SetFont(&font_);
