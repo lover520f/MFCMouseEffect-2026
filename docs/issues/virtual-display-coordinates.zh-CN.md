@@ -33,4 +33,4 @@
 - 如果只在虚拟副屏上差异巨大，优先怀疑副屏软件/驱动；真实外接屏也同样错，则需要进一步检查 DPI/坐标处理。
 
 ## 相关实现
-- `MFCMouseEffect/MouseFx/GlobalMouseHook.cpp`：`NormalizeScreenPoint(...)`
+- `MFCMouseEffect/MouseFx/Core/GlobalMouseHook.cpp`：`NormalizeScreenPoint(...)`

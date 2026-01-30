@@ -1,5 +1,5 @@
 #pragma once
-#include "../../IRippleRenderer.h"
+#include "../../Interfaces/IRippleRenderer.h"
 #include <vector>
 #include <cmath>
 #include <algorithm>

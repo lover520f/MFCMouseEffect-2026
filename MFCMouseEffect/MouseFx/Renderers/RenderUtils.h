@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <gdiplus.h>
-#include "../RippleStyle.h" // Assuming RippleStyle is in MouseFx root
+#include "../Styles/RippleStyle.h"
 
 namespace mousefx {
 namespace render_utils {

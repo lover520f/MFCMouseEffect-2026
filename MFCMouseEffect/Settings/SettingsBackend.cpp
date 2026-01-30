@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "SettingsBackend.h"
 
-#include "../MouseFx/AppController.h"
+#include "../MouseFx/Core/AppController.h"
 
 namespace {
 

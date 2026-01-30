@@ -94,7 +94,7 @@
     <OutDir>$(ProjectDir)..\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -102,6 +102,7 @@
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -124,6 +125,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -148,6 +150,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -174,6 +177,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -192,101 +196,104 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ChildFrm.h" />
-    <ClInclude Include="ClassView.h" />
-    <ClInclude Include="FileView.h" />
-    <ClInclude Include="EmojiPreviewWnd.h" />
+    <ClInclude Include="UI\Frame\ChildFrm.h" />
+    <ClInclude Include="UI\Panes\ClassView.h" />
+    <ClInclude Include="UI\Panes\FileView.h" />
+    <ClInclude Include="UI\Settings\EmojiPreviewWnd.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="UI\Frame\MainFrm.h" />
     <ClInclude Include="MFCMouseEffect.h" />
-    <ClInclude Include="MFCMouseEffectDoc.h" />
-    <ClInclude Include="MFCMouseEffectView.h" />
-    <ClInclude Include="MouseFx\AppController.h" />
-    <ClInclude Include="MouseFx\ConfigPathResolver.h" />
-    <ClInclude Include="MouseFx\EffectFactory.h" />
-    <ClInclude Include="MouseFx\GdiPlusSession.h" />
-    <ClInclude Include="MouseFx\GlobalMouseHook.h" />
-    <ClInclude Include="MouseFx\IconEffect.h" />
-    <ClInclude Include="MouseFx\IMouseEffect.h" />
-    <ClInclude Include="MouseFx\IpcController.h" />
-    <ClInclude Include="MouseFx\JsonLite.h" />
+    <ClInclude Include="UI\DocView\MFCMouseEffectDoc.h" />
+    <ClInclude Include="UI\DocView\MFCMouseEffectView.h" />
+    <ClInclude Include="MouseFx\Core\AppController.h" />
+    <ClInclude Include="MouseFx\Core\ConfigPathResolver.h" />
+    <ClInclude Include="MouseFx\Core\EffectFactory.h" />
+    <ClInclude Include="MouseFx\Core\GdiPlusSession.h" />
+    <ClInclude Include="MouseFx\Core\GlobalMouseHook.h" />
+    <ClInclude Include="MouseFx\Effects\IconEffect.h" />
+    <ClInclude Include="MouseFx\Interfaces\IMouseEffect.h" />
+    <ClInclude Include="MouseFx\Core\IpcController.h" />
+    <ClInclude Include="MouseFx\Core\JsonLite.h" />
     <ClInclude Include="MouseFx\MouseFxMessages.h" />
-    <ClInclude Include="MouseFx\RippleEffect.h" />
-    <ClInclude Include="MouseFx\RippleStyle.h" />
-    <ClInclude Include="MouseFx\RippleWindow.h" />
-    <ClInclude Include="MouseFx\RippleWindowPool.h" />
-    <ClInclude Include="MouseFx\ThemeStyle.h" />
-    <ClInclude Include="MouseFx\TextEffect.h" />
-    <ClInclude Include="MouseFx\TextWindow.h" />
-    <ClInclude Include="MouseFx\TextWindowPool.h" />
-    <ClInclude Include="MouseFx\TrailEffect.h" />
-    <ClInclude Include="MouseFx\TrailWindow.h" />
-    <ClInclude Include="MouseFx\ParticleTrailEffect.h" />
-    <ClInclude Include="MouseFx\ParticleTrailWindow.h" />
-    <ClInclude Include="MouseFx\ScrollEffect.h" />
-    <ClInclude Include="MouseFx\HoldEffect.h" />
-    <ClInclude Include="MouseFx\HoverEffect.h" />
-    <ClInclude Include="MouseFx\EffectConfig.h" />
-    <ClInclude Include="MouseFx\json.hpp" />
-    <ClInclude Include="SettingsWnd.h" />
+    <ClInclude Include="MouseFx\Effects\RippleEffect.h" />
+    <ClInclude Include="MouseFx\Styles\RippleStyle.h" />
+    <ClInclude Include="MouseFx\Windows\RippleWindow.h" />
+    <ClInclude Include="MouseFx\Windows\RippleWindowPool.h" />
+    <ClInclude Include="MouseFx\Styles\ThemeStyle.h" />
+    <ClInclude Include="MouseFx\Effects\TextEffect.h" />
+    <ClInclude Include="MouseFx\Windows\TextWindow.h" />
+    <ClInclude Include="MouseFx\Windows\TextWindowPool.h" />
+    <ClInclude Include="MouseFx\Effects\TrailEffect.h" />
+    <ClInclude Include="MouseFx\Windows\TrailWindow.h" />
+    <ClInclude Include="MouseFx\Effects\ParticleTrailEffect.h" />
+    <ClInclude Include="MouseFx\Windows\ParticleTrailWindow.h" />
+    <ClInclude Include="MouseFx\Effects\ScrollEffect.h" />
+    <ClInclude Include="MouseFx\Effects\HoldEffect.h" />
+    <ClInclude Include="MouseFx\Effects\HoverEffect.h" />
+    <ClInclude Include="MouseFx\Core\EffectConfig.h" />
+    <ClInclude Include="MouseFx\ThirdParty\json.hpp" />
+    <ClInclude Include="UI\Settings\SettingsWnd.h" />
     <ClInclude Include="Settings\SettingsBackend.h" />
     <ClInclude Include="Settings\SettingsModel.h" />
     <ClInclude Include="Settings\SettingsOptions.h" />
-    <ClInclude Include="OutputWnd.h" />
+    <ClInclude Include="Settings\EmojiUtils.h" />
+    <ClInclude Include="UI\Panes\OutputWnd.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="PropertiesWnd.h" />
+    <ClInclude Include="UI\Panes\PropertiesWnd.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="TrayMenuBuilder.h" />
-    <ClInclude Include="TrayMenuCommands.h" />
-    <ClInclude Include="TrayHostWnd.h" />
+    <ClInclude Include="UI\Tray\TrayMenuBuilder.h" />
+    <ClInclude Include="UI\Tray\TrayMenuCommands.h" />
+    <ClInclude Include="UI\Tray\TrayHostWnd.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="ViewTree.h" />
+    <ClInclude Include="UI\Panes\ViewTree.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ChildFrm.cpp" />
-    <ClCompile Include="ClassView.cpp" />
-    <ClCompile Include="FileView.cpp" />
-    <ClCompile Include="EmojiPreviewWnd.cpp" />
-    <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="UI\Frame\ChildFrm.cpp" />
+    <ClCompile Include="UI\Panes\ClassView.cpp" />
+    <ClCompile Include="UI\Panes\FileView.cpp" />
+    <ClCompile Include="UI\Settings\EmojiPreviewWnd.cpp" />
+    <ClCompile Include="UI\Frame\MainFrm.cpp" />
     <ClCompile Include="MFCMouseEffect.cpp" />
-    <ClCompile Include="MFCMouseEffectDoc.cpp" />
-    <ClCompile Include="MFCMouseEffectView.cpp" />
-    <ClCompile Include="MouseFx\AppController.cpp" />
-    <ClCompile Include="MouseFx\ConfigPathResolver.cpp" />
-    <ClCompile Include="MouseFx\EffectFactory.cpp" />
-    <ClCompile Include="MouseFx\GlobalMouseHook.cpp" />
-    <ClCompile Include="MouseFx\IconEffect.cpp" />
-    <ClCompile Include="MouseFx\IpcController.cpp" />
-    <ClCompile Include="MouseFx\JsonLite.cpp" />
-    <ClCompile Include="MouseFx\RippleEffect.cpp" />
-    <ClCompile Include="MouseFx\RippleWindow.cpp" />
-    <ClCompile Include="MouseFx\RippleWindowPool.cpp" />
+    <ClCompile Include="UI\DocView\MFCMouseEffectDoc.cpp" />
+    <ClCompile Include="UI\DocView\MFCMouseEffectView.cpp" />
+    <ClCompile Include="MouseFx\Core\AppController.cpp" />
+    <ClCompile Include="MouseFx\Core\ConfigPathResolver.cpp" />
+    <ClCompile Include="MouseFx\Core\EffectFactory.cpp" />
+    <ClCompile Include="MouseFx\Core\GlobalMouseHook.cpp" />
+    <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
+    <ClCompile Include="MouseFx\Core\IpcController.cpp" />
+    <ClCompile Include="MouseFx\Core\JsonLite.cpp" />
+    <ClCompile Include="MouseFx\Effects\RippleEffect.cpp" />
+    <ClCompile Include="MouseFx\Windows\RippleWindow.cpp" />
+    <ClCompile Include="MouseFx\Windows\RippleWindowPool.cpp" />
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />
-    <ClCompile Include="MouseFx\ThemeStyle.cpp" />
-    <ClCompile Include="MouseFx\TextEffect.cpp" />
-    <ClCompile Include="MouseFx\TextWindow.cpp" />
-    <ClCompile Include="MouseFx\TextWindowPool.cpp" />
-    <ClCompile Include="MouseFx\TrailEffect.cpp" />
-    <ClCompile Include="MouseFx\TrailWindow.cpp" />
-    <ClCompile Include="MouseFx\ParticleTrailEffect.cpp" />
-    <ClCompile Include="MouseFx\ParticleTrailWindow.cpp" />
-    <ClCompile Include="MouseFx\ScrollEffect.cpp" />
-    <ClCompile Include="MouseFx\HoldEffect.cpp" />
-    <ClCompile Include="MouseFx\HoverEffect.cpp" />
-    <ClCompile Include="MouseFx\EffectConfig.cpp" />
-    <ClCompile Include="SettingsWnd.cpp" />
+    <ClCompile Include="MouseFx\Styles\ThemeStyle.cpp" />
+    <ClCompile Include="MouseFx\Effects\TextEffect.cpp" />
+    <ClCompile Include="MouseFx\Windows\TextWindow.cpp" />
+    <ClCompile Include="MouseFx\Windows\TextWindowPool.cpp" />
+    <ClCompile Include="MouseFx\Effects\TrailEffect.cpp" />
+    <ClCompile Include="MouseFx\Windows\TrailWindow.cpp" />
+    <ClCompile Include="MouseFx\Effects\ParticleTrailEffect.cpp" />
+    <ClCompile Include="MouseFx\Windows\ParticleTrailWindow.cpp" />
+    <ClCompile Include="MouseFx\Effects\ScrollEffect.cpp" />
+    <ClCompile Include="MouseFx\Effects\HoldEffect.cpp" />
+    <ClCompile Include="MouseFx\Effects\HoverEffect.cpp" />
+    <ClCompile Include="MouseFx\Core\EffectConfig.cpp" />
+    <ClCompile Include="UI\Settings\SettingsWnd.cpp" />
+    <ClCompile Include="UI\Settings\SettingsWnd.Emoji.cpp" />
     <ClCompile Include="Settings\SettingsBackend.cpp" />
-    <ClCompile Include="OutputWnd.cpp" />
+    <ClCompile Include="Settings\EmojiUtils.cpp" />
+    <ClCompile Include="UI\Panes\OutputWnd.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="PropertiesWnd.cpp" />
-    <ClCompile Include="TrayMenuBuilder.cpp" />
-    <ClCompile Include="TrayHostWnd.cpp" />
-    <ClCompile Include="ViewTree.cpp" />
+    <ClCompile Include="UI\Panes\PropertiesWnd.cpp" />
+    <ClCompile Include="UI\Tray\TrayMenuBuilder.cpp" />
+    <ClCompile Include="UI\Tray\TrayHostWnd.cpp" />
+    <ClCompile Include="UI\Panes\ViewTree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MFCMouseEffect.rc" />

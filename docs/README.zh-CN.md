@@ -8,6 +8,9 @@
 - 问题记录：`docs/issues/text-effect-motion.md`（切换到 DWrite 后的飘散路径一致性）
 - 问题记录：`docs/issues/settings-emoji-preview.md`（设置页表情彩色预览叠层）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
+- 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）
+- 架构整理：`docs/architecture/ui-folder-structure.zh-CN.md`（UI 文件夹结构整理）
+- 架构整理：`docs/architecture/mousefx-folder-structure.zh-CN.md`（MouseFx 文件夹结构整理）
 
 ## 功能简介
 - 全局鼠标点击可视化（Windows）：低级鼠标钩子 `WH_MOUSE_LL` + GDI+ 分层窗口波纹。
@@ -36,7 +39,7 @@ Release 版本已改为“完全不创建主框架窗口”，只创建隐藏宿
 配色：不绘制卡片/底色，窗口背景与控件保持系统默认色，仅保留标题区与关闭按钮的自绘。
 
 ## 外观自定义
-- 主要文件：`MFCMouseEffect/MouseFx/RippleStyle.h`、`MFCMouseEffect/MouseFx/RippleWindow.cpp`。
+- 主要文件：`MFCMouseEffect/MouseFx/Styles/RippleStyle.h`、`MFCMouseEffect/MouseFx/Windows/RippleWindow.cpp`。
 - 关键参数：
   - 时长：`RippleStyle::durationMs`
   - 半径：`startRadius`、`endRadius`

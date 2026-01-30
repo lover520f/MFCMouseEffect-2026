@@ -24,4 +24,4 @@
 - If both coordinate sources are wrong (driver issue), further investigation is needed.
 
 ## Implementation
-- `MFCMouseEffect/MouseFx/GlobalMouseHook.cpp`: `NormalizeScreenPoint(...)`
+- `MFCMouseEffect/MouseFx/Core/GlobalMouseHook.cpp`: `NormalizeScreenPoint(...)`

@@ -4,7 +4,7 @@
 #include <functional>
 #include <map>
 #include <memory>
-#include "../IRippleRenderer.h"
+#include "../Interfaces/IRippleRenderer.h"
 
 namespace mousefx {
 

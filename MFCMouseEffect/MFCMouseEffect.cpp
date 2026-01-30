@@ -7,16 +7,16 @@
 #include "afxwinappex.h"
 #include "afxdialogex.h"
 #include "MFCMouseEffect.h"
-#include "MainFrm.h"
-#include "TrayHostWnd.h"
-#include "SettingsWnd.h"
+#include "UI/Frame/MainFrm.h"
+#include "UI/Tray/TrayHostWnd.h"
+#include "UI/Settings/SettingsWnd.h"
 #include "Settings/SettingsBackend.h"
 
-#include "MFCMouseEffectDoc.h"
-#include "MFCMouseEffectView.h"
+#include "UI/DocView/MFCMouseEffectDoc.h"
+#include "UI/DocView/MFCMouseEffectView.h"
 
-#include "MouseFx/AppController.h"
-#include "MouseFx/IpcController.h"
+#include "MouseFx/Core/AppController.h"
+#include "MouseFx/Core/IpcController.h"
 
 #include <string>
 

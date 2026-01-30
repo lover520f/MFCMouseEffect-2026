@@ -23,28 +23,22 @@ public:
     // Looking at ScrollEffect.cpp (not viewed yet, but recalling architecture), 
     // it likely uses ScrollEffect to orchestrate. 
     // Wait, ScrollEffect instantiates `ScrollWindow` or `RippleWindow`?
-    // RenderStrategies used by RippleWindow.
+    // Render strategies used by RippleWindow.
     // Actually, ScrollEffect usually calls `pool_.Show(..., renderer)`. 
     // But `pool_` uses `RippleWindow`.
     // `RippleWindow::StartContinuous` takes `RenderParams`.
     // `ChevronRenderer` needs to access `params` passed in `RippleWindow::StartContinuous`.
     // But `IRippleRenderer::Render` does NOT receive `RenderParams`! 
-    // Ah, `RenderStrategies.h` didn't have ChevronRenderer inside it in the view I saw earlier? 
-    // Yes it was in `StandardRenderers.h`.
+    // Note: legacy "RenderStrategies/StandardRenderers" headers were removed; see git history if needed.
     // It had `RenderParams params_;` member and `SetParams`. 
     // But `IRippleRenderer` interface defines `Render` without `RenderParams`.
     // So `RippleWindow` must have downcasted or `ChevronRenderer` was special?
-    // Let me check StandardRenderers.h again.
-    // Line 95: `class ChevronRenderer : public IRippleRenderer`.
-    // Line 105: `void SetParams(const RenderParams& p) { params_ = p; }`.
+    // The old implementation relied on setting a `RenderParams` member via a custom setter.
     // `RippleWindow.cpp` Line 140: `style_ = style; render_ = params;`.
     // Warning: `RippleWindow` stores `render_` (the params) but does NOT pass it to `Render` (Line 271).
     // `renderer_->Render(g, t, elapsedMs, sizePx_, style_);`
     // So `ChevronRenderer` used `params_.intensity` internally.
-    // How did `params_` get set? 
-    // The previous `StandardRenderers.h` implementation I saw had `SetParams`.
-    // But `RippleWindow` does NOT call `SetParams` on the renderer.
-    // This implies `ChevronRenderer` in `StandardRenderers.h` might have been broken or relied on manual setting BEFORE passing to window.
+    // How did `params_` get set? ScrollEffect sets it before handing the renderer to the window pool.
     // `ScrollEffect.cpp`:
     // `auto r = std::make_unique<ChevronRenderer>(); r->SetParams(params); pool_.Show...(std::move(r))`
     // Yes, that must be it.

@@ -8,6 +8,9 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Issues: `docs/issues/text-effect-motion.md` (floating text motion parity after DWrite switch)
 - Issues: `docs/issues/settings-emoji-preview.md` (settings emoji color preview overlay)
 - Architecture: `docs/architecture/tray-and-appcontroller-refactor.md` (tray menu table-driven + AppController cleanup)
+- Architecture: `docs/architecture/settingswnd-emoji-split.md` (SettingsWnd emoji logic split)
+- Architecture: `docs/architecture/ui-folder-structure.md` (UI folder layout refolder)
+- Architecture: `docs/architecture/mousefx-folder-structure.md` (MouseFx folder layout refolder)
 
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.
@@ -36,7 +39,7 @@ Note: inner controls use native widgets for stability.
 Colors: no card/background fill; window and controls use system defaults, with only the title area and close button drawn.
 
 ## Customizing the Look
-- File: `MFCMouseEffect/MouseFx/RippleStyle.h` and `MFCMouseEffect/MouseFx/RippleWindow.cpp`.
+- File: `MFCMouseEffect/MouseFx/Styles/RippleStyle.h` and `MFCMouseEffect/MouseFx/Windows/RippleWindow.cpp`.
 - Key knobs:
   - Duration: `RippleStyle::durationMs`
   - Radii: `startRadius`, `endRadius`

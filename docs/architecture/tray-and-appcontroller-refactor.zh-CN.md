@@ -8,18 +8,18 @@
 
 ## 变更摘要
 ### 1) Config 路径解析独立
-- 新增：`MFCMouseEffect/MouseFx/ConfigPathResolver.h`
-- 新增：`MFCMouseEffect/MouseFx/ConfigPathResolver.cpp`
+- 新增：`MFCMouseEffect/MouseFx/Core/ConfigPathResolver.h`
+- 新增：`MFCMouseEffect/MouseFx/Core/ConfigPathResolver.cpp`
 - `AppController` 不再内嵌 `GetConfigDirectory()`，改为调用 `ResolveConfigDirectory()`。
 
 ### 2) Effect 创建逻辑抽出为工厂
-- 新增：`MFCMouseEffect/MouseFx/EffectFactory.h`
-- 新增：`MFCMouseEffect/MouseFx/EffectFactory.cpp`
+- 新增：`MFCMouseEffect/MouseFx/Core/EffectFactory.h`
+- 新增：`MFCMouseEffect/MouseFx/Core/EffectFactory.cpp`
 - `AppController::CreateEffect(...)` 只做委托：`EffectFactory::Create(...)`。
 
 ### 3) 轻量 JSON 字段提取独立
-- 新增：`MFCMouseEffect/MouseFx/JsonLite.h`
-- 新增：`MFCMouseEffect/MouseFx/JsonLite.cpp`
+- 新增：`MFCMouseEffect/MouseFx/Core/JsonLite.h`
+- 新增：`MFCMouseEffect/MouseFx/Core/JsonLite.cpp`
 - `AppController` 不再内嵌 `ExtractJsonValue()`。
 
 ### 4) Renderer 静态注册显式落地（不改渲染实现）
@@ -27,10 +27,10 @@
 - 新增：`MFCMouseEffect/MouseFx/Renderers/RendererLinkage.cpp`
 
 ### 5) 托盘菜单表驱动 + 命令 ID 统一出口
-- 新增：`MFCMouseEffect/TrayMenuCommands.h`（托盘命令 ID 统一定义）
-- 新增：`MFCMouseEffect/TrayMenuBuilder.h`
-- 新增：`MFCMouseEffect/TrayMenuBuilder.cpp`
-- `MFCMouseEffect/TrayHostWnd.cpp` 只负责：
+- 新增：`MFCMouseEffect/UI/Tray/TrayMenuCommands.h`（托盘命令 ID 统一定义）
+- 新增：`MFCMouseEffect/UI/Tray/TrayMenuBuilder.h`
+- 新增：`MFCMouseEffect/UI/Tray/TrayMenuBuilder.cpp`
+- `MFCMouseEffect/UI/Tray/TrayHostWnd.cpp` 只负责：
   - 获取 `mouseFx` 指针
   - 通过 `TrayMenuBuilder::BuildTrayMenu(...)` 构建菜单
   - 根据 cmd 做 “Exit/Settings/StarRepo” UI 操作
@@ -47,4 +47,3 @@
 2. 切换 Click/Trail/Scroll/Hold/Hover 后，对应效果立即变化。
 3. 切换 Theme 后，主题色生效且能持久化到 `config.json`。
 4. 退出/打开设置窗口行为保持不变。
-

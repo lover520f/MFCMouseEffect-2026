@@ -25,7 +25,7 @@
 - **效果**：拉开了与主标题的距离，使层次感更清晰，视觉上更稳重。
 
 ## 相关文件
-- [SettingsWnd.cpp](file:///f:/language/cpp/code/MFCMouseEffect/MFCMouseEffect/SettingsWnd.cpp)
+- `MFCMouseEffect/UI/Settings/SettingsWnd.cpp`
 
 ## 验证结果
 - [x] 关闭按钮 "×" 符号在圆形/圆角矩形背景中完美居中。
@@ -40,7 +40,7 @@
     - 透明琉璃质感的指针代表软件的灵动与轻量。
     - 丝绸般的金紫光带代表丝滑的粒子拖尾效果。
     - 柔和的背景虚化体现了高端的交互质感。
-- **资源路径**：[res/logo_elegant.png](file:///f:/language/cpp/code/MFCMouseEffect/MFCMouseEffect/res/logo_elegant.png)
+- **资源路径**：`MFCMouseEffect/res/logo_elegant.png`
 
 > [!TIP]
 > 建议使用工具（如 Convertio 或相关 VS 插件）将此 PNG 转换为 `32x32`, `48x48`, `256x256` 尺寸的 `.ico` 文件，并替换 `res/MFCMouseEffect.ico` 以同步更新系统托盘和窗口图标。

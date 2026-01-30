@@ -1,5 +1,5 @@
 #pragma once
-#include "../../ITrailRenderer.h"
+#include "../../Interfaces/ITrailRenderer.h"
 #include <vector>
 #include <cmath>
 #include <gdiplus.h>
