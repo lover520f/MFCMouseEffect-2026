@@ -100,6 +100,7 @@ static bool TryBuildEffectJson(UINT cmd, std::string* outJson) {
         { kCmdTrailStreamer, "trail", "streamer" },
         { kCmdTrailElectric, "trail", "electric" },
         { kCmdTrailTubes,    "trail", "tubes" },
+        { kCmdTrailMeteor,   "trail", "meteor" },
         { kCmdTrailParticle, "trail", "particle" },
         { kCmdTrailNone,     "trail", nullptr },
         // Scroll
@@ -149,6 +150,7 @@ void TrayMenuBuilder::BuildTrayMenu(CMenu& menu, mousefx::AppController* mouseFx
         { kCmdTrailStreamer, L"\u9713\u8679\u6d41\u5149 (Streamer)", "streamer" },
         { kCmdTrailElectric, L"\u8d5b\u535a\u7535\u5f27 (Electric)", "electric" },
         { kCmdTrailTubes, L"\u79d1\u5e7b\u7ba1\u9053 (Tubes)", "tubes" },
+        { kCmdTrailMeteor, L"\u7D62\u4E3D\u6D41\u661F (Meteor)", "meteor" },
         { kCmdTrailParticle, L"\u5f69\u8679\u7c92\u5b50 (Particle)", "particle" },
         { kCmdTrailLine, L"\u666e\u901a\u7ebf\u6761 (Line)", "line" },
         { kCmdTrailNone, L"\u65e0 (None)", nullptr },

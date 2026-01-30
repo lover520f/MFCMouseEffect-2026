@@ -17,7 +17,9 @@ enum TrayMenuCmd : UINT {
     kCmdTrailParticle = 3002,
     kCmdTrailStreamer = 3004,
     kCmdTrailElectric = 3005,
+    kCmdTrailTShort = 3006, // Note: Tubes uses tubes/scifi. Keep existing names or add new.
     kCmdTrailTubes = 3006,
+    kCmdTrailMeteor = 3007,
     kCmdTrailNone = 3003,
     // Hover category
     kCmdHoverGlow = 4001,

@@ -3,6 +3,7 @@
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Interfaces/TrailRenderStrategies.h"
 #include "MouseFx/Renderers/Trail/TubesRenderer.h"
+#include "MouseFx/Renderers/Trail/MeteorRenderer.h"
 #include <algorithm>
 #include <cctype>
 #include <string>
@@ -19,6 +20,8 @@ TrailEffect::TrailEffect(const std::string& themeName, const std::string& type) 
         window_->SetRenderer(std::make_unique<StreamerTrailRenderer>());
     } else if (type == "tubes" || type == "scifi") {
         window_->SetRenderer(std::make_unique<TubesRenderer>());
+    } else if (type == "meteor") {
+        window_->SetRenderer(std::make_unique<MeteorRenderer>());
     } else {
         // Default Line
         window_->SetRenderer(std::make_unique<LineTrailRenderer>());

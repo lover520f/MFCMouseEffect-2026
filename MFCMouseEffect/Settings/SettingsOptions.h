@@ -130,6 +130,7 @@ inline const SettingOption* ClickOptions(bool zh, size_t& n) {
 
 inline const SettingOption* TrailOptions(bool zh, size_t& n) {
     static const SettingOption zhOpts[] = {
+        {L"\u7D62\u4E3D\u6D41\u661F", "meteor"},
         {L"\u9713\u8679\u6D41\u5149", "streamer"},
         {L"\u8D5B\u535A\u7535\u5F27", "electric"},
         {L"\u79D1\u5E7B\u7BA1\u9053", "tubes"},
@@ -138,6 +139,7 @@ inline const SettingOption* TrailOptions(bool zh, size_t& n) {
         {L"\u65E0", "none"},
     };
     static const SettingOption enOpts[] = {
+        {L"Meteor Shower", "meteor"},
         {L"Neon Streamer", "streamer"},
         {L"Cyber Electric", "electric"},
         {L"Sci-Fi Tubes", "tubes"},
