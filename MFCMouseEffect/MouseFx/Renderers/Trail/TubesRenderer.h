@@ -51,19 +51,19 @@ public:
         // Tube 1
         chains_[0].color = Gdiplus::Color(249, 103, 251); 
         chains_[0].nodes.resize(NUM_NODES);
-        chains_[0].lag = 0.25f; // Fastest?
+        chains_[0].lag = 0.30f; // Slower follow (was 0.40f, original 0.25f)
         chains_[0].rotOffset = 0.0f;
 
         // Tube 2
         chains_[1].color = Gdiplus::Color(83, 188, 40);
         chains_[1].nodes.resize(NUM_NODES);
-        chains_[1].lag = 0.35f;
-        chains_[1].rotOffset = 2.0f; // Radians offset? Or just distinct lag.
+        chains_[1].lag = 0.40f; // Slower follow (was 0.50f, original 0.35f)
+        chains_[1].rotOffset = 2.0f;
 
         // Tube 3
         chains_[2].color = Gdiplus::Color(105, 88, 213);
         chains_[2].nodes.resize(NUM_NODES);
-        chains_[2].lag = 0.45f; // Slowest
+        chains_[2].lag = 0.50f; // Slower follow (was 0.60f, original 0.45f)
         chains_[2].rotOffset = 4.0f;
     }
 
@@ -82,12 +82,14 @@ public:
         }
 
         // Global Alpha management for Disappearance
-        if (hasInput) {
-            // Active input: full opacity
+        uint64_t now = GetTickCount64();
+        bool isIdle = !hasInput || (now - points.back().addedTime > 50);
+
+        if (!isIdle) {
+            // Mouse is actively moving: full opacity
             fadeAlpha_ = 255.0f;
         } else {
-            // No input: Check convergence
-            // If the tail has nearly reached the head (collapsed), start fading.
+            // Mouse is idle for > 50ms: Check convergence & fade
             bool converged = true;
             for (const auto& chain : chains_) {
                 if (!chain.nodes.empty()) {
@@ -95,7 +97,7 @@ public:
                     const auto& tail = chain.nodes.back();
                     float dx = head.x - tail.x;
                     float dy = head.y - tail.y;
-                    if (dx * dx + dy * dy > 25.0f) { // 5px threshold squared
+                    if (dx * dx + dy * dy > 100.0f) { // 10px threshold squared (was 25.0f/5px)
                         converged = false;
                         break;
                     }
@@ -103,9 +105,11 @@ public:
             }
             
             if (converged) {
-                fadeAlpha_ -= 25.0f; // Fade out speed
-                if (fadeAlpha_ < 0.0f) fadeAlpha_ = 0.0f;
+                fadeAlpha_ -= 35.0f; // Faster fade (was 25.0f)
+            } else {
+                fadeAlpha_ -= 10.0f; // Gradual fade while converging
             }
+            if (fadeAlpha_ < 0.0f) fadeAlpha_ = 0.0f;
         }
         
         if (fadeAlpha_ <= 0.0f) return; // Completely gone
