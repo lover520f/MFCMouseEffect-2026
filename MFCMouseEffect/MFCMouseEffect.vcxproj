@@ -202,11 +202,14 @@
     <ClInclude Include="MFCMouseEffectDoc.h" />
     <ClInclude Include="MFCMouseEffectView.h" />
     <ClInclude Include="MouseFx\AppController.h" />
+    <ClInclude Include="MouseFx\ConfigPathResolver.h" />
+    <ClInclude Include="MouseFx\EffectFactory.h" />
     <ClInclude Include="MouseFx\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\GlobalMouseHook.h" />
     <ClInclude Include="MouseFx\IconEffect.h" />
     <ClInclude Include="MouseFx\IMouseEffect.h" />
     <ClInclude Include="MouseFx\IpcController.h" />
+    <ClInclude Include="MouseFx\JsonLite.h" />
     <ClInclude Include="MouseFx\MouseFxMessages.h" />
     <ClInclude Include="MouseFx\RippleEffect.h" />
     <ClInclude Include="MouseFx\RippleStyle.h" />
@@ -233,6 +236,8 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="PropertiesWnd.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="TrayMenuBuilder.h" />
+    <ClInclude Include="TrayMenuCommands.h" />
     <ClInclude Include="TrayHostWnd.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="ViewTree.h" />
@@ -247,12 +252,16 @@
     <ClCompile Include="MFCMouseEffectDoc.cpp" />
     <ClCompile Include="MFCMouseEffectView.cpp" />
     <ClCompile Include="MouseFx\AppController.cpp" />
+    <ClCompile Include="MouseFx\ConfigPathResolver.cpp" />
+    <ClCompile Include="MouseFx\EffectFactory.cpp" />
     <ClCompile Include="MouseFx\GlobalMouseHook.cpp" />
     <ClCompile Include="MouseFx\IconEffect.cpp" />
     <ClCompile Include="MouseFx\IpcController.cpp" />
+    <ClCompile Include="MouseFx\JsonLite.cpp" />
     <ClCompile Include="MouseFx\RippleEffect.cpp" />
     <ClCompile Include="MouseFx\RippleWindow.cpp" />
     <ClCompile Include="MouseFx\RippleWindowPool.cpp" />
+    <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />
     <ClCompile Include="MouseFx\ThemeStyle.cpp" />
     <ClCompile Include="MouseFx\TextEffect.cpp" />
     <ClCompile Include="MouseFx\TextWindow.cpp" />
@@ -275,6 +284,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PropertiesWnd.cpp" />
+    <ClCompile Include="TrayMenuBuilder.cpp" />
     <ClCompile Include="TrayHostWnd.cpp" />
     <ClCompile Include="ViewTree.cpp" />
   </ItemGroup>

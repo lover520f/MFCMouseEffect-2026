@@ -4,49 +4,12 @@
 
 #include "AppController.h"
 #include "MouseFxMessages.h"
-#include "RippleEffect.h"
-#include "TrailEffect.h"
-#include "IconEffect.h"
-#include "ScrollEffect.h"
-#include "HoldEffect.h"
-#include "HoverEffect.h"
-#include "ParticleTrailEffect.h"
-#include "TextEffect.h"
-
-// Include new renderers (must be global scope to avoid std namespace pollution)
-#include "Renderers/Click/RippleRenderer.h"
-#include "Renderers/Click/StarRenderer.h"
-#include "Renderers/Scroll/ChevronRenderer.h"
-#include "Renderers/Click/StarRenderer.h"
-#include "Renderers/Scroll/ChevronRenderer.h"
-#include "Renderers/Hover/CrosshairRenderer.h"
-#include "Renderers/Hover/TubesHoverRenderer.h"
+#include "ConfigPathResolver.h"
+#include "EffectFactory.h"
+#include "JsonLite.h"
 
 #include <new>
 #include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM
-
-
-
-// Helper: simplistic JSON-like parsing for extracting string values.
-static std::string ExtractJsonValue(const std::string& json, const std::string& key) {
-	std::string search = "\"" + key + "\"";
-	size_t keyPos = json.find(search);
-	if (keyPos == std::string::npos) return "";
-
-	size_t startQuote = json.find('"', keyPos + search.length());
-	if (startQuote == std::string::npos) {
-		startQuote = json.find('"', keyPos + search.length() + 1);
-	}
-	if (startQuote == std::string::npos) return "";
-
-	size_t endQuote = json.find('"', startQuote + 1);
-	if (endQuote == std::string::npos) return "";
-
-	return json.substr(startQuote + 1, endQuote - startQuote - 1);
-}
-
-#include <shlobj.h>
-// #include <filesystem> // Removed to avoid C++17 requirement in Release mode
 
 namespace mousefx {
 
@@ -59,33 +22,21 @@ AppController::~AppController() {
     Stop();
 }
 
-// Helper: Get best directory for config (AppData if possible, else EXE dir)
-static std::wstring GetConfigDirectory() {
-    wchar_t path[MAX_PATH] = {};
-    
-    // Try to get %AppData%\MFCMouseEffect
-#ifndef _DEBUG
-    PWSTR appDataPath = nullptr;
-    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, nullptr, &appDataPath))) {
-        std::wstring p = std::wstring(appDataPath) + L"\\MFCMouseEffect";
-        CoTaskMemFree(appDataPath);
-        
-        // Create directory if it doesn't exist (using Win32 API to support older C++ standards)
-        int res = SHCreateDirectoryExW(nullptr, p.c_str(), nullptr);
-        if (res == ERROR_SUCCESS || res == ERROR_ALREADY_EXISTS || res == ERROR_FILE_EXISTS) {
-            return p;
-        }
+void AppController::PersistConfig() {
+    if (!configDir_.empty()) {
+        EffectConfig::Save(configDir_, config_);
     }
-#endif
+}
 
-    // Fallback to EXE directory
-    GetModuleFileNameW(nullptr, path, MAX_PATH);
-    std::wstring p(path);
-    size_t pos = p.find_last_of(L"\\/");
-    if (pos != std::wstring::npos) {
-        return p.substr(0, pos);
+void AppController::SetActiveEffectType(EffectCategory category, const std::string& type) {
+    switch (category) {
+        case EffectCategory::Click: config_.active.click = type; break;
+        case EffectCategory::Trail: config_.active.trail = type; break;
+        case EffectCategory::Scroll: config_.active.scroll = type; break;
+        case EffectCategory::Hover: config_.active.hover = type; break;
+        case EffectCategory::Hold: config_.active.hold = type; break;
+        default: break;
     }
-    return L".";
 }
 
 bool AppController::Start() {
@@ -93,7 +44,7 @@ bool AppController::Start() {
     diag_ = {};
 
     // Load config from the best available directory (AppData preferred)
-    configDir_ = GetConfigDirectory();
+    configDir_ = ResolveConfigDirectory();
     config_ = EffectConfig::Load(configDir_);
 
     diag_.stage = StartStage::GdiPlusStartup;
@@ -164,47 +115,7 @@ void AppController::Stop() {
 // Except simpler effects might fallback?
 
 std::unique_ptr<IMouseEffect> AppController::CreateEffect(EffectCategory category, const std::string& type) {
-    if (type == "none" || type.empty()) {
-        return nullptr;
-    }
-
-    switch (category) {
-        case EffectCategory::Click:
-            if (type == "ripple") return std::make_unique<RippleEffect>(config_.theme);
-            if (type == "star")   return std::make_unique<IconEffect>(config_.theme);
-            if (type == "text")   return std::make_unique<TextEffect>(config_.textClick, config_.theme);
-            break;
-        case EffectCategory::Trail:
-
-            if (type == "particle") return std::make_unique<ParticleTrailEffect>(config_.theme);
-             // "line", "streamer", "electric" all handled by TrailEffect via strategy
-            return std::make_unique<TrailEffect>(config_.theme, type);
-            break;
-        case EffectCategory::Scroll:
-            if (type == "arrow")  return std::make_unique<ScrollEffect>(config_.theme);
-            break;
-        case EffectCategory::Hold:
-            // Refactored to pass type string directly. Registry handles the rest.
-            return std::make_unique<HoldEffect>(config_.theme, type);
-            break;
-        case EffectCategory::Hover:
-
-            // Pass type directly
-            return std::make_unique<HoverEffect>(config_.theme, type);
-            break;
-        case EffectCategory::Edge:
-            // TODO: implement these categories
-            break;
-        default:
-
-            break;
-    }
-
-    // Fallback for unknown type
-#ifdef _DEBUG
-    OutputDebugStringA(("MouseFx: unknown effect type: " + type + "\n").c_str());
-#endif
-    return nullptr;
+    return EffectFactory::Create(category, type, config_);
 }
 
 void AppController::SetEffect(EffectCategory category, const std::string& type) {
@@ -242,24 +153,18 @@ void AppController::SetTheme(const std::string& theme) {
     SetEffect(EffectCategory::Scroll, config_.active.scroll);
     SetEffect(EffectCategory::Hold, config_.active.hold);
     SetEffect(EffectCategory::Hover, config_.active.hover);
-    if (!configDir_.empty()) {
-        EffectConfig::Save(configDir_, config_);
-    }
+    PersistConfig();
 }
 
 void AppController::SetUiLanguage(const std::string& lang) {
     if (lang.empty()) return;
     config_.uiLanguage = lang;
-    if (!configDir_.empty()) {
-        EffectConfig::Save(configDir_, config_);
-    }
+    PersistConfig();
 }
 
 void AppController::SetTextEffectContent(const std::vector<std::wstring>& texts) {
     config_.textClick.texts = texts;
-    if (!configDir_.empty()) {
-        EffectConfig::Save(configDir_, config_);
-    }
+    PersistConfig();
     // Note: TextEffect pulls from config each click, so no need to "reload" the effect object
     // unless we want to refresh its internal pool immediately.
     // TextEffect::Initialize() builds the pool.
@@ -277,9 +182,7 @@ void AppController::ResetConfig() {
     config_ = EffectConfig::GetDefault();
     
     // 2. Save it to disk
-    if (!configDir_.empty()) {
-        EffectConfig::Save(configDir_, config_);
-    }
+    PersistConfig();
 
     // 3. Re-apply everything
     SetEffect(EffectCategory::Click, config_.active.click);
@@ -310,58 +213,40 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
         return;
     }
 
-    std::string cmd = ExtractJsonValue(jsonCmd, "cmd");
+    std::string cmd = ExtractJsonStringValue(jsonCmd, "cmd");
     
     if (cmd == "set_effect") {
-        std::string category = ExtractJsonValue(jsonCmd, "category");
-        std::string type = ExtractJsonValue(jsonCmd, "type");
+        std::string category = ExtractJsonStringValue(jsonCmd, "category");
+        std::string type = ExtractJsonStringValue(jsonCmd, "type");
         
         if (category.empty()) {
             // Legacy format: {"cmd": "set_effect", "type": "ripple"}
             // Assume click category for backward compatibility
             SetEffect(EffectCategory::Click, type);
-            config_.active.click = type;
+            SetActiveEffectType(EffectCategory::Click, type);
         } else {
             const auto cat = CategoryFromString(category);
             SetEffect(cat, type);
-            switch (cat) {
-            case EffectCategory::Click: config_.active.click = type; break;
-            case EffectCategory::Trail: config_.active.trail = type; break;
-            case EffectCategory::Scroll: config_.active.scroll = type; break;
-            case EffectCategory::Hover: config_.active.hover = type; break;
-            case EffectCategory::Hold: config_.active.hold = type; break;
-            default: break;
-            }
+            SetActiveEffectType(cat, type);
         }
-        if (!configDir_.empty()) {
-            EffectConfig::Save(configDir_, config_);
-        }
+        PersistConfig();
     } else if (cmd == "clear_effect") {
-        std::string category = ExtractJsonValue(jsonCmd, "category");
+        std::string category = ExtractJsonStringValue(jsonCmd, "category");
         const auto cat = CategoryFromString(category);
         ClearEffect(cat);
-        switch (cat) {
-        case EffectCategory::Click: config_.active.click = "none"; break;
-        case EffectCategory::Trail: config_.active.trail = "none"; break;
-        case EffectCategory::Scroll: config_.active.scroll = "none"; break;
-        case EffectCategory::Hover: config_.active.hover = "none"; break;
-        case EffectCategory::Hold: config_.active.hold = "none"; break;
-        default: break;
-        }
-        if (!configDir_.empty()) {
-            EffectConfig::Save(configDir_, config_);
-        }
+        SetActiveEffectType(cat, "none");
+        PersistConfig();
     } else if (cmd == "set_theme") {
-        std::string theme = ExtractJsonValue(jsonCmd, "theme");
+        std::string theme = ExtractJsonStringValue(jsonCmd, "theme");
         SetTheme(theme);
     } else if (cmd == "set_ui_language") {
-        std::string lang = ExtractJsonValue(jsonCmd, "lang");
+        std::string lang = ExtractJsonStringValue(jsonCmd, "lang");
         SetUiLanguage(lang);
     } else if (cmd == "effect_cmd") {
         // Generic command pass-through: { "cmd": "effect_cmd", "category": "hold", "command": "speed", "args": "2.0" }
-        std::string category = ExtractJsonValue(jsonCmd, "category");
-        std::string command = ExtractJsonValue(jsonCmd, "command");
-        std::string args = ExtractJsonValue(jsonCmd, "args");
+        std::string category = ExtractJsonStringValue(jsonCmd, "category");
+        std::string command = ExtractJsonStringValue(jsonCmd, "command");
+        std::string args = ExtractJsonStringValue(jsonCmd, "args");
         
         if (!category.empty()) {
             const auto cat = CategoryFromString(category);

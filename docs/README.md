@@ -7,6 +7,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Issues: `docs/issues/emoji-support.md` (emoji rendering in settings + text click effect)
 - Issues: `docs/issues/text-effect-motion.md` (floating text motion parity after DWrite switch)
 - Issues: `docs/issues/settings-emoji-preview.md` (settings emoji color preview overlay)
+- Architecture: `docs/architecture/tray-and-appcontroller-refactor.md` (tray menu table-driven + AppController cleanup)
 
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

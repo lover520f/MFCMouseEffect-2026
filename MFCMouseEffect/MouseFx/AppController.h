@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <array>
 #include <string>
+#include <vector>
 
 #include "GdiPlusSession.h"
 #include "GlobalMouseHook.h"
@@ -63,7 +64,6 @@ public:
     StartDiagnostics Diagnostics() const { return diag_; }
     
     // Get current config (for effects to read)
-    // Get current config (for effects to read)
     const EffectConfig& Config() const { return config_; }
 
     // Reset settings to defaults
@@ -77,6 +77,9 @@ private:
     
     // Factory method to create effect by category and type name.
     std::unique_ptr<IMouseEffect> CreateEffect(EffectCategory category, const std::string& type);
+
+    void PersistConfig();
+    void SetActiveEffectType(EffectCategory category, const std::string& type);
 
     HWND dispatchHwnd_ = nullptr;
 

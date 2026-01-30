@@ -1,0 +1,17 @@
+#pragma once
+
+#include <memory>
+#include <string>
+
+#include "IMouseEffect.h"
+#include "EffectConfig.h"
+
+namespace mousefx {
+
+class EffectFactory final {
+public:
+    static std::unique_ptr<IMouseEffect> Create(EffectCategory category, const std::string& type, const EffectConfig& config);
+};
+
+} // namespace mousefx
+
