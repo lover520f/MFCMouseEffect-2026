@@ -2,6 +2,9 @@
 
 #include <cstddef>
 #include <string>
+#include <vector>
+#include "MouseFx/Interfaces/EffectCommands.h"
+#include "MouseFx/Interfaces/EffectMetadata.h"
 
 struct SettingOption {
     const wchar_t* display;
@@ -84,6 +87,69 @@ inline const SettingOption* LangOptions(size_t& n) {
     return opts;
 }
 
+// Master metadata lists to ensure unified sorting
+namespace mousefx {
+
+inline const EffectOption* ClickMetadata(size_t& n) {
+    static const EffectOption opts[] = {
+        {"ripple", kCmdClickRipple, L"\u6C34\u6CE2\u7EB9", L"Ripple"},
+        {"star",   kCmdClickStar,   L"\u661F\u661F",      L"Star"},
+        {"text",   kCmdClickText,   L"\u98D8\u6D6E\u6587\u5B57", L"Text"},
+        {"none",   kCmdClickNone,   L"\u65E0",            L"None"},
+    };
+    n = _countof(opts);
+    return opts;
+}
+
+inline const EffectOption* TrailMetadata(size_t& n) {
+    static const EffectOption opts[] = {
+        {"meteor",   kCmdTrailMeteor,   L"\u7D62\u4E3D\u6D41\u661F", L"Meteor Shower"},
+        {"streamer", kCmdTrailStreamer, L"\u9713\u8679\u6D41\u5149", L"Neon Streamer"},
+        {"electric", kCmdTrailElectric, L"\u8D5B\u535A\u7535\u5F27", L"Cyber Electric"},
+        {"tubes",    kCmdTrailTubes,    L"\u79D1\u5E7B\u7BA1\u9053", L"Sci-Fi Tubes"},
+        {"particle", kCmdTrailParticle, L"\u5F69\u8679\u7C92\u5B50", L"Particle"},
+        {"line",     kCmdTrailLine,     L"\u666E\u901A\u7EBF\u6761", L"Line"},
+        {"none",     kCmdTrailNone,     L"\u65E0",            L"None"},
+    };
+    n = _countof(opts);
+    return opts;
+}
+
+inline const EffectOption* ScrollMetadata(size_t& n) {
+    static const EffectOption opts[] = {
+        {"arrow", kCmdScrollArrow, L"\u65B9\u5411\u6307\u793A", L"Arrow"},
+        {"none",  kCmdScrollNone,  L"\u65E0",            L"None"},
+    };
+    n = _countof(opts);
+    return opts;
+}
+
+inline const EffectOption* HoldMetadata(size_t& n) {
+    static const EffectOption opts[] = {
+        {"charge",    kCmdHoldCharge,   L"\u84C4\u529B (\u80FD\u91CF\u73AF)", L"Energy Charge"},
+        {"lightning", kCmdHoldLightning,L"\u95EA\u7535 (\u5947\u70B9)",        L"Lightning"},
+        {"hex",       kCmdHoldHex,      L"\u516D\u8FB9\u5F62 (\u62A4\u76FE)", L"Hex Shield"},
+        {"tech_ring", kCmdHoldTechRing, L"\u79D1\u6280\u5708 (3D)",        L"Tech Ring (3D)"},
+        {"hologram",  kCmdHoldHologram, L"\u516E\u606F\u6295\u5F71 (3D)", L"Hologram (3D)", "scifi3d"},
+        {"none",      kCmdHoldNone,     L"\u65E0",                    L"None"},
+    };
+    n = _countof(opts);
+    return opts;
+}
+
+inline const EffectOption* HoverMetadata(size_t& n) {
+    static const EffectOption opts[] = {
+        {"glow",  kCmdHoverGlow,  L"\u547C\u5438\u706F", L"Glow"},
+        {"tubes", kCmdHoverTubes, L"\u87ba\u65cb\u60ac\u6d6e", L"Helix Suspension", "suspension"},
+        {"none",  kCmdHoverNone,  L"\u65E0",            L"None"},
+    };
+    n = _countof(opts);
+    return opts;
+}
+
+} // namespace mousefx
+
+// Converter helpers for SettingsWindow compatibility
 inline const SettingOption* ThemeOptions(bool zh, size_t& n) {
     static const SettingOption zhOpts[] = {
         {L"\u70ab\u5f69", "chromatic"},
@@ -99,121 +165,78 @@ inline const SettingOption* ThemeOptions(bool zh, size_t& n) {
         {L"Minimal", "minimal"},
         {L"Game", "game"},
     };
-    if (zh) {
-        n = _countof(zhOpts);
-        return zhOpts;
-    }
-    n = _countof(enOpts);
-    return enOpts;
+    if (zh) { n = _countof(zhOpts); return zhOpts; }
+    n = _countof(enOpts); return enOpts;
 }
 
 inline const SettingOption* ClickOptions(bool zh, size_t& n) {
-    static const SettingOption zhOpts[] = {
-        {L"\u6C34\u6CE2\u7EB9", "ripple"},
-        {L"\u661F\u661F", "star"},
-        {L"\u98D8\u6D6E\u6587\u5B57", "text"},
-        {L"\u65E0", "none"},
-    };
-    static const SettingOption enOpts[] = {
-        {L"Ripple", "ripple"},
-        {L"Star", "star"},
-        {L"Text", "text"},
-        {L"None", "none"},
-    };
-    if (zh) {
-        n = _countof(zhOpts);
-        return zhOpts;
+    static std::vector<SettingOption> zhCache, enCache;
+    if (zhCache.empty()) {
+        size_t count = 0;
+        const auto* meta = mousefx::ClickMetadata(count);
+        for (size_t i = 0; i < count; ++i) {
+            zhCache.push_back({meta[i].displayZh, meta[i].value});
+            enCache.push_back({meta[i].displayEn, meta[i].value});
+        }
     }
-    n = _countof(enOpts);
-    return enOpts;
+    n = zhCache.size();
+    return zh ? zhCache.data() : enCache.data();
 }
 
 inline const SettingOption* TrailOptions(bool zh, size_t& n) {
-    static const SettingOption zhOpts[] = {
-        {L"\u7D62\u4E3D\u6D41\u661F", "meteor"},
-        {L"\u9713\u8679\u6D41\u5149", "streamer"},
-        {L"\u8D5B\u535A\u7535\u5F27", "electric"},
-        {L"\u79D1\u5E7B\u7BA1\u9053", "tubes"},
-        {L"\u5F69\u8679\u7C92\u5B50", "particle"},
-        {L"\u666E\u901A\u7EBF\u6761", "line"},
-        {L"\u65E0", "none"},
-    };
-    static const SettingOption enOpts[] = {
-        {L"Meteor Shower", "meteor"},
-        {L"Neon Streamer", "streamer"},
-        {L"Cyber Electric", "electric"},
-        {L"Sci-Fi Tubes", "tubes"},
-        {L"Particle", "particle"},
-        {L"Line", "line"},
-        {L"None", "none"},
-    };
-    if (zh) {
-        n = _countof(zhOpts);
-        return zhOpts;
+    static std::vector<SettingOption> zhCache, enCache;
+    if (zhCache.empty()) {
+        size_t count = 0;
+        const auto* meta = mousefx::TrailMetadata(count);
+        for (size_t i = 0; i < count; ++i) {
+            zhCache.push_back({meta[i].displayZh, meta[i].value});
+            enCache.push_back({meta[i].displayEn, meta[i].value});
+        }
     }
-    n = _countof(enOpts);
-    return enOpts;
+    n = zhCache.size();
+    return zh ? zhCache.data() : enCache.data();
 }
 
 inline const SettingOption* ScrollOptions(bool zh, size_t& n) {
-    static const SettingOption zhOpts[] = {
-        {L"\u65B9\u5411\u6307\u793A", "arrow"},
-        {L"\u65E0", "none"},
-    };
-    static const SettingOption enOpts[] = {
-        {L"Arrow", "arrow"},
-        {L"None", "none"},
-    };
-    if (zh) {
-        n = _countof(zhOpts);
-        return zhOpts;
+    static std::vector<SettingOption> zhCache, enCache;
+    if (zhCache.empty()) {
+        size_t count = 0;
+        const auto* meta = mousefx::ScrollMetadata(count);
+        for (size_t i = 0; i < count; ++i) {
+            zhCache.push_back({meta[i].displayZh, meta[i].value});
+            enCache.push_back({meta[i].displayEn, meta[i].value});
+        }
     }
-    n = _countof(enOpts);
-    return enOpts;
+    n = zhCache.size();
+    return zh ? zhCache.data() : enCache.data();
 }
 
 inline const SettingOption* HoldOptions(bool zh, size_t& n) {
-    static const SettingOption zhOpts[] = {
-        {L"\u84C4\u529B (\u80FD\u91CF\u73AF)", "charge"},
-        {L"\u95EA\u7535 (\u5947\u70B9)", "lightning"},
-        {L"\u516D\u8FB9\u5F62 (\u62A4\u76FE)", "hex"},
-        {L"\u79D1\u6280\u5708 (3D)", "tech_ring"},
-        {L"\u5168\u606F\u6295\u5F71 (3D)", "hologram"},
-        {L"\u65E0", "none"},
-    };
-    static const SettingOption enOpts[] = {
-        {L"Energy Charge", "charge"},
-        {L"Lightning", "lightning"},
-        {L"Hex Shield", "hex"},
-        {L"Tech Ring (3D)", "tech_ring"},
-        {L"Hologram (3D)", "hologram"},
-        {L"None", "none"},
-    };
-    if (zh) {
-        n = _countof(zhOpts);
-        return zhOpts;
+    static std::vector<SettingOption> zhCache, enCache;
+    if (zhCache.empty()) {
+        size_t count = 0;
+        const auto* meta = mousefx::HoldMetadata(count);
+        for (size_t i = 0; i < count; ++i) {
+            zhCache.push_back({meta[i].displayZh, meta[i].value});
+            enCache.push_back({meta[i].displayEn, meta[i].value});
+        }
     }
-    n = _countof(enOpts);
-    return enOpts;
+    n = zhCache.size();
+    return zh ? zhCache.data() : enCache.data();
 }
 
 inline const SettingOption* HoverOptions(bool zh, size_t& n) {
-    static const SettingOption zhOpts[] = {
-        {L"\u547C\u5438\u706F", "glow"},
-        {L"\u87ba\u65cb\u60ac\u6d6e", "tubes"},
-        {L"\u65E0", "none"},
-    };
-    static const SettingOption enOpts[] = {
-        {L"Glow", "glow"},
-        {L"Helix Suspension", "tubes"},
-        {L"None", "none"},
-    };
-    if (zh) {
-        n = _countof(zhOpts);
-        return zhOpts;
+    static std::vector<SettingOption> zhCache, enCache;
+    if (zhCache.empty()) {
+        size_t count = 0;
+        const auto* meta = mousefx::HoverMetadata(count);
+        for (size_t i = 0; i < count; ++i) {
+            zhCache.push_back({meta[i].displayZh, meta[i].value});
+            enCache.push_back({meta[i].displayEn, meta[i].value});
+        }
     }
-    n = _countof(enOpts);
-    return enOpts;
+    n = zhCache.size();
+    return zh ? zhCache.data() : enCache.data();
 }
 
 inline const wchar_t* DisplayForValue(const SettingOption* opts, size_t n, const std::string& value) {

@@ -5,8 +5,11 @@
 #include "resource.h"
 #include "MFCMouseEffect.h"
 #include "TrayMenuBuilder.h"
+#include "TrayMenuCommands.h"
 #include "MouseFx/Core/AppController.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
+
+using namespace mousefx;
 
 BEGIN_MESSAGE_MAP(CTrayHostWnd, CWnd)
 	ON_WM_CREATE()
