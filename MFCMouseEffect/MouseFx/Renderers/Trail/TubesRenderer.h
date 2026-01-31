@@ -156,6 +156,18 @@ public:
                 // Follow previous node
                 curr.x += ddx * chain.lag;
                 curr.y += ddy * chain.lag;
+                
+                // --- Minimum distance constraint to prevent clumping ---
+                // Ensure nodes are at least MIN_SEGMENT_DIST apart
+                constexpr float MIN_SEGMENT_DIST = 3.5f;
+                float dist = std::sqrt(ddx * ddx + ddy * ddy);
+                if (dist < MIN_SEGMENT_DIST && dist > 0.01f) {
+                    // Push the current node away from the previous node
+                    float nx = ddx / dist;
+                    float ny = ddy / dist;
+                    curr.x = prev.x - nx * MIN_SEGMENT_DIST;
+                    curr.y = prev.y - ny * MIN_SEGMENT_DIST;
+                }
             }
         }
 
