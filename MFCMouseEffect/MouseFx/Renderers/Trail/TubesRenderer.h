@@ -1,29 +1,11 @@
 #pragma once
 #include "../../Interfaces/ITrailRenderer.h"
+#include "MouseFx/Utils/TrailColor.h"
 #include <vector>
 #include <cmath>
 #include <gdiplus.h>
 
 namespace mousefx {
-
-namespace { // Helper for HSL
-    inline Gdiplus::Color HslToRgb(float h, float s, float l, int alpha) {
-        auto hue2rgb = [](float p, float q, float t) {
-            if (t < 0.0f) t += 1.0f;
-            if (t > 1.0f) t -= 1.0f;
-            if (t < 1.0f / 6.0f) return p + (q - p) * 6.0f * t;
-            if (t < 1.0f / 2.0f) return q;
-            if (t < 2.0f / 3.0f) return p + (q - p) * (2.0f / 3.0f - t) * 6.0f;
-            return p;
-        };
-        float q = l < 0.5f ? l * (1.0f + s) : l + s - l * s;
-        float p = 2.0f * l - q;
-        float tr = h / 360.0f + 1.0f / 3.0f;
-        float tg = h / 360.0f;
-        float tb = h / 360.0f - 1.0f / 3.0f;
-        return Gdiplus::Color((BYTE)alpha, (BYTE)(hue2rgb(p, q, tr) * 255), (BYTE)(hue2rgb(p, q, tg) * 255), (BYTE)(hue2rgb(p, q, tb) * 255));
-    }
-}
 
 class TubesRenderer : public ITrailRenderer {
 public:
@@ -254,7 +236,7 @@ public:
                    float hue = std::fmod((float)now * 0.2f + c * 30.0f, 360.0f);
                    
                    // Convert to RGB
-                   base = HslToRgb(hue, 0.9f, 0.6f, 255);
+                   base = trail_color::HslToRgbColor(hue, 0.9f, 0.6f, 255);
                 }
 
                 int alpha = (int)(255 * ratio); // Tail fades out alpha too

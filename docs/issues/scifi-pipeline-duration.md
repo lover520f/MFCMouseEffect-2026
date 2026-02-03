@@ -5,8 +5,11 @@
 
 对比其他拖尾特效的持续时间：
 - **普通线段 (`Line`)**: 约 300ms
-- **电弧 (`Electric`)**: 约 400ms
-- **流光 (`Streamer`)**: 约 500ms
+- **电弧 (`Electric`)**: 约 280ms
+- **流光 (`Streamer`)**: 约 420ms
+- **流星 (`Meteor`)**: 约 520ms
+
+说明：以上数值为拖尾“点位历史窗口”的配置（`TrailEffect.cpp` -> `TrailWindow::SetDurationMs`），不同 renderer 只有在点位历史足够时才会表现出明显差异。
 
 ## 解决方案
 为了在不牺牲拖尾长度（视觉质量）的前提下压缩消失时间，采取了以下优化方案：
@@ -27,7 +30,7 @@
 - 将收敛判定阈值从 `5px` 提升至 `10px`，使特效能更早进入快速消失阶段。
 
 ## 最终效果
-优化后，特效在鼠标停止后约 **400ms** 内即可完全消失，与“电弧”特效时长相当，显著减少了对文字显示的干扰。
+优化后，特效在鼠标停止后约 **400ms** 内即可完全消失（大致介于 `electric(280ms)` 与 `streamer(420ms)` 之间），显著减少了对文字显示的干扰。
 
 ## 相关文件
 - [TubesRenderer.h](file:///f:/language/cpp/code/MFCMouseEffect/MFCMouseEffect/MouseFx/Renderers/Trail/TubesRenderer.h)

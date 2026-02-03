@@ -25,6 +25,16 @@ public:
     void Clear();
     void SetChromatic(bool b) { isChromatic_ = b; }
     void SetColor(const Gdiplus::Color& c) { color_ = c; }
+    void SetMaxPoints(int n) {
+        if (n < 2) n = 2;
+        if (n > 240) n = 240;
+        maxPoints_ = n;
+    }
+    void SetDurationMs(int ms) {
+        if (ms < 80) ms = 80;
+        if (ms > 2000) ms = 2000;
+        durationMs_ = ms;
+    }
 
     void SetRenderer(std::unique_ptr<ITrailRenderer> renderer) {
         renderer_ = std::move(renderer);

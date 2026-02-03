@@ -11,6 +11,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Architecture: `docs/architecture/settingswnd-emoji-split.md` (SettingsWnd emoji logic split)
 - Architecture: `docs/architecture/ui-folder-structure.md` (UI folder layout refolder)
 - Architecture: `docs/architecture/mousefx-folder-structure.md` (MouseFx folder layout refolder)
+- Architecture: `docs/architecture/trail-effects-differentiation.md` (trail profiles + renderer split)
 
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

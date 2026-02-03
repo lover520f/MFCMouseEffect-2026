@@ -1,29 +1,12 @@
 #include "pch.h"
 #include "TrailWindow.h"
+#include "MouseFx/Utils/TrailColor.h"
 #include <algorithm>
 
 #pragma comment(lib, "gdiplus.lib")
 #include <cmath>
 
 namespace mousefx {
-
-// Copying HslToRgb for self-containment (or could include ThemeStyle if we exposed it)
-static Gdiplus::Color HslToRgb(float h, float s, float l, int alpha) {
-    auto hue2rgb = [](float p, float q, float t) {
-        if (t < 0.0f) t += 1.0f;
-        if (t > 1.0f) t -= 1.0f;
-        if (t < 1.0f / 6.0f) return p + (q - p) * 6.0f * t;
-        if (t < 1.0f / 2.0f) return q;
-        if (t < 2.0f / 3.0f) return p + (q - p) * (2.0f / 3.0f - t) * 6.0f;
-        return p;
-    };
-    float q = l < 0.5f ? l * (1.0f + s) : l + s - l * s;
-    float p = 2.0f * l - q;
-    float tr = h / 360.0f + 1.0f / 3.0f;
-    float tg = h / 360.0f;
-    float tb = h / 360.0f - 1.0f / 3.0f;
-    return Gdiplus::Color((BYTE)alpha, (BYTE)(hue2rgb(p, q, tr) * 255), (BYTE)(hue2rgb(p, q, tg) * 255), (BYTE)(hue2rgb(p, q, tb) * 255));
-}
 
 static uint64_t NowMs() {
     return GetTickCount64();
@@ -234,7 +217,7 @@ void TrailWindow::Render() {
             Gdiplus::Color c(alpha, color_.GetR(), color_.GetG(), color_.GetB());
              if (isChromatic_) {
                  float hue = std::fmod((float)now * 0.1f + i * 10.0f, 360.0f);
-                 c = HslToRgb(hue, 0.8f, 0.6f, alpha);
+                 c = trail_color::HslToRgbColor(hue, 0.8f, 0.6f, (BYTE)alpha);
             }
             Gdiplus::Pen p(c, 4.0f); 
             p.SetStartCap(Gdiplus::LineCapRound);

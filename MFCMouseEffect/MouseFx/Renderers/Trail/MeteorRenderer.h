@@ -1,5 +1,8 @@
 #pragma once
 #include "../../Interfaces/ITrailRenderer.h"
+#include "MouseFx/Utils/TrailColor.h"
+#include "MouseFx/Utils/TrailMath.h"
+#include "MouseFx/Utils/XorShift.h"
 #include <vector>
 #include <cmath>
 #include <gdiplus.h>
@@ -17,9 +20,9 @@ public:
         float hue;
     };
 
-     MeteorRenderer() {
-        srand((unsigned int)GetTickCount64());
-    }
+    explicit MeteorRenderer(int durationMs = 520)
+        : durationMs_(durationMs),
+          rng_(prng::Mix32((uint32_t)GetTickCount64())) {}
 
     void Render(Gdiplus::Graphics& g, const std::deque<TrailPoint>& points, int width, int height, Gdiplus::Color color, bool isChromatic) override {
         if (points.empty()) {
@@ -29,6 +32,7 @@ public:
         }
 
         uint64_t now = GetTickCount64();
+        const float idleFactor = trail_math::IdleFadeFactor(now, points.back().addedTime, 50, 260);
         float dt = (lastUpdate_ == 0) ? 0.016f : (now - lastUpdate_) / 1000.0f;
         lastUpdate_ = now;
 
@@ -44,7 +48,7 @@ public:
             float dist = std::sqrt(dx * dx + dy * dy);
 
             if (dist > 1.0f) {
-                int emitCount = std::min(3, (int)(dist / 8.0f) + 1);
+                int emitCount = std::min(4, (int)(dist / 7.0f) + 1);
                 for (int i = 0; i < emitCount; ++i) {
                     MeteorSpark s;
                     s.x = (float)head.pt.x - x_offset;
@@ -52,13 +56,13 @@ public:
                     
                     // Velocity: mostly opposite to move, with some spread
                     float baseAngle = std::atan2(-dy, -dx);
-                    float angle = baseAngle + ((rand() % 60 - 30) * 3.14159f / 180.0f);
-                    float speed = (float)(rand() % 100) / 40.0f + 0.5f;
+                    float angle = baseAngle + rng_.Range(-0.55f, 0.55f);
+                    float speed = rng_.Range(0.6f, 3.2f);
                     
                     s.vx = std::cos(angle) * speed;
                     s.vy = std::sin(angle) * speed;
                     s.life = 1.0f;
-                    s.size = (float)(rand() % 25) / 10.0f + 1.0f;
+                    s.size = rng_.Range(1.0f, 3.5f);
                     s.hue = std::fmod((float)now * 0.1f + i * 20.0f, 360.0f);
                     sparks_.push_back(s);
                 }
@@ -66,17 +70,22 @@ public:
         }
 
         // 2. Update Sparks
+        const float sparkFadeBoost = 1.0f + (1.0f - idleFactor) * 2.0f;
         for (auto it = sparks_.begin(); it != sparks_.end(); ) {
             it->x += it->vx;
             it->y += it->vy;
             it->vy += 0.05f; // Slight gravity
-            it->life -= dt * 1.8f; 
+            it->life -= dt * 1.9f * sparkFadeBoost;
             
             if (it->life <= 0) {
                 it = sparks_.erase(it);
             } else {
                 ++it;
             }
+        }
+
+        if (sparks_.size() > 220) {
+            sparks_.erase(sparks_.begin(), sparks_.begin() + (sparks_.size() - 220));
         }
 
         g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
@@ -94,7 +103,8 @@ public:
                 
                 // Age-based fade
                 float age = (float)(now - points[i].addedTime);
-                float life = std::max(0.0f, 1.0f - (age / 450.0f));
+                float life = std::max(0.0f, 1.0f - (age / (float)durationMs_));
+                life *= idleFactor;
                 if (life <= 0) continue;
 
                 float width = 1.0f + 12.0f * ratio * life;
@@ -102,9 +112,10 @@ public:
 
                 Gdiplus::Color c = color;
                 if (isChromatic) {
-                    c = HslToRgb(std::fmod((float)now * 0.15f + i * 8.0f, 360.0f), 0.9f, 0.6f, alpha);
+                    c = trail_color::HslToRgbColor(std::fmod((float)now * 0.15f + (float)i * 8.0f, 360.0f), 0.9f, 0.6f, alpha);
                 } else {
-                    c = Gdiplus::Color(alpha, color.GetR(), color.GetG(), color.GetB());
+                    // Meteor identity: warm tail (less neon-ribbon-like).
+                    c = Gdiplus::Color(alpha, 255, 220, 160);
                 }
 
                 Gdiplus::Pen pen(c, width);
@@ -127,8 +138,10 @@ public:
 
         // 4. Draw Sparks with Glow
         for (const auto& s : sparks_) {
-            BYTE alpha = (BYTE)(s.life * 255);
-            Gdiplus::Color sc = isChromatic ? HslToRgb(s.hue, 0.8f, 0.7f, alpha) : Gdiplus::Color(alpha, 255, 240, 150);
+            BYTE alpha = (BYTE)(s.life * 255 * idleFactor);
+            Gdiplus::Color sc = isChromatic
+                ? trail_color::HslToRgbColor(s.hue, 0.8f, 0.7f, alpha)
+                : Gdiplus::Color(alpha, 255, 235, 170);
             
             // Spark core
             Gdiplus::SolidBrush sb(sc);
@@ -150,8 +163,8 @@ public:
         // Multi-layered Radial Glow
         struct GlowLayer { float radius; BYTE alpha; Gdiplus::Color color; };
         GlowLayer layers[] = {
-            { 18.0f, 40,  isChromatic ? HslToRgb(std::fmod((float)now*0.2f, 360.0f), 0.8f, 0.5f, 40) : Gdiplus::Color(40, color.GetR(), color.GetG(), color.GetB()) },
-            { 10.0f, 100, isChromatic ? HslToRgb(std::fmod((float)now*0.2f, 360.0f), 0.9f, 0.7f, 100) : Gdiplus::Color(100, 255, 255, 200) },
+            { 18.0f, (BYTE)(40 * idleFactor),  isChromatic ? trail_color::HslToRgbColor(std::fmod((float)now*0.2f, 360.0f), 0.8f, 0.5f, (BYTE)(40 * idleFactor)) : Gdiplus::Color((BYTE)(40 * idleFactor), 255, 200, 120) },
+            { 10.0f, (BYTE)(110 * idleFactor), isChromatic ? trail_color::HslToRgbColor(std::fmod((float)now*0.2f, 360.0f), 0.9f, 0.7f, (BYTE)(110 * idleFactor)) : Gdiplus::Color((BYTE)(110 * idleFactor), 255, 240, 180) },
             { 4.0f,  255, Gdiplus::Color(255, 255, 255, 255) } // Bright core
         };
 
@@ -160,33 +173,33 @@ public:
             g.FillEllipse(&brush, headX - layer.radius, headY - layer.radius, layer.radius * 2, layer.radius * 2);
         }
         
-        // Add a "Cross" or "Star" flare effect occasionally or sublty
-        Gdiplus::Pen flarePen(Gdiplus::Color(150, 255, 255, 255), 1.5f);
-        float flareLen = 12.0f;
-        g.DrawLine(&flarePen, headX - flareLen, headY, headX + flareLen, headY);
-        g.DrawLine(&flarePen, headX, headY - flareLen, headX, headY + flareLen);
+        // Directional flare (meteor head streak), only while actively moving.
+        if (idleFactor > 0.6f && points.size() >= 2) {
+            const auto& prev = points[points.size() - 2];
+            float mdx = (float)(head.pt.x - prev.pt.x);
+            float mdy = (float)(head.pt.y - prev.pt.y);
+            float mlen = std::sqrt(mdx * mdx + mdy * mdy);
+            if (mlen > 0.5f) {
+                float inv = 1.0f / mlen;
+                float ux = mdx * inv;
+                float uy = mdy * inv;
+                float px = -uy;
+                float py = ux;
+
+                BYTE a = (BYTE)(120 * idleFactor);
+                Gdiplus::Pen flarePen(Gdiplus::Color(a, 255, 255, 255), 1.2f);
+                float flareLen = 16.0f;
+                g.DrawLine(&flarePen, headX - ux * flareLen, headY - uy * flareLen, headX + ux * flareLen * 0.35f, headY + uy * flareLen * 0.35f);
+                g.DrawLine(&flarePen, headX - px * 8.0f, headY - py * 8.0f, headX + px * 8.0f, headY + py * 8.0f);
+            }
+        }
     }
 
 private:
-     Gdiplus::Color HslToRgb(float h, float s, float l, BYTE alpha) {
-        float q = l < 0.5f ? l * (1.0f + s) : l + s - l * s;
-        float p = 2.0f * l - q;
-        auto hue2rgb = [](float p, float q, float t) {
-            if (t < 0.0f) t += 1.0f;
-            if (t > 1.0f) t -= 1.0f;
-            if (t < 1.0f / 6.0f) return p + (q - p) * 6.0f * t;
-            if (t < 1.0f / 2.0f) return q;
-            if (t < 2.0f / 3.0f) return p + (q - p) * (2.0f / 3.0f - t) * 6.0f;
-            return p;
-        };
-        float tr = h / 360.0f + 1.0f / 3.0f;
-        float tg = h / 360.0f;
-        float tb = h / 360.0f - 1.0f / 3.0f;
-        return Gdiplus::Color(alpha, (BYTE)(hue2rgb(p, q, tr) * 255), (BYTE)(hue2rgb(p, q, tg) * 255), (BYTE)(hue2rgb(p, q, tb) * 255));
-    }
-
     std::vector<MeteorSpark> sparks_;
     uint64_t lastUpdate_ = 0;
+    int durationMs_ = 520;
+    prng::XorShift32 rng_;
 };
 
 } // namespace mousefx
