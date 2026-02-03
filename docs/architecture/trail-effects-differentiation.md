@@ -19,8 +19,9 @@ Result: tails were similarly short and similarly sampled, so visuals converged.
 ## Implementation
 
 ### 1) Per-type history profile
-Profiles are applied in:
-- `MFCMouseEffect/MouseFx/Effects/TrailEffect.cpp`
+Profiles are applied in (defaults; can be overridden via `config.json`):
+- `MFCMouseEffect/MouseFx/Core/EffectFactory.cpp` (profile injection)
+- `MFCMouseEffect/MouseFx/Effects/TrailEffect.cpp` (applies to `TrailWindow`)
 
 Current values:
 - `electric`: `durationMs=280`, `maxPoints=24`
@@ -28,6 +29,9 @@ Current values:
 - `meteor`: `durationMs=520`, `maxPoints=60`
 - `tubes/scifi`: `durationMs=350`, `maxPoints=40`
 - default `line`: `durationMs=300`, `maxPoints=32`
+
+Overrides:
+- `config.json` root `trail_profiles` (see `docs/architecture/trail-profiles-config.md`)
 
 ### 2) TrailWindow configurability
 `TrailWindow` now exposes:
@@ -63,3 +67,5 @@ Now it is an include-only aggregator for:
    - Streamer should look like a smooth neon ribbon with glow.
    - Meteor should look warmer with spark particles and a head flare.
 
+Hot reload:
+- Adjust `trail_profiles` in `config.json`, then apply via tray `Reload config` or IPC `{"cmd":"reload_config"}`.

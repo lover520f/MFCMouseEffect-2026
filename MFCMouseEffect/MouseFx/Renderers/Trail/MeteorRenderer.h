@@ -20,8 +20,9 @@ public:
         float hue;
     };
 
-    explicit MeteorRenderer(int durationMs = 520)
+    MeteorRenderer(int durationMs, const TrailRendererParamsConfig& params)
         : durationMs_(durationMs),
+          params_(params.meteor),
           rng_(prng::Mix32((uint32_t)GetTickCount64())) {}
 
     void Render(Gdiplus::Graphics& g, const std::deque<TrailPoint>& points, int width, int height, Gdiplus::Color color, bool isChromatic) override {
@@ -49,6 +50,7 @@ public:
 
             if (dist > 1.0f) {
                 int emitCount = std::min(4, (int)(dist / 7.0f) + 1);
+                emitCount = (int)std::max(1.0f, std::min(8.0f, (float)emitCount * params_.sparkRateScale));
                 for (int i = 0; i < emitCount; ++i) {
                     MeteorSpark s;
                     s.x = (float)head.pt.x - x_offset;
@@ -57,7 +59,7 @@ public:
                     // Velocity: mostly opposite to move, with some spread
                     float baseAngle = std::atan2(-dy, -dx);
                     float angle = baseAngle + rng_.Range(-0.55f, 0.55f);
-                    float speed = rng_.Range(0.6f, 3.2f);
+                    float speed = rng_.Range(0.6f, 3.2f) * params_.sparkSpeedScale;
                     
                     s.vx = std::cos(angle) * speed;
                     s.vy = std::sin(angle) * speed;
@@ -199,6 +201,7 @@ private:
     std::vector<MeteorSpark> sparks_;
     uint64_t lastUpdate_ = 0;
     int durationMs_ = 520;
+    MeteorTrailParams params_{};
     prng::XorShift32 rng_;
 };
 

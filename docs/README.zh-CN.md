@@ -12,6 +12,8 @@
 - 架构整理：`docs/architecture/ui-folder-structure.zh-CN.md`（UI 文件夹结构整理）
 - 架构整理：`docs/architecture/mousefx-folder-structure.zh-CN.md`（MouseFx 文件夹结构整理）
 - 架构整理：`docs/architecture/trail-effects-differentiation.zh-CN.md`（拖尾差异化：历史配置 + renderer 拆分）
+- 架构整理：`docs/architecture/trail-profiles-config.zh-CN.md`（config.json：trail_profiles + reload_config）
+- 架构整理：`docs/architecture/trail-tuning-settings-ui.zh-CN.md`（设置窗口：拖尾预设 + 高级调参）
 
 ## 功能简介
 - 全局鼠标点击可视化（Windows）：低级鼠标钩子 `WH_MOUSE_LL` + GDI+ 分层窗口波纹。

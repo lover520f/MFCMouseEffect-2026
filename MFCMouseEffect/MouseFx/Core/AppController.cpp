@@ -177,6 +177,18 @@ void AppController::SetTextEffectContent(const std::vector<std::wstring>& texts)
     }
 }
 
+void AppController::SetTrailTuning(const std::string& style, const TrailProfilesConfig& profiles, const TrailRendererParamsConfig& params) {
+    config_.trailStyle = style.empty() ? "custom" : style;
+    config_.trailProfiles = profiles;
+    config_.trailParams = params;
+    PersistConfig();
+
+    // Recreate current trail effect to apply immediately (if any).
+    if (!config_.active.trail.empty() && config_.active.trail != "none") {
+        SetEffect(EffectCategory::Trail, config_.active.trail);
+    }
+}
+
 void AppController::ResetConfig() {
     // 1. Get default config
     config_ = EffectConfig::GetDefault();
@@ -195,6 +207,27 @@ void AppController::ResetConfig() {
     // SettingsWnd calls sync, so it will pull new values.
     // But existing effects might need theme re-apply.
     SetTheme(config_.theme);
+}
+
+void AppController::ReloadConfigFromDisk() {
+    if (configDir_.empty()) return;
+
+    EffectConfig loaded = EffectConfig::Load(configDir_);
+    config_ = loaded;
+
+    const std::string clickType = config_.active.click.empty()
+        ? (config_.defaultEffect.empty() ? "ripple" : config_.defaultEffect)
+        : config_.active.click;
+
+    SetEffect(EffectCategory::Click, clickType);
+    SetEffect(EffectCategory::Trail, config_.active.trail);
+    SetEffect(EffectCategory::Scroll, config_.active.scroll);
+    SetEffect(EffectCategory::Hold, config_.active.hold);
+    SetEffect(EffectCategory::Hover, config_.active.hover);
+
+#ifdef _DEBUG
+    OutputDebugStringW(L"MouseFx: reload_config applied.\n");
+#endif
 }
 
 IMouseEffect* AppController::GetEffect(EffectCategory category) const {
@@ -254,6 +287,8 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
                 effect->OnCommand(command, args);
             }
         }
+    } else if (cmd == "reload_config") {
+        ReloadConfigFromDisk();
     }
 }
 

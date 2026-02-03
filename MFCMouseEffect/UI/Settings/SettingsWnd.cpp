@@ -7,6 +7,7 @@
 #include "MFCMouseEffect.h"
 #include "Settings/SettingsBackend.h"
 #include "Settings/SettingsOptions.h"
+#include "UI/Settings/TrailTuningWnd.h"
 
 #include <vector>
 
@@ -49,6 +50,7 @@ BEGIN_MESSAGE_MAP(CSettingsWnd, CWnd)
     ON_BN_CLICKED(10001, &CSettingsWnd::OnCommandApply)
     ON_BN_CLICKED(10002, &CSettingsWnd::OnCommandClose)
     ON_BN_CLICKED(10003, &CSettingsWnd::OnCommandReset) // Reset button
+    ON_BN_CLICKED(10004, &CSettingsWnd::OnCommandTrailTuning)
     ON_CBN_SELCHANGE(11000, &CSettingsWnd::OnSelChange)
     ON_CBN_SELCHANGE(11001, &CSettingsWnd::OnSelChange)
     ON_CBN_SELCHANGE(11002, &CSettingsWnd::OnSelChange)
@@ -189,7 +191,23 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     
     // Effects section
     mkLabel(lblClick_, 2);  mkCombo(cmbClick_, 2, 11002);
-    mkLabel(lblTrail_, 3);  mkCombo(cmbTrail_, 3, 11003);
+    mkLabel(lblTrail_, 3);
+    {
+        const int dropH = S(140);
+        const int y3 = rowY(3);
+        const int btnW2 = S(108);
+        const int gap = S(8);
+
+        CRect rcCombo(left + labelW + S(8), y3 + S(2),
+                      left + labelW + S(8) + boxW - btnW2 - gap, y3 + rowH + dropH);
+        cmbTrail_.Create(WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP, rcCombo, this, 11003);
+        if (font_.GetSafeHandle()) cmbTrail_.SetFont(&font_);
+
+        CRect rcBtn(left + labelW + S(8) + boxW - btnW2, y3 + S(2),
+                    left + labelW + S(8) + boxW, y3 + S(2) + rowH);
+        btnTrailTuning_.Create(L"", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, rcBtn, this, 10004);
+        if (font_.GetSafeHandle()) btnTrailTuning_.SetFont(&font_);
+    }
     mkLabel(lblScroll_, 4); mkCombo(cmbScroll_, 4, 11004);
     mkLabel(lblHold_, 5);   mkCombo(cmbHold_, 5, 11005);
     mkLabel(lblHover_, 6);  mkCombo(cmbHover_, 6, 11006);
@@ -319,6 +337,14 @@ void CSettingsWnd::OnCommandReset() {
     if (backend_) {
         backend_->ResetToDefaults();
         SyncFromBackend();
+    }
+}
+
+void CSettingsWnd::OnCommandTrailTuning() {
+    if (!backend_) return;
+    auto* w = new CTrailTuningWnd();
+    if (!w->CreateAndShow(this, backend_.get())) {
+        delete w;
     }
 }
 
@@ -512,6 +538,7 @@ void CSettingsWnd::ApplyLanguageToControls() {
     btnClose_.SetWindowTextW(t.btnClose);
     btnApply_.SetWindowTextW(t.btnApply);
     btnReset_.SetWindowTextW(t.btnReset);
+    btnTrailTuning_.SetWindowTextW(t.btnTrailTuning);
 
     const SettingOption* langOpts = LangOptions(n);
     FillCombo(cmbLang_, langOpts, n, model_.uiLanguage);

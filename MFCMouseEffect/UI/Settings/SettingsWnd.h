@@ -43,6 +43,7 @@ protected:
     afx_msg void OnTextChange();
     afx_msg void OnTextFocus();
     afx_msg void OnTextKillFocus();
+    afx_msg void OnCommandTrailTuning();
 
     DECLARE_MESSAGE_MAP()
 
@@ -118,6 +119,7 @@ private:
     CButton btnApply_{};
     CButton btnClose_{};
     CButton btnReset_{}; // New
+    CButton btnTrailTuning_{};
 
     EmojiPreviewWnd emojiPreview_{};
     bool updating_ = false;

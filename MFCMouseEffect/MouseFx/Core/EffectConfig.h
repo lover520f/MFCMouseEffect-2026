@@ -62,6 +62,43 @@ struct TrailConfig {
     Argb color{ 0xDC64FFDA }; // Light cyan-green
 };
 
+// History profile for strategy-based trail renderers (line/streamer/electric/meteor/tubes).
+// Note: ParticleTrailEffect uses a different window/pipeline.
+struct TrailHistoryProfile {
+    int durationMs = 300;
+    int maxPoints = 32;
+};
+
+struct TrailProfilesConfig {
+    TrailHistoryProfile line{300, 32};
+    TrailHistoryProfile streamer{420, 46};
+    TrailHistoryProfile electric{280, 24};
+    TrailHistoryProfile meteor{520, 60};
+    TrailHistoryProfile tubes{350, 40};
+};
+
+struct StreamerTrailParams {
+    float glowWidthScale = 1.8f;
+    float coreWidthScale = 0.55f;
+    float headPower = 1.6f;
+};
+
+struct ElectricTrailParams {
+    float amplitudeScale = 1.0f;
+    float forkChance = 0.10f; // base chance per segment (multiplied by life)
+};
+
+struct MeteorTrailParams {
+    float sparkRateScale = 1.0f;
+    float sparkSpeedScale = 1.0f;
+};
+
+struct TrailRendererParamsConfig {
+    StreamerTrailParams streamer;
+    ElectricTrailParams electric;
+    MeteorTrailParams meteor;
+};
+
 // Configuration for Icon/Star effect
 struct IconConfig {
     int durationMs = 350;
@@ -92,8 +129,13 @@ struct EffectConfig {
     
     RippleConfig ripple;
     TrailConfig trail;
+    TrailProfilesConfig trailProfiles;
+    std::string trailStyle = "default"; // default | snappy | long | cinematic | custom
+    TrailRendererParamsConfig trailParams;
     IconConfig icon;
     TextConfig textClick;
+    
+    TrailHistoryProfile GetTrailHistoryProfile(const std::string& type) const;
     
     // Load config from file, merging with defaults.
     // If file doesn't exist or has errors, returns defaults (no crash).

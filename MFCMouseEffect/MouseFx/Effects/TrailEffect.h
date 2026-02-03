@@ -8,7 +8,7 @@ namespace mousefx {
 
 class TrailEffect final : public IMouseEffect {
 public:
-    TrailEffect(const std::string& themeName, const std::string& type = "line");
+    TrailEffect(const std::string& themeName, const std::string& type, int durationMs, int maxPoints, const TrailRendererParamsConfig& params);
     ~TrailEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Trail; }

@@ -233,8 +233,10 @@
     <ClInclude Include="MouseFx\Core\EffectConfig.h" />
     <ClInclude Include="MouseFx\ThirdParty\json.hpp" />
     <ClInclude Include="UI\Settings\SettingsWnd.h" />
+    <ClInclude Include="UI\Settings\TrailTuningWnd.h" />
     <ClInclude Include="Settings\SettingsBackend.h" />
     <ClInclude Include="Settings\SettingsModel.h" />
+    <ClInclude Include="Settings\TrailTuningModel.h" />
     <ClInclude Include="Settings\SettingsOptions.h" />
     <ClInclude Include="Settings\EmojiUtils.h" />
     <ClInclude Include="UI\Panes\OutputWnd.h" />
@@ -280,6 +282,7 @@
     <ClCompile Include="MouseFx\Effects\HoverEffect.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfig.cpp" />
     <ClCompile Include="UI\Settings\SettingsWnd.cpp" />
+    <ClCompile Include="UI\Settings\TrailTuningWnd.cpp" />
     <ClCompile Include="UI\Settings\SettingsWnd.Emoji.cpp" />
     <ClCompile Include="Settings\SettingsBackend.cpp" />
     <ClCompile Include="Settings\EmojiUtils.cpp" />

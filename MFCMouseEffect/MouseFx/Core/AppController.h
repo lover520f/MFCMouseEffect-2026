@@ -55,6 +55,9 @@ public:
     // Set custom text content for Text Effect
     void SetTextEffectContent(const std::vector<std::wstring>& texts);
 
+    // Advanced tuning: trail history + renderer params (persisted).
+    void SetTrailTuning(const std::string& style, const TrailProfilesConfig& profiles, const TrailRendererParamsConfig& params);
+
     // Get the current effect for a category (may be null).
     IMouseEffect* GetEffect(EffectCategory category) const;
 
@@ -80,6 +83,7 @@ private:
 
     void PersistConfig();
     void SetActiveEffectType(EffectCategory category, const std::string& type);
+    void ReloadConfigFromDisk();
 
     HWND dispatchHwnd_ = nullptr;
 

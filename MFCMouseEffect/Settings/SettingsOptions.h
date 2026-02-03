@@ -32,6 +32,7 @@ struct SettingsText {
     const wchar_t* btnApply;
     const wchar_t* btnReset;
     const wchar_t* btnStar;
+    const wchar_t* btnTrailTuning;
 };
 
 inline const SettingsText& TextZh() {
@@ -52,6 +53,7 @@ inline const SettingsText& TextZh() {
         L"\u5E94\u7528",
         L"\u6062\u590D\u9ED8\u8BA4",
         L"\u2605 Star \u9879\u76EE",
+        L"\u9AD8\u7EA7\u8C03\u53C2...",
     };
     return t;
 }
@@ -74,6 +76,7 @@ inline const SettingsText& TextEn() {
         L"Apply",
         L"Reset",
         L"\u2605 Star Repo",
+        L"Tuning...",
     };
     return t;
 }

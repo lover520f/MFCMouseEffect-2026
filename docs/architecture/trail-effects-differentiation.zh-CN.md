@@ -21,7 +21,8 @@
 
 ### 1）每个类型独立的历史配置
 配置入口：
-- `MFCMouseEffect/MouseFx/Effects/TrailEffect.cpp`
+- `MFCMouseEffect/MouseFx/Core/EffectFactory.cpp`（注入 profile）
+- `MFCMouseEffect/MouseFx/Effects/TrailEffect.cpp`（应用到 `TrailWindow`）
 
 当前配置：
 - `electric`：`durationMs=280`，`maxPoints=24`
@@ -29,6 +30,9 @@
 - `meteor`：`durationMs=520`，`maxPoints=60`
 - `tubes/scifi`：`durationMs=350`，`maxPoints=40`
 - 默认 `line`：`durationMs=300`，`maxPoints=32`
+
+覆盖方式：
+- `config.json` 根节点 `trail_profiles`（详见 `docs/architecture/trail-profiles-config.zh-CN.md`）
 
 ### 2）TrailWindow 支持可配置
 `TrailWindow` 新增：
@@ -63,3 +67,5 @@
    - `streamer` 应该是更平滑的霓虹丝带（外层发光明显）。
    - `meteor` 应该有明显火花粒子与偏暖尾焰。
 
+热应用：
+- 修改 `config.json` 的 `trail_profiles` 后，通过托盘菜单 `重载配置 (Reload config)` 或 IPC `{"cmd":"reload_config"}` 应用。

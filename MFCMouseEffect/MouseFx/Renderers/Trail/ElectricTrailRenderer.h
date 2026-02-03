@@ -11,7 +11,8 @@ namespace mousefx {
 
 class ElectricTrailRenderer final : public ITrailRenderer {
 public:
-    explicit ElectricTrailRenderer(int durationMs = 280) : durationMs_(durationMs) {}
+    ElectricTrailRenderer(int durationMs, const TrailRendererParamsConfig& params)
+        : durationMs_(durationMs), params_(params.electric) {}
 
     void Render(Gdiplus::Graphics& g,
                 const std::deque<TrailPoint>& points,
@@ -55,7 +56,7 @@ public:
             float nx = -dy * invLen;
             float ny = dx * invLen;
 
-            float amp = std::min(10.0f, std::max(2.0f, len * 0.12f)) * life;
+            float amp = std::min(10.0f, std::max(2.0f, len * 0.12f)) * life * params_.amplitudeScale;
             float o1 = rng.Range(-1.0f, 1.0f) * amp;
             float o2 = rng.Range(-1.0f, 1.0f) * amp;
 
@@ -107,7 +108,7 @@ public:
             }
 
             // Occasional fork to make it feel less like a "jittery ribbon".
-            float forkChance = 0.10f * life;
+            float forkChance = params_.forkChance * life;
             if (rng.Next01() < forkChance) {
                 float t = rng.Range(0.35f, 0.75f);
                 Gdiplus::PointF base(x1 + dx * t, y1 + dy * t);
@@ -126,6 +127,7 @@ public:
 
 private:
     int durationMs_ = 280;
+    ElectricTrailParams params_{};
 };
 
 } // namespace mousefx

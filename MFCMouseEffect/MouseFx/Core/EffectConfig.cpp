@@ -73,6 +73,41 @@ static std::string WStringToUtf8(const std::wstring& ws) {
     return out;
 }
 
+static std::string ToLowerAsciiLocal(std::string s) {
+    for (char& c : s) {
+        if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
+    }
+    return s;
+}
+
+static TrailHistoryProfile SanitizeTrailHistoryProfile(TrailHistoryProfile p) {
+    if (p.durationMs < 80) p.durationMs = 80;
+    if (p.durationMs > 2000) p.durationMs = 2000;
+    if (p.maxPoints < 2) p.maxPoints = 2;
+    if (p.maxPoints > 240) p.maxPoints = 240;
+    return p;
+}
+
+static float ClampFloat(float x, float lo, float hi) {
+    if (x < lo) return lo;
+    if (x > hi) return hi;
+    return x;
+}
+
+static TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig p) {
+    p.streamer.glowWidthScale = ClampFloat(p.streamer.glowWidthScale, 0.5f, 4.0f);
+    p.streamer.coreWidthScale = ClampFloat(p.streamer.coreWidthScale, 0.2f, 2.0f);
+    p.streamer.headPower = ClampFloat(p.streamer.headPower, 0.8f, 3.0f);
+
+    p.electric.amplitudeScale = ClampFloat(p.electric.amplitudeScale, 0.2f, 3.0f);
+    p.electric.forkChance = ClampFloat(p.electric.forkChance, 0.0f, 0.5f);
+
+    p.meteor.sparkRateScale = ClampFloat(p.meteor.sparkRateScale, 0.2f, 4.0f);
+    p.meteor.sparkSpeedScale = ClampFloat(p.meteor.sparkSpeedScale, 0.2f, 4.0f);
+
+    return p;
+}
+
 // ============================================================================
 // EffectConfig Implementation
 // ============================================================================
@@ -124,6 +159,17 @@ EffectConfig EffectConfig::GetDefault() {
     return EffectConfig{};
 }
 
+TrailHistoryProfile EffectConfig::GetTrailHistoryProfile(const std::string& type) const {
+    std::string t = ToLowerAsciiLocal(type);
+    if (t == "scifi" || t == "sci-fi" || t == "sci_fi") t = "tubes";
+
+    if (t == "electric") return SanitizeTrailHistoryProfile(trailProfiles.electric);
+    if (t == "streamer") return SanitizeTrailHistoryProfile(trailProfiles.streamer);
+    if (t == "meteor") return SanitizeTrailHistoryProfile(trailProfiles.meteor);
+    if (t == "tubes") return SanitizeTrailHistoryProfile(trailProfiles.tubes);
+    return SanitizeTrailHistoryProfile(trailProfiles.line);
+}
+
 EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
     EffectConfig cfg = GetDefault();
     
@@ -167,6 +213,50 @@ EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
         cfg.active.scroll = GetOr<std::string>(a, "scroll", cfg.active.scroll);
         cfg.active.hover = GetOr<std::string>(a, "hover", cfg.active.hover);
         cfg.active.hold = GetOr<std::string>(a, "hold", cfg.active.hold);
+    }
+
+    cfg.trailStyle = GetOr<std::string>(root, "trail_style", cfg.trailStyle);
+
+    // Parse trail renderer params (optional)
+    if (root.contains("trail_params") && root["trail_params"].is_object()) {
+        const auto& tp = root["trail_params"];
+
+        if (tp.contains("streamer") && tp["streamer"].is_object()) {
+            const auto& o = tp["streamer"];
+            cfg.trailParams.streamer.glowWidthScale = GetOr<float>(o, "glow_width_scale", cfg.trailParams.streamer.glowWidthScale);
+            cfg.trailParams.streamer.coreWidthScale = GetOr<float>(o, "core_width_scale", cfg.trailParams.streamer.coreWidthScale);
+            cfg.trailParams.streamer.headPower = GetOr<float>(o, "head_power", cfg.trailParams.streamer.headPower);
+        }
+        if (tp.contains("electric") && tp["electric"].is_object()) {
+            const auto& o = tp["electric"];
+            cfg.trailParams.electric.amplitudeScale = GetOr<float>(o, "amplitude_scale", cfg.trailParams.electric.amplitudeScale);
+            cfg.trailParams.electric.forkChance = GetOr<float>(o, "fork_chance", cfg.trailParams.electric.forkChance);
+        }
+        if (tp.contains("meteor") && tp["meteor"].is_object()) {
+            const auto& o = tp["meteor"];
+            cfg.trailParams.meteor.sparkRateScale = GetOr<float>(o, "spark_rate_scale", cfg.trailParams.meteor.sparkRateScale);
+            cfg.trailParams.meteor.sparkSpeedScale = GetOr<float>(o, "spark_speed_scale", cfg.trailParams.meteor.sparkSpeedScale);
+        }
+
+        cfg.trailParams = SanitizeTrailParams(cfg.trailParams);
+    }
+
+    // Parse trail history profiles (optional)
+    if (root.contains("trail_profiles") && root["trail_profiles"].is_object()) {
+        const auto& tp = root["trail_profiles"];
+        auto parseOne = [&](const char* key, TrailHistoryProfile& dst) {
+            if (!tp.contains(key) || !tp[key].is_object()) return;
+            const auto& o = tp[key];
+            dst.durationMs = GetOr<int>(o, "duration_ms", dst.durationMs);
+            dst.maxPoints = GetOr<int>(o, "max_points", dst.maxPoints);
+            dst = SanitizeTrailHistoryProfile(dst);
+        };
+
+        parseOne("line", cfg.trailProfiles.line);
+        parseOne("streamer", cfg.trailProfiles.streamer);
+        parseOne("electric", cfg.trailProfiles.electric);
+        parseOne("meteor", cfg.trailProfiles.meteor);
+        parseOne("tubes", cfg.trailProfiles.tubes);
     }
     
     // Parse effects
@@ -278,6 +368,51 @@ bool EffectConfig::Save(const std::wstring& exeDir, const EffectConfig& cfg) {
     root["default_effect"] = cfg.defaultEffect;
     root["theme"] = cfg.theme;
     root["ui_language"] = cfg.uiLanguage;
+    root["trail_style"] = cfg.trailStyle;
+
+    // Trail history profiles (strategy-based trail renderers)
+    {
+        json tp;
+        auto addOne = [&](const char* key, TrailHistoryProfile p) {
+            p = SanitizeTrailHistoryProfile(p);
+            json o;
+            o["duration_ms"] = p.durationMs;
+            o["max_points"] = p.maxPoints;
+            tp[key] = o;
+        };
+        addOne("line", cfg.trailProfiles.line);
+        addOne("streamer", cfg.trailProfiles.streamer);
+        addOne("electric", cfg.trailProfiles.electric);
+        addOne("meteor", cfg.trailProfiles.meteor);
+        addOne("tubes", cfg.trailProfiles.tubes);
+        root["trail_profiles"] = tp;
+    }
+
+    // Trail renderer params
+    {
+        const auto p = SanitizeTrailParams(cfg.trailParams);
+        json tp;
+        {
+            json o;
+            o["glow_width_scale"] = p.streamer.glowWidthScale;
+            o["core_width_scale"] = p.streamer.coreWidthScale;
+            o["head_power"] = p.streamer.headPower;
+            tp["streamer"] = o;
+        }
+        {
+            json o;
+            o["amplitude_scale"] = p.electric.amplitudeScale;
+            o["fork_chance"] = p.electric.forkChance;
+            tp["electric"] = o;
+        }
+        {
+            json o;
+            o["spark_rate_scale"] = p.meteor.sparkRateScale;
+            o["spark_speed_scale"] = p.meteor.sparkSpeedScale;
+            tp["meteor"] = o;
+        }
+        root["trail_params"] = tp;
+    }
 
     json active;
     active["click"] = cfg.active.click;

@@ -27,7 +27,10 @@ std::unique_ptr<IMouseEffect> EffectFactory::Create(EffectCategory category, con
         case EffectCategory::Trail:
             if (type == "particle") return std::make_unique<ParticleTrailEffect>(config.theme);
             // "line", "streamer", "electric" are handled by TrailEffect via strategy.
-            return std::make_unique<TrailEffect>(config.theme, type);
+            {
+                const auto p = config.GetTrailHistoryProfile(type);
+                return std::make_unique<TrailEffect>(config.theme, type, p.durationMs, p.maxPoints, config.trailParams);
+            }
         case EffectCategory::Scroll:
             if (type == "arrow") return std::make_unique<ScrollEffect>(config.theme);
             break;

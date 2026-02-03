@@ -9,6 +9,7 @@ enum TrayMenuCmd : UINT {
     kCmdTrayExit = 1001,
     kCmdTraySettings = 1002,
     kCmdStarRepo = 1003,
+    kCmdTrayReloadConfig = 1004,
 
     // Click category
     kCmdClickRipple = 2001,

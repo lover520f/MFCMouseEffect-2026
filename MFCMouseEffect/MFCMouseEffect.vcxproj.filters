@@ -129,6 +129,9 @@
     <ClInclude Include="UI\Settings\SettingsWnd.h">
       <Filter>头文件\UI\Settings</Filter>
     </ClInclude>
+    <ClInclude Include="UI\Settings\TrailTuningWnd.h">
+      <Filter>头文件\UI\Settings</Filter>
+    </ClInclude>
     <ClInclude Include="UI\Settings\EmojiPreviewWnd.h">
       <Filter>头文件\UI\Settings</Filter>
     </ClInclude>
@@ -136,6 +139,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Settings\SettingsModel.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings\TrailTuningModel.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Settings\SettingsOptions.h">
@@ -198,6 +204,9 @@
       <Filter>源文件\UI\Tray</Filter>
     </ClCompile>
     <ClCompile Include="UI\Settings\SettingsWnd.cpp">
+      <Filter>源文件\UI\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\Settings\TrailTuningWnd.cpp">
       <Filter>源文件\UI\Settings</Filter>
     </ClCompile>
     <ClCompile Include="UI\Settings\SettingsWnd.Emoji.cpp">

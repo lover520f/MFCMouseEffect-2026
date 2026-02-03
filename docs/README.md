@@ -12,6 +12,8 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Architecture: `docs/architecture/ui-folder-structure.md` (UI folder layout refolder)
 - Architecture: `docs/architecture/mousefx-folder-structure.md` (MouseFx folder layout refolder)
 - Architecture: `docs/architecture/trail-effects-differentiation.md` (trail profiles + renderer split)
+- Architecture: `docs/architecture/trail-profiles-config.md` (config.json trail_profiles + reload_config)
+- Architecture: `docs/architecture/trail-tuning-settings-ui.md` (settings UI: presets + trail tuning)
 
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

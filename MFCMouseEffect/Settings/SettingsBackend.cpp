@@ -82,6 +82,55 @@ public:
         if (c_) c_->ResetConfig();
     }
 
+    TrailTuningModel LoadTrailTuning() override {
+        TrailTuningModel out;
+        if (!c_) return out;
+
+        const auto& cfg = c_->Config();
+        out.style = cfg.trailStyle.empty() ? "default" : cfg.trailStyle;
+
+        auto toModel = [](const mousefx::TrailHistoryProfile& p) -> TrailHistoryProfileModel {
+            return {p.durationMs, p.maxPoints};
+        };
+        out.profiles.line = toModel(cfg.trailProfiles.line);
+        out.profiles.streamer = toModel(cfg.trailProfiles.streamer);
+        out.profiles.electric = toModel(cfg.trailProfiles.electric);
+        out.profiles.meteor = toModel(cfg.trailProfiles.meteor);
+        out.profiles.tubes = toModel(cfg.trailProfiles.tubes);
+
+        out.params.streamerGlowWidthScale = cfg.trailParams.streamer.glowWidthScale;
+        out.params.streamerCoreWidthScale = cfg.trailParams.streamer.coreWidthScale;
+        out.params.streamerHeadPower = cfg.trailParams.streamer.headPower;
+        out.params.electricAmplitudeScale = cfg.trailParams.electric.amplitudeScale;
+        out.params.electricForkChance = cfg.trailParams.electric.forkChance;
+        out.params.meteorSparkRateScale = cfg.trailParams.meteor.sparkRateScale;
+        out.params.meteorSparkSpeedScale = cfg.trailParams.meteor.sparkSpeedScale;
+
+        return out;
+    }
+
+    void ApplyTrailTuning(const TrailTuningModel& tuning) override {
+        if (!c_) return;
+
+        mousefx::TrailProfilesConfig profiles;
+        profiles.line = {tuning.profiles.line.durationMs, tuning.profiles.line.maxPoints};
+        profiles.streamer = {tuning.profiles.streamer.durationMs, tuning.profiles.streamer.maxPoints};
+        profiles.electric = {tuning.profiles.electric.durationMs, tuning.profiles.electric.maxPoints};
+        profiles.meteor = {tuning.profiles.meteor.durationMs, tuning.profiles.meteor.maxPoints};
+        profiles.tubes = {tuning.profiles.tubes.durationMs, tuning.profiles.tubes.maxPoints};
+
+        mousefx::TrailRendererParamsConfig params;
+        params.streamer.glowWidthScale = tuning.params.streamerGlowWidthScale;
+        params.streamer.coreWidthScale = tuning.params.streamerCoreWidthScale;
+        params.streamer.headPower = tuning.params.streamerHeadPower;
+        params.electric.amplitudeScale = tuning.params.electricAmplitudeScale;
+        params.electric.forkChance = tuning.params.electricForkChance;
+        params.meteor.sparkRateScale = tuning.params.meteorSparkRateScale;
+        params.meteor.sparkSpeedScale = tuning.params.meteorSparkSpeedScale;
+
+        c_->SetTrailTuning(tuning.style, profiles, params);
+    }
+
 private:
     static std::string TrimAscii(std::string s) {
         auto is_space = [](unsigned char ch) {

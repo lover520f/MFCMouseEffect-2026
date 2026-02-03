@@ -10,7 +10,8 @@ namespace mousefx {
 
 class StreamerTrailRenderer final : public ITrailRenderer {
 public:
-    explicit StreamerTrailRenderer(int durationMs = 420) : durationMs_(durationMs) {}
+    StreamerTrailRenderer(int durationMs, const TrailRendererParamsConfig& params)
+        : durationMs_(durationMs), params_(params.streamer) {}
 
     void Render(Gdiplus::Graphics& g,
                 const std::deque<TrailPoint>& points,
@@ -41,7 +42,7 @@ public:
             if (life <= 0.0f) continue;
 
             // Strong head, soft tail.
-            const float head = std::pow(std::max(0.0f, t), 1.6f);
+            const float head = std::pow(std::max(0.0f, t), params_.headPower);
             const float w = 2.0f + 18.0f * head * life;
 
             int alphaCore = (int)(220.0f * head * life);
@@ -60,7 +61,7 @@ public:
 
             // Outer glow
             {
-                Gdiplus::Pen glowPen(cGlow, w * 1.8f);
+                Gdiplus::Pen glowPen(cGlow, w * params_.glowWidthScale);
                 glowPen.SetStartCap(Gdiplus::LineCapRound);
                 glowPen.SetEndCap(Gdiplus::LineCapRound);
                 glowPen.SetLineJoin(Gdiplus::LineJoinRound);
@@ -73,7 +74,7 @@ public:
 
             // Inner core
             {
-                Gdiplus::Pen corePen(cCore, std::max(1.5f, w * 0.55f));
+                Gdiplus::Pen corePen(cCore, std::max(1.5f, w * params_.coreWidthScale));
                 corePen.SetStartCap(Gdiplus::LineCapRound);
                 corePen.SetEndCap(Gdiplus::LineCapRound);
                 corePen.SetLineJoin(Gdiplus::LineJoinRound);
@@ -88,6 +89,7 @@ public:
 
 private:
     int durationMs_ = 420;
+    StreamerTrailParams params_{};
 };
 
 } // namespace mousefx

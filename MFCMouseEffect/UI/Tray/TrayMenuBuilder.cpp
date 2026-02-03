@@ -108,10 +108,15 @@ void TrayMenuBuilder::BuildTrayMenu(CMenu& menu, mousefx::AppController* mouseFx
     menu.AppendMenu(MF_STRING, kCmdStarRepo, L"\u9879\u76ee\u5730\u5740 / \u652f\u6301\u4f5c\u8005 (Project/Star)");
     menu.AppendMenu(MF_SEPARATOR);
     menu.AppendMenu(MF_STRING, kCmdTraySettings, L"\u8bbe\u7f6e... (Settings...)");
+    menu.AppendMenu(MF_STRING, kCmdTrayReloadConfig, L"\u91cd\u8f7d\u914d\u7f6e (Reload config)");
     menu.AppendMenu(MF_STRING, kCmdTrayExit, L"\u9000\u51fa");
 }
 
 bool TrayMenuBuilder::TryBuildIpcJson(UINT cmd, std::string* outJson) {
+    if (cmd == kCmdTrayReloadConfig) {
+        if (outJson) *outJson = "{\"cmd\":\"reload_config\"}";
+        return true;
+    }
     size_t n = 0;
     if (TryBuildEffectJsonFromMetadata(cmd, mousefx::ClickMetadata(n), n, "click", outJson)) return true;
     if (TryBuildEffectJsonFromMetadata(cmd, mousefx::TrailMetadata(n), n, "trail", outJson)) return true;
