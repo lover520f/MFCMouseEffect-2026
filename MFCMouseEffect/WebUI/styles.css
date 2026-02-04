@@ -51,6 +51,19 @@ button{
   font-weight:650;
   cursor:pointer
 }
+ .btn-link{
+  border:1px solid rgba(255,255,255,.10);
+  background:#0e1627;
+  color:var(--text);
+  border-radius:12px;
+  padding:10px 12px;
+  font-weight:650;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:6px
+}
 button.primary{
   background:linear-gradient(90deg,rgba(77,248,255,.18),rgba(255,90,247,.12));
   border-color:rgba(77,248,255,.25)
@@ -60,6 +73,8 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
 .pair{display:flex;gap:8px}
 .triple{display:flex;gap:8px}
+.hint{font-size:12px;color:rgba(138,160,194,.85)}
+.span2{grid-column:1 / -1}
 .sep{
   grid-column:1 / -1;
   height:1px;
@@ -68,4 +83,3 @@ button:disabled{opacity:.55;cursor:not-allowed}
   border-radius:1px
 }
 @media (max-width: 900px){.row{grid-template-columns:1fr}}
-

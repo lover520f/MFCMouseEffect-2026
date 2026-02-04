@@ -13,6 +13,13 @@ This project now prefers a **lightweight browser UI** served from a **local loop
 3. App opens the default browser to `http://127.0.0.1:<port>/?token=<token>`
 4. The page reads/writes settings via `/api/*` and applies instantly
 
+## Live Apply
+- The web UI auto-applies changes after short debounce (no extra Save required).
+- Manual **Apply Now** button is still available as a one-shot apply.
+## UI Hints
+- Hover tips for top actions (Reload / Apply / Star).
+- Text content clarifies using the English comma.
+
 ## Security Notes
 - The server only binds to **loopback** (`127.0.0.1`).
 - All `/api/*` endpoints require header `X-MFCMouseEffect-Token` matching the token in the URL query.

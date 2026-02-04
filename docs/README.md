@@ -32,6 +32,7 @@ Release builds no longer create the main frame window. A hidden host window is u
 - Entry: `x64\Release\MFCMouseEffect.exe`
 - Tray icon: right-click menu “Exit” (double-click also exits)
 - Debug still shows a main window for convenience
+Note: Tray menu labels now follow the selected UI language (Chinese or English), instead of bilingual mixed text.
 
 ## Settings (Browser UI, Non-background Mode)
 Tray menus are fine for quick toggles. For full configuration (including advanced tuning), the tray **Settings...** opens a browser page served by a local loopback HTTP server.

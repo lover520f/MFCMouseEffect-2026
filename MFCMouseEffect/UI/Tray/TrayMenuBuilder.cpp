@@ -19,6 +19,25 @@ static std::string ToLowerAscii(std::string s) {
     return s;
 }
 
+static bool IsZhUi(mousefx::AppController* mouseFx) {
+    if (!mouseFx) return true;
+    std::string lang = ToLowerAscii(mouseFx->Config().uiLanguage);
+    if (lang.empty()) return true;
+    return lang.rfind("zh", 0) == 0;
+}
+
+static CString PickLabel(const wchar_t* zh, const wchar_t* en, bool isZh) {
+    CString s;
+    if (zh && en) {
+        s = isZh ? zh : en;
+    } else if (zh) {
+        s = zh;
+    } else if (en) {
+        s = en;
+    }
+    return s;
+}
+
 static std::string GetCurrentEffectType(mousefx::AppController* mouseFx, mousefx::EffectCategory category) {
     if (!mouseFx) return "";
     auto* effect = mouseFx->GetEffect(category);
@@ -33,17 +52,12 @@ static void AppendEffectSubMenu(CMenu& parent, const TCHAR* title, mousefx::AppC
     sub.CreatePopupMenu();
 
     const std::string currentType = GetCurrentEffectType(mouseFx, category);
+    const bool zh = IsZhUi(mouseFx);
 
     for (size_t i = 0; i < count; ++i) {
         const auto& it = opts[i];
         
-        // Use English labels in Tray menu as secondary (or just stick to one)
-        // Original code used a mix. Let's use localized labels if available.
-        // Actually TrayMenuBuilder.cpp previously hardcoded "Label (English)".
-        // I'll use displayEn as a fallback or combined.
-        
-        CString label;
-        label.Format(L"%s (%s)", it.displayZh, it.displayEn);
+        CString label = PickLabel(it.displayZh, it.displayEn, zh);
 
         sub.AppendMenu(MF_STRING, it.trayCmd, label);
         if (it.IsMatch(currentType)) {
@@ -58,11 +72,12 @@ static void AppendThemeSubMenu(CMenu& parent, mousefx::AppController* mouseFx) {
     CMenu themeMenu;
     themeMenu.CreatePopupMenu();
 
-    themeMenu.AppendMenu(MF_STRING, kCmdThemeChromatic, L"\u70ab\u5f69 (Chromatic)");
-    themeMenu.AppendMenu(MF_STRING, kCmdThemeSciFi,     L"\u79d1\u5e7b (Sci-Fi)");
-    themeMenu.AppendMenu(MF_STRING, kCmdThemeNeon,      L"\u9713\u8679 (Neon)");
-    themeMenu.AppendMenu(MF_STRING, kCmdThemeMinimal,   L"\u6781\u7b80 (Minimal)");
-    themeMenu.AppendMenu(MF_STRING, kCmdThemeGame,      L"\u6e38\u620f\u611f (Game)");
+    const bool zh = IsZhUi(mouseFx);
+    themeMenu.AppendMenu(MF_STRING, kCmdThemeChromatic, PickLabel(L"\u70ab\u5f69", L"Chromatic", zh));
+    themeMenu.AppendMenu(MF_STRING, kCmdThemeSciFi,     PickLabel(L"\u79d1\u5e7b", L"Sci-Fi", zh));
+    themeMenu.AppendMenu(MF_STRING, kCmdThemeNeon,      PickLabel(L"\u9713\u8679", L"Neon", zh));
+    themeMenu.AppendMenu(MF_STRING, kCmdThemeMinimal,   PickLabel(L"\u6781\u7b80", L"Minimal", zh));
+    themeMenu.AppendMenu(MF_STRING, kCmdThemeGame,      PickLabel(L"\u6e38\u620f\u611f", L"Game", zh));
 
     if (mouseFx) {
         std::string theme = ToLowerAscii(mouseFx->Config().theme);
@@ -73,7 +88,7 @@ static void AppendThemeSubMenu(CMenu& parent, mousefx::AppController* mouseFx) {
         else themeMenu.CheckMenuItem(kCmdThemeNeon, MF_CHECKED);
     }
 
-    parent.AppendMenu(MF_POPUP, (UINT_PTR)themeMenu.Detach(), L"\u4e3b\u9898 (Theme)");
+    parent.AppendMenu(MF_POPUP, (UINT_PTR)themeMenu.Detach(), PickLabel(L"\u4e3b\u9898", L"Theme", zh));
 }
 
 static bool TryBuildEffectJsonFromMetadata(UINT cmd, const mousefx::EffectOption* opts, size_t count, const char* category, std::string* outJson) {
@@ -96,20 +111,21 @@ static bool TryBuildEffectJsonFromMetadata(UINT cmd, const mousefx::EffectOption
 void TrayMenuBuilder::BuildTrayMenu(CMenu& menu, mousefx::AppController* mouseFx) {
     menu.CreatePopupMenu();
     size_t n = 0;
+    const bool zh = IsZhUi(mouseFx);
 
-    AppendEffectSubMenu(menu, L"\u70b9\u51fb\u7279\u6548 (Click)", mouseFx, mousefx::EffectCategory::Click, mousefx::ClickMetadata(n), n);
-    AppendEffectSubMenu(menu, L"\u62d6\u5c3e\u7279\u6548 (Trail)", mouseFx, mousefx::EffectCategory::Trail, mousefx::TrailMetadata(n), n);
-    AppendEffectSubMenu(menu, L"\u6eda\u8f6e\u7279\u6548 (Scroll)", mouseFx, mousefx::EffectCategory::Scroll, mousefx::ScrollMetadata(n), n);
-    AppendEffectSubMenu(menu, L"\u957f\u6309\u7279\u6548 (Hold)", mouseFx, mousefx::EffectCategory::Hold, mousefx::HoldMetadata(n), n);
-    AppendEffectSubMenu(menu, L"\u60ac\u505c\u7279\u6548 (Hover)", mouseFx, mousefx::EffectCategory::Hover, mousefx::HoverMetadata(n), n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u70b9\u51fb\u7279\u6548", L"Click Effects", zh), mouseFx, mousefx::EffectCategory::Click, mousefx::ClickMetadata(n), n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u62d6\u5c3e\u7279\u6548", L"Trail Effects", zh), mouseFx, mousefx::EffectCategory::Trail, mousefx::TrailMetadata(n), n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u6eda\u8f6e\u7279\u6548", L"Scroll Effects", zh), mouseFx, mousefx::EffectCategory::Scroll, mousefx::ScrollMetadata(n), n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u957f\u6309\u7279\u6548", L"Hold Effects", zh), mouseFx, mousefx::EffectCategory::Hold, mousefx::HoldMetadata(n), n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u60ac\u505c\u7279\u6548", L"Hover Effects", zh), mouseFx, mousefx::EffectCategory::Hover, mousefx::HoverMetadata(n), n);
 
     AppendThemeSubMenu(menu, mouseFx);
 
-    menu.AppendMenu(MF_STRING, kCmdStarRepo, L"\u9879\u76ee\u5730\u5740 / \u652f\u6301\u4f5c\u8005 (Project/Star)");
+    menu.AppendMenu(MF_STRING, kCmdStarRepo, PickLabel(L"\u2605 Star \u9879\u76ee", L"\u2605 Star Project", zh));
     menu.AppendMenu(MF_SEPARATOR);
-    menu.AppendMenu(MF_STRING, kCmdTraySettings, L"\u8bbe\u7f6e... (Settings...)");
-    menu.AppendMenu(MF_STRING, kCmdTrayReloadConfig, L"\u91cd\u8f7d\u914d\u7f6e (Reload config)");
-    menu.AppendMenu(MF_STRING, kCmdTrayExit, L"\u9000\u51fa");
+    menu.AppendMenu(MF_STRING, kCmdTraySettings, PickLabel(L"\u8bbe\u7f6e...", L"Settings...", zh));
+    menu.AppendMenu(MF_STRING, kCmdTrayReloadConfig, PickLabel(L"\u91cd\u8f7d\u914d\u7f6e", L"Reload config", zh));
+    menu.AppendMenu(MF_STRING, kCmdTrayExit, PickLabel(L"\u9000\u51fa", L"Exit", zh));
 }
 
 bool TrayMenuBuilder::TryBuildIpcJson(UINT cmd, std::string* outJson) {

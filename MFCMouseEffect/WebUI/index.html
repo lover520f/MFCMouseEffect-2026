@@ -10,51 +10,57 @@
   <div class="wrap">
     <div class="top">
       <div class="brand">
-        <div class="t">MFCMouseEffect Settings</div>
-        <div class="s">Local UI · instant apply · saved to config.json</div>
+        <div class="t" data-i18n="title">MFCMouseEffect Settings</div>
+        <div class="s" data-i18n="subtitle">Local UI · instant apply · saved to config.json</div>
+        <div class="hint" data-i18n="hint_auto_apply">Changes apply automatically after you edit a field.</div>
       </div>
       <div class="btns">
-        <button id="btnReload">Reload</button>
-        <button id="btnSave" class="primary">Save & Apply</button>
+        <a id="btnStar" class="btn-link" href="https://github.com/sqmw/MFCMouseEffect" target="_blank" rel="noopener"
+           data-i18n-title="tip_star" title="Open project page">
+          &#9733; <span data-i18n="btn_star">Star</span>
+        </a>
+        <button id="btnReload" data-i18n="btn_reload" data-i18n-title="tip_reload" title="Reload config.json from disk">Reload</button>
+        <button id="btnSave" class="primary" data-i18n="btn_apply" data-i18n-title="tip_apply" title="Apply current form values">Apply Now</button>
       </div>
     </div>
 
     <div class="row">
       <div class="card" id="general">
-        <h3>General</h3>
+        <h3 data-i18n="section_general">General</h3>
         <div class="grid">
-          <label>Language</label>
+          <label data-i18n="label_language">Language</label>
           <select id="ui_language"></select>
-          <label>Theme</label>
+          <label data-i18n="label_theme">Theme</label>
           <select id="theme"></select>
         </div>
       </div>
 
       <div class="card" id="active">
-        <h3>Active Effects</h3>
+        <h3 data-i18n="section_effects">Active Effects</h3>
         <div class="grid">
-          <label>Click</label><select id="click"></select>
-          <label>Trail</label><select id="trail"></select>
-          <label>Scroll</label><select id="scroll"></select>
-          <label>Hold</label><select id="hold"></select>
-          <label>Hover</label><select id="hover"></select>
+          <label data-i18n="label_click">Click</label><select id="click"></select>
+          <label data-i18n="label_trail">Trail</label><select id="trail"></select>
+          <label data-i18n="label_scroll">Scroll</label><select id="scroll"></select>
+          <label data-i18n="label_hold">Hold</label><select id="hold"></select>
+          <label data-i18n="label_hover">Hover</label><select id="hover"></select>
         </div>
       </div>
     </div>
 
     <div class="row" style="margin-top:12px">
       <div class="card" id="text">
-        <h3>Text Content (Click/Text)</h3>
+        <h3 data-i18n="section_text">Text Content (Click/Text)</h3>
         <div class="grid">
-          <label>Comma separated</label>
-          <textarea id="text_content" placeholder="happy,healthy"></textarea>
+          <label data-i18n="label_texts">Comma separated</label>
+          <textarea id="text_content" data-i18n-placeholder="placeholder_texts" placeholder="happy,healthy"></textarea>
+          <div class="hint span2" data-i18n="hint_texts">Use English comma "," to separate words.</div>
         </div>
       </div>
 
       <div class="card" id="trail">
-        <h3>Trail Tuning</h3>
+        <h3 data-i18n="section_trail_tuning">Trail Tuning</h3>
         <div class="grid">
-          <label>Style preset</label>
+          <label data-i18n="label_style_preset">Style preset</label>
           <select id="trail_style">
             <option value="default">default</option>
             <option value="snappy">snappy</option>
@@ -62,29 +68,30 @@
             <option value="cinematic">cinematic</option>
             <option value="custom">custom</option>
           </select>
+          <div class="hint span2" data-i18n="hint_trail_preset">Preset name only; values below are what actually apply.</div>
         </div>
         <div class="grid" style="margin-top:10px">
-          <label class="mono">streamer duration/max</label>
+          <label class="mono" data-i18n="label_streamer_profile">streamer duration/max</label>
           <div class="pair">
             <input id="p_streamer_duration" type="number" min="80" max="2000"/>
             <input id="p_streamer_max" type="number" min="2" max="240"/>
           </div>
-          <label class="mono">electric duration/max</label>
+          <label class="mono" data-i18n="label_electric_profile">electric duration/max</label>
           <div class="pair">
             <input id="p_electric_duration" type="number" min="80" max="2000"/>
             <input id="p_electric_max" type="number" min="2" max="240"/>
           </div>
-          <label class="mono">meteor duration/max</label>
+          <label class="mono" data-i18n="label_meteor_profile">meteor duration/max</label>
           <div class="pair">
             <input id="p_meteor_duration" type="number" min="80" max="2000"/>
             <input id="p_meteor_max" type="number" min="2" max="240"/>
           </div>
-          <label class="mono">tubes duration/max</label>
+          <label class="mono" data-i18n="label_tubes_profile">tubes duration/max</label>
           <div class="pair">
             <input id="p_tubes_duration" type="number" min="80" max="2000"/>
             <input id="p_tubes_max" type="number" min="2" max="240"/>
           </div>
-          <label class="mono">line duration/max</label>
+          <label class="mono" data-i18n="label_line_profile">line duration/max</label>
           <div class="pair">
             <input id="p_line_duration" type="number" min="80" max="2000"/>
             <input id="p_line_max" type="number" min="2" max="240"/>
@@ -92,22 +99,23 @@
 
           <div class="sep"></div>
 
-          <label class="mono">streamer glow/core/head</label>
+          <label class="mono" data-i18n="label_streamer_params">streamer glow/core/head</label>
           <div class="triple">
             <input id="k_streamer_glow" type="number" step="0.05" min="0.5" max="4"/>
             <input id="k_streamer_core" type="number" step="0.05" min="0.2" max="2"/>
             <input id="k_streamer_head" type="number" step="0.05" min="0.8" max="3"/>
           </div>
-          <label class="mono">electric amp/fork</label>
+          <label class="mono" data-i18n="label_electric_params">electric amp/fork</label>
           <div class="pair">
             <input id="k_electric_amp" type="number" step="0.05" min="0.2" max="3"/>
             <input id="k_electric_fork" type="number" step="0.01" min="0" max="0.5"/>
           </div>
-          <label class="mono">meteor rate/speed</label>
+          <label class="mono" data-i18n="label_meteor_params">meteor rate/speed</label>
           <div class="pair">
             <input id="k_meteor_rate" type="number" step="0.01" min="0.2" max="4"/>
             <input id="k_meteor_speed" type="number" step="0.01" min="0.2" max="4"/>
           </div>
+          <div class="hint span2" data-i18n="hint_clamp">Values are clamped to safe ranges when applied.</div>
         </div>
       </div>
     </div>
@@ -118,4 +126,3 @@
   <script src="/app.js"></script>
 </body>
 </html>
-
