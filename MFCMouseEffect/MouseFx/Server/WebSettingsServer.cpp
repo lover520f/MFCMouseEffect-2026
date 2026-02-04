@@ -115,7 +115,8 @@ bool WebSettingsServer::Start() {
     if (!http_) return false;
     if (http_->IsRunning()) return true;
 
-    return http_->StartLoopback([this](const HttpRequest& req, HttpResponse& resp) {
+    bool started = http_->StartLoopback([this](const HttpRequest& req, HttpResponse& resp) {
+        Touch();
         try {
             std::string path = req.path;
             size_t q = path.find('?');
@@ -149,11 +150,23 @@ bool WebSettingsServer::Start() {
                 resp.body = json({{"ok", true}}).dump();
                 return;
             }
-            if (req.method == "POST" && path == "/api/state") {
+            if (req.method == "POST" && path == "/api/stop") {
                 resp.contentType = "application/json; charset=utf-8";
-                resp.body = ApplyStateJson(req.body);
+                resp.body = json({{"ok", true}}).dump();
+                StopAsync();
                 return;
             }
+            if (req.method == "POST" && path == "/api/reset") {
+                if (controller_) controller_->HandleCommand("{\"cmd\":\"reset_config\"}");
+                resp.contentType = "application/json; charset=utf-8";
+                resp.body = json({{"ok", true}}).dump();
+                return;
+            }
+        if (req.method == "POST" && path == "/api/state") {
+            resp.contentType = "application/json; charset=utf-8";
+            resp.body = ApplyStateJson(req.body);
+            return;
+        }
             if (req.method == "GET" && path == "/favicon.ico") {
                 resp.statusCode = 204;
                 resp.contentType = "text/plain; charset=utf-8";
@@ -185,10 +198,16 @@ bool WebSettingsServer::Start() {
             }
         }
     });
+    if (started) {
+        Touch();
+        StartMonitor();
+    }
+    return started;
 }
 
 void WebSettingsServer::Stop() {
     if (http_) http_->Stop();
+    StopMonitor();
 }
 
 bool WebSettingsServer::IsRunning() const {
@@ -328,6 +347,47 @@ std::wstring WebSettingsServer::ExeDirW() {
     size_t pos = s.find_last_of(L"\\/");
     if (pos == std::wstring::npos) return {};
     return s.substr(0, pos);
+}
+
+uint64_t WebSettingsServer::NowMs() {
+    return GetTickCount64();
+}
+
+void WebSettingsServer::Touch() {
+    lastRequestMs_.store(NowMs());
+}
+
+void WebSettingsServer::StartMonitor() {
+    if (idleTimeoutMs_ <= 0) return;
+    if (monitorRunning_.exchange(true)) return;
+    monitorThread_ = std::thread([this]() {
+        while (monitorRunning_.load()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            if (!http_ || !http_->IsRunning()) continue;
+            uint64_t last = lastRequestMs_.load();
+            if (last == 0) continue;
+            uint64_t now = NowMs();
+            if (now > last && (now - last) > (uint64_t)idleTimeoutMs_) {
+                http_->Stop();
+                monitorRunning_.store(false);
+                break;
+            }
+        }
+    });
+}
+
+void WebSettingsServer::StopMonitor() {
+    monitorRunning_.store(false);
+    if (monitorThread_.joinable() && std::this_thread::get_id() != monitorThread_.get_id()) {
+        monitorThread_.join();
+    }
+}
+
+void WebSettingsServer::StopAsync() {
+    std::thread([this]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        Stop();
+    }).detach();
 }
 
 } // namespace mousefx

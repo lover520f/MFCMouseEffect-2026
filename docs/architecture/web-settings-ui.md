@@ -13,9 +13,11 @@ This project now prefers a **lightweight browser UI** served from a **local loop
 3. App opens the default browser to `http://127.0.0.1:<port>/?token=<token>`
 4. The page reads/writes settings via `/api/*` and applies instantly
 
-## Live Apply
-- The web UI auto-applies changes after short debounce (no extra Save required).
-- Manual **Apply Now** button is still available as a one-shot apply.
+## Apply Flow
+- Changes are **manual apply**: update values then click **Apply**.
+- **Reload** re-reads `config.json` from disk.
+- **Reset** restores defaults (then reloads).
+- **Stop** closes the local server (reopen from tray to start again).
 ## UI Hints
 - Hover tips for top actions (Reload / Apply / Star).
 - Text content clarifies using the English comma.
@@ -39,6 +41,12 @@ This project now prefers a **lightweight browser UI** served from a **local loop
 - `GET /api/state` → current settings (theme/language/active effects + trail tuning)
 - `POST /api/state` → apply settings (maps to `{"cmd":"apply_settings","payload":...}`)
 - `POST /api/reload` → reload `config.json` from disk (maps to `{"cmd":"reload_config"}`)
+- `POST /api/reset` → restore defaults (maps to `{"cmd":"reset_config"}`)
+- `POST /api/stop` → stop local server (on-demand)
+
+## Resource Use
+- The server thread blocks on `accept()` (no busy polling).
+- It also auto-stops after a short idle timeout to reduce background footprint.
 
 ## Implementation Pointers
 - Server: `MFCMouseEffect/MouseFx/Server/WebSettingsServer.cpp`

@@ -328,6 +328,8 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
         }
     } else if (cmd == "reload_config") {
         ReloadConfigFromDisk();
+    } else if (cmd == "reset_config") {
+        ResetConfig();
     } else if (cmd == "apply_settings") {
         json root;
         try {

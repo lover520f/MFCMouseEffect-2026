@@ -14,9 +14,11 @@ MFC 的设置界面在“高级调参”（尤其是拖尾参数）场景下：
 3. 自动打开默认浏览器：`http://127.0.0.1:<port>/?token=<token>`
 4. 页面通过 `/api/*` 读取/写入配置，保存后立即生效
 
-## 实时应用
-- 网页端改动会自动 debounce 后应用（无需反复点保存）。
-- 仍保留 **立即应用** 按钮作为手动触发。
+## 应用方式
+- 目前为 **手动应用**：修改参数后点击 **应用**。
+- **重载** 会从磁盘重新读取 `config.json`。
+- **恢复默认** 会重置为默认值（随后刷新）。
+- **关闭监听** 会停止本地服务器（需要从托盘重新打开）。
 ## 交互提示
 - 顶部按钮提供 hover 提示（Reload / Apply / Star）。
 - 文本内容提示使用英文逗号分隔。
@@ -40,6 +42,12 @@ MFC 的设置界面在“高级调参”（尤其是拖尾参数）场景下：
 - `GET /api/state`：当前配置（语言/主题/各分类启用项 + 拖尾调参）
 - `POST /api/state`：应用配置（内部转换为 `{"cmd":"apply_settings","payload":...}`）
 - `POST /api/reload`：从磁盘重载 `config.json`（内部转换为 `{"cmd":"reload_config"}`）
+- `POST /api/reset`：恢复默认（内部转换为 `{"cmd":"reset_config"}`）
+- `POST /api/stop`：关闭本地服务器（按需启动）
+
+## 资源占用
+- 服务器线程在 `accept()` 阻塞等待（不是轮询）。
+- 另外有空闲超时自动停止，以减少后台占用。
 
 ## 关键实现位置
 - 服务器：`MFCMouseEffect/MouseFx/Server/WebSettingsServer.cpp`

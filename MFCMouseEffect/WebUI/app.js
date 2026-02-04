@@ -8,13 +8,19 @@
     "en-US": {
       title: "MFCMouseEffect Settings",
       subtitle: "Local UI · instant apply · saved to config.json",
-      hint_auto_apply: "Changes apply automatically after you edit a field.",
+      hint_apply: "Change values then click Apply.",
       btn_star: "Star",
       btn_reload: "Reload",
-      btn_apply: "Apply Now",
+      btn_reset: "Reset",
+      btn_stop: "Stop",
+      btn_apply: "Apply",
       tip_star: "Open project page",
       tip_reload: "Reload config.json from disk",
+      tip_reset: "Reset all settings to defaults",
+      tip_stop: "Stop local server (reopen from tray)",
       tip_apply: "Apply current form values",
+      confirm_reset: "Reset to defaults? This cannot be undone.",
+      stopped_hint: "Server stopped. Reopen from tray to continue.",
       section_general: "General",
       section_effects: "Active Effects",
       section_text: "Text Content (Click/Text)",
@@ -51,13 +57,19 @@
     "zh-CN": {
       title: "MFCMouseEffect \u8bbe\u7f6e",
       subtitle: "\u672c\u5730\u8bbe\u7f6e\u9875 \u00b7 \u4fee\u6539\u5373\u65f6\u751f\u6548 \u00b7 \u4fdd\u5b58\u5230 config.json",
-      hint_auto_apply: "\u4fee\u6539\u4efb\u610f\u5b57\u6bb5\u540e\u4f1a\u81ea\u52a8\u5e94\u7528\u3002",
+      hint_apply: "\u4fee\u6539\u5b8c\u540e\u70b9\u51fb\u201c\u5e94\u7528\u201d\u3002",
       btn_star: "Star \u9879\u76ee",
       btn_reload: "\u91cd\u8f7d",
-      btn_apply: "\u7acb\u5373\u5e94\u7528",
+      btn_reset: "\u6062\u590d\u9ed8\u8ba4",
+      btn_stop: "\u5173\u95ed\u76d1\u542c",
+      btn_apply: "\u5e94\u7528",
       tip_star: "\u6253\u5f00\u9879\u76ee\u4e3b\u9875",
       tip_reload: "\u4ece\u78c1\u76d8\u91cd\u8f7d config.json",
-      tip_apply: "\u7acb\u5373\u5e94\u7528\u5f53\u524d\u503c",
+      tip_reset: "\u5c06\u6240\u6709\u8bbe\u7f6e\u6062\u590d\u4e3a\u9ed8\u8ba4",
+      tip_stop: "\u5173\u95ed\u672c\u5730\u76d1\u542c\uff08\u91cd\u65b0\u4ece\u6258\u76d8\u6253\u5f00\uff09",
+      tip_apply: "\u5e94\u7528\u5f53\u524d\u503c",
+      confirm_reset: "\u786e\u5b9a\u6062\u590d\u9ed8\u8ba4\u5417\uff1f\u65e0\u6cd5\u64a4\u9500\u3002",
+      stopped_hint: "\u670d\u52a1\u5df2\u5173\u95ed\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u3002",
       section_general: "\u4e00\u822c",
       section_effects: "\u7279\u6548\u9009\u62e9",
       section_text: "\u6587\u5b57\u5185\u5bb9\uff08\u70b9\u51fb/\u6587\u5b57\uff09",
@@ -161,32 +173,8 @@
     if(node) node.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
-  let updating = false;
-  let autoTimer = null;
-  let autoBusy = false;
-
-  function scheduleAutoApply(){
-    if (updating) return;
-    if (autoTimer) clearTimeout(autoTimer);
-    autoTimer = setTimeout(async () => {
-      if (autoBusy) return;
-      autoBusy = true;
-      try{
-        const st = buildState();
-        const res = await apiPost('/api/state', st);
-        if (!res.ok) throw new Error(res.error || 'apply failed');
-        toast('Auto applied.');
-      }catch(e){
-        toast('Auto apply failed: ' + e.message);
-      }finally{
-        autoBusy = false;
-      }
-    }, 350);
-  }
-
   async function reload(){
     toast('Loading...');
-    updating = true;
     const schema = await apiGet('/api/schema');
     const st = await apiGet('/api/state');
 
@@ -222,7 +210,6 @@
     num('k_idle_fade_end', k.idle_fade_end_ms);
 
     toast('Ready.');
-    updating = false;
   }
 
   function buildState(){
@@ -287,15 +274,34 @@
     }
   });
 
-  document.querySelectorAll('input,select,textarea').forEach(node => {
-    node.addEventListener('input', () => {
-      if (node.id === 'ui_language') applyI18n(node.value);
-      scheduleAutoApply();
-    });
-    node.addEventListener('change', () => {
-      if (node.id === 'ui_language') applyI18n(node.value);
-      scheduleAutoApply();
-    });
+  el('btnReset').addEventListener('click', async () => {
+    try{
+      const lang = el('ui_language').value || 'en-US';
+      const t = I18N[lang] || I18N["en-US"];
+      if (!confirm(t.confirm_reset)) return;
+      toast('Resetting...');
+      const res = await apiPost('/api/reset', {});
+      if (!res.ok) throw new Error(res.error || 'reset failed');
+      await reload();
+    }catch(e){
+      toast('Reset failed: ' + e.message);
+    }
+  });
+
+  el('btnStop').addEventListener('click', async () => {
+    try{
+      const res = await apiPost('/api/stop', {});
+      if (!res.ok) throw new Error(res.error || 'stop failed');
+      const lang = el('ui_language').value || 'en-US';
+      const t = I18N[lang] || I18N["en-US"];
+      toast(t.stopped_hint);
+    }catch(e){
+      toast('Stop failed: ' + e.message);
+    }
+  });
+
+  el('ui_language').addEventListener('change', () => {
+    applyI18n(el('ui_language').value);
   });
 
   reload().then(scrollToHash).catch(e => toast('Load failed: ' + e.message));
