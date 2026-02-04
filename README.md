@@ -63,6 +63,13 @@
   - 性能对比：提供不同 DPI/帧率下的 CPU 占用基准。
   - 文档补充：英文版 Troubleshooting 与 FAQ。
 
+## 💖 赞助与支持
+如果您觉得这个项目对您有所帮助，欢迎通过以下方式支持作者的后续开发。您的支持是我持续改进的动力！
+
+| 支付宝 (Alipay) | 微信支付 (WeChat Pay) |
+| :---: | :---: |
+| <img src="./docs/images/alipay_qr.png" width="240"><br>扫码加鸡腿 | <img src="./docs/images/wechat_qr.png" width="240"><br>请作者喝咖啡 |
+
 ## ⚖️ 许可
 [MIT License](./LICENSE)
 

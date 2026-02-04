@@ -63,6 +63,13 @@ A lightweight, high-performance Windows desktop effect tool that adds real-time 
   - Benchmark CPU usage across DPI/refresh scenarios.
   - Expand Troubleshooting/FAQ (EN).
 
+## 💖 Sponsorship and Support
+If you find this project helpful, feel free to support the developer's further work through the following methods. Your support is the driving force for continuous improvement!
+
+| Alipay | WeChat Pay |
+| :---: | :---: |
+| <img src="./docs/images/alipay_qr.png" width="240"><br>Buy me a snack | <img src="./docs/images/wechat_qr.png" width="240"><br>Buy me a coffee |
+
 ## ⚖️ License
 [MIT License](./LICENSE)
 
