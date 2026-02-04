@@ -7,6 +7,7 @@
 - 问题记录：`docs/issues/emoji-support.md`（设置输入框与文本点击特效的表情渲染）
 - 问题记录：`docs/issues/text-effect-motion.md`（切换到 DWrite 后的飘散路径一致性）
 - 问题记录：`docs/issues/settings-emoji-preview.md`（设置页表情彩色预览叠层）
+- 问题记录：`docs/issues/web-settings-server-lifecycle.zh-CN.md`（浏览器设置页：idle 重启崩溃 + token 轮换）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
 - 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）
 - 架构整理：`docs/architecture/ui-folder-structure.zh-CN.md`（UI 文件夹结构整理）

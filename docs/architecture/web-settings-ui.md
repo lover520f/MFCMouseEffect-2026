@@ -27,6 +27,7 @@ This project now prefers a **lightweight browser UI** served from a **local loop
 - The server only binds to **loopback** (`127.0.0.1`).
 - All `/api/*` endpoints require header `X-MFCMouseEffect-Token` matching the token in the URL query.
   - This is mainly to reduce loopback CSRF risk (any webpage could try calling `http://127.0.0.1:<port>/api/*`).
+- The token rotates on each tray **Settings...** open; only the newest token is accepted.
 
 ## Packaging / Hot Update (Disk Override)
 - Source UI lives in `MFCMouseEffect/WebUI/`.
@@ -68,4 +69,5 @@ This project now prefers a **lightweight browser UI** served from a **local loop
 - **Dropdowns are empty / page shows “Load failed”:** open DevTools Network and check `/api/schema` and `/api/state` responses.
   - Unauthorized → URL missing `?token=...` or token header not sent.
   - 500 → server now returns a concrete error string; paste it into an issue.
+- **Token expired:** the UI shows a toast hint; reopen from tray to get a fresh token.
 - **Encoding error (`invalid UTF-8 byte`)** → server now sanitizes strings by validating UTF-8 and converting from ACP if needed.

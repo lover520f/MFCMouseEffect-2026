@@ -21,6 +21,7 @@
       tip_apply: "Apply current form values",
       confirm_reset: "Reset to defaults? This cannot be undone.",
       stopped_hint: "Server stopped. Reopen from tray to continue.",
+      unauthorized_hint: "Token expired. Reopen settings from the tray.",
       section_general: "General",
       section_effects: "Active Effects",
       section_text: "Text Content (Click/Text)",
@@ -70,6 +71,7 @@
       tip_apply: "\u5e94\u7528\u5f53\u524d\u503c",
       confirm_reset: "\u786e\u5b9a\u6062\u590d\u9ed8\u8ba4\u5417\uff1f\u65e0\u6cd5\u64a4\u9500\u3002",
       stopped_hint: "\u670d\u52a1\u5df2\u5173\u95ed\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u3002",
+      unauthorized_hint: "Token \u5df2\u5931\u6548\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u8bbe\u7f6e\u3002",
       section_general: "\u4e00\u822c",
       section_effects: "\u7279\u6548\u9009\u62e9",
       section_text: "\u6587\u5b57\u5185\u5bb9\uff08\u70b9\u51fb/\u6587\u5b57\uff09",
@@ -137,9 +139,31 @@
     }
   }
 
+  function pickLang(){
+    const sel = el('ui_language');
+    const val = sel ? sel.value : '';
+    if (val) return val;
+    const nav = (navigator.language || '').toLowerCase();
+    if (nav.startsWith('zh')) return 'zh-CN';
+    return 'en-US';
+  }
+
+  function showUnauthorized(){
+    const t = I18N[pickLang()] || I18N["en-US"];
+    toast(t.unauthorized_hint || 'Unauthorized.');
+  }
+
   async function apiGet(path){
     const r = await fetch(path, {headers: {'X-MFCMouseEffect-Token': token}});
-    if(!r.ok) throw new Error(await r.text());
+    if(!r.ok) {
+      if (r.status === 401) {
+        showUnauthorized();
+        const err = new Error('unauthorized');
+        err.code = 'unauthorized';
+        throw err;
+      }
+      throw new Error(await r.text());
+    }
     return await r.json();
   }
   async function apiPost(path, obj){
@@ -148,7 +172,15 @@
       headers:{'Content-Type':'application/json','X-MFCMouseEffect-Token': token},
       body: JSON.stringify(obj || {})
     });
-    if(!r.ok) throw new Error(await r.text());
+    if(!r.ok) {
+      if (r.status === 401) {
+        showUnauthorized();
+        const err = new Error('unauthorized');
+        err.code = 'unauthorized';
+        throw err;
+      }
+      throw new Error(await r.text());
+    }
     return await r.json();
   }
 
@@ -259,6 +291,7 @@
       await reload();
       scrollToHash();
     }catch(e){
+      if (e && e.code === 'unauthorized') return;
       toast('Reload failed: ' + e.message);
     }
   });
@@ -270,6 +303,7 @@
       const res = await apiPost('/api/state', st);
       toast(res.ok ? 'Applied.' : ('Failed: ' + (res.error || '')));
     }catch(e){
+      if (e && e.code === 'unauthorized') return;
       toast('Save failed: ' + e.message);
     }
   });
@@ -284,6 +318,7 @@
       if (!res.ok) throw new Error(res.error || 'reset failed');
       await reload();
     }catch(e){
+      if (e && e.code === 'unauthorized') return;
       toast('Reset failed: ' + e.message);
     }
   });
@@ -296,6 +331,7 @@
       const t = I18N[lang] || I18N["en-US"];
       toast(t.stopped_hint);
     }catch(e){
+      if (e && e.code === 'unauthorized') return;
       toast('Stop failed: ' + e.message);
     }
   });
@@ -304,5 +340,8 @@
     applyI18n(el('ui_language').value);
   });
 
-  reload().then(scrollToHash).catch(e => toast('Load failed: ' + e.message));
+  reload().then(scrollToHash).catch(e => {
+    if (e && e.code === 'unauthorized') return;
+    toast('Load failed: ' + e.message);
+  });
 })();

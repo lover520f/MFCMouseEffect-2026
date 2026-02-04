@@ -1,8 +1,8 @@
 ; Reference: http://www.jrsoftware.org/ishelp/
 
 #define MyAppName "MFCMouseEffect"
-#define MyAppVersion "1.2.0"
-#define MyAppPublisher "sqmw"
+#define MyAppVersion "1.2.1"
+#define MyAppPublisher "ksun22515@gmail.com"
 #define MyAppURL "https://github.com/sqmw/MFCMouseEffect"
 #define MyAppExeName "MFCMouseEffect.exe"
 

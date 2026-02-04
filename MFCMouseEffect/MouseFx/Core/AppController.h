@@ -68,6 +68,7 @@ public:
     
     // Get current config (for effects to read)
     const EffectConfig& Config() const { return config_; }
+    EffectConfig GetConfigSnapshot() const;
 
     // Reset settings to defaults
     void ResetConfig();

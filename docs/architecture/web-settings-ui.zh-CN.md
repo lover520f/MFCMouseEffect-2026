@@ -28,6 +28,7 @@ MFC 的设置界面在“高级调参”（尤其是拖尾参数）场景下：
 - 只绑定 **loopback**（`127.0.0.1`），不对外网暴露。
 - `/api/*` 必须携带 `X-MFCMouseEffect-Token`，并与 URL 中的 `token` 一致。
   - 这是一个轻量防护，主要用于避免“本机任意网页/脚本”对 loopback 发起 CSRF 调用（比如你打开了某个网页，它可以尝试请求 `http://127.0.0.1:<port>/api/*`）。
+- 每次托盘 **设置...** 会轮换 token，仅最新 token 生效。
 
 ## 打包与热更新（磁盘覆盖优先）
 - 源码 UI 位于：`MFCMouseEffect/WebUI/`
@@ -69,4 +70,5 @@ MFC 的设置界面在“高级调参”（尤其是拖尾参数）场景下：
 - **下拉框为空 / 页面提示 “Load failed”：** 打开浏览器开发者工具（Network），查看 `/api/schema`、`/api/state` 的返回。
   - Unauthorized：通常是 URL 缺少 `?token=...` 或请求头未携带 token。
   - 500：服务器会返回具体错误字符串，把它贴出来便于定位。
+- **Token 失效：** UI 会提示 token 已失效，请从托盘重新打开。
 - **编码错误（`invalid UTF-8 byte`）**：服务端已加 UTF-8 校验与 ACP 转换兜底。

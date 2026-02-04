@@ -99,7 +99,7 @@ static json MakeOpt(const char* value, const wchar_t* zh, const wchar_t* en, con
 }
 
 WebSettingsServer::WebSettingsServer(AppController* controller) : controller_(controller) {
-    token_ = MakeToken();
+    RotateToken();
     http_ = std::make_unique<HttpServer>();
 
     std::wstring base = ExeDirW();
@@ -126,7 +126,7 @@ bool WebSettingsServer::Start() {
             if (isApi) {
                 auto it = req.headers.find("x-mfcmouseeffect-token");
                 std::string t = (it == req.headers.end()) ? "" : TrimAscii(it->second);
-                if (t != token_) {
+                if (!IsTokenValid(t)) {
                     resp.statusCode = 401;
                     resp.contentType = "text/plain; charset=utf-8";
                     resp.body = "unauthorized";
@@ -220,14 +220,15 @@ uint16_t WebSettingsServer::Port() const {
 
 std::string WebSettingsServer::Url() const {
     std::ostringstream ss;
-    ss << "http://127.0.0.1:" << (int)Port() << "/?token=" << token_;
+    ss << "http://127.0.0.1:" << (int)Port() << "/?token=" << TokenCopy();
     return ss.str();
 }
 
 std::string WebSettingsServer::BuildSchemaJson() const {
     std::string lang = "zh-CN";
     if (controller_) {
-        lang = controller_->Config().uiLanguage.empty() ? "zh-CN" : controller_->Config().uiLanguage;
+        const auto cfg = controller_->GetConfigSnapshot();
+        lang = cfg.uiLanguage.empty() ? "zh-CN" : cfg.uiLanguage;
     }
 
     json out;
@@ -267,7 +268,7 @@ std::string WebSettingsServer::BuildStateJson() const {
     if (!controller_) {
         return json({{"error","no controller"}}).dump();
     }
-    const auto& cfg = controller_->Config();
+    const auto cfg = controller_->GetConfigSnapshot();
 
     json out;
     out["ui_language"] = EnsureUtf8(cfg.uiLanguage);
@@ -339,6 +340,25 @@ std::string WebSettingsServer::MakeToken() {
     return s;
 }
 
+std::string WebSettingsServer::Token() const {
+    return TokenCopy();
+}
+
+std::string WebSettingsServer::TokenCopy() const {
+    std::lock_guard<std::mutex> lock(tokenMutex_);
+    return token_;
+}
+
+bool WebSettingsServer::IsTokenValid(const std::string& token) const {
+    std::lock_guard<std::mutex> lock(tokenMutex_);
+    return token == token_;
+}
+
+void WebSettingsServer::RotateToken() {
+    std::lock_guard<std::mutex> lock(tokenMutex_);
+    token_ = MakeToken();
+}
+
 std::wstring WebSettingsServer::ExeDirW() {
     wchar_t path[MAX_PATH]{};
     DWORD n = GetModuleFileNameW(nullptr, path, MAX_PATH);
@@ -359,7 +379,11 @@ void WebSettingsServer::Touch() {
 
 void WebSettingsServer::StartMonitor() {
     if (idleTimeoutMs_ <= 0) return;
-    if (monitorRunning_.exchange(true)) return;
+    if (monitorRunning_.load()) return;
+    if (monitorThread_.joinable() && std::this_thread::get_id() != monitorThread_.get_id()) {
+        monitorThread_.join();
+    }
+    monitorRunning_.store(true);
     monitorThread_ = std::thread([this]() {
         while (monitorRunning_.load()) {
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));

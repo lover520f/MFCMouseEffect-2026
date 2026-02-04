@@ -61,6 +61,19 @@ AppController::~AppController() {
     Stop();
 }
 
+EffectConfig AppController::GetConfigSnapshot() const {
+    if (!dispatchHwnd_ || !IsWindow(dispatchHwnd_)) {
+        return config_;
+    }
+    if (GetWindowThreadProcessId(dispatchHwnd_, nullptr) == GetCurrentThreadId()) {
+        return config_;
+    }
+
+    EffectConfig snapshot{};
+    SendMessageW(dispatchHwnd_, WM_MFX_GET_CONFIG, 0, reinterpret_cast<LPARAM>(&snapshot));
+    return snapshot;
+}
+
 void AppController::PersistConfig() {
     if (!configDir_.empty()) {
         EffectConfig::Save(configDir_, config_);
@@ -684,6 +697,14 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         auto* cmdStr = reinterpret_cast<const std::string*>(lParam);
         if (cmdStr) {
             HandleCommand(*cmdStr);
+        }
+        return 0;
+    }
+
+    if (msg == WM_MFX_GET_CONFIG) {
+        auto* out = reinterpret_cast<EffectConfig*>(lParam);
+        if (out) {
+            *out = config_;
         }
         return 0;
     }
