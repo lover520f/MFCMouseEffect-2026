@@ -39,7 +39,7 @@ A lightweight, high-performance Windows desktop effect tool that adds real-time 
 - All releases: [All releases](../../releases)
 
 ## 📦 Build & Run
-1. Open `MFCMouseEffect.sln` with Visual Studio 2022.
+1. Open `MFCMouseEffect.slnx` with Visual Studio 2026.
 2. Select `Release | x64`, then “Rebuild Solution”.
 3. Run `x64/Release/MFCMouseEffect.exe`. Tray mode offers an exit menu; in non-background mode the tray “Settings...” opens the browser settings page.
 
@@ -67,4 +67,4 @@ A lightweight, high-performance Windows desktop effect tool that adds real-time 
 [MIT License](./LICENSE)
 
 ---
-**If it helps, please star ⭐ and share feedback in Issues/Discussions.**
+<p align="center"><b>If it helps, please <a href="https://github.com/sqmw/MFCMouseEffect">star ⭐</a> and share feedback in Issues/Discussions.</b></p>

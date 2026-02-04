@@ -39,7 +39,7 @@
 - 历史版本：[All releases](../../releases)
 
 ## 📦 安装与运行
-1. 使用 Visual Studio 2022 打开 `MFCMouseEffect.sln`。
+1. 使用 Visual Studio 2026 打开 `MFCMouseEffect.slnx`。
 2. 选择 `Release | x64`，执行“重新生成解决方案”。
 3. 运行 `x64/Release/MFCMouseEffect.exe`。托盘模式下右键可退出，非 background 模式右键菜单“设置...”会打开浏览器设置页。
 
@@ -67,4 +67,4 @@
 [MIT License](./LICENSE)
 
 ---
-**觉得有用请点个 Star ⭐，也欢迎在 Issues/Discussions 留言反馈。**
+<p align="center"><b>觉得有用请点个 <a href="https://github.com/sqmw/MFCMouseEffect">Star ⭐</a>，也欢迎在 Issues/Discussions 留言反馈。</b></p>
