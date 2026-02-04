@@ -13,3 +13,4 @@
 - 生成前需先构建 `Release|x64`，确保 `x64\\Release\\webui` 已由 PostBuild 拷贝。
 - 安装包图标取自 `MFCMouseEffect\\res\\MFCMouseEffect.ico`（Install 目录相对路径）。
 - 如需便携版，可直接分发 `x64\\Release\\` 目录；此 iss 方案适用于标准安装版。
+- Inno 输出目录为 `Install\\Output\\`，该目录下的最终安装包不纳入 git 跟踪（见 `.gitignore`）。

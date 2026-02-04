@@ -39,3 +39,6 @@ ipch/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Installer outputs (Inno Setup)
+Install/Output/

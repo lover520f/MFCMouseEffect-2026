@@ -28,7 +28,7 @@
 ## Behavior Changes
 - Every time tray **Settings...** is clicked, a new token is minted.
 - Old tabs will show `unauthorized` on API calls and should be reopened from the tray.
-- The UI shows a toast hint when the token expires.
+- Status messages (Ready / Server stopped / Token expired / Errors) now show only in a top-left banner (the bottom toast is removed).
 
 ## Manual Test Checklist
 - Leave settings idle past the timeout, then open settings again -> no crash.

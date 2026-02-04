@@ -1,8 +1,7 @@
 (() => {
   const token = new URL(location.href).searchParams.get('token') || '';
-  const toastEl = document.getElementById('toast');
-  const toast = (msg) => { toastEl.textContent = msg || ''; };
   const el = (id) => document.getElementById(id);
+  const statusEl = document.getElementById('status');
 
   const I18N = {
     "en-US": {
@@ -22,6 +21,7 @@
       confirm_reset: "Reset to defaults? This cannot be undone.",
       stopped_hint: "Server stopped. Reopen from tray to continue.",
       unauthorized_hint: "Token expired. Reopen settings from the tray.",
+      status_ready: "Ready.",
       section_general: "General",
       section_effects: "Active Effects",
       section_text: "Text Content (Click/Text)",
@@ -72,6 +72,7 @@
       confirm_reset: "\u786e\u5b9a\u6062\u590d\u9ed8\u8ba4\u5417\uff1f\u65e0\u6cd5\u64a4\u9500\u3002",
       stopped_hint: "\u670d\u52a1\u5df2\u5173\u95ed\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u3002",
       unauthorized_hint: "Token \u5df2\u5931\u6548\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u8bbe\u7f6e\u3002",
+      status_ready: "\u5c31\u7eea\u3002",
       section_general: "\u4e00\u822c",
       section_effects: "\u7279\u6548\u9009\u62e9",
       section_text: "\u6587\u5b57\u5185\u5bb9\uff08\u70b9\u51fb/\u6587\u5b57\uff09",
@@ -139,6 +140,20 @@
     }
   }
 
+  function setStatus(msg, tone){
+    if (!statusEl) return;
+    if (!msg) {
+      statusEl.textContent = '';
+      statusEl.className = 'status';
+      return;
+    }
+    statusEl.textContent = msg;
+    let cls = 'status show';
+    if (tone === 'warn') cls += ' warn';
+    if (tone === 'ok') cls += ' ok';
+    statusEl.className = cls;
+  }
+
   function pickLang(){
     const sel = el('ui_language');
     const val = sel ? sel.value : '';
@@ -150,7 +165,7 @@
 
   function showUnauthorized(){
     const t = I18N[pickLang()] || I18N["en-US"];
-    toast(t.unauthorized_hint || 'Unauthorized.');
+    setStatus(t.unauthorized_hint || 'Unauthorized.', 'warn');
   }
 
   async function apiGet(path){
@@ -206,7 +221,7 @@
   }
 
   async function reload(){
-    toast('Loading...');
+    setStatus('Loading...');
     const schema = await apiGet('/api/schema');
     const st = await apiGet('/api/state');
 
@@ -241,7 +256,8 @@
     num('k_idle_fade_start', k.idle_fade_start_ms);
     num('k_idle_fade_end', k.idle_fade_end_ms);
 
-    toast('Ready.');
+    const t = I18N[st.ui_language || 'en-US'] || I18N["en-US"];
+    setStatus(t.status_ready || 'Ready.', 'ok');
   }
 
   function buildState(){
@@ -286,25 +302,29 @@
 
   el('btnReload').addEventListener('click', async () => {
     try{
-      toast('Reloading config...');
+      setStatus('Reloading config...');
       await apiPost('/api/reload', {});
       await reload();
       scrollToHash();
     }catch(e){
       if (e && e.code === 'unauthorized') return;
-      toast('Reload failed: ' + e.message);
+      setStatus('Reload failed: ' + e.message, 'warn');
     }
   });
 
   el('btnSave').addEventListener('click', async () => {
     try{
-      toast('Applying...');
+      setStatus('Applying...');
       const st = buildState();
       const res = await apiPost('/api/state', st);
-      toast(res.ok ? 'Applied.' : ('Failed: ' + (res.error || '')));
+      if (res.ok) {
+        setStatus('Applied.', 'ok');
+      } else {
+        setStatus('Failed: ' + (res.error || ''), 'warn');
+      }
     }catch(e){
       if (e && e.code === 'unauthorized') return;
-      toast('Save failed: ' + e.message);
+      setStatus('Save failed: ' + e.message, 'warn');
     }
   });
 
@@ -313,13 +333,13 @@
       const lang = el('ui_language').value || 'en-US';
       const t = I18N[lang] || I18N["en-US"];
       if (!confirm(t.confirm_reset)) return;
-      toast('Resetting...');
+      setStatus('Resetting...');
       const res = await apiPost('/api/reset', {});
       if (!res.ok) throw new Error(res.error || 'reset failed');
       await reload();
     }catch(e){
       if (e && e.code === 'unauthorized') return;
-      toast('Reset failed: ' + e.message);
+      setStatus('Reset failed: ' + e.message, 'warn');
     }
   });
 
@@ -329,10 +349,10 @@
       if (!res.ok) throw new Error(res.error || 'stop failed');
       const lang = el('ui_language').value || 'en-US';
       const t = I18N[lang] || I18N["en-US"];
-      toast(t.stopped_hint);
+      setStatus(t.stopped_hint, 'warn');
     }catch(e){
       if (e && e.code === 'unauthorized') return;
-      toast('Stop failed: ' + e.message);
+      setStatus('Stop failed: ' + e.message, 'warn');
     }
   });
 
@@ -342,6 +362,6 @@
 
   reload().then(scrollToHash).catch(e => {
     if (e && e.code === 'unauthorized') return;
-    toast('Load failed: ' + e.message);
+    setStatus('Load failed: ' + e.message, 'warn');
   });
 })();
