@@ -21,12 +21,12 @@ A lightweight, high-performance Windows desktop effect tool that adds real-time 
 - Global `WH_MOUSE_LL` hook + GDI+ layered windows; smooth, low CPU/memory.
 - Themes (neon / minimal / game feel) and per-effect toggles with persistence.
 - Tray mode for day-to-day use; background mode driven by parent process via stdin; `config.json` stored beside the exe.
-- Settings window: custom outer frame + native controls, bilingual (default Chinese).
+- Settings (browser UI): opened from tray; served by an embedded loopback server; bilingual and supports advanced tuning (saved to `config.json`).
 
 ## 📸 Showcase
 | | |
 | :---: | :---: |
-| <img src="./docs/images/setting_en.png" width="340"><br>Settings window | <img src="./docs/images/ripple_concept.png" width="340"><br>Click ripple |
+| <img src="./docs/images/setting_en.png" width="340"><br>Settings window (legacy) | <img src="./docs/images/ripple_concept.png" width="340"><br>Click ripple |
 | <img src="./docs/images/trail_concept.png" width="340"><br>Particle trail | <img src="./docs/images/scroll_concept.png" width="340"><br>Scroll indicator |
 | <img src="./docs/images/hold_concept.png" width="340"><br>Hold charge | <img src="./docs/images/hover_concept.png" width="340"><br>Hover glow |
 
@@ -41,10 +41,10 @@ A lightweight, high-performance Windows desktop effect tool that adds real-time 
 ## 📦 Build & Run
 1. Open `MFCMouseEffect.sln` with Visual Studio 2022.
 2. Select `Release | x64`, then “Rebuild Solution”.
-3. Run `x64/Release/MFCMouseEffect.exe`. Tray mode offers an exit menu; in non-background mode you can open the settings window.
+3. Run `x64/Release/MFCMouseEffect.exe`. Tray mode offers an exit menu; in non-background mode the tray “Settings...” opens the browser settings page.
 
 ## 🖥️ Usage
-- Language/theme/effects: configure in the settings window; saved to `config.json`.
+- Language/theme/effects: configure in the browser settings page; saved to `config.json`.
 - Admin windows: run the app as Administrator if you need effects inside elevated apps.
 - Background mode: no tray/UI, fully controlled via stdin JSON by the parent process.
 

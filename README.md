@@ -21,12 +21,12 @@
 - 全局低级鼠标钩子 + GDI+ 分层窗口，跟手流畅，资源占用低。
 - 主题可选（霓虹 / 极简 / 游戏感等），各特效独立切换与持久化。
 - 托盘模式常驻、后台模式（由父进程 stdin 控制），配置文件与 exe 同目录。
-- 设置窗口：自绘外框 + 原生控件，支持中英切换（默认中文）。
+- 设置页（浏览器）：托盘菜单打开，内置本地 loopback server，支持中英切换与高级参数调节（配置写回 `config.json`）。
 
 ## 📸 效果预览
 | | |
 | :---: | :---: |
-| <img src="./docs/images/setting_cn.png" width="340"><br>设置窗口 | <img src="./docs/images/ripple_concept.png" width="340"><br>点击波纹 |
+| <img src="./docs/images/setting_cn.png" width="340"><br>设置窗口（Legacy） | <img src="./docs/images/ripple_concept.png" width="340"><br>点击波纹 |
 | <img src="./docs/images/trail_concept.png" width="340"><br>粒子拖尾 | <img src="./docs/images/scroll_concept.png" width="340"><br>滚轮指引 |
 | <img src="./docs/images/hold_concept.png" width="340"><br>长按蓄力 | <img src="./docs/images/hover_concept.png" width="340"><br>悬停发光 |
 
@@ -41,10 +41,10 @@
 ## 📦 安装与运行
 1. 使用 Visual Studio 2022 打开 `MFCMouseEffect.sln`。
 2. 选择 `Release | x64`，执行“重新生成解决方案”。
-3. 运行 `x64/Release/MFCMouseEffect.exe`。托盘模式下右键可退出，非 background 模式可打开设置窗口。
+3. 运行 `x64/Release/MFCMouseEffect.exe`。托盘模式下右键可退出，非 background 模式右键菜单“设置...”会打开浏览器设置页。
 
 ## 🖥️ 使用说明
-- 语言/主题/各特效切换：通过设置窗口；配置写入同目录 `config.json`。
+- 语言/主题/各特效切换：通过浏览器设置页；配置写入同目录 `config.json`。
 - 管理员窗口捕获：如需对管理员窗口生效，请以管理员身份运行本程序。
 - 背景模式：无托盘/界面，完全由父进程通过 stdin JSON 控制。
 

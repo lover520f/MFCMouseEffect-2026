@@ -85,6 +85,11 @@
 #define IDS_EXPLORER				305
 #define IDS_EDIT_MENU				306
 
+// WebUI (RCDATA fallback)
+#define IDR_WEBUI_INDEX              400
+#define IDR_WEBUI_APPJS              401
+#define IDR_WEBUI_STYLES             402
+
 // 新对象的下一组默认值
 //
 #ifdef APSTUDIO_INVOKED

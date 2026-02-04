@@ -14,6 +14,7 @@
 namespace mousefx {
 class AppController;
 class IpcController;
+class WebSettingsServer;
 }
 
 
@@ -47,7 +48,9 @@ public:
 	// Public for TrayHostWnd access
 	std::unique_ptr<mousefx::AppController> mouseFx_;
 	std::unique_ptr<mousefx::IpcController> ipc_;
+	std::unique_ptr<mousefx::WebSettingsServer> webSettings_;
 	void ShowSettingsWindow();
+	void ShowWebSettings(const wchar_t* fragment = nullptr);
 	void NotifySettingsWndDestroyed(class CSettingsWnd* wnd);
 
 private:

@@ -1,8 +1,9 @@
 #include "pch.h"
-#include "TrailTuningWnd.h"
+#include "UI/Settings/TrailTuningWnd.h"
+
+#include <cmath>
 
 #include "Settings/SettingsBackend.h"
-#include <cmath>
 
 namespace {
 
@@ -68,142 +69,6 @@ static TrailTuningModel MakePresetModel(const std::string& preset) {
 
 } // namespace
 
-BEGIN_MESSAGE_MAP(CTrailTuningWnd, CWnd)
-    ON_WM_CREATE()
-    ON_WM_CLOSE()
-    ON_WM_DESTROY()
-    ON_BN_CLICKED(kIdApply, &CTrailTuningWnd::OnCommandApply)
-    ON_BN_CLICKED(kIdReset, &CTrailTuningWnd::OnCommandReset)
-    ON_CBN_SELCHANGE(kIdPreset, &CTrailTuningWnd::OnSelChangePreset)
-END_MESSAGE_MAP()
-
-bool CTrailTuningWnd::CreateAndShow(CWnd* parent, ISettingsBackend* backend) {
-    backend_ = backend;
-    if (!backend_) return false;
-
-    const CString cls = AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW, LoadCursor(nullptr, IDC_ARROW));
-    DWORD style = WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU;
-    DWORD ex = WS_EX_APPWINDOW;
-
-    CRect rc(0, 0, 620, 520);
-    CPoint pt(0, 0);
-    if (parent && ::IsWindow(parent->GetSafeHwnd())) {
-        CRect prc;
-        parent->GetWindowRect(&prc);
-        pt = prc.CenterPoint();
-    } else {
-        pt.x = GetSystemMetrics(SM_CXSCREEN) / 2;
-        pt.y = GetSystemMetrics(SM_CYSCREEN) / 2;
-    }
-    rc.OffsetRect(pt.x - rc.Width() / 2, pt.y - rc.Height() / 2);
-
-    if (!CreateEx(ex, cls, L"\u62D6\u5C3E\u8C03\u53C2 / Trail Tuning", style, rc, parent, 0)) {
-        return false;
-    }
-    ShowWindow(SW_SHOW);
-    UpdateWindow();
-    return true;
-}
-
-int CTrailTuningWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
-    if (CWnd::OnCreate(lpCreateStruct) == -1) return -1;
-
-    NONCLIENTMETRICS ncm{};
-    ncm.cbSize = sizeof(ncm);
-    if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0)) {
-        font_.CreateFontIndirect(&ncm.lfMessageFont);
-    }
-
-    const int pad = S(12);
-    CRect rc;
-    GetClientRect(&rc);
-
-    int x = pad;
-    int y = pad;
-    int w = rc.Width() - pad * 2;
-
-    auto mkStatic = [&](CStatic& s, const wchar_t* text, int xx, int yy, int ww, int hh) {
-        s.Create(text, WS_CHILD | WS_VISIBLE | SS_LEFT | SS_CENTERIMAGE, CRect(xx, yy, xx + ww, yy + hh), this);
-        if (font_.GetSafeHandle()) s.SetFont(&font_);
-    };
-    auto mkEdit = [&](CEdit& e, int xx, int yy, int ww, int hh) {
-        e.Create(WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, CRect(xx, yy, xx + ww, yy + hh), this, 0);
-        if (font_.GetSafeHandle()) e.SetFont(&font_);
-    };
-
-    mkStatic(lblPreset_, L"\u9884\u8bbe (Preset):", x, y, S(120), S(26));
-    cmbPreset_.Create(WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP, CRect(x + S(130), y, x + S(320), y + S(220)), this, kIdPreset);
-    if (font_.GetSafeHandle()) cmbPreset_.SetFont(&font_);
-    cmbPreset_.AddString(L"Default");
-    cmbPreset_.AddString(L"Snappy");
-    cmbPreset_.AddString(L"Long");
-    cmbPreset_.AddString(L"Cinematic");
-    cmbPreset_.AddString(L"Custom");
-
-    y += S(36);
-
-    mkStatic(lblType_, L"\u7C7B\u578B (Type)", x, y, S(160), S(24));
-    mkStatic(lblDuration_, L"\u65F6\u957Fms (Duration)", x + S(180), y, S(140), S(24));
-    mkStatic(lblMaxPoints_, L"\u70B9\u6570 (Max points)", x + S(320), y, S(160), S(24));
-    y += S(28);
-
-    auto mkRow = [&](CStatic& label, const wchar_t* text, ProfileControls& pc) {
-        mkStatic(label, text, x, y, S(150), S(26));
-        mkEdit(pc.duration, x + S(180), y, S(110), S(26));
-        mkEdit(pc.maxPoints, x + S(320), y, S(110), S(26));
-        y += S(32);
-    };
-
-    mkRow(lblLine_, L"\u666E\u901A\u7EBF\u6761 (Line)", line_);
-    mkRow(lblStreamer_, L"\u9713\u8679\u6D41\u5149 (Streamer)", streamer_);
-    mkRow(lblElectric_, L"\u8D5B\u535A\u7535\u5F27 (Electric)", electric_);
-    mkRow(lblMeteor_, L"\u7D62\u4E3D\u6D41\u661F (Meteor)", meteor_);
-    mkRow(lblTubes_, L"\u79D1\u5E7B\u7BA1\u9053 (Tubes/Sci-Fi)", tubes_);
-
-    y += S(6);
-    mkStatic(lblParams_, L"Renderer \u53C2\u6570 (Params)", x, y, w, S(24));
-    y += S(28);
-
-    auto mkParamRow = [&](CStatic& label, const wchar_t* text, CEdit& edit) {
-        mkStatic(label, text, x, y, S(240), S(26));
-        mkEdit(edit, x + S(260), y, S(120), S(26));
-        y += S(32);
-    };
-
-    mkParamRow(lblStreamerGlow_, L"Streamer glow \u7F29\u653E (glow_width_scale)", edtStreamerGlow_);
-    mkParamRow(lblStreamerHead_, L"Streamer \u5934\u90E8\u6307\u6570 (head_power)", edtStreamerHead_);
-    mkParamRow(lblElectricFork_, L"Electric \u5206\u53C9\u6982\u7387 (fork_chance 0-0.5)", edtElectricFork_);
-    mkParamRow(lblElectricAmp_, L"Electric \u5E45\u5EA6\u7F29\u653E (amplitude_scale)", edtElectricAmp_);
-    mkParamRow(lblMeteorRate_, L"Meteor \u706B\u82B1\u91CF (spark_rate_scale)", edtMeteorRate_);
-    mkParamRow(lblMeteorSpeed_, L"Meteor \u706B\u82B1\u901F\u5EA6 (spark_speed_scale)", edtMeteorSpeed_);
-
-    // Buttons
-    int btnW = S(120);
-    int btnH = S(30);
-    int by = rc.bottom - pad - btnH;
-    btnReset_.Create(L"\u6062\u590D\u9ED8\u8BA4 (Reset)", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, CRect(x, by, x + btnW, by + btnH), this, kIdReset);
-    btnApply_.Create(L"\u5E94\u7528 (Apply)", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, CRect(rc.right - pad - btnW, by, rc.right - pad, by + btnH), this, kIdApply);
-    if (font_.GetSafeHandle()) {
-        btnReset_.SetFont(&font_);
-        btnApply_.SetFont(&font_);
-    }
-
-    LoadFromBackend();
-    return 0;
-}
-
-void CTrailTuningWnd::OnClose() {
-    DestroyWindow();
-}
-
-void CTrailTuningWnd::OnDestroy() {
-    CWnd::OnDestroy();
-}
-
-void CTrailTuningWnd::PostNcDestroy() {
-    delete this;
-}
-
 void CTrailTuningWnd::OnCommandApply() {
     if (!backend_) return;
     if (!SyncModelFromControls()) return;
@@ -230,15 +95,16 @@ void CTrailTuningWnd::OnSelChangePreset() {
     SyncControlsFromModel();
 }
 
-int CTrailTuningWnd::Dpi() const {
-    HDC hdc = ::GetDC(nullptr);
-    int dpi = GetDeviceCaps(hdc, LOGPIXELSX);
-    ::ReleaseDC(nullptr, hdc);
-    return dpi > 0 ? dpi : 96;
+int CTrailTuningWnd::ParseInt(const CString& s, int fallback) {
+    int v = fallback;
+    if (swscanf_s(s, L"%d", &v) == 1) return v;
+    return fallback;
 }
 
-int CTrailTuningWnd::S(int px) const {
-    return MulDiv(px, Dpi(), 96);
+float CTrailTuningWnd::ParseFloat(const CString& s, float fallback) {
+    float v = fallback;
+    if (swscanf_s(s, L"%f", &v) == 1) return v;
+    return fallback;
 }
 
 int CTrailTuningWnd::ClampInt(int v, int lo, int hi) {
@@ -253,21 +119,16 @@ float CTrailTuningWnd::ClampFloat(float v, float lo, float hi) {
     return v;
 }
 
-int CTrailTuningWnd::ParseInt(const CString& s, int fallback) {
-    int v = fallback;
-    if (swscanf_s(s, L"%d", &v) == 1) return v;
-    return fallback;
-}
-
-float CTrailTuningWnd::ParseFloat(const CString& s, float fallback) {
-    float v = fallback;
-    if (swscanf_s(s, L"%f", &v) == 1) return v;
-    return fallback;
-}
-
 void CTrailTuningWnd::LoadFromBackend() {
     if (!backend_) return;
     model_ = backend_->LoadTrailTuning();
+
+    SettingsModel sm = backend_->Load();
+    if (!sm.uiLanguage.empty() && sm.uiLanguage != uiLanguage_) {
+        uiLanguage_ = sm.uiLanguage;
+        ApplyLanguageToControls();
+    }
+
     SyncControlsFromModel();
 
     std::string p = ToLowerAscii(model_.style);
@@ -280,16 +141,17 @@ void CTrailTuningWnd::LoadFromBackend() {
 }
 
 void CTrailTuningWnd::ApplyPreset(const std::string& preset) {
-    if (ToLowerAscii(preset) == "custom") {
+    std::string p = ToLowerAscii(preset);
+    if (p == "custom") {
         model_.style = "custom";
         return;
     }
-    if (ToLowerAscii(preset) == "default") {
+    if (p == "default") {
         model_ = TrailTuningModel{};
         model_.style = "default";
         return;
     }
-    model_ = MakePresetModel(preset);
+    model_ = MakePresetModel(p);
 }
 
 void CTrailTuningWnd::SyncControlsFromModel() {
@@ -312,6 +174,7 @@ void CTrailTuningWnd::SyncControlsFromModel() {
         e.SetWindowTextW(s);
     };
     setF(edtStreamerGlow_, model_.params.streamerGlowWidthScale);
+    setF(edtStreamerCore_, model_.params.streamerCoreWidthScale);
     setF(edtStreamerHead_, model_.params.streamerHeadPower);
     setF(edtElectricFork_, model_.params.electricForkChance);
     setF(edtElectricAmp_, model_.params.electricAmplitudeScale);
@@ -337,13 +200,13 @@ bool CTrailTuningWnd::SyncModelFromControls() {
     readProfile(tubes_, model_.profiles.tubes);
 
     model_.params.streamerGlowWidthScale = ClampFloat(ParseFloat(getText(edtStreamerGlow_), model_.params.streamerGlowWidthScale), 0.5f, 4.0f);
+    model_.params.streamerCoreWidthScale = ClampFloat(ParseFloat(getText(edtStreamerCore_), model_.params.streamerCoreWidthScale), 0.2f, 2.0f);
     model_.params.streamerHeadPower = ClampFloat(ParseFloat(getText(edtStreamerHead_), model_.params.streamerHeadPower), 0.8f, 3.0f);
     model_.params.electricForkChance = ClampFloat(ParseFloat(getText(edtElectricFork_), model_.params.electricForkChance), 0.0f, 0.5f);
     model_.params.electricAmplitudeScale = ClampFloat(ParseFloat(getText(edtElectricAmp_), model_.params.electricAmplitudeScale), 0.2f, 3.0f);
     model_.params.meteorSparkRateScale = ClampFloat(ParseFloat(getText(edtMeteorRate_), model_.params.meteorSparkRateScale), 0.2f, 4.0f);
     model_.params.meteorSparkSpeedScale = ClampFloat(ParseFloat(getText(edtMeteorSpeed_), model_.params.meteorSparkSpeedScale), 0.2f, 4.0f);
 
-    // Style: if values deviate from the selected preset, mark as custom.
     int sel = cmbPreset_.GetCurSel();
     if (sel < 0) sel = 4;
     if (sel == 0) model_.style = "default";
@@ -375,5 +238,7 @@ bool CTrailTuningWnd::SyncModelFromControls() {
             sameF(model_.params.meteorSparkSpeedScale, preset.params.meteorSparkSpeedScale);
         if (!same) model_.style = "custom";
     }
+
     return true;
 }
+

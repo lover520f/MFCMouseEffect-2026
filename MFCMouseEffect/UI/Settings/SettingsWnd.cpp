@@ -7,7 +7,6 @@
 #include "MFCMouseEffect.h"
 #include "Settings/SettingsBackend.h"
 #include "Settings/SettingsOptions.h"
-#include "UI/Settings/TrailTuningWnd.h"
 
 #include <vector>
 
@@ -341,11 +340,8 @@ void CSettingsWnd::OnCommandReset() {
 }
 
 void CSettingsWnd::OnCommandTrailTuning() {
-    if (!backend_) return;
-    auto* w = new CTrailTuningWnd();
-    if (!w->CreateAndShow(this, backend_.get())) {
-        delete w;
-    }
+    // Prefer web UI for advanced tuning to avoid MFC layout issues.
+    theApp.ShowWebSettings(L"#trail");
 }
 
 void CSettingsWnd::OnCommandClose() {

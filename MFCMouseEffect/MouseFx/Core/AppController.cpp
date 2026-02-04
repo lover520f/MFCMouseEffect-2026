@@ -7,14 +7,53 @@
 #include "ConfigPathResolver.h"
 #include "EffectFactory.h"
 #include "JsonLite.h"
+#include "MouseFx/ThirdParty/json.hpp"
 
 #include <new>
 #include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM
+#include <cctype>
 
 namespace mousefx {
 
+using json = nlohmann::json;
+
 static const wchar_t* kDispatchClassName = L"MouseFxDispatchWindow";
 static constexpr UINT_PTR kSelfTestTimerId = 0x4D46;
+
+static std::string TrimAscii(std::string s) {
+    auto is_space = [](unsigned char ch) {
+        return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
+    };
+    size_t b = 0;
+    while (b < s.size() && is_space((unsigned char)s[b])) b++;
+    size_t e = s.size();
+    while (e > b && is_space((unsigned char)s[e - 1])) e--;
+    if (b == 0 && e == s.size()) return s;
+    return s.substr(b, e - b);
+}
+
+static std::wstring Utf8ToWString(const std::string& s) {
+    if (s.empty()) return {};
+    int len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
+    if (len <= 0) return {};
+    std::wstring out((size_t)len, L'\0');
+    int written = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, out.empty() ? nullptr : &out[0], len);
+    if (written <= 0) return {};
+    if (!out.empty() && out.back() == L'\0') out.pop_back();
+    return out;
+}
+
+static int ClampInt(int v, int lo, int hi) {
+    if (v < lo) return lo;
+    if (v > hi) return hi;
+    return v;
+}
+
+static float ClampFloat(float x, float lo, float hi) {
+    if (x < lo) return lo;
+    if (x > hi) return hi;
+    return x;
+}
 
 AppController::AppController() = default;
 
@@ -289,6 +328,145 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
         }
     } else if (cmd == "reload_config") {
         ReloadConfigFromDisk();
+    } else if (cmd == "apply_settings") {
+        json root;
+        try {
+            root = json::parse(jsonCmd);
+        } catch (...) {
+            return;
+        }
+        if (!root.contains("payload") || !root["payload"].is_object()) return;
+        const json& p = root["payload"];
+
+        // Active effects first (theme application recreates themed effects).
+        bool activeChanged = false;
+        if (p.contains("active") && p["active"].is_object()) {
+            auto applyActive = [&](EffectCategory category, const char* key) {
+                const json& a = p["active"];
+                if (!a.contains(key) || !a[key].is_string()) return;
+                std::string type = a[key].get<std::string>();
+                if (type.empty()) return;
+
+                if (type == "none") {
+                    ClearEffect(category);
+                } else {
+                    SetEffect(category, type);
+                }
+                SetActiveEffectType(category, type);
+                activeChanged = true;
+            };
+
+            applyActive(EffectCategory::Click, "click");
+            applyActive(EffectCategory::Trail, "trail");
+            applyActive(EffectCategory::Scroll, "scroll");
+            applyActive(EffectCategory::Hold, "hold");
+            applyActive(EffectCategory::Hover, "hover");
+        }
+        if (activeChanged) {
+            PersistConfig();
+        }
+
+        if (p.contains("ui_language") && p["ui_language"].is_string()) {
+            SetUiLanguage(p["ui_language"].get<std::string>());
+        }
+
+        if (p.contains("text_content") && p["text_content"].is_string()) {
+            std::vector<std::wstring> texts;
+            std::string raw = p["text_content"].get<std::string>();
+            size_t start = 0;
+            size_t end = raw.find(',');
+            while (end != std::string::npos) {
+                std::string token = TrimAscii(raw.substr(start, end - start));
+                if (!token.empty()) texts.push_back(Utf8ToWString(token));
+                start = end + 1;
+                end = raw.find(',', start);
+            }
+            std::string last = TrimAscii(raw.substr(start));
+            if (!last.empty()) texts.push_back(Utf8ToWString(last));
+            SetTextEffectContent(texts);
+        }
+
+        // Trail tuning (optional fields).
+        bool trailTouched = false;
+        std::string style = config_.trailStyle.empty() ? "default" : config_.trailStyle;
+        TrailProfilesConfig profiles = config_.trailProfiles;
+        TrailRendererParamsConfig params = config_.trailParams;
+
+        if (p.contains("trail_style") && p["trail_style"].is_string()) {
+            style = p["trail_style"].get<std::string>();
+            trailTouched = true;
+        }
+
+        auto applyProfile = [&](const char* key, TrailHistoryProfile& dst) {
+            if (!p.contains("trail_profiles") || !p["trail_profiles"].is_object()) return;
+            const json& tp = p["trail_profiles"];
+            if (!tp.contains(key) || !tp[key].is_object()) return;
+            const json& o = tp[key];
+            if (o.contains("duration_ms") && o["duration_ms"].is_number_integer()) {
+                dst.durationMs = ClampInt(o["duration_ms"].get<int>(), 80, 2000);
+                trailTouched = true;
+            }
+            if (o.contains("max_points") && o["max_points"].is_number_integer()) {
+                dst.maxPoints = ClampInt(o["max_points"].get<int>(), 2, 240);
+                trailTouched = true;
+            }
+        };
+
+        applyProfile("line", profiles.line);
+        applyProfile("streamer", profiles.streamer);
+        applyProfile("electric", profiles.electric);
+        applyProfile("meteor", profiles.meteor);
+        applyProfile("tubes", profiles.tubes);
+
+        if (p.contains("trail_params") && p["trail_params"].is_object()) {
+            const json& k = p["trail_params"];
+            if (k.contains("streamer") && k["streamer"].is_object()) {
+                const json& s = k["streamer"];
+                if (s.contains("glow_width_scale") && s["glow_width_scale"].is_number()) {
+                    params.streamer.glowWidthScale = ClampFloat(s["glow_width_scale"].get<float>(), 0.5f, 4.0f);
+                    trailTouched = true;
+                }
+                if (s.contains("core_width_scale") && s["core_width_scale"].is_number()) {
+                    params.streamer.coreWidthScale = ClampFloat(s["core_width_scale"].get<float>(), 0.2f, 2.0f);
+                    trailTouched = true;
+                }
+                if (s.contains("head_power") && s["head_power"].is_number()) {
+                    params.streamer.headPower = ClampFloat(s["head_power"].get<float>(), 0.8f, 3.0f);
+                    trailTouched = true;
+                }
+            }
+            if (k.contains("electric") && k["electric"].is_object()) {
+                const json& e = k["electric"];
+                if (e.contains("amplitude_scale") && e["amplitude_scale"].is_number()) {
+                    params.electric.amplitudeScale = ClampFloat(e["amplitude_scale"].get<float>(), 0.2f, 3.0f);
+                    trailTouched = true;
+                }
+                if (e.contains("fork_chance") && e["fork_chance"].is_number()) {
+                    params.electric.forkChance = ClampFloat(e["fork_chance"].get<float>(), 0.0f, 0.5f);
+                    trailTouched = true;
+                }
+            }
+            if (k.contains("meteor") && k["meteor"].is_object()) {
+                const json& m = k["meteor"];
+                if (m.contains("spark_rate_scale") && m["spark_rate_scale"].is_number()) {
+                    params.meteor.sparkRateScale = ClampFloat(m["spark_rate_scale"].get<float>(), 0.2f, 4.0f);
+                    trailTouched = true;
+                }
+                if (m.contains("spark_speed_scale") && m["spark_speed_scale"].is_number()) {
+                    params.meteor.sparkSpeedScale = ClampFloat(m["spark_speed_scale"].get<float>(), 0.2f, 4.0f);
+                    trailTouched = true;
+                }
+            }
+        }
+
+        if (trailTouched) {
+            SetTrailTuning(style, profiles, params);
+        }
+
+        // Theme last (recreates themed effects).
+        if (p.contains("theme") && p["theme"].is_string()) {
+            SetTheme(p["theme"].get<std::string>());
+        }
     }
 }
 

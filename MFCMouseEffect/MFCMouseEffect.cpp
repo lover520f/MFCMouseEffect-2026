@@ -17,8 +17,10 @@
 
 #include "MouseFx/Core/AppController.h"
 #include "MouseFx/Core/IpcController.h"
+#include "MouseFx/Server/WebSettingsServer.h"
 
 #include <string>
+#include <shellapi.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -319,22 +321,34 @@ BOOL CMFCMouseEffectApp::InitInstance()
 
 void CMFCMouseEffectApp::ShowSettingsWindow()
 {
+	// Prefer the lightweight local web UI (opens in browser) to reduce MFC coupling.
+	ShowWebSettings();
+}
+
+void CMFCMouseEffectApp::ShowWebSettings(const wchar_t* fragment)
+{
 	if (backgroundMode_) {
 		return; // background mode is IPC-only
 	}
-	if (settingsWnd_ && ::IsWindow(settingsWnd_->GetSafeHwnd())) {
-		settingsWnd_->ShowWindow(SW_SHOW);
-		settingsWnd_->SetForegroundWindow();
-		settingsWnd_->SyncFromBackend();
+	if (!mouseFx_) {
 		return;
 	}
-	auto* w = new CSettingsWnd();
-	auto backend = CreateSettingsBackend(mouseFx_.get());
-	if (!w->CreateAndShow(m_pMainWnd, std::move(backend))) {
-		delete w;
-		return;
+
+	if (!webSettings_) {
+		webSettings_ = std::make_unique<mousefx::WebSettingsServer>(mouseFx_.get());
 	}
-	settingsWnd_ = w;
+	if (!webSettings_->IsRunning()) {
+		if (!webSettings_->Start()) {
+			AfxMessageBox(L"Web settings server start failed.", MB_OK | MB_ICONWARNING);
+			return;
+		}
+	}
+
+	CString url(webSettings_->Url().c_str());
+	if (fragment && *fragment) {
+		url += fragment;
+	}
+	ShellExecuteW(nullptr, L"open", url, nullptr, nullptr, SW_SHOWNORMAL);
 }
 
 void CMFCMouseEffectApp::NotifySettingsWndDestroyed(CSettingsWnd* wnd)
@@ -357,6 +371,11 @@ int CMFCMouseEffectApp::ExitInstance()
 	{
 		ipc_->Stop();
 		ipc_.reset();
+	}
+	if (webSettings_)
+	{
+		webSettings_->Stop();
+		webSettings_.reset();
 	}
 	if (mouseFx_)
 	{

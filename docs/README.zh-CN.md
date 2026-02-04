@@ -14,6 +14,7 @@
 - 架构整理：`docs/architecture/trail-effects-differentiation.zh-CN.md`（拖尾差异化：历史配置 + renderer 拆分）
 - 架构整理：`docs/architecture/trail-profiles-config.zh-CN.md`（config.json：trail_profiles + reload_config）
 - 架构整理：`docs/architecture/trail-tuning-settings-ui.zh-CN.md`（设置窗口：拖尾预设 + 高级调参）
+- 架构整理：`docs/architecture/web-settings-ui.zh-CN.md`（浏览器设置页：内置 loopback HTTP server）
 
 ## 功能简介
 - 全局鼠标点击可视化（Windows）：低级鼠标钩子 `WH_MOUSE_LL` + GDI+ 分层窗口波纹。
@@ -32,14 +33,11 @@ Release 版本已改为“完全不创建主框架窗口”，只创建隐藏宿
 - 托盘图标：右键菜单“退出”（双击也可退出）
 - Debug 仍保留主窗口便于调试（不影响波纹渲染）
 
-## 设置窗口（非 background 模式）
-托盘菜单适合快速切换，但对复杂配置不友好。因此在非 background 模式下提供一个轻量设置窗口（从托盘菜单打开），用于集中配置：主题 + 各分类特效，并自动持久化到 `config.json`。
-注意：设置窗口关闭（右上角 X）只会关闭窗口本身，不影响托盘常驻与特效渲染。
-语言：设置窗口支持中/英切换，默认中文，选择会写入 `config.json`（`ui_language`）。
-主题：主题会影响点击/滚轮/长按/悬停等特效的整体配色与风格（非文本类特效）。
-外观：设置窗口为自绘外框/标题栏，与特效逻辑通过后端接口解耦。
-说明：内部控件使用原生控件样式，保证稳定与可用性。
-配色：不绘制卡片/底色，窗口背景与控件保持系统默认色，仅保留标题区与关闭按钮的自绘。
+## 设置（浏览器页，非 background 模式）
+托盘菜单适合快速切换。复杂配置（包含高级调参）通过托盘 **设置...** 打开浏览器设置页（程序内置 loopback HTTP server）。
+- 配置持久化：写入同目录 `config.json`
+- 立即生效：保存后立刻应用
+- 详细说明：`docs/architecture/web-settings-ui.zh-CN.md`
 
 ## 外观自定义
 - 主要文件：`MFCMouseEffect/MouseFx/Styles/RippleStyle.h`、`MFCMouseEffect/MouseFx/Windows/RippleWindow.cpp`。

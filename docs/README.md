@@ -14,6 +14,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Architecture: `docs/architecture/trail-effects-differentiation.md` (trail profiles + renderer split)
 - Architecture: `docs/architecture/trail-profiles-config.md` (config.json trail_profiles + reload_config)
 - Architecture: `docs/architecture/trail-tuning-settings-ui.md` (settings UI: presets + trail tuning)
+- Architecture: `docs/architecture/web-settings-ui.md` (browser settings via loopback HTTP server)
 
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.
@@ -32,14 +33,11 @@ Release builds no longer create the main frame window. A hidden host window is u
 - Tray icon: right-click menu “Exit” (double-click also exits)
 - Debug still shows a main window for convenience
 
-## Settings Window (Non-background Mode)
-Tray menus are fine for quick toggles, but not great for full configuration. In non-background mode, a lightweight settings window can be opened from the tray menu to configure theme + per-category effects, with persistence to `config.json`.
-Closing the window (X) only closes the settings UI; it does not stop the tray/background process.
-Language: the settings window supports Chinese/English switching (default Chinese) and persists to `config.json` (`ui_language`).
-Theme: the selected theme affects the overall look of click/scroll/hold/hover effects (non-text effects).
-Look: the settings window draws a custom frame/title and is decoupled from effect logic via a backend interface.
-Note: inner controls use native widgets for stability.
-Colors: no card/background fill; window and controls use system defaults, with only the title area and close button drawn.
+## Settings (Browser UI, Non-background Mode)
+Tray menus are fine for quick toggles. For full configuration (including advanced tuning), the tray **Settings...** opens a browser page served by a local loopback HTTP server.
+- Persistence: saved to `config.json`
+- Live apply: changes take effect immediately
+- Details: `docs/architecture/web-settings-ui.md`
 
 ## Customizing the Look
 - File: `MFCMouseEffect/MouseFx/Styles/RippleStyle.h` and `MFCMouseEffect/MouseFx/Windows/RippleWindow.cpp`.

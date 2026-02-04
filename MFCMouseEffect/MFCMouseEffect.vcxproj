@@ -94,7 +94,7 @@
     <OutDir>$(ProjectDir)..\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
-    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -117,6 +117,9 @@
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
+    <PostBuildEvent>
+      <Command>if exist "$(ProjectDir)WebUI" xcopy /E /Y /I "$(ProjectDir)WebUI" "$(OutDir)webui\\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -194,6 +197,9 @@
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
+    <PostBuildEvent>
+      <Command>if exist "$(ProjectDir)WebUI" xcopy /E /Y /I "$(ProjectDir)WebUI" "$(OutDir)webui\\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="UI\Frame\ChildFrm.h" />
@@ -215,6 +221,9 @@
     <ClInclude Include="MouseFx\Core\IpcController.h" />
     <ClInclude Include="MouseFx\Core\JsonLite.h" />
     <ClInclude Include="MouseFx\MouseFxMessages.h" />
+    <ClInclude Include="MouseFx\Server\HttpServer.h" />
+    <ClInclude Include="MouseFx\Server\WebUiAssets.h" />
+    <ClInclude Include="MouseFx\Server\WebSettingsServer.h" />
     <ClInclude Include="MouseFx\Effects\RippleEffect.h" />
     <ClInclude Include="MouseFx\Styles\RippleStyle.h" />
     <ClInclude Include="MouseFx\Windows\RippleWindow.h" />
@@ -281,8 +290,13 @@
     <ClCompile Include="MouseFx\Effects\HoldEffect.cpp" />
     <ClCompile Include="MouseFx\Effects\HoverEffect.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfig.cpp" />
+    <ClCompile Include="MouseFx\Server\HttpServer.cpp" />
+    <ClCompile Include="MouseFx\Server\WebUiAssets.cpp" />
+    <ClCompile Include="MouseFx\Server\WebSettingsServer.cpp" />
     <ClCompile Include="UI\Settings\SettingsWnd.cpp" />
-    <ClCompile Include="UI\Settings\TrailTuningWnd.cpp" />
+    <ClCompile Include="UI\Settings\TrailTuningWnd.Chrome.cpp" />
+    <ClCompile Include="UI\Settings\TrailTuningWnd.Core.cpp" />
+    <ClCompile Include="UI\Settings\TrailTuningWnd.Model.cpp" />
     <ClCompile Include="UI\Settings\SettingsWnd.Emoji.cpp" />
     <ClCompile Include="Settings\SettingsBackend.cpp" />
     <ClCompile Include="Settings\EmojiUtils.cpp" />
@@ -330,6 +344,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\MFCMouseEffect.rc2" />
+    <None Include="WebUI\index.html" />
+    <None Include="WebUI\app.js" />
+    <None Include="WebUI\styles.css" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

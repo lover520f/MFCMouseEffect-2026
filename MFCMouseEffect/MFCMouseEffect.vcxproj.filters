@@ -105,6 +105,15 @@
     <ClInclude Include="MouseFx\Core\MouseFxMessages.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Server\HttpServer.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Server\WebUiAssets.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Server\WebSettingsServer.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Styles\RippleStyle.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -185,6 +194,15 @@
     <ClCompile Include="MouseFx\Core\AppController.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Server\HttpServer.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\WebUiAssets.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\WebSettingsServer.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Core\GlobalMouseHook.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
@@ -206,7 +224,13 @@
     <ClCompile Include="UI\Settings\SettingsWnd.cpp">
       <Filter>源文件\UI\Settings</Filter>
     </ClCompile>
-    <ClCompile Include="UI\Settings\TrailTuningWnd.cpp">
+    <ClCompile Include="UI\Settings\TrailTuningWnd.Chrome.cpp">
+      <Filter>源文件\UI\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\Settings\TrailTuningWnd.Core.cpp">
+      <Filter>源文件\UI\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\Settings\TrailTuningWnd.Model.cpp">
       <Filter>源文件\UI\Settings</Filter>
     </ClCompile>
     <ClCompile Include="UI\Settings\SettingsWnd.Emoji.cpp">
@@ -218,6 +242,17 @@
     <ClCompile Include="Settings\SettingsBackend.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="WebUI\index.html">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="WebUI\app.js">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="WebUI\styles.css">
+      <Filter>资源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MFCMouseEffect.rc">
