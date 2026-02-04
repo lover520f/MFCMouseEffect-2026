@@ -15,6 +15,7 @@
 - 架构整理：`docs/architecture/trail-profiles-config.zh-CN.md`（config.json：trail_profiles + reload_config）
 - 架构整理：`docs/architecture/trail-tuning-settings-ui.zh-CN.md`（设置窗口：拖尾预设 + 高级调参）
 - 架构整理：`docs/architecture/web-settings-ui.zh-CN.md`（浏览器设置页：内置 loopback HTTP server）
+- 安装包：`docs/install/installer-packaging-20260204.md`（Inno Setup 更新，2026-02-04）
 
 ## 功能简介
 - 全局鼠标点击可视化（Windows）：低级鼠标钩子 `WH_MOUSE_LL` + GDI+ 分层窗口波纹。

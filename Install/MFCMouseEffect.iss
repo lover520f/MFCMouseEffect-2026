@@ -1,10 +1,21 @@
 ; Reference: http://www.jrsoftware.org/ishelp/
 
 #define MyAppName "MFCMouseEffect"
-#define MyAppVersion "1.1.0"
-#define MyAppPublisher "YourName"
-#define MyAppURL "https://example.com/mfcmouseeffect"
+#define MyAppVersion "1.2.0"
+#define MyAppPublisher "sqmw"
+#define MyAppURL "https://github.com/sqmw/MFCMouseEffect"
 #define MyAppExeName "MFCMouseEffect.exe"
+
+; Optional Chinese language file detection (avoid build failure if not installed)
+#define LangZh1 AddBackslash(GetEnv("ProgramFiles")) + "Inno Setup 6\\Languages\\ChineseSimplified.isl"
+#define LangZh2 AddBackslash(GetEnv("ProgramFiles(x86)")) + "Inno Setup 6\\Languages\\ChineseSimplified.isl"
+#if FileExists(LangZh1)
+  #define LangZh LangZh1
+#elif FileExists(LangZh2)
+  #define LangZh LangZh2
+#else
+  #define LangZh ""
+#endif
 
 [Setup]
 ; Unique ID for the application
@@ -16,14 +27,19 @@ AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
+UsePreviousAppDir=yes
 DisableProgramGroupPage=yes
 ; Require administrative privileges for installation
 PrivilegesRequired=admin
+PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=Output
-OutputBaseFilename=MFCMouseEffect_Setup
+OutputBaseFilename=MFCMouseEffect_{#MyAppVersion}_Setup_x64
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+SetupIconFile=..\MFCMouseEffect\res\MFCMouseEffect.ico
+UsePreviousLanguage=yes
+ShowLanguageDialog=auto
 ; --- 64-bit Architecture Configuration ---
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
@@ -36,7 +52,9 @@ CloseApplicationsFilter={#MyAppExeName}
 RestartApplications=no
 
 [Languages]
-; Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+#if LangZh != ""
+Name: "chinesesimplified"; MessagesFile: "{#LangZh}"
+#endif
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
@@ -44,12 +62,15 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "startup"; Description: "Run at Windows startup"; GroupDescription: "Additional options:"
 
 [Files]
-; Source path is relative to where the .iss file is located.
-; Assuming .iss is in 'Install' folder, exe is in '..\x64\Release\'
+; Binaries + config
 Source: "..\x64\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\x64\Release\config.json"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist skipifsourcedoesntexist
-; Add any other assets here
-; Source: "..\Config\*"; DestDir: "{app}\Config"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Web UI (local server assets)
+Source: "..\x64\Release\webui\*"; DestDir: "{app}\webui"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
+; Docs + license (optional)
+Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "..\README.en.md"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

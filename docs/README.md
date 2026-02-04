@@ -15,6 +15,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Architecture: `docs/architecture/trail-profiles-config.md` (config.json trail_profiles + reload_config)
 - Architecture: `docs/architecture/trail-tuning-settings-ui.md` (settings UI: presets + trail tuning)
 - Architecture: `docs/architecture/web-settings-ui.md` (browser settings via loopback HTTP server)
+- Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.
