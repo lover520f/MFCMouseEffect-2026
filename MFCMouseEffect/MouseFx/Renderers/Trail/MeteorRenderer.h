@@ -23,6 +23,7 @@ public:
     MeteorRenderer(int durationMs, const TrailRendererParamsConfig& params)
         : durationMs_(durationMs),
           params_(params.meteor),
+          idle_(params.idleFade),
           rng_(prng::Mix32((uint32_t)GetTickCount64())) {}
 
     void Render(Gdiplus::Graphics& g, const std::deque<TrailPoint>& points, int width, int height, Gdiplus::Color color, bool isChromatic) override {
@@ -33,7 +34,10 @@ public:
         }
 
         uint64_t now = GetTickCount64();
-        const float idleFactor = trail_math::IdleFadeFactor(now, points.back().addedTime, 50, 260);
+        int fadeStart = idle_.startMs > 0 ? idle_.startMs : 50;
+        int fadeEnd = idle_.endMs > 0 ? idle_.endMs : 260;
+        if (fadeEnd <= fadeStart) fadeEnd = fadeStart + 1;
+        const float idleFactor = trail_math::IdleFadeFactor(now, points.back().addedTime, fadeStart, fadeEnd);
         float dt = (lastUpdate_ == 0) ? 0.016f : (now - lastUpdate_) / 1000.0f;
         lastUpdate_ = now;
 
@@ -202,6 +206,7 @@ private:
     uint64_t lastUpdate_ = 0;
     int durationMs_ = 520;
     MeteorTrailParams params_{};
+    IdleFadeParams idle_{};
     prng::XorShift32 rng_;
 };
 

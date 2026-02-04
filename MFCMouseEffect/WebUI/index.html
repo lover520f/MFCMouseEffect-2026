@@ -69,6 +69,12 @@
             <option value="custom">custom</option>
           </select>
           <div class="hint span2" data-i18n="hint_trail_preset">Preset name only; values below are what actually apply.</div>
+          <label data-i18n="label_idle_fade">Idle fade start/end (ms)</label>
+          <div class="pair">
+            <input id="k_idle_fade_start" type="number" min="0" max="3000"/>
+            <input id="k_idle_fade_end" type="number" min="0" max="6000"/>
+          </div>
+          <div class="hint span2" data-i18n="hint_idle_fade">Controls how fast the trail converges after the mouse stops.</div>
         </div>
         <div class="grid" style="margin-top:10px">
           <label class="mono" data-i18n="label_streamer_profile">streamer duration/max</label>

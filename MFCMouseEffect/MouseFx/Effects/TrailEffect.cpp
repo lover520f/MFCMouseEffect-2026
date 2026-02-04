@@ -27,7 +27,7 @@ TrailEffect::TrailEffect(const std::string& themeName, const std::string& type, 
         window_->SetRenderer(std::make_unique<MeteorRenderer>(durationMs, params));
     } else {
         // Default Line
-        window_->SetRenderer(std::make_unique<LineTrailRenderer>(durationMs));
+        window_->SetRenderer(std::make_unique<LineTrailRenderer>(durationMs, params));
     }
 }
 

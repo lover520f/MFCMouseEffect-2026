@@ -55,10 +55,16 @@ Renderer-specific knobs (optional):
     "meteor": {
       "spark_rate_scale": 1.0,
       "spark_speed_scale": 1.0
-    }
+    },
+    "idle_fade_start_ms": 50,
+    "idle_fade_end_ms": 260
   }
 }
 ```
+
+Notes:
+- `idle_fade_*` is optional; `0` means "use renderer default".
+- If `end <= start`, runtime will auto-fix to `start + 1`.
 
 ## Hot Reload
 ## Config Location (Important)

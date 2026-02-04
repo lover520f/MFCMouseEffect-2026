@@ -105,6 +105,11 @@ static TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig p
     p.meteor.sparkRateScale = ClampFloat(p.meteor.sparkRateScale, 0.2f, 4.0f);
     p.meteor.sparkSpeedScale = ClampFloat(p.meteor.sparkSpeedScale, 0.2f, 4.0f);
 
+    if (p.idleFade.startMs < 0) p.idleFade.startMs = 0;
+    if (p.idleFade.endMs < 0) p.idleFade.endMs = 0;
+    if (p.idleFade.startMs > 3000) p.idleFade.startMs = 3000;
+    if (p.idleFade.endMs > 6000) p.idleFade.endMs = 6000;
+
     return p;
 }
 
@@ -237,6 +242,8 @@ EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
             cfg.trailParams.meteor.sparkRateScale = GetOr<float>(o, "spark_rate_scale", cfg.trailParams.meteor.sparkRateScale);
             cfg.trailParams.meteor.sparkSpeedScale = GetOr<float>(o, "spark_speed_scale", cfg.trailParams.meteor.sparkSpeedScale);
         }
+        cfg.trailParams.idleFade.startMs = GetOr<int>(tp, "idle_fade_start_ms", cfg.trailParams.idleFade.startMs);
+        cfg.trailParams.idleFade.endMs = GetOr<int>(tp, "idle_fade_end_ms", cfg.trailParams.idleFade.endMs);
 
         cfg.trailParams = SanitizeTrailParams(cfg.trailParams);
     }
@@ -411,6 +418,8 @@ bool EffectConfig::Save(const std::wstring& exeDir, const EffectConfig& cfg) {
             o["spark_speed_scale"] = p.meteor.sparkSpeedScale;
             tp["meteor"] = o;
         }
+        if (p.idleFade.startMs > 0) tp["idle_fade_start_ms"] = p.idleFade.startMs;
+        if (p.idleFade.endMs > 0) tp["idle_fade_end_ms"] = p.idleFade.endMs;
         root["trail_params"] = tp;
     }
 

@@ -31,6 +31,8 @@
       hint_texts: "Use English comma \",\" to separate words.",
       label_style_preset: "Style preset",
       hint_trail_preset: "Preset name only; values below are what actually apply.",
+      label_idle_fade: "Idle fade start/end (ms)",
+      hint_idle_fade: "Controls how fast the trail converges after the mouse stops (0 = default).",
       label_streamer_profile: "streamer duration/max",
       label_electric_profile: "electric duration/max",
       label_meteor_profile: "meteor duration/max",
@@ -39,7 +41,12 @@
       label_streamer_params: "streamer glow/core/head",
       label_electric_params: "electric amp/fork",
       label_meteor_params: "meteor rate/speed",
-      hint_clamp: "Values are clamped to safe ranges when applied."
+      hint_clamp: "Values are clamped to safe ranges when applied.",
+      style_default: "Default",
+      style_snappy: "Snappy",
+      style_long: "Long",
+      style_cinematic: "Cinematic",
+      style_custom: "Custom"
     },
     "zh-CN": {
       title: "MFCMouseEffect \u8bbe\u7f6e",
@@ -67,6 +74,8 @@
       hint_texts: "\u8bf7\u4f7f\u7528\u82f1\u6587\u9017\u53f7 \",\" \u5206\u9694\u3002",
       label_style_preset: "\u9884\u8bbe\u98ce\u683c",
       hint_trail_preset: "\u9884\u8bbe\u53ea\u662f\u540d\u79f0\uff0c\u4ee5\u4e0b\u6570\u503c\u624d\u662f\u5b9e\u9645\u751f\u6548\u3002",
+      label_idle_fade: "\u505c\u7559\u6de1\u51fa \u5f00\u59cb/\u7ed3\u675f(ms)",
+      hint_idle_fade: "\u63a7\u5236\u9f20\u6807\u505c\u4f4f\u540e\u7684\u62d6\u5c3e\u6536\u655b\u901f\u5ea6\uff080 \u4e3a\u9ed8\u8ba4\uff09\u3002",
       label_streamer_profile: "\u9713\u8679 \u65f6\u957f/\u70b9\u6570",
       label_electric_profile: "\u7535\u5f27 \u65f6\u957f/\u70b9\u6570",
       label_meteor_profile: "\u6d41\u661f \u65f6\u957f/\u70b9\u6570",
@@ -75,7 +84,12 @@
       label_streamer_params: "\u9713\u8679 \u5149\u666f/\u6838\u5fc3/\u5934\u90e8",
       label_electric_params: "\u7535\u5f27 \u632f\u5e45/\u5206\u53c9",
       label_meteor_params: "\u6d41\u661f \u9891\u7387/\u901f\u5ea6",
-      hint_clamp: "\u6570\u503c\u4f1a\u88ab\u5b89\u5168\u533a\u95f4\u8fdb\u884c\u88c1\u526a\u3002"
+      hint_clamp: "\u6570\u503c\u4f1a\u88ab\u5b89\u5168\u533a\u95f4\u8fdb\u884c\u88c1\u526a\u3002",
+      style_default: "\u9ed8\u8ba4",
+      style_snappy: "\u7d27\u81f4",
+      style_long: "\u5ef6\u957f",
+      style_cinematic: "\u5267\u60c5",
+      style_custom: "\u81ea\u5b9a\u4e49"
     }
   };
 
@@ -94,6 +108,21 @@
       const key = node.getAttribute('data-i18n-placeholder');
       if (key && t[key]) node.setAttribute('placeholder', t[key]);
     });
+
+    const styleMap = {
+      "default": t.style_default || "default",
+      "snappy": t.style_snappy || "snappy",
+      "long": t.style_long || "long",
+      "cinematic": t.style_cinematic || "cinematic",
+      "custom": t.style_custom || "custom"
+    };
+    const styleSelect = el('trail_style');
+    if (styleSelect) {
+      Array.from(styleSelect.options).forEach(opt => {
+        const key = opt.value;
+        if (styleMap[key]) opt.textContent = styleMap[key];
+      });
+    }
   }
 
   async function apiGet(path){
@@ -189,6 +218,8 @@
     num('k_electric_fork', k.electric?.fork_chance);
     num('k_meteor_rate', k.meteor?.spark_rate_scale);
     num('k_meteor_speed', k.meteor?.spark_speed_scale);
+    num('k_idle_fade_start', k.idle_fade_start_ms);
+    num('k_idle_fade_end', k.idle_fade_end_ms);
 
     toast('Ready.');
     updating = false;
@@ -228,6 +259,8 @@
           spark_rate_scale: getNum('k_meteor_rate'),
           spark_speed_scale: getNum('k_meteor_speed')
         },
+        idle_fade_start_ms: getNum('k_idle_fade_start'),
+        idle_fade_end_ms: getNum('k_idle_fade_end'),
       }
     };
   }

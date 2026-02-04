@@ -93,10 +93,17 @@ struct MeteorTrailParams {
     float sparkSpeedScale = 1.0f;
 };
 
+struct IdleFadeParams {
+    // 0 means "use renderer default"
+    int startMs = 0;
+    int endMs = 0;
+};
+
 struct TrailRendererParamsConfig {
     StreamerTrailParams streamer;
     ElectricTrailParams electric;
     MeteorTrailParams meteor;
+    IdleFadeParams idleFade;
 };
 
 // Configuration for Icon/Star effect

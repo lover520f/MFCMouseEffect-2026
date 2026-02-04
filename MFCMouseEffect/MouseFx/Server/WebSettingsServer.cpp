@@ -283,6 +283,8 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"streamer", {{"glow_width_scale", cfg.trailParams.streamer.glowWidthScale}, {"core_width_scale", cfg.trailParams.streamer.coreWidthScale}, {"head_power", cfg.trailParams.streamer.headPower}}},
         {"electric", {{"amplitude_scale", cfg.trailParams.electric.amplitudeScale}, {"fork_chance", cfg.trailParams.electric.forkChance}}},
         {"meteor", {{"spark_rate_scale", cfg.trailParams.meteor.sparkRateScale}, {"spark_speed_scale", cfg.trailParams.meteor.sparkSpeedScale}}},
+        {"idle_fade_start_ms", cfg.trailParams.idleFade.startMs},
+        {"idle_fade_end_ms", cfg.trailParams.idleFade.endMs},
     };
 
     return out.dump();

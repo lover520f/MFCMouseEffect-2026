@@ -19,6 +19,7 @@ This project now prefers a **lightweight browser UI** served from a **local loop
 ## UI Hints
 - Hover tips for top actions (Reload / Apply / Star).
 - Text content clarifies using the English comma.
+- Trail tuning includes **Idle Fade Start/End (ms)** to control convergence speed after mouse stops.
 
 ## Security Notes
 - The server only binds to **loopback** (`127.0.0.1`).

@@ -55,10 +55,16 @@ renderer 专属参数（可选）：
     "meteor": {
       "spark_rate_scale": 1.0,
       "spark_speed_scale": 1.0
-    }
+    },
+    "idle_fade_start_ms": 50,
+    "idle_fade_end_ms": 260
   }
 }
 ```
+
+说明：
+- `idle_fade_*` 为可选项；`0` 表示“使用默认值”。
+- 若 `end <= start`，运行时会自动修正为 `start + 1`。
 
 ## 热重载
 ## 配置文件位置（重要）

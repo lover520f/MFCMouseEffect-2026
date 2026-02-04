@@ -9,7 +9,8 @@ namespace mousefx {
 
 class LineTrailRenderer final : public ITrailRenderer {
 public:
-    explicit LineTrailRenderer(int durationMs = 300) : durationMs_(durationMs) {}
+    LineTrailRenderer(int durationMs, const TrailRendererParamsConfig& params)
+        : durationMs_(durationMs), idle_(params.idleFade) {}
 
     void Render(Gdiplus::Graphics& g,
                 const std::deque<TrailPoint>& points,
@@ -20,7 +21,10 @@ public:
         if (points.size() < 2) return;
 
         const uint64_t now = GetTickCount64();
-        const float idleFactor = trail_math::IdleFadeFactor(now, points.back().addedTime, 60, 220);
+        int fadeStart = idle_.startMs > 0 ? idle_.startMs : 60;
+        int fadeEnd = idle_.endMs > 0 ? idle_.endMs : 220;
+        if (fadeEnd <= fadeStart) fadeEnd = fadeStart + 1;
+        const float idleFactor = trail_math::IdleFadeFactor(now, points.back().addedTime, fadeStart, fadeEnd);
 
         const int x_offset = GetSystemMetrics(SM_XVIRTUALSCREEN);
         const int y_offset = GetSystemMetrics(SM_YVIRTUALSCREEN);
@@ -57,7 +61,7 @@ public:
 
 private:
     int durationMs_ = 300;
+    IdleFadeParams idle_{};
 };
 
 } // namespace mousefx
-

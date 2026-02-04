@@ -457,6 +457,14 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
                     trailTouched = true;
                 }
             }
+            if (k.contains("idle_fade_start_ms") && k["idle_fade_start_ms"].is_number_integer()) {
+                params.idleFade.startMs = ClampInt(k["idle_fade_start_ms"].get<int>(), 0, 3000);
+                trailTouched = true;
+            }
+            if (k.contains("idle_fade_end_ms") && k["idle_fade_end_ms"].is_number_integer()) {
+                params.idleFade.endMs = ClampInt(k["idle_fade_end_ms"].get<int>(), 0, 6000);
+                trailTouched = true;
+            }
         }
 
         if (trailTouched) {

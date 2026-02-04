@@ -12,7 +12,7 @@ namespace mousefx {
 class ElectricTrailRenderer final : public ITrailRenderer {
 public:
     ElectricTrailRenderer(int durationMs, const TrailRendererParamsConfig& params)
-        : durationMs_(durationMs), params_(params.electric) {}
+        : durationMs_(durationMs), params_(params.electric), idle_(params.idleFade) {}
 
     void Render(Gdiplus::Graphics& g,
                 const std::deque<TrailPoint>& points,
@@ -24,7 +24,10 @@ public:
 
         const uint64_t now = GetTickCount64();
         const uint64_t frameKey = now / 30; // stabilize jitter within ~1-2 frames
-        const float idleFactor = trail_math::IdleFadeFactor(now, points.back().addedTime, 40, 180);
+        int fadeStart = idle_.startMs > 0 ? idle_.startMs : 40;
+        int fadeEnd = idle_.endMs > 0 ? idle_.endMs : 180;
+        if (fadeEnd <= fadeStart) fadeEnd = fadeStart + 1;
+        const float idleFactor = trail_math::IdleFadeFactor(now, points.back().addedTime, fadeStart, fadeEnd);
 
         const int x_offset = GetSystemMetrics(SM_XVIRTUALSCREEN);
         const int y_offset = GetSystemMetrics(SM_YVIRTUALSCREEN);
@@ -128,6 +131,7 @@ public:
 private:
     int durationMs_ = 280;
     ElectricTrailParams params_{};
+    IdleFadeParams idle_{};
 };
 
 } // namespace mousefx
