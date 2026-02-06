@@ -114,6 +114,9 @@ private:
     } pendingHold_{};
     bool ignoreNextClick_ = false; // If hold triggered, ignore the subsequent click
 
+    bool holdButtonDown_ = false;
+    uint64_t holdDownTick_ = 0;
+
 #ifdef _DEBUG
     uint32_t debugClickCount_ = 0;
 #endif

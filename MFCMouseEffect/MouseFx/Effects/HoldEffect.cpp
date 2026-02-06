@@ -13,6 +13,7 @@
 #include "MouseFx/Renderers/Hold/HexRenderer.h"
 #include "MouseFx/Renderers/Hold/TechRingRenderer.h"
 #include "MouseFx/Renderers/Hold/HologramHudRenderer.h"
+#include "MouseFx/Renderers/Hold/HoldNeon3DRenderer.h"
 
 namespace mousefx {
 
@@ -60,14 +61,21 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
     }
 
     currentRipple_ = pool_.ShowContinuous(ev, finalStyle, std::move(renderer), params);
+    if (currentRipple_) {
+        char buf[32]{};
+        snprintf(buf, sizeof(buf), "%u", finalStyle.durationMs);
+        currentRipple_->SendCommand("threshold_ms", buf);
+    }
 }
 
 void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
     holdPoint_ = pt;
     if (currentRipple_) {
         currentRipple_->UpdatePosition(pt);
+        char buf[32]{};
+        snprintf(buf, sizeof(buf), "%u", (uint32_t)durationMs);
+        currentRipple_->SendCommand("hold_ms", buf);
     }
-    (void)durationMs;
 }
 
 void HoldEffect::OnHoldEnd() {

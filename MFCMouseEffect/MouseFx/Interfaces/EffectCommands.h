@@ -47,6 +47,7 @@ enum TrayMenuCmd : UINT {
     kCmdHoldHologram = 7005,
     kCmdHoldSciFi3D = 7005, // Alias
     kCmdHoldTechRing = 7006,
+    kCmdHoldNeon3D = 7007,
 
     // Theme
     kCmdThemeChromatic = 8000,

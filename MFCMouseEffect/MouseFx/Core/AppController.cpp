@@ -592,8 +592,13 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         }
         // Dispatch to Hold category effect (to update position if following mouse)
         if (auto* effect = GetEffect(EffectCategory::Hold)) {
-             // Pass 0 duration for now as valid delta tracking requires more state
-            effect->OnHoldUpdate(pt, 0);
+            DWORD holdMs = 0;
+            if (holdButtonDown_ && holdDownTick_ != 0) {
+                const uint64_t now = GetTickCount64();
+                const uint64_t delta = (now >= holdDownTick_) ? (now - holdDownTick_) : 0;
+                holdMs = (DWORD)std::min<uint64_t>(delta, 0xFFFFFFFFu);
+            }
+            effect->OnHoldUpdate(pt, holdMs);
         }
         return 0;
     }
@@ -619,6 +624,9 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         POINT pt;
         pt.x = GET_X_LPARAM(lParam);
         pt.y = GET_Y_LPARAM(lParam);
+
+        holdButtonDown_ = true;
+        holdDownTick_ = GetTickCount64();
         
         // Start delayed hold
         pendingHold_.pt = pt;
@@ -631,6 +639,9 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
     }
 
     if (msg == WM_MFX_BUTTON_UP) {
+        holdButtonDown_ = false;
+        holdDownTick_ = 0;
+
         // Cancel pending hold if quick click
         if (pendingHold_.active) {
             KillTimer(hwnd, kHoldTimerId);
