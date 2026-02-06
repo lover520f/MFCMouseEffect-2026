@@ -39,7 +39,11 @@ public:
         if (renderer_) renderer_->OnCommand(cmd, args);
     }
 
-    void UpdateRenderParams(const RenderParams& params) { render_ = params; }
+    void UpdateRenderParams(const RenderParams& params) {
+        render_ = params;
+        if (renderer_) renderer_->SetParams(render_);
+        loop_ = render_.loop;
+    }
 
 private:
     static constexpr UINT_PTR kTimerId = 1;

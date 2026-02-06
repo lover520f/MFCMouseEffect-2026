@@ -139,7 +139,8 @@ void RippleWindow::StartContinuous(const ClickEvent& ev, const RippleStyle& styl
     style_ = style;
     render_ = params;
 
-    // Init 
+    // Init
+    renderer_->SetParams(render_);
     renderer_->Start(style_);
 
     EnsureSurface(style_.windowSize);

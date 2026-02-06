@@ -32,7 +32,7 @@ std::unique_ptr<IMouseEffect> EffectFactory::Create(EffectCategory category, con
                 return std::make_unique<TrailEffect>(config.theme, type, p.durationMs, p.maxPoints, config.trailParams);
             }
         case EffectCategory::Scroll:
-            if (type == "arrow") return std::make_unique<ScrollEffect>(config.theme);
+            if (type == "arrow" || type == "helix") return std::make_unique<ScrollEffect>(config.theme, type);
             break;
         case EffectCategory::Hold:
             return std::make_unique<HoldEffect>(config.theme, type);

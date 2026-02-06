@@ -121,6 +121,7 @@ inline const EffectOption* TrailMetadata(size_t& n) {
 inline const EffectOption* ScrollMetadata(size_t& n) {
     static const EffectOption opts[] = {
         {"arrow", kCmdScrollArrow, L"\u65B9\u5411\u6307\u793A", L"Arrow"},
+        {"helix", kCmdScrollHelix, L"\u0033\u0044\u53CC\u87BA\u65CB", L"3D Helix"},
         {"none",  kCmdScrollNone,  L"\u65E0",            L"None"},
     };
     n = _countof(opts);

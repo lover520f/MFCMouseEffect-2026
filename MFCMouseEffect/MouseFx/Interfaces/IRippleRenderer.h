@@ -20,6 +20,10 @@ public:
     // Called when the effect starts (or restarts for looping)
     virtual void Start(const RippleStyle& style) {}
 
+    // Optional: per-instance render params (direction/intensity/loop, etc.).
+    // Called before Start() when available, and can be updated while running.
+    virtual void SetParams(const RenderParams& params) {}
+
     // Called every frame
     // t: normalized progress (0.0 to 1.0)
     // elapsedMs: time since start in milliseconds

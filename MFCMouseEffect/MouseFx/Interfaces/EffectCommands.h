@@ -34,6 +34,7 @@ enum TrayMenuCmd : UINT {
     // Scroll category
     kCmdScrollArrow = 5001,
     kCmdScrollNone = 5002,
+    kCmdScrollHelix = 5003,
 
     // Edge category
     kCmdEdgeNone = 6001,
