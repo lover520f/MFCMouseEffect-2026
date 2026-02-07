@@ -38,6 +38,9 @@
 - 统一缓动：采用更自然的 ease-out 衰减，避免突然消失。
 - 使用 “aura + core” 双层线条：先画低 alpha 的外圈，再画内核线条。
 - 头部高光更克制：小而亮的白色核心 + 柔和光晕，不刺眼。
+- 通过轻量透视（camera/depth）控制线宽和亮度，避免“平面粗线团”。
+- 全段保留弱可见、头部增强，并加入稀疏横向连接肋线，双螺旋结构更清晰。
+- 降低摆幅和 aura 宽度，减少糊团感，方向阅读更干净。
 
 ## 涉及文件
 - `MFCMouseEffect/MouseFx/Interfaces/IRippleRenderer.h`
@@ -46,6 +49,21 @@
 - `MFCMouseEffect/MouseFx/Effects/ScrollEffect.cpp`
 - `MFCMouseEffect/MouseFx/Renderers/Scroll/ChevronRenderer.h`
 - `MFCMouseEffect/MouseFx/Renderers/Scroll/HelixRenderer.h`
+
+## 本次细化（3D 双螺旋）
+针对“最新 3D 双螺旋观感丑陋”的问题，本次集中做了三类调优：
+
+1. **结构可读性**
+   - 双链条分离渲染并深度排序。
+   - 每隔若干段绘制一条低透明度连接肋线，强化 DNA/双螺旋识别。
+
+2. **空间层次**
+   - 增加基于 `localZ` 的透视缩放（`camera/(camera+z)`），线宽与亮度随深度变化。
+   - 将过大的横向摆幅收敛，避免“扁平甩带”。
+
+3. **光效克制**
+   - aura 宽度从“粗扩散”改为“窄外晕”。
+   - 头部高光半径与 alpha 下调，改成小而清晰的亮点。
 
 ## 手工验证建议
 1. 在设置中切换 Scroll 类型：
@@ -59,4 +77,3 @@
    - 光晕层次是否柔和、不糊成一团
    - 方向是否一致（上/下/左/右）
    - 高强度是否“更亮但不刺眼”
-
