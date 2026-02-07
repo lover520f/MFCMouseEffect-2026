@@ -22,11 +22,10 @@ bool HoverEffect::Initialize() {
 
 void HoverEffect::Shutdown() {
     OnHoverEnd();
-    pool_.Shutdown();
 }
 
 void HoverEffect::OnHoverStart(const POINT& pt) {
-    if (currentGlowId_ != 0 || currentGlow_) return;
+    if (currentGlowId_ != 0) return;
 
     ClickEvent ev{};
     ev.pt = pt;
@@ -53,29 +52,12 @@ void HoverEffect::OnHoverStart(const POINT& pt) {
 
     currentGlowId_ = OverlayHostService::Instance().ShowContinuousRipple(
         ev, finalStyle, std::move(renderer), params);
-    if (currentGlowId_ != 0) {
-        currentGlow_ = nullptr;
-        return;
-    }
-
-    if (!pool_.Initialize(2)) return;
-    std::unique_ptr<IRippleRenderer> fallbackRenderer;
-    if (type_ == "tubes" || type_ == "suspension") {
-        fallbackRenderer = std::make_unique<TubesHoverRenderer>(isChromatic_);
-    } else {
-        fallbackRenderer = std::make_unique<CrosshairRenderer>();
-    }
-    currentGlow_ = pool_.ShowContinuous(ev, finalStyle, std::move(fallbackRenderer), params);
 }
 
 void HoverEffect::OnHoverEnd() {
     if (currentGlowId_ != 0) {
         OverlayHostService::Instance().StopRipple(currentGlowId_);
         currentGlowId_ = 0;
-    }
-    if (currentGlow_) {
-        currentGlow_->Stop();
-        currentGlow_ = nullptr;
     }
 }
 

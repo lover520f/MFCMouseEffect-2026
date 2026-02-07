@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "IconEffect.h"
+#include "MouseFx/Core/OverlayHostService.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Renderers/Click/StarRenderer.h"
 
@@ -15,14 +16,10 @@ IconEffect::~IconEffect() {
 }
 
 bool IconEffect::Initialize() {
-    if (!pool_.Initialize(8)) {
-        return false;
-    }
     return true;
 }
 
 void IconEffect::Shutdown() {
-    pool_.Shutdown();
 }
 
 void IconEffect::OnClick(const ClickEvent& event) {
@@ -34,7 +31,8 @@ void IconEffect::OnClick(const ClickEvent& event) {
     if (isChromatic_) {
         finalStyle = MakeRandomStyle(style_);
     }
-    pool_.ShowRipple(event, finalStyle, std::make_unique<StarRenderer>(), params);
+    OverlayHostService::Instance().ShowRipple(
+        event, finalStyle, std::make_unique<StarRenderer>(), params);
 }
 
 } // namespace mousefx

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
-#include "MouseFx/Windows/RippleWindowPool.h"
+#include "MouseFx/Styles/RippleStyle.h"
 #include <cstdint>
 #include <string>
 
@@ -24,13 +24,10 @@ public:
     void OnCommand(const std::string& cmd, const std::string& args) override;
 
 private:
-    RippleWindowPool pool_{};
     POINT holdPoint_{};
     int holdButton_ = 0;
     
     uint64_t currentRippleId_ = 0;
-    // Fallback path: track active window in legacy pool.
-    RippleWindow* currentRipple_ = nullptr;
     RippleStyle style_{};
     std::string type_; // Renderer type name
     bool isChromatic_ = false;

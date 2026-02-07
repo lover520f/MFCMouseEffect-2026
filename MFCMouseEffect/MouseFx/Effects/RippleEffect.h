@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
-#include "MouseFx/Windows/RippleWindowPool.h"
+#include "MouseFx/Styles/RippleStyle.h"
 #include <string>
 
 namespace mousefx {
@@ -19,7 +19,6 @@ public:
     void OnClick(const ClickEvent& event) override;
 
 private:
-    RippleWindowPool pool_{};
     RippleStyle style_{};
     bool isChromatic_ = false;
 };

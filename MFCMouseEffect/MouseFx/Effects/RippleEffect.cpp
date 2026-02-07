@@ -20,7 +20,6 @@ bool RippleEffect::Initialize() {
 }
 
 void RippleEffect::Shutdown() {
-    pool_.Shutdown();
 }
 
 void RippleEffect::OnClick(const ClickEvent& event) {
@@ -33,12 +32,8 @@ void RippleEffect::OnClick(const ClickEvent& event) {
         finalStyle = MakeRandomStyle(style_);
     }
 
-    uint64_t id = OverlayHostService::Instance().ShowRipple(
+    OverlayHostService::Instance().ShowRipple(
         event, finalStyle, std::make_unique<RippleRenderer>(), params);
-    if (id != 0) return;
-
-    if (!pool_.Initialize(10)) return;
-    pool_.ShowRipple(event, finalStyle, std::make_unique<RippleRenderer>(), params);
 }
 
 } // namespace mousefx

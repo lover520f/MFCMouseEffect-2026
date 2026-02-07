@@ -30,7 +30,6 @@ bool ScrollEffect::Initialize() {
 }
 
 void ScrollEffect::Shutdown() {
-    pool_.Shutdown();
 }
 
 void ScrollEffect::OnCommand(const std::string& cmd, const std::string& args) {
@@ -70,17 +69,7 @@ void ScrollEffect::OnScroll(const ScrollEvent& event) {
         finalStyle = MakeRandomStyle(style_);
     }
 
-    uint64_t id = OverlayHostService::Instance().ShowRipple(ev, finalStyle, std::move(renderer), params);
-    if (id != 0) return;
-
-    if (!pool_.Initialize(10)) return;
-    auto fallbackRenderer = RendererRegistry::Instance().Create(currentRendererName_);
-    if (!fallbackRenderer && currentRendererName_ != "none") {
-        fallbackRenderer = RendererRegistry::Instance().Create("arrow");
-    }
-    if (!fallbackRenderer) return;
-    fallbackRenderer->SetParams(params);
-    pool_.ShowRipple(ev, finalStyle, std::move(fallbackRenderer), params);
+    OverlayHostService::Instance().ShowRipple(ev, finalStyle, std::move(renderer), params);
 }
 
 } // namespace mousefx

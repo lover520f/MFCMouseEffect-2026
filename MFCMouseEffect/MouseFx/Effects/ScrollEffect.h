@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
-#include "MouseFx/Windows/RippleWindowPool.h"
+#include "MouseFx/Styles/RippleStyle.h"
 #include <string>
 
 namespace mousefx {
@@ -21,7 +21,6 @@ public:
     void OnCommand(const std::string& cmd, const std::string& args) override;
 
 private:
-    RippleWindowPool pool_{};
     RippleStyle style_{};
     bool isChromatic_ = false;
     std::string currentRendererName_ = "arrow";

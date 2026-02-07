@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
-#include "MouseFx/Windows/RippleWindowPool.h"
+#include "MouseFx/Styles/RippleStyle.h"
 #include <cstdint>
 #include <string>
 
@@ -23,9 +23,7 @@ public:
     void OnHoverEnd() override;
 
 private:
-    RippleWindowPool pool_{};
     uint64_t currentGlowId_ = 0;
-    RippleWindow* currentGlow_ = nullptr;
     RippleStyle style_{};
     std::string type_;
     bool isChromatic_ = false;
