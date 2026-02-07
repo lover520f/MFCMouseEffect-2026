@@ -27,7 +27,7 @@ void ParticleTrailEffect::Shutdown() {
 
 void ParticleTrailEffect::OnMouseMove(const POINT& pt) {
     if (window_) {
-        window_->Emit(pt, 6); // Emit 6 particles per move event
+        window_->UpdateCursor(pt);
     }
 }
 

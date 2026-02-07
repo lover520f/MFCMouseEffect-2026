@@ -9,6 +9,9 @@ static uint64_t NowMs() {
     return GetTickCount64();
 }
 
+static const uint64_t kTopmostReassertIntervalMs = 2500;
+static ParticleTrailWindow* g_particleForegroundHookOwner = nullptr;
+
 // HSV to RGB conversion
 static Gdiplus::Color HslToRgb(float h, float s, float l, BYTE alpha) {
     float c = (1.0f - std::abs(2.0f * l - 1.0f)) * s;
@@ -33,6 +36,7 @@ ParticleTrailWindow::~ParticleTrailWindow() {
 }
 
 void ParticleTrailWindow::Shutdown() {
+    UnregisterForegroundHook();
     if (hwnd_) {
         KillTimer(hwnd_, kTimerId);
         DestroyWindow(hwnd_);
@@ -91,8 +95,15 @@ bool ParticleTrailWindow::Create() {
     lastTick_ = NowMs();
     SetTimer(hwnd_, kTimerId, 16, nullptr);
     ShowWindow(hwnd_, SW_SHOWNA);
+    RegisterForegroundHook();
+    EnsureTopmostZOrder(true);
     
     return true;
+}
+
+void ParticleTrailWindow::UpdateCursor(const POINT& pt) {
+    latestCursorPt_ = pt;
+    hasLatestCursorPt_ = true;
 }
 
 void ParticleTrailWindow::Emit(const POINT& pt, int count) {
@@ -160,6 +171,12 @@ LRESULT ParticleTrailWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             return 0;
         }
         break;
+    case WM_DESTROY:
+        UnregisterForegroundHook();
+        break;
+    case kMsgEnsureTopmost:
+        EnsureTopmostZOrder(true);
+        return 0;
     }
     return DefWindowProcW(hwnd_, msg, wParam, lParam);
 }
@@ -169,6 +186,33 @@ void ParticleTrailWindow::OnTick() {
     float dt = (now - lastTick_) / 1000.0f;
     if (dt > 0.1f) dt = 0.1f;
     lastTick_ = now;
+
+    POINT pt{};
+    bool havePt = false;
+    if (hasLatestCursorPt_) {
+        pt = latestCursorPt_;
+        hasLatestCursorPt_ = false;
+        havePt = true;
+    } else if (GetCursorPos(&pt)) {
+        havePt = true;
+    }
+
+    if (havePt) {
+        if (!hasLastEmitCursorPt_) {
+            lastEmitCursorPt_ = pt;
+            hasLastEmitCursorPt_ = true;
+        }
+        const float dx = (float)(pt.x - lastEmitCursorPt_.x);
+        const float dy = (float)(pt.y - lastEmitCursorPt_.y);
+        const float dist = std::sqrt(dx * dx + dy * dy);
+        if (dist >= 1.0f) {
+            int emitCount = (int)(dist * 0.18f) + 2;
+            if (emitCount < 2) emitCount = 2;
+            if (emitCount > 12) emitCount = 12;
+            Emit(pt, emitCount);
+            lastEmitCursorPt_ = pt;
+        }
+    }
 
     // Update particles
     for (auto it = particles_.begin(); it != particles_.end(); ) {
@@ -184,7 +228,51 @@ void ParticleTrailWindow::OnTick() {
         }
     }
 
+    EnsureTopmostZOrder(false);
     Render();
+}
+
+void CALLBACK ParticleTrailWindow::ForegroundEventProc(HWINEVENTHOOK, DWORD event, HWND hwnd, LONG, LONG, DWORD, DWORD) {
+    if (event != EVENT_SYSTEM_FOREGROUND) return;
+    ParticleTrailWindow* self = g_particleForegroundHookOwner;
+    if (!self || !self->hwnd_) return;
+    if (!IsWindow(self->hwnd_)) return;
+    if (hwnd == self->hwnd_) return;
+    PostMessageW(self->hwnd_, kMsgEnsureTopmost, 0, 0);
+}
+
+void ParticleTrailWindow::RegisterForegroundHook() {
+    if (foregroundHook_) return;
+    foregroundHook_ = SetWinEventHook(
+        EVENT_SYSTEM_FOREGROUND,
+        EVENT_SYSTEM_FOREGROUND,
+        nullptr,
+        &ParticleTrailWindow::ForegroundEventProc,
+        0,
+        0,
+        WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+    if (foregroundHook_) {
+        g_particleForegroundHookOwner = this;
+    }
+}
+
+void ParticleTrailWindow::UnregisterForegroundHook() {
+    if (foregroundHook_) {
+        UnhookWinEvent(foregroundHook_);
+        foregroundHook_ = nullptr;
+    }
+    if (g_particleForegroundHookOwner == this) {
+        g_particleForegroundHookOwner = nullptr;
+    }
+}
+
+void ParticleTrailWindow::EnsureTopmostZOrder(bool force) {
+    if (!hwnd_) return;
+    const uint64_t now = NowMs();
+    if (!force && (now - lastTopmostEnsureMs_ < kTopmostReassertIntervalMs)) return;
+    lastTopmostEnsureMs_ = now;
+    SetWindowPos(hwnd_, HWND_TOPMOST, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
 }
 
 void ParticleTrailWindow::EnsureSurface(int w, int h) {

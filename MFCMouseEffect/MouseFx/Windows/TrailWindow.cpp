@@ -12,6 +12,9 @@ static uint64_t NowMs() {
     return GetTickCount64();
 }
 
+static const uint64_t kTopmostReassertIntervalMs = 2500;
+static TrailWindow* g_foregroundHookOwner = nullptr;
+
 TrailWindow::TrailWindow() = default;
 
 TrailWindow::~TrailWindow() {
@@ -19,6 +22,7 @@ TrailWindow::~TrailWindow() {
 }
 
 void TrailWindow::Shutdown() {
+    UnregisterForegroundHook();
     if (hwnd_) {
         KillTimer(hwnd_, kTimerId);
         DestroyWindow(hwnd_);
@@ -80,23 +84,20 @@ bool TrailWindow::Create() {
     // Start loop
     SetTimer(hwnd_, kTimerId, 16, nullptr); // ~60fps
     ShowWindow(hwnd_, SW_SHOWNA);
+    RegisterForegroundHook();
+    EnsureTopmostZOrder(true);
     
     return true;
 }
 
 void TrailWindow::AddPoint(const POINT& pt) {
-    TrailPoint tp;
-    tp.pt = pt;
-    tp.addedTime = NowMs();
-    points_.push_back(tp);
-
-    if (points_.size() > (size_t)maxPoints_) {
-        points_.pop_front();
-    }
+    latestCursorPt_ = pt;
+    hasLatestCursorPt_ = true;
 }
 
 void TrailWindow::Clear() {
     points_.clear();
+    hasLastSamplePt_ = false;
     UpdateLayered(); // Clear screen
 }
 
@@ -128,14 +129,19 @@ LRESULT TrailWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
         }
         break;
     case WM_DESTROY:
+        UnregisterForegroundHook();
         KillTimer(hwnd_, kTimerId);
         break;
+    case kMsgEnsureTopmost:
+        EnsureTopmostZOrder(true);
+        return 0;
     }
     return DefWindowProcW(hwnd_, msg, wParam, lParam);
 }
 
 void TrailWindow::OnTick() {
     uint64_t now = NowMs();
+    SampleCursorPoint(now);
     
     // Remove old points
     while (!points_.empty()) {
@@ -147,7 +153,78 @@ void TrailWindow::OnTick() {
     }
 
     // Always render (or optimize to only render if dirty? For smooth fadeout we need to render always)
+    EnsureTopmostZOrder(false);
     Render();
+}
+
+void TrailWindow::SampleCursorPoint(uint64_t nowMs) {
+    POINT pt{};
+    bool havePoint = false;
+    if (hasLatestCursorPt_) {
+        pt = latestCursorPt_;
+        hasLatestCursorPt_ = false;
+        havePoint = true;
+    } else if (GetCursorPos(&pt)) {
+        havePoint = true;
+    }
+    if (!havePoint) return;
+
+    if (hasLastSamplePt_ && pt.x == lastSamplePt_.x && pt.y == lastSamplePt_.y) {
+        return;
+    }
+
+    TrailPoint tp;
+    tp.pt = pt;
+    tp.addedTime = nowMs;
+    points_.push_back(tp);
+    if (points_.size() > (size_t)maxPoints_) {
+        points_.pop_front();
+    }
+    lastSamplePt_ = pt;
+    hasLastSamplePt_ = true;
+}
+
+void CALLBACK TrailWindow::ForegroundEventProc(HWINEVENTHOOK, DWORD event, HWND hwnd, LONG, LONG, DWORD, DWORD) {
+    if (event != EVENT_SYSTEM_FOREGROUND) return;
+    TrailWindow* self = g_foregroundHookOwner;
+    if (!self || !self->hwnd_) return;
+    if (!IsWindow(self->hwnd_)) return;
+    if (hwnd == self->hwnd_) return;
+    PostMessageW(self->hwnd_, kMsgEnsureTopmost, 0, 0);
+}
+
+void TrailWindow::RegisterForegroundHook() {
+    if (foregroundHook_) return;
+    foregroundHook_ = SetWinEventHook(
+        EVENT_SYSTEM_FOREGROUND,
+        EVENT_SYSTEM_FOREGROUND,
+        nullptr,
+        &TrailWindow::ForegroundEventProc,
+        0,
+        0,
+        WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+    if (foregroundHook_) {
+        g_foregroundHookOwner = this;
+    }
+}
+
+void TrailWindow::UnregisterForegroundHook() {
+    if (foregroundHook_) {
+        UnhookWinEvent(foregroundHook_);
+        foregroundHook_ = nullptr;
+    }
+    if (g_foregroundHookOwner == this) {
+        g_foregroundHookOwner = nullptr;
+    }
+}
+
+void TrailWindow::EnsureTopmostZOrder(bool force) {
+    if (!hwnd_) return;
+    const uint64_t now = NowMs();
+    if (!force && (now - lastTopmostEnsureMs_ < kTopmostReassertIntervalMs)) return;
+    lastTopmostEnsureMs_ = now;
+    SetWindowPos(hwnd_, HWND_TOPMOST, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
 }
 
 void TrailWindow::EnsureSurface(int w, int h) {

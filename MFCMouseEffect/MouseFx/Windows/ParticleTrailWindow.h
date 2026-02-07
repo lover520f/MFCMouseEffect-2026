@@ -16,13 +16,16 @@ public:
     void Shutdown();
     
     void Emit(const POINT& pt, int count = 5);
+    void UpdateCursor(const POINT& pt);
     void Clear();
     void SetChromatic(bool b) { isChromatic_ = b; }
 
 private:
     static constexpr UINT_PTR kTimerId = 3;
+    static constexpr UINT kMsgEnsureTopmost = WM_APP + 0x32;
     bool isChromatic_ = false;
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    static void CALLBACK ForegroundEventProc(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD eventTime);
 
     LRESULT OnMessage(UINT msg, WPARAM wParam, LPARAM lParam);
     void OnTick();
@@ -30,6 +33,9 @@ private:
     void UpdateLayered();
     void EnsureSurface(int w, int h);
     void DestroySurface();
+    void EnsureTopmostZOrder(bool force = false);
+    void RegisterForegroundHook();
+    void UnregisterForegroundHook();
 
     struct Particle {
         float x, y;
@@ -52,6 +58,12 @@ private:
     void* bits_ = nullptr;
     int width_ = 0;
     int height_ = 0;
+    uint64_t lastTopmostEnsureMs_ = 0;
+    HWINEVENTHOOK foregroundHook_ = nullptr;
+    POINT latestCursorPt_{};
+    bool hasLatestCursorPt_ = false;
+    POINT lastEmitCursorPt_{};
+    bool hasLastEmitCursorPt_ = false;
 };
 
 } // namespace mousefx
