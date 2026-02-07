@@ -141,6 +141,9 @@
     <ClInclude Include="MouseFx\Layers\ParticleTrailOverlayLayer.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Layers\RippleOverlayLayer.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="UI\Tray\TrayHostWnd.h">
       <Filter>头文件\UI\Tray</Filter>
     </ClInclude>
@@ -240,6 +243,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Layers\ParticleTrailOverlayLayer.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Layers\RippleOverlayLayer.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="UI\Tray\TrayHostWnd.cpp">

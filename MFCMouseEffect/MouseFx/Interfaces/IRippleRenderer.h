@@ -2,6 +2,7 @@
 
 #include <gdiplus.h>
 #include <cstdint>
+#include <string>
 #include "MouseFx/Styles/RippleStyle.h"
 
 namespace mousefx {

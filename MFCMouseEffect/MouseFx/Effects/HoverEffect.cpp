@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "HoverEffect.h"
+#include "MouseFx/Core/OverlayHostService.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Renderers/Hover/CrosshairRenderer.h"
 #include "MouseFx/Renderers/Hover/TubesHoverRenderer.h"
@@ -16,7 +17,7 @@ HoverEffect::~HoverEffect() {
 }
 
 bool HoverEffect::Initialize() {
-    return pool_.Initialize(2);
+    return true;
 }
 
 void HoverEffect::Shutdown() {
@@ -25,7 +26,7 @@ void HoverEffect::Shutdown() {
 }
 
 void HoverEffect::OnHoverStart(const POINT& pt) {
-    if (currentGlow_) return;
+    if (currentGlowId_ != 0 || currentGlow_) return;
 
     ClickEvent ev{};
     ev.pt = pt;
@@ -50,10 +51,28 @@ void HoverEffect::OnHoverStart(const POINT& pt) {
         renderer = std::make_unique<CrosshairRenderer>();
     }
 
-    currentGlow_ = pool_.ShowContinuous(ev, finalStyle, std::move(renderer), params);
+    currentGlowId_ = OverlayHostService::Instance().ShowContinuousRipple(
+        ev, finalStyle, std::move(renderer), params);
+    if (currentGlowId_ != 0) {
+        currentGlow_ = nullptr;
+        return;
+    }
+
+    if (!pool_.Initialize(2)) return;
+    std::unique_ptr<IRippleRenderer> fallbackRenderer;
+    if (type_ == "tubes" || type_ == "suspension") {
+        fallbackRenderer = std::make_unique<TubesHoverRenderer>(isChromatic_);
+    } else {
+        fallbackRenderer = std::make_unique<CrosshairRenderer>();
+    }
+    currentGlow_ = pool_.ShowContinuous(ev, finalStyle, std::move(fallbackRenderer), params);
 }
 
 void HoverEffect::OnHoverEnd() {
+    if (currentGlowId_ != 0) {
+        OverlayHostService::Instance().StopRipple(currentGlowId_);
+        currentGlowId_ = 0;
+    }
     if (currentGlow_) {
         currentGlow_->Stop();
         currentGlow_ = nullptr;

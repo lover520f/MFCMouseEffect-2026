@@ -2,6 +2,7 @@
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Windows/RippleWindowPool.h"
+#include <cstdint>
 #include <string>
 
 namespace mousefx {
@@ -23,6 +24,7 @@ public:
 
 private:
     RippleWindowPool pool_{};
+    uint64_t currentGlowId_ = 0;
     RippleWindow* currentGlow_ = nullptr;
     RippleStyle style_{};
     std::string type_;

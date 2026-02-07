@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ScrollEffect.h"
+#include "MouseFx/Core/OverlayHostService.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include <algorithm>
 #include "MouseFx/Renderers/RendererRegistry.h"
@@ -25,8 +26,7 @@ ScrollEffect::~ScrollEffect() {
 }
 
 bool ScrollEffect::Initialize() {
-    // Small pool for scroll indicators
-    return pool_.Initialize(10);
+    return true;
 }
 
 void ScrollEffect::Shutdown() {
@@ -70,7 +70,17 @@ void ScrollEffect::OnScroll(const ScrollEvent& event) {
         finalStyle = MakeRandomStyle(style_);
     }
 
-    pool_.ShowRipple(ev, finalStyle, std::move(renderer), params);
+    uint64_t id = OverlayHostService::Instance().ShowRipple(ev, finalStyle, std::move(renderer), params);
+    if (id != 0) return;
+
+    if (!pool_.Initialize(10)) return;
+    auto fallbackRenderer = RendererRegistry::Instance().Create(currentRendererName_);
+    if (!fallbackRenderer && currentRendererName_ != "none") {
+        fallbackRenderer = RendererRegistry::Instance().Create("arrow");
+    }
+    if (!fallbackRenderer) return;
+    fallbackRenderer->SetParams(params);
+    pool_.ShowRipple(ev, finalStyle, std::move(fallbackRenderer), params);
 }
 
 } // namespace mousefx

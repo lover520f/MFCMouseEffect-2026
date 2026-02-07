@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "HoldEffect.h"
+#include "MouseFx/Core/OverlayHostService.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Renderers/RendererRegistry.h"
 // Include all renderers so they are linked/registered? 
@@ -27,11 +28,11 @@ HoldEffect::~HoldEffect() {
 }
 
 bool HoldEffect::Initialize() {
-    // Small pool for hold indicators
-    return pool_.Initialize(5);
+    return true;
 }
 
 void HoldEffect::Shutdown() {
+    OnHoldEnd();
     pool_.Shutdown();
 }
 
@@ -60,7 +61,21 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
         finalStyle = MakeRandomStyle(style_);
     }
 
-    currentRipple_ = pool_.ShowContinuous(ev, finalStyle, std::move(renderer), params);
+    currentRippleId_ = OverlayHostService::Instance().ShowContinuousRipple(
+        ev, finalStyle, std::move(renderer), params);
+    if (currentRippleId_ == 0) {
+        if (!pool_.Initialize(5)) return;
+        std::unique_ptr<IRippleRenderer> fallbackRenderer = RendererRegistry::Instance().Create(type_);
+        if (!fallbackRenderer) {
+            fallbackRenderer = RendererRegistry::Instance().Create("charge");
+        }
+        currentRipple_ = pool_.ShowContinuous(ev, finalStyle, std::move(fallbackRenderer), params);
+    } else {
+        currentRipple_ = nullptr;
+        char buf[32]{};
+        snprintf(buf, sizeof(buf), "%u", finalStyle.durationMs);
+        OverlayHostService::Instance().SendRippleCommand(currentRippleId_, "threshold_ms", buf);
+    }
     if (currentRipple_) {
         char buf[32]{};
         snprintf(buf, sizeof(buf), "%u", finalStyle.durationMs);
@@ -70,6 +85,12 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
 
 void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
     holdPoint_ = pt;
+    if (currentRippleId_ != 0) {
+        OverlayHostService::Instance().UpdateRipplePosition(currentRippleId_, pt);
+        char buf[32]{};
+        snprintf(buf, sizeof(buf), "%u", (uint32_t)durationMs);
+        OverlayHostService::Instance().SendRippleCommand(currentRippleId_, "hold_ms", buf);
+    }
     if (currentRipple_) {
         currentRipple_->UpdatePosition(pt);
         char buf[32]{};
@@ -79,11 +100,20 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
 }
 
 void HoldEffect::OnHoldEnd() {
+    if (currentRippleId_ != 0) {
+        OverlayHostService::Instance().StopRipple(currentRippleId_);
+        currentRippleId_ = 0;
+    }
     if (currentRipple_) {
         currentRipple_->Stop();
         currentRipple_ = nullptr;
     }
     holdButton_ = 0;
+}
+
+void HoldEffect::OnCommand(const std::string& cmd, const std::string& args) {
+    OverlayHostService::Instance().BroadcastRippleCommand(cmd, args);
+    pool_.BroadcastCommand(cmd, args);
 }
 
 } // namespace mousefx

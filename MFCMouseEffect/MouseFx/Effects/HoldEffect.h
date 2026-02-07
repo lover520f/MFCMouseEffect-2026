@@ -2,6 +2,7 @@
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Windows/RippleWindowPool.h"
+#include <cstdint>
 #include <string>
 
 namespace mousefx {
@@ -20,17 +21,15 @@ public:
     void OnHoldStart(const POINT& pt, int button) override;
     void OnHoldUpdate(const POINT& pt, DWORD durationMs) override;
     void OnHoldEnd() override;
-    
-    void OnCommand(const std::string& cmd, const std::string& args) override {
-        pool_.BroadcastCommand(cmd, args);
-    }
+    void OnCommand(const std::string& cmd, const std::string& args) override;
 
 private:
     RippleWindowPool pool_{};
     POINT holdPoint_{};
     int holdButton_ = 0;
     
-    // Track active window to stop looping
+    uint64_t currentRippleId_ = 0;
+    // Fallback path: track active window in legacy pool.
     RippleWindow* currentRipple_ = nullptr;
     RippleStyle style_{};
     std::string type_; // Renderer type name
