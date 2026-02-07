@@ -6,6 +6,8 @@
 
 namespace mousefx {
 
+class ParticleTrailOverlayLayer;
+
 class ParticleTrailEffect final : public IMouseEffect {
 public:
     explicit ParticleTrailEffect(const std::string& themeName);
@@ -21,6 +23,7 @@ public:
 
 private:
     std::unique_ptr<ParticleTrailWindow> window_;
+    ParticleTrailOverlayLayer* hostLayer_ = nullptr;
     bool isChromatic_ = false;
 };
 

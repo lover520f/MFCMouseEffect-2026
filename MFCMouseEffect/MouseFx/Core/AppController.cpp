@@ -6,6 +6,7 @@
 #include "MouseFxMessages.h"
 #include "ConfigPathResolver.h"
 #include "EffectFactory.h"
+#include "OverlayHostService.h"
 #include "JsonLite.h"
 #include "MouseFx/ThirdParty/json.hpp"
 
@@ -156,6 +157,7 @@ void AppController::Stop() {
             effect.reset();
         }
     }
+    OverlayHostService::Instance().Shutdown();
     DestroyDispatchWindow();
     gdiplus_.Shutdown();
 }

@@ -214,10 +214,14 @@
     <ClInclude Include="MouseFx\Core\AppController.h" />
     <ClInclude Include="MouseFx\Core\ConfigPathResolver.h" />
     <ClInclude Include="MouseFx\Core\EffectFactory.h" />
+    <ClInclude Include="MouseFx\Core\OverlayHostService.h" />
     <ClInclude Include="MouseFx\Core\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\GlobalMouseHook.h" />
     <ClInclude Include="MouseFx\Effects\IconEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IMouseEffect.h" />
+    <ClInclude Include="MouseFx\Interfaces\IOverlayLayer.h" />
+    <ClInclude Include="MouseFx\Layers\ParticleTrailOverlayLayer.h" />
+    <ClInclude Include="MouseFx\Layers\TrailOverlayLayer.h" />
     <ClInclude Include="MouseFx\Core\IpcController.h" />
     <ClInclude Include="MouseFx\Core\JsonLite.h" />
     <ClInclude Include="MouseFx\MouseFxMessages.h" />
@@ -236,6 +240,7 @@
     <ClInclude Include="MouseFx\Windows\TrailWindow.h" />
     <ClInclude Include="MouseFx\Effects\ParticleTrailEffect.h" />
     <ClInclude Include="MouseFx\Windows\ParticleTrailWindow.h" />
+    <ClInclude Include="MouseFx\Windows\OverlayHostWindow.h" />
     <ClInclude Include="MouseFx\Effects\ScrollEffect.h" />
     <ClInclude Include="MouseFx\Effects\HoldEffect.h" />
     <ClInclude Include="MouseFx\Effects\HoverEffect.h" />
@@ -270,6 +275,7 @@
     <ClCompile Include="MouseFx\Core\AppController.cpp" />
     <ClCompile Include="MouseFx\Core\ConfigPathResolver.cpp" />
     <ClCompile Include="MouseFx\Core\EffectFactory.cpp" />
+    <ClCompile Include="MouseFx\Core\OverlayHostService.cpp" />
     <ClCompile Include="MouseFx\Core\GlobalMouseHook.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
     <ClCompile Include="MouseFx\Core\IpcController.cpp" />
@@ -285,7 +291,10 @@
     <ClCompile Include="MouseFx\Effects\TrailEffect.cpp" />
     <ClCompile Include="MouseFx\Windows\TrailWindow.cpp" />
     <ClCompile Include="MouseFx\Effects\ParticleTrailEffect.cpp" />
+    <ClCompile Include="MouseFx\Layers\ParticleTrailOverlayLayer.cpp" />
+    <ClCompile Include="MouseFx\Layers\TrailOverlayLayer.cpp" />
     <ClCompile Include="MouseFx\Windows\ParticleTrailWindow.cpp" />
+    <ClCompile Include="MouseFx\Windows\OverlayHostWindow.cpp" />
     <ClCompile Include="MouseFx\Effects\ScrollEffect.cpp" />
     <ClCompile Include="MouseFx\Effects\HoldEffect.cpp" />
     <ClCompile Include="MouseFx\Effects\HoverEffect.cpp" />

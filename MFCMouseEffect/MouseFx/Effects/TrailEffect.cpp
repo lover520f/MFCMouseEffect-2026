@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "TrailEffect.h"
+#include "MouseFx/Core/OverlayHostService.h"
+#include "MouseFx/Layers/TrailOverlayLayer.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Interfaces/TrailRenderStrategies.h"
 #include "MouseFx/Renderers/Trail/TubesRenderer.h"
@@ -13,22 +15,9 @@ namespace mousefx {
 TrailEffect::TrailEffect(const std::string& themeName, const std::string& type, int durationMs, int maxPoints, const TrailRendererParamsConfig& params)
     : window_(std::make_unique<TrailWindow>()), type_(type) {
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
-    window_->SetDurationMs(durationMs);
-    window_->SetMaxPoints(maxPoints);
-    
-    // Set appropriate renderer
-    if (type == "electric") {
-        window_->SetRenderer(std::make_unique<ElectricTrailRenderer>(durationMs, params));
-    } else if (type == "streamer") {
-        window_->SetRenderer(std::make_unique<StreamerTrailRenderer>(durationMs, params));
-    } else if (type == "tubes" || type == "scifi") {
-        window_->SetRenderer(std::make_unique<TubesRenderer>());
-    } else if (type == "meteor") {
-        window_->SetRenderer(std::make_unique<MeteorRenderer>(durationMs, params));
-    } else {
-        // Default Line
-        window_->SetRenderer(std::make_unique<LineTrailRenderer>(durationMs, params));
-    }
+    durationMs_ = durationMs;
+    maxPoints_ = maxPoints;
+    params_ = params;
 }
 
 TrailEffect::~TrailEffect() {
@@ -36,20 +25,23 @@ TrailEffect::~TrailEffect() {
 }
 
 bool TrailEffect::Initialize() {
+    hostLayer_ = OverlayHostService::Instance().AttachTrailLayer(
+        CreateRenderer(), durationMs_, maxPoints_, isChromatic_);
+    if (hostLayer_) return true;
+
     if (!window_->Create()) return false;
+    window_->SetDurationMs(durationMs_);
+    window_->SetMaxPoints(maxPoints_);
+    window_->SetRenderer(CreateRenderer());
     window_->SetChromatic(isChromatic_);
     return true;
 }
 
-// The Initialize method is removed as its logic has been moved to the constructor.
-// bool TrailEffect::Initialize() {
-//     window_ = std::make_unique<TrailWindow>();
-//     if (!window_->Create()) return false;
-//     window_->SetChromatic(isChromatic_);
-//     return true;
-// }
-
 void TrailEffect::Shutdown() {
+    if (hostLayer_) {
+        OverlayHostService::Instance().DetachLayer(hostLayer_);
+        hostLayer_ = nullptr;
+    }
     if (window_) {
         window_->Shutdown();
         window_.reset();
@@ -57,9 +49,29 @@ void TrailEffect::Shutdown() {
 }
 
 void TrailEffect::OnMouseMove(const POINT& pt) {
+    if (hostLayer_) {
+        hostLayer_->AddPoint(pt);
+        return;
+    }
     if (window_) {
         window_->AddPoint(pt);
     }
+}
+
+std::unique_ptr<ITrailRenderer> TrailEffect::CreateRenderer() const {
+    if (type_ == "electric") {
+        return std::make_unique<ElectricTrailRenderer>(durationMs_, params_);
+    }
+    if (type_ == "streamer") {
+        return std::make_unique<StreamerTrailRenderer>(durationMs_, params_);
+    }
+    if (type_ == "tubes" || type_ == "scifi") {
+        return std::make_unique<TubesRenderer>();
+    }
+    if (type_ == "meteor") {
+        return std::make_unique<MeteorRenderer>(durationMs_, params_);
+    }
+    return std::make_unique<LineTrailRenderer>(durationMs_, params_);
 }
 
 } // namespace mousefx

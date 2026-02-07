@@ -1,10 +1,14 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
+#include "MouseFx/Core/EffectConfig.h"
 #include "MouseFx/Windows/TrailWindow.h"
 #include <memory>
 
 namespace mousefx {
+
+class ITrailRenderer;
+class TrailOverlayLayer;
 
 class TrailEffect final : public IMouseEffect {
 public:
@@ -19,8 +23,14 @@ public:
     void OnMouseMove(const POINT& pt) override;
 
 private:
+    std::unique_ptr<ITrailRenderer> CreateRenderer() const;
+
     std::unique_ptr<TrailWindow> window_;
+    TrailOverlayLayer* hostLayer_ = nullptr;
     std::string type_;
+    int durationMs_ = 350;
+    int maxPoints_ = 40;
+    TrailRendererParamsConfig params_{};
     bool isChromatic_ = false;
 };
 
