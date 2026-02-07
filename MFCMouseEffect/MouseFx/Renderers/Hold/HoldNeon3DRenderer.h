@@ -37,7 +37,7 @@ public:
         for (size_t i = 0; i < seeds_.size(); ++i) {
             seeds_[i] = hash.Hash01((uint32_t)(0xC001D00Du + i)) * 10.0f;
         }
-        branchCount_ = 8 + (int)std::floor(hash.Hash01(0xB16B00u) * 5.0f); // 8..12
+        branchCount_ = 6 + (int)std::floor(hash.Hash01(0xB16B00u) * 4.0f); // 6..9
         bundleBiasRad_ = (hash.Hash01(0xA11CEu) - 0.5f) * 0.38f;           // small random offset
         orbitPhase_ = hash.Hash01(0xC0FFEEu) * neon3d::kTau;
 
@@ -85,6 +85,13 @@ public:
         const float progressStartAng = kStartAng;
         const float headAng = progressStartAng + progress * kTau;
 
+        // Reduce early-frame clutter: fade in sub-layers progressively.
+        const float hatchA = alphaIn * Smoothstep(0.03f, 0.16f, progress);
+        const float tendrilsA = alphaIn * 0.86f * Smoothstep(0.08f, 0.26f, progress);
+        const float weaveA = alphaIn * Smoothstep(0.10f, 0.30f, progress);
+        const float capsuleA = alphaIn * Smoothstep(0.12f, 0.28f, progress);
+        const float labelA = alphaIn * Smoothstep(0.08f, 0.22f, progress);
+
         const Gdiplus::Color strokeRaw = ToGdiPlus(style.stroke);
         const Gdiplus::Color primary(255, strokeRaw.GetR(), strokeRaw.GetG(), strokeRaw.GetB());
 
@@ -94,9 +101,10 @@ public:
         const Gdiplus::Color purple = pal.purple;
         const Gdiplus::Color mint = pal.mint;
 
-        const Gdiplus::Color cyanFx = MulAlpha(cyan, alphaIn);
-        const Gdiplus::Color purpleFx = MulAlpha(purple, alphaIn);
-        const Gdiplus::Color mintFx = MulAlpha(mint, alphaIn);
+        const Gdiplus::Color cyanHatch = MulAlpha(cyan, hatchA);
+        const Gdiplus::Color cyanWeave = MulAlpha(cyan, weaveA);
+        const Gdiplus::Color purpleWeave = MulAlpha(purple, weaveA);
+        const Gdiplus::Color mintWeave = MulAlpha(mint, weaveA);
 
         g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
         g.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHighQuality);
@@ -105,24 +113,28 @@ public:
         // Layer order matches the concept spec (bottom -> top).
         DrawGlassRing(g, cx, cy, R, thick, cyan, purple, alphaIn);
         // Micro streaks keep 12 o'clock as the "scan" origin (background texture).
-        DrawMicroStreaks(g, cx, cy, innerR, alphaIn, timeSec, cyan);
-        DrawInnerHatch(g, cx, cy, innerR, progress, headAng, timeSec, cyanFx);
+        DrawMicroStreaks(g, cx, cy, innerR, alphaIn * 0.90f, timeSec, cyan);
+        DrawInnerHatch(g, cx, cy, innerR, progress, headAng, timeSec, cyanHatch);
+        // Keep scanner above hatch so the clockwise flow line remains readable.
+        DrawInnerScanner(g, cx, cy, innerR - 2.0f, timeSec, alphaIn * 0.96f, cyan, purple);
         DrawCrystalSeed(g, cx, cy, 16.0f, timeSec, alphaIn, cyan, purple);
 
         // Keep the tendrils "alive" even when progress is clamped to 1.0.
-        const float orbit = (0.10f + 0.10f * progress) * (float)sin(timeSec * 0.85f + orbitPhase_)
+        const float orbit = (0.20f + 0.16f * progress) * (float)sin(timeSec * 0.85f + orbitPhase_)
             + 0.05f * (float)sin(timeSec * 1.45f + orbitPhase_ * 2.3f);
-        DrawBranchTendrils(g, cx, cy, innerR, progress, headAng + orbit, timeSec, dtSec, alphaIn, bundleBiasRad_,
+        const float tendrilAng = headAng - 0.95f + orbit;
+        DrawBranchTendrils(g, cx, cy, innerR, progress, tendrilAng, timeSec, dtSec, tendrilsA, bundleBiasRad_,
             cyan, purple, seeds_.data(), (int)seeds_.size(), branchCount_, sparks_, rng_);
 
         DrawProgressArcBase(g, cx, cy, R, progressStartAng, progress, cyan, alphaIn);
         DrawProgressMainArc(g, cx, cy, R, progressStartAng, progress, cyan, purple, alphaIn);
-        DrawWovenBand(g, cx, cy, R, progress, headAng, timeSec, cyanFx, purpleFx, mintFx);
-        DrawCapsuleHead(g, cx, cy, R, progress, headAng, cyan, purple, alphaIn);
+        DrawStartAnchorPlate(g, cx, cy, R, progressStartAng, cyan, purple, alphaIn * 0.85f);
+        DrawWovenBand(g, cx, cy, R, progress, headAng, timeSec, cyanWeave, purpleWeave, mintWeave);
+        DrawCapsuleHead(g, cx, cy, R, progress, headAng, cyan, purple, capsuleA);
 
         const float maxOut = std::max(6.0f, (float)sizePx * 0.5f - R - 18.0f);
         const float labelOut = std::min(22.0f, maxOut);
-        DrawPercentLabel(g, cx, cy, R, progress, headAng, alphaIn, labelOut, cyan, purple);
+        DrawPercentLabel(g, cx, cy, R, progress, headAng, labelA, labelOut, cyan, purple);
     }
 
 private:

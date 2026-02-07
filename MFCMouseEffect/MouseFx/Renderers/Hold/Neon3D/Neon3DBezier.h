@@ -64,6 +64,23 @@ inline std::vector<Gdiplus::PointF> JitterPolyline(const std::vector<Gdiplus::Po
     return out;
 }
 
+inline std::vector<Gdiplus::PointF> SmoothPolyline(const std::vector<Gdiplus::PointF>& pts, int iterations) {
+    if (iterations <= 0 || pts.size() < 3) return pts;
+    std::vector<Gdiplus::PointF> cur = pts;
+    std::vector<Gdiplus::PointF> next = pts;
+    for (int it = 0; it < iterations; ++it) {
+        next[0] = cur[0];
+        for (size_t i = 1; i + 1 < cur.size(); ++i) {
+            const Gdiplus::PointF& p0 = cur[i - 1];
+            const Gdiplus::PointF& p1 = cur[i];
+            const Gdiplus::PointF& p2 = cur[i + 1];
+            next[i] = Gdiplus::PointF((p0.X + 2.0f * p1.X + p2.X) * 0.25f, (p0.Y + 2.0f * p1.Y + p2.Y) * 0.25f);
+        }
+        next.back() = cur.back();
+        cur.swap(next);
+    }
+    return cur;
+}
+
 } // namespace neon3d
 } // namespace mousefx
-

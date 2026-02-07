@@ -93,6 +93,17 @@ inline NeonPalette MakeNeonPalette(const Gdiplus::Color& primaryRgb) {
         l = 0.60f;
     }
 
+    // Concept alignment: keep the overall palette in a cool cyan/purple range.
+    // If a theme provides a warm primary (yellow/orange/red), force the base hue back toward cyan
+    // so the HUD does not become "golden lightning".
+    //
+    // Roughly allow: 150..260 degrees (cyan/blue region).
+    if (s >= 0.18f) {
+        if (h < 150.0f || h > 260.0f) {
+            h = 190.0f;
+        }
+    }
+
     const float sat = std::max(0.72f, s);
     const float light = std::max(0.55f, std::min(0.68f, l));
 
@@ -105,4 +116,3 @@ inline NeonPalette MakeNeonPalette(const Gdiplus::Color& primaryRgb) {
 
 } // namespace neon3d
 } // namespace mousefx
-

@@ -23,6 +23,110 @@ struct Spark {
     float life = 0.0f;
 };
 
+inline void DrawInnerScanner(Gdiplus::Graphics& g, float cx, float cy, float r, float timeSec, float alpha01,
+                             const Gdiplus::Color& cyan, const Gdiplus::Color& purple) {
+    using namespace mousefx::render_utils;
+    const float a = Clamp01(alpha01);
+    if (a <= 0.001f) return;
+
+    // Flow semantics:
+    // 1) streamlines move clockwise along the inner wall
+    // 2) 12 o'clock is a fixed outlet with tangential extension.
+    const float speed = 0.24f; // rotations per second
+    const float travel = fnmod(timeSec * speed, 1.0f);
+    const float rr = r - 1.8f;
+    const float x = cx - rr;
+    const float y = cy - rr;
+    const float d = rr * 2.0f;
+
+    // Faint base loop keeps the scanner readable even under dense top layers.
+    {
+        Gdiplus::Pen base(MulAlpha(cyan, 0.045f * a), 2.2f);
+        base.SetStartCap(Gdiplus::LineCapRound);
+        base.SetEndCap(Gdiplus::LineCapRound);
+        g.DrawArc(&base, x, y, d, d, RadToDeg(kStartAng), 360.0f);
+    }
+    {
+        Gdiplus::Pen base2(MulAlpha(purple, 0.022f * a), 4.5f);
+        base2.SetStartCap(Gdiplus::LineCapRound);
+        base2.SetEndCap(Gdiplus::LineCapRound);
+        g.DrawArc(&base2, x, y, d, d, RadToDeg(kStartAng), 360.0f);
+    }
+
+    const int streakCount = 34;
+    for (int i = 0; i < streakCount; ++i) {
+        const float slot = (float)i / (float)streakCount;
+        const float phase = fnmod(slot + travel, 1.0f); // clockwise phase [0..1)
+        const float seg = 0.022f + 0.030f * (1.0f - slot);
+        const float head = kStartAng + phase * kTau;
+        const float start = head - seg;
+
+        // "Flow to outlet": as phase approaches 1.0 (back to 12 o'clock), brightness rises.
+        const float towardOutlet = Smoothstep(0.52f, 1.0f, phase);
+        const float justAfterOutlet = 1.0f - Smoothstep(0.0f, 0.14f, phase);
+        const float energy = (0.08f + 0.92f * towardOutlet) * (1.0f - justAfterOutlet * 0.45f);
+
+        const float glowA = (0.030f + 0.090f * energy) * a;
+        const float coreA = (0.055f + 0.190f * energy) * a;
+
+        Gdiplus::Pen glow(MulAlpha(purple, glowA), 4.4f);
+        glow.SetStartCap(Gdiplus::LineCapRound);
+        glow.SetEndCap(Gdiplus::LineCapRound);
+        g.DrawArc(&glow, x, y, d, d, RadToDeg(start), RadToDeg(seg));
+
+        Gdiplus::Pen core(MulAlpha(cyan, coreA), 1.75f);
+        core.SetStartCap(Gdiplus::LineCapRound);
+        core.SetEndCap(Gdiplus::LineCapRound);
+        g.DrawArc(&core, x, y, d, d, RadToDeg(start), RadToDeg(seg));
+    }
+
+    // Outlet collar at 12 o'clock, makes the fixed sink point obvious.
+    {
+        Gdiplus::Pen glow(MulAlpha(purple, 0.11f * a), 8.0f);
+        glow.SetStartCap(Gdiplus::LineCapRound);
+        glow.SetEndCap(Gdiplus::LineCapRound);
+        g.DrawArc(&glow, x, y, d, d, RadToDeg(kStartAng - 0.10f), RadToDeg(0.18f));
+    }
+    {
+        Gdiplus::Pen core(MulAlpha(cyan, 0.20f * a), 3.0f);
+        core.SetStartCap(Gdiplus::LineCapRound);
+        core.SetEndCap(Gdiplus::LineCapRound);
+        g.DrawArc(&core, x, y, d, d, RadToDeg(kStartAng - 0.10f), RadToDeg(0.18f));
+    }
+
+    // Fixed 12 o'clock outlet extension (tangent direction = clockwise to the right).
+    const Gdiplus::PointF outlet = Polar(cx, cy, rr + 1.0f, kStartAng);
+    const Gdiplus::PointF tangent((float)cos(kStartAng + 3.1415926f * 0.5f), (float)sin(kStartAng + 3.1415926f * 0.5f));
+    const float outLen = 16.0f + 10.0f * (0.5f + 0.5f * (float)sin(timeSec * 4.0f));
+    const Gdiplus::PointF outMid(outlet.X + tangent.X * (outLen * 0.45f), outlet.Y + tangent.Y * (outLen * 0.45f));
+    const Gdiplus::PointF outFar(outlet.X + tangent.X * outLen, outlet.Y + tangent.Y * outLen);
+
+    {
+        Gdiplus::Pen glow(MulAlpha(purple, 0.17f * a), 10.0f);
+        glow.SetStartCap(Gdiplus::LineCapRound);
+        glow.SetEndCap(Gdiplus::LineCapRound);
+        g.DrawLine(&glow, outlet, outFar);
+    }
+    {
+        Gdiplus::Pen core(MulAlpha(cyan, 0.30f * a), 4.2f);
+        core.SetStartCap(Gdiplus::LineCapRound);
+        core.SetEndCap(Gdiplus::LineCapRound);
+        g.DrawLine(&core, outlet, outFar);
+    }
+    {
+        Gdiplus::Pen line(MulAlpha(Gdiplus::Color(255, 245, 252, 255), 0.52f * a), 1.6f);
+        line.SetStartCap(Gdiplus::LineCapRound);
+        line.SetEndCap(Gdiplus::LineCapRound);
+        g.DrawLine(&line, outMid, outFar);
+    }
+
+    {
+        const float dotR = 1.9f + 0.8f * (0.5f + 0.5f * (float)sin(timeSec * 5.8f));
+        Gdiplus::SolidBrush b(MulAlpha(Gdiplus::Color(255, 245, 252, 255), 0.82f * a));
+        g.FillEllipse(&b, outlet.X - dotR, outlet.Y - dotR, dotR * 2.0f, dotR * 2.0f);
+    }
+}
+
 inline void DrawMicroStreaks(Gdiplus::Graphics& g, float cx, float cy, float r, float appear01, float timeSec, const Gdiplus::Color& cyan) {
     using namespace mousefx::render_utils;
     const float appear = Clamp01(appear01);
@@ -193,9 +297,10 @@ inline void DrawBranchTendrils(Gdiplus::Graphics& g, float cx, float cy, float i
 
     UpdateSparks(sparks, dtSec);
 
-    const Gdiplus::PointF start(cx, cy);
     const float bundleWob = 0.12f * (float)sin(timeSec * 1.15f + bundleBiasRad * 2.7f);
     const float bundleAng = headAng - 0.22f + bundleBiasRad + bundleWob;
+    // Start from the crystal edge instead of the exact center (more like the concept "nozzle").
+    const Gdiplus::PointF start = Polar(cx, cy, 9.0f, bundleAng);
     const Gdiplus::PointF trunkEnd = Polar(cx, cy, innerR - 12.0f, bundleAng);
 
     // Trunk control points (slight arc).
@@ -205,8 +310,19 @@ inline void DrawBranchTendrils(Gdiplus::Graphics& g, float cx, float cy, float i
                              start.Y + (trunkEnd.Y - start.Y) * 0.75f + 6.0f * (float)cos(timeSec * 1.6f));
 
     const auto trunkPts = SampleBezier(start, c1, c2, trunkEnd, 22);
-    const auto trunkJ = JitterPolyline(trunkPts, timeSec, progress, seeds, seedsCount, 1.0f, 2.5f, 8.0f);
-    const int forkIndex = (int)std::floor((float)trunkJ.size() * 0.62f);
+    const auto trunkJRaw = JitterPolyline(trunkPts, timeSec, progress, seeds, seedsCount, 0.45f, 1.35f, 6.0f);
+
+    // Keep the trunk smoother near the crystal and only add jitter toward the ring.
+    std::vector<Gdiplus::PointF> trunkJ;
+    trunkJ.reserve(trunkPts.size());
+    for (size_t i = 0; i < trunkPts.size(); ++i) {
+        const float u = (trunkPts.size() <= 1) ? 0.0f : (float)i / (float)(trunkPts.size() - 1);
+        const float gate = Smoothstep(0.58f, 1.0f, u);
+        trunkJ.push_back(Lerp(trunkPts[i], trunkJRaw[i], gate));
+    }
+    trunkJ = SmoothPolyline(trunkJ, 2);
+
+    const int forkIndex = (int)std::floor((float)trunkJ.size() * 0.70f);
     const Gdiplus::PointF forkBase = trunkJ[ClampInt(forkIndex, 0, (int)trunkJ.size() - 1)];
 
     auto drawPolyline = [&](const std::vector<Gdiplus::PointF>& pts, float wGlow, float aGlow, float wCore, float aCore) {
@@ -227,7 +343,7 @@ inline void DrawBranchTendrils(Gdiplus::Graphics& g, float cx, float cy, float i
         }
     };
 
-    drawPolyline(trunkJ, 7.0f, 0.18f, 2.2f, 0.42f);
+    drawPolyline(trunkJ, 6.0f, 0.14f, 2.0f, 0.34f);
 
     const float spread = Lerp(0.55f, 0.95f, Smoothstep(0.10f, 1.0f, progress));
     const float endA0 = headAng - spread;
@@ -259,13 +375,16 @@ inline void DrawBranchTendrils(Gdiplus::Graphics& g, float cx, float cy, float i
         j.reserve(raw.size());
         for (int k = 0; k < (int)raw.size(); ++k) {
             const float uu = (raw.size() <= 1) ? 0.0f : (float)k / (float)(raw.size() - 1);
-            const float aamp = (0.6f + 2.2f * uu) * (0.6f + 0.6f * progress);
-            const float ww = (float)sin(timeSec * 9.5f + uu * 12.0f + (seedsCount > 0 ? seeds[(k + i) % seedsCount] : 0.0f));
+            // "Silky" tendrils: less jagged than lightning (lower amp/freq, stronger near endpoints).
+            const float tailGate = Smoothstep(0.35f, 1.0f, uu);
+            const float aamp = (0.35f + 1.25f * uu) * (0.55f + 0.45f * progress) * tailGate;
+            const float ww = (float)sin(timeSec * 7.0f + uu * 9.0f + (seedsCount > 0 ? seeds[(k + i) % seedsCount] : 0.0f));
             const Gdiplus::PointF nn = PolyNormal(raw, k);
             j.push_back(Gdiplus::PointF(raw[k].X + nn.X * ww * aamp, raw[k].Y + nn.Y * ww * aamp));
         }
+        j = SmoothPolyline(j, 1);
 
-        drawPolyline(j, 5.5f, 0.18f, 1.8f, 0.42f);
+        drawPolyline(j, 4.8f, 0.14f, 1.6f, 0.34f);
 
         // Endpoint dot (glow + aura).
         const float dotR = 2.2f + 2.4f * (0.35f + 0.65f * progress);
@@ -306,8 +425,8 @@ inline void DrawWovenBand(Gdiplus::Graphics& g, float cx, float cy, float R, flo
     const float progress = Clamp01(progress01);
     if (progress <= 0.0f) return;
 
-    // Concept tweak: keep the tail anchored at 12 o'clock (kStartAng) so the weave does not look
-    // like a fixed-length segment sliding around the ring. Brightness still concentrates near head.
+    // Keep the tail anchored at 12 o'clock, but avoid a "single hot patch" look:
+    // full segment stays faintly readable while the head region is significantly brighter.
     const float energyFade = Smoothstep(0.05f, 0.20f, progress);
     const float u0 = kStartAng;
     const float u1 = headAng;
@@ -356,8 +475,12 @@ inline void DrawWovenBand(Gdiplus::Graphics& g, float cx, float cy, float R, flo
             const Vec3 B = P(uB);
             const float z = (A.z + B.z) * 0.5f;
 
-            const float headBoost = 0.55f + 0.45f * t0;
-            const float a01 = (0.14f + 0.62f * headBoost) * (0.35f + 0.65f * energyFade);
+            const float headBoost = 0.50f + 0.50f * t0;
+            const float nearHead = Smoothstep(0.58f, 1.0f, t0);
+            const float nearHeadPow = nearHead * nearHead;
+            const float baseTail = 0.20f + 0.26f * Smoothstep(0.0f, 0.85f, t0);
+            const float focus = (0.12f + 0.76f * headBoost) * nearHeadPow;
+            const float a01 = (baseTail + focus) * (0.34f + 0.66f * energyFade);
 
             const float scale = 1.0f + (z / (R * 0.20f)) * 0.07f;
             const Gdiplus::PointF a(cx + A.x * scale, cy + A.y * scale);
@@ -396,10 +519,9 @@ inline void DrawPercentLabel(Gdiplus::Graphics& g, float cx, float cy, float R, 
     const float progress = Clamp01(progress01);
     const int pct = (int)std::round(progress * 100.0f);
 
-    // Clamp around top.
-    // Note: the overlay window is ~220px. Use a tighter clamp to avoid clipping.
-    const float topMin = DegToRad(-120.0f);
-    const float topMax = DegToRad(-60.0f);
+    // Clamp around top while keeping a stronger relation to the head position.
+    const float topMin = DegToRad(-145.0f);
+    const float topMax = DegToRad(-35.0f);
     const float a = std::max(topMin, std::min(topMax, headAng - 0.35f));
 
     const float out = std::max(6.0f, outwardPx);

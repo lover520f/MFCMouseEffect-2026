@@ -54,6 +54,12 @@ inline void DrawGlassRing(Gdiplus::Graphics& g, float cx, float cy, float R, flo
         pen.SetEndCap(Gdiplus::LineCapRound);
         g.DrawEllipse(&pen, x, y, d, d);
     }
+    {
+        Gdiplus::Pen pen(MulAlpha(cyan, 0.045f * a), thick + 20.0f);
+        pen.SetStartCap(Gdiplus::LineCapRound);
+        pen.SetEndCap(Gdiplus::LineCapRound);
+        g.DrawEllipse(&pen, x, y, d, d);
+    }
 
     // Rim highlights.
     {
@@ -79,6 +85,38 @@ inline void DrawGlassRing(Gdiplus::Graphics& g, float cx, float cy, float R, flo
         pen.SetStartCap(Gdiplus::LineCapRound);
         pen.SetEndCap(Gdiplus::LineCapRound);
         g.DrawEllipse(&pen, x, y, d, d);
+    }
+}
+
+inline void DrawStartAnchorPlate(Gdiplus::Graphics& g, float cx, float cy, float R, float startAngRad,
+                                 const Gdiplus::Color& cyan, const Gdiplus::Color& purple, float alpha) {
+    using namespace mousefx::render_utils;
+    const float a = Clamp01(alpha);
+    if (a <= 0.001f) return;
+
+    // Concept detail: a subtle HUD "plate" at the fixed start (12 o'clock).
+    const float plateSweep = 0.18f;
+    const float x = cx - R;
+    const float y = cy - R;
+    const float d = R * 2.0f;
+
+    {
+        Gdiplus::Pen glow(MulAlpha(purple, 0.05f * a), 7.5f);
+        glow.SetStartCap(Gdiplus::LineCapSquare);
+        glow.SetEndCap(Gdiplus::LineCapSquare);
+        g.DrawArc(&glow, x, y, d, d, RadToDeg(startAngRad - plateSweep * 0.5f), RadToDeg(plateSweep));
+    }
+    {
+        Gdiplus::Pen core(MulAlpha(cyan, 0.13f * a), 3.8f);
+        core.SetStartCap(Gdiplus::LineCapSquare);
+        core.SetEndCap(Gdiplus::LineCapSquare);
+        g.DrawArc(&core, x, y, d, d, RadToDeg(startAngRad - plateSweep * 0.5f), RadToDeg(plateSweep));
+    }
+    {
+        Gdiplus::Pen line(MulAlpha(Gdiplus::Color(255, 245, 252, 255), 0.18f * a), 1.2f);
+        line.SetStartCap(Gdiplus::LineCapSquare);
+        line.SetEndCap(Gdiplus::LineCapSquare);
+        g.DrawArc(&line, x, y, d, d, RadToDeg(startAngRad - plateSweep * 0.5f), RadToDeg(plateSweep));
     }
 }
 
@@ -135,11 +173,12 @@ inline void DrawProgressMainArc(Gdiplus::Graphics& g, float cx, float cy, float 
     };
 
     // This is the "readable progress" arc (concept: one end fixed, the other grows to head).
-    // Keep it softer than capsule head, but still clearly visible.
-    arc(16.0f, purple, 0.05f);
-    arc(12.0f, cyan,   0.08f);
-    arc(8.0f,  cyan,   0.14f);
-    arc(3.0f,  Gdiplus::Color(255, 235, 248, 255), 0.55f);
+    // Keep it much softer than the woven band + capsule head.
+    const float coreFade = 1.0f - Smoothstep(0.25f, 0.55f, p); // visible early, subtle later
+    arc(14.0f, purple, 0.025f);
+    arc(10.0f, cyan,   0.040f);
+    arc(6.5f,  cyan,   0.075f);
+    arc(2.6f,  Gdiplus::Color(255, 235, 248, 255), 0.28f * coreFade);
 }
 
 inline void DrawCapsuleHead(Gdiplus::Graphics& g, float cx, float cy, float R, float progress01, float headAngRad,
