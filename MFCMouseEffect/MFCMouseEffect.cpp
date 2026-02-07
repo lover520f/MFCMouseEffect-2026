@@ -27,8 +27,8 @@
 #endif
 
 static void EnableDpiAwarenessForScreenCoords() {
-	// RippleWindow uses screen coordinates from WH_MOUSE_LL. If the process is DPI-unaware,
-	// the coordinate spaces can mismatch on scaled displays and the ripple may appear off-screen.
+	// Overlay host layers use screen coordinates from WH_MOUSE_LL. If the process is DPI-unaware,
+	// the coordinate spaces can mismatch on scaled displays and effects may appear off-screen.
 #ifndef DPI_AWARENESS_CONTEXT
 	DECLARE_HANDLE(DPI_AWARENESS_CONTEXT);
 #endif

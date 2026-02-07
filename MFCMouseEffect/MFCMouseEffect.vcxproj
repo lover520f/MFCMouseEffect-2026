@@ -232,8 +232,6 @@
     <ClInclude Include="MouseFx\Server\WebSettingsServer.h" />
     <ClInclude Include="MouseFx\Effects\RippleEffect.h" />
     <ClInclude Include="MouseFx\Styles\RippleStyle.h" />
-    <ClInclude Include="MouseFx\Windows\RippleWindow.h" />
-    <ClInclude Include="MouseFx\Windows\RippleWindowPool.h" />
     <ClInclude Include="MouseFx\Styles\ThemeStyle.h" />
     <ClInclude Include="MouseFx\Effects\TextEffect.h" />
     <ClInclude Include="MouseFx\Windows\TextWindow.h" />
@@ -283,8 +281,6 @@
     <ClCompile Include="MouseFx\Core\IpcController.cpp" />
     <ClCompile Include="MouseFx\Core\JsonLite.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleEffect.cpp" />
-    <ClCompile Include="MouseFx\Windows\RippleWindow.cpp" />
-    <ClCompile Include="MouseFx\Windows\RippleWindowPool.cpp" />
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />
     <ClCompile Include="MouseFx\Styles\ThemeStyle.cpp" />
     <ClCompile Include="MouseFx\Effects\TextEffect.cpp" />

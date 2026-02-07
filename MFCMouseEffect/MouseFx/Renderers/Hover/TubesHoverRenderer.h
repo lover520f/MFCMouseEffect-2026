@@ -85,7 +85,7 @@ public:
 
         for (int c = 0; c < 3; ++c) {
             auto& chain = chains_[c];
-            // Use global time to avoid resets when RippleWindow loops
+            // Use global time to avoid resets when overlay sessions are restarted
             float time = (float)GetTickCount64() * chain.speed;
 
             for (size_t i = 0; i < chain.nodes.size(); ++i) {

@@ -120,12 +120,6 @@
     <ClInclude Include="MouseFx\Styles\RippleStyle.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Windows\RippleWindow.h">
-      <Filter>头文件\MouseFx</Filter>
-    </ClInclude>
-    <ClInclude Include="MouseFx\Windows\RippleWindowPool.h">
-      <Filter>头文件\MouseFx</Filter>
-    </ClInclude>
     <ClInclude Include="MouseFx\Styles\ThemeStyle.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -228,12 +222,6 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\GlobalMouseHook.cpp">
-      <Filter>源文件\MouseFx</Filter>
-    </ClCompile>
-    <ClCompile Include="MouseFx\Windows\RippleWindow.cpp">
-      <Filter>源文件\MouseFx</Filter>
-    </ClCompile>
-    <ClCompile Include="MouseFx\Windows\RippleWindowPool.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Styles\ThemeStyle.cpp">
