@@ -6,6 +6,7 @@
 #include "MouseFx/Interfaces/ITrailRenderer.h"
 #include "MouseFx/Layers/ParticleTrailOverlayLayer.h"
 #include "MouseFx/Layers/RippleOverlayLayer.h"
+#include "MouseFx/Layers/TextOverlayLayer.h"
 #include "MouseFx/Layers/TrailOverlayLayer.h"
 #include "MouseFx/Windows/OverlayHostWindow.h"
 
@@ -29,6 +30,7 @@ bool OverlayHostService::Initialize() {
 void OverlayHostService::Shutdown() {
     if (!host_) return;
     rippleLayer_ = nullptr;
+    textLayer_ = nullptr;
     host_->Shutdown();
     host_.reset();
 }
@@ -92,10 +94,20 @@ void OverlayHostService::BroadcastRippleCommand(const std::string& cmd, const st
     rippleLayer_->BroadcastCommand(cmd, args);
 }
 
+bool OverlayHostService::ShowText(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config) {
+    TextOverlayLayer* layer = EnsureTextLayer();
+    if (!layer) return false;
+    layer->ShowText(pt, text, color, config);
+    return true;
+}
+
 void OverlayHostService::DetachLayer(IOverlayLayer* layer) {
     if (!host_ || !layer) return;
     if (rippleLayer_ == layer) {
         rippleLayer_ = nullptr;
+    }
+    if (textLayer_ == layer) {
+        textLayer_ = nullptr;
     }
     host_->RemoveLayer(layer);
 }
@@ -105,6 +117,13 @@ RippleOverlayLayer* OverlayHostService::EnsureRippleLayer() {
     auto layer = std::make_unique<RippleOverlayLayer>();
     rippleLayer_ = static_cast<RippleOverlayLayer*>(AttachLayer(std::move(layer)));
     return rippleLayer_;
+}
+
+TextOverlayLayer* OverlayHostService::EnsureTextLayer() {
+    if (textLayer_) return textLayer_;
+    auto layer = std::make_unique<TextOverlayLayer>();
+    textLayer_ = static_cast<TextOverlayLayer*>(AttachLayer(std::move(layer)));
+    return textLayer_;
 }
 
 } // namespace mousefx

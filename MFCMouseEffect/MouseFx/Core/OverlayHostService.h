@@ -16,7 +16,9 @@ class OverlayHostWindow;
 class TrailOverlayLayer;
 class ParticleTrailOverlayLayer;
 class RippleOverlayLayer;
+class TextOverlayLayer;
 struct RenderParams;
+struct TextConfig;
 
 class OverlayHostService final {
 public:
@@ -35,6 +37,7 @@ public:
     bool IsRippleActive(uint64_t id) const;
     void SendRippleCommand(uint64_t id, const std::string& cmd, const std::string& args);
     void BroadcastRippleCommand(const std::string& cmd, const std::string& args);
+    bool ShowText(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config);
     void DetachLayer(IOverlayLayer* layer);
 
 private:
@@ -46,8 +49,10 @@ private:
 
     std::unique_ptr<OverlayHostWindow> host_{};
     RippleOverlayLayer* rippleLayer_ = nullptr;
+    TextOverlayLayer* textLayer_ = nullptr;
 
     RippleOverlayLayer* EnsureRippleLayer();
+    TextOverlayLayer* EnsureTextLayer();
 };
 
 } // namespace mousefx

@@ -222,6 +222,7 @@
     <ClInclude Include="MouseFx\Interfaces\IOverlayLayer.h" />
     <ClInclude Include="MouseFx\Layers\ParticleTrailOverlayLayer.h" />
     <ClInclude Include="MouseFx\Layers\RippleOverlayLayer.h" />
+    <ClInclude Include="MouseFx\Layers\TextOverlayLayer.h" />
     <ClInclude Include="MouseFx\Layers\TrailOverlayLayer.h" />
     <ClInclude Include="MouseFx\Core\IpcController.h" />
     <ClInclude Include="MouseFx\Core\JsonLite.h" />
@@ -294,6 +295,7 @@
     <ClCompile Include="MouseFx\Effects\ParticleTrailEffect.cpp" />
     <ClCompile Include="MouseFx\Layers\ParticleTrailOverlayLayer.cpp" />
     <ClCompile Include="MouseFx\Layers\RippleOverlayLayer.cpp" />
+    <ClCompile Include="MouseFx\Layers\TextOverlayLayer.cpp" />
     <ClCompile Include="MouseFx\Layers\TrailOverlayLayer.cpp" />
     <ClCompile Include="MouseFx\Windows\ParticleTrailWindow.cpp" />
     <ClCompile Include="MouseFx\Windows\OverlayHostWindow.cpp" />
