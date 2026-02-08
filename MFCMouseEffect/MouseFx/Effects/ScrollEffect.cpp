@@ -15,6 +15,10 @@ static float Clamp01(float v) {
     return std::max(0.0f, std::min(1.0f, v));
 }
 
+static uint64_t NowMs() {
+    return GetTickCount64();
+}
+
 ScrollEffect::ScrollEffect(const std::string& themeName, const std::string& rendererName) 
     : currentRendererName_(rendererName) {
     style_ = GetThemePalette(themeName).scroll;
@@ -35,10 +39,47 @@ void ScrollEffect::Shutdown() {
 void ScrollEffect::OnCommand(const std::string& cmd, const std::string& args) {
     if (cmd == "type") {
         currentRendererName_ = args;
+        lastEmitTickMs_ = 0;
+        pendingDelta_ = 0;
+        activeRippleIds_.clear();
+    }
+}
+
+bool ScrollEffect::IsHelixRenderer() const {
+    return ToLowerAscii(currentRendererName_) == "helix";
+}
+
+void ScrollEffect::PruneInactiveRipples(size_t maxActive) {
+    if (activeRippleIds_.empty()) return;
+    auto& host = OverlayHostService::Instance();
+
+    while (!activeRippleIds_.empty() && !host.IsRippleActive(activeRippleIds_.front())) {
+        activeRippleIds_.pop_front();
+    }
+    while (activeRippleIds_.size() > maxActive) {
+        const uint64_t id = activeRippleIds_.front();
+        activeRippleIds_.pop_front();
+        host.StopRipple(id);
     }
 }
 
 void ScrollEffect::OnScroll(const ScrollEvent& event) {
+    int effectiveDelta = event.delta;
+    const bool helixMode = IsHelixRenderer();
+    if (helixMode) {
+        pendingDelta_ += event.delta;
+        const uint64_t now = NowMs();
+        if (lastEmitTickMs_ != 0 && (now - lastEmitTickMs_) < kHelixEmitIntervalMs) {
+            PruneInactiveRipples(kHelixMaxActiveRipples);
+            return;
+        }
+        lastEmitTickMs_ = now;
+        if (pendingDelta_ != 0) {
+            effectiveDelta = pendingDelta_;
+            pendingDelta_ = 0;
+        }
+    }
+
     auto renderer = RendererRegistry::Instance().Create(currentRendererName_);
     if (!renderer) {
         if (currentRendererName_ != "none") {
@@ -53,13 +94,13 @@ void ScrollEffect::OnScroll(const ScrollEvent& event) {
     ev.button = MouseButton::Left;
 
     RenderParams params;
-    const float base = (event.delta >= 0) ? -3.1415926f / 2.0f : 3.1415926f / 2.0f;
+    const float base = (effectiveDelta >= 0) ? -3.1415926f / 2.0f : 3.1415926f / 2.0f;
     if (event.horizontal) {
-        params.directionRad = (event.delta >= 0) ? 0.0f : 3.1415926f;
+        params.directionRad = (effectiveDelta >= 0) ? 0.0f : 3.1415926f;
     } else {
         params.directionRad = base;
     }
-    const float strength = (float)std::abs(event.delta) / 120.0f;
+    const float strength = (float)std::abs(effectiveDelta) / 120.0f;
     params.intensity = Clamp01(0.6f + strength * 0.6f);
     params.loop = false;
     renderer->SetParams(params);
@@ -68,8 +109,15 @@ void ScrollEffect::OnScroll(const ScrollEvent& event) {
     if (isChromatic_) {
         finalStyle = MakeRandomStyle(style_);
     }
+    if (helixMode) {
+        finalStyle.durationMs = std::min<uint32_t>(finalStyle.durationMs, 240u);
+    }
 
-    OverlayHostService::Instance().ShowRipple(ev, finalStyle, std::move(renderer), params);
+    const uint64_t rippleId = OverlayHostService::Instance().ShowRipple(ev, finalStyle, std::move(renderer), params);
+    if (helixMode && rippleId != 0) {
+        activeRippleIds_.push_back(rippleId);
+        PruneInactiveRipples(kHelixMaxActiveRipples);
+    }
 }
 
 } // namespace mousefx

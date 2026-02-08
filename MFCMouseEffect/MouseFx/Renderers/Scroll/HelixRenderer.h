@@ -63,7 +63,7 @@ public:
         const Gdiplus::Color glow = ToGdiPlus(style.glow);
         const Gdiplus::Color white(255, 255, 255, 255);
 
-        const int segments = 64;
+        const int segments = 44;
         const float length = (style.endRadius - style.startRadius) * 2.05f;
         const float radius = style.strokeWidth * 2.2f + 6.2f;
         const float camera = radius * 5.2f;
@@ -157,9 +157,9 @@ public:
 
             // Soft aura
             {
-                const BYTE auraA = ClampByte((int)(s.color.GetA() * 0.30f));
+                const BYTE auraA = ClampByte((int)(s.color.GetA() * 0.24f));
                 Gdiplus::Pen auraPen(Gdiplus::Color(auraA, s.color.GetR(), s.color.GetG(), s.color.GetB()),
-                    (s.width + 2.8f) < 1.0f ? 1.0f : (s.width + 2.8f));
+                    (s.width + 2.1f) < 1.0f ? 1.0f : (s.width + 2.1f));
                 auraPen.SetStartCap(Gdiplus::LineCapRound);
                 auraPen.SetEndCap(Gdiplus::LineCapRound);
                 g.DrawLine(&auraPen, s.x1, s.y1, s.x2, s.y2);

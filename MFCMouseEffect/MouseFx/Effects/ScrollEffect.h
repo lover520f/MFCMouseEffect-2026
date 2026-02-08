@@ -2,6 +2,8 @@
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Styles/RippleStyle.h"
+#include <cstdint>
+#include <deque>
 #include <string>
 
 namespace mousefx {
@@ -21,9 +23,18 @@ public:
     void OnCommand(const std::string& cmd, const std::string& args) override;
 
 private:
+    static constexpr uint64_t kHelixEmitIntervalMs = 14;
+    static constexpr size_t kHelixMaxActiveRipples = 8;
+
+    bool IsHelixRenderer() const;
+    void PruneInactiveRipples(size_t maxActive);
+
     RippleStyle style_{};
     bool isChromatic_ = false;
     std::string currentRendererName_ = "arrow";
+    uint64_t lastEmitTickMs_ = 0;
+    int pendingDelta_ = 0;
+    std::deque<uint64_t> activeRippleIds_{};
 };
 
 } // namespace mousefx
