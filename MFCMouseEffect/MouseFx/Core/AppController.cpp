@@ -33,6 +33,20 @@ static std::string TrimAscii(std::string s) {
     return s.substr(b, e - b);
 }
 
+static std::string ToLowerAscii(std::string s) {
+    for (char& c : s) {
+        if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
+    }
+    return s;
+}
+
+static std::string NormalizeHoldFollowMode(std::string mode) {
+    mode = ToLowerAscii(mode);
+    if (mode == "precise") return "precise";
+    if (mode == "efficient") return "efficient";
+    return "smooth";
+}
+
 static std::wstring Utf8ToWString(const std::string& s) {
     if (s.empty()) return {};
     int len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
@@ -231,6 +245,16 @@ void AppController::SetTextEffectContent(const std::vector<std::wstring>& texts)
     }
 }
 
+void AppController::SetHoldFollowMode(const std::string& mode) {
+    const std::string normalized = NormalizeHoldFollowMode(mode);
+    if (config_.holdFollowMode == normalized) return;
+    config_.holdFollowMode = normalized;
+    PersistConfig();
+    if (!config_.active.hold.empty() && config_.active.hold != "none") {
+        SetEffect(EffectCategory::Hold, config_.active.hold);
+    }
+}
+
 void AppController::SetTrailTuning(const std::string& style, const TrailProfilesConfig& profiles, const TrailRendererParamsConfig& params) {
     config_.trailStyle = style.empty() ? "custom" : style;
     config_.trailProfiles = profiles;
@@ -401,6 +425,10 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
             std::string last = TrimAscii(raw.substr(start));
             if (!last.empty()) texts.push_back(Utf8ToWString(last));
             SetTextEffectContent(texts);
+        }
+
+        if (p.contains("hold_follow_mode") && p["hold_follow_mode"].is_string()) {
+            SetHoldFollowMode(p["hold_follow_mode"].get<std::string>());
         }
 
         // Trail tuning (optional fields).
@@ -585,9 +613,11 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
     } 
     
     if (msg == WM_MFX_MOVE) {
-        POINT pt;
-        pt.x = static_cast<LONG>(wParam);
-        pt.y = static_cast<LONG>(lParam);
+        POINT pt{};
+        if (!hook_.ConsumeLatestMove(pt)) {
+            pt.x = static_cast<LONG>(wParam);
+            pt.y = static_cast<LONG>(lParam);
+        }
         // Dispatch to Trail category effect
         if (auto* effect = GetEffect(EffectCategory::Trail)) {
             effect->OnMouseMove(pt);

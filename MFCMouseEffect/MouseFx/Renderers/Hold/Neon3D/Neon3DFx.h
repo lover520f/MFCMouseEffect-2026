@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <ppl.h>
 
 namespace mousefx {
 namespace neon3d {
@@ -349,8 +350,15 @@ inline void DrawBranchTendrils(Gdiplus::Graphics& g, float cx, float cy, float i
     const float endA0 = headAng - spread;
     const float endA1 = headAng + 0.04f;
 
-    // Branches.
-    for (int i = 0; i < branchCount; ++i) {
+    struct BranchGeometry {
+        float angle = 0.0f;
+        Gdiplus::PointF end{};
+        std::vector<Gdiplus::PointF> points{};
+    };
+
+    auto buildBranch = [&](int i) -> BranchGeometry {
+        BranchGeometry out{};
+
         const float u = (branchCount <= 1) ? 0.0f : (float)i / (float)(branchCount - 1);
         const float a = Lerp(endA0, endA1, u);
         const Gdiplus::PointF end = Polar(cx, cy, innerR, a);
@@ -360,7 +368,8 @@ inline void DrawBranchTendrils(Gdiplus::Graphics& g, float cx, float cy, float i
         float nx = -dy;
         float ny = dx;
         const float nl = std::max(1.0f, (float)std::sqrt(nx * nx + ny * ny));
-        nx /= nl; ny /= nl;
+        nx /= nl;
+        ny /= nl;
 
         const float branchAmp = (10.0f + 18.0f * u) * (0.6f + 0.6f * progress);
         const float wob = (float)sin(timeSec * 7.5f + (seedsCount > 0 ? seeds[(i + 3) % seedsCount] : 0.0f) + u * 9.0f);
@@ -375,33 +384,47 @@ inline void DrawBranchTendrils(Gdiplus::Graphics& g, float cx, float cy, float i
         j.reserve(raw.size());
         for (int k = 0; k < (int)raw.size(); ++k) {
             const float uu = (raw.size() <= 1) ? 0.0f : (float)k / (float)(raw.size() - 1);
-            // "Silky" tendrils: less jagged than lightning (lower amp/freq, stronger near endpoints).
             const float tailGate = Smoothstep(0.35f, 1.0f, uu);
             const float aamp = (0.35f + 1.25f * uu) * (0.55f + 0.45f * progress) * tailGate;
             const float ww = (float)sin(timeSec * 7.0f + uu * 9.0f + (seedsCount > 0 ? seeds[(k + i) % seedsCount] : 0.0f));
             const Gdiplus::PointF nn = PolyNormal(raw, k);
             j.push_back(Gdiplus::PointF(raw[k].X + nn.X * ww * aamp, raw[k].Y + nn.Y * ww * aamp));
         }
-        j = SmoothPolyline(j, 1);
+        out.points = SmoothPolyline(j, 1);
+        out.end = end;
+        out.angle = a;
+        return out;
+    };
 
-        drawPolyline(j, 4.8f, 0.14f, 1.6f, 0.34f);
+    std::vector<BranchGeometry> branches((size_t)branchCount);
+    if (branchCount >= 4) {
+        Concurrency::parallel_for(0, branchCount, [&](int i) {
+            branches[(size_t)i] = buildBranch(i);
+        });
+    } else {
+        for (int i = 0; i < branchCount; ++i) {
+            branches[(size_t)i] = buildBranch(i);
+        }
+    }
 
-        // Endpoint dot (glow + aura).
+    for (int i = 0; i < branchCount; ++i) {
+        const auto& branch = branches[(size_t)i];
+        drawPolyline(branch.points, 4.8f, 0.14f, 1.6f, 0.34f);
+
         const float dotR = 2.2f + 2.4f * (0.35f + 0.65f * progress);
         {
             Gdiplus::SolidBrush b(MulAlpha(Gdiplus::Color(255, 245, 250, 255), 0.92f * alpha));
-            g.FillEllipse(&b, end.X - dotR, end.Y - dotR, dotR * 2.0f, dotR * 2.0f);
+            g.FillEllipse(&b, branch.end.X - dotR, branch.end.Y - dotR, dotR * 2.0f, dotR * 2.0f);
         }
         {
             Gdiplus::SolidBrush b(MulAlpha(purple, 0.18f * alpha));
-            g.FillEllipse(&b, end.X - dotR * 3.2f, end.Y - dotR * 3.2f, dotR * 6.4f, dotR * 6.4f);
+            g.FillEllipse(&b, branch.end.X - dotR * 3.2f, branch.end.Y - dotR * 3.2f, dotR * 6.4f, dotR * 6.4f);
         }
 
-        // Spawn sparks (small, like concept's right-side dots).
         const float spawnChancePerSec = 0.6f * (0.10f + 0.90f * progress);
         if (rng.Next01() < spawnChancePerSec * dtSec) {
             Spark s;
-            s.ang = a + (rng.Next01() - 0.5f) * 0.35f;
+            s.ang = branch.angle + (rng.Next01() - 0.5f) * 0.35f;
             s.rr = innerR + 2.0f;
             s.v = 50.0f + 140.0f * rng.Next01();
             s.life = 0.45f + 0.40f * rng.Next01();

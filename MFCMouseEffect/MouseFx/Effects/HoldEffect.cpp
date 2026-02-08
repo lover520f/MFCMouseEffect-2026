@@ -15,10 +15,12 @@
 #include "MouseFx/Renderers/Hold/TechRingRenderer.h"
 #include "MouseFx/Renderers/Hold/HologramHudRenderer.h"
 #include "MouseFx/Renderers/Hold/HoldNeon3DRenderer.h"
+#include <cmath>
 
 namespace mousefx {
 
-HoldEffect::HoldEffect(const std::string& themeName, const std::string& type) : type_(type) {
+HoldEffect::HoldEffect(const std::string& themeName, const std::string& type, const std::string& followMode)
+    : type_(type), followMode_(ParseFollowMode(followMode)) {
     style_ = GetThemePalette(themeName).hold;
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
 }
@@ -40,6 +42,10 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
 
     holdPoint_ = pt;
     holdButton_ = button;
+    hasSmoothedPoint_ = false;
+    hasLastSentPoint_ = false;
+    lastHoldCommandMs_ = 0;
+    lastEfficientPosMs_ = 0;
     
     ClickEvent ev{};
     ev.pt = pt;
@@ -71,8 +77,52 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
 
 void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
     holdPoint_ = pt;
-    if (currentRippleId_ != 0) {
-        OverlayHostService::Instance().UpdateRipplePosition(currentRippleId_, pt);
+    if (currentRippleId_ == 0) return;
+
+    const uint64_t nowMs = GetTickCount64();
+    POINT outPt = pt;
+    bool shouldUpdatePos = false;
+
+    switch (followMode_) {
+        case FollowMode::Precise:
+            shouldUpdatePos = true;
+            break;
+        case FollowMode::Smooth: {
+            const float alpha = 0.35f;
+            if (!hasSmoothedPoint_) {
+                smoothedX_ = (float)pt.x;
+                smoothedY_ = (float)pt.y;
+                hasSmoothedPoint_ = true;
+            } else {
+                smoothedX_ += ((float)pt.x - smoothedX_) * alpha;
+                smoothedY_ += ((float)pt.y - smoothedY_) * alpha;
+            }
+            outPt.x = (LONG)std::lround(smoothedX_);
+            outPt.y = (LONG)std::lround(smoothedY_);
+            shouldUpdatePos = true;
+            break;
+        }
+        case FollowMode::Efficient:
+            if (nowMs - lastEfficientPosMs_ >= 20) {
+                lastEfficientPosMs_ = nowMs;
+                shouldUpdatePos = true;
+            }
+            break;
+    }
+
+    if (shouldUpdatePos) {
+        if (!hasLastSentPoint_ || !IsSamePoint(lastSentPoint_, outPt)) {
+            OverlayHostService::Instance().UpdateRipplePosition(currentRippleId_, outPt);
+            lastSentPoint_ = outPt;
+            hasLastSentPoint_ = true;
+        }
+    }
+
+    uint64_t cmdIntervalMs = 0;
+    if (followMode_ == FollowMode::Smooth) cmdIntervalMs = 8;
+    if (followMode_ == FollowMode::Efficient) cmdIntervalMs = 20;
+    if (cmdIntervalMs == 0 || nowMs - lastHoldCommandMs_ >= cmdIntervalMs) {
+        lastHoldCommandMs_ = nowMs;
         char buf[32]{};
         snprintf(buf, sizeof(buf), "%u", (uint32_t)durationMs);
         OverlayHostService::Instance().SendRippleCommand(currentRippleId_, "hold_ms", buf);
@@ -85,10 +135,25 @@ void HoldEffect::OnHoldEnd() {
         currentRippleId_ = 0;
     }
     holdButton_ = 0;
+    hasSmoothedPoint_ = false;
+    hasLastSentPoint_ = false;
+    lastHoldCommandMs_ = 0;
+    lastEfficientPosMs_ = 0;
 }
 
 void HoldEffect::OnCommand(const std::string& cmd, const std::string& args) {
     OverlayHostService::Instance().BroadcastRippleCommand(cmd, args);
+}
+
+HoldEffect::FollowMode HoldEffect::ParseFollowMode(const std::string& mode) {
+    std::string value = ToLowerAscii(mode);
+    if (value == "precise") return FollowMode::Precise;
+    if (value == "efficient") return FollowMode::Efficient;
+    return FollowMode::Smooth;
+}
+
+bool HoldEffect::IsSamePoint(const POINT& a, const POINT& b) {
+    return a.x == b.x && a.y == b.y;
 }
 
 } // namespace mousefx

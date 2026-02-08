@@ -35,6 +35,7 @@ bool GlobalMouseHook::Start(HWND dispatchHwnd) {
     dispatchHwnd_ = dispatchHwnd;
     instance_ = this;
     lastError_ = ERROR_SUCCESS;
+    movePending_.store(false, std::memory_order_release);
 
     hook_ = SetWindowsHookExW(WH_MOUSE_LL, &GlobalMouseHook::HookProc, GetModuleHandleW(nullptr), 0);
     if (!hook_) {
@@ -52,10 +53,20 @@ void GlobalMouseHook::Stop() {
         hook_ = nullptr;
     }
     dispatchHwnd_ = nullptr;
+    movePending_.store(false, std::memory_order_release);
     if (instance_ == this) {
         instance_ = nullptr;
     }
     lastError_ = ERROR_SUCCESS;
+}
+
+bool GlobalMouseHook::ConsumeLatestMove(POINT& outPt) {
+    if (!movePending_.exchange(false, std::memory_order_acq_rel)) {
+        return false;
+    }
+    outPt.x = latestMoveX_.load(std::memory_order_acquire);
+    outPt.y = latestMoveY_.load(std::memory_order_acquire);
+    return true;
 }
 
 LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam) {
@@ -94,8 +105,13 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
         case WM_MOUSEMOVE:
             if (s) {
                 const POINT pt = NormalizeScreenPoint(s->pt);
-                PostMessageW(instance_->dispatchHwnd_, WM_MFX_MOVE, 
-                    (WPARAM)pt.x, (LPARAM)pt.y);
+                instance_->latestMoveX_.store(pt.x, std::memory_order_release);
+                instance_->latestMoveY_.store(pt.y, std::memory_order_release);
+                if (!instance_->movePending_.exchange(true, std::memory_order_acq_rel)) {
+                    if (!PostMessageW(instance_->dispatchHwnd_, WM_MFX_MOVE, 0, 0)) {
+                        instance_->movePending_.store(false, std::memory_order_release);
+                    }
+                }
             }
             break;
         case WM_MOUSEWHEEL:

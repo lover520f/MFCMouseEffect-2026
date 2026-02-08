@@ -132,6 +132,9 @@ struct EffectConfig {
     // UI language for non-background settings window (persisted).
     // Values: "zh-CN" (default) or "en-US".
     std::string uiLanguage = "zh-CN";
+    // Hold follow strategy:
+    // precise | smooth | efficient
+    std::string holdFollowMode = "smooth";
     ActiveEffectConfig active;
     
     RippleConfig ripple;

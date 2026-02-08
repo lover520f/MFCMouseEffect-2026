@@ -50,6 +50,8 @@
       section_trail_tuning: "Trail Tuning",
       label_language: "Language",
       label_theme: "Theme",
+      label_hold_follow_mode: "Hold Tracking",
+      tip_hold_follow_mode: "Controls how tightly hold effects track cursor position. Precise is most responsive; smooth is balanced; performance first lowers CPU pressure.",
       label_click: "Click",
       label_trail: "Trail",
       label_scroll: "Scroll",
@@ -120,6 +122,8 @@
       section_trail_tuning: "\u62d6\u5c3e\u8c03\u53c2",
       label_language: "\u8bed\u8a00",
       label_theme: "\u4e3b\u9898",
+      label_hold_follow_mode: "\u957f\u6309\u8ddf\u968f\u6a21\u5f0f",
+      tip_hold_follow_mode: "\u63a7\u5236\u957f\u6309\u7279\u6548\u4e0e\u9f20\u6807\u7684\u540c\u6b65\u7b56\u7565\u3002\u7cbe\u51c6\u8ddf\u968f\u54cd\u5e94\u6700\u5feb\uff1b\u5e73\u6ed1\u8ddf\u968f\u66f4\u5747\u8861\uff1b\u6027\u80fd\u4f18\u5148\u80fd\u964d\u4f4eCPU\u538b\u529b\u3002",
       label_click: "\u70b9\u51fb",
       label_trail: "\u62d6\u5c3e",
       label_scroll: "\u6eda\u8f6e",
@@ -370,6 +374,7 @@
 
     fillSelect(el('ui_language'), schema.ui_languages, st.ui_language);
     fillSelect(el('theme'), schema.themes, st.theme);
+    fillSelect(el('hold_follow_mode'), schema.hold_follow_modes, st.hold_follow_mode || 'smooth');
     fillSelect(el('click'), schema.effects?.click, st.active?.click);
     fillSelect(el('trail'), schema.effects?.trail, st.active?.trail);
     fillSelect(el('scroll'), schema.effects?.scroll, st.active?.scroll);
@@ -404,6 +409,7 @@
     return {
       ui_language: el('ui_language').value,
       theme: el('theme').value,
+      hold_follow_mode: el('hold_follow_mode').value,
       active: {
         click: el('click').value,
         trail: el('trail').value,

@@ -54,6 +54,8 @@ public:
     
     // Set custom text content for Text Effect
     void SetTextEffectContent(const std::vector<std::wstring>& texts);
+    // Set hold follow mode (precise|smooth|efficient).
+    void SetHoldFollowMode(const std::string& mode);
 
     // Advanced tuning: trail history + renderer params (persisted).
     void SetTrailTuning(const std::string& style, const TrailProfilesConfig& profiles, const TrailRendererParamsConfig& params);

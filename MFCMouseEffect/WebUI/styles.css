@@ -101,6 +101,31 @@ body.mfx-modal-open{overflow:hidden}
 .card h3{margin:0 0 10px;font-size:14px;font-weight:700}
 .grid{display:grid;grid-template-columns:160px 1fr;gap:10px 12px;align-items:center}
 label{font-size:12px;color:var(--muted)}
+.label-with-tip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px
+}
+.info-badge{
+  width:16px;
+  height:16px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.28);
+  color:#dce9ff;
+  font-size:11px;
+  font-weight:700;
+  line-height:1;
+  cursor:help;
+  background:rgba(26,38,62,.9)
+}
+.info-badge:hover{
+  border-color:rgba(77,248,255,.55);
+  color:#ffffff;
+  box-shadow:0 0 0 2px rgba(77,248,255,.14)
+}
 select,input,textarea{
   width:100%;
   box-sizing:border-box;

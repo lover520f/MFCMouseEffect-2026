@@ -245,6 +245,12 @@ std::string WebSettingsServer::BuildSchemaJson() const {
         {{"value","game"},{"label", LabelByLang(L"\u6e38\u620f\u611f", L"Game", lang)}}
     });
 
+    out["hold_follow_modes"] = json::array({
+        {{"value","precise"},{"label", LabelByLang(L"\u7cbe\u51c6\u8ddf\u968f", L"Precise Tracking", lang)}},
+        {{"value","smooth"},{"label", LabelByLang(L"\u5e73\u6ed1\u8ddf\u968f", L"Smooth Tracking", lang)}},
+        {{"value","efficient"},{"label", LabelByLang(L"\u6027\u80fd\u4f18\u5148", L"Performance First", lang)}}
+    });
+
     auto build = [&](const EffectOption* (*fn)(size_t&), const char* key) {
         size_t n = 0;
         const EffectOption* opts = fn(n);
@@ -273,6 +279,7 @@ std::string WebSettingsServer::BuildStateJson() const {
     json out;
     out["ui_language"] = EnsureUtf8(cfg.uiLanguage);
     out["theme"] = EnsureUtf8(cfg.theme);
+    out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
     out["active"] = {
         {"click", EnsureUtf8(cfg.active.click)},
         {"trail", EnsureUtf8(cfg.active.trail)},

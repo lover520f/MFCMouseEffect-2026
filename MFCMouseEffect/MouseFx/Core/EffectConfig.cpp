@@ -80,6 +80,13 @@ static std::string ToLowerAsciiLocal(std::string s) {
     return s;
 }
 
+static std::string NormalizeHoldFollowMode(std::string s) {
+    s = ToLowerAsciiLocal(s);
+    if (s == "precise") return "precise";
+    if (s == "efficient") return "efficient";
+    return "smooth";
+}
+
 static TrailHistoryProfile SanitizeTrailHistoryProfile(TrailHistoryProfile p) {
     if (p.durationMs < 80) p.durationMs = 80;
     if (p.durationMs > 2000) p.durationMs = 2000;
@@ -211,6 +218,7 @@ EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
     cfg.defaultEffect = GetOr<std::string>(root, "default_effect", cfg.defaultEffect);
     cfg.theme = GetOr<std::string>(root, "theme", cfg.theme);
     cfg.uiLanguage = GetOr<std::string>(root, "ui_language", cfg.uiLanguage);
+    cfg.holdFollowMode = NormalizeHoldFollowMode(GetOr<std::string>(root, "hold_follow_mode", cfg.holdFollowMode));
     if (root.contains("active_effects") && root["active_effects"].is_object()) {
         const auto& a = root["active_effects"];
         cfg.active.click = GetOr<std::string>(a, "click", cfg.active.click);
@@ -375,6 +383,7 @@ bool EffectConfig::Save(const std::wstring& exeDir, const EffectConfig& cfg) {
     root["default_effect"] = cfg.defaultEffect;
     root["theme"] = cfg.theme;
     root["ui_language"] = cfg.uiLanguage;
+    root["hold_follow_mode"] = NormalizeHoldFollowMode(cfg.holdFollowMode);
     root["trail_style"] = cfg.trailStyle;
 
     // Trail history profiles (strategy-based trail renderers)

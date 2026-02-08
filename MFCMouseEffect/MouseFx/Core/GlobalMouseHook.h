@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <cstdint>
+#include <atomic>
 
 namespace mousefx {
 
@@ -28,6 +29,7 @@ public:
     bool Start(HWND dispatchHwnd);
     void Stop();
     DWORD LastError() const { return lastError_; }
+    bool ConsumeLatestMove(POINT& outPt);
 
 private:
     static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -36,6 +38,9 @@ private:
     HHOOK hook_ = nullptr;
     HWND dispatchHwnd_ = nullptr;
     DWORD lastError_ = ERROR_SUCCESS;
+    std::atomic<bool> movePending_{false};
+    std::atomic<LONG> latestMoveX_{0};
+    std::atomic<LONG> latestMoveY_{0};
 };
 
 } // namespace mousefx
