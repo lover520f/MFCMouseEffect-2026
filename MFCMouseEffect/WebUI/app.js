@@ -29,7 +29,20 @@
       stopped_blocked: "Server is stopped. This action is unavailable. Reopen settings from the tray.",
       unauthorized_blocked: "Token expired. This action is unavailable. Reopen settings from the tray.",
       dialog_title_notice: "Connection lost",
+      dialog_title_confirm: "Please confirm",
       dialog_btn_ok: "Got it",
+      dialog_btn_cancel: "Cancel",
+      dialog_btn_confirm_reset: "Reset",
+      status_loading: "Loading...",
+      status_reloading: "Reloading config...",
+      status_applying: "Applying...",
+      status_applied: "Applied.",
+      status_resetting: "Resetting...",
+      status_reload_failed: "Reload failed: ",
+      status_save_failed: "Save failed: ",
+      status_reset_failed: "Reset failed: ",
+      status_stop_failed: "Stop failed: ",
+      status_load_failed: "Load failed: ",
       status_ready: "Ready.",
       section_general: "General",
       section_effects: "Active Effects",
@@ -86,7 +99,20 @@
       stopped_blocked: "\u670d\u52a1\u5df2\u5173\u95ed\uff0c\u65e0\u6cd5\u6267\u884c\u8be5\u64cd\u4f5c\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u3002",
       unauthorized_blocked: "Token \u5df2\u5931\u6548\uff0c\u65e0\u6cd5\u6267\u884c\u8be5\u64cd\u4f5c\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u3002",
       dialog_title_notice: "\u8fde\u63a5\u5f02\u5e38",
+      dialog_title_confirm: "\u8bf7\u786e\u8ba4",
       dialog_btn_ok: "\u6211\u77e5\u9053\u4e86",
+      dialog_btn_cancel: "\u53d6\u6d88",
+      dialog_btn_confirm_reset: "\u786e\u8ba4\u91cd\u7f6e",
+      status_loading: "\u6b63\u5728\u52a0\u8f7d...",
+      status_reloading: "\u6b63\u5728\u91cd\u8f7d\u914d\u7f6e...",
+      status_applying: "\u6b63\u5728\u5e94\u7528...",
+      status_applied: "\u5df2\u5e94\u7528\u3002",
+      status_resetting: "\u6b63\u5728\u6062\u590d\u9ed8\u8ba4...",
+      status_reload_failed: "\u91cd\u8f7d\u5931\u8d25\uff1a",
+      status_save_failed: "\u5e94\u7528\u5931\u8d25\uff1a",
+      status_reset_failed: "\u6062\u590d\u5931\u8d25\uff1a",
+      status_stop_failed: "\u5173\u95ed\u76d1\u542c\u5931\u8d25\uff1a",
+      status_load_failed: "\u52a0\u8f7d\u5931\u8d25\uff1a",
       status_ready: "\u5c31\u7eea\u3002",
       section_general: "\u4e00\u822c",
       section_effects: "\u7279\u6548\u9009\u62e9",
@@ -170,6 +196,20 @@
     statusEl.className = cls;
   }
 
+  function currentText(){
+    return I18N[pickLang()] || I18N["en-US"];
+  }
+
+  function statusText(key, fallback){
+    const t = currentText();
+    return t[key] || fallback;
+  }
+
+  function statusError(prefixKey, fallbackPrefix, error){
+    const msg = (error && error.message) ? error.message : String(error || '');
+    return statusText(prefixKey, fallbackPrefix) + msg;
+  }
+
   function setActionButtonsEnabled(enabled){
     ['btnReload', 'btnReset', 'btnStop', 'btnSave'].forEach((id) => {
       const node = el(id);
@@ -178,7 +218,7 @@
   }
 
   function blockActionWhenDisconnected(){
-    const t = I18N[pickLang()] || I18N["en-US"];
+    const t = currentText();
     if (connectionState === 'online' || connectionState === 'unknown') return false;
     const showBlockedDialog = (message) => {
       if (window.MfxDialog && typeof window.MfxDialog.showNotice === 'function') {
@@ -206,7 +246,7 @@
   function markConnection(next, force){
     if (!force && connectionState === next) return;
     connectionState = next;
-    const t = I18N[pickLang()] || I18N["en-US"];
+    const t = currentText();
     if (next === 'online') {
       setActionButtonsEnabled(true);
       setStatus(t.status_ready || 'Ready.', 'ok');
@@ -322,7 +362,7 @@
   }
 
   async function reload(){
-    setStatus('Loading...');
+    setStatus(statusText('status_loading', 'Loading...'));
     const schema = await apiGet('/api/schema');
     const st = await apiGet('/api/state');
 
@@ -403,46 +443,56 @@
   el('btnReload').addEventListener('click', async () => {
     try{
       if (blockActionWhenDisconnected()) return;
-      setStatus('Reloading config...');
+      setStatus(statusText('status_reloading', 'Reloading config...'));
       await apiPost('/api/reload', {});
       await reload();
       scrollToHash();
     }catch(e){
       if (e && e.code === 'unauthorized') return;
-      setStatus('Reload failed: ' + e.message, 'warn');
+      setStatus(statusError('status_reload_failed', 'Reload failed: ', e), 'warn');
     }
   });
 
   el('btnSave').addEventListener('click', async () => {
     try{
       if (blockActionWhenDisconnected()) return;
-      setStatus('Applying...');
+      setStatus(statusText('status_applying', 'Applying...'));
       const st = buildState();
       const res = await apiPost('/api/state', st);
       if (res.ok) {
-        setStatus('Applied.', 'ok');
+        setStatus(statusText('status_applied', 'Applied.'), 'ok');
       } else {
         setStatus('Failed: ' + (res.error || ''), 'warn');
       }
     }catch(e){
       if (e && e.code === 'unauthorized') return;
-      setStatus('Save failed: ' + e.message, 'warn');
+      setStatus(statusError('status_save_failed', 'Save failed: ', e), 'warn');
     }
   });
 
   el('btnReset').addEventListener('click', async () => {
     try{
       if (blockActionWhenDisconnected()) return;
-      const lang = el('ui_language').value || 'en-US';
-      const t = I18N[lang] || I18N["en-US"];
-      if (!confirm(t.confirm_reset)) return;
-      setStatus('Resetting...');
+      const t = currentText();
+      let confirmed = false;
+      if (window.MfxDialog && typeof window.MfxDialog.showConfirm === 'function') {
+        confirmed = await window.MfxDialog.showConfirm({
+          title: t.dialog_title_confirm || 'Please confirm',
+          message: t.confirm_reset,
+          okText: t.dialog_btn_confirm_reset || 'Reset',
+          cancelText: t.dialog_btn_cancel || 'Cancel'
+        });
+      } else {
+        confirmed = confirm(t.confirm_reset);
+      }
+      if (!confirmed) return;
+      setStatus(statusText('status_resetting', 'Resetting...'));
       const res = await apiPost('/api/reset', {});
       if (!res.ok) throw new Error(res.error || 'reset failed');
       await reload();
     }catch(e){
       if (e && e.code === 'unauthorized') return;
-      setStatus('Reset failed: ' + e.message, 'warn');
+      setStatus(statusError('status_reset_failed', 'Reset failed: ', e), 'warn');
     }
   });
 
@@ -454,7 +504,7 @@
       markConnection('stopped');
     }catch(e){
       if (e && e.code === 'unauthorized') return;
-      setStatus('Stop failed: ' + e.message, 'warn');
+      setStatus(statusError('status_stop_failed', 'Stop failed: ', e), 'warn');
     }
   });
 

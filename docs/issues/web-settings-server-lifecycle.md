@@ -47,6 +47,13 @@
   - Top-left banner is still kept, so users get both persistent status and immediate click feedback.
   - Replaced native browser `alert` with a themed dialog (`dialog.js`) to match WebUI style.
 
+## 2026-02-08 Update 3: Dialog Consistency + Localized Runtime Status
+- Interaction consistency:
+  - "Reset to defaults" confirmation now uses the themed confirm dialog instead of browser-native `confirm`.
+  - Removed mixed usage of native/system dialogs and themed dialogs in the web settings flow.
+- Text consistency:
+  - Runtime status messages (`Loading`, `Applying`, `Reload failed`, etc.) are now localized and switch with UI language.
+
 ## Manual Test Checklist
 - Leave settings idle past the timeout, then open settings again -> no crash.
 - Open settings twice; the first tab should fail API calls (unauthorized), the newest should work.
