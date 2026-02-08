@@ -39,6 +39,7 @@ private:
     void UpdateLayered();
     void EnsureSurface(int w, int h);
     void DestroySurface();
+    void SyncBoundsWithVirtualScreen(bool forceMove);
     void StartFrameLoop();
     void StopFrameLoop();
     void EnsureTopmostZOrder(bool force = false);
@@ -51,6 +52,10 @@ private:
     void* bits_ = nullptr;
     int width_ = 0;
     int height_ = 0;
+    int virtualX_ = 0;
+    int virtualY_ = 0;
+    int virtualW_ = 0;
+    int virtualH_ = 0;
     bool ticking_ = false;
     uint64_t lastTopmostEnsureMs_ = 0;
     HWINEVENTHOOK foregroundHook_ = nullptr;

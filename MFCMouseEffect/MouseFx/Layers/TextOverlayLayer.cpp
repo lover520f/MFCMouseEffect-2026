@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "TextOverlayLayer.h"
+#include "MouseFx/Core/OverlayCoordSpace.h"
 
 #include <algorithm>
 #include <cmath>
@@ -120,9 +121,6 @@ void TextOverlayLayer::Update(uint64_t nowMs) {
 void TextOverlayLayer::Render(Gdiplus::Graphics& graphics) {
     if (instances_.empty()) return;
 
-    const int virtualX = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    const int virtualY = GetSystemMetrics(SM_YVIRTUALSCREEN);
-
     for (const auto& instance : instances_) {
         if (!instance.active) continue;
 
@@ -163,8 +161,9 @@ void TextOverlayLayer::Render(Gdiplus::Graphics& graphics) {
         const int fontStyle = emojiOnly ? Gdiplus::FontStyleRegular : Gdiplus::FontStyleBold;
         Gdiplus::Font font(family.c_str(), fontSizePt, fontStyle, Gdiplus::UnitPoint);
 
-        const float x = (float)(instance.startPt.x - virtualX) + xOffset;
-        const float y = (float)(instance.startPt.y - virtualY) - yOffset;
+        const POINT startPt = ScreenToOverlayPoint(instance.startPt);
+        const float x = (float)startPt.x + xOffset;
+        const float y = (float)startPt.y - yOffset;
         const Gdiplus::RectF layout(x - 120.0f, y - 60.0f, 240.0f, 120.0f);
         Gdiplus::StringFormat format;
         format.SetAlignment(Gdiplus::StringAlignmentCenter);

@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "ParticleTrailOverlayLayer.h"
+#include "MouseFx/Core/OverlayCoordSpace.h"
 
 #include <algorithm>
 #include <cmath>
@@ -109,15 +110,14 @@ Gdiplus::Color ParticleTrailOverlayLayer::HslToRgb(float h, float s, float l, BY
 }
 
 void ParticleTrailOverlayLayer::Emit(const POINT& pt, int count) {
-    const int xOffset = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    const int yOffset = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    const POINT localPt = ScreenToOverlayPoint(pt);
 
     globalHue_ = std::fmod(globalHue_ + 5.0f, 360.0f);
 
     for (int i = 0; i < count; ++i) {
         Particle particle{};
-        particle.x = (float)pt.x - (float)xOffset;
-        particle.y = (float)pt.y - (float)yOffset;
+        particle.x = (float)localPt.x;
+        particle.y = (float)localPt.y;
 
         const float angle = (float)(rand() % 360) * 3.14159f / 180.0f;
         const float speed = (float)(rand() % 100) / 30.0f + 0.5f;

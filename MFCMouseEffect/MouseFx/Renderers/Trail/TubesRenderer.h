@@ -1,5 +1,6 @@
 #pragma once
 #include "../../Interfaces/ITrailRenderer.h"
+#include "MouseFx/Core/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include <vector>
 #include <cmath>
@@ -96,9 +97,6 @@ public:
         
         if (fadeAlpha_ <= 0.0f) return; // Completely gone
 
-        int x_offset = GetSystemMetrics(SM_XVIRTUALSCREEN);
-        int y_offset = GetSystemMetrics(SM_YVIRTUALSCREEN);
-
         g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
         // 2. Update Physics for each chain
@@ -182,8 +180,10 @@ public:
                     radius *= (fadeAlpha_ / 255.0f);
                 } 
                 
-                float renderX = node.x - x_offset;
-                float renderY = node.y - y_offset;
+                const POINT nodePt{(LONG)std::lround(node.x), (LONG)std::lround(node.y)};
+                const POINT localPt = ScreenToOverlayPoint(nodePt);
+                float renderX = (float)localPt.x;
+                float renderY = (float)localPt.y;
                 
                 // --- Helix/Weave Offset ---
                 // To prevent them from merging into a single line, we add a perpendicular or radial offset.

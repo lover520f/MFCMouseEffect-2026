@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/ITrailRenderer.h"
+#include "MouseFx/Core/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include "MouseFx/Utils/TrailMath.h"
 #include "MouseFx/Utils/XorShift.h"
@@ -29,12 +30,11 @@ public:
         if (fadeEnd <= fadeStart) fadeEnd = fadeStart + 1;
         const float idleFactor = trail_math::IdleFadeFactor(now, points.back().addedTime, fadeStart, fadeEnd);
 
-        const int x_offset = GetSystemMetrics(SM_XVIRTUALSCREEN);
-        const int y_offset = GetSystemMetrics(SM_YVIRTUALSCREEN);
-
         for (size_t i = 0; i + 1 < points.size(); ++i) {
             const auto& p1 = points[i];
             const auto& p2 = points[i + 1];
+            const POINT lp1 = ScreenToOverlayPoint(p1.pt);
+            const POINT lp2 = ScreenToOverlayPoint(p2.pt);
 
             const uint64_t age = now - p1.addedTime;
             float life = 1.0f - ((float)age / (float)durationMs_);
@@ -45,10 +45,10 @@ public:
             uint32_t seed = prng::Mix32((uint32_t)frameKey ^ (uint32_t)(i * 0x9E3779B9u));
             prng::XorShift32 rng(seed);
 
-            float x1 = (float)p1.pt.x - (float)x_offset;
-            float y1 = (float)p1.pt.y - (float)y_offset;
-            float x2 = (float)p2.pt.x - (float)x_offset;
-            float y2 = (float)p2.pt.y - (float)y_offset;
+            float x1 = (float)lp1.x;
+            float y1 = (float)lp1.y;
+            float x2 = (float)lp2.x;
+            float y2 = (float)lp2.y;
 
             float dx = x2 - x1;
             float dy = y2 - y1;

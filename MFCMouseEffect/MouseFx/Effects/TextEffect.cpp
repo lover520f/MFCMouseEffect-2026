@@ -56,6 +56,17 @@ TextEffect::~TextEffect() {
 }
 
 bool TextEffect::Initialize() {
+    bool hasEmojiText = false;
+    for (const auto& item : config_.texts) {
+        if (HasEmojiStarter(item)) {
+            hasEmojiText = true;
+            break;
+        }
+    }
+    if (hasEmojiText) {
+        if (!pool_.Initialize(8)) return false;
+    }
+    (void)OverlayHostService::Instance().Initialize();
     return true;
 }
 
@@ -77,9 +88,8 @@ void TextEffect::OnClick(const ClickEvent& event) {
         color = config_.colors[RandomRange(0, (int)config_.colors.size() - 1)];
     }
 
-    // Keep emoji support parity with legacy D2D text path.
     if (HasEmojiStarter(text)) {
-        if (!pool_.Initialize(15)) return;
+        if (!pool_.Initialize(8)) return;
         pool_.ShowText(event.pt, text, color, config_);
         return;
     }
@@ -88,7 +98,7 @@ void TextEffect::OnClick(const ClickEvent& event) {
         return;
     }
 
-    if (!pool_.Initialize(15)) return;
+    if (!pool_.Initialize(8)) return;
     pool_.ShowText(event.pt, text, color, config_);
 }
 

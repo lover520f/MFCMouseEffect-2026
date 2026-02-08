@@ -102,6 +102,9 @@
     <ClInclude Include="MouseFx\Core\OverlayHostService.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\OverlayCoordSpace.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\GlobalMouseHook.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -210,6 +213,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\OverlayHostService.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\OverlayCoordSpace.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Server\HttpServer.cpp">

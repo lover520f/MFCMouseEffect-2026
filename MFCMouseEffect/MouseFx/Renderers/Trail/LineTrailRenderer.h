@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/ITrailRenderer.h"
+#include "MouseFx/Core/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include "MouseFx/Utils/TrailMath.h"
 #include <cmath>
@@ -26,12 +27,11 @@ public:
         if (fadeEnd <= fadeStart) fadeEnd = fadeStart + 1;
         const float idleFactor = trail_math::IdleFadeFactor(now, points.back().addedTime, fadeStart, fadeEnd);
 
-        const int x_offset = GetSystemMetrics(SM_XVIRTUALSCREEN);
-        const int y_offset = GetSystemMetrics(SM_YVIRTUALSCREEN);
-
         for (size_t i = 0; i + 1 < points.size(); ++i) {
             const auto& p1 = points[i];
             const auto& p2 = points[i + 1];
+            const POINT lp1 = ScreenToOverlayPoint(p1.pt);
+            const POINT lp2 = ScreenToOverlayPoint(p2.pt);
 
             const uint64_t age = now - p1.addedTime;
             float life = 1.0f - ((float)age / (float)durationMs_);
@@ -52,10 +52,10 @@ public:
             pen.SetLineJoin(Gdiplus::LineJoinRound);
 
             g.DrawLine(&pen,
-                       (int)p1.pt.x - x_offset,
-                       (int)p1.pt.y - y_offset,
-                       (int)p2.pt.x - x_offset,
-                       (int)p2.pt.y - y_offset);
+                       lp1.x,
+                       lp1.y,
+                       lp2.x,
+                       lp2.y);
         }
     }
 

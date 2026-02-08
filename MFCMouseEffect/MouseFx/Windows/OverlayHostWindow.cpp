@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "OverlayHostWindow.h"
+#include "MouseFx/Core/OverlayCoordSpace.h"
 
 #include <algorithm>
 
@@ -61,10 +62,12 @@ bool OverlayHostWindow::Create() {
         GetModuleHandleW(nullptr),
         this);
     if (!hwnd_) return false;
+    SetOverlayWindowHandle(hwnd_);
 
     EnsureSurface(w, h);
     ShowWindow(hwnd_, SW_HIDE);
     RegisterForegroundHook();
+    SyncBoundsWithVirtualScreen(true);
     EnsureTopmostZOrder(true);
     return true;
 }
@@ -78,6 +81,8 @@ void OverlayHostWindow::Shutdown() {
     }
     DestroySurface();
     layers_.clear();
+    ClearOverlayWindowHandle();
+    ClearOverlayOriginOverride();
 }
 
 IOverlayLayer* OverlayHostWindow::AddLayer(std::unique_ptr<IOverlayLayer> layer) {
@@ -137,7 +142,13 @@ LRESULT OverlayHostWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     case WM_DESTROY:
         StopFrameLoop();
         UnregisterForegroundHook();
+        ClearOverlayWindowHandle();
+        ClearOverlayOriginOverride();
         break;
+    case WM_DISPLAYCHANGE:
+    case WM_DPICHANGED:
+        SyncBoundsWithVirtualScreen(true);
+        return 0;
     default:
         break;
     }
@@ -151,6 +162,7 @@ void OverlayHostWindow::OnTick() {
         return;
     }
 
+    SyncBoundsWithVirtualScreen(false);
     EnsureTopmostZOrder(false);
     const uint64_t nowMs = NowMs();
     for (auto& layer : layers_) {
@@ -167,6 +179,12 @@ void OverlayHostWindow::OnTick() {
 
 void OverlayHostWindow::Render() {
     if (!hwnd_ || !memDc_ || !bits_) return;
+
+    RECT rc{};
+    if (GetWindowRect(hwnd_, &rc)) {
+        SetOverlayOriginOverride(rc.left, rc.top);
+    }
+
     ZeroMemory(bits_, (size_t)width_ * (size_t)height_ * 4);
 
     Gdiplus::Bitmap bmp(width_, height_, width_ * 4, PixelFormat32bppPARGB, static_cast<BYTE*>(bits_));
@@ -185,9 +203,8 @@ void OverlayHostWindow::Render() {
 void OverlayHostWindow::UpdateLayered() {
     POINT ptSrc{0, 0};
     SIZE sizeWnd{width_, height_};
-    POINT ptDst{
-        GetSystemMetrics(SM_XVIRTUALSCREEN),
-        GetSystemMetrics(SM_YVIRTUALSCREEN)};
+    POINT ptDst{virtualX_, virtualY_};
+    SetOverlayOriginOverride(ptDst.x, ptDst.y);
     BLENDFUNCTION bf{AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
     UpdateLayeredWindow(hwnd_, nullptr, &ptDst, &sizeWnd, memDc_, &ptSrc, 0, &bf, ULW_ALPHA);
 }
@@ -221,10 +238,33 @@ void OverlayHostWindow::DestroySurface() {
     height_ = 0;
 }
 
+void OverlayHostWindow::SyncBoundsWithVirtualScreen(bool forceMove) {
+    if (!hwnd_) return;
+
+    const int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    const int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    const int w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    const int h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    if (w <= 0 || h <= 0) return;
+
+    const bool boundsChanged = (x != virtualX_) || (y != virtualY_) || (w != virtualW_) || (h != virtualH_);
+    if (forceMove || boundsChanged) {
+        SetWindowPos(hwnd_, nullptr, x, y, w, h, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+        virtualX_ = x;
+        virtualY_ = y;
+        virtualW_ = w;
+        virtualH_ = h;
+    }
+
+    EnsureSurface(w, h);
+    SetOverlayOriginOverride(virtualX_, virtualY_);
+}
+
 void OverlayHostWindow::StartFrameLoop() {
     if (!hwnd_) return;
     if (ticking_) return;
     ticking_ = true;
+    SyncBoundsWithVirtualScreen(false);
     ShowWindow(hwnd_, SW_SHOWNA);
     SetTimer(hwnd_, kTimerId, 16, nullptr);
     EnsureTopmostZOrder(true);

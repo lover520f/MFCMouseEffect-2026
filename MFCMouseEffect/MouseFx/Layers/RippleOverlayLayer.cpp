@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "RippleOverlayLayer.h"
+#include "MouseFx/Core/OverlayCoordSpace.h"
 
 #include <algorithm>
 
@@ -124,9 +125,6 @@ void RippleOverlayLayer::Update(uint64_t nowMs) {
 }
 
 void RippleOverlayLayer::Render(Gdiplus::Graphics& graphics) {
-    const int virtualX = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    const int virtualY = GetSystemMetrics(SM_YVIRTUALSCREEN);
-
     for (auto& instance : instances_) {
         if (!instance.active || !instance.renderer) continue;
 
@@ -134,8 +132,9 @@ void RippleOverlayLayer::Render(Gdiplus::Graphics& graphics) {
         if (sizePx < 64) sizePx = 64;
         if (sizePx > 512) sizePx = 512;
 
-        const int left = (int)instance.ev.pt.x - (sizePx / 2) - virtualX;
-        const int top = (int)instance.ev.pt.y - (sizePx / 2) - virtualY;
+        const POINT centerPt = ScreenToOverlayPoint(instance.ev.pt);
+        const int left = centerPt.x - (sizePx / 2);
+        const int top = centerPt.y - (sizePx / 2);
 
         const Gdiplus::GraphicsState state = graphics.Save();
         graphics.TranslateTransform((Gdiplus::REAL)left, (Gdiplus::REAL)top);

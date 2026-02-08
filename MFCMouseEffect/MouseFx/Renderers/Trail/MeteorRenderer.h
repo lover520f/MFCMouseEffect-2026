@@ -1,5 +1,6 @@
 #pragma once
 #include "../../Interfaces/ITrailRenderer.h"
+#include "MouseFx/Core/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include "MouseFx/Utils/TrailMath.h"
 #include "MouseFx/Utils/XorShift.h"
@@ -42,14 +43,14 @@ public:
         lastUpdate_ = now;
 
         const auto& head = points.back();
-        int x_offset = GetSystemMetrics(SM_XVIRTUALSCREEN);
-        int y_offset = GetSystemMetrics(SM_YVIRTUALSCREEN);
+        const POINT headLocal = ScreenToOverlayPoint(head.pt);
 
         // 1. Emit Sparks if moving
         if (points.size() >= 2) {
             const auto& prev = points[points.size() - 2];
-            float dx = (float)(head.pt.x - prev.pt.x);
-            float dy = (float)(head.pt.y - prev.pt.y);
+            const POINT prevLocal = ScreenToOverlayPoint(prev.pt);
+            float dx = (float)(headLocal.x - prevLocal.x);
+            float dy = (float)(headLocal.y - prevLocal.y);
             float dist = std::sqrt(dx * dx + dy * dy);
 
             if (dist > 1.0f) {
@@ -57,8 +58,8 @@ public:
                 emitCount = (int)std::max(1.0f, std::min(8.0f, (float)emitCount * params_.sparkRateScale));
                 for (int i = 0; i < emitCount; ++i) {
                     MeteorSpark s;
-                    s.x = (float)head.pt.x - x_offset;
-                    s.y = (float)head.pt.y - y_offset;
+                    s.x = (float)headLocal.x;
+                    s.y = (float)headLocal.y;
                     
                     // Velocity: mostly opposite to move, with some spread
                     float baseAngle = std::atan2(-dy, -dx);
@@ -100,7 +101,8 @@ public:
         if (points.size() >= 2) {
             std::vector<Gdiplus::PointF> pathPoints;
             for (const auto& p : points) {
-                pathPoints.push_back(Gdiplus::PointF((float)p.pt.x - x_offset, (float)p.pt.y - y_offset));
+                const POINT localPt = ScreenToOverlayPoint(p.pt);
+                pathPoints.push_back(Gdiplus::PointF((float)localPt.x, (float)localPt.y));
             }
 
             // Draw the tail in segments to allow gradient and width tapering
@@ -163,8 +165,8 @@ public:
         }
 
         // 5. Draw Improved Glowing Head
-        float headX = (float)head.pt.x - x_offset;
-        float headY = (float)head.pt.y - y_offset;
+        float headX = (float)headLocal.x;
+        float headY = (float)headLocal.y;
         
         // Multi-layered Radial Glow
         struct GlowLayer { float radius; BYTE alpha; Gdiplus::Color color; };
@@ -182,8 +184,9 @@ public:
         // Directional flare (meteor head streak), only while actively moving.
         if (idleFactor > 0.6f && points.size() >= 2) {
             const auto& prev = points[points.size() - 2];
-            float mdx = (float)(head.pt.x - prev.pt.x);
-            float mdy = (float)(head.pt.y - prev.pt.y);
+            const POINT prevLocal = ScreenToOverlayPoint(prev.pt);
+            float mdx = (float)(headLocal.x - prevLocal.x);
+            float mdy = (float)(headLocal.y - prevLocal.y);
             float mlen = std::sqrt(mdx * mdx + mdy * mdy);
             if (mlen > 0.5f) {
                 float inv = 1.0f / mlen;

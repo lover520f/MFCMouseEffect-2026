@@ -36,6 +36,7 @@ private:
     void EnsureSurface(int w, int h);
     void DestroySurface();
     bool EnsureD2DResources();
+    bool EnsureTextLayout(float dpi, float widthDip, float heightDip);
     void DestroyD2DResources();
 
     static const wchar_t* ClassName();
@@ -64,6 +65,11 @@ private:
     Microsoft::WRL::ComPtr<IDWriteFactory> dwriteFactory_;
     Microsoft::WRL::ComPtr<ID2D1DCRenderTarget> d2dTarget_;
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> d2dBrush_;
+    Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat_;
+    Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayout_;
+    float layoutDpi_ = 0.0f;
+    float layoutWidthDip_ = 0.0f;
+    float layoutHeightDip_ = 0.0f;
 };
 
 } // namespace mousefx

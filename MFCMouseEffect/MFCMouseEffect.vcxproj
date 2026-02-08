@@ -214,6 +214,7 @@
     <ClInclude Include="MouseFx\Core\AppController.h" />
     <ClInclude Include="MouseFx\Core\ConfigPathResolver.h" />
     <ClInclude Include="MouseFx\Core\EffectFactory.h" />
+    <ClInclude Include="MouseFx\Core\OverlayCoordSpace.h" />
     <ClInclude Include="MouseFx\Core\OverlayHostService.h" />
     <ClInclude Include="MouseFx\Core\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\GlobalMouseHook.h" />
@@ -275,6 +276,7 @@
     <ClCompile Include="MouseFx\Core\AppController.cpp" />
     <ClCompile Include="MouseFx\Core\ConfigPathResolver.cpp" />
     <ClCompile Include="MouseFx\Core\EffectFactory.cpp" />
+    <ClCompile Include="MouseFx\Core\OverlayCoordSpace.cpp" />
     <ClCompile Include="MouseFx\Core\OverlayHostService.cpp" />
     <ClCompile Include="MouseFx\Core\GlobalMouseHook.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />

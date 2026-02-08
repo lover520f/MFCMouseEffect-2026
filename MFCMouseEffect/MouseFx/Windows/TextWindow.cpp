@@ -301,7 +301,105 @@ bool TextWindow::EnsureD2DResources() {
     return true;
 }
 
+bool TextWindow::EnsureTextLayout(float dpi, float widthDip, float heightDip) {
+    if (!dwriteFactory_) return false;
+
+    const float fontSize = (config_.fontSize) * (96.0f / 72.0f);
+    const bool sizeChanged =
+        std::abs(layoutDpi_ - dpi) > 0.01f ||
+        std::abs(layoutWidthDip_ - widthDip) > 0.01f ||
+        std::abs(layoutHeightDip_ - heightDip) > 0.01f;
+
+    if (textLayout_ && textFormat_ && !sizeChanged) {
+        return true;
+    }
+
+    textLayout_.Reset();
+    textFormat_.Reset();
+
+    const bool emojiOnly = IsEmojiOnlyText(text_);
+    const bool hasEmoji = HasEmojiStarter(text_);
+    const std::wstring fontName = ResolveFontFamilyName(config_, text_);
+    const std::wstring emojiFontName = L"Segoe UI Emoji";
+    const DWRITE_FONT_WEIGHT baseWeight = emojiOnly ? DWRITE_FONT_WEIGHT_REGULAR : DWRITE_FONT_WEIGHT_BOLD;
+
+    if (FAILED(dwriteFactory_->CreateTextFormat(
+        fontName.c_str(),
+        nullptr,
+        baseWeight,
+        DWRITE_FONT_STYLE_NORMAL,
+        DWRITE_FONT_STRETCH_NORMAL,
+        fontSize,
+        L"",
+        textFormat_.GetAddressOf()))) {
+        return false;
+    }
+
+    textFormat_->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+    textFormat_->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+    textFormat_->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
+
+    if (FAILED(dwriteFactory_->CreateTextLayout(
+        text_.c_str(),
+        (UINT32)text_.size(),
+        textFormat_.Get(),
+        (FLOAT)widthDip,
+        (FLOAT)heightDip,
+        textLayout_.GetAddressOf()))) {
+        textFormat_.Reset();
+        return false;
+    }
+
+    if (hasEmoji) {
+        size_t pos = 0;
+        while (pos < text_.size()) {
+            size_t runStart = pos;
+            size_t next = pos;
+            uint32_t cp = NextCodePoint(text_, &next);
+            if (cp == 0) break;
+            pos = next;
+            if (IsEmojiCodePoint(cp)) {
+                size_t runEnd = pos;
+                while (runEnd < text_.size()) {
+                    size_t probe = runEnd;
+                    uint32_t cp2 = NextCodePoint(text_, &probe);
+                    if (cp2 == 0) break;
+                    if (!IsEmojiComponent(cp2)) break;
+                    runEnd = probe;
+                }
+                DWRITE_TEXT_RANGE range{ (UINT32)runStart, (UINT32)(runEnd - runStart) };
+                textLayout_->SetFontFamilyName(emojiFontName.c_str(), range);
+                textLayout_->SetFontWeight(DWRITE_FONT_WEIGHT_REGULAR, range);
+                pos = runEnd;
+            } else {
+                size_t runEnd = pos;
+                while (runEnd < text_.size()) {
+                    size_t probe = runEnd;
+                    uint32_t cp2 = NextCodePoint(text_, &probe);
+                    if (cp2 == 0) break;
+                    if (IsEmojiCodePoint(cp2)) break;
+                    runEnd = probe;
+                }
+                DWRITE_TEXT_RANGE range{ (UINT32)runStart, (UINT32)(runEnd - runStart) };
+                textLayout_->SetFontFamilyName(fontName.c_str(), range);
+                textLayout_->SetFontWeight(DWRITE_FONT_WEIGHT_BOLD, range);
+                pos = runEnd;
+            }
+        }
+    }
+
+    layoutDpi_ = dpi;
+    layoutWidthDip_ = widthDip;
+    layoutHeightDip_ = heightDip;
+    return true;
+}
+
 void TextWindow::DestroyD2DResources() {
+    textLayout_.Reset();
+    textFormat_.Reset();
+    layoutDpi_ = 0.0f;
+    layoutWidthDip_ = 0.0f;
+    layoutHeightDip_ = 0.0f;
     d2dBrush_.Reset();
     d2dTarget_.Reset();
 }
@@ -339,79 +437,9 @@ void TextWindow::RenderFrame(float t) {
     if (t < 0.15f) alpha = t / 0.15f; 
     else if (t > 0.6f) alpha = 1.0f - (t - 0.6f) / 0.4f;
 
-    const bool emojiOnly = IsEmojiOnlyText(text_);
-    const bool hasEmoji = HasEmojiStarter(text_);
-
-    const std::wstring fontName = ResolveFontFamilyName(config_, text_);
-    const std::wstring emojiFontName = L"Segoe UI Emoji";
-    const float fontSize = (config_.fontSize * scale) * (96.0f / 72.0f);
-    const DWRITE_FONT_WEIGHT baseWeight = emojiOnly ? DWRITE_FONT_WEIGHT_REGULAR : DWRITE_FONT_WEIGHT_BOLD;
-
-    Microsoft::WRL::ComPtr<IDWriteTextFormat> format;
-    if (FAILED(dwriteFactory_->CreateTextFormat(
-        fontName.c_str(),
-        nullptr,
-        baseWeight,
-        DWRITE_FONT_STYLE_NORMAL,
-        DWRITE_FONT_STRETCH_NORMAL,
-        fontSize,
-        L"",
-        format.GetAddressOf()))) {
+    if (!EnsureTextLayout(dpi, widthDip, heightDip)) {
         d2dTarget_->EndDraw();
         return;
-    }
-    format->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
-    format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-    format->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
-
-    Microsoft::WRL::ComPtr<IDWriteTextLayout> layout;
-    if (FAILED(dwriteFactory_->CreateTextLayout(
-        text_.c_str(),
-        (UINT32)text_.size(),
-        format.Get(),
-        (FLOAT)widthDip,
-        (FLOAT)heightDip,
-        layout.GetAddressOf()))) {
-        d2dTarget_->EndDraw();
-        return;
-    }
-
-    if (hasEmoji) {
-        size_t pos = 0;
-        while (pos < text_.size()) {
-            size_t runStart = pos;
-            size_t next = pos;
-            uint32_t cp = NextCodePoint(text_, &next);
-            if (cp == 0) break;
-            pos = next;
-            if (IsEmojiCodePoint(cp)) {
-                size_t runEnd = pos;
-                while (runEnd < text_.size()) {
-                    size_t probe = runEnd;
-                    uint32_t cp2 = NextCodePoint(text_, &probe);
-                    if (cp2 == 0) break;
-                    if (!IsEmojiComponent(cp2)) break;
-                    runEnd = probe;
-                }
-                DWRITE_TEXT_RANGE range{ (UINT32)runStart, (UINT32)(runEnd - runStart) };
-                layout->SetFontFamilyName(emojiFontName.c_str(), range);
-                layout->SetFontWeight(DWRITE_FONT_WEIGHT_REGULAR, range);
-                pos = runEnd;
-            } else {
-                size_t runEnd = pos;
-                while (runEnd < text_.size()) {
-                    size_t probe = runEnd;
-                    uint32_t cp2 = NextCodePoint(text_, &probe);
-                    if (cp2 == 0) break;
-                    if (IsEmojiCodePoint(cp2)) break;
-                    runEnd = probe;
-                }
-                DWRITE_TEXT_RANGE range{ (UINT32)runStart, (UINT32)(runEnd - runStart) };
-                layout->SetFontFamilyName(fontName.c_str(), range);
-                layout->SetFontWeight(DWRITE_FONT_WEIGHT_BOLD, range);
-                pos = runEnd;
-            }
-        }
     }
 
     d2dBrush_->SetColor(D2D1::ColorF(
@@ -428,14 +456,18 @@ void TextWindow::RenderFrame(float t) {
     D2D1_MATRIX_3X2_F transform =
         D2D1::Matrix3x2F::Translation(centerX, centerY) *
         D2D1::Matrix3x2F::Rotation(angle) *
+        D2D1::Matrix3x2F::Scale(D2D1::SizeF(scale, scale), D2D1::Point2F(centerX, centerY)) *
         D2D1::Matrix3x2F::Translation(-centerX, -centerY);
     d2dTarget_->SetTransform(transform);
 
+    const D2D1_DRAW_TEXT_OPTIONS drawOptions = HasEmojiStarter(text_)
+        ? D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT
+        : D2D1_DRAW_TEXT_OPTIONS_NONE;
     d2dTarget_->DrawTextLayout(
         D2D1::Point2F(xPosDip, -yOffsetDip),
-        layout.Get(),
+        textLayout_.Get(),
         d2dBrush_.Get(),
-        D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+        drawOptions);
 
     d2dTarget_->SetTransform(D2D1::Matrix3x2F::Identity());
     d2dTarget_->EndDraw();

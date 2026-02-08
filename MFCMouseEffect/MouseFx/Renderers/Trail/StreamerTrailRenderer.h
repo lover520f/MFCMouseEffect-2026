@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/ITrailRenderer.h"
+#include "MouseFx/Core/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include "MouseFx/Utils/TrailMath.h"
 #include <algorithm>
@@ -27,15 +28,14 @@ public:
         if (fadeEnd <= fadeStart) fadeEnd = fadeStart + 1;
         const float idleFactor = trail_math::IdleFadeFactor(now, points.back().addedTime, fadeStart, fadeEnd);
 
-        const int x_offset = GetSystemMetrics(SM_XVIRTUALSCREEN);
-        const int y_offset = GetSystemMetrics(SM_YVIRTUALSCREEN);
-
         const size_t n = points.size();
 
         // Neon streamer: two-pass stroke (outer glow + inner core) with head-weighted thickness.
         for (size_t i = 0; i + 1 < n; ++i) {
             const auto& p1 = points[i];
             const auto& p2 = points[i + 1];
+            const POINT lp1 = ScreenToOverlayPoint(p1.pt);
+            const POINT lp2 = ScreenToOverlayPoint(p2.pt);
 
             const float t = (n <= 2) ? 1.0f : (float)i / (float)(n - 1); // 0 tail -> 1 head
 
@@ -69,10 +69,10 @@ public:
                 glowPen.SetEndCap(Gdiplus::LineCapRound);
                 glowPen.SetLineJoin(Gdiplus::LineJoinRound);
                 g.DrawLine(&glowPen,
-                           (int)p1.pt.x - x_offset,
-                           (int)p1.pt.y - y_offset,
-                           (int)p2.pt.x - x_offset,
-                           (int)p2.pt.y - y_offset);
+                           lp1.x,
+                           lp1.y,
+                           lp2.x,
+                           lp2.y);
             }
 
             // Inner core
@@ -82,10 +82,10 @@ public:
                 corePen.SetEndCap(Gdiplus::LineCapRound);
                 corePen.SetLineJoin(Gdiplus::LineJoinRound);
                 g.DrawLine(&corePen,
-                           (int)p1.pt.x - x_offset,
-                           (int)p1.pt.y - y_offset,
-                           (int)p2.pt.x - x_offset,
-                           (int)p2.pt.y - y_offset);
+                           lp1.x,
+                           lp1.y,
+                           lp2.x,
+                           lp2.y);
             }
         }
     }
