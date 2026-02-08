@@ -73,11 +73,16 @@ void ParticleTrailOverlayLayer::Render(Gdiplus::Graphics& graphics) {
     graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
     for (const auto& particle : particles_) {
+        POINT screenPt{};
+        screenPt.x = static_cast<LONG>(std::lround(particle.x));
+        screenPt.y = static_cast<LONG>(std::lround(particle.y));
+        const POINT localPt = ScreenToOverlayPoint(screenPt);
+
         BYTE alpha = (BYTE)(particle.life * 255.0f);
         Gdiplus::Color color = HslToRgb(particle.hue, 0.8f, 0.6f, alpha);
         Gdiplus::SolidBrush brush(color);
         float size = particle.size * particle.life;
-        graphics.FillEllipse(&brush, particle.x - size * 0.5f, particle.y - size * 0.5f, size, size);
+        graphics.FillEllipse(&brush, (float)localPt.x - size * 0.5f, (float)localPt.y - size * 0.5f, size, size);
     }
 }
 
@@ -110,14 +115,15 @@ Gdiplus::Color ParticleTrailOverlayLayer::HslToRgb(float h, float s, float l, BY
 }
 
 void ParticleTrailOverlayLayer::Emit(const POINT& pt, int count) {
-    const POINT localPt = ScreenToOverlayPoint(pt);
-
     globalHue_ = std::fmod(globalHue_ + 5.0f, 360.0f);
 
     for (int i = 0; i < count; ++i) {
         Particle particle{};
-        particle.x = (float)localPt.x;
-        particle.y = (float)localPt.y;
+        // Keep particle positions in screen space.
+        // OverlayHost may render the same layer onto multiple per-monitor windows.
+        // Converting to local coordinates here can bind points to the wrong monitor origin.
+        particle.x = (float)pt.x;
+        particle.y = (float)pt.y;
 
         const float angle = (float)(rand() % 360) * 3.14159f / 180.0f;
         const float speed = (float)(rand() % 100) / 30.0f + 0.5f;
