@@ -42,6 +42,15 @@ static bool IsEmojiCodePoint(uint32_t cp) {
     return false;
 }
 
+static bool HasEmojiStarter(const std::wstring& text) {
+    for (size_t i = 0; i < text.size();) {
+        uint32_t cp = NextCodePoint(text, &i);
+        if (cp == 0) break;
+        if (IsEmojiCodePoint(cp)) return true;
+    }
+    return false;
+}
+
 bool TextOverlayLayer::IsEmojiOnlyText(const std::wstring& text) {
     bool hasEmoji = false;
     for (size_t i = 0; i < text.size();) {
@@ -59,7 +68,7 @@ bool TextOverlayLayer::IsEmojiOnlyText(const std::wstring& text) {
 }
 
 std::wstring TextOverlayLayer::ResolveFontFamilyName(const TextConfig& config, const std::wstring& text) {
-    if (IsEmojiOnlyText(text)) {
+    if (HasEmojiStarter(text)) {
         return L"Segoe UI Emoji";
     }
     if (!config.fontFamily.empty()) {
@@ -157,8 +166,8 @@ void TextOverlayLayer::Render(Gdiplus::Graphics& graphics) {
         std::wstring family = EnsureFontFamily(ResolveFontFamilyName(instance.config, instance.text));
         float fontSizePt = instance.config.fontSize * scale;
         if (fontSizePt < 6.0f) fontSizePt = 6.0f;
-        const bool emojiOnly = IsEmojiOnlyText(instance.text);
-        const int fontStyle = emojiOnly ? Gdiplus::FontStyleRegular : Gdiplus::FontStyleBold;
+        const bool hasEmoji = HasEmojiStarter(instance.text);
+        const int fontStyle = hasEmoji ? Gdiplus::FontStyleRegular : Gdiplus::FontStyleBold;
         Gdiplus::Font font(family.c_str(), fontSizePt, fontStyle, Gdiplus::UnitPoint);
 
         const POINT startPt = ScreenToOverlayPoint(instance.startPt);

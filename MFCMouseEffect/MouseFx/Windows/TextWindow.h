@@ -33,6 +33,9 @@ private:
     LRESULT OnMessage(UINT msg, WPARAM wParam, LPARAM lParam);
     void OnTick();
     void RenderFrame(float t);
+    bool RenderEmojiBaseFrame();
+    void PresentEmojiCachedFrame(float t);
+    void PresentBackbuffer(int left, int top, BYTE alpha);
     void EnsureSurface(int w, int h);
     void DestroySurface();
     bool EnsureD2DResources();
@@ -53,6 +56,10 @@ private:
     float driftX_ = 0.0f;
     float swayFreq_ = 1.0f;
     float swayAmp_ = 0.0f;
+    bool emojiColorMode_ = false;
+    bool emojiFrameReady_ = false;
+    int baseLeft_ = 0;
+    int baseTop_ = 0;
 
     // Layered window backbuffer.
     HDC memDc_ = nullptr;

@@ -18,13 +18,14 @@
   - `HasEmojiStarter`
 - Routing rule:
   - Emoji text -> `TextWindowPool`
-  - Non-emoji text -> host text layer first, pool fallback
+  - Non-emoji text -> host text layer first, pool fallback.
+  - Emoji legacy path now uses cached-frame rendering: color-font layout is drawn once, later frames only move/fade the cached buffer.
 - Keep prewarm behavior:
   - Prewarm emoji pool when configured texts include emoji.
   - Initialize host service eagerly as best effort.
 - File: `MFCMouseEffect/MouseFx/Windows/TextWindow.cpp`
-  - Use `D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT` only when current text contains emoji.
-  - Keep non-emoji text on normal draw option to avoid changing the plain-text path.
+  - (Updated for stability) use `D2D1_DRAW_TEXT_OPTIONS_NONE` to avoid debugger `_com_error` flood on some systems.
+  - Emoji still routes through `TextWindowPool`; this change is render-option stability, not path removal.
 
 ## Validation
 

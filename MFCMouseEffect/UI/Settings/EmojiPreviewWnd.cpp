@@ -191,6 +191,9 @@ void EmojiPreviewWnd::Render() {
         format->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
         format->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
         format->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
+    } else {
+        d2dTarget_->EndDraw();
+        return;
     }
 
     Microsoft::WRL::ComPtr<IDWriteTextLayout> layout;
@@ -250,11 +253,13 @@ void EmojiPreviewWnd::Render() {
     const float x = padLeftPx_ * pxToDip;
     const float y = padTopPx_ * pxToDip;
 
+    // Stability-first: avoid color-font path here as well, otherwise VS debugger
+    // can spam first-chance _com_error while settings preview repaints.
     d2dTarget_->DrawTextLayout(
         D2D1::Point2F(x, y),
         layout.Get(),
         d2dBrush_.Get(),
-        D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+        D2D1_DRAW_TEXT_OPTIONS_NONE);
 
     d2dTarget_->EndDraw();
 }

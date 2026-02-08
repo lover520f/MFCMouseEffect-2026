@@ -172,6 +172,10 @@ void TextWindow::StartAt(const POINT& pt, const std::wstring& text, Argb color, 
 
     const int left = pt.x - (winSize / 2);
     const int top = pt.y - (winSize / 2);
+    baseLeft_ = left;
+    baseTop_ = top;
+    emojiColorMode_ = HasEmojiStarter(text_);
+    emojiFrameReady_ = false;
 
     SetWindowPos(hwnd_, HWND_TOPMOST, left, top, winSize, winSize, SWP_NOACTIVATE | SWP_SHOWWINDOW);
 
@@ -183,7 +187,16 @@ void TextWindow::StartAt(const POINT& pt, const std::wstring& text, Argb color, 
     swayFreq_ = 1.0f + (float)(rand() % 200) / 100.0f; // 1.0 to 3.0 frequency
     swayAmp_ = 5.0f + (float)(rand() % 100) / 10.0f;   // 5.0 to 15.0 px amplitude
 
-    RenderFrame(0.0f);
+    if (emojiColorMode_) {
+        emojiFrameReady_ = RenderEmojiBaseFrame();
+        if (emojiFrameReady_) {
+            PresentEmojiCachedFrame(0.0f);
+        } else {
+            RenderFrame(0.0f);
+        }
+    } else {
+        RenderFrame(0.0f);
+    }
     SetTimer(hwnd_, kTimerId, 16, nullptr);
 }
 
@@ -236,7 +249,11 @@ void TextWindow::OnTick() {
         return;
     }
 
-    RenderFrame(t);
+    if (emojiColorMode_ && emojiFrameReady_) {
+        PresentEmojiCachedFrame(t);
+    } else {
+        RenderFrame(t);
+    }
 }
 
 void TextWindow::EnsureSurface(int w, int h) {
@@ -460,9 +477,9 @@ void TextWindow::RenderFrame(float t) {
         D2D1::Matrix3x2F::Translation(-centerX, -centerY);
     d2dTarget_->SetTransform(transform);
 
-    const D2D1_DRAW_TEXT_OPTIONS drawOptions = HasEmojiStarter(text_)
-        ? D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT
-        : D2D1_DRAW_TEXT_OPTIONS_NONE;
+    // Stability-first: color-font path can trigger heavy _com_error first-chance noise
+    // on some systems/drivers under debugger.
+    const D2D1_DRAW_TEXT_OPTIONS drawOptions = D2D1_DRAW_TEXT_OPTIONS_NONE;
     d2dTarget_->DrawTextLayout(
         D2D1::Point2F(xPosDip, -yOffsetDip),
         textLayout_.Get(),
@@ -472,13 +489,70 @@ void TextWindow::RenderFrame(float t) {
     d2dTarget_->SetTransform(D2D1::Matrix3x2F::Identity());
     d2dTarget_->EndDraw();
 
-    // Push to screen
-    POINT ptSrc{ 0, 0 };
-    SIZE sizeWnd{ width_, height_ };
     RECT r{};
     GetWindowRect(hwnd_, &r);
-    POINT ptDst{ r.left, r.top };
-    BLENDFUNCTION bf{ AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+    PresentBackbuffer(r.left, r.top, 255);
+}
+
+bool TextWindow::RenderEmojiBaseFrame() {
+    if (!hwnd_ || !memDc_ || !bits_) return false;
+
+    ZeroMemory(bits_, (size_t)width_ * (size_t)height_ * 4);
+
+    if (!EnsureD2DResources()) return false;
+    const float dpi = GetWindowDpi(hwnd_);
+    const float pxToDip = 96.0f / dpi;
+    const float widthDip = (float)width_ * pxToDip;
+    const float heightDip = (float)height_ * pxToDip;
+    d2dTarget_->SetDpi(dpi, dpi);
+    const RECT rc = { 0, 0, width_, height_ };
+    if (FAILED(d2dTarget_->BindDC(memDc_, &rc))) return false;
+    d2dTarget_->BeginDraw();
+    d2dTarget_->Clear(D2D1::ColorF(0, 0, 0, 0));
+
+    if (!EnsureTextLayout(dpi, widthDip, heightDip)) {
+        d2dTarget_->EndDraw();
+        return false;
+    }
+
+    d2dBrush_->SetColor(D2D1::ColorF(
+        (float)((color_.value >> 16) & 0xFF) / 255.0f,
+        (float)((color_.value >> 8) & 0xFF) / 255.0f,
+        (float)(color_.value & 0xFF) / 255.0f,
+        1.0f));
+
+    d2dTarget_->SetTransform(D2D1::Matrix3x2F::Identity());
+    d2dTarget_->DrawTextLayout(
+        D2D1::Point2F(0.0f, 0.0f),
+        textLayout_.Get(),
+        d2dBrush_.Get(),
+        D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+    d2dTarget_->EndDraw();
+    return true;
+}
+
+void TextWindow::PresentEmojiCachedFrame(float t) {
+    const float eased = EaseOutCubic(t);
+    const float yOffset = eased * config_.floatDistance;
+    const float xPos = (t * driftX_) + std::sin(t * 3.14159f * swayFreq_) * swayAmp_;
+
+    float alpha = 1.0f;
+    if (t < 0.15f) alpha = t / 0.15f;
+    else if (t > 0.6f) alpha = 1.0f - (t - 0.6f) / 0.4f;
+    if (alpha < 0.0f) alpha = 0.0f;
+    if (alpha > 1.0f) alpha = 1.0f;
+
+    const int left = baseLeft_ + (int)std::lround(xPos);
+    const int top = baseTop_ - (int)std::lround(yOffset);
+    SetWindowPos(hwnd_, HWND_TOPMOST, left, top, width_, height_, SWP_NOACTIVATE | SWP_NOSIZE | SWP_SHOWWINDOW);
+    PresentBackbuffer(left, top, (BYTE)std::lround(alpha * 255.0f));
+}
+
+void TextWindow::PresentBackbuffer(int left, int top, BYTE alpha) {
+    POINT ptSrc{ 0, 0 };
+    SIZE sizeWnd{ width_, height_ };
+    POINT ptDst{ left, top };
+    BLENDFUNCTION bf{ AC_SRC_OVER, 0, alpha, AC_SRC_ALPHA };
     UpdateLayeredWindow(hwnd_, nullptr, &ptDst, &sizeWnd, memDc_, &ptSrc, 0, &bf, ULW_ALPHA);
 }
 

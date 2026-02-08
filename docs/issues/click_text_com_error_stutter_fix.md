@@ -36,3 +36,27 @@
 
 - This fix is intentionally stability-first for debug/dev sessions.
 - If future requirement is full color emoji fidelity with zero first-chance noise, consider replacing legacy emoji path with a host-side text renderer that supports color glyph runs.
+
+## 2026-02-08 Regression Guard
+
+- Symptom returned when `TextWindow::RenderFrame()` switched back to `D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT`.
+- Resolution: force `D2D1_DRAW_TEXT_OPTIONS_NONE` again in `TextWindow.cpp` to keep debugger output and frame pacing stable.
+
+## 2026-02-08 Additional Source: Settings Emoji Preview
+
+- Even after stabilizing `TextWindow`, first-chance `_com_error` can still flood when settings UI keeps repainting emoji preview.
+- Root cause: `UI/Settings/EmojiPreviewWnd.cpp` still used `D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT`.
+- Resolution:
+  - Switch preview draw option to `D2D1_DRAW_TEXT_OPTIONS_NONE`.
+  - Add a defensive early return when `CreateTextFormat(...)` fails, instead of continuing with a null format.
+
+## 2026-02-08 Final Stabilization (Revised Again): Emoji Cached-Frame Path
+
+- Requirement conflict: host-first avoids COM spam but cannot preserve full-color emoji; legacy DWrite preserves color but can spam `_com_error` when color-font draw runs every frame.
+- Final route:
+  - Emoji text -> `TextWindowPool`
+  - Non-emoji text -> host overlay first, pool fallback
+- `TextWindow` emoji rendering strategy changed:
+  - Render color emoji glyphs once with `D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT`.
+  - Reuse cached backbuffer for subsequent animation frames (position + alpha only), avoiding per-frame color-font draw calls.
+- This keeps original color emoji appearance while reducing COM first-chance noise significantly.

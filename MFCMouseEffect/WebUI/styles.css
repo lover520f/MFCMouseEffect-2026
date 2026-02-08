@@ -13,6 +13,7 @@ body{
   background:radial-gradient(1200px 900px at 20% 10%,#142044 0%,#0b1220 55%,#050a13 100%);
   color:var(--text);
 }
+body.mfx-modal-open{overflow:hidden}
 .status{
   position:fixed;
   top:14px;
@@ -41,6 +42,48 @@ body{
 .status.ok{
   border-left-color:rgba(77,248,255,.75);
   background:rgba(12,26,36,.92)
+}
+.status.offline{
+  min-width:360px;
+  border-left-color:rgba(255,120,120,.88);
+  background:linear-gradient(90deg,rgba(66,20,28,.96),rgba(42,16,28,.96));
+  box-shadow:0 14px 34px rgba(0,0,0,.42), 0 0 0 1px rgba(255,120,120,.2) inset
+}
+.mfx-modal-mask{
+  position:fixed;
+  inset:0;
+  z-index:40;
+  background:rgba(3,7,15,.62);
+  backdrop-filter:blur(3px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px
+}
+.mfx-modal-card{
+  width:min(520px,100%);
+  background:linear-gradient(180deg,rgba(18,26,43,.98),rgba(12,18,32,.98));
+  border:1px solid rgba(255,120,120,.28);
+  border-radius:14px;
+  box-shadow:0 22px 45px rgba(0,0,0,.48),0 0 0 1px rgba(255,120,120,.15) inset;
+  padding:16px
+}
+.mfx-modal-title{
+  margin:0 0 10px;
+  font-size:16px;
+  font-weight:720;
+  color:#ffd5d5
+}
+.mfx-modal-text{
+  margin:0;
+  color:#f2f6ff;
+  font-size:14px;
+  line-height:1.6
+}
+.mfx-modal-actions{
+  margin-top:14px;
+  display:flex;
+  justify-content:flex-end
 }
 .wrap{max-width:1050px;margin:28px auto;padding:0 16px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}

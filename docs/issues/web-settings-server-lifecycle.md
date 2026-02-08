@@ -30,6 +30,23 @@
 - Old tabs will show `unauthorized` on API calls and should be reopened from the tray.
 - Status messages (Ready / Server stopped / Token expired / Errors) now show only in a top-left banner (the bottom toast is removed).
 
+## 2026-02-08 Update: Disconnection Banner Sync
+- Issue: After initial successful load, the top-left status could stay at "Ready" even if the local server was later stopped or the connection dropped, which looked like a UI bug.
+- Fix:
+  - Added lightweight health probing in WebUI (`/api/state`, every 3 seconds, plus immediate probe when tab becomes visible).
+  - Added an explicit `offline` state and banner text: "Disconnected from local server. Reopen from tray to continue."
+  - After successful `Stop`, state switches to `stopped` immediately; service-dependent buttons stay clickable but disconnected actions now show a popup and are aborted.
+  - Added a stronger visual banner style for disconnection (red warning tone) to clearly distinguish it from `Ready`.
+
+## 2026-02-08 Update 2: Popup on Disconnected Actions
+- Requirement: when users click actions like Apply while disconnected, show a clear popup to avoid "button does nothing" confusion.
+- Implementation:
+  - Added a shared guard `blockActionWhenDisconnected()`.
+  - `Reload/Apply/Reset/Stop` now check connection state before sending requests.
+  - If state is `offline/stopped/unauthorized`, show a blocking warning dialog and abort the action.
+  - Top-left banner is still kept, so users get both persistent status and immediate click feedback.
+  - Replaced native browser `alert` with a themed dialog (`dialog.js`) to match WebUI style.
+
 ## Manual Test Checklist
 - Leave settings idle past the timeout, then open settings again -> no crash.
 - Open settings twice; the first tab should fail API calls (unauthorized), the newest should work.

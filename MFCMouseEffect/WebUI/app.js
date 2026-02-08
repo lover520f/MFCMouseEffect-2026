@@ -2,6 +2,9 @@
   const token = new URL(location.href).searchParams.get('token') || '';
   const el = (id) => document.getElementById(id);
   const statusEl = document.getElementById('status');
+  const healthCheckMs = 3000;
+  let healthTimer = 0;
+  let connectionState = 'unknown';
 
   const I18N = {
     "en-US": {
@@ -20,7 +23,13 @@
       tip_apply: "Apply current form values",
       confirm_reset: "Reset to defaults? This cannot be undone.",
       stopped_hint: "Server stopped. Reopen from tray to continue.",
+      disconnected_hint: "Disconnected from local server. Reopen from tray to continue.",
       unauthorized_hint: "Token expired. Reopen settings from the tray.",
+      disconnected_blocked: "Disconnected. This action is unavailable. Reopen settings from the tray.",
+      stopped_blocked: "Server is stopped. This action is unavailable. Reopen settings from the tray.",
+      unauthorized_blocked: "Token expired. This action is unavailable. Reopen settings from the tray.",
+      dialog_title_notice: "Connection lost",
+      dialog_btn_ok: "Got it",
       status_ready: "Ready.",
       section_general: "General",
       section_effects: "Active Effects",
@@ -71,7 +80,13 @@
       tip_apply: "\u5e94\u7528\u5f53\u524d\u503c",
       confirm_reset: "\u786e\u5b9a\u6062\u590d\u9ed8\u8ba4\u5417\uff1f\u65e0\u6cd5\u64a4\u9500\u3002",
       stopped_hint: "\u670d\u52a1\u5df2\u5173\u95ed\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u3002",
+      disconnected_hint: "\u5df2\u4e0e\u672c\u5730\u670d\u52a1\u65ad\u5f00\u8fde\u63a5\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u3002",
       unauthorized_hint: "Token \u5df2\u5931\u6548\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u8bbe\u7f6e\u3002",
+      disconnected_blocked: "\u5f53\u524d\u5df2\u65ad\u5f00\u8fde\u63a5\uff0c\u65e0\u6cd5\u6267\u884c\u8be5\u64cd\u4f5c\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u3002",
+      stopped_blocked: "\u670d\u52a1\u5df2\u5173\u95ed\uff0c\u65e0\u6cd5\u6267\u884c\u8be5\u64cd\u4f5c\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u3002",
+      unauthorized_blocked: "Token \u5df2\u5931\u6548\uff0c\u65e0\u6cd5\u6267\u884c\u8be5\u64cd\u4f5c\uff0c\u8bf7\u4ece\u6258\u76d8\u91cd\u65b0\u6253\u5f00\u3002",
+      dialog_title_notice: "\u8fde\u63a5\u5f02\u5e38",
+      dialog_btn_ok: "\u6211\u77e5\u9053\u4e86",
       status_ready: "\u5c31\u7eea\u3002",
       section_general: "\u4e00\u822c",
       section_effects: "\u7279\u6548\u9009\u62e9",
@@ -151,7 +166,64 @@
     let cls = 'status show';
     if (tone === 'warn') cls += ' warn';
     if (tone === 'ok') cls += ' ok';
+    if (tone === 'offline') cls += ' offline';
     statusEl.className = cls;
+  }
+
+  function setActionButtonsEnabled(enabled){
+    ['btnReload', 'btnReset', 'btnStop', 'btnSave'].forEach((id) => {
+      const node = el(id);
+      if (node) node.disabled = !enabled;
+    });
+  }
+
+  function blockActionWhenDisconnected(){
+    const t = I18N[pickLang()] || I18N["en-US"];
+    if (connectionState === 'online' || connectionState === 'unknown') return false;
+    const showBlockedDialog = (message) => {
+      if (window.MfxDialog && typeof window.MfxDialog.showNotice === 'function') {
+        window.MfxDialog.showNotice({
+          title: t.dialog_title_notice || 'Connection lost',
+          message,
+          okText: t.dialog_btn_ok || 'OK'
+        });
+        return;
+      }
+      alert(message);
+    };
+    if (connectionState === 'unauthorized') {
+      showBlockedDialog(t.unauthorized_blocked || t.unauthorized_hint || 'Unauthorized.');
+      return true;
+    }
+    if (connectionState === 'stopped') {
+      showBlockedDialog(t.stopped_blocked || t.stopped_hint || 'Server stopped.');
+      return true;
+    }
+    showBlockedDialog(t.disconnected_blocked || t.disconnected_hint || 'Disconnected from server.');
+    return true;
+  }
+
+  function markConnection(next, force){
+    if (!force && connectionState === next) return;
+    connectionState = next;
+    const t = I18N[pickLang()] || I18N["en-US"];
+    if (next === 'online') {
+      setActionButtonsEnabled(true);
+      setStatus(t.status_ready || 'Ready.', 'ok');
+      return;
+    }
+    if (next === 'unauthorized') {
+      setActionButtonsEnabled(true);
+      setStatus(t.unauthorized_hint || 'Unauthorized.', 'warn');
+      return;
+    }
+    if (next === 'stopped') {
+      setActionButtonsEnabled(true);
+      setStatus(t.stopped_hint || 'Server stopped.', 'offline');
+      return;
+    }
+    setActionButtonsEnabled(true);
+    setStatus(t.disconnected_hint || 'Disconnected from server.', 'offline');
   }
 
   function pickLang(){
@@ -164,8 +236,37 @@
   }
 
   function showUnauthorized(){
-    const t = I18N[pickLang()] || I18N["en-US"];
-    setStatus(t.unauthorized_hint || 'Unauthorized.', 'warn');
+    markConnection('unauthorized');
+  }
+
+  async function probeConnection(){
+    try{
+      const r = await fetch('/api/state', {
+        headers: {'X-MFCMouseEffect-Token': token},
+        cache: 'no-store'
+      });
+      if (r.status === 401) {
+        markConnection('unauthorized');
+        return false;
+      }
+      if (!r.ok) {
+        markConnection('offline');
+        return false;
+      }
+      markConnection('online');
+      return true;
+    }catch(_e){
+      markConnection('offline');
+      return false;
+    }
+  }
+
+  function startHealthCheck(){
+    if (healthTimer) return;
+    healthTimer = window.setInterval(() => { probeConnection(); }, healthCheckMs);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) probeConnection();
+    });
   }
 
   async function apiGet(path){
@@ -256,8 +357,7 @@
     num('k_idle_fade_start', k.idle_fade_start_ms);
     num('k_idle_fade_end', k.idle_fade_end_ms);
 
-    const t = I18N[st.ui_language || 'en-US'] || I18N["en-US"];
-    setStatus(t.status_ready || 'Ready.', 'ok');
+    markConnection('online');
   }
 
   function buildState(){
@@ -302,6 +402,7 @@
 
   el('btnReload').addEventListener('click', async () => {
     try{
+      if (blockActionWhenDisconnected()) return;
       setStatus('Reloading config...');
       await apiPost('/api/reload', {});
       await reload();
@@ -314,6 +415,7 @@
 
   el('btnSave').addEventListener('click', async () => {
     try{
+      if (blockActionWhenDisconnected()) return;
       setStatus('Applying...');
       const st = buildState();
       const res = await apiPost('/api/state', st);
@@ -330,6 +432,7 @@
 
   el('btnReset').addEventListener('click', async () => {
     try{
+      if (blockActionWhenDisconnected()) return;
       const lang = el('ui_language').value || 'en-US';
       const t = I18N[lang] || I18N["en-US"];
       if (!confirm(t.confirm_reset)) return;
@@ -345,11 +448,10 @@
 
   el('btnStop').addEventListener('click', async () => {
     try{
+      if (blockActionWhenDisconnected()) return;
       const res = await apiPost('/api/stop', {});
       if (!res.ok) throw new Error(res.error || 'stop failed');
-      const lang = el('ui_language').value || 'en-US';
-      const t = I18N[lang] || I18N["en-US"];
-      setStatus(t.stopped_hint, 'warn');
+      markConnection('stopped');
     }catch(e){
       if (e && e.code === 'unauthorized') return;
       setStatus('Stop failed: ' + e.message, 'warn');
@@ -358,10 +460,14 @@
 
   el('ui_language').addEventListener('change', () => {
     applyI18n(el('ui_language').value);
+    if (connectionState !== 'unknown') markConnection(connectionState, true);
   });
 
-  reload().then(scrollToHash).catch(e => {
+  startHealthCheck();
+  reload().then(() => {
+    scrollToHash();
+  }).catch(e => {
     if (e && e.code === 'unauthorized') return;
-    setStatus('Load failed: ' + e.message, 'warn');
+    markConnection('offline');
   });
 })();
