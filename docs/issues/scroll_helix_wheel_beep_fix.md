@@ -1,31 +1,33 @@
-# Scroll Helix wheel beep fix
+# Scroll wheel input shaper (unified)
 
 ## Symptom
 
-- Wheel beep can appear only when scroll renderer is `helix`.
-- Slow wheel input is usually fine; burst wheel input is more likely to trigger the problem.
+- Wheel beep was easiest to reproduce with scroll renderer `helix`.
+- Slow wheel input was usually fine; burst wheel input was more likely to trigger the problem.
 
 ## Root cause
 
-- `ScrollEffect` created one new ripple instance per wheel tick with no emission pacing.
-- `helix` has significantly higher per-instance draw cost than simple scroll renderers.
-- Under burst input, many helix instances overlapped in a short window, causing frame spikes and visible event jitter.
+- `ScrollEffect` originally created one new ripple instance per wheel tick with no input shaping.
+- This allowed burst wheel packets to create short-lived visual instance storms.
+- `helix` exposed the issue first because its per-instance cost is higher.
 
 ## Fix
 
-### 1) Add helix-specific emission pacing
+### 1) Introduce unified scroll input shaping
 
 - File: `MFCMouseEffect/MouseFx/Effects/ScrollEffect.h`
 - File: `MFCMouseEffect/MouseFx/Effects/ScrollEffect.cpp`
-- Add `kHelixEmitIntervalMs = 14` to coalesce burst wheel ticks.
-- Accumulate wheel delta during the interval and emit one combined visual pulse.
+- Add a common shaper profile (`emit interval`, `max active`, `max duration`).
+- Coalesce burst wheel ticks by accumulating delta inside one emission interval.
+- Apply shaping to all scroll renderers.
 
-### 2) Add active helix instance cap
+### 2) Keep renderer-specific profile tuning
 
 - File: `MFCMouseEffect/MouseFx/Effects/ScrollEffect.h`
 - File: `MFCMouseEffect/MouseFx/Effects/ScrollEffect.cpp`
-- Track active ripple ids for helix and cap concurrent instances (`kHelixMaxActiveRipples = 8`).
-- Stop oldest active ripple when cap is exceeded.
+- Default profile is moderate for simple renderers.
+- `helix` profile remains stricter (`14ms`, max `8` active, max duration `240ms`).
+- Track active ripple ids and stop oldest instance when cap is exceeded.
 
 ### 3) Reduce helix per-frame complexity
 
@@ -35,11 +37,12 @@
 
 ## Verification checklist
 
-1. Set scroll effect type to `helix`.
-2. Burst-scroll on desktop and in regular app windows.
-3. Confirm visual response remains smooth and no wheel beep is reproduced.
-4. Switch to non-helix renderer and confirm behavior is unchanged.
+1. Set scroll effect type to `helix` and burst-scroll on desktop/app windows.
+2. Confirm no wheel beep and no severe frame hitch.
+3. Switch to non-helix renderer (`arrow`/`chevron`) and repeat burst-scroll.
+4. Confirm all scroll renderers keep smooth feedback under fast wheel input.
 
 ## Notes
 
-- This fix targets the real overload path in `helix` burst scenarios instead of global system sound workarounds.
+- This fix keeps root-cause handling in the app input/render chain.
+- No system-level sound toggles are required.

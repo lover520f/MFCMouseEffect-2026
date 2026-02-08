@@ -49,6 +49,16 @@ bool ScrollEffect::IsHelixRenderer() const {
     return ToLowerAscii(currentRendererName_) == "helix";
 }
 
+ScrollEffect::InputShaperProfile ScrollEffect::GetInputShaperProfile() const {
+    InputShaperProfile profile{};
+    if (IsHelixRenderer()) {
+        profile.emitIntervalMs = kHelixEmitIntervalMs;
+        profile.maxActiveRipples = kHelixMaxActiveRipples;
+        profile.maxDurationMs = kHelixMaxDurationMs;
+    }
+    return profile;
+}
+
 void ScrollEffect::PruneInactiveRipples(size_t maxActive) {
     if (activeRippleIds_.empty()) return;
     auto& host = OverlayHostService::Instance();
@@ -64,20 +74,20 @@ void ScrollEffect::PruneInactiveRipples(size_t maxActive) {
 }
 
 void ScrollEffect::OnScroll(const ScrollEvent& event) {
+    const InputShaperProfile shaper = GetInputShaperProfile();
+    pendingDelta_ += event.delta;
+
+    const uint64_t now = NowMs();
+    if (lastEmitTickMs_ != 0 && (now - lastEmitTickMs_) < shaper.emitIntervalMs) {
+        PruneInactiveRipples(shaper.maxActiveRipples);
+        return;
+    }
+
     int effectiveDelta = event.delta;
-    const bool helixMode = IsHelixRenderer();
-    if (helixMode) {
-        pendingDelta_ += event.delta;
-        const uint64_t now = NowMs();
-        if (lastEmitTickMs_ != 0 && (now - lastEmitTickMs_) < kHelixEmitIntervalMs) {
-            PruneInactiveRipples(kHelixMaxActiveRipples);
-            return;
-        }
-        lastEmitTickMs_ = now;
-        if (pendingDelta_ != 0) {
-            effectiveDelta = pendingDelta_;
-            pendingDelta_ = 0;
-        }
+    lastEmitTickMs_ = now;
+    if (pendingDelta_ != 0) {
+        effectiveDelta = pendingDelta_;
+        pendingDelta_ = 0;
     }
 
     auto renderer = RendererRegistry::Instance().Create(currentRendererName_);
@@ -109,14 +119,12 @@ void ScrollEffect::OnScroll(const ScrollEvent& event) {
     if (isChromatic_) {
         finalStyle = MakeRandomStyle(style_);
     }
-    if (helixMode) {
-        finalStyle.durationMs = std::min<uint32_t>(finalStyle.durationMs, 240u);
-    }
+    finalStyle.durationMs = std::min<uint32_t>(finalStyle.durationMs, shaper.maxDurationMs);
 
     const uint64_t rippleId = OverlayHostService::Instance().ShowRipple(ev, finalStyle, std::move(renderer), params);
-    if (helixMode && rippleId != 0) {
+    if (rippleId != 0) {
         activeRippleIds_.push_back(rippleId);
-        PruneInactiveRipples(kHelixMaxActiveRipples);
+        PruneInactiveRipples(shaper.maxActiveRipples);
     }
 }
 
