@@ -23,6 +23,17 @@ public:
     void RemoveLayer(IOverlayLayer* layer);
     void ClearLayers();
 
+    struct HostSurface {
+        HWND hwnd = nullptr;
+        HDC memDc = nullptr;
+        HBITMAP dib = nullptr;
+        void* bits = nullptr;
+        int x = 0;
+        int y = 0;
+        int width = 0;
+        int height = 0;
+    };
+
 private:
     static constexpr UINT_PTR kTimerId = 5;
     static constexpr UINT kMsgEnsureTopmost = WM_APP + 0x33;
@@ -33,12 +44,12 @@ private:
     static bool EnsureClassRegistered();
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-    LRESULT OnMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+    LRESULT OnMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     void OnTick();
     void Render();
-    void UpdateLayered();
-    void EnsureSurface(int w, int h);
-    void DestroySurface();
+    void RenderSurface(HostSurface& surface);
+    bool RebuildSurfaces();
+    void DestroySurfaces();
     void SyncBoundsWithVirtualScreen(bool forceMove);
     void StartFrameLoop();
     void StopFrameLoop();
@@ -46,12 +57,8 @@ private:
     void RegisterForegroundHook();
     void UnregisterForegroundHook();
 
-    HWND hwnd_ = nullptr;
-    HDC memDc_ = nullptr;
-    HBITMAP dib_ = nullptr;
-    void* bits_ = nullptr;
-    int width_ = 0;
-    int height_ = 0;
+    std::vector<HostSurface> surfaces_{};
+    HWND timerHwnd_ = nullptr;
     int virtualX_ = 0;
     int virtualY_ = 0;
     int virtualW_ = 0;

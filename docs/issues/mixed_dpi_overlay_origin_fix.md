@@ -45,6 +45,23 @@ Updated areas:
 
 Additional refinement for asymmetric scale pairs:
 
-- Switched from pure origin subtraction to `ScreenToClient(overlay hwnd)` mapping via `ScreenToOverlayPoint(...)`.
-- This lets Windows apply the correct DPI-aware coordinate transform for the host window.
-- Ripple/Text/Particle layers and Trail renderers now use the same conversion path.
+- Single fullscreen host window is still vulnerable in mixed-DPI topologies because one HWND cannot represent per-monitor DPI transforms consistently.
+- Final approach switches host rendering to **one layered host window per monitor**.
+- Each monitor host renders with its own local origin; `ScreenToOverlayPoint(...)` remains a simple `screen - origin` mapping.
+- This mirrors the stability behavior observed in the emoji text path (small per-monitor windows stay aligned).
+
+## Follow-up (DPI init hardening)
+
+- DPI awareness startup now attempts `Per-Monitor V2`, then `SetProcessDpiAwareness(ProcessPerMonitorDpiAware)`, and only then falls back to `SetProcessDPIAware`.
+- This reduces the chance of silently running with weaker DPI awareness on some machines.
+
+## Architecture decision
+
+- **Theoretical best (single host window across all monitors):**
+  - Lower window-management overhead and simpler composition path.
+  - Works well when all monitors share the same DPI scale.
+- **Current production choice (one host window per monitor):**
+  - Chosen for mixed-DPI stability (for example `100% + 150%`).
+  - Avoids cross-monitor DPI transform ambiguity and keeps pointer/effect alignment reliable.
+- Conclusion:
+  - In this codebase, single host is the ideal design target, but per-monitor host is the robust solution for real mixed-DPI environments.

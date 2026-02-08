@@ -12,6 +12,13 @@ std::atomic<int> g_overlayOriginX{0};
 std::atomic<int> g_overlayOriginY{0};
 std::atomic<UINT_PTR> g_overlayWindowHandle{0};
 
+POINT GetVirtualScreenOrigin() {
+    POINT pt{};
+    pt.x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    pt.y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    return pt;
+}
+
 } // namespace
 
 void SetOverlayWindowHandle(HWND hwnd) {
@@ -40,22 +47,11 @@ POINT GetOverlayOrigin() {
         return pt;
     }
 
-    POINT pt{};
-    pt.x = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    pt.y = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    return pt;
+    return GetVirtualScreenOrigin();
 }
 
 POINT ScreenToOverlayPoint(const POINT& screenPt) {
     POINT pt = screenPt;
-
-    const HWND hwnd = (HWND)g_overlayWindowHandle.load(std::memory_order_acquire);
-    if (hwnd && IsWindow(hwnd)) {
-        if (ScreenToClient(hwnd, &pt)) {
-            return pt;
-        }
-    }
-
     const POINT origin = GetOverlayOrigin();
     pt.x -= origin.x;
     pt.y -= origin.y;
