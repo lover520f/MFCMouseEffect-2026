@@ -254,6 +254,15 @@
         : `Bridge mode: ${modeLabel}`;
       finalText = `${finalText} ${bridgeMode}`;
     }
+    if (bridge && bridge.requested_mode && bridge.mode && bridge.requested_mode !== bridge.mode) {
+      const requestedLabel = (lang === 'zh-CN')
+        ? (bridge.requested_mode_label_zh || bridge.requested_mode || '')
+        : (bridge.requested_mode_label_en || bridge.requested_mode || '');
+      const fallbackText = (lang === 'zh-CN')
+        ? `已从请求模式回退: ${requestedLabel}`
+        : `Requested mode downgraded from: ${requestedLabel}`;
+      finalText = `${finalText} ${fallbackText}`;
+    }
     if (bridge && bridge.mode && bridge.mode !== 'none') {
       const compReady = !!bridge.compositor_apis_ready;
       const compText = (lang === 'zh-CN')

@@ -123,14 +123,25 @@ static json BuildDawnProbeJson(const gpu::DawnRuntimeProbeInfo& probe) {
 }
 
 static json BuildDawnOverlayBridgeJson(const gpu::DawnOverlayBridgeStatus& bridge) {
-    const bool hostCompat = bridge.mode == "host_compat";
-    const bool compositor = bridge.mode == "compositor";
+    const auto modeLabelEn = [](const std::string& mode) {
+        if (mode == "host_compat") return "Host-Compatible Bridge";
+        if (mode == "compositor") return "GPU Compositor Bridge";
+        return "Not Enabled";
+    };
+    const auto modeLabelZh = [](const std::string& mode) {
+        if (mode == "host_compat") return u8"\u5bbf\u4e3b\u517c\u5bb9\u6865\u63a5";
+        if (mode == "compositor") return u8"GPU \u5408\u6210\u6865\u63a5";
+        return u8"\u672a\u542f\u7528";
+    };
     return json{
         {"compiled", bridge.compiled},
         {"available", bridge.available},
         {"mode", bridge.mode},
-        {"mode_label_en", hostCompat ? "Host-Compatible Bridge" : (compositor ? "GPU Compositor Bridge" : "Not Enabled")},
-        {"mode_label_zh", hostCompat ? u8"\u5bbf\u4e3b\u517c\u5bb9\u6865\u63a5" : (compositor ? u8"GPU \u5408\u6210\u6865\u63a5" : u8"\u672a\u542f\u7528")},
+        {"mode_label_en", modeLabelEn(bridge.mode)},
+        {"mode_label_zh", modeLabelZh(bridge.mode)},
+        {"requested_mode", bridge.requestedMode},
+        {"requested_mode_label_en", modeLabelEn(bridge.requestedMode)},
+        {"requested_mode_label_zh", modeLabelZh(bridge.requestedMode)},
         {"compositor_apis_ready", bridge.compositorApisReady},
         {"compositor_detail", bridge.compositorDetail},
         {"detail", bridge.detail},
@@ -532,7 +543,9 @@ std::string WebSettingsServer::BuildSchemaJson() const {
         {"bridge_codes", json::array({
             "bridge_not_compiled",
             "bridge_compiled_stub",
-            "bridge_enabled_host_compat"
+            "bridge_enabled_host_compat",
+            "bridge_enabled_compositor",
+            "bridge_fallback_host_compat_compositor_not_ready"
         })},
         {"bridge_modes", json::array({
             "none",
