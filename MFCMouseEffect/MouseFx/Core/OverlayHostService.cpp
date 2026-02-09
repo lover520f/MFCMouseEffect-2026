@@ -32,6 +32,7 @@ void OverlayHostService::SetRenderBackendPreference(const std::string& backend) 
     const std::string normalized = NormalizeRenderBackend(backend);
     if (requestedBackend_ == normalized) return;
     requestedBackend_ = normalized;
+    RefreshGpuRuntimeProbe();
     Shutdown();
 }
 
@@ -66,6 +67,15 @@ void OverlayHostService::RefreshGpuRuntimeProbe() {
         const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
         backendDetail_ = dawn.detail;
     }
+}
+
+std::string OverlayHostService::ProbeDawnRuntimeNow(bool refreshProbe) {
+    if (refreshProbe) {
+        gpu::ResetDawnRuntimeProbe();
+    }
+    const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
+    backendDetail_ = dawn.detail;
+    return dawn.detail;
 }
 
 bool OverlayHostService::Initialize() {

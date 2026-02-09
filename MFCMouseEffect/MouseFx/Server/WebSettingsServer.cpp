@@ -152,6 +152,21 @@ bool WebSettingsServer::Start() {
                 resp.body = json({{"ok", true}}).dump();
                 return;
             }
+            if (req.method == "POST" && path == "/api/gpu/probe_now") {
+                bool refresh = true;
+                if (!req.body.empty()) {
+                    try {
+                        json in = json::parse(req.body);
+                        if (in.contains("refresh") && in["refresh"].is_boolean()) {
+                            refresh = in["refresh"].get<bool>();
+                        }
+                    } catch (...) {}
+                }
+                const std::string detail = OverlayHostService::Instance().ProbeDawnRuntimeNow(refresh);
+                resp.contentType = "application/json; charset=utf-8";
+                resp.body = json({{"ok", true}, {"detail", detail}}).dump();
+                return;
+            }
             if ((req.method == "POST" || req.method == "GET") && path == "/api/reload") {
                 if (controller_) controller_->HandleCommand("{\"cmd\":\"reload_config\"}");
                 resp.contentType = "application/json; charset=utf-8";

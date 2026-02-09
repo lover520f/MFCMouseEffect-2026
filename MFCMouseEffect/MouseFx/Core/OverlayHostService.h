@@ -34,6 +34,7 @@ public:
     bool HasGpuHardware() const;
     bool IsGpuBackendAvailable(const std::string& backend) const;
     void RefreshGpuRuntimeProbe();
+    std::string ProbeDawnRuntimeNow(bool refreshProbe);
 
     bool Initialize();
     void Shutdown();
