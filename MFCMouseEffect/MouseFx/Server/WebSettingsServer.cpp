@@ -306,7 +306,7 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
     };
 }
 
-static json BuildGpuBannerJson(const std::string& activeBackend, const gpu::DawnRuntimeStatus& status, const gpu::DawnOverlayBridgeStatus& bridge) {
+static json BuildGpuBannerJson(const std::string& backendPreference, const std::string& activeBackend, const gpu::DawnRuntimeStatus& status, const gpu::DawnOverlayBridgeStatus& bridge) {
     const bool gpuInUse = (activeBackend == "dawn");
     const std::string statusDetail = status.lastInitDetail.empty() ? status.probe.detail : status.lastInitDetail;
     const std::string stateCode = DawnStateCodeFromDetail(statusDetail);
@@ -329,6 +329,38 @@ static json BuildGpuBannerJson(const std::string& activeBackend, const gpu::Dawn
         }
     }
     const json accel = BuildGpuAccelerationJson(activeBackend, bridge);
+    if (!gpuInUse && backendPreference == "cpu") {
+        return json{
+            {"code", "cpu_forced"},
+            {"tone", "info"},
+            {"text_en", "CPU mode active (manual selection). GPU runtime checks are optional."},
+            {"text_zh", u8"\u5f53\u524d\u4e3a CPU \u6a21\u5f0f\uff08\u624b\u52a8\u9009\u62e9\uff09\uff0cGPU \u8fd0\u884c\u65f6\u68c0\u6d4b\u4ec5\u4f9b\u53c2\u8003\u3002"},
+            {"state_code", stateCode},
+            {"acceleration", accel},
+            {"action", json{
+                {"action_code", "none"},
+                {"action_text_en", ""},
+                {"action_text_zh", ""},
+                {"tone", "info"},
+            }},
+        };
+    }
+    if (!gpuInUse && backendPreference == "auto" && stateCode == "loader_missing") {
+        return json{
+            {"code", "cpu_auto_no_dawn_runtime"},
+            {"tone", "info"},
+            {"text_en", "CPU fallback active. Dawn runtime package not found; GPU mode remains optional."},
+            {"text_zh", u8"\u5f53\u524d\u4e3a CPU \u515c\u5e95\uff0c\u672a\u627e\u5230 Dawn \u8fd0\u884c\u65f6\u5305\uff0cGPU \u6a21\u5f0f\u4ecd\u4e3a\u53ef\u9009\u3002"},
+            {"state_code", stateCode},
+            {"acceleration", accel},
+            {"action", json{
+                {"action_code", "trigger_probe_now"},
+                {"action_text_en", "Use Recheck GPU when you later deploy Dawn runtime files."},
+                {"action_text_zh", u8"\u540e\u7eed\u90e8\u7f72 Dawn \u8fd0\u884c\u65f6\u6587\u4ef6\u540e\uff0c\u53ef\u70b9\u51fb\u201c\u91cd\u65b0\u68c0\u6d4b GPU\u201d\u3002"},
+                {"tone", "info"},
+            }},
+        };
+    }
     if (gpuInUse) {
         const bool full = accel.value("level", "partial") == "full";
         return json{
@@ -438,7 +470,7 @@ bool WebSettingsServer::Start() {
                     {"dawn_status", BuildDawnStatusJson(dawnStatus)},
                     {"dawn_overlay_bridge", BuildDawnOverlayBridgeJson(dawnBridge)},
                     {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge)},
-                    {"gpu_status_banner", BuildGpuBannerJson(activeBackend, dawnStatus, dawnBridge)},
+                    {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
                 }).dump();
                 return;
             }
@@ -470,7 +502,7 @@ bool WebSettingsServer::Start() {
                     {"dawn_status", BuildDawnStatusJson(dawnStatus)},
                     {"dawn_overlay_bridge", BuildDawnOverlayBridgeJson(dawnBridge)},
                     {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge)},
-                    {"gpu_status_banner", BuildGpuBannerJson(activeBackend, dawnStatus, dawnBridge)},
+                    {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
                 }).dump();
                 return;
             }
@@ -696,7 +728,7 @@ std::string WebSettingsServer::BuildStateJson() const {
     out["dawn_overlay_bridge"] = BuildDawnOverlayBridgeJson(dawnBridge);
     out["gpu_bridge_mode_request"] = EnsureUtf8(cfg.gpuBridgeModeRequest);
     out["gpu_acceleration"] = BuildGpuAccelerationJson(activeBackend, dawnBridge);
-    out["gpu_status_banner"] = BuildGpuBannerJson(activeBackend, dawnStatus, dawnBridge);
+    out["gpu_status_banner"] = BuildGpuBannerJson(cfg.renderBackend, activeBackend, dawnStatus, dawnBridge);
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
     out["active"] = {
         {"click", EnsureUtf8(cfg.active.click)},

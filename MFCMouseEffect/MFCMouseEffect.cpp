@@ -7,7 +7,6 @@
 #include "afxwinappex.h"
 #include "afxdialogex.h"
 #include "MFCMouseEffect.h"
-#include "UI/Frame/MainFrm.h"
 #include "UI/Tray/TrayHostWnd.h"
 #include "UI/Settings/SettingsWnd.h"
 #include "Settings/SettingsBackend.h"
@@ -275,22 +274,7 @@ BOOL CMFCMouseEffectApp::InitInstance()
 	}
 	backgroundMode_ = !showTrayIcon;
 
-#ifdef _DEBUG
-	// Debug：创建 CTrayHostWnd (完整托盘菜单) + CMainFrame (MDI调试窗口)
-	trayHost_ = std::make_unique<CTrayHostWnd>();
-	trayHost_->CreateHost(showTrayIcon);
-
-	CMainFrame* pMainFrame = new CMainFrame;
-	if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
-	{
-		delete pMainFrame;
-		return FALSE;
-	}
-	m_pMainWnd = pMainFrame;
-	pMainFrame->ShowWindow(SW_SHOW);
-	pMainFrame->UpdateWindow();
-#else
-	// Release：仅创建隐藏宿主窗口用于托盘图标。
+	// Unified for Debug/Release: use hidden tray host window only.
 	trayHost_ = std::make_unique<CTrayHostWnd>();
 	if (!trayHost_->CreateHost(showTrayIcon))
 	{
@@ -298,7 +282,6 @@ BOOL CMFCMouseEffectApp::InitInstance()
 		return FALSE;
 	}
 	m_pMainWnd = trayHost_.get();
-#endif
 
 	// Start global mouse click effects (non-blocking, click-through).
 	mouseFx_ = std::make_unique<mousefx::AppController>();
