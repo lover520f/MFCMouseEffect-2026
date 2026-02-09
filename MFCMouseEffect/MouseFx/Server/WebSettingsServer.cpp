@@ -487,7 +487,8 @@ std::string WebSettingsServer::BuildSchemaJson() const {
         {"version", 1},
         {"bridge_codes", json::array({
             "bridge_not_compiled",
-            "bridge_compiled_stub"
+            "bridge_compiled_stub",
+            "bridge_enabled_host_compat"
         })},
         {"state_codes", json::array({
             "init_not_run",
