@@ -115,12 +115,32 @@ static json BuildDawnProbeJson(const gpu::DawnRuntimeProbeInfo& probe) {
     };
 }
 
+static const char* DawnStateCodeFromDetail(const std::string& detail) {
+    if (detail == "no_display_adapter") return "no_display_adapter";
+    if (detail == "dawn_disabled_at_build") return "build_disabled";
+    if (detail == "dawn_loader_missing") return "loader_missing";
+    if (detail == "dawn_symbols_missing") return "symbols_missing";
+    if (detail == "dawn_symbols_partial") return "symbols_partial";
+    if (detail == "dawn_create_instance_proc_missing") return "create_proc_missing";
+    if (detail == "dawn_create_instance_failed") return "create_failed";
+    if (detail == "dawn_instance_ok_no_device") return "instance_ok_no_device";
+    if (detail == "dawn_runtime_ready_for_device_stage") return "ready_for_device_stage";
+    if (detail == "init_not_run") return "init_not_run";
+    return "unknown";
+}
+
 static json BuildDawnStatusJson(const gpu::DawnRuntimeStatus& status) {
+    const std::string statusDetail = status.lastInitDetail.empty() ? status.probe.detail : status.lastInitDetail;
+    const char* stateCode = DawnStateCodeFromDetail(statusDetail);
     return json{
+        {"schema_version", 1},
+        {"state_code", stateCode},
+        {"detail", statusDetail},
         {"init_attempts", status.initAttempts},
         {"last_init_detail", status.lastInitDetail},
         {"last_init_tick_ms", status.lastInitTickMs},
         {"ready_for_device_stage", status.readyForDeviceStage},
+        {"legacy_ready_for_device_stage", status.readyForDeviceStage},
         {"probe", BuildDawnProbeJson(status.probe)},
     };
 }
@@ -314,6 +334,23 @@ std::string WebSettingsServer::BuildSchemaJson() const {
         {{"value","smooth"},{"label", LabelByLang(L"\u5e73\u6ed1\u8ddf\u968f\uff08\u63a8\u8350\uff09", L"Smooth (Recommended)", lang)}},
         {{"value","efficient"},{"label", LabelByLang(L"\u6027\u80fd\u4f18\u5148\uff08\u7701CPU\uff09", L"Performance First (Lower CPU)", lang)}}
     });
+
+    out["gpu_status_schema"] = {
+        {"version", 1},
+        {"state_codes", json::array({
+            "init_not_run",
+            "no_display_adapter",
+            "build_disabled",
+            "loader_missing",
+            "symbols_missing",
+            "symbols_partial",
+            "create_proc_missing",
+            "create_failed",
+            "instance_ok_no_device",
+            "ready_for_device_stage",
+            "unknown"
+        })}
+    };
 
     auto build = [&](const EffectOption* (*fn)(size_t&), const char* key) {
         size_t n = 0;
