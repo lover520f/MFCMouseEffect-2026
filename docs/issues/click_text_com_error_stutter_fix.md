@@ -60,3 +60,8 @@
   - Render color emoji glyphs once with `D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT`.
   - Reuse cached backbuffer for subsequent animation frames (position + alpha only), avoiding per-frame color-font draw calls.
 - This keeps original color emoji appearance while reducing COM first-chance noise significantly.
+
+## 2026-02-09 Decision Update
+
+- Removed the debug-only `_set_com_error_handler(...)` hook from `MFCMouseEffect.cpp`.
+- Reason: do not hide first-chance COM diagnostics globally in debug sessions; keep raw debugger signals visible for root-cause analysis.
