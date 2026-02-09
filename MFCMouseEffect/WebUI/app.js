@@ -55,6 +55,7 @@
       label_language: "Language",
       label_theme: "Theme",
       label_render_backend: "Render Backend",
+      label_gpu_bridge_mode: "GPU Bridge Mode",
       label_hold_follow_mode: "Hold Tracking",
       tip_hold_follow_mode: "Choose by feel and CPU budget: Precise (lowest latency, best for aiming/drawing), Smooth (recommended default, balanced response and stability), Performance First (reduced update rate for heavy effects or weaker CPUs).",
       label_click: "Click",
@@ -82,6 +83,9 @@
       status_gpu_probing: "Rechecking GPU runtime...",
       status_gpu_probe_done: "GPU runtime status updated.",
       status_gpu_probe_failed: "GPU probe failed: ",
+      status_bridge_switching: "Switching GPU bridge mode...",
+      status_bridge_switched: "GPU bridge mode switched.",
+      status_bridge_switch_failed: "GPU bridge mode switch failed: ",
       style_default: "Default",
       style_snappy: "Snappy",
       style_long: "Long",
@@ -132,6 +136,7 @@
       label_language: "\u8bed\u8a00",
       label_theme: "\u4e3b\u9898",
       label_render_backend: "\u6e32\u67d3\u540e\u7aef",
+      label_gpu_bridge_mode: "GPU \u6865\u63a5\u6a21\u5f0f",
       label_hold_follow_mode: "\u957f\u6309\u8ddf\u968f\u6a21\u5f0f",
       tip_hold_follow_mode: "\u6309\u4f53\u611f\u548c CPU \u9884\u7b97\u9009\u62e9\uff1a\u7cbe\u51c6\u8ddf\u968f\uff08\u5ef6\u8fdf\u6700\u4f4e\uff0c\u9002\u5408\u6e38\u620f/\u7ed8\u56fe\uff09\uff1b\u5e73\u6ed1\u8ddf\u968f\uff08\u9ed8\u8ba4\u63a8\u8350\uff0c\u8ddf\u624b\u4e0e\u7a33\u5b9a\u66f4\u5747\u8861\uff09\uff1b\u6027\u80fd\u4f18\u5148\uff08\u964d\u4f4e\u66f4\u65b0\u9891\u7387\uff0c\u9002\u5408\u7279\u6548\u8f83\u91cd\u6216 CPU \u7d27\u5f20\u573a\u666f\uff09\u3002",
       label_click: "\u70b9\u51fb",
@@ -159,6 +164,9 @@
       status_gpu_probing: "\u6b63\u5728\u91cd\u65b0\u68c0\u6d4b GPU \u8fd0\u884c\u65f6...",
       status_gpu_probe_done: "GPU \u8fd0\u884c\u65f6\u72b6\u6001\u5df2\u66f4\u65b0\u3002",
       status_gpu_probe_failed: "GPU \u68c0\u6d4b\u5931\u8d25\uff1a",
+      status_bridge_switching: "\u6b63\u5728\u5207\u6362 GPU \u6865\u63a5\u6a21\u5f0f...",
+      status_bridge_switched: "GPU \u6865\u63a5\u6a21\u5f0f\u5df2\u5207\u6362\u3002",
+      status_bridge_switch_failed: "GPU \u6865\u63a5\u6a21\u5f0f\u5207\u6362\u5931\u8d25\uff1a",
       style_default: "\u9ed8\u8ba4",
       style_snappy: "\u7d27\u81f4",
       style_long: "\u5ef6\u957f",
@@ -453,6 +461,23 @@
     }
   }
 
+  async function switchBridgeMode(mode){
+    if (blockActionWhenDisconnected()) return;
+    setStatus(statusText('status_bridge_switching', 'Switching GPU bridge mode...'));
+    try {
+      const res = await apiPost('/api/gpu/bridge_mode', {mode});
+      const merged = mergeGpuStatePatch(res);
+      if (merged && typeof merged.gpu_bridge_mode_request !== 'string') {
+        merged.gpu_bridge_mode_request = mode;
+      }
+      renderGpuBanner(merged);
+      setStatus(statusText('status_bridge_switched', 'GPU bridge mode switched.'), 'ok');
+    } catch (e) {
+      if (e && e.code === 'unauthorized') return;
+      setStatus(statusError('status_bridge_switch_failed', 'GPU bridge mode switch failed: ', e), 'warn');
+    }
+  }
+
   function fillSelect(sel, items, current){
     sel.innerHTML = '';
     for(const it of items || []){
@@ -485,6 +510,7 @@
     fillSelect(el('ui_language'), schema.ui_languages, st.ui_language);
     fillSelect(el('theme'), schema.themes, st.theme);
     fillSelect(el('render_backend'), schema.render_backends, st.render_backend || 'gdi_cpu');
+    fillSelect(el('gpu_bridge_mode_request'), schema.gpu_bridge_modes, st.gpu_bridge_mode_request || 'host_compat');
     fillSelect(el('hold_follow_mode'), schema.hold_follow_modes, st.hold_follow_mode || 'smooth');
     fillSelect(el('click'), schema.effects?.click, st.active?.click);
     fillSelect(el('trail'), schema.effects?.trail, st.active?.trail);
@@ -522,6 +548,7 @@
       ui_language: el('ui_language').value,
       theme: el('theme').value,
       render_backend: el('render_backend').value,
+      gpu_bridge_mode_request: el('gpu_bridge_mode_request').value,
       hold_follow_mode: el('hold_follow_mode').value,
       active: {
         click: el('click').value,
@@ -635,6 +662,13 @@
 
   if (btnGpuProbeEl) {
     btnGpuProbeEl.addEventListener('click', () => { probeGpuNow(); });
+  }
+
+  const bridgeModeSelect = el('gpu_bridge_mode_request');
+  if (bridgeModeSelect) {
+    bridgeModeSelect.addEventListener('change', () => {
+      switchBridgeMode(bridgeModeSelect.value || 'host_compat');
+    });
   }
 
   startHealthCheck();

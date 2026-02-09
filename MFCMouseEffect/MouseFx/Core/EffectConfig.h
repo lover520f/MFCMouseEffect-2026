@@ -133,6 +133,10 @@ struct EffectConfig {
     // auto | dawn | cpu
     // Runtime always falls back to cpu when preferred gpu backend is unavailable.
     std::string renderBackend = "auto";
+    // Dawn bridge mode request:
+    // host_compat | compositor
+    // Runtime may fallback to host_compat when compositor APIs are unavailable.
+    std::string gpuBridgeModeRequest = "host_compat";
     // UI language for non-background settings window (persisted).
     // Values: "zh-CN" (default) or "en-US".
     std::string uiLanguage = "zh-CN";

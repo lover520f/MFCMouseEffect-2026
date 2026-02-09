@@ -50,6 +50,8 @@ public:
     void SetTheme(const std::string& theme);
     // Set render backend preference (auto|dawn|cpu).
     void SetRenderBackend(const std::string& backend);
+    // Set Dawn bridge mode request (host_compat|compositor).
+    void SetGpuBridgeModeRequest(const std::string& mode);
 
     // Set settings window UI language (persisted).
     void SetUiLanguage(const std::string& lang);

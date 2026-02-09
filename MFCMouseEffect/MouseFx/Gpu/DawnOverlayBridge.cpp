@@ -4,9 +4,12 @@
 #include "DawnRuntime.h"
 
 #include <cstdlib>
+#include <mutex>
 
 namespace mousefx::gpu {
 namespace {
+std::mutex g_bridgeModeMutex{};
+std::string g_requestedModeOverride{};
 
 std::string ToLowerAscii(std::string s) {
     for (char& c : s) {
@@ -22,6 +25,10 @@ std::string NormalizeRequestedBridgeMode(const char* raw) {
     return "host_compat";
 }
 
+std::string NormalizeRequestedBridgeMode(const std::string& raw) {
+    return NormalizeRequestedBridgeMode(raw.c_str());
+}
+
 std::string ReadRequestedBridgeModeFromEnv() {
     char* raw = nullptr;
     size_t len = 0;
@@ -35,6 +42,14 @@ std::string ReadRequestedBridgeModeFromEnv() {
     return out;
 }
 
+std::string ReadRequestedBridgeMode() {
+    std::lock_guard<std::mutex> lock(g_bridgeModeMutex);
+    if (!g_requestedModeOverride.empty()) {
+        return NormalizeRequestedBridgeMode(g_requestedModeOverride);
+    }
+    return ReadRequestedBridgeModeFromEnv();
+}
+
 } // namespace
 
 DawnOverlayBridgeStatus GetDawnOverlayBridgeStatus() {
@@ -43,7 +58,7 @@ DawnOverlayBridgeStatus GetDawnOverlayBridgeStatus() {
     status.compositorApisReady = probe.hasCreateSurface && probe.hasGetQueue && probe.hasSurfacePresent && probe.canCreateDevice;
     status.compositorDetail = status.compositorApisReady ? "compositor_api_ready" : "compositor_api_missing";
 #ifdef MOUSEFX_ENABLE_DAWN_OVERLAY_BRIDGE
-    status.requestedMode = ReadRequestedBridgeModeFromEnv();
+    status.requestedMode = ReadRequestedBridgeMode();
     status.compiled = true;
     status.available = true;
     if (status.requestedMode == "compositor") {
@@ -70,6 +85,15 @@ DawnOverlayBridgeStatus GetDawnOverlayBridgeStatus() {
 
 bool IsDawnOverlayBridgeAvailable() {
     return GetDawnOverlayBridgeStatus().available;
+}
+
+void SetRequestedBridgeMode(const std::string& mode) {
+    std::lock_guard<std::mutex> lock(g_bridgeModeMutex);
+    g_requestedModeOverride = NormalizeRequestedBridgeMode(mode);
+}
+
+std::string GetRequestedBridgeMode() {
+    return ReadRequestedBridgeMode();
 }
 
 } // namespace mousefx::gpu

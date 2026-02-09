@@ -16,5 +16,7 @@ struct DawnOverlayBridgeStatus {
 
 DawnOverlayBridgeStatus GetDawnOverlayBridgeStatus();
 bool IsDawnOverlayBridgeAvailable();
+void SetRequestedBridgeMode(const std::string& mode);
+std::string GetRequestedBridgeMode();
 
 } // namespace mousefx::gpu

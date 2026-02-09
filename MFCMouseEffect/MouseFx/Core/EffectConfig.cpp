@@ -94,6 +94,12 @@ static std::string NormalizeRenderBackend(std::string s) {
     return "auto";
 }
 
+static std::string NormalizeGpuBridgeMode(std::string s) {
+    s = ToLowerAsciiLocal(s);
+    if (s == "compositor") return "compositor";
+    return "host_compat";
+}
+
 static TrailHistoryProfile SanitizeTrailHistoryProfile(TrailHistoryProfile p) {
     if (p.durationMs < 80) p.durationMs = 80;
     if (p.durationMs > 2000) p.durationMs = 2000;
@@ -225,6 +231,7 @@ EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
     cfg.defaultEffect = GetOr<std::string>(root, "default_effect", cfg.defaultEffect);
     cfg.theme = GetOr<std::string>(root, "theme", cfg.theme);
     cfg.renderBackend = NormalizeRenderBackend(GetOr<std::string>(root, "render_backend", cfg.renderBackend));
+    cfg.gpuBridgeModeRequest = NormalizeGpuBridgeMode(GetOr<std::string>(root, "gpu_bridge_mode_request", cfg.gpuBridgeModeRequest));
     cfg.uiLanguage = GetOr<std::string>(root, "ui_language", cfg.uiLanguage);
     cfg.holdFollowMode = NormalizeHoldFollowMode(GetOr<std::string>(root, "hold_follow_mode", cfg.holdFollowMode));
     if (root.contains("active_effects") && root["active_effects"].is_object()) {
@@ -391,6 +398,7 @@ bool EffectConfig::Save(const std::wstring& exeDir, const EffectConfig& cfg) {
     root["default_effect"] = cfg.defaultEffect;
     root["theme"] = cfg.theme;
     root["render_backend"] = NormalizeRenderBackend(cfg.renderBackend);
+    root["gpu_bridge_mode_request"] = NormalizeGpuBridgeMode(cfg.gpuBridgeModeRequest);
     root["ui_language"] = cfg.uiLanguage;
     root["hold_follow_mode"] = NormalizeHoldFollowMode(cfg.holdFollowMode);
     root["trail_style"] = cfg.trailStyle;

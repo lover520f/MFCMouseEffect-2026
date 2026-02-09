@@ -387,6 +387,44 @@ bool WebSettingsServer::Start() {
                 resp.body = json({{"ok", true}}).dump();
                 return;
             }
+            if (req.method == "POST" && path == "/api/gpu/bridge_mode") {
+                std::string mode = "host_compat";
+                if (!req.body.empty()) {
+                    try {
+                        json in = json::parse(req.body);
+                        if (in.contains("mode") && in["mode"].is_string()) {
+                            mode = in["mode"].get<std::string>();
+                        }
+                    } catch (...) {}
+                }
+                if (controller_) {
+                    json cmd;
+                    cmd["cmd"] = "set_gpu_bridge_mode";
+                    cmd["mode"] = mode;
+                    controller_->HandleCommand(cmd.dump());
+                } else {
+                    gpu::SetRequestedBridgeMode(mode);
+                    OverlayHostService::Instance().RefreshGpuRuntimeProbe();
+                }
+                const std::string activeBackend = OverlayHostService::Instance().GetActiveRenderBackend();
+                const gpu::DawnRuntimeStatus dawnStatus = gpu::GetDawnRuntimeStatus();
+                const gpu::DawnOverlayBridgeStatus dawnBridge = gpu::GetDawnOverlayBridgeStatus();
+                resp.contentType = "application/json; charset=utf-8";
+                resp.body = json({
+                    {"ok", true},
+                    {"requested_mode", dawnBridge.requestedMode},
+                    {"gpu_bridge_mode_request", dawnBridge.requestedMode},
+                    {"active_backend", activeBackend},
+                    {"backend_detail", OverlayHostService::Instance().GetRenderBackendDetail()},
+                    {"render_pipeline_mode", OverlayHostService::Instance().GetRenderPipelineMode()},
+                    {"gpu_in_use", activeBackend == "dawn"},
+                    {"dawn_status", BuildDawnStatusJson(dawnStatus)},
+                    {"dawn_overlay_bridge", BuildDawnOverlayBridgeJson(dawnBridge)},
+                    {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge)},
+                    {"gpu_status_banner", BuildGpuBannerJson(activeBackend, dawnStatus, dawnBridge)},
+                }).dump();
+                return;
+            }
             if (req.method == "POST" && path == "/api/gpu/probe_now") {
                 bool refresh = true;
                 if (!req.body.empty()) {
@@ -531,6 +569,10 @@ std::string WebSettingsServer::BuildSchemaJson() const {
         {{"value","smooth"},{"label", LabelByLang(L"\u5e73\u6ed1\u8ddf\u968f\uff08\u63a8\u8350\uff09", L"Smooth (Recommended)", lang)}},
         {{"value","efficient"},{"label", LabelByLang(L"\u6027\u80fd\u4f18\u5148\uff08\u7701CPU\uff09", L"Performance First (Lower CPU)", lang)}}
     });
+    out["gpu_bridge_modes"] = json::array({
+        {{"value","host_compat"},{"label", LabelByLang(L"\u5bbf\u4e3b\u517c\u5bb9\u6865\u63a5\uff08\u7a33\u5b9a\u63a8\u8350\uff09", L"Host-Compatible Bridge (Stable)", lang)}},
+        {{"value","compositor"},{"label", LabelByLang(L"GPU \u5408\u6210\u6865\u63a5\uff08\u5b9e\u9a8c\uff09", L"GPU Compositor Bridge (Experimental)", lang)}}
+    });
 
     out["render_pipeline_modes"] = json::array({
         {{"value", "cpu_layered"}, {"label", LabelByLang(L"CPU \u5206\u5c42\u7a97\u53e3", L"CPU Layered Window", lang)}},
@@ -634,6 +676,7 @@ std::string WebSettingsServer::BuildStateJson() const {
     out["dawn_probe"] = BuildDawnProbeJson(dawnStatus.probe);
     out["dawn_status"] = BuildDawnStatusJson(dawnStatus);
     out["dawn_overlay_bridge"] = BuildDawnOverlayBridgeJson(dawnBridge);
+    out["gpu_bridge_mode_request"] = EnsureUtf8(cfg.gpuBridgeModeRequest);
     out["gpu_acceleration"] = BuildGpuAccelerationJson(activeBackend, dawnBridge);
     out["gpu_status_banner"] = BuildGpuBannerJson(activeBackend, dawnStatus, dawnBridge);
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);

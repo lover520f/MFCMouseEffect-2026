@@ -54,6 +54,12 @@ static std::string NormalizeRenderBackend(std::string backend) {
     return "auto";
 }
 
+static std::string NormalizeGpuBridgeMode(std::string mode) {
+    mode = ToLowerAscii(mode);
+    if (mode == "compositor") return "compositor";
+    return "host_compat";
+}
+
 static std::wstring Utf8ToWString(const std::string& s) {
     if (s.empty()) return {};
     int len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
@@ -120,6 +126,7 @@ bool AppController::Start() {
     // Load config from the best available directory (AppData preferred)
     configDir_ = ResolveConfigDirectory();
     config_ = EffectConfig::Load(configDir_);
+    OverlayHostService::Instance().SetGpuBridgeModeRequest(config_.gpuBridgeModeRequest);
     OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
 
     diag_.stage = StartStage::GdiPlusStartup;
@@ -242,6 +249,19 @@ void AppController::SetRenderBackend(const std::string& backend) {
     RecreateActiveEffects();
 }
 
+void AppController::SetGpuBridgeModeRequest(const std::string& mode) {
+    const std::string normalized = NormalizeGpuBridgeMode(mode);
+    const bool changed = (config_.gpuBridgeModeRequest != normalized);
+    if (changed) {
+        config_.gpuBridgeModeRequest = normalized;
+        PersistConfig();
+    }
+    OverlayHostService::Instance().SetGpuBridgeModeRequest(normalized);
+    if (config_.renderBackend != "cpu") {
+        RecreateActiveEffects();
+    }
+}
+
 void AppController::SetUiLanguage(const std::string& lang) {
     if (lang.empty()) return;
     config_.uiLanguage = lang;
@@ -293,6 +313,7 @@ void AppController::ResetConfig() {
     PersistConfig();
 
     // 3. Re-apply everything
+    OverlayHostService::Instance().SetGpuBridgeModeRequest(config_.gpuBridgeModeRequest);
     OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
     RecreateActiveEffects();
     
@@ -307,6 +328,7 @@ void AppController::ReloadConfigFromDisk() {
 
     EffectConfig loaded = EffectConfig::Load(configDir_);
     config_ = loaded;
+    OverlayHostService::Instance().SetGpuBridgeModeRequest(config_.gpuBridgeModeRequest);
     OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
 
     RecreateActiveEffects();
@@ -372,6 +394,9 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
     } else if (cmd == "set_render_backend") {
         std::string backend = ExtractJsonStringValue(jsonCmd, "backend");
         SetRenderBackend(backend);
+    } else if (cmd == "set_gpu_bridge_mode") {
+        std::string mode = ExtractJsonStringValue(jsonCmd, "mode");
+        SetGpuBridgeModeRequest(mode);
     } else if (cmd == "set_ui_language") {
         std::string lang = ExtractJsonStringValue(jsonCmd, "lang");
         SetUiLanguage(lang);
@@ -454,6 +479,9 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
         }
         if (p.contains("render_backend") && p["render_backend"].is_string()) {
             SetRenderBackend(p["render_backend"].get<std::string>());
+        }
+        if (p.contains("gpu_bridge_mode_request") && p["gpu_bridge_mode_request"].is_string()) {
+            SetGpuBridgeModeRequest(p["gpu_bridge_mode_request"].get<std::string>());
         }
 
         // Trail tuning (optional fields).

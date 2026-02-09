@@ -32,6 +32,8 @@ public:
     std::string GetActiveRenderBackend() const;
     std::string GetRenderBackendDetail() const;
     std::string GetRenderPipelineMode() const;
+    void SetGpuBridgeModeRequest(const std::string& mode);
+    std::string GetGpuBridgeModeRequest() const;
     bool HasGpuHardware() const;
     bool IsGpuBackendAvailable(const std::string& backend) const;
     void RefreshGpuRuntimeProbe();
@@ -66,6 +68,7 @@ private:
     RippleOverlayLayer* rippleLayer_ = nullptr;
     TextOverlayLayer* textLayer_ = nullptr;
     std::string requestedBackend_ = "auto";
+    std::string requestedBridgeMode_ = "host_compat";
     std::string activeBackend_ = "cpu";
     std::string backendDetail_ = "cpu_default";
     std::string pipelineMode_ = "cpu_layered";
@@ -73,6 +76,7 @@ private:
     RippleOverlayLayer* EnsureRippleLayer();
     TextOverlayLayer* EnsureTextLayer();
     static std::string NormalizeRenderBackend(std::string backend);
+    static std::string NormalizeGpuBridgeMode(std::string mode);
 };
 
 } // namespace mousefx

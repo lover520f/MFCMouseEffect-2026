@@ -24,6 +24,14 @@ std::string OverlayHostService::NormalizeRenderBackend(std::string backend) {
     return "auto";
 }
 
+std::string OverlayHostService::NormalizeGpuBridgeMode(std::string mode) {
+    for (char& c : mode) {
+        if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
+    }
+    if (mode == "compositor") return "compositor";
+    return "host_compat";
+}
+
 OverlayHostService& OverlayHostService::Instance() {
     static OverlayHostService instance;
     return instance;
@@ -51,6 +59,17 @@ std::string OverlayHostService::GetRenderBackendDetail() const {
 
 std::string OverlayHostService::GetRenderPipelineMode() const {
     return pipelineMode_;
+}
+
+void OverlayHostService::SetGpuBridgeModeRequest(const std::string& mode) {
+    const std::string normalized = NormalizeGpuBridgeMode(mode);
+    requestedBridgeMode_ = normalized;
+    gpu::SetRequestedBridgeMode(normalized);
+    RefreshGpuRuntimeProbe();
+}
+
+std::string OverlayHostService::GetGpuBridgeModeRequest() const {
+    return requestedBridgeMode_;
 }
 
 bool OverlayHostService::HasGpuHardware() const {
