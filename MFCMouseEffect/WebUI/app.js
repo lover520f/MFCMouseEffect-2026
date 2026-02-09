@@ -4,6 +4,7 @@
   const statusEl = document.getElementById('status');
   const gpuBannerEl = document.getElementById('gpuBanner');
   const gpuBannerTextEl = document.getElementById('gpuBannerText');
+  const btnGpuActionEl = document.getElementById('btnGpuAction');
   const btnGpuProbeEl = document.getElementById('btnGpuProbe');
   const healthCheckMs = 3000;
   let healthTimer = 0;
@@ -79,10 +80,15 @@
       label_electric_params: "electric amp/fork",
       label_meteor_params: "meteor rate/speed",
       hint_clamp: "Values are clamped to safe ranges when applied.",
+      btn_gpu_action_probe: "Probe now",
+      btn_gpu_action_enable_dawn: "Enable Dawn",
       btn_probe_gpu: "Recheck GPU",
       status_gpu_probing: "Rechecking GPU runtime...",
       status_gpu_probe_done: "GPU runtime status updated.",
       status_gpu_probe_failed: "GPU probe failed: ",
+      status_gpu_action_running: "Executing suggested action...",
+      status_gpu_action_done: "Suggested action completed.",
+      status_gpu_action_failed: "Suggested action failed: ",
       status_bridge_switching: "Switching GPU bridge mode...",
       status_bridge_switched: "GPU bridge mode switched.",
       status_bridge_switch_failed: "GPU bridge mode switch failed: ",
@@ -160,10 +166,15 @@
       label_electric_params: "\u7535\u5f27 \u632f\u5e45/\u5206\u53c9",
       label_meteor_params: "\u6d41\u661f \u9891\u7387/\u901f\u5ea6",
       hint_clamp: "\u6570\u503c\u4f1a\u88ab\u5b89\u5168\u533a\u95f4\u8fdb\u884c\u88c1\u526a\u3002",
+      btn_gpu_action_probe: "\u7acb\u5373\u63a2\u6d4b",
+      btn_gpu_action_enable_dawn: "\u542f\u7528 Dawn",
       btn_probe_gpu: "\u91cd\u65b0\u68c0\u6d4b GPU",
       status_gpu_probing: "\u6b63\u5728\u91cd\u65b0\u68c0\u6d4b GPU \u8fd0\u884c\u65f6...",
       status_gpu_probe_done: "GPU \u8fd0\u884c\u65f6\u72b6\u6001\u5df2\u66f4\u65b0\u3002",
       status_gpu_probe_failed: "GPU \u68c0\u6d4b\u5931\u8d25\uff1a",
+      status_gpu_action_running: "\u6b63\u5728\u6267\u884c\u5efa\u8bae\u64cd\u4f5c...",
+      status_gpu_action_done: "\u5efa\u8bae\u64cd\u4f5c\u5df2\u5b8c\u6210\u3002",
+      status_gpu_action_failed: "\u5efa\u8bae\u64cd\u4f5c\u5931\u8d25\uff1a",
       status_bridge_switching: "\u6b63\u5728\u5207\u6362 GPU \u6865\u63a5\u6a21\u5f0f...",
       status_bridge_switched: "GPU \u6865\u63a5\u6a21\u5f0f\u5df2\u5207\u6362\u3002",
       status_bridge_switch_failed: "GPU \u6865\u63a5\u6a21\u5f0f\u5207\u6362\u5931\u8d25\uff1a",
@@ -231,6 +242,7 @@
     }
     const banner = st.gpu_status_banner || {};
     const action = banner.action || {};
+    const actionCode = action.action_code || '';
     const lang = pickLang();
     const text = (lang === 'zh-CN') ? (banner.text_zh || banner.text_en || '') : (banner.text_en || banner.text_zh || '');
     const actionText = (lang === 'zh-CN') ? (action.action_text_zh || action.action_text_en || '') : (action.action_text_en || action.action_text_zh || '');
@@ -288,8 +300,44 @@
     if (gpuBannerTextEl) {
       gpuBannerTextEl.textContent = stateCode ? `${prefix}${finalText} (${stateCode})` : `${prefix}${finalText}`;
     }
+    renderGpuActionButton(actionCode);
     const tone = banner.tone || (st.gpu_in_use ? 'ok' : 'warn');
     gpuBannerEl.className = `gpu-banner ${tone}`;
+  }
+
+  function isGpuActionSupported(actionCode){
+    return actionCode === 'trigger_probe_now' ||
+      actionCode === 'wire_device_stage' ||
+      actionCode === 'wire_overlay_gpu_bridge' ||
+      actionCode === 'enable_dawn_backend' ||
+      actionCode === 'review_logs' ||
+      actionCode === 'check_driver_and_backend' ||
+      actionCode === 'validate_runtime_abi';
+  }
+
+  function gpuActionLabel(actionCode){
+    if (actionCode === 'enable_dawn_backend') {
+      return statusText('btn_gpu_action_enable_dawn', 'Enable Dawn');
+    }
+    return statusText('btn_gpu_action_probe', 'Probe now');
+  }
+
+  function renderGpuActionButton(actionCode){
+    if (!btnGpuActionEl) return;
+    if (!actionCode || !isGpuActionSupported(actionCode)) {
+      btnGpuActionEl.classList.add('hidden');
+      btnGpuActionEl.dataset.actionCode = '';
+      return;
+    }
+    btnGpuActionEl.dataset.actionCode = actionCode;
+    btnGpuActionEl.textContent = gpuActionLabel(actionCode);
+    btnGpuActionEl.classList.remove('hidden');
+  }
+
+  async function refreshStateFromServer(){
+    const st = await apiGet('/api/state');
+    latestState = st;
+    renderGpuBanner(st);
   }
 
   function currentText(){
@@ -458,6 +506,27 @@
     } catch (e) {
       if (e && e.code === 'unauthorized') return;
       setStatus(statusError('status_gpu_probe_failed', 'GPU probe failed: ', e), 'warn');
+    }
+  }
+
+  async function runGpuSuggestedAction(){
+    if (!btnGpuActionEl) return;
+    const actionCode = btnGpuActionEl.dataset.actionCode || '';
+    if (!actionCode || !isGpuActionSupported(actionCode)) return;
+    if (blockActionWhenDisconnected()) return;
+
+    setStatus(statusText('status_gpu_action_running', 'Executing suggested action...'));
+    try {
+      if (actionCode === 'enable_dawn_backend') {
+        await apiPost('/api/state', {render_backend: 'dawn'});
+        await refreshStateFromServer();
+      } else {
+        await probeGpuNow();
+      }
+      setStatus(statusText('status_gpu_action_done', 'Suggested action completed.'), 'ok');
+    } catch (e) {
+      if (e && e.code === 'unauthorized') return;
+      setStatus(statusError('status_gpu_action_failed', 'Suggested action failed: ', e), 'warn');
     }
   }
 
@@ -662,6 +731,9 @@
 
   if (btnGpuProbeEl) {
     btnGpuProbeEl.addEventListener('click', () => { probeGpuNow(); });
+  }
+  if (btnGpuActionEl) {
+    btnGpuActionEl.addEventListener('click', () => { runGpuSuggestedAction(); });
   }
 
   const bridgeModeSelect = el('gpu_bridge_mode_request');

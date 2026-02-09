@@ -112,6 +112,19 @@ body.mfx-modal-open{overflow:hidden}
   background:rgba(12,20,36,.88);
   color:var(--text)
 }
+.gpu-banner .action-btn{
+  flex:0 0 auto;
+  padding:7px 10px;
+  border-radius:8px;
+  font-size:12px;
+  border:1px solid rgba(77,248,255,.35);
+  background:linear-gradient(90deg,rgba(77,248,255,.18),rgba(255,90,247,.10));
+  color:var(--text)
+}
+.gpu-banner .action-btn:hover{
+  border-color:rgba(77,248,255,.60)
+}
+.gpu-banner .action-btn.hidden{display:none}
 .gpu-banner .probe-btn:hover{
   border-color:rgba(77,248,255,.45)
 }
