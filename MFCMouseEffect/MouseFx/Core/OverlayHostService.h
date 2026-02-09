@@ -31,6 +31,7 @@ public:
     std::string GetRenderBackendPreference() const;
     std::string GetActiveRenderBackend() const;
     std::string GetRenderBackendDetail() const;
+    std::string GetRenderPipelineMode() const;
     bool HasGpuHardware() const;
     bool IsGpuBackendAvailable(const std::string& backend) const;
     void RefreshGpuRuntimeProbe();
@@ -67,6 +68,7 @@ private:
     std::string requestedBackend_ = "auto";
     std::string activeBackend_ = "cpu";
     std::string backendDetail_ = "cpu_default";
+    std::string pipelineMode_ = "cpu_layered";
 
     RippleOverlayLayer* EnsureRippleLayer();
     TextOverlayLayer* EnsureTextLayer();

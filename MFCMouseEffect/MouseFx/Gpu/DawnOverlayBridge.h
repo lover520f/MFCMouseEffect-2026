@@ -8,6 +8,8 @@ struct DawnOverlayBridgeStatus {
     bool compiled = false;
     bool available = false;
     std::string mode = "none";
+    bool compositorApisReady = false;
+    std::string compositorDetail = "not_checked";
     std::string detail = "bridge_not_compiled";
 };
 

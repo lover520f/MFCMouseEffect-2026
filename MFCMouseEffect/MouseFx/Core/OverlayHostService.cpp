@@ -2,6 +2,7 @@
 
 #include "OverlayHostService.h"
 
+#include "MouseFx/Gpu/DawnOverlayBridge.h"
 #include "MouseFx/Gpu/DawnRuntime.h"
 #include "MouseFx/Gpu/GpuHardwareProbe.h"
 #include "MouseFx/Interfaces/IRippleRenderer.h"
@@ -48,6 +49,10 @@ std::string OverlayHostService::GetRenderBackendDetail() const {
     return backendDetail_;
 }
 
+std::string OverlayHostService::GetRenderPipelineMode() const {
+    return pipelineMode_;
+}
+
 bool OverlayHostService::HasGpuHardware() const {
     return gpu::HasDesktopDisplayAdapter();
 }
@@ -87,22 +92,37 @@ bool OverlayHostService::Initialize() {
         if (dawn.ok) {
             activeBackend_ = dawn.backend;
             backendDetail_ = dawn.detail;
+            const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
+            if (bridge.mode == "compositor" && bridge.compositorApisReady) {
+                pipelineMode_ = "dawn_compositor";
+            } else {
+                pipelineMode_ = "dawn_host_compat_layered";
+            }
         } else {
             activeBackend_ = "cpu";
             backendDetail_ = dawn.detail;
+            pipelineMode_ = "cpu_layered";
         }
     } else if (pref == "auto") {
         const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
         if (dawn.ok) {
             activeBackend_ = dawn.backend;
             backendDetail_ = dawn.detail;
+            const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
+            if (bridge.mode == "compositor" && bridge.compositorApisReady) {
+                pipelineMode_ = "dawn_compositor";
+            } else {
+                pipelineMode_ = "dawn_host_compat_layered";
+            }
         } else {
             activeBackend_ = "cpu";
             backendDetail_ = dawn.detail;
+            pipelineMode_ = "cpu_layered";
         }
     } else {
         activeBackend_ = "cpu";
         backendDetail_ = "cpu_forced";
+        pipelineMode_ = "cpu_layered";
     }
 
     host_ = std::make_unique<OverlayHostWindow>();
@@ -121,6 +141,7 @@ void OverlayHostService::Shutdown() {
     host_.reset();
     activeBackend_ = "cpu";
     backendDetail_ = "cpu_default";
+    pipelineMode_ = "cpu_layered";
 }
 
 IOverlayLayer* OverlayHostService::AttachLayer(std::unique_ptr<IOverlayLayer> layer) {

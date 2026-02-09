@@ -238,6 +238,12 @@
         : `Acceleration: ${accelLabel}`;
       finalText = `${finalText} ${accelText}`;
     }
+    if (st && st.render_pipeline_mode) {
+      const pipelineText = (lang === 'zh-CN')
+        ? `渲染管线: ${st.render_pipeline_mode}`
+        : `Pipeline: ${st.render_pipeline_mode}`;
+      finalText = `${finalText} ${pipelineText}`;
+    }
     const bridge = st.dawn_overlay_bridge || {};
     if (bridge && bridge.mode && bridge.mode !== 'none') {
       const modeLabel = (lang === 'zh-CN')
@@ -247,6 +253,13 @@
         ? `桥接模式: ${modeLabel}`
         : `Bridge mode: ${modeLabel}`;
       finalText = `${finalText} ${bridgeMode}`;
+    }
+    if (bridge && bridge.mode && bridge.mode !== 'none') {
+      const compReady = !!bridge.compositor_apis_ready;
+      const compText = (lang === 'zh-CN')
+        ? (compReady ? 'Compositor API: 就绪' : 'Compositor API: 未就绪')
+        : (compReady ? 'Compositor API: Ready' : 'Compositor API: Not Ready');
+      finalText = `${finalText} ${compText}`;
     }
     if (stateCode === 'device_ready_cpu_bridge_pending' && bridge && bridge.detail) {
       const bridgeNote = (lang === 'zh-CN')

@@ -112,6 +112,9 @@ static json BuildDawnProbeJson(const gpu::DawnRuntimeProbeInfo& probe) {
         {"has_create_instance", probe.hasCreateInstance},
         {"has_request_adapter", probe.hasRequestAdapter},
         {"has_request_device", probe.hasRequestDevice},
+        {"has_create_surface", probe.hasCreateSurface},
+        {"has_get_queue", probe.hasGetQueue},
+        {"has_surface_present", probe.hasSurfacePresent},
         {"can_create_instance", probe.canCreateInstance},
         {"can_request_adapter", probe.canRequestAdapter},
         {"can_create_device", probe.canCreateDevice},
@@ -128,6 +131,8 @@ static json BuildDawnOverlayBridgeJson(const gpu::DawnOverlayBridgeStatus& bridg
         {"mode", bridge.mode},
         {"mode_label_en", hostCompat ? "Host-Compatible Bridge" : (compositor ? "GPU Compositor Bridge" : "Not Enabled")},
         {"mode_label_zh", hostCompat ? u8"\u5bbf\u4e3b\u517c\u5bb9\u6865\u63a5" : (compositor ? u8"GPU \u5408\u6210\u6865\u63a5" : u8"\u672a\u542f\u7528")},
+        {"compositor_apis_ready", bridge.compositorApisReady},
+        {"compositor_detail", bridge.compositorDetail},
         {"detail", bridge.detail},
     };
 }
@@ -391,6 +396,7 @@ bool WebSettingsServer::Start() {
                     {"detail", detail},
                     {"active_backend", activeBackend},
                     {"backend_detail", OverlayHostService::Instance().GetRenderBackendDetail()},
+                    {"render_pipeline_mode", OverlayHostService::Instance().GetRenderPipelineMode()},
                     {"gpu_in_use", activeBackend == "dawn"},
                     {"gpu_hardware_available", OverlayHostService::Instance().HasGpuHardware()},
                     {"dawn_available", OverlayHostService::Instance().IsGpuBackendAvailable("dawn")},
@@ -515,6 +521,12 @@ std::string WebSettingsServer::BuildSchemaJson() const {
         {{"value","efficient"},{"label", LabelByLang(L"\u6027\u80fd\u4f18\u5148\uff08\u7701CPU\uff09", L"Performance First (Lower CPU)", lang)}}
     });
 
+    out["render_pipeline_modes"] = json::array({
+        {{"value", "cpu_layered"}, {"label", LabelByLang(L"CPU \u5206\u5c42\u7a97\u53e3", L"CPU Layered Window", lang)}},
+        {{"value", "dawn_host_compat_layered"}, {"label", LabelByLang(L"Dawn \u5bbf\u4e3b\u517c\u5bb9\u5206\u5c42", L"Dawn Host-Compatible Layered", lang)}},
+        {{"value", "dawn_compositor"}, {"label", LabelByLang(L"Dawn GPU \u5408\u6210", L"Dawn GPU Compositor", lang)}}
+    });
+
     out["gpu_status_schema"] = {
         {"version", 1},
         {"bridge_codes", json::array({
@@ -526,6 +538,11 @@ std::string WebSettingsServer::BuildSchemaJson() const {
             "none",
             "host_compat",
             "compositor"
+        })},
+        {"compositor_codes", json::array({
+            "not_checked",
+            "compositor_api_ready",
+            "compositor_api_missing"
         })},
         {"state_codes", json::array({
             "init_not_run",
@@ -595,6 +612,7 @@ std::string WebSettingsServer::BuildStateJson() const {
     const std::string activeBackend = OverlayHostService::Instance().GetActiveRenderBackend();
     out["render_backend_active"] = activeBackend;
     out["render_backend_detail"] = OverlayHostService::Instance().GetRenderBackendDetail();
+    out["render_pipeline_mode"] = OverlayHostService::Instance().GetRenderPipelineMode();
     out["gpu_in_use"] = (activeBackend == "dawn");
     out["gpu_hardware_available"] = OverlayHostService::Instance().HasGpuHardware();
     out["dawn_available"] = OverlayHostService::Instance().IsGpuBackendAvailable("dawn");

@@ -20,6 +20,9 @@ struct DawnRuntimeProbeInfo {
     bool hasCreateInstance = false;
     bool hasRequestAdapter = false;
     bool hasRequestDevice = false;
+    bool hasCreateSurface = false;
+    bool hasGetQueue = false;
+    bool hasSurfacePresent = false;
     bool canCreateInstance = false;
     bool canRequestAdapter = false;
     bool canCreateDevice = false;

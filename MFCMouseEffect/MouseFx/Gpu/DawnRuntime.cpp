@@ -79,6 +79,27 @@ bool HasRequestDeviceSymbol(HMODULE mod) {
     return (p0 != nullptr) || (p1 != nullptr);
 }
 
+bool HasCreateSurfaceSymbol(HMODULE mod) {
+    if (!mod) return false;
+    FARPROC p0 = GetProcAddress(mod, "wgpuInstanceCreateSurface");
+    FARPROC p1 = GetProcAddress(mod, "webgpuInstanceCreateSurface");
+    return (p0 != nullptr) || (p1 != nullptr);
+}
+
+bool HasGetQueueSymbol(HMODULE mod) {
+    if (!mod) return false;
+    FARPROC p0 = GetProcAddress(mod, "wgpuDeviceGetQueue");
+    FARPROC p1 = GetProcAddress(mod, "webgpuDeviceGetQueue");
+    return (p0 != nullptr) || (p1 != nullptr);
+}
+
+bool HasSurfacePresentSymbol(HMODULE mod) {
+    if (!mod) return false;
+    FARPROC p0 = GetProcAddress(mod, "wgpuSurfacePresent");
+    FARPROC p1 = GetProcAddress(mod, "webgpuSurfacePresent");
+    return (p0 != nullptr) || (p1 != nullptr);
+}
+
 FARPROC ResolveCreateInstanceProc(HMODULE mod) {
     if (!mod) return nullptr;
     FARPROC p0 = GetProcAddress(mod, "wgpuCreateInstance");
@@ -196,6 +217,9 @@ void RunProbeIfNeededLocked() {
     g_probe.hasCreateInstance = HasCreateInstanceSymbol(g_dawnModule);
     g_probe.hasRequestAdapter = HasRequestAdapterSymbol(g_dawnModule);
     g_probe.hasRequestDevice = HasRequestDeviceSymbol(g_dawnModule);
+    g_probe.hasCreateSurface = HasCreateSurfaceSymbol(g_dawnModule);
+    g_probe.hasGetQueue = HasGetQueueSymbol(g_dawnModule);
+    g_probe.hasSurfacePresent = HasSurfacePresentSymbol(g_dawnModule);
     g_probe.canCreateInstance = false;
     g_probe.canRequestAdapter = false;
     g_probe.canCreateDevice = false;
