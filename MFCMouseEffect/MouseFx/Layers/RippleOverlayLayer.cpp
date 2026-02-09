@@ -6,6 +6,13 @@
 #include <algorithm>
 
 namespace mousefx {
+namespace {
+
+bool RectanglesOverlap(int l1, int t1, int r1, int b1, int l2, int t2, int r2, int b2) {
+    return !(r1 <= l2 || r2 <= l1 || b1 <= t2 || b2 <= t1);
+}
+
+} // namespace
 
 uint64_t RippleOverlayLayer::NowMs() {
     return GetTickCount64();
@@ -165,6 +172,33 @@ void RippleOverlayLayer::Render(Gdiplus::Graphics& graphics) {
         instance.renderer->Render(graphics, instance.t, instance.elapsedMs, sizePx, instance.style);
         graphics.Restore(state);
     }
+}
+
+bool RippleOverlayLayer::IntersectsScreenRect(int left, int top, int right, int bottom) const {
+    if (left >= right || top >= bottom) return false;
+
+    for (const auto& instance : instances_) {
+        if (!instance.active || !instance.renderer) continue;
+
+        int sizePx = instance.style.windowSize;
+        if (sizePx < 64) sizePx = 64;
+        if (sizePx > 512) sizePx = 512;
+        const int half = sizePx / 2;
+
+        // Reserve extra space for glow/bloom around the style window.
+        const int padding = (sizePx / 2) + 64;
+        const int cx = instance.ev.pt.x;
+        const int cy = instance.ev.pt.y;
+        const int l = cx - half - padding;
+        const int t = cy - half - padding;
+        const int r = cx + half + padding + 1;
+        const int b = cy + half + padding + 1;
+        if (RectanglesOverlap(left, top, right, bottom, l, t, r, b)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 RippleOverlayLayer::RippleInstance* RippleOverlayLayer::FindById(uint64_t id) {

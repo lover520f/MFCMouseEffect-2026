@@ -55,8 +55,8 @@
       section_trail_tuning: "Trail Tuning",
       label_language: "Language",
       label_theme: "Theme",
-      label_render_backend: "Render Backend",
-      label_gpu_bridge_mode: "GPU Bridge Mode",
+      label_render_backend: "Acceleration Mode",
+      label_gpu_bridge_mode: "Compatibility Mode",
       label_hold_follow_mode: "Hold Tracking",
       tip_hold_follow_mode: "Choose by feel and CPU budget: Precise (lowest latency, best for aiming/drawing), Smooth (recommended default, balanced response and stability), Performance First (reduced update rate for heavy effects or weaker CPUs).",
       label_click: "Click",
@@ -80,19 +80,19 @@
       label_electric_params: "electric amp/fork",
       label_meteor_params: "meteor rate/speed",
       hint_clamp: "Values are clamped to safe ranges when applied.",
-      btn_gpu_action_probe: "Probe now",
-      btn_gpu_action_enable_dawn: "Enable Dawn",
-      btn_gpu_action_switch_stable: "Use Stable Bridge",
-      btn_probe_gpu: "Recheck GPU",
-      status_gpu_probing: "Rechecking GPU runtime...",
-      status_gpu_probe_done: "GPU runtime status updated.",
-      status_gpu_probe_failed: "GPU probe failed: ",
-      status_gpu_action_running: "Executing suggested action...",
-      status_gpu_action_done: "Suggested action completed.",
-      status_gpu_action_failed: "Suggested action failed: ",
-      status_bridge_switching: "Switching GPU bridge mode...",
-      status_bridge_switched: "GPU bridge mode switched.",
-      status_bridge_switch_failed: "GPU bridge mode switch failed: ",
+      btn_gpu_action_probe: "Refresh",
+      btn_gpu_action_enable_dawn: "Switch to GPU",
+      btn_gpu_action_switch_stable: "Use Stable Mode",
+      btn_probe_gpu: "Refresh Acceleration",
+      status_gpu_probing: "Refreshing acceleration status...",
+      status_gpu_probe_done: "Acceleration status updated.",
+      status_gpu_probe_failed: "Refresh failed: ",
+      status_gpu_action_running: "Applying optimization suggestion...",
+      status_gpu_action_done: "Optimization action completed.",
+      status_gpu_action_failed: "Action failed: ",
+      status_bridge_switching: "Switching compatibility mode...",
+      status_bridge_switched: "Compatibility mode switched.",
+      status_bridge_switch_failed: "Compatibility mode switch failed: ",
       style_default: "Default",
       style_snappy: "Snappy",
       style_long: "Long",
@@ -142,8 +142,8 @@
       section_trail_tuning: "\u62d6\u5c3e\u8c03\u53c2",
       label_language: "\u8bed\u8a00",
       label_theme: "\u4e3b\u9898",
-      label_render_backend: "\u6e32\u67d3\u540e\u7aef",
-      label_gpu_bridge_mode: "GPU \u6865\u63a5\u6a21\u5f0f",
+      label_render_backend: "\u52a0\u901f\u6a21\u5f0f",
+      label_gpu_bridge_mode: "\u517c\u5bb9\u7b56\u7565",
       label_hold_follow_mode: "\u957f\u6309\u8ddf\u968f\u6a21\u5f0f",
       tip_hold_follow_mode: "\u6309\u4f53\u611f\u548c CPU \u9884\u7b97\u9009\u62e9\uff1a\u7cbe\u51c6\u8ddf\u968f\uff08\u5ef6\u8fdf\u6700\u4f4e\uff0c\u9002\u5408\u6e38\u620f/\u7ed8\u56fe\uff09\uff1b\u5e73\u6ed1\u8ddf\u968f\uff08\u9ed8\u8ba4\u63a8\u8350\uff0c\u8ddf\u624b\u4e0e\u7a33\u5b9a\u66f4\u5747\u8861\uff09\uff1b\u6027\u80fd\u4f18\u5148\uff08\u964d\u4f4e\u66f4\u65b0\u9891\u7387\uff0c\u9002\u5408\u7279\u6548\u8f83\u91cd\u6216 CPU \u7d27\u5f20\u573a\u666f\uff09\u3002",
       label_click: "\u70b9\u51fb",
@@ -167,19 +167,19 @@
       label_electric_params: "\u7535\u5f27 \u632f\u5e45/\u5206\u53c9",
       label_meteor_params: "\u6d41\u661f \u9891\u7387/\u901f\u5ea6",
       hint_clamp: "\u6570\u503c\u4f1a\u88ab\u5b89\u5168\u533a\u95f4\u8fdb\u884c\u88c1\u526a\u3002",
-      btn_gpu_action_probe: "\u7acb\u5373\u63a2\u6d4b",
-      btn_gpu_action_enable_dawn: "\u542f\u7528 Dawn",
-      btn_gpu_action_switch_stable: "\u5207\u6362\u7a33\u5b9a\u6865\u63a5",
-      btn_probe_gpu: "\u91cd\u65b0\u68c0\u6d4b GPU",
-      status_gpu_probing: "\u6b63\u5728\u91cd\u65b0\u68c0\u6d4b GPU \u8fd0\u884c\u65f6...",
-      status_gpu_probe_done: "GPU \u8fd0\u884c\u65f6\u72b6\u6001\u5df2\u66f4\u65b0\u3002",
-      status_gpu_probe_failed: "GPU \u68c0\u6d4b\u5931\u8d25\uff1a",
-      status_gpu_action_running: "\u6b63\u5728\u6267\u884c\u5efa\u8bae\u64cd\u4f5c...",
-      status_gpu_action_done: "\u5efa\u8bae\u64cd\u4f5c\u5df2\u5b8c\u6210\u3002",
-      status_gpu_action_failed: "\u5efa\u8bae\u64cd\u4f5c\u5931\u8d25\uff1a",
-      status_bridge_switching: "\u6b63\u5728\u5207\u6362 GPU \u6865\u63a5\u6a21\u5f0f...",
-      status_bridge_switched: "GPU \u6865\u63a5\u6a21\u5f0f\u5df2\u5207\u6362\u3002",
-      status_bridge_switch_failed: "GPU \u6865\u63a5\u6a21\u5f0f\u5207\u6362\u5931\u8d25\uff1a",
+      btn_gpu_action_probe: "\u5237\u65b0\u72b6\u6001",
+      btn_gpu_action_enable_dawn: "\u5207\u5230 GPU",
+      btn_gpu_action_switch_stable: "\u5207\u5230\u7a33\u5b9a\u6a21\u5f0f",
+      btn_probe_gpu: "\u5237\u65b0\u52a0\u901f\u72b6\u6001",
+      status_gpu_probing: "\u6b63\u5728\u5237\u65b0\u52a0\u901f\u72b6\u6001...",
+      status_gpu_probe_done: "\u52a0\u901f\u72b6\u6001\u5df2\u66f4\u65b0\u3002",
+      status_gpu_probe_failed: "\u5237\u65b0\u5931\u8d25\uff1a",
+      status_gpu_action_running: "\u6b63\u5728\u6267\u884c\u4f18\u5316\u5efa\u8bae...",
+      status_gpu_action_done: "\u4f18\u5316\u64cd\u4f5c\u5df2\u5b8c\u6210\u3002",
+      status_gpu_action_failed: "\u64cd\u4f5c\u5931\u8d25\uff1a",
+      status_bridge_switching: "\u6b63\u5728\u5207\u6362\u517c\u5bb9\u7b56\u7565...",
+      status_bridge_switched: "\u517c\u5bb9\u7b56\u7565\u5df2\u5207\u6362\u3002",
+      status_bridge_switch_failed: "\u517c\u5bb9\u7b56\u7565\u5207\u6362\u5931\u8d25\uff1a",
       style_default: "\u9ed8\u8ba4",
       style_snappy: "\u7d27\u81f4",
       style_long: "\u5ef6\u957f",
@@ -235,6 +235,133 @@
     statusEl.className = cls;
   }
 
+  function pipelineLabel(mode, lang){
+    const zh = {
+      cpu_layered: 'CPU \u5206\u5c42\u6e32\u67d3',
+      dawn_host_compat_layered: 'GPU \u517c\u5bb9\u52a0\u901f\uff08\u7279\u6548\u4ecd\u4ee5 CPU \u7ed8\u5236\u4e3a\u4e3b\uff09',
+      dawn_compositor: 'GPU \u5408\u6210\u8def\u5f84\uff08\u5f53\u524d\u9636\u6bb5\u7279\u6548\u4ecd\u4ee5 CPU \u7ed8\u5236\u4e3a\u4e3b\uff09'
+    };
+    const en = {
+      cpu_layered: 'CPU layered rendering',
+      dawn_host_compat_layered: 'GPU compatible acceleration (effects still mainly CPU-rasterized)',
+      dawn_compositor: 'GPU compositor path (effects are still mainly CPU-rasterized at this stage)'
+    };
+    if (!mode) return '';
+    if (lang === 'zh-CN') return zh[mode] || mode;
+    return en[mode] || mode;
+  }
+
+  function gpuSummaryText(st, banner, stateCode, lang){
+    const gpuInUse = !!(st && st.gpu_in_use);
+    if (gpuInUse) {
+      return (lang === 'zh-CN')
+        ? '\u5df2\u542f\u7528 GPU \u517c\u5bb9\u52a0\u901f\uff0c\u4f46\u7279\u6548\u7ed8\u5236\u5728\u5f53\u524d\u9636\u6bb5\u4ecd\u4ee5 CPU \u4e3a\u4e3b\uff0c\u56e0\u6b64\u4ecd\u53ef\u80fd\u5360\u7528\u8f83\u591a CPU\u3002'
+        : 'GPU compatible acceleration is enabled, but in the current stage effects are still mostly CPU-rasterized and can remain CPU-heavy.';
+    }
+
+    switch (stateCode) {
+      case 'loader_missing':
+        return (lang === 'zh-CN')
+          ? '\u5f53\u524d\u4f7f\u7528 CPU\uff1a\u672a\u627e\u5230 GPU \u8fd0\u884c\u5e93\u3002'
+          : 'CPU mode: GPU runtime was not found.';
+      case 'handshake_skipped_debugger':
+        return (lang === 'zh-CN')
+          ? '\u5f53\u524d\u4f7f\u7528 CPU\uff1a\u8c03\u8bd5\u5668\u9644\u52a0\u65f6\u4f1a\u8df3\u8fc7 GPU \u63a2\u6d4b\u3002'
+          : 'CPU mode: GPU probing is skipped while a debugger is attached.';
+      case 'request_adapter_exception':
+      case 'request_adapter_failed':
+      case 'request_adapter_timeout':
+      case 'request_device_exception':
+      case 'request_device_failed':
+      case 'request_device_timeout':
+        return (lang === 'zh-CN')
+          ? '\u5f53\u524d\u4f7f\u7528 CPU\uff1aGPU \u521d\u59cb\u5316\u5931\u8d25\u3002'
+          : 'CPU mode: GPU initialization failed.';
+      case 'symbols_missing':
+      case 'symbols_partial':
+        return (lang === 'zh-CN')
+          ? '\u5f53\u524d\u4f7f\u7528 CPU\uff1aGPU \u8fd0\u884c\u5e93\u7248\u672c\u4e0e\u5f53\u524d\u7a0b\u5e8f\u4e0d\u517c\u5bb9\u3002'
+          : 'CPU mode: GPU runtime version is not compatible with current app.';
+      case 'build_disabled':
+        return (lang === 'zh-CN')
+          ? '\u5f53\u524d\u4f7f\u7528 CPU\uff1a\u5f53\u524d\u7248\u672c\u672a\u542f\u7528 GPU \u6a21\u5757\u3002'
+          : 'CPU mode: this build does not include GPU backend.';
+      case 'no_display_adapter':
+        return (lang === 'zh-CN')
+          ? '\u5f53\u524d\u4f7f\u7528 CPU\uff1a\u672a\u68c0\u6d4b\u5230\u53ef\u7528\u663e\u793a\u8bbe\u5907\u3002'
+          : 'CPU mode: no usable desktop display adapter was detected.';
+      case 'modern_abi_bridge_pending':
+      case 'device_ready_cpu_bridge_pending':
+      case 'ready_for_device_stage':
+        return (lang === 'zh-CN')
+          ? '\u5f53\u524d\u4f7f\u7528 CPU\uff1aGPU \u8fd0\u884c\u5e93\u53ef\u7528\uff0c\u4f46\u5c1a\u672a\u5b8c\u6210\u5207\u6362\u3002'
+          : 'CPU mode: GPU runtime is available, but backend switch is not completed yet.';
+      default:
+        return (lang === 'zh-CN')
+          ? ((banner && (banner.text_zh || banner.text_en)) || '\u5f53\u524d\u4e3a CPU \u515c\u5e95\u6a21\u5f0f\u3002')
+          : ((banner && (banner.text_en || banner.text_zh)) || 'CPU fallback mode is active.');
+    }
+  }
+
+  function accelerationLabelText(st, accel, lang){
+    const gpuInUse = !!(st && st.gpu_in_use);
+    if (!gpuInUse) {
+      return (lang === 'zh-CN') ? 'CPU 兜底' : 'CPU fallback';
+    }
+
+    const mode = (st && st.render_pipeline_mode) ? st.render_pipeline_mode : '';
+    if (mode === 'dawn_compositor' || mode === 'dawn_host_compat_layered') {
+      return (lang === 'zh-CN')
+        ? '部分 GPU（特效仍以 CPU 绘制为主）'
+        : 'Partial GPU (effects still mainly CPU-rasterized)';
+    }
+
+    if (accel) {
+      if (lang === 'zh-CN' && accel.label_zh) return accel.label_zh;
+      if (lang !== 'zh-CN' && accel.label_en) return accel.label_en;
+      if (accel.label_en) return accel.label_en;
+      if (accel.label_zh) return accel.label_zh;
+    }
+    return (lang === 'zh-CN') ? '部分 GPU' : 'Partial GPU';
+  }
+
+  function gpuHintText(stateCode, actionCode, actionTextRaw, lang){
+    if (actionCode === 'trigger_probe_now') {
+      return '';
+    }
+    switch (stateCode) {
+      case 'loader_missing':
+        return (lang === 'zh-CN')
+          ? '\u53ef\u628a webgpu_dawn.dll \u653e\u5230 EXE \u540c\u76ee\u5f55\uff0c\u6216\u9879\u76ee Runtime/Dawn \u76ee\u5f55\u3002'
+          : 'Put webgpu_dawn.dll next to the exe, or under Runtime/Dawn in this project.';
+      case 'handshake_skipped_debugger':
+        return (lang === 'zh-CN')
+          ? '\u8bf7\u4f7f\u7528 Ctrl+F5 \u6216\u76f4\u63a5\u53cc\u51fb EXE \u8fd0\u884c\u3002'
+          : 'Use Ctrl+F5 or run the exe directly.';
+      case 'request_adapter_exception':
+      case 'request_adapter_failed':
+      case 'request_adapter_timeout':
+      case 'request_device_exception':
+      case 'request_device_failed':
+      case 'request_device_timeout':
+        return (lang === 'zh-CN')
+          ? '\u8bf7\u5148\u66f4\u65b0\u663e\u5361\u9a71\u52a8\uff0c\u6216\u66f4\u6362\u5339\u914d\u7684 Dawn \u8fd0\u884c\u5e93\u7248\u672c\u3002'
+          : 'Try updating GPU drivers or using a Dawn runtime version that matches this app.';
+      case 'modern_abi_bridge_pending':
+      case 'device_ready_cpu_bridge_pending':
+        return (lang === 'zh-CN')
+          ? '\u53ef\u5c1d\u8bd5\u5207\u6362\u5230 GPU \u6a21\u5f0f\u5e76\u91cd\u65b0\u63a2\u6d4b\u3002'
+          : 'Try switching to GPU mode and rechecking.';
+      default:
+        if (actionCode === 'switch_bridge_host_compat') {
+          return (lang === 'zh-CN')
+            ? '\u5982\u679c\u60f3\u8981\u66f4\u7a33\u5b9a\uff0c\u53ef\u5207\u6362\u5230\u7a33\u5b9a\u6a21\u5f0f\u3002'
+            : 'Switch to Stable mode if you prefer reliability.';
+        }
+        return actionTextRaw || '';
+    }
+  }
+
   function renderGpuBanner(st){
     if (!gpuBannerEl) return;
     if (!st || !st.gpu_status_banner) {
@@ -246,24 +373,24 @@
     const action = banner.action || {};
     const actionCode = action.action_code || '';
     const lang = pickLang();
-    const text = (lang === 'zh-CN') ? (banner.text_zh || banner.text_en || '') : (banner.text_en || banner.text_zh || '');
-    const actionText = (lang === 'zh-CN') ? (action.action_text_zh || action.action_text_en || '') : (action.action_text_en || action.action_text_zh || '');
+    const actionTextRaw = (lang === 'zh-CN') ? (action.action_text_zh || action.action_text_en || '') : (action.action_text_en || action.action_text_zh || '');
     const stateCode = banner.state_code || '';
-    let finalText = actionText ? `${text} ${actionText}` : text;
+    const summaryText = gpuSummaryText(st, banner, stateCode, lang);
+    const hintText = gpuHintText(stateCode, actionCode, actionTextRaw, lang);
+    let finalText = hintText ? `${summaryText} ${hintText}` : summaryText;
     const accel = banner.acceleration || st.gpu_acceleration || {};
     if (accel && accel.level) {
-      const accelLabel = (lang === 'zh-CN')
-        ? (accel.label_zh || accel.label_en || accel.level)
-        : (accel.label_en || accel.label_zh || accel.level);
+      const accelLabel = accelerationLabelText(st, accel, lang);
       const accelText = (lang === 'zh-CN')
         ? `加速级别: ${accelLabel}`
         : `Acceleration: ${accelLabel}`;
       finalText = `${finalText} ${accelText}`;
     }
     if (st && st.render_pipeline_mode) {
+      const pipelineLabelText = pipelineLabel(st.render_pipeline_mode, lang);
       const pipelineText = (lang === 'zh-CN')
-        ? `渲染管线: ${st.render_pipeline_mode}`
-        : `Pipeline: ${st.render_pipeline_mode}`;
+        ? `渲染路径: ${pipelineLabelText}`
+        : `Rendering path: ${pipelineLabelText}`;
       finalText = `${finalText} ${pipelineText}`;
     }
     const bridge = st.dawn_overlay_bridge || {};
@@ -272,35 +399,27 @@
         ? (bridge.mode_label_zh || bridge.mode || '')
         : (bridge.mode_label_en || bridge.mode || '');
       const bridgeMode = (lang === 'zh-CN')
-        ? `桥接模式: ${modeLabel}`
-        : `Bridge mode: ${modeLabel}`;
+        ? `兼容策略: ${modeLabel}`
+        : `Compatibility mode: ${modeLabel}`;
       finalText = `${finalText} ${bridgeMode}`;
     }
     if (bridge && bridge.requested_mode && bridge.mode && bridge.requested_mode !== bridge.mode) {
-      const requestedLabel = (lang === 'zh-CN')
-        ? (bridge.requested_mode_label_zh || bridge.requested_mode || '')
-        : (bridge.requested_mode_label_en || bridge.requested_mode || '');
       const fallbackText = (lang === 'zh-CN')
-        ? `已从请求模式回退: ${requestedLabel}`
-        : `Requested mode downgraded from: ${requestedLabel}`;
+        ? '\u4e3a\u4fdd\u8bc1\u7a33\u5b9a\u6027\uff0c\u5df2\u81ea\u52a8\u4f7f\u7528\u66f4\u7a33\u5b9a\u7684\u517c\u5bb9\u7b56\u7565\u3002'
+        : 'For stability, a safer compatibility mode was selected automatically.';
       finalText = `${finalText} ${fallbackText}`;
     }
     if (bridge && bridge.mode && bridge.mode !== 'none') {
       const compReady = !!bridge.compositor_apis_ready;
       const compText = (lang === 'zh-CN')
-        ? (compReady ? 'Compositor API: 就绪' : 'Compositor API: 未就绪')
-        : (compReady ? 'Compositor API: Ready' : 'Compositor API: Not Ready');
+        ? (compReady ? '\u9ad8\u7ea7\u5408\u6210\u80fd\u529b: \u53ef\u7528' : '\u9ad8\u7ea7\u5408\u6210\u80fd\u529b: \u672a\u5c31\u7eea')
+        : (compReady ? 'Advanced compositor: Ready' : 'Advanced compositor: Not ready');
       finalText = `${finalText} ${compText}`;
     }
-    if (stateCode === 'device_ready_cpu_bridge_pending' && bridge && bridge.detail) {
-      const bridgeNote = (lang === 'zh-CN')
-        ? `当前桥接状态: ${bridge.detail}`
-        : `Bridge status: ${bridge.detail}`;
-      finalText = `${finalText} ${bridgeNote}`;
-    }
     const prefix = st.gpu_in_use ? '[GPU] ' : '[CPU] ';
+    const showDiagCode = (new URL(location.href)).searchParams.get('diag') === '1';
     if (gpuBannerTextEl) {
-      gpuBannerTextEl.textContent = stateCode ? `${prefix}${finalText} (${stateCode})` : `${prefix}${finalText}`;
+      gpuBannerTextEl.textContent = (showDiagCode && stateCode) ? `${prefix}${finalText} [${stateCode}]` : `${prefix}${finalText}`;
     }
     renderGpuActionButton(actionCode);
     const tone = banner.tone || (st.gpu_in_use ? 'ok' : 'warn');
@@ -313,6 +432,7 @@
       actionCode === 'wire_overlay_gpu_bridge' ||
       actionCode === 'switch_bridge_host_compat' ||
       actionCode === 'enable_dawn_backend' ||
+      actionCode === 'run_without_debugger_for_gpu_probe' ||
       actionCode === 'review_logs' ||
       actionCode === 'check_driver_and_backend' ||
       actionCode === 'validate_runtime_abi';

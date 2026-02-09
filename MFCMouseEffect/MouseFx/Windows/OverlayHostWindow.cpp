@@ -309,9 +309,14 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     Gdiplus::Bitmap bmp(surface.width, surface.height, surface.width * 4, PixelFormat32bppPARGB, static_cast<BYTE*>(surface.bits));
     Gdiplus::Graphics graphics(&bmp);
     graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+    const int surfaceLeft = surface.x;
+    const int surfaceTop = surface.y;
+    const int surfaceRight = surface.x + surface.width;
+    const int surfaceBottom = surface.y + surface.height;
 
     for (auto& layer : layers_) {
-        if (layer && layer->IsAlive()) {
+        if (layer && layer->IsAlive() &&
+            layer->IntersectsScreenRect(surfaceLeft, surfaceTop, surfaceRight, surfaceBottom)) {
             layer->Render(graphics);
         }
     }

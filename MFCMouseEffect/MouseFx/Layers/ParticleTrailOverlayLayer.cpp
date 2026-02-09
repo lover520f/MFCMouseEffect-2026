@@ -7,6 +7,13 @@
 #include <cmath>
 
 namespace mousefx {
+namespace {
+
+bool RectanglesOverlap(int l1, int t1, int r1, int b1, int l2, int t2, int r2, int b2) {
+    return !(r1 <= l2 || r2 <= l1 || b1 <= t2 || b2 <= t1);
+}
+
+} // namespace
 
 ParticleTrailOverlayLayer::ParticleTrailOverlayLayer(bool isChromatic) : isChromatic_(isChromatic) {}
 
@@ -84,6 +91,58 @@ void ParticleTrailOverlayLayer::Render(Gdiplus::Graphics& graphics) {
         float size = particle.size * particle.life;
         graphics.FillEllipse(&brush, (float)localPt.x - size * 0.5f, (float)localPt.y - size * 0.5f, size, size);
     }
+}
+
+bool ParticleTrailOverlayLayer::IntersectsScreenRect(int left, int top, int right, int bottom) const {
+    if (left >= right || top >= bottom) return false;
+
+    int minX = 0;
+    int minY = 0;
+    int maxX = 0;
+    int maxY = 0;
+    bool hasBounds = false;
+
+    for (const auto& particle : particles_) {
+        const int px = (int)std::lround(particle.x);
+        const int py = (int)std::lround(particle.y);
+        const int radius = (int)std::ceil((double)(particle.size * particle.life + 4.0f));
+        const int l = px - radius;
+        const int t = py - radius;
+        const int r = px + radius + 1;
+        const int b = py + radius + 1;
+
+        if (!hasBounds) {
+            minX = l;
+            minY = t;
+            maxX = r;
+            maxY = b;
+            hasBounds = true;
+        } else {
+            if (l < minX) minX = l;
+            if (t < minY) minY = t;
+            if (r > maxX) maxX = r;
+            if (b > maxY) maxY = b;
+        }
+    }
+
+    if (!hasBounds && hasLatestCursorPt_) {
+        minX = latestCursorPt_.x - 64;
+        minY = latestCursorPt_.y - 64;
+        maxX = latestCursorPt_.x + 65;
+        maxY = latestCursorPt_.y + 65;
+        hasBounds = true;
+    }
+
+    if (!hasBounds && hasLastEmitCursorPt_) {
+        minX = lastEmitCursorPt_.x - 64;
+        minY = lastEmitCursorPt_.y - 64;
+        maxX = lastEmitCursorPt_.x + 65;
+        maxY = lastEmitCursorPt_.y + 65;
+        hasBounds = true;
+    }
+
+    if (!hasBounds) return false;
+    return RectanglesOverlap(left, top, right, bottom, minX, minY, maxX, maxY);
 }
 
 Gdiplus::Color ParticleTrailOverlayLayer::HslToRgb(float h, float s, float l, BYTE alpha) {
