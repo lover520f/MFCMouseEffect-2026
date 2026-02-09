@@ -82,6 +82,7 @@
       hint_clamp: "Values are clamped to safe ranges when applied.",
       btn_gpu_action_probe: "Probe now",
       btn_gpu_action_enable_dawn: "Enable Dawn",
+      btn_gpu_action_switch_stable: "Use Stable Bridge",
       btn_probe_gpu: "Recheck GPU",
       status_gpu_probing: "Rechecking GPU runtime...",
       status_gpu_probe_done: "GPU runtime status updated.",
@@ -168,6 +169,7 @@
       hint_clamp: "\u6570\u503c\u4f1a\u88ab\u5b89\u5168\u533a\u95f4\u8fdb\u884c\u88c1\u526a\u3002",
       btn_gpu_action_probe: "\u7acb\u5373\u63a2\u6d4b",
       btn_gpu_action_enable_dawn: "\u542f\u7528 Dawn",
+      btn_gpu_action_switch_stable: "\u5207\u6362\u7a33\u5b9a\u6865\u63a5",
       btn_probe_gpu: "\u91cd\u65b0\u68c0\u6d4b GPU",
       status_gpu_probing: "\u6b63\u5728\u91cd\u65b0\u68c0\u6d4b GPU \u8fd0\u884c\u65f6...",
       status_gpu_probe_done: "GPU \u8fd0\u884c\u65f6\u72b6\u6001\u5df2\u66f4\u65b0\u3002",
@@ -309,6 +311,7 @@
     return actionCode === 'trigger_probe_now' ||
       actionCode === 'wire_device_stage' ||
       actionCode === 'wire_overlay_gpu_bridge' ||
+      actionCode === 'switch_bridge_host_compat' ||
       actionCode === 'enable_dawn_backend' ||
       actionCode === 'review_logs' ||
       actionCode === 'check_driver_and_backend' ||
@@ -316,6 +319,9 @@
   }
 
   function gpuActionLabel(actionCode){
+    if (actionCode === 'switch_bridge_host_compat') {
+      return statusText('btn_gpu_action_switch_stable', 'Use Stable Bridge');
+    }
     if (actionCode === 'enable_dawn_backend') {
       return statusText('btn_gpu_action_enable_dawn', 'Enable Dawn');
     }
@@ -517,7 +523,18 @@
 
     setStatus(statusText('status_gpu_action_running', 'Executing suggested action...'));
     try {
-      if (actionCode === 'enable_dawn_backend') {
+      if (actionCode === 'switch_bridge_host_compat') {
+        const res = await apiPost('/api/gpu/bridge_mode', {mode: 'host_compat'});
+        const merged = mergeGpuStatePatch(res);
+        if (merged) {
+          merged.gpu_bridge_mode_request = 'host_compat';
+          renderGpuBanner(merged);
+        } else {
+          await refreshStateFromServer();
+        }
+        const bridgeModeSelect = el('gpu_bridge_mode_request');
+        if (bridgeModeSelect) bridgeModeSelect.value = 'host_compat';
+      } else if (actionCode === 'enable_dawn_backend') {
         await apiPost('/api/state', {render_backend: 'dawn'});
         await refreshStateFromServer();
       } else {

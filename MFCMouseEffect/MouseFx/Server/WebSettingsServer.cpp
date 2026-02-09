@@ -310,7 +310,24 @@ static json BuildGpuBannerJson(const std::string& activeBackend, const gpu::Dawn
     const bool gpuInUse = (activeBackend == "dawn");
     const std::string statusDetail = status.lastInitDetail.empty() ? status.probe.detail : status.lastInitDetail;
     const std::string stateCode = DawnStateCodeFromDetail(statusDetail);
-    const json advice = BuildDawnAdviceJson(stateCode);
+    json advice = BuildDawnAdviceJson(stateCode);
+    if (gpuInUse) {
+        if (bridge.detail == "bridge_fallback_host_compat_compositor_not_ready") {
+            advice = json{
+                {"action_code", "switch_bridge_host_compat"},
+                {"action_text_en", "Compositor APIs are unavailable. Switch bridge request to host-compatible mode for stable behavior."},
+                {"action_text_zh", u8"\u68c0\u6d4b\u5230 Compositor API \u4e0d\u53ef\u7528\uff0c\u53ef\u5207\u6362\u5230\u5bbf\u4e3b\u517c\u5bb9\u6865\u63a5\u4ee5\u83b7\u5f97\u66f4\u7a33\u5b9a\u7684\u884c\u4e3a\u3002"},
+                {"tone", "warn"},
+            };
+        } else if (advice.value("action_code", "") == "enable_dawn_backend") {
+            advice = json{
+                {"action_code", "trigger_probe_now"},
+                {"action_text_en", "GPU backend is already active. Re-probe if you want to refresh runtime diagnostics."},
+                {"action_text_zh", u8"\u5f53\u524d\u5df2\u5728\u4f7f\u7528 GPU \u540e\u7aef\uff0c\u5982\u9700\u5237\u65b0\u8bca\u65ad\u4fe1\u606f\u53ef\u91cd\u65b0\u63a2\u6d4b\u3002"},
+                {"tone", "info"},
+            };
+        }
+    }
     const json accel = BuildGpuAccelerationJson(activeBackend, bridge);
     if (gpuInUse) {
         const bool full = accel.value("level", "partial") == "full";
@@ -623,6 +640,7 @@ std::string WebSettingsServer::BuildSchemaJson() const {
         {"action_codes", json::array({
             "wire_device_stage",
             "wire_overlay_gpu_bridge",
+            "switch_bridge_host_compat",
             "enable_dawn_backend",
             "install_dawn_runtime",
             "replace_runtime_binary",
