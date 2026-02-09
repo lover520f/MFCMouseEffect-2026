@@ -2,9 +2,11 @@
   const token = new URL(location.href).searchParams.get('token') || '';
   const el = (id) => document.getElementById(id);
   const statusEl = document.getElementById('status');
+  const gpuBannerEl = document.getElementById('gpuBanner');
   const healthCheckMs = 3000;
   let healthTimer = 0;
   let connectionState = 'unknown';
+  let latestState = null;
 
   const I18N = {
     "en-US": {
@@ -200,6 +202,26 @@
     statusEl.className = cls;
   }
 
+  function renderGpuBanner(st){
+    if (!gpuBannerEl) return;
+    if (!st || !st.gpu_status_banner) {
+      gpuBannerEl.className = 'gpu-banner hidden';
+      gpuBannerEl.textContent = '';
+      return;
+    }
+    const banner = st.gpu_status_banner || {};
+    const action = banner.action || {};
+    const lang = pickLang();
+    const text = (lang === 'zh-CN') ? (banner.text_zh || banner.text_en || '') : (banner.text_en || banner.text_zh || '');
+    const actionText = (lang === 'zh-CN') ? (action.action_text_zh || action.action_text_en || '') : (action.action_text_en || action.action_text_zh || '');
+    const stateCode = banner.state_code || '';
+    const finalText = actionText ? `${text} ${actionText}` : text;
+    const prefix = st.gpu_in_use ? '[GPU] ' : '[CPU] ';
+    gpuBannerEl.textContent = stateCode ? `${prefix}${finalText} (${stateCode})` : `${prefix}${finalText}`;
+    const tone = banner.tone || (st.gpu_in_use ? 'ok' : 'warn');
+    gpuBannerEl.className = `gpu-banner ${tone}`;
+  }
+
   function currentText(){
     return I18N[pickLang()] || I18N["en-US"];
   }
@@ -254,6 +276,7 @@
     if (next === 'online') {
       setActionButtonsEnabled(true);
       setStatus(t.status_ready || 'Ready.', 'ok');
+      renderGpuBanner(latestState);
       return;
     }
     if (next === 'unauthorized') {
@@ -297,6 +320,11 @@
         markConnection('offline');
         return false;
       }
+      try {
+        const st = await r.json();
+        latestState = st;
+        renderGpuBanner(st);
+      } catch(_e) {}
       markConnection('online');
       return true;
     }catch(_e){
@@ -369,6 +397,7 @@
     setStatus(statusText('status_loading', 'Loading...'));
     const schema = await apiGet('/api/schema');
     const st = await apiGet('/api/state');
+    latestState = st;
 
     applyI18n(st.ui_language || 'en-US');
 
@@ -403,6 +432,7 @@
     num('k_idle_fade_end', k.idle_fade_end_ms);
 
     markConnection('online');
+    renderGpuBanner(st);
   }
 
   function buildState(){
@@ -516,6 +546,7 @@
 
   el('ui_language').addEventListener('change', () => {
     applyI18n(el('ui_language').value);
+    renderGpuBanner(latestState);
     if (connectionState !== 'unknown') markConnection(connectionState, true);
   });
 

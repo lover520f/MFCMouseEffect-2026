@@ -145,6 +145,96 @@ static json BuildDawnStatusJson(const gpu::DawnRuntimeStatus& status) {
     };
 }
 
+static json BuildDawnAdviceJson(const std::string& stateCode) {
+    if (stateCode == "ready_for_device_stage" || stateCode == "instance_ok_no_device") {
+        return json{
+            {"action_code", "wire_device_stage"},
+            {"action_text_en", "Dawn runtime is ready. Wire adapter/device/surface initialization next."},
+            {"action_text_zh", "Dawn 运行时已就绪，下一步请接入 adapter/device/surface 初始化。"},
+            {"tone", "info"},
+        };
+    }
+    if (stateCode == "loader_missing") {
+        return json{
+            {"action_code", "install_dawn_runtime"},
+            {"action_text_en", "Dawn loader DLL was not found. Deploy webgpu_dawn.dll or dawn_native.dll next to the exe."},
+            {"action_text_zh", "未找到 Dawn 运行时 DLL。请将 webgpu_dawn.dll 或 dawn_native.dll 部署到可执行文件同目录。"},
+            {"tone", "warn"},
+        };
+    }
+    if (stateCode == "symbols_missing" || stateCode == "symbols_partial") {
+        return json{
+            {"action_code", "replace_runtime_binary"},
+            {"action_text_en", "Dawn DLL was found but required symbols are missing. Replace with a compatible runtime build."},
+            {"action_text_zh", "已找到 Dawn DLL，但缺少所需符号。请替换为兼容版本的运行时二进制。"},
+            {"tone", "warn"},
+        };
+    }
+    if (stateCode == "create_failed" || stateCode == "create_proc_missing") {
+        return json{
+            {"action_code", "validate_runtime_abi"},
+            {"action_text_en", "CreateInstance failed. Verify runtime ABI compatibility and graphics driver environment."},
+            {"action_text_zh", "CreateInstance 失败。请检查运行时 ABI 兼容性及显卡驱动环境。"},
+            {"tone", "warn"},
+        };
+    }
+    if (stateCode == "build_disabled") {
+        return json{
+            {"action_code", "enable_dawn_build_flag"},
+            {"action_text_en", "Dawn backend is disabled at build time. Enable MOUSEFX_ENABLE_DAWN and rebuild."},
+            {"action_text_zh", "当前构建未启用 Dawn。请开启 MOUSEFX_ENABLE_DAWN 并重新编译。"},
+            {"tone", "warn"},
+        };
+    }
+    if (stateCode == "no_display_adapter") {
+        return json{
+            {"action_code", "check_display_adapter"},
+            {"action_text_en", "No desktop display adapter detected. Check remote/virtual display environment."},
+            {"action_text_zh", "未检测到桌面显示适配器。请检查远程会话或虚拟显示环境。"},
+            {"tone", "warn"},
+        };
+    }
+    if (stateCode == "init_not_run") {
+        return json{
+            {"action_code", "trigger_probe_now"},
+            {"action_text_en", "Initialization was not attempted yet. Trigger probe_now or apply backend once."},
+            {"action_text_zh", "尚未执行初始化尝试。请调用 probe_now 或切换一次后端触发探测。"},
+            {"tone", "info"},
+        };
+    }
+    return json{
+        {"action_code", "review_logs"},
+        {"action_text_en", "Unknown Dawn state. Review runtime logs and probe details."},
+        {"action_text_zh", "未知 Dawn 状态，请结合日志和 probe 详情排查。"},
+        {"tone", "warn"},
+    };
+}
+
+static json BuildGpuBannerJson(const std::string& activeBackend, const gpu::DawnRuntimeStatus& status) {
+    const bool gpuInUse = (activeBackend == "dawn");
+    const std::string statusDetail = status.lastInitDetail.empty() ? status.probe.detail : status.lastInitDetail;
+    const std::string stateCode = DawnStateCodeFromDetail(statusDetail);
+    const json advice = BuildDawnAdviceJson(stateCode);
+    if (gpuInUse) {
+        return json{
+            {"code", "gpu_active"},
+            {"tone", "ok"},
+            {"text_en", "GPU backend active (Dawn)."},
+            {"text_zh", "当前使用 GPU 后端（Dawn）。"},
+            {"state_code", stateCode},
+            {"action", advice},
+        };
+    }
+    return json{
+        {"code", "cpu_fallback"},
+        {"tone", advice.value("tone", "warn")},
+        {"text_en", "CPU fallback active."},
+        {"text_zh", "当前为 CPU 兜底模式。"},
+        {"state_code", stateCode},
+        {"action", advice},
+    };
+}
+
 WebSettingsServer::WebSettingsServer(AppController* controller) : controller_(controller) {
     RotateToken();
     http_ = std::make_unique<HttpServer>();
@@ -208,17 +298,20 @@ bool WebSettingsServer::Start() {
                     } catch (...) {}
                 }
                 const std::string detail = OverlayHostService::Instance().ProbeDawnRuntimeNow(refresh);
+                const std::string activeBackend = OverlayHostService::Instance().GetActiveRenderBackend();
                 const gpu::DawnRuntimeStatus dawnStatus = gpu::GetDawnRuntimeStatus();
                 resp.contentType = "application/json; charset=utf-8";
                 resp.body = json({
                     {"ok", true},
                     {"detail", detail},
-                    {"active_backend", OverlayHostService::Instance().GetActiveRenderBackend()},
+                    {"active_backend", activeBackend},
                     {"backend_detail", OverlayHostService::Instance().GetRenderBackendDetail()},
+                    {"gpu_in_use", activeBackend == "dawn"},
                     {"gpu_hardware_available", OverlayHostService::Instance().HasGpuHardware()},
                     {"dawn_available", OverlayHostService::Instance().IsGpuBackendAvailable("dawn")},
                     {"dawn_probe", BuildDawnProbeJson(dawnStatus.probe)},
                     {"dawn_status", BuildDawnStatusJson(dawnStatus)},
+                    {"gpu_status_banner", BuildGpuBannerJson(activeBackend, dawnStatus)},
                 }).dump();
                 return;
             }
@@ -349,6 +442,16 @@ std::string WebSettingsServer::BuildSchemaJson() const {
             "instance_ok_no_device",
             "ready_for_device_stage",
             "unknown"
+        })},
+        {"action_codes", json::array({
+            "wire_device_stage",
+            "install_dawn_runtime",
+            "replace_runtime_binary",
+            "validate_runtime_abi",
+            "enable_dawn_build_flag",
+            "check_display_adapter",
+            "trigger_probe_now",
+            "review_logs"
         })}
     };
 
@@ -381,13 +484,16 @@ std::string WebSettingsServer::BuildStateJson() const {
     out["ui_language"] = EnsureUtf8(cfg.uiLanguage);
     out["theme"] = EnsureUtf8(cfg.theme);
     out["render_backend"] = EnsureUtf8(cfg.renderBackend);
-    out["render_backend_active"] = OverlayHostService::Instance().GetActiveRenderBackend();
+    const std::string activeBackend = OverlayHostService::Instance().GetActiveRenderBackend();
+    out["render_backend_active"] = activeBackend;
     out["render_backend_detail"] = OverlayHostService::Instance().GetRenderBackendDetail();
+    out["gpu_in_use"] = (activeBackend == "dawn");
     out["gpu_hardware_available"] = OverlayHostService::Instance().HasGpuHardware();
     out["dawn_available"] = OverlayHostService::Instance().IsGpuBackendAvailable("dawn");
     const gpu::DawnRuntimeStatus dawnStatus = gpu::GetDawnRuntimeStatus();
     out["dawn_probe"] = BuildDawnProbeJson(dawnStatus.probe);
     out["dawn_status"] = BuildDawnStatusJson(dawnStatus);
+    out["gpu_status_banner"] = BuildGpuBannerJson(activeBackend, dawnStatus);
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
     out["active"] = {
         {"click", EnsureUtf8(cfg.active.click)},
