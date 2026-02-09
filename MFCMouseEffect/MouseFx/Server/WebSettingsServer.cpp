@@ -132,6 +132,28 @@ static json BuildDawnOverlayBridgeJson(const gpu::DawnOverlayBridgeStatus& bridg
     };
 }
 
+static json BuildGpuAccelerationJson(const std::string& activeBackend, const gpu::DawnOverlayBridgeStatus& bridge) {
+    if (activeBackend != "dawn") {
+        return json{
+            {"level", "none"},
+            {"label_en", "CPU Fallback"},
+            {"label_zh", u8"\u0043\u0050\u0055 \u515c\u5e95"},
+        };
+    }
+    if (bridge.mode == "compositor") {
+        return json{
+            {"level", "full"},
+            {"label_en", "Full GPU Compositor"},
+            {"label_zh", u8"\u5b8c\u6574 GPU \u5408\u6210"},
+        };
+    }
+    return json{
+        {"level", "partial"},
+        {"label_en", "Partial GPU (Host-Compatible Bridge)"},
+        {"label_zh", u8"\u90e8\u5206 GPU\uff08\u5bbf\u4e3b\u517c\u5bb9\u6865\u63a5\uff09"},
+    };
+}
+
 static const char* DawnStateCodeFromDetail(const std::string& detail) {
     if (detail == "no_display_adapter") return "no_display_adapter";
     if (detail == "dawn_disabled_at_build") return "build_disabled";
@@ -268,18 +290,21 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
     };
 }
 
-static json BuildGpuBannerJson(const std::string& activeBackend, const gpu::DawnRuntimeStatus& status) {
+static json BuildGpuBannerJson(const std::string& activeBackend, const gpu::DawnRuntimeStatus& status, const gpu::DawnOverlayBridgeStatus& bridge) {
     const bool gpuInUse = (activeBackend == "dawn");
     const std::string statusDetail = status.lastInitDetail.empty() ? status.probe.detail : status.lastInitDetail;
     const std::string stateCode = DawnStateCodeFromDetail(statusDetail);
     const json advice = BuildDawnAdviceJson(stateCode);
+    const json accel = BuildGpuAccelerationJson(activeBackend, bridge);
     if (gpuInUse) {
+        const bool full = accel.value("level", "partial") == "full";
         return json{
             {"code", "gpu_active"},
-            {"tone", "ok"},
-            {"text_en", "GPU backend active (Dawn)."},
-            {"text_zh", u8"\u5f53\u524d\u4f7f\u7528 \u0047\u0050\u0055 \u540e\u7aef\uff08\u0044\u0061\u0077\u006e\uff09\u3002"},
+            {"tone", full ? "ok" : "info"},
+            {"text_en", full ? "GPU backend active (Dawn compositor)." : "GPU backend active (Dawn host-compatible bridge)."},
+            {"text_zh", full ? u8"\u5f53\u524d\u4f7f\u7528 GPU \u5408\u6210\u540e\u7aef\uff08Dawn\uff09\u3002" : u8"\u5f53\u524d\u4f7f\u7528 GPU \u540e\u7aef\uff08Dawn \u5bbf\u4e3b\u517c\u5bb9\u6865\u63a5\uff09\u3002"},
             {"state_code", stateCode},
+            {"acceleration", accel},
             {"action", advice},
         };
     }
@@ -289,6 +314,7 @@ static json BuildGpuBannerJson(const std::string& activeBackend, const gpu::Dawn
         {"text_en", "CPU fallback active."},
         {"text_zh", u8"\u5f53\u524d\u4e3a \u0043\u0050\u0055 \u515c\u5e95\u6a21\u5f0f\u3002"},
         {"state_code", stateCode},
+        {"acceleration", accel},
         {"action", advice},
     };
 }
@@ -371,7 +397,8 @@ bool WebSettingsServer::Start() {
                     {"dawn_probe", BuildDawnProbeJson(dawnStatus.probe)},
                     {"dawn_status", BuildDawnStatusJson(dawnStatus)},
                     {"dawn_overlay_bridge", BuildDawnOverlayBridgeJson(dawnBridge)},
-                    {"gpu_status_banner", BuildGpuBannerJson(activeBackend, dawnStatus)},
+                    {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge)},
+                    {"gpu_status_banner", BuildGpuBannerJson(activeBackend, dawnStatus, dawnBridge)},
                 }).dump();
                 return;
             }
@@ -576,7 +603,8 @@ std::string WebSettingsServer::BuildStateJson() const {
     out["dawn_probe"] = BuildDawnProbeJson(dawnStatus.probe);
     out["dawn_status"] = BuildDawnStatusJson(dawnStatus);
     out["dawn_overlay_bridge"] = BuildDawnOverlayBridgeJson(dawnBridge);
-    out["gpu_status_banner"] = BuildGpuBannerJson(activeBackend, dawnStatus);
+    out["gpu_acceleration"] = BuildGpuAccelerationJson(activeBackend, dawnBridge);
+    out["gpu_status_banner"] = BuildGpuBannerJson(activeBackend, dawnStatus, dawnBridge);
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
     out["active"] = {
         {"click", EnsureUtf8(cfg.active.click)},

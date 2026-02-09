@@ -228,6 +228,16 @@
     const actionText = (lang === 'zh-CN') ? (action.action_text_zh || action.action_text_en || '') : (action.action_text_en || action.action_text_zh || '');
     const stateCode = banner.state_code || '';
     let finalText = actionText ? `${text} ${actionText}` : text;
+    const accel = banner.acceleration || st.gpu_acceleration || {};
+    if (accel && accel.level) {
+      const accelLabel = (lang === 'zh-CN')
+        ? (accel.label_zh || accel.label_en || accel.level)
+        : (accel.label_en || accel.label_zh || accel.level);
+      const accelText = (lang === 'zh-CN')
+        ? `加速级别: ${accelLabel}`
+        : `Acceleration: ${accelLabel}`;
+      finalText = `${finalText} ${accelText}`;
+    }
     const bridge = st.dawn_overlay_bridge || {};
     if (bridge && bridge.mode && bridge.mode !== 'none') {
       const modeLabel = (lang === 'zh-CN')
