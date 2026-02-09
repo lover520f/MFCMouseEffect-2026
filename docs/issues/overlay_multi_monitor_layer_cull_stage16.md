@@ -15,6 +15,10 @@
 2. 在 OverlayHostWindow 渲染时按屏幕做图层过滤
 - 文件：`MFCMouseEffect/MouseFx/Windows/OverlayHostWindow.cpp`
 - 在 `RenderSurface(...)` 中，仅当图层与当前屏幕窗口相交时才调用 `layer->Render(...)`。
+- 对“当前无可见内容且上一帧也为空”的屏幕，直接跳过：
+  - `ZeroMemory` 清屏
+  - `UpdateLayeredWindow`
+  仅在“从有内容 -> 无内容”的切换帧执行一次清空提交，避免残影并减少重复提交开销。
 
 3. 为重负载图层实现相交判断（重点覆盖用户反馈场景）
 - 拖尾：`MFCMouseEffect/MouseFx/Layers/TrailOverlayLayer.h/.cpp`
@@ -27,6 +31,7 @@
 
 ## 预期效果
 - 多屏下，特效只在相关屏幕绘制，不再在所有屏幕重复做重计算/重绘制。
+- 对无活跃特效的副屏，减少逐帧 `UpdateLayeredWindow` 提交。
 - 对长按、拖尾、悬浮三类卡顿场景有直接缓解。
 - 对单屏行为无功能性变化。
 

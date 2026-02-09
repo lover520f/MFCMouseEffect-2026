@@ -304,15 +304,30 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     if (!surface.hwnd || !surface.memDc || !surface.bits || surface.width <= 0 || surface.height <= 0) return;
 
     SetOverlayOriginOverride(surface.x, surface.y);
+    const int surfaceLeft = surface.x;
+    const int surfaceTop = surface.y;
+    const int surfaceRight = surface.x + surface.width;
+    const int surfaceBottom = surface.y + surface.height;
+    bool hasAnyLayerVisibleOnSurface = false;
+    for (const auto& layer : layers_) {
+        if (layer && layer->IsAlive() &&
+            layer->IntersectsScreenRect(surfaceLeft, surfaceTop, surfaceRight, surfaceBottom)) {
+            hasAnyLayerVisibleOnSurface = true;
+            break;
+        }
+    }
+
+    // If the surface is already empty and still no visible layer intersects it,
+    // skip expensive buffer clear + UpdateLayeredWindow for this frame.
+    if (!hasAnyLayerVisibleOnSurface && !surface.hadVisibleContent) {
+        return;
+    }
+
     ZeroMemory(surface.bits, (size_t)surface.width * (size_t)surface.height * 4);
 
     Gdiplus::Bitmap bmp(surface.width, surface.height, surface.width * 4, PixelFormat32bppPARGB, static_cast<BYTE*>(surface.bits));
     Gdiplus::Graphics graphics(&bmp);
     graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-    const int surfaceLeft = surface.x;
-    const int surfaceTop = surface.y;
-    const int surfaceRight = surface.x + surface.width;
-    const int surfaceBottom = surface.y + surface.height;
 
     for (auto& layer : layers_) {
         if (layer && layer->IsAlive() &&
@@ -326,6 +341,7 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     POINT ptDst{surface.x, surface.y};
     BLENDFUNCTION bf{AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
     UpdateLayeredWindow(surface.hwnd, nullptr, &ptDst, &sizeWnd, surface.memDc, &ptSrc, 0, &bf, ULW_ALPHA);
+    surface.hadVisibleContent = hasAnyLayerVisibleOnSurface;
 }
 
 bool OverlayHostWindow::RebuildSurfaces() {
@@ -397,6 +413,7 @@ void OverlayHostWindow::DestroySurfaces() {
         }
         surface.width = 0;
         surface.height = 0;
+        surface.hadVisibleContent = false;
     }
     surfaces_.clear();
     timerHwnd_ = nullptr;
