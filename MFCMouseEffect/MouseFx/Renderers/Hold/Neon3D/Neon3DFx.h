@@ -397,7 +397,10 @@ inline void DrawBranchTendrils(Gdiplus::Graphics& g, float cx, float cy, float i
     };
 
     const std::vector<BranchGeometry> branches =
-        ::mousefx::compute::BuildArray<BranchGeometry>(branchCount, 4, buildBranch);
+        ::mousefx::compute::BuildArray<BranchGeometry>(
+            branchCount,
+            ::mousefx::compute::ParallelProfile::Balanced,
+            buildBranch);
 
     for (int i = 0; i < branchCount; ++i) {
         const auto& branch = branches[(size_t)i];

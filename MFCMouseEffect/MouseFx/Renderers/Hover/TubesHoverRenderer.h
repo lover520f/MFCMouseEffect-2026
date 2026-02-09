@@ -1,5 +1,6 @@
 #pragma once
 #include "../../Interfaces/IRippleRenderer.h"
+#include "MouseFx/Compute/EffectComputeExecutor.h"
 #include <vector>
 #include <cmath>
 #include <algorithm>
@@ -87,34 +88,52 @@ public:
             auto& chain = chains_[c];
             // Use global time to avoid resets when overlay sessions are restarted
             float time = (float)GetTickCount64() * chain.speed;
+            const uint64_t nowTick = GetTickCount64();
 
-            for (size_t i = 0; i < chain.nodes.size(); ++i) {
-                const auto& node = chain.nodes[i];
-                
-                // Animate rotation
-                float rot = time + node.phase;
-                float curR = std::sqrt(node.baseOffX*node.baseOffX + node.baseOffY*node.baseOffY);
-                // Breathe
-                curR += std::sin(time * 2.0f + i * 0.1f) * 5.0f;
+            struct NodeFrame {
+                float x = 0.0f;
+                float y = 0.0f;
+                float radius = 0.0f;
+                Gdiplus::Color base{};
+            };
 
-                float finalX = cx + std::cos(rot) * curR;
-                float finalY = cy + std::sin(rot) * curR;
+            const std::vector<NodeFrame> frames =
+                ::mousefx::compute::BuildArray<NodeFrame>(
+                    (int)chain.nodes.size(),
+                    ::mousefx::compute::ParallelProfile::Throughput,
+                    [&](int idx) {
+                        NodeFrame frame{};
+                        const auto& node = chain.nodes[(size_t)idx];
 
-                // Render style similar to Trail
-                float ratio = 1.0f - (float)i / chain.nodes.size(); 
-                float radius = 3.0f + 10.0f * ratio;
+                        float rot = time + node.phase;
+                        float curR = std::sqrt(node.baseOffX * node.baseOffX + node.baseOffY * node.baseOffY);
+                        curR += std::sin(time * 2.0f + (float)idx * 0.1f) * 5.0f;
+
+                        frame.x = cx + std::cos(rot) * curR;
+                        frame.y = cy + std::sin(rot) * curR;
+
+                        const float ratio = 1.0f - (float)idx / (float)chain.nodes.size();
+                        frame.radius = 3.0f + 10.0f * ratio;
+
+                        frame.base = chain.color;
+                        if (isChromatic_) {
+                            const float hue = std::fmod((float)nowTick * 0.2f + c * 30.0f, 360.0f);
+                            frame.base = HslToRgb(hue, 0.9f, 0.6f, 255);
+                        }
+                        return frame;
+                    });
+
+            for (const auto& frame : frames) {
+                const float finalX = frame.x;
+                const float finalY = frame.y;
+                const float radius = frame.radius;
 
                 Gdiplus::GraphicsPath path;
                 path.AddEllipse(finalX - radius, finalY - radius, radius * 2, radius * 2);
     
                 Gdiplus::PathGradientBrush pthGrBrush(&path);
                 
-                Gdiplus::Color base = chain.color;
-                
-                if (isChromatic_) {
-                   float hue = std::fmod((float)GetTickCount64() * 0.2f + c * 30.0f, 360.0f);
-                   base = HslToRgb(hue, 0.9f, 0.6f, 255);
-                }
+                const Gdiplus::Color base = frame.base;
                 
                 // Alpha fade? Suspension is usually fully visible but ghosty?
                 // Use style.alpha multiplier if needed, but fixed 200 is fine for this specific effect.

@@ -1,5 +1,6 @@
 #pragma once
 #include "../../Interfaces/ITrailRenderer.h"
+#include "MouseFx/Compute/EffectComputeExecutor.h"
 #include "MouseFx/Core/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include <vector>
@@ -99,57 +100,15 @@ public:
 
         g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
-        // 2. Update Physics for each chain
-        for (int c = 0; c < 3; ++c) {
-            auto& chain = chains_[c];
-            
-            // Head follows mouse
-            float targetX = (float)target.x;
-            float targetY = (float)target.y;
-
-            // Simple exponential smoothing (Lerp) for the head
-            // The reference implementation might use a more complex array shifting, 
-            // but Lerp gives a good "damped" feel.
-            
-            // To emulate the "Tubes" library:
-            // It likely propagates positions down the chain.
-            
-            // Update Head
-            auto& head = chain.nodes[0];
-            float dx = targetX - head.x;
-            float dy = targetY - head.y;
-            
-            // "Lag" factor determines speed. detailed logic:
-            // if we just lerp, it never overshoots.
-            // Reference seems to be simple follow.
-            head.x += dx * chain.lag;
-            head.y += dy * chain.lag;
-
-            // Propagate to rest of chain
-            for (size_t i = 1; i < chain.nodes.size(); ++i) {
-                auto& curr = chain.nodes[i];
-                auto& prev = chain.nodes[i-1];
-                
-                float ddx = prev.x - curr.x;
-                float ddy = prev.y - curr.y;
-                
-                // Follow previous node
-                curr.x += ddx * chain.lag;
-                curr.y += ddy * chain.lag;
-                
-                // --- Minimum distance constraint to prevent clumping ---
-                // Ensure nodes are at least MIN_SEGMENT_DIST apart
-                constexpr float MIN_SEGMENT_DIST = 3.5f;
-                float dist = std::sqrt(ddx * ddx + ddy * ddy);
-                if (dist < MIN_SEGMENT_DIST && dist > 0.01f) {
-                    // Push the current node away from the previous node
-                    float nx = ddx / dist;
-                    float ny = ddy / dist;
-                    curr.x = prev.x - nx * MIN_SEGMENT_DIST;
-                    curr.y = prev.y - ny * MIN_SEGMENT_DIST;
-                }
-            }
-        }
+        // 2. Update physics by compute executor. Renderer only defines chain transition.
+        const float targetX = (float)target.x;
+        const float targetY = (float)target.y;
+        std::vector<TubeChain> updatedChains =
+            ::mousefx::compute::BuildArray<TubeChain>(
+                (int)chains_.size(),
+                ::mousefx::compute::ParallelProfile::AggressiveSmallBatch,
+                [&](int idx) { return BuildUpdatedChain(chains_[(size_t)idx], targetX, targetY); });
+        chains_ = std::move(updatedChains);
 
         // 3. Render
         // Draw from tail to head
@@ -270,6 +229,39 @@ public:
     }
 
 private:
+    static TubeChain BuildUpdatedChain(const TubeChain& src, float targetX, float targetY) {
+        TubeChain out = src;
+        if (out.nodes.empty()) return out;
+
+        // Update head.
+        auto& head = out.nodes[0];
+        const float dx = targetX - head.x;
+        const float dy = targetY - head.y;
+        head.x += dx * out.lag;
+        head.y += dy * out.lag;
+
+        // Propagate to tail with minimum segment distance to avoid clumping.
+        for (size_t i = 1; i < out.nodes.size(); ++i) {
+            auto& curr = out.nodes[i];
+            auto& prev = out.nodes[i - 1];
+
+            const float ddx = prev.x - curr.x;
+            const float ddy = prev.y - curr.y;
+            curr.x += ddx * out.lag;
+            curr.y += ddy * out.lag;
+
+            constexpr float kMinSegmentDist = 3.5f;
+            const float dist = std::sqrt(ddx * ddx + ddy * ddy);
+            if (dist < kMinSegmentDist && dist > 0.01f) {
+                const float nx = ddx / dist;
+                const float ny = ddy / dist;
+                curr.x = prev.x - nx * kMinSegmentDist;
+                curr.y = prev.y - ny * kMinSegmentDist;
+            }
+        }
+        return out;
+    }
+
     static constexpr size_t NUM_NODES = 30; // Length of tail
     std::vector<TubeChain> chains_;
     POINT lastTarget_ = { 0, 0 };
