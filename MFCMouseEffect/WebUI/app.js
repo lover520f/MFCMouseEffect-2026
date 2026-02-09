@@ -230,9 +230,12 @@
     let finalText = actionText ? `${text} ${actionText}` : text;
     const bridge = st.dawn_overlay_bridge || {};
     if (bridge && bridge.mode && bridge.mode !== 'none') {
+      const modeLabel = (lang === 'zh-CN')
+        ? (bridge.mode_label_zh || bridge.mode || '')
+        : (bridge.mode_label_en || bridge.mode || '');
       const bridgeMode = (lang === 'zh-CN')
-        ? `桥接模式: ${bridge.mode}`
-        : `Bridge mode: ${bridge.mode}`;
+        ? `桥接模式: ${modeLabel}`
+        : `Bridge mode: ${modeLabel}`;
       finalText = `${finalText} ${bridgeMode}`;
     }
     if (stateCode === 'device_ready_cpu_bridge_pending' && bridge && bridge.detail) {

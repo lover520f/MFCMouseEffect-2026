@@ -120,10 +120,14 @@ static json BuildDawnProbeJson(const gpu::DawnRuntimeProbeInfo& probe) {
 }
 
 static json BuildDawnOverlayBridgeJson(const gpu::DawnOverlayBridgeStatus& bridge) {
+    const bool hostCompat = bridge.mode == "host_compat";
+    const bool compositor = bridge.mode == "compositor";
     return json{
         {"compiled", bridge.compiled},
         {"available", bridge.available},
         {"mode", bridge.mode},
+        {"mode_label_en", hostCompat ? "Host-Compatible Bridge" : (compositor ? "GPU Compositor Bridge" : "Not Enabled")},
+        {"mode_label_zh", hostCompat ? u8"\u5bbf\u4e3b\u517c\u5bb9\u6865\u63a5" : (compositor ? u8"GPU \u5408\u6210\u6865\u63a5" : u8"\u672a\u542f\u7528")},
         {"detail", bridge.detail},
     };
 }
