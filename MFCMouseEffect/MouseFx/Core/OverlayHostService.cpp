@@ -60,6 +60,14 @@ bool OverlayHostService::IsGpuBackendAvailable(const std::string& backend) const
     return false;
 }
 
+void OverlayHostService::RefreshGpuRuntimeProbe() {
+    gpu::ResetDawnRuntimeProbe();
+    if (requestedBackend_ == "dawn" || requestedBackend_ == "auto") {
+        const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
+        backendDetail_ = dawn.detail;
+    }
+}
+
 bool OverlayHostService::Initialize() {
     if (host_) return true;
 

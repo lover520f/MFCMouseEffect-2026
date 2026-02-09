@@ -4,6 +4,7 @@
 #include "GpuHardwareProbe.h"
 
 #include <windows.h>
+#include <mutex>
 
 namespace mousefx::gpu {
 namespace {
@@ -11,6 +12,8 @@ namespace {
 HMODULE g_dawnModule = nullptr;
 bool g_dawnProbeAttempted = false;
 DawnRuntimeProbeInfo g_probe{};
+uint64_t g_probeGeneration = 0;
+std::mutex g_probeMutex{};
 
 using PFN_wgpuCreateInstance = void* (*)(const void*);
 using PFN_wgpuInstanceRelease = void (*)(void*);
@@ -72,11 +75,12 @@ FARPROC ResolveInstanceReleaseProc(HMODULE mod) {
     return GetProcAddress(mod, "webgpuInstanceRelease");
 }
 
-void RunProbeIfNeeded() {
+void RunProbeIfNeededLocked() {
     if (g_dawnProbeAttempted) return;
     g_dawnProbeAttempted = true;
 
     g_probe = {};
+    g_probe.generation = ++g_probeGeneration;
     g_probe.compiled = IsDawnCompiled();
     g_probe.hasDisplayAdapter = HasDesktopDisplayAdapter();
     if (!g_probe.hasDisplayAdapter) {
@@ -115,9 +119,22 @@ void RunProbeIfNeeded() {
 
 } // namespace
 
-const DawnRuntimeProbeInfo& GetDawnRuntimeProbeInfo() {
-    RunProbeIfNeeded();
+DawnRuntimeProbeInfo GetDawnRuntimeProbeInfo() {
+    std::lock_guard<std::mutex> lock(g_probeMutex);
+    RunProbeIfNeededLocked();
     return g_probe;
+}
+
+void ResetDawnRuntimeProbe() {
+    std::lock_guard<std::mutex> lock(g_probeMutex);
+    if (g_dawnModule) {
+        FreeLibrary(g_dawnModule);
+        g_dawnModule = nullptr;
+    }
+    g_dawnProbeAttempted = false;
+    g_probe = {};
+    g_probe.detail = "probe_reset";
+    g_probe.generation = ++g_probeGeneration;
 }
 
 bool IsDawnCompiled() {
@@ -129,7 +146,8 @@ bool IsDawnCompiled() {
 }
 
 DawnRuntimeInitResult TryInitializeDawnRuntime() {
-    RunProbeIfNeeded();
+    std::lock_guard<std::mutex> lock(g_probeMutex);
+    RunProbeIfNeededLocked();
 
     DawnRuntimeInitResult result{};
     if (!g_probe.hasDisplayAdapter) {

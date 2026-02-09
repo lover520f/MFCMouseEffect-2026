@@ -146,6 +146,12 @@ bool WebSettingsServer::Start() {
                 resp.body = BuildStateJson();
                 return;
             }
+            if (req.method == "POST" && path == "/api/gpu/probe_refresh") {
+                OverlayHostService::Instance().RefreshGpuRuntimeProbe();
+                resp.contentType = "application/json; charset=utf-8";
+                resp.body = json({{"ok", true}}).dump();
+                return;
+            }
             if ((req.method == "POST" || req.method == "GET") && path == "/api/reload") {
                 if (controller_) controller_->HandleCommand("{\"cmd\":\"reload_config\"}");
                 resp.contentType = "application/json; charset=utf-8";
@@ -293,8 +299,9 @@ std::string WebSettingsServer::BuildStateJson() const {
     out["gpu_hardware_available"] = OverlayHostService::Instance().HasGpuHardware();
     out["dawn_available"] = OverlayHostService::Instance().IsGpuBackendAvailable("dawn");
     {
-        const gpu::DawnRuntimeProbeInfo& probe = gpu::GetDawnRuntimeProbeInfo();
+        const gpu::DawnRuntimeProbeInfo probe = gpu::GetDawnRuntimeProbeInfo();
         out["dawn_probe"] = {
+            {"generation", probe.generation},
             {"compiled", probe.compiled},
             {"has_display_adapter", probe.hasDisplayAdapter},
             {"module_loaded", probe.moduleLoaded},

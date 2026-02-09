@@ -33,6 +33,7 @@ public:
     std::string GetRenderBackendDetail() const;
     bool HasGpuHardware() const;
     bool IsGpuBackendAvailable(const std::string& backend) const;
+    void RefreshGpuRuntimeProbe();
 
     bool Initialize();
     void Shutdown();

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 namespace mousefx::gpu {
@@ -11,6 +12,7 @@ struct DawnRuntimeInitResult {
 };
 
 struct DawnRuntimeProbeInfo {
+    uint64_t generation = 0;
     bool compiled = false;
     bool hasDisplayAdapter = false;
     bool moduleLoaded = false;
@@ -25,6 +27,7 @@ struct DawnRuntimeProbeInfo {
 bool IsDawnCompiled();
 
 DawnRuntimeInitResult TryInitializeDawnRuntime();
-const DawnRuntimeProbeInfo& GetDawnRuntimeProbeInfo();
+DawnRuntimeProbeInfo GetDawnRuntimeProbeInfo();
+void ResetDawnRuntimeProbe();
 
 } // namespace mousefx::gpu
