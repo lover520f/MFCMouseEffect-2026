@@ -38,6 +38,7 @@ public:
 
     void Start(const RippleStyle& style) override {
         particles_.clear();
+        particles_.reserve(40);
         for(int i=0; i<40; ++i) {
             float theta = ((float)(rand() % 360) / 180.0f) * 3.14159f;
             float phi = ((float)(rand() % 180) / 180.0f) * 3.14159f;
@@ -66,10 +67,12 @@ public:
         Gdiplus::Color stroke = ToGdiPlus(style.stroke);
         Gdiplus::Color glow = ToGdiPlus(style.glow);
         Gdiplus::Color fill = ToGdiPlus(style.fill);
+        (void)glow;
 
         auto DrawRing3D = [&](float r, float spin, float width, Gdiplus::Color color, float startArc, float sweepArc, int axisMode, float axisTilt) {
-             std::vector<Gdiplus::PointF> points;
-             int segments = 60;
+             constexpr int segments = 60;
+             ringPointsScratch_.clear();
+             ringPointsScratch_.reserve(segments + 1);
              for (int i = 0; i <= segments; ++i) {
                  float pct = (float)i / segments;
                  float ang = startArc + sweepArc * pct;
@@ -83,12 +86,12 @@ public:
                  v = RotX(v, baseTiltX);
                  v = RotY(v, baseTiltY);
                  
-                 points.push_back(Project(v, cx, cy));
+                 ringPointsScratch_.push_back(Project(v, cx, cy));
              }
              
              Gdiplus::Pen p(color, width);
              if (sweepArc < 6.28f) p.SetStartCap(Gdiplus::LineCapRound), p.SetEndCap(Gdiplus::LineCapRound);
-             g.DrawLines(&p, points.data(), (INT)points.size());
+             g.DrawLines(&p, ringPointsScratch_.data(), (INT)ringPointsScratch_.size());
         };
 
         // 1. Core Energy Orb
@@ -152,6 +155,9 @@ public:
             g.FillEllipse(&pb, pt.X - pSize/2, pt.Y - pSize/2, pSize, pSize);
         }
     }
+
+private:
+    std::vector<Gdiplus::PointF> ringPointsScratch_;
 };
 
 REGISTER_RENDERER("tech_ring", TechRingRenderer)

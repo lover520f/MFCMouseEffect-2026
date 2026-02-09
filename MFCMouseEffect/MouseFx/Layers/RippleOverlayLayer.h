@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace mousefx {
@@ -47,6 +48,7 @@ private:
     const RippleInstance* FindById(uint64_t id) const;
 
     std::vector<RippleInstance> instances_{};
+    std::unordered_map<uint64_t, size_t> idToIndex_{};
     uint64_t nextId_ = 1;
 };
 

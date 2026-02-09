@@ -30,6 +30,7 @@ public:
 
     void Start(const RippleStyle& style) override {
         particles_.clear();
+        particles_.reserve(30);
         for(int i=0; i<30; ++i) {
             float angle = ((float)(rand() % 360) / 180.0f) * 3.14159f;
             float r = style.endRadius * (0.2f + (float)(rand()%80)/100.0f);
@@ -50,21 +51,22 @@ public:
         
         // 1. Draw Ground Ring Segments (tech look)
         auto DrawSegmentRing = [&](float r, float spin, float width, int count, float gapRatio) {
+             constexpr int segs = 10;
              for (int i = 0; i < count; ++i) {
                  float step = 2 * 3.14159f / count;
                  float startAng = i * step + spin;
                  float sweep = step * (1.0f - gapRatio);
-                 
-                 std::vector<Gdiplus::PointF> points;
-                 int segs = 10;
+
+                 segmentPointsScratch_.clear();
+                 segmentPointsScratch_.reserve(segs + 1);
                  for(int j=0; j<=segs; ++j) {
                      float ang = startAng + sweep * ((float)j/segs);
-                     points.push_back(Project({r * cos(ang), 0.0f, r * sin(ang)}, cx, cy, tilt));
+                     segmentPointsScratch_.push_back(Project({r * cos(ang), 0.0f, r * sin(ang)}, cx, cy, tilt));
                  }
-                 
+
                  BYTE a = ClampByte((int)(stroke.GetA() * (1.0f - progress * 0.5f))); 
                  Gdiplus::Pen p(Gdiplus::Color(a, stroke.GetR(), stroke.GetG(), stroke.GetB()), width);
-                 g.DrawLines(&p, points.data(), (INT)points.size());
+                 g.DrawLines(&p, segmentPointsScratch_.data(), (INT)segmentPointsScratch_.size());
              }
         };
 
@@ -114,6 +116,9 @@ public:
             g.FillPath(&pgb, &path);
         }
     }
+
+private:
+    std::vector<Gdiplus::PointF> segmentPointsScratch_;
 };
 
 REGISTER_RENDERER("hologram", HologramHudRenderer)

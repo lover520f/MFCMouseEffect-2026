@@ -36,6 +36,10 @@ public:
         Gdiplus::Color color;
     };
 
+    struct Point3D {
+        float x, y, z, w, a, u;
+    };
+
     void Render(Gdiplus::Graphics& g, float t, uint64_t elapsedMs, int sizePx, const RippleStyle& style) override {
         using namespace render_utils;
 
@@ -69,10 +73,8 @@ public:
         const float camera = radius * 5.2f;
         const float depthAmp = radius * 0.95f;
 
-        std::vector<Segment> renderQueue;
-        renderQueue.reserve(segments * 3);
-
-        struct Point3D { float x, y, z, w, a, u; };
+        renderQueue_.clear();
+        renderQueue_.reserve((size_t)segments * 3u);
         
         auto getPoint = [&](int i, float offsetRad) -> Point3D {
             const float u = (float)i / (float)segments; // 0..1
@@ -95,18 +97,18 @@ public:
             return { sx, sy, localZ / depthAmp, widthFactor, alphaFactor, u };
         };
 
-        std::vector<Point3D> strandA;
-        std::vector<Point3D> strandB;
-        strandA.reserve((size_t)segments);
-        strandB.reserve((size_t)segments);
+        strandA_.clear();
+        strandB_.clear();
+        strandA_.reserve((size_t)segments);
+        strandB_.reserve((size_t)segments);
         for (int i = 0; i < segments; ++i) {
-            strandA.push_back(getPoint(i, 0.0f));
-            strandB.push_back(getPoint(i, 3.1415926f));
+            strandA_.push_back(getPoint(i, 0.0f));
+            strandB_.push_back(getPoint(i, 3.1415926f));
         }
 
         for (int i = 0; i < segments - 1; ++i) {
-            Point3D p1 = strandA[(size_t)i];
-            Point3D p2 = strandA[(size_t)i + 1];
+            Point3D p1 = strandA_[(size_t)i];
+            Point3D p2 = strandA_[(size_t)i + 1];
             
             float avgZ = (p1.z + p2.z) * 0.5f;
             float avgW = ((p1.w + p2.w) * 0.5f) * (style.strokeWidth + 0.9f);
@@ -115,13 +117,13 @@ public:
             const float strandMix = 0.25f + 0.45f * avgU;
             Gdiplus::Color c1 = MixColor(stroke, white, strandMix, ClampByte((int)(avgA * 255.0f)));
              
-            renderQueue.push_back({ 
+            renderQueue_.push_back({
                 avgZ, p1.x, p1.y, p2.x, p2.y, avgW, 
                 c1
             });
 
-            Point3D q1 = strandB[(size_t)i];
-            Point3D q2 = strandB[(size_t)i + 1];
+            Point3D q1 = strandB_[(size_t)i];
+            Point3D q2 = strandB_[(size_t)i + 1];
 
             float avgZ2 = (q1.z + q2.z) * 0.5f;
             float avgW2 = ((q1.w + q2.w) * 0.5f) * (style.strokeWidth + 0.9f);
@@ -130,7 +132,7 @@ public:
             const float strandMix2 = 0.20f + 0.32f * avgU2;
             Gdiplus::Color c2 = MixColor(glow, white, strandMix2, ClampByte((int)(avgA2 * 255.0f)));
 
-            renderQueue.push_back({ 
+            renderQueue_.push_back({
                 avgZ2, q1.x, q1.y, q2.x, q2.y, avgW2, 
                 c2
             });
@@ -141,18 +143,18 @@ public:
                 const float rw = std::max(1.0f, (style.strokeWidth + 0.5f) * 0.34f);
                 const float ra = Clamp01((avgA + avgA2) * 0.34f);
                 const Gdiplus::Color rc = MixColor(stroke, glow, 0.5f, ClampByte((int)(ra * 255.0f)));
-                renderQueue.push_back({
+                renderQueue_.push_back({
                     rz, p1.x, p1.y, q1.x, q1.y, rw, rc
                 });
             }
         }
 
-        std::sort(renderQueue.begin(), renderQueue.end(), [](const Segment& a, const Segment& b) {
+        std::sort(renderQueue_.begin(), renderQueue_.end(), [](const Segment& a, const Segment& b) {
             return a.z < b.z;
         });
 
         g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-        for (const auto& s : renderQueue) {
+        for (const auto& s : renderQueue_) {
             if (s.color.GetA() == 0) continue;
 
             // Soft aura
@@ -191,6 +193,9 @@ public:
 
 private:
     RenderParams params_{};
+    std::vector<Segment> renderQueue_{};
+    std::vector<Point3D> strandA_{};
+    std::vector<Point3D> strandB_{};
 };
 
 REGISTER_RENDERER("helix", HelixRenderer)

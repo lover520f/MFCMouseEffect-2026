@@ -30,6 +30,7 @@ uint64_t RippleOverlayLayer::ShowRipple(const ClickEvent& ev, const RippleStyle&
     instance.renderer->Start(instance.style);
 
     instances_.push_back(std::move(instance));
+    idToIndex_[instances_.back().id] = instances_.size() - 1;
     return instances_.back().id;
 }
 
@@ -52,6 +53,7 @@ uint64_t RippleOverlayLayer::ShowContinuous(const ClickEvent& ev, const RippleSt
     instance.renderer->Start(instance.style);
 
     instances_.push_back(std::move(instance));
+    idToIndex_[instances_.back().id] = instances_.size() - 1;
     return instances_.back().id;
 }
 
@@ -116,12 +118,22 @@ void RippleOverlayLayer::Update(uint64_t nowMs) {
         instance.t = t;
     }
 
-    instances_.erase(
-        std::remove_if(
-            instances_.begin(),
-            instances_.end(),
-            [](const RippleInstance& instance) { return !instance.active; }),
-        instances_.end());
+    // Remove inactive instances in-place and keep id->index map consistent.
+    for (size_t i = 0; i < instances_.size();) {
+        if (instances_[i].active) {
+            ++i;
+            continue;
+        }
+
+        const uint64_t removedId = instances_[i].id;
+        const size_t last = instances_.size() - 1;
+        if (i != last) {
+            instances_[i] = std::move(instances_[last]);
+            idToIndex_[instances_[i].id] = i;
+        }
+        instances_.pop_back();
+        idToIndex_.erase(removedId);
+    }
 }
 
 void RippleOverlayLayer::Render(Gdiplus::Graphics& graphics) {
@@ -145,18 +157,22 @@ void RippleOverlayLayer::Render(Gdiplus::Graphics& graphics) {
 
 RippleOverlayLayer::RippleInstance* RippleOverlayLayer::FindById(uint64_t id) {
     if (id == 0) return nullptr;
-    for (auto& instance : instances_) {
-        if (instance.id == id) return &instance;
-    }
-    return nullptr;
+    const auto it = idToIndex_.find(id);
+    if (it == idToIndex_.end()) return nullptr;
+    const size_t idx = it->second;
+    if (idx >= instances_.size()) return nullptr;
+    if (instances_[idx].id != id) return nullptr;
+    return &instances_[idx];
 }
 
 const RippleOverlayLayer::RippleInstance* RippleOverlayLayer::FindById(uint64_t id) const {
     if (id == 0) return nullptr;
-    for (const auto& instance : instances_) {
-        if (instance.id == id) return &instance;
-    }
-    return nullptr;
+    const auto it = idToIndex_.find(id);
+    if (it == idToIndex_.end()) return nullptr;
+    const size_t idx = it->second;
+    if (idx >= instances_.size()) return nullptr;
+    if (instances_[idx].id != id) return nullptr;
+    return &instances_[idx];
 }
 
 } // namespace mousefx
