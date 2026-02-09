@@ -424,6 +424,19 @@
         : `Command stream: ${cs.command_count || 0} (trail ${cs.trail_commands || 0}, ripple ${cs.ripple_commands || 0}, particle ${cs.particle_commands || 0})`;
       finalText = `${finalText} ${diagText}`;
     }
+    if (showDiagCode && st && st.dawn_command_consumer) {
+      const cc = st.dawn_command_consumer;
+      const consumerText = (lang === 'zh-CN')
+        ? `消费: ${cc.accepted ? '已接收' : '未接收'} (${cc.detail || 'unknown'})`
+        : `Consumer: ${cc.accepted ? 'accepted' : 'rejected'} (${cc.detail || 'unknown'})`;
+      const prepText = (lang === 'zh-CN')
+        ? `Trail预处理: b${cc.prepared_trail_batches || 0} v${cc.prepared_trail_vertices || 0} s${cc.prepared_trail_segments || 0} t${cc.prepared_trail_triangles || 0} u${cc.prepared_upload_bytes || 0}`
+        : `Trail prep: b${cc.prepared_trail_batches || 0} v${cc.prepared_trail_vertices || 0} s${cc.prepared_trail_segments || 0} t${cc.prepared_trail_triangles || 0} u${cc.prepared_upload_bytes || 0}`;
+      const submitText = (lang === 'zh-CN')
+        ? `提交: ${cc.noop_submit_success || 0}/${cc.noop_submit_attempts || 0}`
+        : `Submit: ${cc.noop_submit_success || 0}/${cc.noop_submit_attempts || 0}`;
+      finalText = `${finalText} ${consumerText} ${prepText} ${submitText}`;
+    }
     const prefix = st.gpu_in_use ? '[GPU] ' : '[CPU] ';
     if (gpuBannerTextEl) {
       gpuBannerTextEl.textContent = (showDiagCode && stateCode) ? `${prefix}${finalText} [${stateCode}]` : `${prefix}${finalText}`;

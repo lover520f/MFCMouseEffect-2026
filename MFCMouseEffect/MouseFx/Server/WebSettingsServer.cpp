@@ -8,6 +8,7 @@
 #include "MouseFx/Core/AppController.h"
 #include "MouseFx/Core/OverlayHostService.h"
 #include "MouseFx/Gpu/DawnOverlayBridge.h"
+#include "MouseFx/Gpu/DawnCommandConsumer.h"
 #include "MouseFx/Gpu/DawnRuntime.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/WebUiAssets.h"
@@ -485,6 +486,7 @@ bool WebSettingsServer::Start() {
                 const std::string activeBackend = OverlayHostService::Instance().GetActiveRenderBackend();
                 const gpu::DawnRuntimeStatus dawnStatus = gpu::GetDawnRuntimeStatus();
                 const gpu::DawnOverlayBridgeStatus dawnBridge = gpu::GetDawnOverlayBridgeStatus();
+                const gpu::DawnCommandConsumeStatus consume = gpu::GetDawnCommandConsumeStatus();
                 resp.contentType = "application/json; charset=utf-8";
                 resp.body = json({
                     {"ok", true},
@@ -496,6 +498,24 @@ bool WebSettingsServer::Start() {
                     {"gpu_in_use", activeBackend == "dawn"},
                     {"dawn_status", BuildDawnStatusJson(dawnStatus)},
                     {"dawn_overlay_bridge", BuildDawnOverlayBridgeJson(dawnBridge)},
+                    {"dawn_command_consumer", {
+                        {"submit_tick_ms", consume.submitTickMs},
+                        {"accepted", consume.accepted},
+                        {"detail", consume.detail},
+                        {"accepted_frames", consume.acceptedFrames},
+                        {"rejected_frames", consume.rejectedFrames},
+                        {"command_count", consume.commandCount},
+                        {"trail_commands", consume.trailCommandCount},
+                        {"ripple_commands", consume.rippleCommandCount},
+                        {"particle_commands", consume.particleCommandCount},
+                        {"prepared_trail_batches", consume.preparedTrailBatches},
+                        {"prepared_trail_vertices", consume.preparedTrailVertices},
+                        {"prepared_trail_segments", consume.preparedTrailSegments},
+                        {"prepared_trail_triangles", consume.preparedTrailTriangles},
+                        {"prepared_upload_bytes", consume.preparedUploadBytes},
+                        {"noop_submit_attempts", consume.noopSubmitAttempts},
+                        {"noop_submit_success", consume.noopSubmitSuccess},
+                    }},
                     {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge)},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
                 }).dump();
@@ -515,6 +535,7 @@ bool WebSettingsServer::Start() {
                 const std::string activeBackend = OverlayHostService::Instance().GetActiveRenderBackend();
                 const gpu::DawnRuntimeStatus dawnStatus = gpu::GetDawnRuntimeStatus();
                 const gpu::DawnOverlayBridgeStatus dawnBridge = gpu::GetDawnOverlayBridgeStatus();
+                const gpu::DawnCommandConsumeStatus consume = gpu::GetDawnCommandConsumeStatus();
                 resp.contentType = "application/json; charset=utf-8";
                 resp.body = json({
                     {"ok", true},
@@ -528,6 +549,24 @@ bool WebSettingsServer::Start() {
                     {"dawn_probe", BuildDawnProbeJson(dawnStatus.probe)},
                     {"dawn_status", BuildDawnStatusJson(dawnStatus)},
                     {"dawn_overlay_bridge", BuildDawnOverlayBridgeJson(dawnBridge)},
+                    {"dawn_command_consumer", {
+                        {"submit_tick_ms", consume.submitTickMs},
+                        {"accepted", consume.accepted},
+                        {"detail", consume.detail},
+                        {"accepted_frames", consume.acceptedFrames},
+                        {"rejected_frames", consume.rejectedFrames},
+                        {"command_count", consume.commandCount},
+                        {"trail_commands", consume.trailCommandCount},
+                        {"ripple_commands", consume.rippleCommandCount},
+                        {"particle_commands", consume.particleCommandCount},
+                        {"prepared_trail_batches", consume.preparedTrailBatches},
+                        {"prepared_trail_vertices", consume.preparedTrailVertices},
+                        {"prepared_trail_segments", consume.preparedTrailSegments},
+                        {"prepared_trail_triangles", consume.preparedTrailTriangles},
+                        {"prepared_upload_bytes", consume.preparedUploadBytes},
+                        {"noop_submit_attempts", consume.noopSubmitAttempts},
+                        {"noop_submit_success", consume.noopSubmitSuccess},
+                    }},
                     {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge)},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
                 }).dump();
@@ -765,6 +804,25 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"trail_commands", OverlayHostService::Instance().GetLastGpuTrailCommandCount()},
         {"ripple_commands", OverlayHostService::Instance().GetLastGpuRippleCommandCount()},
         {"particle_commands", OverlayHostService::Instance().GetLastGpuParticleCommandCount()},
+    };
+    const gpu::DawnCommandConsumeStatus consume = gpu::GetDawnCommandConsumeStatus();
+    out["dawn_command_consumer"] = {
+        {"submit_tick_ms", consume.submitTickMs},
+        {"accepted", consume.accepted},
+        {"detail", consume.detail},
+        {"accepted_frames", consume.acceptedFrames},
+        {"rejected_frames", consume.rejectedFrames},
+        {"command_count", consume.commandCount},
+        {"trail_commands", consume.trailCommandCount},
+        {"ripple_commands", consume.rippleCommandCount},
+        {"particle_commands", consume.particleCommandCount},
+        {"prepared_trail_batches", consume.preparedTrailBatches},
+        {"prepared_trail_vertices", consume.preparedTrailVertices},
+        {"prepared_trail_segments", consume.preparedTrailSegments},
+        {"prepared_trail_triangles", consume.preparedTrailTriangles},
+        {"prepared_upload_bytes", consume.preparedUploadBytes},
+        {"noop_submit_attempts", consume.noopSubmitAttempts},
+        {"noop_submit_success", consume.noopSubmitSuccess},
     };
     out["gpu_bridge_mode_request"] = EnsureUtf8(cfg.gpuBridgeModeRequest);
     out["gpu_acceleration"] = BuildGpuAccelerationJson(activeBackend, dawnBridge);

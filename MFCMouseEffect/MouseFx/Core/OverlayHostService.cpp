@@ -3,6 +3,7 @@
 #include "OverlayHostService.h"
 
 #include "MouseFx/Gpu/DawnOverlayBridge.h"
+#include "MouseFx/Gpu/DawnCommandConsumer.h"
 #include "MouseFx/Gpu/DawnRuntime.h"
 #include "MouseFx/Gpu/GpuHardwareProbe.h"
 #include "MouseFx/Interfaces/IRippleRenderer.h"
@@ -174,6 +175,7 @@ bool OverlayHostService::Initialize() {
         host_.reset();
         return false;
     }
+    host_->SetGpuSubmitContext(activeBackend_, pipelineMode_);
     return true;
 }
 
@@ -183,6 +185,7 @@ void OverlayHostService::Shutdown() {
     textLayer_ = nullptr;
     host_->Shutdown();
     host_.reset();
+    gpu::ResetDawnCommandConsumeStatus();
     activeBackend_ = "cpu";
     backendDetail_ = "cpu_default";
     pipelineMode_ = "cpu_layered";

@@ -44,5 +44,6 @@ DawnRuntimeInitResult TryInitializeDawnRuntime();
 DawnRuntimeProbeInfo GetDawnRuntimeProbeInfo();
 DawnRuntimeStatus GetDawnRuntimeStatus();
 void ResetDawnRuntimeProbe();
+bool TrySubmitNoopQueueWork(std::string* detailOut = nullptr);
 
 } // namespace mousefx::gpu

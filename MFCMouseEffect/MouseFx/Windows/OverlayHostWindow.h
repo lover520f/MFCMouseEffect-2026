@@ -6,6 +6,7 @@
 #include <atomic>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "MouseFx/Gpu/OverlayGpuCommandStream.h"
@@ -24,6 +25,7 @@ public:
     IOverlayLayer* AddLayer(std::unique_ptr<IOverlayLayer> layer);
     void RemoveLayer(IOverlayLayer* layer);
     void ClearLayers();
+    void SetGpuSubmitContext(const std::string& activeBackend, const std::string& pipelineMode);
     uint64_t GetLastGpuCommandFrameTickMs() const;
     uint32_t GetLastGpuCommandCount() const;
     uint32_t GetLastGpuTrailCommandCount() const;
@@ -82,6 +84,8 @@ private:
     std::atomic<uint32_t> gpuTrailCommandCount_{0};
     std::atomic<uint32_t> gpuRippleCommandCount_{0};
     std::atomic<uint32_t> gpuParticleCommandCount_{0};
+    std::string gpuSubmitActiveBackend_ = "cpu";
+    std::string gpuSubmitPipelineMode_ = "cpu_layered";
 };
 
 } // namespace mousefx

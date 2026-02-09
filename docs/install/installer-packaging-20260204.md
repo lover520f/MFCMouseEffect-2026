@@ -8,6 +8,7 @@
 - 支持中英文安装界面（ChineseSimplified / English）；保留上次的安装目录和语言。
 - 安装/卸载前自动结束运行中的 `MFCMouseEffect.exe`，避免文件占用。
 - 如果本机未安装 `ChineseSimplified.isl` 语言包，编译器会自动仅使用英文，避免 `Couldn't open include file` 报错。
+- 安装器可执行文件的版本资源显式配置为 `VersionInfoVersion={AppVersion}.0`，避免文件属性显示 `0.0.0.0`。
 
 ## 使用提示
 - 生成前需先构建 `Release|x64`，确保 `x64\\Release\\webui` 已由 PostBuild 拷贝。

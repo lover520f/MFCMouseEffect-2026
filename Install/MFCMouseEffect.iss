@@ -1,7 +1,7 @@
 ; Reference: http://www.jrsoftware.org/ishelp/
 
 #define MyAppName "MFCMouseEffect"
-#define MyAppVersion "1.2.1"
+#define MyAppVersion "1.2.2"
 #define MyAppPublisher "ksun22515@gmail.com"
 #define MyAppURL "https://github.com/sqmw/MFCMouseEffect"
 #define MyAppExeName "MFCMouseEffect.exe"
@@ -22,6 +22,7 @@
 AppId={{D3F7B7B1-4A2E-4F8A-8C8E-9B2E1D2E3F4G}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
+AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
@@ -43,6 +44,12 @@ ShowLanguageDialog=auto
 ; --- 64-bit Architecture Configuration ---
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
+VersionInfoVersion={#MyAppVersion}.0
+VersionInfoCompany={#MyAppPublisher}
+VersionInfoDescription={#MyAppName} Setup
+VersionInfoTextVersion={#MyAppVersion}
+VersionInfoProductName={#MyAppName}
+VersionInfoProductVersion={#MyAppVersion}
 
 ; --- Close running instances automatically ---
 ; Do NOT use AppMutex here, otherwise Inno will prompt the user to close the app.

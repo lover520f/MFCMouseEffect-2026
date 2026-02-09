@@ -2,6 +2,7 @@
 
 #include "OverlayHostWindow.h"
 #include "MouseFx/Core/OverlayCoordSpace.h"
+#include "MouseFx/Gpu/DawnCommandConsumer.h"
 
 #include <algorithm>
 #include <vector>
@@ -246,6 +247,11 @@ void OverlayHostWindow::ClearLayers() {
     StopFrameLoop();
 }
 
+void OverlayHostWindow::SetGpuSubmitContext(const std::string& activeBackend, const std::string& pipelineMode) {
+    gpuSubmitActiveBackend_ = activeBackend.empty() ? "cpu" : activeBackend;
+    gpuSubmitPipelineMode_ = pipelineMode.empty() ? "cpu_layered" : pipelineMode;
+}
+
 LRESULT CALLBACK OverlayHostWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     OverlayHostWindow* self = nullptr;
     if (msg == WM_NCCREATE) {
@@ -396,6 +402,15 @@ void OverlayHostWindow::CollectGpuCommandStream(uint64_t nowMs) {
     gpuTrailCommandCount_.store(trailCount, std::memory_order_release);
     gpuRippleCommandCount_.store(rippleCount, std::memory_order_release);
     gpuParticleCommandCount_.store(particleCount, std::memory_order_release);
+
+    const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatus();
+    const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
+    gpu::SubmitOverlayGpuCommands(
+        gpuCommandStream_,
+        runtime,
+        bridge,
+        gpuSubmitActiveBackend_,
+        gpuSubmitPipelineMode_);
 }
 
 bool OverlayHostWindow::RebuildSurfaces() {
