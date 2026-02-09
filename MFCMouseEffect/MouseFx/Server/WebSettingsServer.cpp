@@ -246,9 +246,9 @@ std::string WebSettingsServer::BuildSchemaJson() const {
     });
 
     out["hold_follow_modes"] = json::array({
-        {{"value","precise"},{"label", LabelByLang(L"\u7cbe\u51c6\u8ddf\u968f", L"Precise Tracking", lang)}},
-        {{"value","smooth"},{"label", LabelByLang(L"\u5e73\u6ed1\u8ddf\u968f", L"Smooth Tracking", lang)}},
-        {{"value","efficient"},{"label", LabelByLang(L"\u6027\u80fd\u4f18\u5148", L"Performance First", lang)}}
+        {{"value","precise"},{"label", LabelByLang(L"\u7cbe\u51c6\u8ddf\u968f\uff08\u4f4e\u5ef6\u8fdf\uff09", L"Precise (Low Latency)", lang)}},
+        {{"value","smooth"},{"label", LabelByLang(L"\u5e73\u6ed1\u8ddf\u968f\uff08\u63a8\u8350\uff09", L"Smooth (Recommended)", lang)}},
+        {{"value","efficient"},{"label", LabelByLang(L"\u6027\u80fd\u4f18\u5148\uff08\u7701CPU\uff09", L"Performance First (Lower CPU)", lang)}}
     });
 
     auto build = [&](const EffectOption* (*fn)(size_t&), const char* key) {

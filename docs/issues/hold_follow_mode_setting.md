@@ -13,6 +13,17 @@
   - smooth: balanced
   - efficient: lower CPU pressure
 
+## 2026-02-09 UX Copy Refinement
+
+- Improved tooltip copy from generic tradeoff text to scenario-based guidance:
+  - when to choose low latency (`precise`)
+  - which one is recommended default (`smooth`)
+  - when to prioritize CPU budget (`efficient`)
+- Updated schema option labels to make choice intent obvious in the dropdown:
+  - `precise` -> `Precise (Low Latency)` / `精准跟随（低延迟）`
+  - `smooth` -> `Smooth (Recommended)` / `平滑跟随（推荐）`
+  - `efficient` -> `Performance First (Lower CPU)` / `性能优先（省CPU）`
+
 ## Runtime Modes
 - `precise`
   - Always updates hold effect position with latest point.
