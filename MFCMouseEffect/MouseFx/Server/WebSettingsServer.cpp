@@ -123,6 +123,7 @@ static json BuildDawnOverlayBridgeJson(const gpu::DawnOverlayBridgeStatus& bridg
     return json{
         {"compiled", bridge.compiled},
         {"available", bridge.available},
+        {"mode", bridge.mode},
         {"detail", bridge.detail},
     };
 }
@@ -489,6 +490,11 @@ std::string WebSettingsServer::BuildSchemaJson() const {
             "bridge_not_compiled",
             "bridge_compiled_stub",
             "bridge_enabled_host_compat"
+        })},
+        {"bridge_modes", json::array({
+            "none",
+            "host_compat",
+            "compositor"
         })},
         {"state_codes", json::array({
             "init_not_run",

@@ -7,6 +7,7 @@ namespace mousefx::gpu {
 struct DawnOverlayBridgeStatus {
     bool compiled = false;
     bool available = false;
+    std::string mode = "none";
     std::string detail = "bridge_not_compiled";
 };
 

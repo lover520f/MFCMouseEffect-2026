@@ -229,6 +229,12 @@
     const stateCode = banner.state_code || '';
     let finalText = actionText ? `${text} ${actionText}` : text;
     const bridge = st.dawn_overlay_bridge || {};
+    if (bridge && bridge.mode && bridge.mode !== 'none') {
+      const bridgeMode = (lang === 'zh-CN')
+        ? `桥接模式: ${bridge.mode}`
+        : `Bridge mode: ${bridge.mode}`;
+      finalText = `${finalText} ${bridgeMode}`;
+    }
     if (stateCode === 'device_ready_cpu_bridge_pending' && bridge && bridge.detail) {
       const bridgeNote = (lang === 'zh-CN')
         ? `当前桥接状态: ${bridge.detail}`
