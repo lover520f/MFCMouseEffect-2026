@@ -416,8 +416,15 @@
         : (compReady ? 'Advanced compositor: Ready' : 'Advanced compositor: Not ready');
       finalText = `${finalText} ${compText}`;
     }
-    const prefix = st.gpu_in_use ? '[GPU] ' : '[CPU] ';
     const showDiagCode = (new URL(location.href)).searchParams.get('diag') === '1';
+    if (showDiagCode && st && st.gpu_command_stream) {
+      const cs = st.gpu_command_stream;
+      const diagText = (lang === 'zh-CN')
+        ? `命令流: ${cs.command_count || 0} (trail ${cs.trail_commands || 0}, ripple ${cs.ripple_commands || 0}, particle ${cs.particle_commands || 0})`
+        : `Command stream: ${cs.command_count || 0} (trail ${cs.trail_commands || 0}, ripple ${cs.ripple_commands || 0}, particle ${cs.particle_commands || 0})`;
+      finalText = `${finalText} ${diagText}`;
+    }
+    const prefix = st.gpu_in_use ? '[GPU] ' : '[CPU] ';
     if (gpuBannerTextEl) {
       gpuBannerTextEl.textContent = (showDiagCode && stateCode) ? `${prefix}${finalText} [${stateCode}]` : `${prefix}${finalText}`;
     }

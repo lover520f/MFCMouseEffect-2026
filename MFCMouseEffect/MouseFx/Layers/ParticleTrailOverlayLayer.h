@@ -17,6 +17,7 @@ public:
     void Render(Gdiplus::Graphics& graphics) override;
     bool IsAlive() const override { return true; }
     bool IntersectsScreenRect(int left, int top, int right, int bottom) const override;
+    void AppendGpuCommands(gpu::OverlayGpuCommandStream& stream, uint64_t nowMs) const override;
 
 private:
     struct Particle {

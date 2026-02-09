@@ -102,6 +102,31 @@ std::string OverlayHostService::ProbeDawnRuntimeNow(bool refreshProbe) {
     return dawn.detail;
 }
 
+uint64_t OverlayHostService::GetLastGpuCommandFrameTickMs() const {
+    if (!host_) return 0;
+    return host_->GetLastGpuCommandFrameTickMs();
+}
+
+uint32_t OverlayHostService::GetLastGpuCommandCount() const {
+    if (!host_) return 0;
+    return host_->GetLastGpuCommandCount();
+}
+
+uint32_t OverlayHostService::GetLastGpuTrailCommandCount() const {
+    if (!host_) return 0;
+    return host_->GetLastGpuTrailCommandCount();
+}
+
+uint32_t OverlayHostService::GetLastGpuRippleCommandCount() const {
+    if (!host_) return 0;
+    return host_->GetLastGpuRippleCommandCount();
+}
+
+uint32_t OverlayHostService::GetLastGpuParticleCommandCount() const {
+    if (!host_) return 0;
+    return host_->GetLastGpuParticleCommandCount();
+}
+
 bool OverlayHostService::Initialize() {
     if (host_) return true;
 

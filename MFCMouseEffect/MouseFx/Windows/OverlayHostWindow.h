@@ -3,10 +3,12 @@
 #include <windows.h>
 #include <gdiplus.h>
 
+#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <vector>
 
+#include "MouseFx/Gpu/OverlayGpuCommandStream.h"
 #include "MouseFx/Interfaces/IOverlayLayer.h"
 
 namespace mousefx {
@@ -22,6 +24,11 @@ public:
     IOverlayLayer* AddLayer(std::unique_ptr<IOverlayLayer> layer);
     void RemoveLayer(IOverlayLayer* layer);
     void ClearLayers();
+    uint64_t GetLastGpuCommandFrameTickMs() const;
+    uint32_t GetLastGpuCommandCount() const;
+    uint32_t GetLastGpuTrailCommandCount() const;
+    uint32_t GetLastGpuRippleCommandCount() const;
+    uint32_t GetLastGpuParticleCommandCount() const;
 
     struct HostSurface {
         HWND hwnd = nullptr;
@@ -49,6 +56,7 @@ private:
     void OnTick();
     void Render();
     void RenderSurface(HostSurface& surface);
+    void CollectGpuCommandStream(uint64_t nowMs);
     bool RebuildSurfaces();
     void DestroySurfaces();
     void SyncBoundsWithVirtualScreen(bool forceMove);
@@ -68,6 +76,12 @@ private:
     uint64_t lastTopmostEnsureMs_ = 0;
     HWINEVENTHOOK foregroundHook_ = nullptr;
     std::vector<std::unique_ptr<IOverlayLayer>> layers_{};
+    gpu::OverlayGpuCommandStream gpuCommandStream_{};
+    std::atomic<uint64_t> gpuCommandFrameTickMs_{0};
+    std::atomic<uint32_t> gpuCommandCount_{0};
+    std::atomic<uint32_t> gpuTrailCommandCount_{0};
+    std::atomic<uint32_t> gpuRippleCommandCount_{0};
+    std::atomic<uint32_t> gpuParticleCommandCount_{0};
 };
 
 } // namespace mousefx

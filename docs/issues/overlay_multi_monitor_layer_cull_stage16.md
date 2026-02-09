@@ -15,6 +15,7 @@
 2. 在 OverlayHostWindow 渲染时按屏幕做图层过滤
 - 文件：`MFCMouseEffect/MouseFx/Windows/OverlayHostWindow.cpp`
 - 在 `RenderSurface(...)` 中，仅当图层与当前屏幕窗口相交时才调用 `layer->Render(...)`。
+- 相交筛选改为“单次筛选 + 列表渲染”，避免同帧重复执行两次相交判定。
 - 对“当前无可见内容且上一帧也为空”的屏幕，直接跳过：
   - `ZeroMemory` 清屏
   - `UpdateLayeredWindow`

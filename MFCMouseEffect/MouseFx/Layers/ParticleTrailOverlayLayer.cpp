@@ -145,6 +145,39 @@ bool ParticleTrailOverlayLayer::IntersectsScreenRect(int left, int top, int righ
     return RectanglesOverlap(left, top, right, bottom, minX, minY, maxX, maxY);
 }
 
+void ParticleTrailOverlayLayer::AppendGpuCommands(gpu::OverlayGpuCommandStream& stream, uint64_t nowMs) const {
+    (void)nowMs;
+    if (particles_.empty()) return;
+
+    gpu::OverlayGpuCommand cmd{};
+    cmd.type = gpu::OverlayGpuCommandType::ParticleSprites;
+    cmd.effectTag = "particle_trail";
+    cmd.flags = isChromatic_ ? 1u : 0u;
+    const size_t maxVertices = 256;
+    const size_t start = (particles_.size() > maxVertices) ? (particles_.size() - maxVertices) : 0;
+    cmd.vertices.reserve(particles_.size() - start);
+
+    for (size_t i = start; i < particles_.size(); ++i) {
+        const auto& particle = particles_[i];
+        const BYTE alpha = (BYTE)(particle.life * 255.0f);
+        const Gdiplus::Color c = HslToRgb(particle.hue, 0.8f, 0.6f, alpha);
+        gpu::OverlayGpuVertex v{};
+        v.x = particle.x;
+        v.y = particle.y;
+        v.size = particle.size * particle.life;
+        v.extra = particle.life;
+        v.colorArgb = ((uint32_t)c.GetA() << 24) |
+                      ((uint32_t)c.GetR() << 16) |
+                      ((uint32_t)c.GetG() << 8) |
+                      (uint32_t)c.GetB();
+        cmd.vertices.push_back(v);
+    }
+
+    if (!cmd.vertices.empty()) {
+        stream.Add(std::move(cmd));
+    }
+}
+
 Gdiplus::Color ParticleTrailOverlayLayer::HslToRgb(float h, float s, float l, BYTE alpha) {
     float c = (1.0f - std::abs(2.0f * l - 1.0f)) * s;
     float x = c * (1.0f - std::abs(std::fmod(h / 60.0f, 2.0f) - 1.0f));

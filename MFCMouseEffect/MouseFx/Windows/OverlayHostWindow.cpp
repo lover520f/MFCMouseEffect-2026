@@ -156,6 +156,26 @@ OverlayHostWindow::~OverlayHostWindow() {
     Shutdown();
 }
 
+uint64_t OverlayHostWindow::GetLastGpuCommandFrameTickMs() const {
+    return gpuCommandFrameTickMs_.load(std::memory_order_acquire);
+}
+
+uint32_t OverlayHostWindow::GetLastGpuCommandCount() const {
+    return gpuCommandCount_.load(std::memory_order_acquire);
+}
+
+uint32_t OverlayHostWindow::GetLastGpuTrailCommandCount() const {
+    return gpuTrailCommandCount_.load(std::memory_order_acquire);
+}
+
+uint32_t OverlayHostWindow::GetLastGpuRippleCommandCount() const {
+    return gpuRippleCommandCount_.load(std::memory_order_acquire);
+}
+
+uint32_t OverlayHostWindow::GetLastGpuParticleCommandCount() const {
+    return gpuParticleCommandCount_.load(std::memory_order_acquire);
+}
+
 const wchar_t* OverlayHostWindow::ClassName() {
     return L"MouseFxOverlayHostWindow";
 }
@@ -291,6 +311,8 @@ void OverlayHostWindow::OnTick() {
             layers_.end(),
             [](const std::unique_ptr<IOverlayLayer>& layer) { return !layer || !layer->IsAlive(); }),
         layers_.end());
+
+    CollectGpuCommandStream(nowMs);
     Render();
 }
 
@@ -308,14 +330,15 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     const int surfaceTop = surface.y;
     const int surfaceRight = surface.x + surface.width;
     const int surfaceBottom = surface.y + surface.height;
-    bool hasAnyLayerVisibleOnSurface = false;
+    std::vector<IOverlayLayer*> visibleLayers{};
+    visibleLayers.reserve(layers_.size());
     for (const auto& layer : layers_) {
         if (layer && layer->IsAlive() &&
             layer->IntersectsScreenRect(surfaceLeft, surfaceTop, surfaceRight, surfaceBottom)) {
-            hasAnyLayerVisibleOnSurface = true;
-            break;
+            visibleLayers.push_back(layer.get());
         }
     }
+    const bool hasAnyLayerVisibleOnSurface = !visibleLayers.empty();
 
     // If the surface is already empty and still no visible layer intersects it,
     // skip expensive buffer clear + UpdateLayeredWindow for this frame.
@@ -329,11 +352,8 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     Gdiplus::Graphics graphics(&bmp);
     graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
-    for (auto& layer : layers_) {
-        if (layer && layer->IsAlive() &&
-            layer->IntersectsScreenRect(surfaceLeft, surfaceTop, surfaceRight, surfaceBottom)) {
-            layer->Render(graphics);
-        }
+    for (IOverlayLayer* layer : visibleLayers) {
+        if (layer) layer->Render(graphics);
     }
 
     POINT ptSrc{0, 0};
@@ -342,6 +362,40 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     BLENDFUNCTION bf{AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
     UpdateLayeredWindow(surface.hwnd, nullptr, &ptDst, &sizeWnd, surface.memDc, &ptSrc, 0, &bf, ULW_ALPHA);
     surface.hadVisibleContent = hasAnyLayerVisibleOnSurface;
+}
+
+void OverlayHostWindow::CollectGpuCommandStream(uint64_t nowMs) {
+    gpuCommandStream_.Reset(nowMs);
+    gpuCommandStream_.Reserve(layers_.size());
+    for (const auto& layer : layers_) {
+        if (layer && layer->IsAlive()) {
+            layer->AppendGpuCommands(gpuCommandStream_, nowMs);
+        }
+    }
+
+    uint32_t trailCount = 0;
+    uint32_t rippleCount = 0;
+    uint32_t particleCount = 0;
+    for (const auto& cmd : gpuCommandStream_.Commands()) {
+        switch (cmd.type) {
+        case gpu::OverlayGpuCommandType::TrailPolyline:
+            ++trailCount;
+            break;
+        case gpu::OverlayGpuCommandType::RipplePulse:
+            ++rippleCount;
+            break;
+        case gpu::OverlayGpuCommandType::ParticleSprites:
+            ++particleCount;
+            break;
+        default:
+            break;
+        }
+    }
+    gpuCommandFrameTickMs_.store(nowMs, std::memory_order_release);
+    gpuCommandCount_.store((uint32_t)gpuCommandStream_.Commands().size(), std::memory_order_release);
+    gpuTrailCommandCount_.store(trailCount, std::memory_order_release);
+    gpuRippleCommandCount_.store(rippleCount, std::memory_order_release);
+    gpuParticleCommandCount_.store(particleCount, std::memory_order_release);
 }
 
 bool OverlayHostWindow::RebuildSurfaces() {

@@ -91,6 +91,38 @@ bool TrailOverlayLayer::IntersectsScreenRect(int left, int top, int right, int b
     return RectanglesOverlap(left, top, right, bottom, minX, minY, maxX + 1, maxY + 1);
 }
 
+void TrailOverlayLayer::AppendGpuCommands(gpu::OverlayGpuCommandStream& stream, uint64_t nowMs) const {
+    if (points_.size() < 2) return;
+
+    gpu::OverlayGpuCommand cmd{};
+    cmd.type = gpu::OverlayGpuCommandType::TrailPolyline;
+    cmd.effectTag = "trail";
+    cmd.flags = isChromatic_ ? 1u : 0u;
+    cmd.param0 = (float)durationMs_;
+    cmd.vertices.reserve(points_.size());
+
+    const uint32_t baseColor = ((uint32_t)color_.GetA() << 24) |
+                               ((uint32_t)color_.GetR() << 16) |
+                               ((uint32_t)color_.GetG() << 8) |
+                               (uint32_t)color_.GetB();
+    for (const auto& point : points_) {
+        gpu::OverlayGpuVertex v{};
+        v.x = (float)point.pt.x;
+        v.y = (float)point.pt.y;
+        const uint64_t ageMs = (nowMs >= point.addedTime) ? (nowMs - point.addedTime) : 0;
+        const float life = (durationMs_ > 0)
+            ? (1.0f - (float)ageMs / (float)durationMs_)
+            : 1.0f;
+        v.extra = (life < 0.0f) ? 0.0f : ((life > 1.0f) ? 1.0f : life);
+        v.colorArgb = baseColor;
+        cmd.vertices.push_back(v);
+    }
+
+    if (!cmd.vertices.empty()) {
+        stream.Add(std::move(cmd));
+    }
+}
+
 void TrailOverlayLayer::SampleCursorPoint(uint64_t nowMs) {
     POINT pt{};
     bool havePoint = false;

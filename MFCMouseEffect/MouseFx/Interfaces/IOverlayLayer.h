@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <gdiplus.h>
 
+#include "MouseFx/Gpu/OverlayGpuCommandStream.h"
+
 namespace mousefx {
 
 class IOverlayLayer {
@@ -17,6 +19,10 @@ public:
         (void)right;
         (void)bottom;
         return true;
+    }
+    virtual void AppendGpuCommands(gpu::OverlayGpuCommandStream& stream, uint64_t nowMs) const {
+        (void)stream;
+        (void)nowMs;
     }
 };
 

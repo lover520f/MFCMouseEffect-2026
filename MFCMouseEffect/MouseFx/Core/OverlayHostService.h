@@ -38,6 +38,11 @@ public:
     bool IsGpuBackendAvailable(const std::string& backend) const;
     void RefreshGpuRuntimeProbe();
     std::string ProbeDawnRuntimeNow(bool refreshProbe);
+    uint64_t GetLastGpuCommandFrameTickMs() const;
+    uint32_t GetLastGpuCommandCount() const;
+    uint32_t GetLastGpuTrailCommandCount() const;
+    uint32_t GetLastGpuRippleCommandCount() const;
+    uint32_t GetLastGpuParticleCommandCount() const;
 
     bool Initialize();
     void Shutdown();

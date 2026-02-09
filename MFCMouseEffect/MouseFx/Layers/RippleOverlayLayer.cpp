@@ -201,6 +201,33 @@ bool RippleOverlayLayer::IntersectsScreenRect(int left, int top, int right, int 
     return false;
 }
 
+void RippleOverlayLayer::AppendGpuCommands(gpu::OverlayGpuCommandStream& stream, uint64_t nowMs) const {
+    for (const auto& instance : instances_) {
+        if (!instance.active || !instance.renderer) continue;
+
+        gpu::OverlayGpuCommand cmd{};
+        cmd.type = gpu::OverlayGpuCommandType::RipplePulse;
+        cmd.effectTag = instance.continuous ? "hover_hold_continuous" : "ripple";
+        cmd.effectInstanceId = instance.id;
+        cmd.flags = instance.continuous ? 1u : 0u;
+        cmd.param0 = (float)instance.style.windowSize;
+        cmd.param1 = instance.t;
+        cmd.param2 = (float)instance.elapsedMs;
+        cmd.param3 = (float)instance.style.durationMs;
+
+        gpu::OverlayGpuVertex center{};
+        center.x = (float)instance.ev.pt.x;
+        center.y = (float)instance.ev.pt.y;
+        center.size = (float)instance.style.endRadius;
+        center.extra = instance.t;
+        center.colorArgb = instance.style.stroke.value;
+        cmd.vertices.push_back(center);
+
+        stream.Add(std::move(cmd));
+    }
+    (void)nowMs;
+}
+
 RippleOverlayLayer::RippleInstance* RippleOverlayLayer::FindById(uint64_t id) {
     if (id == 0) return nullptr;
     const auto it = idToIndex_.find(id);

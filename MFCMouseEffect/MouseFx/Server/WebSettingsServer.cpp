@@ -156,17 +156,15 @@ static json BuildGpuAccelerationJson(const std::string& activeBackend, const gpu
             {"label_zh", u8"\u0043\u0050\u0055 \u515c\u5e95"},
         };
     }
-    if (bridge.mode == "compositor") {
-        return json{
-            {"level", "full"},
-            {"label_en", "Full GPU Compositor"},
-            {"label_zh", u8"\u5b8c\u6574 GPU \u5408\u6210"},
-        };
-    }
+    const bool compositorRequested = (bridge.mode == "compositor");
     return json{
         {"level", "partial"},
-        {"label_en", "Partial GPU (Host-Compatible Bridge)"},
-        {"label_zh", u8"\u90e8\u5206 GPU\uff08\u5bbf\u4e3b\u517c\u5bb9\u6865\u63a5\uff09"},
+        {"label_en", compositorRequested
+            ? "GPU Compatible Acceleration (Compositor Path, CPU-heavy effects remain)"
+            : "GPU Compatible Acceleration (Host-Compatible Bridge)"},
+        {"label_zh", compositorRequested
+            ? u8"GPU \u517c\u5bb9\u52a0\u901f\uff08\u5408\u6210\u8def\u5f84\uff0c\u7279\u6548\u4ecd\u4ee5 CPU \u7ed8\u5236\u4e3a\u4e3b\uff09"
+            : u8"GPU \u517c\u5bb9\u52a0\u901f\uff08\u5bbf\u4e3b\u517c\u5bb9\u6865\u63a5\uff09"},
     };
 }
 
@@ -178,12 +176,17 @@ static const char* DawnStateCodeFromDetail(const std::string& detail) {
     if (detail == "dawn_symbols_partial") return "symbols_partial";
     if (detail == "dawn_create_instance_proc_missing") return "create_proc_missing";
     if (detail == "dawn_create_instance_failed") return "create_failed";
+    if (detail == "dawn_handshake_skipped_debugger") return "handshake_skipped_debugger";
+    if (detail == "dawn_overlay_bridge_ready_modern_abi") return "overlay_bridge_ready_modern_abi";
+    if (detail == "dawn_modern_abi_bridge_pending") return "modern_abi_bridge_pending";
     if (detail == "dawn_instance_ok_no_device") return "instance_ok_no_device";
     if (detail == "dawn_device_ready_cpu_bridge_pending") return "device_ready_cpu_bridge_pending";
     if (detail == "dawn_request_adapter_proc_missing") return "request_adapter_proc_missing";
+    if (detail == "dawn_request_adapter_exception") return "request_adapter_exception";
     if (detail == "dawn_request_adapter_timeout") return "request_adapter_timeout";
     if (detail == "dawn_request_adapter_failed") return "request_adapter_failed";
     if (detail == "dawn_request_device_proc_missing") return "request_device_proc_missing";
+    if (detail == "dawn_request_device_exception") return "request_device_exception";
     if (detail == "dawn_request_device_timeout") return "request_device_timeout";
     if (detail == "dawn_request_device_failed") return "request_device_failed";
     if (detail == "dawn_overlay_bridge_ready") return "overlay_bridge_ready";
@@ -225,6 +228,22 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
             {"tone", "ok"},
         };
     }
+    if (stateCode == "overlay_bridge_ready_modern_abi") {
+        return json{
+            {"action_code", "enable_dawn_backend"},
+            {"action_text_en", "Modern Dawn runtime detected and bridge is ready. GPU backend can be enabled; full adapter/device deep-probe wiring is deferred."},
+            {"action_text_zh", u8"\u68c0\u6d4b\u5230\u73b0\u4ee3 Dawn \u8fd0\u884c\u65f6\u4e14\u6865\u63a5\u5df2\u5c31\u7eea\u3002\u53ef\u542f\u7528 GPU \u540e\u7aef\uff0cadapter/device \u6df1\u5ea6\u63a2\u6d4b\u5c06\u5728\u540e\u7eed\u9636\u6bb5\u5bf9\u9f50\u65b0 ABI\u3002"},
+            {"tone", "ok"},
+        };
+    }
+    if (stateCode == "modern_abi_bridge_pending") {
+        return json{
+            {"action_code", "wire_overlay_gpu_bridge"},
+            {"action_text_en", "Modern Dawn runtime detected, but overlay bridge is not active yet. Enable bridge/backend first."},
+            {"action_text_zh", u8"\u5df2\u68c0\u6d4b\u5230\u73b0\u4ee3 Dawn \u8fd0\u884c\u65f6\uff0c\u4f46 Overlay \u6865\u63a5\u5c1a\u672a\u542f\u7528\uff0c\u8bf7\u5148\u542f\u7528\u6865\u63a5\u6216\u540e\u7aef\u3002"},
+            {"tone", "info"},
+        };
+    }
     if (stateCode == "device_ready_cpu_bridge_pending") {
         return json{
             {"action_code", "wire_overlay_gpu_bridge"},
@@ -242,12 +261,21 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
         };
     }
     if (stateCode == "request_adapter_timeout" || stateCode == "request_device_timeout" ||
+        stateCode == "request_adapter_exception" || stateCode == "request_device_exception" ||
         stateCode == "request_adapter_failed" || stateCode == "request_device_failed") {
         return json{
             {"action_code", "check_driver_and_backend"},
             {"action_text_en", "Adapter/device request failed. Verify graphics driver, runtime build, and desktop session capability."},
             {"action_text_zh", u8"\u8bf7\u6c42 \u0061\u0064\u0061\u0070\u0074\u0065\u0072\u002f\u0064\u0065\u0076\u0069\u0063\u0065 \u5931\u8d25\u3002\u8bf7\u68c0\u67e5\u663e\u5361\u9a71\u52a8\u3001\u8fd0\u884c\u65f6\u7248\u672c\u4ee5\u53ca\u684c\u9762\u4f1a\u8bdd\u80fd\u529b\u3002"},
             {"tone", "warn"},
+        };
+    }
+    if (stateCode == "handshake_skipped_debugger") {
+        return json{
+            {"action_code", "run_without_debugger_for_gpu_probe"},
+            {"action_text_en", "Debugger session detected. Dawn adapter/device handshake is skipped to avoid first-chance DLL breaks. Run without debugger to complete probe."},
+            {"action_text_zh", u8"\u68c0\u6d4b\u5230\u8c03\u8bd5\u5668\u9644\u52a0\uff0c\u4e3a\u907f\u514d DLL \u9996\u6b21\u5f02\u5e38\u4e2d\u65ad\uff0c\u5df2\u8df3\u8fc7 Dawn adapter/device \u63e1\u624b\u3002\u8bf7\u4f7f\u7528\u975e\u8c03\u8bd5\u65b9\u5f0f\u8fd0\u884c\u4ee5\u5b8c\u6210\u63a2\u6d4b\u3002"},
+            {"tone", "info"},
         };
     }
     if (stateCode == "loader_missing") {
@@ -362,12 +390,11 @@ static json BuildGpuBannerJson(const std::string& backendPreference, const std::
         };
     }
     if (gpuInUse) {
-        const bool full = accel.value("level", "partial") == "full";
         return json{
             {"code", "gpu_active"},
-            {"tone", full ? "ok" : "info"},
-            {"text_en", full ? "GPU backend active (Dawn compositor)." : "GPU backend active (Dawn host-compatible bridge)."},
-            {"text_zh", full ? u8"\u5f53\u524d\u4f7f\u7528 GPU \u5408\u6210\u540e\u7aef\uff08Dawn\uff09\u3002" : u8"\u5f53\u524d\u4f7f\u7528 GPU \u540e\u7aef\uff08Dawn \u5bbf\u4e3b\u517c\u5bb9\u6865\u63a5\uff09\u3002"},
+            {"tone", "info"},
+            {"text_en", "GPU backend active (compatibility acceleration). Some effects are still CPU-rasterized in the current stage."},
+            {"text_zh", u8"\u5f53\u524d\u5df2\u542f\u7528 GPU \u540e\u7aef\uff08\u517c\u5bb9\u52a0\u901f\uff09\u3002\u73b0\u9636\u6bb5\u90e8\u5206\u7279\u6548\u4ecd\u7531 CPU \u6805\u683c\u5316\u7ed8\u5236\u3002"},
             {"state_code", stateCode},
             {"acceleration", accel},
             {"action", advice},
@@ -657,15 +684,20 @@ std::string WebSettingsServer::BuildSchemaJson() const {
             "symbols_partial",
             "create_proc_missing",
             "create_failed",
+            "handshake_skipped_debugger",
             "instance_ok_no_device",
             "device_ready_cpu_bridge_pending",
             "request_adapter_proc_missing",
+            "request_adapter_exception",
             "request_adapter_timeout",
             "request_adapter_failed",
             "request_device_proc_missing",
+            "request_device_exception",
             "request_device_timeout",
             "request_device_failed",
             "overlay_bridge_ready",
+            "overlay_bridge_ready_modern_abi",
+            "modern_abi_bridge_pending",
             "ready_for_device_stage",
             "unknown"
         })},
@@ -677,6 +709,7 @@ std::string WebSettingsServer::BuildSchemaJson() const {
             "install_dawn_runtime",
             "replace_runtime_binary",
             "check_driver_and_backend",
+            "run_without_debugger_for_gpu_probe",
             "validate_runtime_abi",
             "enable_dawn_build_flag",
             "check_display_adapter",
@@ -726,6 +759,13 @@ std::string WebSettingsServer::BuildStateJson() const {
     out["dawn_probe"] = BuildDawnProbeJson(dawnStatus.probe);
     out["dawn_status"] = BuildDawnStatusJson(dawnStatus);
     out["dawn_overlay_bridge"] = BuildDawnOverlayBridgeJson(dawnBridge);
+    out["gpu_command_stream"] = {
+        {"frame_tick_ms", OverlayHostService::Instance().GetLastGpuCommandFrameTickMs()},
+        {"command_count", OverlayHostService::Instance().GetLastGpuCommandCount()},
+        {"trail_commands", OverlayHostService::Instance().GetLastGpuTrailCommandCount()},
+        {"ripple_commands", OverlayHostService::Instance().GetLastGpuRippleCommandCount()},
+        {"particle_commands", OverlayHostService::Instance().GetLastGpuParticleCommandCount()},
+    };
     out["gpu_bridge_mode_request"] = EnsureUtf8(cfg.gpuBridgeModeRequest);
     out["gpu_acceleration"] = BuildGpuAccelerationJson(activeBackend, dawnBridge);
     out["gpu_status_banner"] = BuildGpuBannerJson(cfg.renderBackend, activeBackend, dawnStatus, dawnBridge);
