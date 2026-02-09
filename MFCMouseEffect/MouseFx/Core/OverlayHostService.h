@@ -1,6 +1,7 @@
 #pragma once
 
 #include <windows.h>
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -35,6 +36,8 @@ public:
     void UpdateRipplePosition(uint64_t id, const POINT& pt);
     void StopRipple(uint64_t id);
     bool IsRippleActive(uint64_t id) const;
+    void UpdateRippleHoldElapsed(uint64_t id, uint32_t holdMs);
+    void UpdateRippleHoldThreshold(uint64_t id, uint32_t thresholdMs);
     void SendRippleCommand(uint64_t id, const std::string& cmd, const std::string& args);
     void BroadcastRippleCommand(const std::string& cmd, const std::string& args);
     bool ShowText(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config);

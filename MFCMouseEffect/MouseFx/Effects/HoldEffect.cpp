@@ -69,9 +69,7 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
     currentRippleId_ = OverlayHostService::Instance().ShowContinuousRipple(
         ev, finalStyle, std::move(renderer), params);
     if (currentRippleId_ != 0) {
-        char buf[32]{};
-        snprintf(buf, sizeof(buf), "%u", finalStyle.durationMs);
-        OverlayHostService::Instance().SendRippleCommand(currentRippleId_, "threshold_ms", buf);
+        OverlayHostService::Instance().UpdateRippleHoldThreshold(currentRippleId_, finalStyle.durationMs);
     }
 }
 
@@ -123,9 +121,7 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
     if (followMode_ == FollowMode::Efficient) cmdIntervalMs = 20;
     if (cmdIntervalMs == 0 || nowMs - lastHoldCommandMs_ >= cmdIntervalMs) {
         lastHoldCommandMs_ = nowMs;
-        char buf[32]{};
-        snprintf(buf, sizeof(buf), "%u", (uint32_t)durationMs);
-        OverlayHostService::Instance().SendRippleCommand(currentRippleId_, "hold_ms", buf);
+        OverlayHostService::Instance().UpdateRippleHoldElapsed(currentRippleId_, (uint32_t)durationMs);
     }
 }
 

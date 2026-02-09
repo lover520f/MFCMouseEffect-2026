@@ -84,6 +84,16 @@ bool OverlayHostService::IsRippleActive(uint64_t id) const {
     return rippleLayer_->IsActive(id);
 }
 
+void OverlayHostService::UpdateRippleHoldElapsed(uint64_t id, uint32_t holdMs) {
+    if (!rippleLayer_) return;
+    rippleLayer_->SendHoldElapsed(id, holdMs);
+}
+
+void OverlayHostService::UpdateRippleHoldThreshold(uint64_t id, uint32_t thresholdMs) {
+    if (!rippleLayer_) return;
+    rippleLayer_->SendHoldThreshold(id, thresholdMs);
+}
+
 void OverlayHostService::SendRippleCommand(uint64_t id, const std::string& cmd, const std::string& args) {
     if (!rippleLayer_) return;
     rippleLayer_->SendCommand(id, cmd, args);

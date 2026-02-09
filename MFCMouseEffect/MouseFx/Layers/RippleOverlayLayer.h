@@ -22,6 +22,8 @@ public:
     void UpdatePosition(uint64_t id, const POINT& pt);
     void Stop(uint64_t id);
     bool IsActive(uint64_t id) const;
+    void SendHoldElapsed(uint64_t id, uint32_t holdMs);
+    void SendHoldThreshold(uint64_t id, uint32_t thresholdMs);
     void SendCommand(uint64_t id, const std::string& cmd, const std::string& args);
     void BroadcastCommand(const std::string& cmd, const std::string& args);
 

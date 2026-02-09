@@ -43,7 +43,40 @@
 - Lower per-frame temporary allocation frequency in hold renderers.
 - Reduced allocator churn and more stable frame pacing on CPU fallback path.
 
+## 3) Typed Hold Progress Fast Path
+
+### Problem
+- `HoldEffect` previously sent hold progress through string commands each update:
+  - `snprintf(...)` in producer
+  - `OnCommand + sscanf_s(...)` in renderer
+- This path ran on high-frequency hold updates and introduced avoidable format/parse overhead.
+
+### Change
+- Added typed hold APIs in `IRippleRenderer`:
+  - `SetHoldElapsedMs(uint32_t)`
+  - `SetHoldDurationMs(uint32_t)`
+  - File: `MFCMouseEffect/MouseFx/Interfaces/IRippleRenderer.h`
+- Added typed forwarding in host/layer:
+  - `OverlayHostService::UpdateRippleHoldElapsed/UpdateRippleHoldThreshold`
+  - `RippleOverlayLayer::SendHoldElapsed/SendHoldThreshold`
+  - Files:
+    - `MFCMouseEffect/MouseFx/Core/OverlayHostService.h`
+    - `MFCMouseEffect/MouseFx/Core/OverlayHostService.cpp`
+    - `MFCMouseEffect/MouseFx/Layers/RippleOverlayLayer.h`
+    - `MFCMouseEffect/MouseFx/Layers/RippleOverlayLayer.cpp`
+- Switched `HoldEffect` to typed calls instead of per-frame string formatting:
+  - File: `MFCMouseEffect/MouseFx/Effects/HoldEffect.cpp`
+- `HoldNeon3DRenderer` now overrides typed methods to update state directly.
+  - Keeps `OnCommand(...)` parsing for backward compatibility with legacy/external command paths.
+  - File: `MFCMouseEffect/MouseFx/Renderers/Hold/HoldNeon3DRenderer.h`
+
+### Result
+- Removed string format/parse overhead from the primary hold update hot path.
+- Kept compatibility for existing command-based integrations.
+
 ## Validation
-- Compiled with:
-  - `MSBuild.exe MFCMouseEffect/MFCMouseEffect.vcxproj /t:ClCompile /p:Configuration=Release /p:Platform=x64 /m:1`
-- Compile passed with no new errors.
+- In this environment, `MSBuild.exe`/VC toolchain is unavailable in PATH, so full compile verification could not be executed.
+- Attempted:
+  - `dotnet build MFCMouseEffect/MFCMouseEffect.vcxproj -c Release -p:Platform=x64 -m:1`
+- Result:
+  - Fails with `MSB4278` (`Microsoft.Cpp.Default.props` not found in dotnet CLI context), which is expected for VC++ projects without VS C++ MSBuild toolchain.

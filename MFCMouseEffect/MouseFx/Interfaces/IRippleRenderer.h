@@ -34,6 +34,11 @@ public:
 
     // Handle external commands/interaction
     virtual void OnCommand(const std::string& cmd, const std::string& args) {}
+
+    // Typed hold progress path to avoid format/parse overhead on hot loops.
+    // Default keeps backward compatibility for renderers that only implement OnCommand.
+    virtual void SetHoldElapsedMs(uint32_t holdMs) { OnCommand("hold_ms", std::to_string(holdMs)); }
+    virtual void SetHoldDurationMs(uint32_t thresholdMs) { OnCommand("threshold_ms", std::to_string(thresholdMs)); }
 };
 
 } // namespace mousefx

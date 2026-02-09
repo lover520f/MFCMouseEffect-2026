@@ -47,14 +47,22 @@ public:
     void OnCommand(const std::string& cmd, const std::string& args) override {
         if (cmd == "hold_ms") {
             uint32_t ms = 0;
-            if (sscanf_s(args.c_str(), "%u", &ms) == 1) currentHoldMs_ = ms;
+            if (sscanf_s(args.c_str(), "%u", &ms) == 1) SetHoldElapsedMs(ms);
             return;
         }
         if (cmd == "threshold_ms") {
             uint32_t ms = 0;
-            if (sscanf_s(args.c_str(), "%u", &ms) == 1) thresholdMs_ = ms;
+            if (sscanf_s(args.c_str(), "%u", &ms) == 1) SetHoldDurationMs(ms);
             return;
         }
+    }
+
+    void SetHoldElapsedMs(uint32_t holdMs) override {
+        currentHoldMs_ = holdMs;
+    }
+
+    void SetHoldDurationMs(uint32_t thresholdMs) override {
+        thresholdMs_ = thresholdMs;
     }
 
     void Render(Gdiplus::Graphics& g, float t, uint64_t elapsedMs, int sizePx, const RippleStyle& style) override {

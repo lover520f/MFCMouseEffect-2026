@@ -74,6 +74,18 @@ bool RippleOverlayLayer::IsActive(uint64_t id) const {
     return instance && instance->active;
 }
 
+void RippleOverlayLayer::SendHoldElapsed(uint64_t id, uint32_t holdMs) {
+    RippleInstance* instance = FindById(id);
+    if (!instance || !instance->renderer) return;
+    instance->renderer->SetHoldElapsedMs(holdMs);
+}
+
+void RippleOverlayLayer::SendHoldThreshold(uint64_t id, uint32_t thresholdMs) {
+    RippleInstance* instance = FindById(id);
+    if (!instance || !instance->renderer) return;
+    instance->renderer->SetHoldDurationMs(thresholdMs);
+}
+
 void RippleOverlayLayer::SendCommand(uint64_t id, const std::string& cmd, const std::string& args) {
     RippleInstance* instance = FindById(id);
     if (!instance || !instance->renderer) return;
