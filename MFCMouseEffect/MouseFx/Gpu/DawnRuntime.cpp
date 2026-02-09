@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "DawnRuntime.h"
+#include "DawnOverlayBridge.h"
 #include "GpuHardwareProbe.h"
 
 #include <chrono>
@@ -347,8 +348,22 @@ DawnRuntimeInitResult TryInitializeDawnRuntime() {
         reinterpret_cast<PFN_wgpuInstanceRelease>(releaseProc)(instance);
     }
 
-    // Stage 14 status:
-    // adapter/device handshake works, but overlay renderer bridge is still CPU-host based.
+    const DawnOverlayBridgeStatus bridge = GetDawnOverlayBridgeStatus();
+
+    // Stage 16 status:
+    // When overlay bridge is available, Dawn is considered active backend.
+    if (bridge.available) {
+        DawnRuntimeInitResult result{};
+        result.ok = true;
+        result.backend = "dawn";
+        result.detail = "dawn_overlay_bridge_ready";
+        g_probe.detail = "dawn_runtime_ready_for_device_stage";
+        g_lastInitDetail = result.detail;
+        g_lastInitTickMs = GetTickCount64();
+        return result;
+    }
+
+    // adapter/device handshake works, but overlay bridge is not wired yet.
     DawnRuntimeInitResult result{};
     result.ok = false;
     result.backend = "cpu";

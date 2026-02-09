@@ -143,6 +143,7 @@ static const char* DawnStateCodeFromDetail(const std::string& detail) {
     if (detail == "dawn_request_device_proc_missing") return "request_device_proc_missing";
     if (detail == "dawn_request_device_timeout") return "request_device_timeout";
     if (detail == "dawn_request_device_failed") return "request_device_failed";
+    if (detail == "dawn_overlay_bridge_ready") return "overlay_bridge_ready";
     if (detail == "dawn_runtime_ready_for_device_stage") return "ready_for_device_stage";
     if (detail == "init_not_run") return "init_not_run";
     return "unknown";
@@ -171,6 +172,14 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
             {"action_text_en", "Dawn runtime is ready. Wire adapter/device/surface initialization next."},
             {"action_text_zh", u8"\u0044\u0061\u0077\u006e \u8fd0\u884c\u65f6\u5df2\u5c31\u7eea\uff0c\u4e0b\u4e00\u6b65\u8bf7\u63a5\u5165 \u0061\u0064\u0061\u0070\u0074\u0065\u0072\u002f\u0064\u0065\u0076\u0069\u0063\u0065\u002f\u0073\u0075\u0072\u0066\u0061\u0063\u0065 \u521d\u59cb\u5316\u3002"},
             {"tone", "info"},
+        };
+    }
+    if (stateCode == "overlay_bridge_ready") {
+        return json{
+            {"action_code", "enable_dawn_backend"},
+            {"action_text_en", "Dawn overlay bridge is ready. You can switch backend to Dawn to enable GPU mode."},
+            {"action_text_zh", u8"\u0044\u0061\u0077\u006e \u6e32\u67d3\u6865\u5df2\u5c31\u7eea\u3002\u53ef\u5207\u6362\u5230 \u0044\u0061\u0077\u006e \u540e\u7aef\u542f\u7528 GPU \u6a21\u5f0f\u3002"},
+            {"tone", "ok"},
         };
     }
     if (stateCode == "device_ready_cpu_bridge_pending") {
@@ -497,12 +506,14 @@ std::string WebSettingsServer::BuildSchemaJson() const {
             "request_device_proc_missing",
             "request_device_timeout",
             "request_device_failed",
+            "overlay_bridge_ready",
             "ready_for_device_stage",
             "unknown"
         })},
         {"action_codes", json::array({
             "wire_device_stage",
             "wire_overlay_gpu_bridge",
+            "enable_dawn_backend",
             "install_dawn_runtime",
             "replace_runtime_binary",
             "check_driver_and_backend",

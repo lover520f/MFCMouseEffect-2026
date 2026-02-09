@@ -87,19 +87,19 @@ bool OverlayHostService::Initialize() {
         if (dawn.ok) {
             activeBackend_ = dawn.backend;
             backendDetail_ = dawn.detail;
-            return true;
+        } else {
+            activeBackend_ = "cpu";
+            backendDetail_ = dawn.detail;
         }
-        activeBackend_ = "cpu";
-        backendDetail_ = dawn.detail;
     } else if (pref == "auto") {
         const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
         if (dawn.ok) {
             activeBackend_ = dawn.backend;
             backendDetail_ = dawn.detail;
-            return true;
+        } else {
+            activeBackend_ = "cpu";
+            backendDetail_ = dawn.detail;
         }
-        activeBackend_ = "cpu";
-        backendDetail_ = dawn.detail;
     } else {
         activeBackend_ = "cpu";
         backendDetail_ = "cpu_forced";
