@@ -129,6 +129,10 @@ struct ActiveEffectConfig {
 struct EffectConfig {
     std::string defaultEffect = "ripple";
     std::string theme = "neon";
+    // Render backend preference:
+    // auto | dawn | cpu
+    // Runtime always falls back to cpu when preferred gpu backend is unavailable.
+    std::string renderBackend = "auto";
     // UI language for non-background settings window (persisted).
     // Values: "zh-CN" (default) or "en-US".
     std::string uiLanguage = "zh-CN";

@@ -6,6 +6,8 @@
 #include <sstream>
 
 #include "MouseFx/Core/AppController.h"
+#include "MouseFx/Core/OverlayHostService.h"
+#include "MouseFx/Gpu/DawnRuntime.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/WebUiAssets.h"
 #include "MouseFx/ThirdParty/json.hpp"
@@ -245,6 +247,12 @@ std::string WebSettingsServer::BuildSchemaJson() const {
         {{"value","game"},{"label", LabelByLang(L"\u6e38\u620f\u611f", L"Game", lang)}}
     });
 
+    out["render_backends"] = json::array({
+        {{"value","auto"},{"label", LabelByLang(L"\u81ea\u52a8\uff08\u4f18\u5148 Dawn\uff0c\u4e0d\u53ef\u7528\u5219 CPU\uff09", L"Auto (Prefer Dawn, fallback CPU)", lang)}},
+        {{"value","dawn"},{"label", LabelByLang(L"Dawn GPU", L"Dawn GPU", lang)}},
+        {{"value","cpu"},{"label", LabelByLang(L"CPU \u517c\u5bb9", L"CPU Fallback", lang)}}
+    });
+
     out["hold_follow_modes"] = json::array({
         {{"value","precise"},{"label", LabelByLang(L"\u7cbe\u51c6\u8ddf\u968f\uff08\u4f4e\u5ef6\u8fdf\uff09", L"Precise (Low Latency)", lang)}},
         {{"value","smooth"},{"label", LabelByLang(L"\u5e73\u6ed1\u8ddf\u968f\uff08\u63a8\u8350\uff09", L"Smooth (Recommended)", lang)}},
@@ -279,6 +287,25 @@ std::string WebSettingsServer::BuildStateJson() const {
     json out;
     out["ui_language"] = EnsureUtf8(cfg.uiLanguage);
     out["theme"] = EnsureUtf8(cfg.theme);
+    out["render_backend"] = EnsureUtf8(cfg.renderBackend);
+    out["render_backend_active"] = OverlayHostService::Instance().GetActiveRenderBackend();
+    out["render_backend_detail"] = OverlayHostService::Instance().GetRenderBackendDetail();
+    out["gpu_hardware_available"] = OverlayHostService::Instance().HasGpuHardware();
+    out["dawn_available"] = OverlayHostService::Instance().IsGpuBackendAvailable("dawn");
+    {
+        const gpu::DawnRuntimeProbeInfo& probe = gpu::GetDawnRuntimeProbeInfo();
+        out["dawn_probe"] = {
+            {"compiled", probe.compiled},
+            {"has_display_adapter", probe.hasDisplayAdapter},
+            {"module_loaded", probe.moduleLoaded},
+            {"module_name", probe.moduleName},
+            {"has_core_proc", probe.hasCoreProc},
+            {"has_create_instance", probe.hasCreateInstance},
+            {"has_request_adapter", probe.hasRequestAdapter},
+            {"can_create_instance", probe.canCreateInstance},
+            {"detail", probe.detail},
+        };
+    }
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
     out["active"] = {
         {"click", EnsureUtf8(cfg.active.click)},

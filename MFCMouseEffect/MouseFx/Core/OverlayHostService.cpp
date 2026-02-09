@@ -2,6 +2,8 @@
 
 #include "OverlayHostService.h"
 
+#include "MouseFx/Gpu/DawnRuntime.h"
+#include "MouseFx/Gpu/GpuHardwareProbe.h"
 #include "MouseFx/Interfaces/IRippleRenderer.h"
 #include "MouseFx/Interfaces/ITrailRenderer.h"
 #include "MouseFx/Layers/ParticleTrailOverlayLayer.h"
@@ -12,13 +14,79 @@
 
 namespace mousefx {
 
+std::string OverlayHostService::NormalizeRenderBackend(std::string backend) {
+    for (char& c : backend) {
+        if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
+    }
+    if (backend == "dawn") return "dawn";
+    if (backend == "cpu") return "cpu";
+    return "auto";
+}
+
 OverlayHostService& OverlayHostService::Instance() {
     static OverlayHostService instance;
     return instance;
 }
 
+void OverlayHostService::SetRenderBackendPreference(const std::string& backend) {
+    const std::string normalized = NormalizeRenderBackend(backend);
+    if (requestedBackend_ == normalized) return;
+    requestedBackend_ = normalized;
+    Shutdown();
+}
+
+std::string OverlayHostService::GetRenderBackendPreference() const {
+    return requestedBackend_;
+}
+
+std::string OverlayHostService::GetActiveRenderBackend() const {
+    return activeBackend_;
+}
+
+std::string OverlayHostService::GetRenderBackendDetail() const {
+    return backendDetail_;
+}
+
+bool OverlayHostService::HasGpuHardware() const {
+    return gpu::HasDesktopDisplayAdapter();
+}
+
+bool OverlayHostService::IsGpuBackendAvailable(const std::string& backend) const {
+    const std::string normalized = NormalizeRenderBackend(backend);
+    if (normalized == "dawn") {
+        return gpu::IsDawnCompiled();
+    }
+    if (normalized == "cpu") return true;
+    return false;
+}
+
 bool OverlayHostService::Initialize() {
     if (host_) return true;
+
+    const std::string pref = NormalizeRenderBackend(requestedBackend_);
+    if (pref == "dawn") {
+        const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
+        if (dawn.ok) {
+            activeBackend_ = dawn.backend;
+            backendDetail_ = dawn.detail;
+            return true;
+        }
+        activeBackend_ = "cpu";
+        backendDetail_ = dawn.detail;
+    } else if (pref == "auto") {
+        const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
+        if (dawn.ok) {
+            activeBackend_ = dawn.backend;
+            backendDetail_ = dawn.detail;
+            return true;
+        }
+        activeBackend_ = "cpu";
+        backendDetail_ = dawn.detail;
+    } else {
+        activeBackend_ = "cpu";
+        backendDetail_ = "cpu_forced";
+    }
+
     host_ = std::make_unique<OverlayHostWindow>();
     if (!host_->Create()) {
         host_.reset();
@@ -33,6 +101,8 @@ void OverlayHostService::Shutdown() {
     textLayer_ = nullptr;
     host_->Shutdown();
     host_.reset();
+    activeBackend_ = "cpu";
+    backendDetail_ = "cpu_default";
 }
 
 IOverlayLayer* OverlayHostService::AttachLayer(std::unique_ptr<IOverlayLayer> layer) {

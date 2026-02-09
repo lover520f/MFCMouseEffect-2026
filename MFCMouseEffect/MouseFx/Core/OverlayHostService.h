@@ -25,6 +25,15 @@ class OverlayHostService final {
 public:
     static OverlayHostService& Instance();
 
+    // Preferred backend: auto | dawn | cpu.
+    // Runtime will always fall back to cpu when gpu backend is unavailable.
+    void SetRenderBackendPreference(const std::string& backend);
+    std::string GetRenderBackendPreference() const;
+    std::string GetActiveRenderBackend() const;
+    std::string GetRenderBackendDetail() const;
+    bool HasGpuHardware() const;
+    bool IsGpuBackendAvailable(const std::string& backend) const;
+
     bool Initialize();
     void Shutdown();
 
@@ -53,9 +62,13 @@ private:
     std::unique_ptr<OverlayHostWindow> host_{};
     RippleOverlayLayer* rippleLayer_ = nullptr;
     TextOverlayLayer* textLayer_ = nullptr;
+    std::string requestedBackend_ = "auto";
+    std::string activeBackend_ = "cpu";
+    std::string backendDetail_ = "cpu_default";
 
     RippleOverlayLayer* EnsureRippleLayer();
     TextOverlayLayer* EnsureTextLayer();
+    static std::string NormalizeRenderBackend(std::string backend);
 };
 
 } // namespace mousefx

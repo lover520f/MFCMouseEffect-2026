@@ -48,6 +48,8 @@ public:
 
     // Set visual theme (affects themed effects).
     void SetTheme(const std::string& theme);
+    // Set render backend preference (auto|dawn|cpu).
+    void SetRenderBackend(const std::string& backend);
 
     // Set settings window UI language (persisted).
     void SetUiLanguage(const std::string& lang);
@@ -87,6 +89,7 @@ private:
     void PersistConfig();
     void SetActiveEffectType(EffectCategory category, const std::string& type);
     void ReloadConfigFromDisk();
+    void RecreateActiveEffects();
 
     HWND dispatchHwnd_ = nullptr;
 

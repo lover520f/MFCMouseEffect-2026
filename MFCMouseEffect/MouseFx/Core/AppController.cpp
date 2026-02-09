@@ -47,6 +47,13 @@ static std::string NormalizeHoldFollowMode(std::string mode) {
     return "smooth";
 }
 
+static std::string NormalizeRenderBackend(std::string backend) {
+    backend = ToLowerAscii(backend);
+    if (backend == "dawn") return "dawn";
+    if (backend == "cpu") return "cpu";
+    return "auto";
+}
+
 static std::wstring Utf8ToWString(const std::string& s) {
     if (s.empty()) return {};
     int len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
@@ -113,6 +120,7 @@ bool AppController::Start() {
     // Load config from the best available directory (AppData preferred)
     configDir_ = ResolveConfigDirectory();
     config_ = EffectConfig::Load(configDir_);
+    OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
 
     diag_.stage = StartStage::GdiPlusStartup;
     if (!gdiplus_.Startup()) {
@@ -224,6 +232,16 @@ void AppController::SetTheme(const std::string& theme) {
     PersistConfig();
 }
 
+void AppController::SetRenderBackend(const std::string& backend) {
+    const std::string normalized = NormalizeRenderBackend(backend);
+    if (config_.renderBackend == normalized) return;
+    config_.renderBackend = normalized;
+    PersistConfig();
+
+    OverlayHostService::Instance().SetRenderBackendPreference(normalized);
+    RecreateActiveEffects();
+}
+
 void AppController::SetUiLanguage(const std::string& lang) {
     if (lang.empty()) return;
     config_.uiLanguage = lang;
@@ -275,11 +293,8 @@ void AppController::ResetConfig() {
     PersistConfig();
 
     // 3. Re-apply everything
-    SetEffect(EffectCategory::Click, config_.active.click);
-    SetEffect(EffectCategory::Trail, config_.active.trail);
-    SetEffect(EffectCategory::Scroll, config_.active.scroll);
-    SetEffect(EffectCategory::Hold, config_.active.hold);
-    SetEffect(EffectCategory::Hover, config_.active.hover);
+    OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
+    RecreateActiveEffects();
     
     // Theme/Language rely on being pulled by UI or re-applied if needed?
     // SettingsWnd calls sync, so it will pull new values.
@@ -292,16 +307,9 @@ void AppController::ReloadConfigFromDisk() {
 
     EffectConfig loaded = EffectConfig::Load(configDir_);
     config_ = loaded;
+    OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
 
-    const std::string clickType = config_.active.click.empty()
-        ? (config_.defaultEffect.empty() ? "ripple" : config_.defaultEffect)
-        : config_.active.click;
-
-    SetEffect(EffectCategory::Click, clickType);
-    SetEffect(EffectCategory::Trail, config_.active.trail);
-    SetEffect(EffectCategory::Scroll, config_.active.scroll);
-    SetEffect(EffectCategory::Hold, config_.active.hold);
-    SetEffect(EffectCategory::Hover, config_.active.hover);
+    RecreateActiveEffects();
 
 #ifdef _DEBUG
     OutputDebugStringW(L"MouseFx: reload_config applied.\n");
@@ -312,6 +320,17 @@ IMouseEffect* AppController::GetEffect(EffectCategory category) const {
     size_t idx = static_cast<size_t>(category);
     if (idx >= kCategoryCount) return nullptr;
     return effects_[idx].get();
+}
+
+void AppController::RecreateActiveEffects() {
+    const std::string clickType = config_.active.click.empty()
+        ? (config_.defaultEffect.empty() ? "ripple" : config_.defaultEffect)
+        : config_.active.click;
+    SetEffect(EffectCategory::Click, clickType);
+    SetEffect(EffectCategory::Trail, config_.active.trail);
+    SetEffect(EffectCategory::Scroll, config_.active.scroll);
+    SetEffect(EffectCategory::Hold, config_.active.hold);
+    SetEffect(EffectCategory::Hover, config_.active.hover);
 }
 
 void AppController::HandleCommand(const std::string& jsonCmd) {
@@ -350,6 +369,9 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
     } else if (cmd == "set_theme") {
         std::string theme = ExtractJsonStringValue(jsonCmd, "theme");
         SetTheme(theme);
+    } else if (cmd == "set_render_backend") {
+        std::string backend = ExtractJsonStringValue(jsonCmd, "backend");
+        SetRenderBackend(backend);
     } else if (cmd == "set_ui_language") {
         std::string lang = ExtractJsonStringValue(jsonCmd, "lang");
         SetUiLanguage(lang);
@@ -429,6 +451,9 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
 
         if (p.contains("hold_follow_mode") && p["hold_follow_mode"].is_string()) {
             SetHoldFollowMode(p["hold_follow_mode"].get<std::string>());
+        }
+        if (p.contains("render_backend") && p["render_backend"].is_string()) {
+            SetRenderBackend(p["render_backend"].get<std::string>());
         }
 
         // Trail tuning (optional fields).
