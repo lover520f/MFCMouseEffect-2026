@@ -115,6 +115,16 @@ static json BuildDawnProbeJson(const gpu::DawnRuntimeProbeInfo& probe) {
     };
 }
 
+static json BuildDawnStatusJson(const gpu::DawnRuntimeStatus& status) {
+    return json{
+        {"init_attempts", status.initAttempts},
+        {"last_init_detail", status.lastInitDetail},
+        {"last_init_tick_ms", status.lastInitTickMs},
+        {"ready_for_device_stage", status.readyForDeviceStage},
+        {"probe", BuildDawnProbeJson(status.probe)},
+    };
+}
+
 WebSettingsServer::WebSettingsServer(AppController* controller) : controller_(controller) {
     RotateToken();
     http_ = std::make_unique<HttpServer>();
@@ -178,7 +188,7 @@ bool WebSettingsServer::Start() {
                     } catch (...) {}
                 }
                 const std::string detail = OverlayHostService::Instance().ProbeDawnRuntimeNow(refresh);
-                const gpu::DawnRuntimeProbeInfo probe = gpu::GetDawnRuntimeProbeInfo();
+                const gpu::DawnRuntimeStatus dawnStatus = gpu::GetDawnRuntimeStatus();
                 resp.contentType = "application/json; charset=utf-8";
                 resp.body = json({
                     {"ok", true},
@@ -187,7 +197,8 @@ bool WebSettingsServer::Start() {
                     {"backend_detail", OverlayHostService::Instance().GetRenderBackendDetail()},
                     {"gpu_hardware_available", OverlayHostService::Instance().HasGpuHardware()},
                     {"dawn_available", OverlayHostService::Instance().IsGpuBackendAvailable("dawn")},
-                    {"dawn_probe", BuildDawnProbeJson(probe)},
+                    {"dawn_probe", BuildDawnProbeJson(dawnStatus.probe)},
+                    {"dawn_status", BuildDawnStatusJson(dawnStatus)},
                 }).dump();
                 return;
             }
@@ -337,7 +348,9 @@ std::string WebSettingsServer::BuildStateJson() const {
     out["render_backend_detail"] = OverlayHostService::Instance().GetRenderBackendDetail();
     out["gpu_hardware_available"] = OverlayHostService::Instance().HasGpuHardware();
     out["dawn_available"] = OverlayHostService::Instance().IsGpuBackendAvailable("dawn");
-    out["dawn_probe"] = BuildDawnProbeJson(gpu::GetDawnRuntimeProbeInfo());
+    const gpu::DawnRuntimeStatus dawnStatus = gpu::GetDawnRuntimeStatus();
+    out["dawn_probe"] = BuildDawnProbeJson(dawnStatus.probe);
+    out["dawn_status"] = BuildDawnStatusJson(dawnStatus);
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
     out["active"] = {
         {"click", EnsureUtf8(cfg.active.click)},

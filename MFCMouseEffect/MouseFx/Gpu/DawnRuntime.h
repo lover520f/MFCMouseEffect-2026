@@ -24,10 +24,19 @@ struct DawnRuntimeProbeInfo {
     std::string detail = "probe_not_run";
 };
 
+struct DawnRuntimeStatus {
+    DawnRuntimeProbeInfo probe{};
+    std::string lastInitDetail = "init_not_run";
+    uint64_t initAttempts = 0;
+    uint64_t lastInitTickMs = 0;
+    bool readyForDeviceStage = false;
+};
+
 bool IsDawnCompiled();
 
 DawnRuntimeInitResult TryInitializeDawnRuntime();
 DawnRuntimeProbeInfo GetDawnRuntimeProbeInfo();
+DawnRuntimeStatus GetDawnRuntimeStatus();
 void ResetDawnRuntimeProbe();
 
 } // namespace mousefx::gpu

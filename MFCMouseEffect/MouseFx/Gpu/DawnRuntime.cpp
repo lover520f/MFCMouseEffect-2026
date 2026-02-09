@@ -14,6 +14,9 @@ bool g_dawnProbeAttempted = false;
 DawnRuntimeProbeInfo g_probe{};
 uint64_t g_probeGeneration = 0;
 std::mutex g_probeMutex{};
+uint64_t g_initAttempts = 0;
+uint64_t g_lastInitTickMs = 0;
+std::string g_lastInitDetail = "init_not_run";
 
 using PFN_wgpuCreateInstance = void* (*)(const void*);
 using PFN_wgpuInstanceRelease = void (*)(void*);
@@ -117,6 +120,16 @@ void RunProbeIfNeededLocked() {
     g_probe.detail = "dawn_runtime_ready_for_device_stage";
 }
 
+DawnRuntimeInitResult FailLocked(const char* detail) {
+    DawnRuntimeInitResult result{};
+    result.ok = false;
+    result.backend = "cpu";
+    result.detail = detail ? detail : "unknown_error";
+    g_lastInitDetail = result.detail;
+    g_lastInitTickMs = GetTickCount64();
+    return result;
+}
+
 } // namespace
 
 DawnRuntimeProbeInfo GetDawnRuntimeProbeInfo() {
@@ -135,6 +148,24 @@ void ResetDawnRuntimeProbe() {
     g_probe = {};
     g_probe.detail = "probe_reset";
     g_probe.generation = ++g_probeGeneration;
+    g_initAttempts = 0;
+    g_lastInitTickMs = 0;
+    g_lastInitDetail = "init_not_run";
+}
+
+DawnRuntimeStatus GetDawnRuntimeStatus() {
+    std::lock_guard<std::mutex> lock(g_probeMutex);
+    RunProbeIfNeededLocked();
+
+    DawnRuntimeStatus status{};
+    status.probe = g_probe;
+    status.lastInitDetail = g_lastInitDetail;
+    status.initAttempts = g_initAttempts;
+    status.lastInitTickMs = g_lastInitTickMs;
+    status.readyForDeviceStage =
+        (g_probe.detail == "dawn_runtime_ready_for_device_stage") ||
+        (g_lastInitDetail == "dawn_instance_ok_no_device");
+    return status;
 }
 
 bool IsDawnCompiled() {
@@ -148,58 +179,37 @@ bool IsDawnCompiled() {
 DawnRuntimeInitResult TryInitializeDawnRuntime() {
     std::lock_guard<std::mutex> lock(g_probeMutex);
     RunProbeIfNeededLocked();
+    ++g_initAttempts;
 
-    DawnRuntimeInitResult result{};
     if (!g_probe.hasDisplayAdapter) {
-        result.ok = false;
-        result.backend = "cpu";
-        result.detail = "no_display_adapter";
-        return result;
+        return FailLocked("no_display_adapter");
     }
 
     if (!g_probe.compiled) {
-        result.ok = false;
-        result.backend = "cpu";
-        result.detail = "dawn_disabled_at_build";
-        return result;
+        return FailLocked("dawn_disabled_at_build");
     }
 
 #ifdef MOUSEFX_ENABLE_DAWN
     if (!g_probe.moduleLoaded) {
-        result.ok = false;
-        result.backend = "cpu";
-        result.detail = "dawn_loader_missing";
-        return result;
+        return FailLocked("dawn_loader_missing");
     }
     if (!g_probe.hasCoreProc) {
-        result.ok = false;
-        result.backend = "cpu";
-        result.detail = "dawn_symbols_missing";
-        return result;
+        return FailLocked("dawn_symbols_missing");
     }
     if (!(g_probe.hasCreateInstance && g_probe.hasRequestAdapter)) {
-        result.ok = false;
-        result.backend = "cpu";
-        result.detail = "dawn_symbols_partial";
-        return result;
+        return FailLocked("dawn_symbols_partial");
     }
 
     const FARPROC createProc = ResolveCreateInstanceProc(g_dawnModule);
     if (!createProc) {
-        result.ok = false;
-        result.backend = "cpu";
-        result.detail = "dawn_create_instance_proc_missing";
-        g_probe.detail = result.detail;
-        return result;
+        g_probe.detail = "dawn_create_instance_proc_missing";
+        return FailLocked("dawn_create_instance_proc_missing");
     }
 
     void* instance = reinterpret_cast<PFN_wgpuCreateInstance>(createProc)(nullptr);
     if (!instance) {
-        result.ok = false;
-        result.backend = "cpu";
-        result.detail = "dawn_create_instance_failed";
-        g_probe.detail = result.detail;
-        return result;
+        g_probe.detail = "dawn_create_instance_failed";
+        return FailLocked("dawn_create_instance_failed");
     }
 
     g_probe.canCreateInstance = true;
@@ -210,16 +220,16 @@ DawnRuntimeInitResult TryInitializeDawnRuntime() {
 
     // Stage 6 status:
     // Dawn instance creation works, but adapter/device/surface is not wired yet.
+    DawnRuntimeInitResult result{};
     result.ok = false;
     result.backend = "cpu";
     result.detail = "dawn_instance_ok_no_device";
     g_probe.detail = "dawn_runtime_ready_for_device_stage";
+    g_lastInitDetail = result.detail;
+    g_lastInitTickMs = GetTickCount64();
     return result;
 #else
-    result.ok = false;
-    result.backend = "cpu";
-    result.detail = "dawn_disabled_at_build";
-    return result;
+    return FailLocked("dawn_disabled_at_build");
 #endif
 }
 
