@@ -100,6 +100,21 @@ static json MakeOpt(const char* value, const wchar_t* zh, const wchar_t* en, con
     return o;
 }
 
+static json BuildDawnProbeJson(const gpu::DawnRuntimeProbeInfo& probe) {
+    return json{
+        {"generation", probe.generation},
+        {"compiled", probe.compiled},
+        {"has_display_adapter", probe.hasDisplayAdapter},
+        {"module_loaded", probe.moduleLoaded},
+        {"module_name", probe.moduleName},
+        {"has_core_proc", probe.hasCoreProc},
+        {"has_create_instance", probe.hasCreateInstance},
+        {"has_request_adapter", probe.hasRequestAdapter},
+        {"can_create_instance", probe.canCreateInstance},
+        {"detail", probe.detail},
+    };
+}
+
 WebSettingsServer::WebSettingsServer(AppController* controller) : controller_(controller) {
     RotateToken();
     http_ = std::make_unique<HttpServer>();
@@ -163,8 +178,17 @@ bool WebSettingsServer::Start() {
                     } catch (...) {}
                 }
                 const std::string detail = OverlayHostService::Instance().ProbeDawnRuntimeNow(refresh);
+                const gpu::DawnRuntimeProbeInfo probe = gpu::GetDawnRuntimeProbeInfo();
                 resp.contentType = "application/json; charset=utf-8";
-                resp.body = json({{"ok", true}, {"detail", detail}}).dump();
+                resp.body = json({
+                    {"ok", true},
+                    {"detail", detail},
+                    {"active_backend", OverlayHostService::Instance().GetActiveRenderBackend()},
+                    {"backend_detail", OverlayHostService::Instance().GetRenderBackendDetail()},
+                    {"gpu_hardware_available", OverlayHostService::Instance().HasGpuHardware()},
+                    {"dawn_available", OverlayHostService::Instance().IsGpuBackendAvailable("dawn")},
+                    {"dawn_probe", BuildDawnProbeJson(probe)},
+                }).dump();
                 return;
             }
             if ((req.method == "POST" || req.method == "GET") && path == "/api/reload") {
@@ -313,21 +337,7 @@ std::string WebSettingsServer::BuildStateJson() const {
     out["render_backend_detail"] = OverlayHostService::Instance().GetRenderBackendDetail();
     out["gpu_hardware_available"] = OverlayHostService::Instance().HasGpuHardware();
     out["dawn_available"] = OverlayHostService::Instance().IsGpuBackendAvailable("dawn");
-    {
-        const gpu::DawnRuntimeProbeInfo probe = gpu::GetDawnRuntimeProbeInfo();
-        out["dawn_probe"] = {
-            {"generation", probe.generation},
-            {"compiled", probe.compiled},
-            {"has_display_adapter", probe.hasDisplayAdapter},
-            {"module_loaded", probe.moduleLoaded},
-            {"module_name", probe.moduleName},
-            {"has_core_proc", probe.hasCoreProc},
-            {"has_create_instance", probe.hasCreateInstance},
-            {"has_request_adapter", probe.hasRequestAdapter},
-            {"can_create_instance", probe.canCreateInstance},
-            {"detail", probe.detail},
-        };
-    }
+    out["dawn_probe"] = BuildDawnProbeJson(gpu::GetDawnRuntimeProbeInfo());
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
     out["active"] = {
         {"click", EnsureUtf8(cfg.active.click)},
