@@ -96,6 +96,9 @@
     <ClInclude Include="MouseFx\Core\AppController.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Compute\EffectComputeExecutor.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\GdiPlusSession.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>

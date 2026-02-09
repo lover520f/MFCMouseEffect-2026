@@ -2,6 +2,7 @@
 
 #include "Neon3DBezier.h"
 #include "Neon3DRings.h"
+#include "MouseFx/Compute/EffectComputeExecutor.h"
 
 #include <gdiplus.h>
 #include <algorithm>
@@ -9,7 +10,6 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include <ppl.h>
 
 namespace mousefx {
 namespace neon3d {
@@ -396,16 +396,8 @@ inline void DrawBranchTendrils(Gdiplus::Graphics& g, float cx, float cy, float i
         return out;
     };
 
-    std::vector<BranchGeometry> branches((size_t)branchCount);
-    if (branchCount >= 4) {
-        Concurrency::parallel_for(0, branchCount, [&](int i) {
-            branches[(size_t)i] = buildBranch(i);
-        });
-    } else {
-        for (int i = 0; i < branchCount; ++i) {
-            branches[(size_t)i] = buildBranch(i);
-        }
-    }
+    const std::vector<BranchGeometry> branches =
+        ::mousefx::compute::BuildArray<BranchGeometry>(branchCount, 4, buildBranch);
 
     for (int i = 0; i < branchCount; ++i) {
         const auto& branch = branches[(size_t)i];
