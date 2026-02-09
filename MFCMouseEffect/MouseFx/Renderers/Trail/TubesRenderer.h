@@ -103,12 +103,14 @@ public:
         // 2. Update physics by compute executor. Renderer only defines chain transition.
         const float targetX = (float)target.x;
         const float targetY = (float)target.y;
-        std::vector<TubeChain> updatedChains =
-            ::mousefx::compute::BuildArray<TubeChain>(
-                (int)chains_.size(),
-                ::mousefx::compute::ParallelProfile::AggressiveSmallBatch,
-                [&](int idx) { return BuildUpdatedChain(chains_[(size_t)idx], targetX, targetY); });
-        chains_ = std::move(updatedChains);
+        ::mousefx::compute::ForEachIndex(
+            (int)chains_.size(),
+            ::mousefx::compute::ParallelProfile::AggressiveSmallBatch,
+            [&](int idx) { UpdateChain(&chains_[(size_t)idx], targetX, targetY); });
+
+        const float fadeScale = fadeAlpha_ / 255.0f;
+        const float frameTime = (float)now * 0.005f;
+        const float chromaBaseHue = std::fmod((float)now * 0.2f, 360.0f);
 
         // 3. Render
         // Draw from tail to head
@@ -122,8 +124,17 @@ public:
         for (int c = 0; c < 3; ++c) {
             const auto& chain = chains_[c];
             // Gradient brush setup could be reused if optimized, but creating per node is safer for varying sizes/alphas.
-            
-            int nodesCount = (int)chain.nodes.size();
+
+            const int nodesCount = (int)chain.nodes.size();
+            if (nodesCount <= 0) continue;
+            const float invNodesCount = 1.0f / (float)nodesCount;
+            const float chainPhase = (float)c * (2.0f * 3.14159f / 3.0f); // 0/120/240 degrees
+            Gdiplus::Color chainBaseColor = chain.color;
+            if (isChromatic) {
+                const float hue = std::fmod(chromaBaseHue + (float)c * 30.0f, 360.0f);
+                chainBaseColor = trail_color::HslToRgbColor(hue, 0.9f, 0.6f, 255);
+            }
+
             for (int i = nodesCount - 1; i >= 0; --i) {
                 const auto& node = chain.nodes[i];
                 
@@ -131,12 +142,12 @@ public:
                 // Visual check: usually Head is lead, fairly large. Tail fades out.
                 // Let's try: Head = 20px, Tail = 2px.
                 
-                float ratio = 1.0f - (float)i / (float)nodesCount; // 1.0 at head, ~0.0 at tail
+                const float ratio = 1.0f - (float)i * invNodesCount; // 1.0 at head, ~0.0 at tail
                 float radius = 2.0f + 7.0f * ratio; // Reduced from 12.0f
                 
                 // Shrink when fading
                 if (fadeAlpha_ < 255.0f) {
-                    radius *= (fadeAlpha_ / 255.0f);
+                    radius *= fadeScale;
                 } 
                 
                 const POINT nodePt{(LONG)std::lround(node.x), (LONG)std::lround(node.y)};
@@ -148,14 +159,8 @@ public:
                 // To prevent them from merging into a single line, we add a perpendicular or radial offset.
                 // We simulate a spiral around the central path.
                 
-                uint64_t now = GetTickCount64();
-                float time = (float)now * 0.005f; // Animation speed
-                
-                // Offset based on chain ID (angles 0, 120, 240 degrees)
-                float chainPhase = c * (2.0f * 3.14159f / 3.0f); 
-                
                 // Offset based on node index (to create the spiral wave along the tail)
-                float nodePhase = i * 0.3f; 
+                const float nodePhase = (float)i * 0.3f; 
                 
                 // Amplitude tapers off at the tail? Or fully thick?
                 // Visual choice: Tapering amplitude makes it look like a drill/tornado.
@@ -166,11 +171,11 @@ public:
                 
                 // If disappearing, reduce amplitude to 0 to converge cleanly
                 if (fadeAlpha_ < 255.0f) {
-                    amplitude *= (fadeAlpha_ / 255.0f);
+                    amplitude *= fadeScale;
                 }
 
-                float oscX = std::cos(time + nodePhase + chainPhase) * amplitude;
-                float oscY = std::sin(time + nodePhase + chainPhase) * amplitude;
+                const float oscX = std::cos(frameTime + nodePhase + chainPhase) * amplitude;
+                const float oscY = std::sin(frameTime + nodePhase + chainPhase) * amplitude;
                 
                 renderX += oscX;
                 renderY += oscY;
@@ -183,27 +188,13 @@ public:
                 
                 // Color calc
                 // Center is whitish, surround is the chain color
-                Gdiplus::Color base = chain.color;
-                
-                if (isChromatic) {
-                   // Chromatic: Cycle hue based on time and chain index
-                   // Time factor: slow cycle (0.1)
-                   // Chain offset: separate them (30 degrees)
-                   // Node offset: slight gradient along tail? (0.5 * i)
-                   
-                   uint64_t now = GetTickCount64();
-                   float hue = std::fmod((float)now * 0.2f + c * 30.0f, 360.0f);
-                   
-                   // Convert to RGB
-                   base = trail_color::HslToRgbColor(hue, 0.9f, 0.6f, 255);
-                }
+                const Gdiplus::Color base = chainBaseColor;
 
                 int alpha = (int)(255 * ratio); // Tail fades out alpha too
-                alpha = (int)(alpha * (fadeAlpha_ / 255.0f)); // Apply global fade
+                alpha = (int)(alpha * fadeScale); // Apply global fade
                 
                 // Adjust base color with alpha
                 Gdiplus::Color surroundC(0, base.GetR(), base.GetG(), base.GetB()); // 0 alpha at edge
-                Gdiplus::Color centerC(alpha, 255, 255, 255); // White center, varying alpha
 
                 // Ideally center is solid white at head?
                 // Reference has a very "glowing" look. 
@@ -229,26 +220,25 @@ public:
     }
 
 private:
-    static TubeChain BuildUpdatedChain(const TubeChain& src, float targetX, float targetY) {
-        TubeChain out = src;
-        if (out.nodes.empty()) return out;
+    static void UpdateChain(TubeChain* chain, float targetX, float targetY) {
+        if (!chain || chain->nodes.empty()) return;
 
         // Update head.
-        auto& head = out.nodes[0];
+        auto& head = chain->nodes[0];
         const float dx = targetX - head.x;
         const float dy = targetY - head.y;
-        head.x += dx * out.lag;
-        head.y += dy * out.lag;
+        head.x += dx * chain->lag;
+        head.y += dy * chain->lag;
 
         // Propagate to tail with minimum segment distance to avoid clumping.
-        for (size_t i = 1; i < out.nodes.size(); ++i) {
-            auto& curr = out.nodes[i];
-            auto& prev = out.nodes[i - 1];
+        for (size_t i = 1; i < chain->nodes.size(); ++i) {
+            auto& curr = chain->nodes[i];
+            auto& prev = chain->nodes[i - 1];
 
             const float ddx = prev.x - curr.x;
             const float ddy = prev.y - curr.y;
-            curr.x += ddx * out.lag;
-            curr.y += ddy * out.lag;
+            curr.x += ddx * chain->lag;
+            curr.y += ddy * chain->lag;
 
             constexpr float kMinSegmentDist = 3.5f;
             const float dist = std::sqrt(ddx * ddx + ddy * ddy);
@@ -259,7 +249,6 @@ private:
                 curr.y = prev.y - ny * kMinSegmentDist;
             }
         }
-        return out;
     }
 
     static constexpr size_t NUM_NODES = 30; // Length of tail

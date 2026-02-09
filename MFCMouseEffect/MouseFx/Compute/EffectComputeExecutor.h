@@ -29,22 +29,48 @@ inline bool ShouldRunParallel(int count, int parallelThreshold) {
     return cores == 0 || cores > 1;
 }
 
+template <typename IndexFn>
+void ForEachIndex(int count, int parallelThreshold, IndexFn&& indexFn) {
+    if (count <= 0) return;
+    if (ShouldRunParallel(count, parallelThreshold)) {
+        Concurrency::parallel_for(0, count, [&](int i) {
+            indexFn(i);
+        });
+    } else {
+        for (int i = 0; i < count; ++i) {
+            indexFn(i);
+        }
+    }
+}
+
+template <typename IndexFn>
+void ForEachIndex(int count, ParallelProfile profile, IndexFn&& indexFn) {
+    ForEachIndex(count, ResolveParallelThreshold(profile), std::forward<IndexFn>(indexFn));
+}
+
+template <typename T, typename BuildFn>
+void BuildArrayInto(std::vector<T>& out, int count, int parallelThreshold, BuildFn&& buildFn) {
+    if (count <= 0) {
+        out.clear();
+        return;
+    }
+    out.resize((size_t)count);
+    ForEachIndex(count, parallelThreshold, [&](int i) {
+        out[(size_t)i] = buildFn(i);
+    });
+}
+
+template <typename T, typename BuildFn>
+void BuildArrayInto(std::vector<T>& out, int count, ParallelProfile profile, BuildFn&& buildFn) {
+    BuildArrayInto<T>(out, count, ResolveParallelThreshold(profile), std::forward<BuildFn>(buildFn));
+}
+
 // Build a fixed-size result array from an index-based builder.
 // The caller only provides the build function; threading policy is centralized here.
 template <typename T, typename BuildFn>
 std::vector<T> BuildArray(int count, int parallelThreshold, BuildFn&& buildFn) {
-    if (count <= 0) return {};
-
-    std::vector<T> out((size_t)count);
-    if (ShouldRunParallel(count, parallelThreshold)) {
-        Concurrency::parallel_for(0, count, [&](int i) {
-            out[(size_t)i] = buildFn(i);
-        });
-    } else {
-        for (int i = 0; i < count; ++i) {
-            out[(size_t)i] = buildFn(i);
-        }
-    }
+    std::vector<T> out;
+    BuildArrayInto<T>(out, count, parallelThreshold, std::forward<BuildFn>(buildFn));
     return out;
 }
 

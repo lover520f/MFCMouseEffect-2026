@@ -38,6 +38,9 @@
   - Added `ResolveParallelThreshold(...)` and `ShouldRunParallel(...)`.
   - Added overload:
     - `BuildArray<T>(count, ParallelProfile, buildFn)`
+  - Added execution primitives:
+    - `ForEachIndex(count, ParallelProfile, fn)` for in-place parallel updates
+    - `BuildArrayInto(out, count, ParallelProfile, buildFn)` for reusable output buffers
 - Effects no longer pass raw threshold literals like `2/4/8`.
   - `TubesRenderer` -> `ParallelProfile::AggressiveSmallBatch`
   - `Neon3DFx` -> `ParallelProfile::Balanced`
@@ -46,6 +49,13 @@
 ### Why this matters
 - Effect code now only describes compute intent (small/medium/throughput), not thread scheduling numbers.
 - Future tuning (CPU fallback behavior per machine/core count) can be done centrally in one file.
+- Reduces per-frame temporary allocations/copies in hot paths:
+  - `TubesRenderer` now updates chains in-place via `ForEachIndex` (no per-frame chain vector swap).
+  - `TubesHoverRenderer` now reuses per-chain frame scratch buffers via `BuildArrayInto`.
+- Also reduces render-loop repeated work:
+  - frame timestamp is sampled once per frame (instead of inside inner node loops),
+  - chromatic base color is computed once per chain,
+  - reused loop constants (inverse node count / fade scale) avoid repeated divisions.
 
 ## Benefits
 - Single place to evolve CPU scheduling strategy.

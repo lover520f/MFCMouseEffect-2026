@@ -45,6 +45,7 @@ public:
     TubesHoverRenderer(bool isChromatic = false) : isChromatic_(isChromatic) {
         // Init 3 chains matching the trail effect colors
         chains_.resize(3);
+        frameScratch_.resize(3);
         
         chains_[0].color = Gdiplus::Color(249, 103, 251); 
         chains_[0].nodes.resize(NUM_NODES);
@@ -81,47 +82,42 @@ public:
         
         float cx = sizePx / 2.0f;
         float cy = sizePx / 2.0f;
+        const uint64_t nowTick = GetTickCount64();
         
         g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
         for (int c = 0; c < 3; ++c) {
             auto& chain = chains_[c];
             // Use global time to avoid resets when overlay sessions are restarted
-            float time = (float)GetTickCount64() * chain.speed;
-            const uint64_t nowTick = GetTickCount64();
+            const float time = (float)nowTick * chain.speed;
+            Gdiplus::Color chainBase = chain.color;
+            if (isChromatic_) {
+                const float hue = std::fmod((float)nowTick * 0.2f + (float)c * 30.0f, 360.0f);
+                chainBase = HslToRgb(hue, 0.9f, 0.6f, 255);
+            }
+            const float invCount = chain.nodes.empty() ? 0.0f : (1.0f / (float)chain.nodes.size());
+            std::vector<NodeFrame>& frames = frameScratch_[(size_t)c];
+            ::mousefx::compute::BuildArrayInto<NodeFrame>(
+                frames,
+                (int)chain.nodes.size(),
+                ::mousefx::compute::ParallelProfile::Throughput,
+                [&](int idx) {
+                    NodeFrame frame{};
+                    const auto& node = chain.nodes[(size_t)idx];
 
-            struct NodeFrame {
-                float x = 0.0f;
-                float y = 0.0f;
-                float radius = 0.0f;
-                Gdiplus::Color base{};
-            };
+                    float rot = time + node.phase;
+                    float curR = std::sqrt(node.baseOffX * node.baseOffX + node.baseOffY * node.baseOffY);
+                    curR += std::sin(time * 2.0f + (float)idx * 0.1f) * 5.0f;
 
-            const std::vector<NodeFrame> frames =
-                ::mousefx::compute::BuildArray<NodeFrame>(
-                    (int)chain.nodes.size(),
-                    ::mousefx::compute::ParallelProfile::Throughput,
-                    [&](int idx) {
-                        NodeFrame frame{};
-                        const auto& node = chain.nodes[(size_t)idx];
+                    frame.x = cx + std::cos(rot) * curR;
+                    frame.y = cy + std::sin(rot) * curR;
 
-                        float rot = time + node.phase;
-                        float curR = std::sqrt(node.baseOffX * node.baseOffX + node.baseOffY * node.baseOffY);
-                        curR += std::sin(time * 2.0f + (float)idx * 0.1f) * 5.0f;
+                    const float ratio = 1.0f - (float)idx * invCount;
+                    frame.radius = 3.0f + 10.0f * ratio;
 
-                        frame.x = cx + std::cos(rot) * curR;
-                        frame.y = cy + std::sin(rot) * curR;
-
-                        const float ratio = 1.0f - (float)idx / (float)chain.nodes.size();
-                        frame.radius = 3.0f + 10.0f * ratio;
-
-                        frame.base = chain.color;
-                        if (isChromatic_) {
-                            const float hue = std::fmod((float)nowTick * 0.2f + c * 30.0f, 360.0f);
-                            frame.base = HslToRgb(hue, 0.9f, 0.6f, 255);
-                        }
-                        return frame;
-                    });
+                    frame.base = chainBase;
+                    return frame;
+                });
 
             for (const auto& frame : frames) {
                 const float finalX = frame.x;
@@ -158,9 +154,17 @@ public:
     }
 
 private:
+    struct NodeFrame {
+        float x = 0.0f;
+        float y = 0.0f;
+        float radius = 0.0f;
+        Gdiplus::Color base{};
+    };
+
     static constexpr int NUM_NODES = 20;
 
     std::vector<HoverChain> chains_;
+    std::vector<std::vector<NodeFrame>> frameScratch_;
     bool isChromatic_ = false;
 };
 
