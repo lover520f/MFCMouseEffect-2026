@@ -227,7 +227,14 @@
     const text = (lang === 'zh-CN') ? (banner.text_zh || banner.text_en || '') : (banner.text_en || banner.text_zh || '');
     const actionText = (lang === 'zh-CN') ? (action.action_text_zh || action.action_text_en || '') : (action.action_text_en || action.action_text_zh || '');
     const stateCode = banner.state_code || '';
-    const finalText = actionText ? `${text} ${actionText}` : text;
+    let finalText = actionText ? `${text} ${actionText}` : text;
+    const bridge = st.dawn_overlay_bridge || {};
+    if (stateCode === 'device_ready_cpu_bridge_pending' && bridge && bridge.detail) {
+      const bridgeNote = (lang === 'zh-CN')
+        ? `当前桥接状态: ${bridge.detail}`
+        : `Bridge status: ${bridge.detail}`;
+      finalText = `${finalText} ${bridgeNote}`;
+    }
     const prefix = st.gpu_in_use ? '[GPU] ' : '[CPU] ';
     if (gpuBannerTextEl) {
       gpuBannerTextEl.textContent = stateCode ? `${prefix}${finalText} (${stateCode})` : `${prefix}${finalText}`;

@@ -7,6 +7,7 @@
 
 #include "MouseFx/Core/AppController.h"
 #include "MouseFx/Core/OverlayHostService.h"
+#include "MouseFx/Gpu/DawnOverlayBridge.h"
 #include "MouseFx/Gpu/DawnRuntime.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/WebUiAssets.h"
@@ -110,8 +111,19 @@ static json BuildDawnProbeJson(const gpu::DawnRuntimeProbeInfo& probe) {
         {"has_core_proc", probe.hasCoreProc},
         {"has_create_instance", probe.hasCreateInstance},
         {"has_request_adapter", probe.hasRequestAdapter},
+        {"has_request_device", probe.hasRequestDevice},
         {"can_create_instance", probe.canCreateInstance},
+        {"can_request_adapter", probe.canRequestAdapter},
+        {"can_create_device", probe.canCreateDevice},
         {"detail", probe.detail},
+    };
+}
+
+static json BuildDawnOverlayBridgeJson(const gpu::DawnOverlayBridgeStatus& bridge) {
+    return json{
+        {"compiled", bridge.compiled},
+        {"available", bridge.available},
+        {"detail", bridge.detail},
     };
 }
 
@@ -124,6 +136,13 @@ static const char* DawnStateCodeFromDetail(const std::string& detail) {
     if (detail == "dawn_create_instance_proc_missing") return "create_proc_missing";
     if (detail == "dawn_create_instance_failed") return "create_failed";
     if (detail == "dawn_instance_ok_no_device") return "instance_ok_no_device";
+    if (detail == "dawn_device_ready_cpu_bridge_pending") return "device_ready_cpu_bridge_pending";
+    if (detail == "dawn_request_adapter_proc_missing") return "request_adapter_proc_missing";
+    if (detail == "dawn_request_adapter_timeout") return "request_adapter_timeout";
+    if (detail == "dawn_request_adapter_failed") return "request_adapter_failed";
+    if (detail == "dawn_request_device_proc_missing") return "request_device_proc_missing";
+    if (detail == "dawn_request_device_timeout") return "request_device_timeout";
+    if (detail == "dawn_request_device_failed") return "request_device_failed";
     if (detail == "dawn_runtime_ready_for_device_stage") return "ready_for_device_stage";
     if (detail == "init_not_run") return "init_not_run";
     return "unknown";
@@ -152,6 +171,31 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
             {"action_text_en", "Dawn runtime is ready. Wire adapter/device/surface initialization next."},
             {"action_text_zh", u8"\u0044\u0061\u0077\u006e \u8fd0\u884c\u65f6\u5df2\u5c31\u7eea\uff0c\u4e0b\u4e00\u6b65\u8bf7\u63a5\u5165 \u0061\u0064\u0061\u0070\u0074\u0065\u0072\u002f\u0064\u0065\u0076\u0069\u0063\u0065\u002f\u0073\u0075\u0072\u0066\u0061\u0063\u0065 \u521d\u59cb\u5316\u3002"},
             {"tone", "info"},
+        };
+    }
+    if (stateCode == "device_ready_cpu_bridge_pending") {
+        return json{
+            {"action_code", "wire_overlay_gpu_bridge"},
+            {"action_text_en", "Adapter/device handshake succeeded. Next wire OverlayHost rendering bridge to Dawn backend."},
+            {"action_text_zh", u8"\u5df2\u5b8c\u6210 \u0061\u0064\u0061\u0070\u0074\u0065\u0072\u002f\u0064\u0065\u0076\u0069\u0063\u0065 \u63e1\u624b\u3002\u4e0b\u4e00\u6b65\u8bf7\u5c06 \u004f\u0076\u0065\u0072\u006c\u0061\u0079\u0048\u006f\u0073\u0074 \u6e32\u67d3\u6865\u63a5\u5165 \u0044\u0061\u0077\u006e \u540e\u7aef\u3002"},
+            {"tone", "info"},
+        };
+    }
+    if (stateCode == "request_adapter_proc_missing" || stateCode == "request_device_proc_missing") {
+        return json{
+            {"action_code", "replace_runtime_binary"},
+            {"action_text_en", "Runtime is missing requestAdapter/requestDevice symbols. Replace with a newer compatible Dawn runtime."},
+            {"action_text_zh", u8"\u8fd0\u884c\u65f6\u7f3a\u5c11 \u0072\u0065\u0071\u0075\u0065\u0073\u0074\u0041\u0064\u0061\u0070\u0074\u0065\u0072\u002f\u0072\u0065\u0071\u0075\u0065\u0073\u0074\u0044\u0065\u0076\u0069\u0063\u0065 \u7b26\u53f7\u3002\u8bf7\u66ff\u6362\u4e3a\u66f4\u65b0\u4e14\u517c\u5bb9\u7684 \u0044\u0061\u0077\u006e \u8fd0\u884c\u65f6\u3002"},
+            {"tone", "warn"},
+        };
+    }
+    if (stateCode == "request_adapter_timeout" || stateCode == "request_device_timeout" ||
+        stateCode == "request_adapter_failed" || stateCode == "request_device_failed") {
+        return json{
+            {"action_code", "check_driver_and_backend"},
+            {"action_text_en", "Adapter/device request failed. Verify graphics driver, runtime build, and desktop session capability."},
+            {"action_text_zh", u8"\u8bf7\u6c42 \u0061\u0064\u0061\u0070\u0074\u0065\u0072\u002f\u0064\u0065\u0076\u0069\u0063\u0065 \u5931\u8d25\u3002\u8bf7\u68c0\u67e5\u663e\u5361\u9a71\u52a8\u3001\u8fd0\u884c\u65f6\u7248\u672c\u4ee5\u53ca\u684c\u9762\u4f1a\u8bdd\u80fd\u529b\u3002"},
+            {"tone", "warn"},
         };
     }
     if (stateCode == "loader_missing") {
@@ -300,6 +344,7 @@ bool WebSettingsServer::Start() {
                 const std::string detail = OverlayHostService::Instance().ProbeDawnRuntimeNow(refresh);
                 const std::string activeBackend = OverlayHostService::Instance().GetActiveRenderBackend();
                 const gpu::DawnRuntimeStatus dawnStatus = gpu::GetDawnRuntimeStatus();
+                const gpu::DawnOverlayBridgeStatus dawnBridge = gpu::GetDawnOverlayBridgeStatus();
                 resp.contentType = "application/json; charset=utf-8";
                 resp.body = json({
                     {"ok", true},
@@ -311,6 +356,7 @@ bool WebSettingsServer::Start() {
                     {"dawn_available", OverlayHostService::Instance().IsGpuBackendAvailable("dawn")},
                     {"dawn_probe", BuildDawnProbeJson(dawnStatus.probe)},
                     {"dawn_status", BuildDawnStatusJson(dawnStatus)},
+                    {"dawn_overlay_bridge", BuildDawnOverlayBridgeJson(dawnBridge)},
                     {"gpu_status_banner", BuildGpuBannerJson(activeBackend, dawnStatus)},
                 }).dump();
                 return;
@@ -430,6 +476,10 @@ std::string WebSettingsServer::BuildSchemaJson() const {
 
     out["gpu_status_schema"] = {
         {"version", 1},
+        {"bridge_codes", json::array({
+            "bridge_not_compiled",
+            "bridge_compiled_stub"
+        })},
         {"state_codes", json::array({
             "init_not_run",
             "no_display_adapter",
@@ -440,13 +490,22 @@ std::string WebSettingsServer::BuildSchemaJson() const {
             "create_proc_missing",
             "create_failed",
             "instance_ok_no_device",
+            "device_ready_cpu_bridge_pending",
+            "request_adapter_proc_missing",
+            "request_adapter_timeout",
+            "request_adapter_failed",
+            "request_device_proc_missing",
+            "request_device_timeout",
+            "request_device_failed",
             "ready_for_device_stage",
             "unknown"
         })},
         {"action_codes", json::array({
             "wire_device_stage",
+            "wire_overlay_gpu_bridge",
             "install_dawn_runtime",
             "replace_runtime_binary",
+            "check_driver_and_backend",
             "validate_runtime_abi",
             "enable_dawn_build_flag",
             "check_display_adapter",
@@ -491,8 +550,10 @@ std::string WebSettingsServer::BuildStateJson() const {
     out["gpu_hardware_available"] = OverlayHostService::Instance().HasGpuHardware();
     out["dawn_available"] = OverlayHostService::Instance().IsGpuBackendAvailable("dawn");
     const gpu::DawnRuntimeStatus dawnStatus = gpu::GetDawnRuntimeStatus();
+    const gpu::DawnOverlayBridgeStatus dawnBridge = gpu::GetDawnOverlayBridgeStatus();
     out["dawn_probe"] = BuildDawnProbeJson(dawnStatus.probe);
     out["dawn_status"] = BuildDawnStatusJson(dawnStatus);
+    out["dawn_overlay_bridge"] = BuildDawnOverlayBridgeJson(dawnBridge);
     out["gpu_status_banner"] = BuildGpuBannerJson(activeBackend, dawnStatus);
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
     out["active"] = {

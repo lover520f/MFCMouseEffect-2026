@@ -19,7 +19,10 @@ struct DawnRuntimeProbeInfo {
     bool hasCoreProc = false;
     bool hasCreateInstance = false;
     bool hasRequestAdapter = false;
+    bool hasRequestDevice = false;
     bool canCreateInstance = false;
+    bool canRequestAdapter = false;
+    bool canCreateDevice = false;
     std::string moduleName = "";
     std::string detail = "probe_not_run";
 };

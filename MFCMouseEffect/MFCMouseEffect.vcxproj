@@ -250,6 +250,7 @@
     <ClInclude Include="MouseFx\Effects\HoldEffect.h" />
     <ClInclude Include="MouseFx\Effects\HoverEffect.h" />
     <ClInclude Include="MouseFx\Core\EffectConfig.h" />
+    <ClInclude Include="MouseFx\Gpu\DawnOverlayBridge.h" />
     <ClInclude Include="MouseFx\Gpu\DawnRuntime.h" />
     <ClInclude Include="MouseFx\Gpu\GpuHardwareProbe.h" />
     <ClInclude Include="MouseFx\ThirdParty\json.hpp" />
@@ -282,6 +283,7 @@
     <ClCompile Include="MouseFx\Core\AppController.cpp" />
     <ClCompile Include="MouseFx\Core\ConfigPathResolver.cpp" />
     <ClCompile Include="MouseFx\Core\EffectFactory.cpp" />
+    <ClCompile Include="MouseFx\Gpu\DawnOverlayBridge.cpp" />
     <ClCompile Include="MouseFx\Gpu\DawnRuntime.cpp" />
     <ClCompile Include="MouseFx\Core\OverlayCoordSpace.cpp" />
     <ClCompile Include="MouseFx\Core\OverlayHostService.cpp" />
