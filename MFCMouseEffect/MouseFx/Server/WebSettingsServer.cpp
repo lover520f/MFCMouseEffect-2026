@@ -150,7 +150,7 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
         return json{
             {"action_code", "wire_device_stage"},
             {"action_text_en", "Dawn runtime is ready. Wire adapter/device/surface initialization next."},
-            {"action_text_zh", "Dawn 运行时已就绪，下一步请接入 adapter/device/surface 初始化。"},
+            {"action_text_zh", u8"\u0044\u0061\u0077\u006e \u8fd0\u884c\u65f6\u5df2\u5c31\u7eea\uff0c\u4e0b\u4e00\u6b65\u8bf7\u63a5\u5165 \u0061\u0064\u0061\u0070\u0074\u0065\u0072\u002f\u0064\u0065\u0076\u0069\u0063\u0065\u002f\u0073\u0075\u0072\u0066\u0061\u0063\u0065 \u521d\u59cb\u5316\u3002"},
             {"tone", "info"},
         };
     }
@@ -158,7 +158,7 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
         return json{
             {"action_code", "install_dawn_runtime"},
             {"action_text_en", "Dawn loader DLL was not found. Deploy webgpu_dawn.dll or dawn_native.dll next to the exe."},
-            {"action_text_zh", "未找到 Dawn 运行时 DLL。请将 webgpu_dawn.dll 或 dawn_native.dll 部署到可执行文件同目录。"},
+            {"action_text_zh", u8"\u672a\u627e\u5230 \u0044\u0061\u0077\u006e \u8fd0\u884c\u65f6 \u0044\u004c\u004c\u3002\u8bf7\u5c06 \u0077\u0065\u0062\u0067\u0070\u0075\u005f\u0064\u0061\u0077\u006e\u002e\u0064\u006c\u006c \u6216 \u0064\u0061\u0077\u006e\u005f\u006e\u0061\u0074\u0069\u0076\u0065\u002e\u0064\u006c\u006c \u90e8\u7f72\u5230\u53ef\u6267\u884c\u6587\u4ef6\u540c\u76ee\u5f55\u3002"},
             {"tone", "warn"},
         };
     }
@@ -166,7 +166,7 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
         return json{
             {"action_code", "replace_runtime_binary"},
             {"action_text_en", "Dawn DLL was found but required symbols are missing. Replace with a compatible runtime build."},
-            {"action_text_zh", "已找到 Dawn DLL，但缺少所需符号。请替换为兼容版本的运行时二进制。"},
+            {"action_text_zh", u8"\u5df2\u627e\u5230 \u0044\u0061\u0077\u006e \u0044\u004c\u004c\uff0c\u4f46\u7f3a\u5c11\u6240\u9700\u7b26\u53f7\u3002\u8bf7\u66ff\u6362\u4e3a\u517c\u5bb9\u7248\u672c\u7684\u8fd0\u884c\u65f6\u4e8c\u8fdb\u5236\u3002"},
             {"tone", "warn"},
         };
     }
@@ -174,7 +174,7 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
         return json{
             {"action_code", "validate_runtime_abi"},
             {"action_text_en", "CreateInstance failed. Verify runtime ABI compatibility and graphics driver environment."},
-            {"action_text_zh", "CreateInstance 失败。请检查运行时 ABI 兼容性及显卡驱动环境。"},
+            {"action_text_zh", u8"\u0043\u0072\u0065\u0061\u0074\u0065\u0049\u006e\u0073\u0074\u0061\u006e\u0063\u0065 \u5931\u8d25\u3002\u8bf7\u68c0\u67e5\u8fd0\u884c\u65f6 \u0041\u0042\u0049 \u517c\u5bb9\u6027\u53ca\u663e\u5361\u9a71\u52a8\u73af\u5883\u3002"},
             {"tone", "warn"},
         };
     }
@@ -182,7 +182,7 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
         return json{
             {"action_code", "enable_dawn_build_flag"},
             {"action_text_en", "Dawn backend is disabled at build time. Enable MOUSEFX_ENABLE_DAWN and rebuild."},
-            {"action_text_zh", "当前构建未启用 Dawn。请开启 MOUSEFX_ENABLE_DAWN 并重新编译。"},
+            {"action_text_zh", u8"\u5f53\u524d\u6784\u5efa\u672a\u542f\u7528 \u0044\u0061\u0077\u006e\u3002\u8bf7\u5f00\u542f \u004d\u004f\u0055\u0053\u0045\u0046\u0058\u005f\u0045\u004e\u0041\u0042\u004c\u0045\u005f\u0044\u0041\u0057\u004e \u5e76\u91cd\u65b0\u7f16\u8bd1\u3002"},
             {"tone", "warn"},
         };
     }
@@ -190,7 +190,7 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
         return json{
             {"action_code", "check_display_adapter"},
             {"action_text_en", "No desktop display adapter detected. Check remote/virtual display environment."},
-            {"action_text_zh", "未检测到桌面显示适配器。请检查远程会话或虚拟显示环境。"},
+            {"action_text_zh", u8"\u672a\u68c0\u6d4b\u5230\u684c\u9762\u663e\u793a\u9002\u914d\u5668\u3002\u8bf7\u68c0\u67e5\u8fdc\u7a0b\u4f1a\u8bdd\u6216\u865a\u62df\u663e\u793a\u73af\u5883\u3002"},
             {"tone", "warn"},
         };
     }
@@ -198,14 +198,14 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
         return json{
             {"action_code", "trigger_probe_now"},
             {"action_text_en", "Initialization was not attempted yet. Trigger probe_now or apply backend once."},
-            {"action_text_zh", "尚未执行初始化尝试。请调用 probe_now 或切换一次后端触发探测。"},
+            {"action_text_zh", u8"\u5c1a\u672a\u6267\u884c\u521d\u59cb\u5316\u5c1d\u8bd5\u3002\u8bf7\u8c03\u7528 \u0070\u0072\u006f\u0062\u0065\u005f\u006e\u006f\u0077 \u6216\u5207\u6362\u4e00\u6b21\u540e\u7aef\u89e6\u53d1\u63a2\u6d4b\u3002"},
             {"tone", "info"},
         };
     }
     return json{
         {"action_code", "review_logs"},
         {"action_text_en", "Unknown Dawn state. Review runtime logs and probe details."},
-        {"action_text_zh", "未知 Dawn 状态，请结合日志和 probe 详情排查。"},
+        {"action_text_zh", u8"\u672a\u77e5 \u0044\u0061\u0077\u006e \u72b6\u6001\uff0c\u8bf7\u7ed3\u5408\u65e5\u5fd7\u548c \u0070\u0072\u006f\u0062\u0065 \u8be6\u60c5\u6392\u67e5\u3002"},
         {"tone", "warn"},
     };
 }
@@ -220,7 +220,7 @@ static json BuildGpuBannerJson(const std::string& activeBackend, const gpu::Dawn
             {"code", "gpu_active"},
             {"tone", "ok"},
             {"text_en", "GPU backend active (Dawn)."},
-            {"text_zh", "当前使用 GPU 后端（Dawn）。"},
+            {"text_zh", u8"\u5f53\u524d\u4f7f\u7528 \u0047\u0050\u0055 \u540e\u7aef\uff08\u0044\u0061\u0077\u006e\uff09\u3002"},
             {"state_code", stateCode},
             {"action", advice},
         };
@@ -229,7 +229,7 @@ static json BuildGpuBannerJson(const std::string& activeBackend, const gpu::Dawn
         {"code", "cpu_fallback"},
         {"tone", advice.value("tone", "warn")},
         {"text_en", "CPU fallback active."},
-        {"text_zh", "当前为 CPU 兜底模式。"},
+        {"text_zh", u8"\u5f53\u524d\u4e3a \u0043\u0050\u0055 \u515c\u5e95\u6a21\u5f0f\u3002"},
         {"state_code", stateCode},
         {"action", advice},
     };

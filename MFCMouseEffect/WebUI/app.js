@@ -3,6 +3,8 @@
   const el = (id) => document.getElementById(id);
   const statusEl = document.getElementById('status');
   const gpuBannerEl = document.getElementById('gpuBanner');
+  const gpuBannerTextEl = document.getElementById('gpuBannerText');
+  const btnGpuProbeEl = document.getElementById('btnGpuProbe');
   const healthCheckMs = 3000;
   let healthTimer = 0;
   let connectionState = 'unknown';
@@ -52,6 +54,7 @@
       section_trail_tuning: "Trail Tuning",
       label_language: "Language",
       label_theme: "Theme",
+      label_render_backend: "Render Backend",
       label_hold_follow_mode: "Hold Tracking",
       tip_hold_follow_mode: "Choose by feel and CPU budget: Precise (lowest latency, best for aiming/drawing), Smooth (recommended default, balanced response and stability), Performance First (reduced update rate for heavy effects or weaker CPUs).",
       label_click: "Click",
@@ -75,6 +78,10 @@
       label_electric_params: "electric amp/fork",
       label_meteor_params: "meteor rate/speed",
       hint_clamp: "Values are clamped to safe ranges when applied.",
+      btn_probe_gpu: "Recheck GPU",
+      status_gpu_probing: "Rechecking GPU runtime...",
+      status_gpu_probe_done: "GPU runtime status updated.",
+      status_gpu_probe_failed: "GPU probe failed: ",
       style_default: "Default",
       style_snappy: "Snappy",
       style_long: "Long",
@@ -124,6 +131,7 @@
       section_trail_tuning: "\u62d6\u5c3e\u8c03\u53c2",
       label_language: "\u8bed\u8a00",
       label_theme: "\u4e3b\u9898",
+      label_render_backend: "\u6e32\u67d3\u540e\u7aef",
       label_hold_follow_mode: "\u957f\u6309\u8ddf\u968f\u6a21\u5f0f",
       tip_hold_follow_mode: "\u6309\u4f53\u611f\u548c CPU \u9884\u7b97\u9009\u62e9\uff1a\u7cbe\u51c6\u8ddf\u968f\uff08\u5ef6\u8fdf\u6700\u4f4e\uff0c\u9002\u5408\u6e38\u620f/\u7ed8\u56fe\uff09\uff1b\u5e73\u6ed1\u8ddf\u968f\uff08\u9ed8\u8ba4\u63a8\u8350\uff0c\u8ddf\u624b\u4e0e\u7a33\u5b9a\u66f4\u5747\u8861\uff09\uff1b\u6027\u80fd\u4f18\u5148\uff08\u964d\u4f4e\u66f4\u65b0\u9891\u7387\uff0c\u9002\u5408\u7279\u6548\u8f83\u91cd\u6216 CPU \u7d27\u5f20\u573a\u666f\uff09\u3002",
       label_click: "\u70b9\u51fb",
@@ -147,6 +155,10 @@
       label_electric_params: "\u7535\u5f27 \u632f\u5e45/\u5206\u53c9",
       label_meteor_params: "\u6d41\u661f \u9891\u7387/\u901f\u5ea6",
       hint_clamp: "\u6570\u503c\u4f1a\u88ab\u5b89\u5168\u533a\u95f4\u8fdb\u884c\u88c1\u526a\u3002",
+      btn_probe_gpu: "\u91cd\u65b0\u68c0\u6d4b GPU",
+      status_gpu_probing: "\u6b63\u5728\u91cd\u65b0\u68c0\u6d4b GPU \u8fd0\u884c\u65f6...",
+      status_gpu_probe_done: "GPU \u8fd0\u884c\u65f6\u72b6\u6001\u5df2\u66f4\u65b0\u3002",
+      status_gpu_probe_failed: "GPU \u68c0\u6d4b\u5931\u8d25\uff1a",
       style_default: "\u9ed8\u8ba4",
       style_snappy: "\u7d27\u81f4",
       style_long: "\u5ef6\u957f",
@@ -206,7 +218,7 @@
     if (!gpuBannerEl) return;
     if (!st || !st.gpu_status_banner) {
       gpuBannerEl.className = 'gpu-banner hidden';
-      gpuBannerEl.textContent = '';
+      if (gpuBannerTextEl) gpuBannerTextEl.textContent = '';
       return;
     }
     const banner = st.gpu_status_banner || {};
@@ -217,7 +229,9 @@
     const stateCode = banner.state_code || '';
     const finalText = actionText ? `${text} ${actionText}` : text;
     const prefix = st.gpu_in_use ? '[GPU] ' : '[CPU] ';
-    gpuBannerEl.textContent = stateCode ? `${prefix}${finalText} (${stateCode})` : `${prefix}${finalText}`;
+    if (gpuBannerTextEl) {
+      gpuBannerTextEl.textContent = stateCode ? `${prefix}${finalText} (${stateCode})` : `${prefix}${finalText}`;
+    }
     const tone = banner.tone || (st.gpu_in_use ? 'ok' : 'warn');
     gpuBannerEl.className = `gpu-banner ${tone}`;
   }
@@ -237,10 +251,15 @@
   }
 
   function setActionButtonsEnabled(enabled){
-    ['btnReload', 'btnReset', 'btnStop', 'btnSave'].forEach((id) => {
+    ['btnReload', 'btnReset', 'btnStop', 'btnSave', 'btnGpuProbe'].forEach((id) => {
       const node = el(id);
       if (node) node.disabled = !enabled;
     });
+  }
+
+  function mergeGpuStatePatch(patch){
+    latestState = Object.assign({}, latestState || {}, patch || {});
+    return latestState;
   }
 
   function blockActionWhenDisconnected(){
@@ -372,6 +391,20 @@
     return await r.json();
   }
 
+  async function probeGpuNow(){
+    if (blockActionWhenDisconnected()) return;
+    setStatus(statusText('status_gpu_probing', 'Rechecking GPU runtime...'));
+    try {
+      const res = await apiPost('/api/gpu/probe_now', {refresh: true});
+      const merged = mergeGpuStatePatch(res);
+      renderGpuBanner(merged);
+      setStatus(statusText('status_gpu_probe_done', 'GPU runtime status updated.'), 'ok');
+    } catch (e) {
+      if (e && e.code === 'unauthorized') return;
+      setStatus(statusError('status_gpu_probe_failed', 'GPU probe failed: ', e), 'warn');
+    }
+  }
+
   function fillSelect(sel, items, current){
     sel.innerHTML = '';
     for(const it of items || []){
@@ -403,6 +436,7 @@
 
     fillSelect(el('ui_language'), schema.ui_languages, st.ui_language);
     fillSelect(el('theme'), schema.themes, st.theme);
+    fillSelect(el('render_backend'), schema.render_backends, st.render_backend || 'gdi_cpu');
     fillSelect(el('hold_follow_mode'), schema.hold_follow_modes, st.hold_follow_mode || 'smooth');
     fillSelect(el('click'), schema.effects?.click, st.active?.click);
     fillSelect(el('trail'), schema.effects?.trail, st.active?.trail);
@@ -439,6 +473,7 @@
     return {
       ui_language: el('ui_language').value,
       theme: el('theme').value,
+      render_backend: el('render_backend').value,
       hold_follow_mode: el('hold_follow_mode').value,
       active: {
         click: el('click').value,
@@ -549,6 +584,10 @@
     renderGpuBanner(latestState);
     if (connectionState !== 'unknown') markConnection(connectionState, true);
   });
+
+  if (btnGpuProbeEl) {
+    btnGpuProbeEl.addEventListener('click', () => { probeGpuNow(); });
+  }
 
   startHealthCheck();
   reload().then(() => {

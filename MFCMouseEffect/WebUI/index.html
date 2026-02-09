@@ -27,7 +27,10 @@
       </div>
     </div>
 
-    <div id="gpuBanner" class="gpu-banner hidden" aria-live="polite"></div>
+    <div id="gpuBanner" class="gpu-banner hidden" aria-live="polite">
+      <div id="gpuBannerText" class="gpu-banner-text"></div>
+      <button id="btnGpuProbe" class="probe-btn" type="button" data-i18n="btn_probe_gpu">Recheck GPU</button>
+    </div>
 
     <div class="row">
       <div class="card" id="general">
@@ -37,6 +40,8 @@
           <select id="ui_language"></select>
           <label data-i18n="label_theme">Theme</label>
           <select id="theme"></select>
+          <label data-i18n="label_render_backend">Render Backend</label>
+          <select id="render_backend"></select>
           <label class="label-with-tip">
             <span data-i18n="label_hold_follow_mode">Hold Tracking</span>
             <span class="info-badge" data-i18n-title="tip_hold_follow_mode" title="Choose by feel and CPU budget.">!</span>
