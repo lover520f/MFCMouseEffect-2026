@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <chrono>
 #include <mutex>
 #include <string>
 
@@ -39,6 +40,7 @@ struct DawnCommandConsumeStatus {
     uint64_t noopSubmitSuccess = 0;
     uint64_t emptyCommandSubmitAttempts = 0;
     uint64_t emptyCommandSubmitSuccess = 0;
+    uint64_t nonTrailSubmitThrottled = 0;
     std::string detail = "not_submitted";
 };
 
@@ -168,7 +170,20 @@ inline void SubmitOverlayGpuCommands(
     const bool hasTrailGeometry = (prep.triangles > 0);
     const bool hasRippleGeometry = (prep.rippleTriangles > 0);
     const bool hasParticleGeometry = (prep.particleSprites > 0);
+    const bool hasOnlyNonTrailGeometry = (!hasTrailGeometry) && (hasRippleGeometry || hasParticleGeometry);
+    static uint64_t s_lastNonTrailSubmitTickMs = 0;
+    constexpr uint64_t kNonTrailSubmitIntervalMs = 8; // cap non-trail submit to ~120Hz
     if (hasTrailGeometry || hasRippleGeometry || hasParticleGeometry) {
+        if (hasOnlyNonTrailGeometry && status.submitTickMs > 0) {
+            if (s_lastNonTrailSubmitTickMs > 0 &&
+                status.submitTickMs - s_lastNonTrailSubmitTickMs < kNonTrailSubmitIntervalMs) {
+                ++status.nonTrailSubmitThrottled;
+                status.detail = "accepted_nontrail_geometry_submit_throttled";
+                ++status.acceptedFrames;
+                return;
+            }
+            s_lastNonTrailSubmitTickMs = status.submitTickMs;
+        }
         ++status.noopSubmitAttempts;
         std::string submitDetail;
         if (TrySubmitNoopQueueWork(&submitDetail)) {

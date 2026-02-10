@@ -567,7 +567,10 @@
       const cmdSubmitText = (lang === 'zh-CN')
         ? `命令缓冲提交: ${cc.empty_command_submit_success || 0}/${cc.empty_command_submit_attempts || 0}`
         : `CmdBuffer submit: ${cc.empty_command_submit_success || 0}/${cc.empty_command_submit_attempts || 0}`;
-      finalText = `${finalText} ${consumerText} ${prepText} ${ripplePrepText} ${particlePrepText} ${prepModeText} ${submitText} ${cmdSubmitText}`;
+      const nonTrailThrottleText = (lang === 'zh-CN')
+        ? `NonTrail节流: ${cc.nontrail_submit_throttled || 0}`
+        : `NonTrail throttle: ${cc.nontrail_submit_throttled || 0}`;
+      finalText = `${finalText} ${consumerText} ${prepText} ${ripplePrepText} ${particlePrepText} ${prepModeText} ${submitText} ${cmdSubmitText} ${nonTrailThrottleText}`;
     }
     const prefix = st.gpu_in_use ? '[GPU] ' : '[CPU] ';
     if (gpuBannerTextEl) {

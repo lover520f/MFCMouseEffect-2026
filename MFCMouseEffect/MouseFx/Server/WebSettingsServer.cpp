@@ -581,6 +581,7 @@ bool WebSettingsServer::Start() {
                         {"noop_submit_success", consume.noopSubmitSuccess},
                         {"empty_command_submit_attempts", consume.emptyCommandSubmitAttempts},
                         {"empty_command_submit_success", consume.emptyCommandSubmitSuccess},
+                        {"nontrail_submit_throttled", consume.nonTrailSubmitThrottled},
                     }},
                     {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus)},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
@@ -643,6 +644,7 @@ bool WebSettingsServer::Start() {
                         {"noop_submit_success", consume.noopSubmitSuccess},
                         {"empty_command_submit_attempts", consume.emptyCommandSubmitAttempts},
                         {"empty_command_submit_success", consume.emptyCommandSubmitSuccess},
+                        {"nontrail_submit_throttled", consume.nonTrailSubmitThrottled},
                     }},
                     {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus)},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
@@ -932,6 +934,7 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"noop_submit_success", consume.noopSubmitSuccess},
         {"empty_command_submit_attempts", consume.emptyCommandSubmitAttempts},
         {"empty_command_submit_success", consume.emptyCommandSubmitSuccess},
+        {"nontrail_submit_throttled", consume.nonTrailSubmitThrottled},
     };
     out["gpu_bridge_mode_request"] = EnsureUtf8(cfg.gpuBridgeModeRequest);
     out["gpu_acceleration"] = BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus);
