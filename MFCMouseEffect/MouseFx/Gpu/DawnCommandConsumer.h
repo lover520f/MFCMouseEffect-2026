@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <atomic>
 #include <chrono>
 #include <mutex>
 #include <string>
@@ -69,8 +70,15 @@ inline void SubmitOverlayGpuCommands(
     const DawnOverlayBridgeStatus& bridge,
     const std::string& activeBackend,
     const std::string& pipelineMode) {
-    std::lock_guard<std::mutex> lock(DawnConsumerMutex());
-    DawnCommandConsumeStatus& status = DawnConsumerStatusStorage();
+    DawnCommandConsumeStatus status{};
+    {
+        std::lock_guard<std::mutex> lock(DawnConsumerMutex());
+        status = DawnConsumerStatusStorage();
+    }
+    auto publish = [&]() {
+        std::lock_guard<std::mutex> lock(DawnConsumerMutex());
+        DawnConsumerStatusStorage() = status;
+    };
 
     status.submitTickMs = stream.FrameTickMs();
     status.commandCount = (uint32_t)stream.Commands().size();
@@ -118,24 +126,28 @@ inline void SubmitOverlayGpuCommands(
         status.accepted = false;
         status.detail = "backend_not_dawn";
         ++status.rejectedFrames;
+        publish();
         return;
     }
     if (!compositorPath) {
         status.accepted = false;
         status.detail = "pipeline_not_compositor";
         ++status.rejectedFrames;
+        publish();
         return;
     }
     if (!bridgeCompositor || !bridge.compositorApisReady) {
         status.accepted = false;
         status.detail = "bridge_not_ready";
         ++status.rejectedFrames;
+        publish();
         return;
     }
     if (!runtimeReady) {
         status.accepted = false;
         status.detail = "runtime_not_ready";
         ++status.rejectedFrames;
+        publish();
         return;
     }
 
@@ -143,6 +155,7 @@ inline void SubmitOverlayGpuCommands(
         status.accepted = true;
         status.detail = "accepted_empty_frame";
         ++status.acceptedFrames;
+        publish();
         return;
     }
 
@@ -154,6 +167,7 @@ inline void SubmitOverlayGpuCommands(
             ? "accepted_waiting_queue_modern_abi_preprocess_skipped"
             : "accepted_waiting_queue_preprocess_skipped";
         ++status.acceptedFrames;
+        publish();
         return;
     }
 
@@ -188,18 +202,20 @@ inline void SubmitOverlayGpuCommands(
         if (nonTrailMixed) return std::string(base) + "_mixed";
         return std::string(base);
     };
-    static uint64_t s_lastNonTrailSubmitTickMs = 0;
+    static std::atomic<uint64_t> s_lastNonTrailSubmitTickMs{0};
     constexpr uint64_t kNonTrailSubmitIntervalMs = 8; // cap non-trail submit to ~120Hz
     if (hasTrailGeometry || hasRippleGeometry || hasParticleGeometry) {
         if (hasOnlyNonTrailGeometry && status.submitTickMs > 0) {
-            if (s_lastNonTrailSubmitTickMs > 0 &&
-                status.submitTickMs - s_lastNonTrailSubmitTickMs < kNonTrailSubmitIntervalMs) {
+            const uint64_t lastNonTrailTick = s_lastNonTrailSubmitTickMs.load(std::memory_order_relaxed);
+            if (lastNonTrailTick > 0 &&
+                status.submitTickMs - lastNonTrailTick < kNonTrailSubmitIntervalMs) {
                 ++status.nonTrailSubmitThrottled;
                 status.detail = nonTrailDetail("accepted_nontrail_geometry_submit_throttled");
                 ++status.acceptedFrames;
+                publish();
                 return;
             }
-            s_lastNonTrailSubmitTickMs = status.submitTickMs;
+            s_lastNonTrailSubmitTickMs.store(status.submitTickMs, std::memory_order_relaxed);
         }
         ++status.noopSubmitAttempts;
         std::string submitDetail;
@@ -266,6 +282,7 @@ inline void SubmitOverlayGpuCommands(
         status.detail = "accepted_no_trail_geometry";
     }
     ++status.acceptedFrames;
+    publish();
 }
 
 inline DawnCommandConsumeStatus GetDawnCommandConsumeStatus() {
