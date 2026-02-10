@@ -95,6 +95,7 @@ using PFN_wgpuInstanceProcessEvents = void (*)(void*);
 
 constexpr WGPUCallbackModeRaw kWGPUCallbackModeWaitAnyOnly = 1u;
 constexpr WGPUCallbackModeRaw kWGPUCallbackModeAllowProcessEvents = 2u;
+constexpr WGPUCallbackModeRaw kWGPUCallbackModeAllowSpontaneous = 3u;
 constexpr WGPUWaitStatusRaw kWGPUWaitStatusSuccess = 1u;
 constexpr WGPUWaitStatusRaw kWGPUWaitStatusTimedOut = 2u;
 constexpr WGPURequestAdapterStatusRaw kWGPURequestAdapterStatusSuccess = 1u;
@@ -731,6 +732,7 @@ bool SafeRequestAdapterCallModern(
     FARPROC processEventsProc,
     void* instance,
     RequestResult<uint32_t>* out,
+    WGPUCallbackModeRaw callbackMode,
     uint32_t timeoutMs,
     std::string* reasonOut = nullptr) {
     if (!requestProc || !waitAnyProc || !instance || !out) {
@@ -739,7 +741,7 @@ bool SafeRequestAdapterCallModern(
     }
 
     WGPURequestAdapterCallbackInfoRaw cbInfo{};
-    cbInfo.mode = kWGPUCallbackModeAllowProcessEvents;
+    cbInfo.mode = callbackMode;
     cbInfo.callback = OnRequestAdapterModern;
     cbInfo.userdata1 = out;
     WGPURequestAdapterOptionsRaw options{};
@@ -758,6 +760,7 @@ bool SafeRequestAdapterCallModern(
     WGPUFutureWaitInfoRaw waitInfo{};
     waitInfo.future = future;
     const uint64_t deadline = GetTickCount64() + timeoutMs;
+    bool usedUnexpectedWaitStatusFallback = false;
     while (GetTickCount64() <= deadline) {
         waitInfo.completed = 0;
         WGPUWaitStatusRaw waitStatus = 0;
@@ -769,29 +772,20 @@ bool SafeRequestAdapterCallModern(
             if (waitInfo.completed) break;
         } else if (waitStatus == kWGPUWaitStatusTimedOut) {
             // keep polling
+        } else if (processEventsProc) {
+            // Some runtimes may transiently return non-success/non-timeout statuses
+            // during callback progress. Keep polling until deadline instead of failing immediately.
+            usedUnexpectedWaitStatusFallback = true;
+            reinterpret_cast<PFN_wgpuInstanceProcessEvents>(processEventsProc)(instance);
+            std::unique_lock<std::mutex> lock(out->mu);
+            if (out->done) break;
+            lock.unlock();
+            Sleep(5);
+            continue;
         } else {
-            // Some runtimes reject waitAny for specific callback modes/future classes.
-            // Fallback to processEvents-driven completion instead of failing hard.
-            if (processEventsProc) {
-                for (int i = 0; i < 40; ++i) {
-                    reinterpret_cast<PFN_wgpuInstanceProcessEvents>(processEventsProc)(instance);
-                    std::unique_lock<std::mutex> lock(out->mu);
-                    if (out->done) {
-                        if (reasonOut) {
-                            std::ostringstream oss;
-                            oss << "wait_status_" << waitStatus << "_fallback_process_events_ok";
-                            *reasonOut = oss.str();
-                        }
-                        return true;
-                    }
-                    lock.unlock();
-                    Sleep(5);
-                }
-            }
             if (reasonOut) {
                 std::ostringstream oss;
                 oss << "wait_status_" << waitStatus;
-                if (processEventsProc) oss << "_fallback_process_events_timeout";
                 *reasonOut = oss.str();
             }
             return false;
@@ -803,11 +797,13 @@ bool SafeRequestAdapterCallModern(
         if (out->done) break;
     }
 
-    if (!WaitForRequest(*out, 50)) {
+    if (!WaitForRequest(*out, 600)) {
         if (reasonOut) *reasonOut = "callback_timeout";
         return false;
     }
-    if (reasonOut) *reasonOut = "ok";
+    if (reasonOut) {
+        *reasonOut = usedUnexpectedWaitStatusFallback ? "ok_wait_status_fallback" : "ok";
+    }
     return true;
 }
 
@@ -818,6 +814,7 @@ bool SafeRequestDeviceCallModern(
     void* instance,
     void* adapter,
     RequestResult<uint32_t>* out,
+    WGPUCallbackModeRaw callbackMode,
     uint32_t timeoutMs,
     std::string* reasonOut = nullptr) {
     if (!requestProc || !waitAnyProc || !instance || !adapter || !out) {
@@ -826,7 +823,7 @@ bool SafeRequestDeviceCallModern(
     }
 
     WGPURequestDeviceCallbackInfoRaw cbInfo{};
-    cbInfo.mode = kWGPUCallbackModeAllowProcessEvents;
+    cbInfo.mode = callbackMode;
     cbInfo.callback = OnRequestDeviceModern;
     cbInfo.userdata1 = out;
 
@@ -843,6 +840,7 @@ bool SafeRequestDeviceCallModern(
     WGPUFutureWaitInfoRaw waitInfo{};
     waitInfo.future = future;
     const uint64_t deadline = GetTickCount64() + timeoutMs;
+    bool usedUnexpectedWaitStatusFallback = false;
     while (GetTickCount64() <= deadline) {
         waitInfo.completed = 0;
         WGPUWaitStatusRaw waitStatus = 0;
@@ -854,27 +852,18 @@ bool SafeRequestDeviceCallModern(
             if (waitInfo.completed) break;
         } else if (waitStatus == kWGPUWaitStatusTimedOut) {
             // keep polling
+        } else if (processEventsProc) {
+            usedUnexpectedWaitStatusFallback = true;
+            reinterpret_cast<PFN_wgpuInstanceProcessEvents>(processEventsProc)(instance);
+            std::unique_lock<std::mutex> lock(out->mu);
+            if (out->done) break;
+            lock.unlock();
+            Sleep(5);
+            continue;
         } else {
-            if (processEventsProc) {
-                for (int i = 0; i < 40; ++i) {
-                    reinterpret_cast<PFN_wgpuInstanceProcessEvents>(processEventsProc)(instance);
-                    std::unique_lock<std::mutex> lock(out->mu);
-                    if (out->done) {
-                        if (reasonOut) {
-                            std::ostringstream oss;
-                            oss << "wait_status_" << waitStatus << "_fallback_process_events_ok";
-                            *reasonOut = oss.str();
-                        }
-                        return true;
-                    }
-                    lock.unlock();
-                    Sleep(5);
-                }
-            }
             if (reasonOut) {
                 std::ostringstream oss;
                 oss << "wait_status_" << waitStatus;
-                if (processEventsProc) oss << "_fallback_process_events_timeout";
                 *reasonOut = oss.str();
             }
             return false;
@@ -886,11 +875,13 @@ bool SafeRequestDeviceCallModern(
         if (out->done) break;
     }
 
-    if (!WaitForRequest(*out, 50)) {
+    if (!WaitForRequest(*out, 600)) {
         if (reasonOut) *reasonOut = "callback_timeout";
         return false;
     }
-    if (reasonOut) *reasonOut = "ok";
+    if (reasonOut) {
+        *reasonOut = usedUnexpectedWaitStatusFallback ? "ok_wait_status_fallback" : "ok";
+    }
     return true;
 }
 
@@ -1028,24 +1019,82 @@ bool TryPrimeQueueWithModernWaitAny(
         return false;
     }
 
+    auto modeName = [](WGPUCallbackModeRaw mode) -> const char* {
+        if (mode == kWGPUCallbackModeWaitAnyOnly) return "wait_any_only";
+        if (mode == kWGPUCallbackModeAllowProcessEvents) return "allow_process_events";
+        if (mode == kWGPUCallbackModeAllowSpontaneous) return "allow_spontaneous";
+        return "unknown_mode";
+    };
+    auto shouldRetry = [](const std::string& reason) -> bool {
+        if (reason.empty()) return false;
+        return reason.find("callback_timeout") != std::string::npos ||
+               reason.find("wait_status_") != std::string::npos ||
+               reason.find("wait_any_exception") != std::string::npos;
+    };
+
+    const WGPUCallbackModeRaw modeCandidates[] = {
+        kWGPUCallbackModeWaitAnyOnly,
+        kWGPUCallbackModeAllowProcessEvents,
+        kWGPUCallbackModeAllowSpontaneous,
+    };
+
     RequestResult<uint32_t> adapterResult{};
-    std::string adapterReason;
-    if (!SafeRequestAdapterCallModern(requestAdapterProc, waitAnyProc, processEventsProc, instance, &adapterResult, 1500, &adapterReason)) {
-        if (detailOut) {
-            std::ostringstream oss;
-            oss << "modern_request_adapter_" << (adapterReason.empty() ? "failed" : adapterReason)
-                << "@ra:" << (requestAdapterSource.empty() ? "unknown" : requestAdapterSource)
-                << ",wa:" << (waitAnySource.empty() ? "unknown" : waitAnySource)
-                << ",pe:" << (processEventsSource.empty() ? "none" : processEventsSource);
-            *detailOut = oss.str();
+    RequestResult<uint32_t> deviceResult{};
+    auto resetRequestResult = [](RequestResult<uint32_t>& r) {
+        std::lock_guard<std::mutex> lock(r.mu);
+        r.done = false;
+        r.status = 0;
+        r.handle = nullptr;
+        r.message.clear();
+    };
+    auto releaseAdapter = [&]() {
+        if (adapterReleaseProc && adapterResult.handle) {
+            reinterpret_cast<PFN_wgpuAdapterRelease>(adapterReleaseProc)(adapterResult.handle);
+            adapterResult.handle = nullptr;
         }
-        return false;
-    }
-    if (!adapterResult.handle) {
-        if (detailOut) {
-            if (adapterResult.status == 0) {
-                *detailOut = "modern_request_adapter_failed";
-            } else {
+    };
+    auto releaseDevice = [&]() {
+        if (deviceReleaseProc && deviceResult.handle) {
+            reinterpret_cast<PFN_wgpuDeviceRelease>(deviceReleaseProc)(deviceResult.handle);
+            deviceResult.handle = nullptr;
+        }
+    };
+
+    WGPUCallbackModeRaw selectedMode = modeCandidates[0];
+    std::string adapterReason;
+    std::string deviceReason;
+    bool primeOk = false;
+
+    for (size_t i = 0; i < _countof(modeCandidates); ++i) {
+        selectedMode = modeCandidates[i];
+        resetRequestResult(adapterResult);
+        resetRequestResult(deviceResult);
+        adapterReason.clear();
+        deviceReason.clear();
+        releaseAdapter();
+        releaseDevice();
+
+        if (!SafeRequestAdapterCallModern(requestAdapterProc, waitAnyProc, processEventsProc, instance, &adapterResult, selectedMode, 1500, &adapterReason)) {
+            if (i + 1 < _countof(modeCandidates) && shouldRetry(adapterReason)) {
+                continue;
+            }
+            if (detailOut) {
+                std::ostringstream oss;
+                oss << "modern_request_adapter_" << (adapterReason.empty() ? "failed" : adapterReason)
+                    << "_mode:" << modeName(selectedMode)
+                    << "@ra:" << (requestAdapterSource.empty() ? "unknown" : requestAdapterSource)
+                    << ",wa:" << (waitAnySource.empty() ? "unknown" : waitAnySource)
+                    << ",pe:" << (processEventsSource.empty() ? "none" : processEventsSource);
+                *detailOut = oss.str();
+            }
+            return false;
+        }
+
+        if (!adapterResult.handle || adapterResult.status != kWGPURequestAdapterStatusSuccess) {
+            if (i + 1 < _countof(modeCandidates)) {
+                continue;
+            }
+            if (detailOut) {
                 std::ostringstream oss;
                 oss << "modern_request_adapter_status_" << adapterResult.status;
                 if (!adapterResult.message.empty()) {
@@ -1053,85 +1102,59 @@ bool TryPrimeQueueWithModernWaitAny(
                 }
                 *detailOut = oss.str();
             }
+            return false;
         }
-        return false;
-    }
-    if (adapterResult.status != kWGPURequestAdapterStatusSuccess) {
-        if (detailOut) {
-            std::ostringstream oss;
-            oss << "modern_request_adapter_status_" << adapterResult.status;
-            if (!adapterResult.message.empty()) {
-                oss << "_msg:" << ClipMessageForDiag(adapterResult.message);
+
+        if (!SafeRequestDeviceCallModern(requestDeviceProc, waitAnyProc, processEventsProc, instance, adapterResult.handle, &deviceResult, selectedMode, 2000, &deviceReason)) {
+            releaseAdapter();
+            if (i + 1 < _countof(modeCandidates) && shouldRetry(deviceReason)) {
+                continue;
             }
-            *detailOut = oss.str();
+            if (detailOut) {
+                std::ostringstream oss;
+                oss << "modern_request_device_" << (deviceReason.empty() ? "failed" : deviceReason)
+                    << "_mode:" << modeName(selectedMode)
+                    << "@rd:" << (requestDeviceSource.empty() ? "unknown" : requestDeviceSource)
+                    << ",wa:" << (waitAnySource.empty() ? "unknown" : waitAnySource)
+                    << ",pe:" << (processEventsSource.empty() ? "none" : processEventsSource);
+                *detailOut = oss.str();
+            }
+            return false;
         }
-        if (adapterReleaseProc && adapterResult.handle) {
-            reinterpret_cast<PFN_wgpuAdapterRelease>(adapterReleaseProc)(adapterResult.handle);
-            adapterResult.handle = nullptr;
-        }
-        return false;
-    }
 
-    auto releaseAdapter = [&]() {
-        if (adapterReleaseProc && adapterResult.handle) {
-            reinterpret_cast<PFN_wgpuAdapterRelease>(adapterReleaseProc)(adapterResult.handle);
-            adapterResult.handle = nullptr;
-        }
-    };
-
-    RequestResult<uint32_t> deviceResult{};
-    std::string deviceReason;
-    if (!SafeRequestDeviceCallModern(requestDeviceProc, waitAnyProc, processEventsProc, instance, adapterResult.handle, &deviceResult, 2000, &deviceReason)) {
-        if (detailOut) {
-            std::ostringstream oss;
-            oss << "modern_request_device_" << (deviceReason.empty() ? "failed" : deviceReason)
-                << "@rd:" << (requestDeviceSource.empty() ? "unknown" : requestDeviceSource)
-                << ",wa:" << (waitAnySource.empty() ? "unknown" : waitAnySource)
-                << ",pe:" << (processEventsSource.empty() ? "none" : processEventsSource);
-            *detailOut = oss.str();
-        }
-        releaseAdapter();
-        return false;
-    }
-    if (!deviceResult.handle) {
-        if (detailOut) {
-            if (deviceResult.status == 0) {
-                *detailOut = "modern_request_device_failed";
-            } else {
+        if (!deviceResult.handle || deviceResult.status != kWGPURequestDeviceStatusSuccess) {
+            const bool adapterConsumed =
+                deviceResult.status == 3 &&
+                deviceResult.message.find("consumed") != std::string::npos;
+            releaseDevice();
+            releaseAdapter();
+            if (i + 1 < _countof(modeCandidates) && adapterConsumed) {
+                continue;
+            }
+            if (detailOut) {
                 std::ostringstream oss;
                 oss << "modern_request_device_status_" << deviceResult.status;
                 if (!deviceResult.message.empty()) {
                     oss << "_msg:" << ClipMessageForDiag(deviceResult.message);
                 }
+                oss << "_mode:" << modeName(selectedMode);
                 *detailOut = oss.str();
             }
+            return false;
         }
-        releaseAdapter();
-        return false;
+
+        primeOk = true;
+        break;
     }
-    if (deviceResult.status != kWGPURequestDeviceStatusSuccess) {
-        if (detailOut) {
-            std::ostringstream oss;
-            oss << "modern_request_device_status_" << deviceResult.status;
-            if (!deviceResult.message.empty()) {
-                oss << "_msg:" << ClipMessageForDiag(deviceResult.message);
-            }
-            *detailOut = oss.str();
-        }
-        if (deviceReleaseProc && deviceResult.handle) {
-            reinterpret_cast<PFN_wgpuDeviceRelease>(deviceReleaseProc)(deviceResult.handle);
-            deviceResult.handle = nullptr;
-        }
-        releaseAdapter();
+
+    if (!primeOk) {
+        if (detailOut) *detailOut = "modern_prime_mode_exhausted";
         return false;
     }
 
     if (!getQueueProc || !queueSubmitProc) {
         if (detailOut) *detailOut = !getQueueProc ? "device_get_queue_proc_missing" : "queue_submit_proc_missing";
-        if (deviceReleaseProc && deviceResult.handle) {
-            reinterpret_cast<PFN_wgpuDeviceRelease>(deviceReleaseProc)(deviceResult.handle);
-            deviceResult.handle = nullptr;
-        }
+        releaseDevice();
         releaseAdapter();
         return false;
     }
@@ -1139,10 +1162,7 @@ bool TryPrimeQueueWithModernWaitAny(
     void* queue = reinterpret_cast<PFN_wgpuDeviceGetQueue>(getQueueProc)(deviceResult.handle);
     if (!queue) {
         if (detailOut) *detailOut = "device_get_queue_failed";
-        if (deviceReleaseProc && deviceResult.handle) {
-            reinterpret_cast<PFN_wgpuDeviceRelease>(deviceReleaseProc)(deviceResult.handle);
-            deviceResult.handle = nullptr;
-        }
+        releaseDevice();
         releaseAdapter();
         return false;
     }
