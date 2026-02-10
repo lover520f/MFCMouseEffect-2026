@@ -183,19 +183,19 @@ static json BuildGpuAccelerationJson(
     if (!runtime.queueReady) {
         return json{
             {"level", "partial"},
-            {"label_en", "GPU backend selected, but command queue is not ready (CPU path still active)"},
-            {"label_zh", u8"\u5df2\u9009\u62e9 GPU \u540e\u7aef\uff0c\u4f46\u547d\u4ee4\u961f\u5217\u672a\u5c31\u7eea\uff08\u5f53\u524d\u4ecd\u4ee5 CPU \u8def\u5f84\u4e3a\u4e3b\uff09"},
+            {"label_en", "GPU backend selected, command queue is not ready yet"},
+            {"label_zh", u8"\u5df2\u9009\u62e9 GPU \u540e\u7aef\uff0c\u547d\u4ee4\u961f\u5217\u5c1a\u672a\u5c31\u7eea"},
         };
     }
     const bool compositorRequested = (bridge.mode == "compositor");
     return json{
         {"level", "partial"},
         {"label_en", compositorRequested
-            ? "GPU Compatible Acceleration (Compositor Path, CPU-heavy effects remain)"
-            : "GPU Compatible Acceleration (Host-Compatible Bridge)"},
+            ? "GPU Compositor Path (Compositor Mode)"
+            : "GPU Compositor Path (Host-Compatible Mode)"},
         {"label_zh", compositorRequested
-            ? u8"GPU \u517c\u5bb9\u52a0\u901f\uff08\u5408\u6210\u8def\u5f84\uff0c\u7279\u6548\u4ecd\u4ee5 CPU \u7ed8\u5236\u4e3a\u4e3b\uff09"
-            : u8"GPU \u517c\u5bb9\u52a0\u901f\uff08\u5bbf\u4e3b\u517c\u5bb9\u6865\u63a5\uff09"},
+            ? u8"GPU \u5408\u6210\u8def\u5f84\uff08Compositor \u6a21\u5f0f\uff09"
+            : u8"GPU \u5408\u6210\u8def\u5f84\uff08\u5bbf\u4e3b\u517c\u5bb9\u6a21\u5f0f\uff09"},
     };
 }
 
@@ -449,8 +449,8 @@ static json BuildGpuBannerJson(const std::string& backendPreference, const std::
         return json{
             {"code", "gpu_active"},
             {"tone", "info"},
-            {"text_en", "GPU backend active (compatibility acceleration). Some effects are still CPU-rasterized in the current stage."},
-            {"text_zh", u8"\u5f53\u524d\u5df2\u542f\u7528 GPU \u540e\u7aef\uff08\u517c\u5bb9\u52a0\u901f\uff09\u3002\u73b0\u9636\u6bb5\u90e8\u5206\u7279\u6548\u4ecd\u7531 CPU \u6805\u683c\u5316\u7ed8\u5236\u3002"},
+            {"text_en", "GPU backend active."},
+            {"text_zh", u8"\u5f53\u524d\u5df2\u542f\u7528 GPU \u540e\u7aef\u3002"},
             {"state_code", stateCode},
             {"acceleration", accel},
             {"action", advice},

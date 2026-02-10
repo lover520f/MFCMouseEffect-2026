@@ -315,13 +315,13 @@
   function pipelineLabel(mode, lang){
     const zh = {
       cpu_layered: 'CPU \u5206\u5c42\u6e32\u67d3',
-      dawn_host_compat_layered: 'GPU \u517c\u5bb9\u52a0\u901f\uff08\u7279\u6548\u4ecd\u4ee5 CPU \u7ed8\u5236\u4e3a\u4e3b\uff09',
-      dawn_compositor: 'GPU \u5408\u6210\u8def\u5f84\uff08\u5f53\u524d\u9636\u6bb5\u7279\u6548\u4ecd\u4ee5 CPU \u7ed8\u5236\u4e3a\u4e3b\uff09'
+      dawn_host_compat_layered: 'GPU \u5408\u6210\u8def\u5f84\uff08\u5bbf\u4e3b\u517c\u5bb9\u6a21\u5f0f\uff09',
+      dawn_compositor: 'GPU \u5408\u6210\u8def\u5f84\uff08Compositor \u6a21\u5f0f\uff09'
     };
     const en = {
       cpu_layered: 'CPU layered rendering',
-      dawn_host_compat_layered: 'GPU compatible acceleration (effects still mainly CPU-rasterized)',
-      dawn_compositor: 'GPU compositor path (effects are still mainly CPU-rasterized at this stage)'
+      dawn_host_compat_layered: 'GPU compositor path (host-compatible mode)',
+      dawn_compositor: 'GPU compositor path (compositor mode)'
     };
     if (!mode) return '';
     if (lang === 'zh-CN') return zh[mode] || mode;
@@ -332,8 +332,8 @@
     const gpuInUse = !!(st && st.gpu_in_use);
     if (gpuInUse) {
       return (lang === 'zh-CN')
-        ? '\u5df2\u542f\u7528 GPU \u517c\u5bb9\u52a0\u901f\uff0c\u4f46\u7279\u6548\u7ed8\u5236\u5728\u5f53\u524d\u9636\u6bb5\u4ecd\u4ee5 CPU \u4e3a\u4e3b\uff0c\u56e0\u6b64\u4ecd\u53ef\u80fd\u5360\u7528\u8f83\u591a CPU\u3002'
-        : 'GPU compatible acceleration is enabled, but in the current stage effects are still mostly CPU-rasterized and can remain CPU-heavy.';
+        ? '\u5df2\u542f\u7528 GPU \u540e\u7aef\u3002'
+        : 'GPU backend is active.';
     }
 
     switch (stateCode) {
@@ -397,8 +397,8 @@
     const mode = (st && st.render_pipeline_mode) ? st.render_pipeline_mode : '';
     if (mode === 'dawn_compositor' || mode === 'dawn_host_compat_layered') {
       return (lang === 'zh-CN')
-        ? '部分 GPU（特效仍以 CPU 绘制为主）'
-        : 'Partial GPU (effects still mainly CPU-rasterized)';
+        ? 'GPU \u5408\u6210\u5df2\u542f\u7528'
+        : 'GPU compositor active';
     }
 
     if (accel) {
@@ -487,8 +487,8 @@
     }
     if (st && st.dawn_status && st.gpu_in_use && !st.dawn_status.queue_ready) {
       const queueHint = (lang === 'zh-CN')
-        ? 'GPU命令队列未就绪，当前仍以CPU路径为主。'
-        : 'GPU command queue is not ready; CPU path is still primary.';
+        ? 'GPU\u547d\u4ee4\u961f\u5217\u672a\u5c31\u7eea\uff0c\u5f53\u524d\u4f7f\u7528\u964d\u7ea7\u8def\u5f84\u3002'
+        : 'GPU command queue is not ready; fallback path is active.';
       finalText = `${finalText} ${queueHint}`;
     }
     if (st && st.render_pipeline_mode) {

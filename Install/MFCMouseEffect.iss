@@ -72,6 +72,9 @@ Name: "startup"; Description: "Run at Windows startup"; GroupDescription: "Addit
 ; Binaries + config
 Source: "..\x64\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\x64\Release\config.json"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist skipifsourcedoesntexist
+; GPU runtime dependencies (optional, copied when present)
+Source: "..\x64\Release\webgpu_dawn.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "..\x64\Release\d3dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 ; Web UI (local server assets)
 Source: "..\x64\Release\webui\*"; DestDir: "{app}\webui"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 ; Docs + license (optional)
