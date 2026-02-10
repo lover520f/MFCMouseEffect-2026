@@ -552,6 +552,9 @@
       const prepText = (lang === 'zh-CN')
         ? `Trail预处理: b${cc.prepared_trail_batches || 0} v${cc.prepared_trail_vertices || 0} s${cc.prepared_trail_segments || 0} t${cc.prepared_trail_triangles || 0} u${cc.prepared_upload_bytes || 0}`
         : `Trail prep: b${cc.prepared_trail_batches || 0} v${cc.prepared_trail_vertices || 0} s${cc.prepared_trail_segments || 0} t${cc.prepared_trail_triangles || 0} u${cc.prepared_upload_bytes || 0}`;
+      const ripplePrepText = (lang === 'zh-CN')
+        ? `涟漪预处理: b${cc.prepared_ripple_batches || 0} p${cc.prepared_ripple_pulses || 0} t${cc.prepared_ripple_triangles || 0} u${cc.prepared_ripple_upload_bytes || 0}`
+        : `Ripple prep: b${cc.prepared_ripple_batches || 0} p${cc.prepared_ripple_pulses || 0} t${cc.prepared_ripple_triangles || 0} u${cc.prepared_ripple_upload_bytes || 0}`;
       const particlePrepText = (lang === 'zh-CN')
         ? `粒子预处理: b${cc.prepared_particle_batches || 0} p${cc.prepared_particle_sprites || 0} u${cc.prepared_particle_upload_bytes || 0}`
         : `Particle prep: b${cc.prepared_particle_batches || 0} p${cc.prepared_particle_sprites || 0} u${cc.prepared_particle_upload_bytes || 0}`;
@@ -564,7 +567,7 @@
       const cmdSubmitText = (lang === 'zh-CN')
         ? `命令缓冲提交: ${cc.empty_command_submit_success || 0}/${cc.empty_command_submit_attempts || 0}`
         : `CmdBuffer submit: ${cc.empty_command_submit_success || 0}/${cc.empty_command_submit_attempts || 0}`;
-      finalText = `${finalText} ${consumerText} ${prepText} ${particlePrepText} ${prepModeText} ${submitText} ${cmdSubmitText}`;
+      finalText = `${finalText} ${consumerText} ${prepText} ${ripplePrepText} ${particlePrepText} ${prepModeText} ${submitText} ${cmdSubmitText}`;
     }
     const prefix = st.gpu_in_use ? '[GPU] ' : '[CPU] ';
     if (gpuBannerTextEl) {

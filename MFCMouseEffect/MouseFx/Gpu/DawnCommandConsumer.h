@@ -29,6 +29,10 @@ struct DawnCommandConsumeStatus {
     uint32_t preparedParticleBatches = 0;
     uint32_t preparedParticleSprites = 0;
     uint32_t preparedParticleUploadBytes = 0;
+    uint32_t preparedRippleBatches = 0;
+    uint32_t preparedRipplePulses = 0;
+    uint32_t preparedRippleTriangles = 0;
+    uint32_t preparedRippleUploadBytes = 0;
     uint32_t preprocessWorkers = 1;
     bool preprocessParallel = false;
     uint64_t noopSubmitAttempts = 0;
@@ -75,6 +79,10 @@ inline void SubmitOverlayGpuCommands(
     status.preparedParticleBatches = 0;
     status.preparedParticleSprites = 0;
     status.preparedParticleUploadBytes = 0;
+    status.preparedRippleBatches = 0;
+    status.preparedRipplePulses = 0;
+    status.preparedRippleTriangles = 0;
+    status.preparedRippleUploadBytes = 0;
     status.preprocessWorkers = 1;
     status.preprocessParallel = false;
     for (const auto& cmd : stream.Commands()) {
@@ -150,10 +158,17 @@ inline void SubmitOverlayGpuCommands(
     status.preparedParticleBatches = prep.particleBatches;
     status.preparedParticleSprites = prep.particleSprites;
     status.preparedParticleUploadBytes = prep.particleUploadBytes;
+    status.preparedRippleBatches = prep.rippleBatches;
+    status.preparedRipplePulses = prep.ripplePulses;
+    status.preparedRippleTriangles = prep.rippleTriangles;
+    status.preparedRippleUploadBytes = prep.rippleUploadBytes;
     status.preprocessWorkers = prep.workers;
     status.preprocessParallel = prep.usedParallel;
 
-    if (prep.triangles > 0) {
+    const bool hasTrailGeometry = (prep.triangles > 0);
+    const bool hasRippleGeometry = (prep.rippleTriangles > 0);
+    const bool hasParticleGeometry = (prep.particleSprites > 0);
+    if (hasTrailGeometry || hasRippleGeometry || hasParticleGeometry) {
         ++status.noopSubmitAttempts;
         std::string submitDetail;
         if (TrySubmitNoopQueueWork(&submitDetail)) {
@@ -162,21 +177,39 @@ inline void SubmitOverlayGpuCommands(
             std::string cmdSubmitDetail;
             if (TrySubmitEmptyCommandBuffer(&cmdSubmitDetail)) {
                 ++status.emptyCommandSubmitSuccess;
-                status.detail = prep.usedParallel
-                    ? "accepted_trail_geometry_prepared_parallel_and_cmd_submit"
-                    : "accepted_trail_geometry_prepared_and_cmd_submit";
+                if (hasTrailGeometry) {
+                    status.detail = prep.usedParallel
+                        ? "accepted_trail_geometry_prepared_parallel_and_cmd_submit"
+                        : "accepted_trail_geometry_prepared_and_cmd_submit";
+                } else {
+                    status.detail = prep.usedParallel
+                        ? "accepted_nontrail_geometry_prepared_parallel_and_cmd_submit"
+                        : "accepted_nontrail_geometry_prepared_and_cmd_submit";
+                }
             } else {
-                status.detail = prep.usedParallel
-                    ? "accepted_trail_geometry_prepared_parallel_cmd_submit_pending"
-                    : "accepted_trail_geometry_prepared_cmd_submit_pending";
+                if (hasTrailGeometry) {
+                    status.detail = prep.usedParallel
+                        ? "accepted_trail_geometry_prepared_parallel_cmd_submit_pending"
+                        : "accepted_trail_geometry_prepared_cmd_submit_pending";
+                } else {
+                    status.detail = prep.usedParallel
+                        ? "accepted_nontrail_geometry_prepared_parallel_cmd_submit_pending"
+                        : "accepted_nontrail_geometry_prepared_cmd_submit_pending";
+                }
                 if (!cmdSubmitDetail.empty()) {
                     status.detail += "_" + cmdSubmitDetail;
                 }
             }
         } else {
-            status.detail = prep.usedParallel
-                ? "accepted_trail_geometry_prepared_parallel_submit_pending"
-                : "accepted_trail_geometry_prepared_submit_pending";
+            if (hasTrailGeometry) {
+                status.detail = prep.usedParallel
+                    ? "accepted_trail_geometry_prepared_parallel_submit_pending"
+                    : "accepted_trail_geometry_prepared_submit_pending";
+            } else {
+                status.detail = prep.usedParallel
+                    ? "accepted_nontrail_geometry_prepared_parallel_submit_pending"
+                    : "accepted_nontrail_geometry_prepared_submit_pending";
+            }
             if (!submitDetail.empty()) {
                 status.detail += "_" + submitDetail;
             }

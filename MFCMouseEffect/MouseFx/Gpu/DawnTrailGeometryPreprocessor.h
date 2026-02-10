@@ -20,6 +20,10 @@ struct TrailGeometryPrepResult {
     uint32_t particleBatches = 0;
     uint32_t particleSprites = 0;
     uint32_t particleUploadBytes = 0;
+    uint32_t rippleBatches = 0;
+    uint32_t ripplePulses = 0;
+    uint32_t rippleTriangles = 0;
+    uint32_t rippleUploadBytes = 0;
     uint32_t workers = 1;
     bool usedParallel = false;
 };
@@ -40,6 +44,11 @@ inline TrailGeometryPrepResult MergeTrailPrep(
     out.particleSprites = a.particleSprites + b.particleSprites;
     const uint64_t particleUpload = (uint64_t)a.particleUploadBytes + (uint64_t)b.particleUploadBytes;
     out.particleUploadBytes = (particleUpload > 0xFFFFFFFFull) ? 0xFFFFFFFFu : (uint32_t)particleUpload;
+    out.rippleBatches = a.rippleBatches + b.rippleBatches;
+    out.ripplePulses = a.ripplePulses + b.ripplePulses;
+    out.rippleTriangles = a.rippleTriangles + b.rippleTriangles;
+    const uint64_t rippleUpload = (uint64_t)a.rippleUploadBytes + (uint64_t)b.rippleUploadBytes;
+    out.rippleUploadBytes = (rippleUpload > 0xFFFFFFFFull) ? 0xFFFFFFFFu : (uint32_t)rippleUpload;
     out.workers = (a.workers > b.workers) ? a.workers : b.workers;
     out.usedParallel = a.usedParallel || b.usedParallel;
     return out;
@@ -131,6 +140,7 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
 
     TrailGeometryPrepResult base{};
     constexpr uint32_t kBytesPerParticleSprite = 120; // 6 verts * (x,y,u,v,color) * 4 bytes
+    constexpr uint32_t kBytesPerRipplePulse = 120; // approximated as a screen-space quad (6 verts)
     for (const auto& cmd : stream.Commands()) {
         if (cmd.type != OverlayGpuCommandType::ParticleSprites || cmd.vertices.empty()) continue;
         ++base.particleBatches;
@@ -138,6 +148,15 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
         const uint64_t particleBytes = (uint64_t)base.particleUploadBytes +
                                        (uint64_t)cmd.vertices.size() * (uint64_t)kBytesPerParticleSprite;
         base.particleUploadBytes = (particleBytes > 0xFFFFFFFFull) ? 0xFFFFFFFFu : (uint32_t)particleBytes;
+    }
+    for (const auto& cmd : stream.Commands()) {
+        if (cmd.type != OverlayGpuCommandType::RipplePulse || cmd.vertices.empty()) continue;
+        ++base.rippleBatches;
+        base.ripplePulses += (uint32_t)cmd.vertices.size();
+        base.rippleTriangles += (uint32_t)cmd.vertices.size() * 2u;
+        const uint64_t rippleBytes = (uint64_t)base.rippleUploadBytes +
+                                     (uint64_t)cmd.vertices.size() * (uint64_t)kBytesPerRipplePulse;
+        base.rippleUploadBytes = (rippleBytes > 0xFFFFFFFFull) ? 0xFFFFFFFFu : (uint32_t)rippleBytes;
     }
 
     if (trails.empty()) return base;
@@ -153,6 +172,10 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
         out.particleBatches = base.particleBatches;
         out.particleSprites = base.particleSprites;
         out.particleUploadBytes = base.particleUploadBytes;
+        out.rippleBatches = base.rippleBatches;
+        out.ripplePulses = base.ripplePulses;
+        out.rippleTriangles = base.rippleTriangles;
+        out.rippleUploadBytes = base.rippleUploadBytes;
         return out;
     }
 
@@ -179,6 +202,10 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
         merged.particleBatches = base.particleBatches;
         merged.particleSprites = base.particleSprites;
         merged.particleUploadBytes = base.particleUploadBytes;
+        merged.rippleBatches = base.rippleBatches;
+        merged.ripplePulses = base.ripplePulses;
+        merged.rippleTriangles = base.rippleTriangles;
+        merged.rippleUploadBytes = base.rippleUploadBytes;
         return merged;
     } catch (...) {
         TrailGeometryPrepResult out = detail::BuildTrailGeometryRange(trails, 0, trails.size());
@@ -187,6 +214,10 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
         out.particleBatches = base.particleBatches;
         out.particleSprites = base.particleSprites;
         out.particleUploadBytes = base.particleUploadBytes;
+        out.rippleBatches = base.rippleBatches;
+        out.ripplePulses = base.ripplePulses;
+        out.rippleTriangles = base.rippleTriangles;
+        out.rippleUploadBytes = base.rippleUploadBytes;
         return out;
     }
 }
