@@ -205,7 +205,8 @@ inline void SubmitOverlayGpuCommands(
             ++status.noopSubmitSuccess;
             ++status.emptyCommandSubmitAttempts;
             std::string cmdSubmitDetail;
-            if (TrySubmitEmptyCommandBuffer(&cmdSubmitDetail)) {
+            const char* submitTag = hasTrailGeometry ? "trail" : (nonTrailRippleOnly ? "ripple" : (nonTrailParticleOnly ? "particle" : "mixed"));
+            if (TrySubmitEmptyCommandBufferTagged(submitTag, &cmdSubmitDetail)) {
                 ++status.emptyCommandSubmitSuccess;
                 if (hasTrailGeometry) {
                     status.detail = prep.usedParallel

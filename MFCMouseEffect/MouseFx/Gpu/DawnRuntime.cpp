@@ -1679,7 +1679,7 @@ bool TrySubmitNoopQueueWork(std::string* detailOut) {
     return false;
 }
 
-bool TrySubmitEmptyCommandBuffer(std::string* detailOut) {
+bool TrySubmitEmptyCommandBufferTagged(const char* tag, std::string* detailOut) {
     void* device = nullptr;
     void* queue = nullptr;
     FARPROC createEncoderProc = nullptr;
@@ -1715,12 +1715,28 @@ bool TrySubmitEmptyCommandBuffer(std::string* detailOut) {
             queueSubmitProc,
             device,
             queue)) {
-        if (detailOut) *detailOut = "empty_command_buffer_submit_ok";
+        if (detailOut) {
+            if (tag && *tag) {
+                *detailOut = std::string("empty_command_buffer_submit_ok_") + tag;
+            } else {
+                *detailOut = "empty_command_buffer_submit_ok";
+            }
+        }
         return true;
     }
 
-    if (detailOut) *detailOut = "empty_command_buffer_submit_exception";
+    if (detailOut) {
+        if (tag && *tag) {
+            *detailOut = std::string("empty_command_buffer_submit_exception_") + tag;
+        } else {
+            *detailOut = "empty_command_buffer_submit_exception";
+        }
+    }
     return false;
+}
+
+bool TrySubmitEmptyCommandBuffer(std::string* detailOut) {
+    return TrySubmitEmptyCommandBufferTagged(nullptr, detailOut);
 }
 
 } // namespace mousefx::gpu
