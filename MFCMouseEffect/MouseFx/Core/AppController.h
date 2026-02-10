@@ -113,6 +113,7 @@ private:
 
     // Hold delay logic
     static constexpr UINT_PTR kHoldTimerId = 5;
+    static constexpr UINT_PTR kDeferredBackendTimerId = 6;
     static constexpr DWORD kHoldDelayMs = 350; // Increased to 350ms to distinguish from click
     struct PendingHold {
         POINT pt;
@@ -123,6 +124,9 @@ private:
 
     bool holdButtonDown_ = false;
     uint64_t holdDownTick_ = 0;
+    bool deferredBackendApplyPending_ = false;
+    bool deferredDawnUpgradePending_ = false;
+    uint32_t deferredDawnUpgradeRetryCount_ = 0;
 
 #ifdef _DEBUG
     uint32_t debugClickCount_ = 0;

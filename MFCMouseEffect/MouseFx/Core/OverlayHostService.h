@@ -1,6 +1,7 @@
 #pragma once
 
 #include <windows.h>
+#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -36,7 +37,9 @@ public:
     std::string GetGpuBridgeModeRequest() const;
     bool HasGpuHardware() const;
     bool IsGpuBackendAvailable(const std::string& backend) const;
+    bool IsDawnQueueReady() const;
     void RefreshGpuRuntimeProbe();
+    void RefreshGpuRuntimeProbeAsync();
     std::string ProbeDawnRuntimeNow(bool refreshProbe);
     uint64_t GetLastGpuCommandFrameTickMs() const;
     uint32_t GetLastGpuCommandCount() const;
@@ -77,6 +80,9 @@ private:
     std::string activeBackend_ = "cpu";
     std::string backendDetail_ = "cpu_default";
     std::string pipelineMode_ = "cpu_layered";
+    std::atomic<bool> asyncProbeRunning_{false};
+    std::atomic<uint64_t> asyncProbeToken_{0};
+    std::atomic<uint64_t> asyncProbeDoneToken_{0};
 
     RippleOverlayLayer* EnsureRippleLayer();
     TextOverlayLayer* EnsureTextLayer();

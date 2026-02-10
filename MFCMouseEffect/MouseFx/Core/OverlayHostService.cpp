@@ -14,6 +14,8 @@
 #include "MouseFx/Layers/TrailOverlayLayer.h"
 #include "MouseFx/Windows/OverlayHostWindow.h"
 
+#include <thread>
+
 namespace mousefx {
 
 std::string OverlayHostService::NormalizeRenderBackend(std::string backend) {
@@ -42,7 +44,9 @@ void OverlayHostService::SetRenderBackendPreference(const std::string& backend) 
     const std::string normalized = NormalizeRenderBackend(backend);
     if (requestedBackend_ == normalized) return;
     requestedBackend_ = normalized;
-    RefreshGpuRuntimeProbe();
+    if (normalized == "dawn" || normalized == "auto") {
+        RefreshGpuRuntimeProbeAsync();
+    }
     Shutdown();
 }
 
@@ -66,7 +70,9 @@ void OverlayHostService::SetGpuBridgeModeRequest(const std::string& mode) {
     const std::string normalized = NormalizeGpuBridgeMode(mode);
     requestedBridgeMode_ = normalized;
     gpu::SetRequestedBridgeMode(normalized);
-    RefreshGpuRuntimeProbe();
+    if (requestedBackend_ == "dawn" || requestedBackend_ == "auto") {
+        RefreshGpuRuntimeProbeAsync();
+    }
 }
 
 std::string OverlayHostService::GetGpuBridgeModeRequest() const {
@@ -86,12 +92,43 @@ bool OverlayHostService::IsGpuBackendAvailable(const std::string& backend) const
     return false;
 }
 
+bool OverlayHostService::IsDawnQueueReady() const {
+    const gpu::DawnRuntimeStatus status = gpu::GetDawnRuntimeStatus();
+    return status.queueReady;
+}
+
 void OverlayHostService::RefreshGpuRuntimeProbe() {
     gpu::ResetDawnRuntimeProbe();
     if (requestedBackend_ == "dawn" || requestedBackend_ == "auto") {
         const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
         backendDetail_ = dawn.detail;
     }
+}
+
+void OverlayHostService::RefreshGpuRuntimeProbeAsync() {
+    asyncProbeToken_.fetch_add(1, std::memory_order_relaxed);
+    if (asyncProbeRunning_.exchange(true, std::memory_order_acq_rel)) {
+        return;
+    }
+    std::thread([this]() {
+        SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
+        for (;;) {
+            const uint64_t token = asyncProbeToken_.load(std::memory_order_acquire);
+            const std::string requested = requestedBackend_;
+            if (requested == "dawn" || requested == "auto") {
+                (void)gpu::TryInitializeDawnRuntime();
+            }
+            asyncProbeDoneToken_.store(token, std::memory_order_release);
+            if (asyncProbeToken_.load(std::memory_order_acquire) == token) {
+                break;
+            }
+        }
+        asyncProbeRunning_.store(false, std::memory_order_release);
+        if (asyncProbeDoneToken_.load(std::memory_order_acquire) !=
+            asyncProbeToken_.load(std::memory_order_acquire)) {
+            RefreshGpuRuntimeProbeAsync();
+        }
+    }).detach();
 }
 
 std::string OverlayHostService::ProbeDawnRuntimeNow(bool refreshProbe) {
@@ -131,21 +168,13 @@ uint32_t OverlayHostService::GetLastGpuParticleCommandCount() const {
 bool OverlayHostService::Initialize() {
     if (host_) return true;
 
-    auto resolveDawnActivation = [&](const gpu::DawnRuntimeInitResult& dawn) {
-        if (!dawn.ok || dawn.backend != "dawn") return false;
-        const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatus();
-        if (runtime.queueReady) return true;
-        // Modern ABI runtime can still provide bridge-level GPU composition while queue handshake is pending.
-        // Keep backend active so users can run with latest runtime binaries, and expose queue readiness via diagnostics.
-        return runtime.modernAbiDetected;
-    };
-
     const std::string pref = NormalizeRenderBackend(requestedBackend_);
-    if (pref == "dawn") {
-        const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
-        if (resolveDawnActivation(dawn)) {
-            activeBackend_ = dawn.backend;
-            backendDetail_ = dawn.detail;
+    if (pref == "dawn" || pref == "auto") {
+        const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatus();
+        const bool dawnReady = runtime.queueReady;
+        if (dawnReady) {
+            activeBackend_ = "dawn";
+            backendDetail_ = runtime.lastInitDetail.empty() ? "queue_ready" : runtime.lastInitDetail;
             const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
             if (bridge.mode == "compositor" && bridge.compositorApisReady) {
                 pipelineMode_ = "dawn_compositor";
@@ -154,32 +183,14 @@ bool OverlayHostService::Initialize() {
             }
         } else {
             activeBackend_ = "cpu";
-            if (dawn.ok && dawn.backend == "dawn") {
-                backendDetail_ = "dawn_queue_not_ready";
+            if (runtime.lastInitDetail.empty() || runtime.lastInitDetail == "init_not_run") {
+                backendDetail_ = "dawn_probe_pending";
             } else {
-                backendDetail_ = dawn.detail;
+                backendDetail_ = runtime.lastInitDetail;
             }
             pipelineMode_ = "cpu_layered";
-        }
-    } else if (pref == "auto") {
-        const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
-        if (resolveDawnActivation(dawn)) {
-            activeBackend_ = dawn.backend;
-            backendDetail_ = dawn.detail;
-            const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
-            if (bridge.mode == "compositor" && bridge.compositorApisReady) {
-                pipelineMode_ = "dawn_compositor";
-            } else {
-                pipelineMode_ = "dawn_host_compat_layered";
-            }
-        } else {
-            activeBackend_ = "cpu";
-            if (dawn.ok && dawn.backend == "dawn") {
-                backendDetail_ = "dawn_queue_not_ready";
-            } else {
-                backendDetail_ = dawn.detail;
-            }
-            pipelineMode_ = "cpu_layered";
+            // Keep probe/handshake off the UI thread while we run with CPU fallback.
+            RefreshGpuRuntimeProbeAsync();
         }
     } else {
         activeBackend_ = "cpu";

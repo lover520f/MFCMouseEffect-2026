@@ -122,12 +122,18 @@ void AppController::SetActiveEffectType(EffectCategory category, const std::stri
 bool AppController::Start() {
     if (dispatchHwnd_) return true;
     diag_ = {};
+    deferredBackendApplyPending_ = false;
+    deferredDawnUpgradePending_ = false;
+    deferredDawnUpgradeRetryCount_ = 0;
 
     // Load config from the best available directory (AppData preferred)
     configDir_ = ResolveConfigDirectory();
     config_ = EffectConfig::Load(configDir_);
+    config_.renderBackend = NormalizeRenderBackend(config_.renderBackend);
+    // Startup fast-path: bootstrap with CPU first, then apply the configured backend asynchronously.
+    OverlayHostService::Instance().SetRenderBackendPreference("cpu");
     OverlayHostService::Instance().SetGpuBridgeModeRequest(config_.gpuBridgeModeRequest);
-    OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
+    deferredBackendApplyPending_ = (config_.renderBackend != "cpu");
 
     diag_.stage = StartStage::GdiPlusStartup;
     if (!gdiplus_.Startup()) {
@@ -172,6 +178,10 @@ bool AppController::Start() {
         return false;
     }
 
+    if (deferredBackendApplyPending_) {
+        SetTimer(dispatchHwnd_, kDeferredBackendTimerId, 1, nullptr);
+    }
+
 //#ifdef _DEBUG
 //    SetTimer(dispatchHwnd_, kSelfTestTimerId, 250, nullptr);
 //#endif
@@ -180,6 +190,9 @@ bool AppController::Start() {
 
 void AppController::Stop() {
     hook_.Stop();
+    deferredBackendApplyPending_ = false;
+    deferredDawnUpgradePending_ = false;
+    deferredDawnUpgradeRetryCount_ = 0;
     for (auto& effect : effects_) {
         if (effect) {
             effect->Shutdown();
@@ -245,8 +258,25 @@ void AppController::SetRenderBackend(const std::string& backend) {
     config_.renderBackend = normalized;
     PersistConfig();
 
+    if (normalized == "cpu") {
+        deferredDawnUpgradePending_ = false;
+        deferredDawnUpgradeRetryCount_ = 0;
+        if (dispatchHwnd_) {
+            KillTimer(dispatchHwnd_, kDeferredBackendTimerId);
+        }
+    }
+
     OverlayHostService::Instance().SetRenderBackendPreference(normalized);
     RecreateActiveEffects();
+
+    if ((normalized == "dawn" || normalized == "auto") &&
+        OverlayHostService::Instance().GetActiveRenderBackend() != "dawn") {
+        deferredDawnUpgradePending_ = true;
+        deferredDawnUpgradeRetryCount_ = 0;
+        if (dispatchHwnd_) {
+            SetTimer(dispatchHwnd_, kDeferredBackendTimerId, 200, nullptr);
+        }
+    }
 }
 
 void AppController::SetGpuBridgeModeRequest(const std::string& mode) {
@@ -741,6 +771,46 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
     }
 
     if (msg == WM_TIMER) {
+        if (wParam == kDeferredBackendTimerId) {
+            KillTimer(hwnd, kDeferredBackendTimerId);
+            if (deferredBackendApplyPending_) {
+                deferredBackendApplyPending_ = false;
+                OverlayHostService::Instance().SetGpuBridgeModeRequest(config_.gpuBridgeModeRequest);
+                OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
+                if (config_.renderBackend != "cpu") {
+                    RecreateActiveEffects();
+                    if (OverlayHostService::Instance().GetActiveRenderBackend() != "dawn") {
+                        deferredDawnUpgradePending_ = true;
+                        deferredDawnUpgradeRetryCount_ = 0;
+                        SetTimer(hwnd, kDeferredBackendTimerId, 200, nullptr);
+                    } else {
+                        deferredDawnUpgradePending_ = false;
+                        deferredDawnUpgradeRetryCount_ = 0;
+                    }
+                } else {
+                    deferredDawnUpgradePending_ = false;
+                    deferredDawnUpgradeRetryCount_ = 0;
+                }
+                return 0;
+            }
+            if (deferredDawnUpgradePending_) {
+                if (OverlayHostService::Instance().IsDawnQueueReady()) {
+                    RecreateActiveEffects();
+                    deferredDawnUpgradePending_ = false;
+                    deferredDawnUpgradeRetryCount_ = 0;
+                } else {
+                    ++deferredDawnUpgradeRetryCount_;
+                    if (deferredDawnUpgradeRetryCount_ < 50) {
+                        SetTimer(hwnd, kDeferredBackendTimerId, 200, nullptr);
+                    } else {
+                        deferredDawnUpgradePending_ = false;
+                        deferredDawnUpgradeRetryCount_ = 0;
+                    }
+                }
+                return 0;
+            }
+            return 0;
+        }
         if (wParam == kHoverTimerId) {
             if (!hovering_) {
                 uint64_t elapsed = GetTickCount64() - lastInputTime_;
