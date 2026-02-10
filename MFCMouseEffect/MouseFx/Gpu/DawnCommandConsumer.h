@@ -34,6 +34,8 @@ struct DawnCommandConsumeStatus {
     uint32_t preparedRipplePulses = 0;
     uint32_t preparedRippleTriangles = 0;
     uint32_t preparedRippleUploadBytes = 0;
+    uint32_t preparedRippleBakedQuads = 0;
+    uint32_t preparedRippleBakedVertices = 0;
     uint32_t preprocessWorkers = 1;
     bool preprocessParallel = false;
     uint64_t noopSubmitAttempts = 0;
@@ -85,6 +87,8 @@ inline void SubmitOverlayGpuCommands(
     status.preparedRipplePulses = 0;
     status.preparedRippleTriangles = 0;
     status.preparedRippleUploadBytes = 0;
+    status.preparedRippleBakedQuads = 0;
+    status.preparedRippleBakedVertices = 0;
     status.preprocessWorkers = 1;
     status.preprocessParallel = false;
     for (const auto& cmd : stream.Commands()) {
@@ -164,6 +168,8 @@ inline void SubmitOverlayGpuCommands(
     status.preparedRipplePulses = prep.ripplePulses;
     status.preparedRippleTriangles = prep.rippleTriangles;
     status.preparedRippleUploadBytes = prep.rippleUploadBytes;
+    status.preparedRippleBakedQuads = prep.rippleBakedQuads;
+    status.preparedRippleBakedVertices = prep.rippleBakedVertices;
     status.preprocessWorkers = prep.workers;
     status.preprocessParallel = prep.usedParallel;
 
@@ -206,9 +212,11 @@ inline void SubmitOverlayGpuCommands(
                         ? "accepted_trail_geometry_prepared_parallel_and_cmd_submit"
                         : "accepted_trail_geometry_prepared_and_cmd_submit";
                 } else {
+                    const bool rippleBakedReady = (prep.rippleBakedVertices > 0);
                     status.detail = prep.usedParallel
                         ? nonTrailDetail("accepted_nontrail_geometry_prepared_parallel_and_cmd_submit")
                         : nonTrailDetail("accepted_nontrail_geometry_prepared_and_cmd_submit");
+                    if (rippleBakedReady) status.detail += "_ripple_baked";
                 }
             } else {
                 if (hasTrailGeometry) {

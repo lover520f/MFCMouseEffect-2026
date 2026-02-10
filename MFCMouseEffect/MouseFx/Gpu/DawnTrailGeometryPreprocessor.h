@@ -25,6 +25,8 @@ struct TrailGeometryPrepResult {
     uint32_t ripplePulses = 0;
     uint32_t rippleTriangles = 0;
     uint32_t rippleUploadBytes = 0;
+    uint32_t rippleBakedQuads = 0;
+    uint32_t rippleBakedVertices = 0;
     uint32_t workers = 1;
     bool usedParallel = false;
 };
@@ -50,6 +52,8 @@ inline TrailGeometryPrepResult MergeTrailPrep(
     out.rippleTriangles = a.rippleTriangles + b.rippleTriangles;
     const uint64_t rippleUpload = (uint64_t)a.rippleUploadBytes + (uint64_t)b.rippleUploadBytes;
     out.rippleUploadBytes = (rippleUpload > 0xFFFFFFFFull) ? 0xFFFFFFFFu : (uint32_t)rippleUpload;
+    out.rippleBakedQuads = a.rippleBakedQuads + b.rippleBakedQuads;
+    out.rippleBakedVertices = a.rippleBakedVertices + b.rippleBakedVertices;
     out.workers = (a.workers > b.workers) ? a.workers : b.workers;
     out.usedParallel = a.usedParallel || b.usedParallel;
     return out;
@@ -154,6 +158,8 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
     base.ripplePulses = ripple.pulses;
     base.rippleTriangles = ripple.triangles;
     base.rippleUploadBytes = ripple.uploadBytes;
+    base.rippleBakedQuads = ripple.bakedQuads;
+    base.rippleBakedVertices = ripple.bakedVertices;
 
     if (trails.empty()) return base;
 
@@ -172,6 +178,8 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
         out.ripplePulses = base.ripplePulses;
         out.rippleTriangles = base.rippleTriangles;
         out.rippleUploadBytes = base.rippleUploadBytes;
+        out.rippleBakedQuads = base.rippleBakedQuads;
+        out.rippleBakedVertices = base.rippleBakedVertices;
         return out;
     }
 
@@ -202,6 +210,8 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
         merged.ripplePulses = base.ripplePulses;
         merged.rippleTriangles = base.rippleTriangles;
         merged.rippleUploadBytes = base.rippleUploadBytes;
+        merged.rippleBakedQuads = base.rippleBakedQuads;
+        merged.rippleBakedVertices = base.rippleBakedVertices;
         return merged;
     } catch (...) {
         TrailGeometryPrepResult out = detail::BuildTrailGeometryRange(trails, 0, trails.size());
@@ -214,6 +224,8 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
         out.ripplePulses = base.ripplePulses;
         out.rippleTriangles = base.rippleTriangles;
         out.rippleUploadBytes = base.rippleUploadBytes;
+        out.rippleBakedQuads = base.rippleBakedQuads;
+        out.rippleBakedVertices = base.rippleBakedVertices;
         return out;
     }
 }
