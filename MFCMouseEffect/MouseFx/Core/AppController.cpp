@@ -131,7 +131,7 @@ bool AppController::Start() {
     config_ = EffectConfig::Load(configDir_);
     config_.renderBackend = NormalizeRenderBackend(config_.renderBackend);
     // Startup fast-path: bootstrap with CPU first, then apply the configured backend asynchronously.
-    OverlayHostService::Instance().SetRenderBackendPreference("cpu");
+    (void)OverlayHostService::Instance().SetRenderBackendPreference("cpu");
     OverlayHostService::Instance().SetGpuBridgeModeRequest(config_.gpuBridgeModeRequest);
     deferredBackendApplyPending_ = (config_.renderBackend != "cpu");
 
@@ -266,16 +266,21 @@ void AppController::SetRenderBackend(const std::string& backend) {
         }
     }
 
-    OverlayHostService::Instance().SetRenderBackendPreference(normalized);
-    RecreateActiveEffects();
+    const bool shouldRecreateNow = OverlayHostService::Instance().SetRenderBackendPreference(normalized);
+    if (shouldRecreateNow) {
+        RecreateActiveEffects();
+    }
 
     if ((normalized == "dawn" || normalized == "auto") &&
-        OverlayHostService::Instance().GetActiveRenderBackend() != "dawn") {
+        !OverlayHostService::Instance().IsDawnQueueReady()) {
         deferredDawnUpgradePending_ = true;
         deferredDawnUpgradeRetryCount_ = 0;
         if (dispatchHwnd_) {
             SetTimer(dispatchHwnd_, kDeferredBackendTimerId, 200, nullptr);
         }
+    } else {
+        deferredDawnUpgradePending_ = false;
+        deferredDawnUpgradeRetryCount_ = 0;
     }
 }
 
@@ -287,8 +292,18 @@ void AppController::SetGpuBridgeModeRequest(const std::string& mode) {
         PersistConfig();
     }
     OverlayHostService::Instance().SetGpuBridgeModeRequest(normalized);
-    if (config_.renderBackend != "cpu") {
+    if (config_.renderBackend == "cpu") {
+        return;
+    }
+    if (OverlayHostService::Instance().GetActiveRenderBackend() == "dawn" ||
+        OverlayHostService::Instance().IsDawnQueueReady()) {
         RecreateActiveEffects();
+        return;
+    }
+    deferredDawnUpgradePending_ = true;
+    deferredDawnUpgradeRetryCount_ = 0;
+    if (dispatchHwnd_) {
+        SetTimer(dispatchHwnd_, kDeferredBackendTimerId, 200, nullptr);
     }
 }
 
@@ -344,8 +359,16 @@ void AppController::ResetConfig() {
 
     // 3. Re-apply everything
     OverlayHostService::Instance().SetGpuBridgeModeRequest(config_.gpuBridgeModeRequest);
-    OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
-    RecreateActiveEffects();
+    const bool shouldRecreateNow = OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
+    if (shouldRecreateNow) {
+        RecreateActiveEffects();
+    } else if (config_.renderBackend != "cpu") {
+        deferredDawnUpgradePending_ = true;
+        deferredDawnUpgradeRetryCount_ = 0;
+        if (dispatchHwnd_) {
+            SetTimer(dispatchHwnd_, kDeferredBackendTimerId, 200, nullptr);
+        }
+    }
     
     // Theme/Language rely on being pulled by UI or re-applied if needed?
     // SettingsWnd calls sync, so it will pull new values.
@@ -359,9 +382,16 @@ void AppController::ReloadConfigFromDisk() {
     EffectConfig loaded = EffectConfig::Load(configDir_);
     config_ = loaded;
     OverlayHostService::Instance().SetGpuBridgeModeRequest(config_.gpuBridgeModeRequest);
-    OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
-
-    RecreateActiveEffects();
+    const bool shouldRecreateNow = OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
+    if (shouldRecreateNow) {
+        RecreateActiveEffects();
+    } else if (config_.renderBackend != "cpu") {
+        deferredDawnUpgradePending_ = true;
+        deferredDawnUpgradeRetryCount_ = 0;
+        if (dispatchHwnd_) {
+            SetTimer(dispatchHwnd_, kDeferredBackendTimerId, 200, nullptr);
+        }
+    }
 
 #ifdef _DEBUG
     OutputDebugStringW(L"MouseFx: reload_config applied.\n");
@@ -776,10 +806,13 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
             if (deferredBackendApplyPending_) {
                 deferredBackendApplyPending_ = false;
                 OverlayHostService::Instance().SetGpuBridgeModeRequest(config_.gpuBridgeModeRequest);
-                OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
+                const bool shouldRecreateNow =
+                    OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
                 if (config_.renderBackend != "cpu") {
-                    RecreateActiveEffects();
-                    if (OverlayHostService::Instance().GetActiveRenderBackend() != "dawn") {
+                    if (shouldRecreateNow) {
+                        RecreateActiveEffects();
+                    }
+                    if (!OverlayHostService::Instance().IsDawnQueueReady()) {
                         deferredDawnUpgradePending_ = true;
                         deferredDawnUpgradeRetryCount_ = 0;
                         SetTimer(hwnd, kDeferredBackendTimerId, 200, nullptr);

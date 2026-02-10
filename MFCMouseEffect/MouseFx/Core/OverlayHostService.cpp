@@ -40,14 +40,20 @@ OverlayHostService& OverlayHostService::Instance() {
     return instance;
 }
 
-void OverlayHostService::SetRenderBackendPreference(const std::string& backend) {
+bool OverlayHostService::SetRenderBackendPreference(const std::string& backend) {
     const std::string normalized = NormalizeRenderBackend(backend);
-    if (requestedBackend_ == normalized) return;
+    if (requestedBackend_ == normalized) return false;
     requestedBackend_ = normalized;
     if (normalized == "dawn" || normalized == "auto") {
         RefreshGpuRuntimeProbeAsync();
+        const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatus();
+        if (activeBackend_ == "cpu" && !runtime.queueReady) {
+            backendDetail_ = "dawn_probe_pending";
+            return false;
+        }
     }
     Shutdown();
+    return true;
 }
 
 std::string OverlayHostService::GetRenderBackendPreference() const {

@@ -28,7 +28,8 @@ public:
 
     // Preferred backend: auto | dawn | cpu.
     // Runtime will always fall back to cpu when gpu backend is unavailable.
-    void SetRenderBackendPreference(const std::string& backend);
+    // Returns true when backend transition reset host state and callers should recreate effects now.
+    bool SetRenderBackendPreference(const std::string& backend);
     std::string GetRenderBackendPreference() const;
     std::string GetActiveRenderBackend() const;
     std::string GetRenderBackendDetail() const;
