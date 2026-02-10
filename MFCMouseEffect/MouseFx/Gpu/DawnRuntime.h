@@ -72,6 +72,7 @@ void ResetDawnRuntimeProbe();
 bool TrySubmitNoopQueueWork(std::string* detailOut = nullptr);
 bool TrySubmitEmptyCommandBuffer(std::string* detailOut = nullptr);
 bool TrySubmitEmptyCommandBufferTagged(const char* tag, std::string* detailOut = nullptr);
+bool TrySubmitRippleBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut = nullptr);
 DawnRuntimeSymbolStatus GetDawnRuntimeSymbolStatus();
 
 } // namespace mousefx::gpu

@@ -43,6 +43,8 @@ struct DawnCommandConsumeStatus {
     uint64_t emptyCommandSubmitAttempts = 0;
     uint64_t emptyCommandSubmitSuccess = 0;
     uint64_t nonTrailSubmitThrottled = 0;
+    uint64_t ripplePacketSubmitAttempts = 0;
+    uint64_t ripplePacketSubmitSuccess = 0;
     std::string detail = "not_submitted";
 };
 
@@ -205,8 +207,18 @@ inline void SubmitOverlayGpuCommands(
             ++status.noopSubmitSuccess;
             ++status.emptyCommandSubmitAttempts;
             std::string cmdSubmitDetail;
-            const char* submitTag = hasTrailGeometry ? "trail" : (nonTrailRippleOnly ? "ripple" : (nonTrailParticleOnly ? "particle" : "mixed"));
-            if (TrySubmitEmptyCommandBufferTagged(submitTag, &cmdSubmitDetail)) {
+            bool cmdSubmitOk = false;
+            if (!hasTrailGeometry && nonTrailRippleOnly && prep.rippleBakedVertices > 0) {
+                ++status.ripplePacketSubmitAttempts;
+                cmdSubmitOk = TrySubmitRippleBakedPacket(prep.rippleBakedVertices, prep.rippleUploadBytes, &cmdSubmitDetail);
+                if (cmdSubmitOk) {
+                    ++status.ripplePacketSubmitSuccess;
+                }
+            } else {
+                const char* submitTag = hasTrailGeometry ? "trail" : (nonTrailRippleOnly ? "ripple" : (nonTrailParticleOnly ? "particle" : "mixed"));
+                cmdSubmitOk = TrySubmitEmptyCommandBufferTagged(submitTag, &cmdSubmitDetail);
+            }
+            if (cmdSubmitOk) {
                 ++status.emptyCommandSubmitSuccess;
                 if (hasTrailGeometry) {
                     status.detail = prep.usedParallel
@@ -218,6 +230,9 @@ inline void SubmitOverlayGpuCommands(
                         ? nonTrailDetail("accepted_nontrail_geometry_prepared_parallel_and_cmd_submit")
                         : nonTrailDetail("accepted_nontrail_geometry_prepared_and_cmd_submit");
                     if (rippleBakedReady) status.detail += "_ripple_baked";
+                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_packet_submit_ok_") == 0) {
+                        status.detail += "_packet";
+                    }
                 }
             } else {
                 if (hasTrailGeometry) {

@@ -584,6 +584,8 @@ bool WebSettingsServer::Start() {
                         {"empty_command_submit_attempts", consume.emptyCommandSubmitAttempts},
                         {"empty_command_submit_success", consume.emptyCommandSubmitSuccess},
                         {"nontrail_submit_throttled", consume.nonTrailSubmitThrottled},
+                        {"ripple_packet_submit_attempts", consume.ripplePacketSubmitAttempts},
+                        {"ripple_packet_submit_success", consume.ripplePacketSubmitSuccess},
                     }},
                     {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus)},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
@@ -649,6 +651,8 @@ bool WebSettingsServer::Start() {
                         {"empty_command_submit_attempts", consume.emptyCommandSubmitAttempts},
                         {"empty_command_submit_success", consume.emptyCommandSubmitSuccess},
                         {"nontrail_submit_throttled", consume.nonTrailSubmitThrottled},
+                        {"ripple_packet_submit_attempts", consume.ripplePacketSubmitAttempts},
+                        {"ripple_packet_submit_success", consume.ripplePacketSubmitSuccess},
                     }},
                     {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus)},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
@@ -941,6 +945,8 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"empty_command_submit_attempts", consume.emptyCommandSubmitAttempts},
         {"empty_command_submit_success", consume.emptyCommandSubmitSuccess},
         {"nontrail_submit_throttled", consume.nonTrailSubmitThrottled},
+        {"ripple_packet_submit_attempts", consume.ripplePacketSubmitAttempts},
+        {"ripple_packet_submit_success", consume.ripplePacketSubmitSuccess},
     };
     out["gpu_bridge_mode_request"] = EnsureUtf8(cfg.gpuBridgeModeRequest);
     out["gpu_acceleration"] = BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus);

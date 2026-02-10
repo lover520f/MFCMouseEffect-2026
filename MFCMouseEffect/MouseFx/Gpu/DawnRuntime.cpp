@@ -1739,4 +1739,30 @@ bool TrySubmitEmptyCommandBuffer(std::string* detailOut) {
     return TrySubmitEmptyCommandBufferTagged(nullptr, detailOut);
 }
 
+bool TrySubmitRippleBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut) {
+    if (bakedVertices == 0 || uploadBytes == 0) {
+        if (detailOut) *detailOut = "ripple_packet_empty";
+        return false;
+    }
+
+    std::string submitDetail;
+    if (!TrySubmitEmptyCommandBufferTagged("ripple_pass", &submitDetail)) {
+        if (detailOut) {
+            if (submitDetail.empty()) {
+                *detailOut = "ripple_packet_submit_fail";
+            } else {
+                *detailOut = std::string("ripple_packet_submit_fail_") + submitDetail;
+            }
+        }
+        return false;
+    }
+
+    if (detailOut) {
+        std::ostringstream oss;
+        oss << "ripple_packet_submit_ok_v" << bakedVertices << "_u" << uploadBytes;
+        *detailOut = oss.str();
+    }
+    return true;
+}
+
 } // namespace mousefx::gpu
