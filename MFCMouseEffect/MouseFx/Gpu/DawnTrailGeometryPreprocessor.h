@@ -7,6 +7,7 @@
 #include <thread>
 #include <vector>
 
+#include "MouseFx/Gpu/DawnRippleGeometryPreprocessor.h"
 #include "MouseFx/Gpu/OverlayGpuCommandStream.h"
 
 namespace mousefx::gpu {
@@ -140,7 +141,6 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
 
     TrailGeometryPrepResult base{};
     constexpr uint32_t kBytesPerParticleSprite = 120; // 6 verts * (x,y,u,v,color) * 4 bytes
-    constexpr uint32_t kBytesPerRipplePulse = 120; // approximated as a screen-space quad (6 verts)
     for (const auto& cmd : stream.Commands()) {
         if (cmd.type != OverlayGpuCommandType::ParticleSprites || cmd.vertices.empty()) continue;
         ++base.particleBatches;
@@ -149,15 +149,11 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
                                        (uint64_t)cmd.vertices.size() * (uint64_t)kBytesPerParticleSprite;
         base.particleUploadBytes = (particleBytes > 0xFFFFFFFFull) ? 0xFFFFFFFFu : (uint32_t)particleBytes;
     }
-    for (const auto& cmd : stream.Commands()) {
-        if (cmd.type != OverlayGpuCommandType::RipplePulse || cmd.vertices.empty()) continue;
-        ++base.rippleBatches;
-        base.ripplePulses += (uint32_t)cmd.vertices.size();
-        base.rippleTriangles += (uint32_t)cmd.vertices.size() * 2u;
-        const uint64_t rippleBytes = (uint64_t)base.rippleUploadBytes +
-                                     (uint64_t)cmd.vertices.size() * (uint64_t)kBytesPerRipplePulse;
-        base.rippleUploadBytes = (rippleBytes > 0xFFFFFFFFull) ? 0xFFFFFFFFu : (uint32_t)rippleBytes;
-    }
+    const RippleGeometryPrepResult ripple = PreprocessRippleGeometry(stream);
+    base.rippleBatches = ripple.batches;
+    base.ripplePulses = ripple.pulses;
+    base.rippleTriangles = ripple.triangles;
+    base.rippleUploadBytes = ripple.uploadBytes;
 
     if (trails.empty()) return base;
 

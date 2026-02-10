@@ -171,6 +171,15 @@ inline void SubmitOverlayGpuCommands(
     const bool hasRippleGeometry = (prep.rippleTriangles > 0);
     const bool hasParticleGeometry = (prep.particleSprites > 0);
     const bool hasOnlyNonTrailGeometry = (!hasTrailGeometry) && (hasRippleGeometry || hasParticleGeometry);
+    const bool nonTrailMixed = hasRippleGeometry && hasParticleGeometry;
+    const bool nonTrailRippleOnly = hasRippleGeometry && !hasParticleGeometry;
+    const bool nonTrailParticleOnly = hasParticleGeometry && !hasRippleGeometry;
+    auto nonTrailDetail = [&](const char* base) -> std::string {
+        if (nonTrailRippleOnly) return std::string(base) + "_ripple";
+        if (nonTrailParticleOnly) return std::string(base) + "_particle";
+        if (nonTrailMixed) return std::string(base) + "_mixed";
+        return std::string(base);
+    };
     static uint64_t s_lastNonTrailSubmitTickMs = 0;
     constexpr uint64_t kNonTrailSubmitIntervalMs = 8; // cap non-trail submit to ~120Hz
     if (hasTrailGeometry || hasRippleGeometry || hasParticleGeometry) {
@@ -178,7 +187,7 @@ inline void SubmitOverlayGpuCommands(
             if (s_lastNonTrailSubmitTickMs > 0 &&
                 status.submitTickMs - s_lastNonTrailSubmitTickMs < kNonTrailSubmitIntervalMs) {
                 ++status.nonTrailSubmitThrottled;
-                status.detail = "accepted_nontrail_geometry_submit_throttled";
+                status.detail = nonTrailDetail("accepted_nontrail_geometry_submit_throttled");
                 ++status.acceptedFrames;
                 return;
             }
@@ -198,8 +207,8 @@ inline void SubmitOverlayGpuCommands(
                         : "accepted_trail_geometry_prepared_and_cmd_submit";
                 } else {
                     status.detail = prep.usedParallel
-                        ? "accepted_nontrail_geometry_prepared_parallel_and_cmd_submit"
-                        : "accepted_nontrail_geometry_prepared_and_cmd_submit";
+                        ? nonTrailDetail("accepted_nontrail_geometry_prepared_parallel_and_cmd_submit")
+                        : nonTrailDetail("accepted_nontrail_geometry_prepared_and_cmd_submit");
                 }
             } else {
                 if (hasTrailGeometry) {
@@ -208,8 +217,8 @@ inline void SubmitOverlayGpuCommands(
                         : "accepted_trail_geometry_prepared_cmd_submit_pending";
                 } else {
                     status.detail = prep.usedParallel
-                        ? "accepted_nontrail_geometry_prepared_parallel_cmd_submit_pending"
-                        : "accepted_nontrail_geometry_prepared_cmd_submit_pending";
+                        ? nonTrailDetail("accepted_nontrail_geometry_prepared_parallel_cmd_submit_pending")
+                        : nonTrailDetail("accepted_nontrail_geometry_prepared_cmd_submit_pending");
                 }
                 if (!cmdSubmitDetail.empty()) {
                     status.detail += "_" + cmdSubmitDetail;
@@ -222,8 +231,8 @@ inline void SubmitOverlayGpuCommands(
                     : "accepted_trail_geometry_prepared_submit_pending";
             } else {
                 status.detail = prep.usedParallel
-                    ? "accepted_nontrail_geometry_prepared_parallel_submit_pending"
-                    : "accepted_nontrail_geometry_prepared_submit_pending";
+                    ? nonTrailDetail("accepted_nontrail_geometry_prepared_parallel_submit_pending")
+                    : nonTrailDetail("accepted_nontrail_geometry_prepared_submit_pending");
             }
             if (!submitDetail.empty()) {
                 status.detail += "_" + submitDetail;
