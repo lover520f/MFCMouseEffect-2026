@@ -32,6 +32,17 @@
       <button id="btnGpuAction" class="action-btn hidden" type="button">Action</button>
       <button id="btnGpuProbe" class="probe-btn" type="button" data-i18n="btn_probe_gpu">Recheck GPU</button>
     </div>
+    <div id="diagPanel" class="diag-panel hidden" aria-live="polite">
+      <div class="diag-head">
+        <div class="diag-title">Diag Stream</div>
+        <div class="diag-actions">
+          <button id="btnDiagSymbol" class="probe-btn" type="button">Check Symbols</button>
+          <button id="btnDiagCopy" class="probe-btn" type="button">Copy</button>
+          <button id="btnDiagClear" class="probe-btn" type="button">Clear</button>
+        </div>
+      </div>
+      <textarea id="diagLog" readonly spellcheck="false"></textarea>
+    </div>
 
     <div class="row">
       <div class="card" id="general">

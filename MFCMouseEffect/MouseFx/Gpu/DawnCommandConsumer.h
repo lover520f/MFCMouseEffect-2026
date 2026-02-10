@@ -1,14 +1,13 @@
 #pragma once
 
 #include <cstddef>
-#include <cmath>
 #include <cstdint>
 #include <mutex>
 #include <string>
-#include <vector>
 
 #include "MouseFx/Gpu/DawnOverlayBridge.h"
 #include "MouseFx/Gpu/DawnRuntime.h"
+#include "MouseFx/Gpu/DawnTrailGeometryPreprocessor.h"
 #include "MouseFx/Gpu/OverlayGpuCommandStream.h"
 
 namespace mousefx::gpu {
@@ -27,8 +26,15 @@ struct DawnCommandConsumeStatus {
     uint32_t preparedTrailSegments = 0;
     uint32_t preparedTrailTriangles = 0;
     uint32_t preparedUploadBytes = 0;
+    uint32_t preparedParticleBatches = 0;
+    uint32_t preparedParticleSprites = 0;
+    uint32_t preparedParticleUploadBytes = 0;
+    uint32_t preprocessWorkers = 1;
+    bool preprocessParallel = false;
     uint64_t noopSubmitAttempts = 0;
     uint64_t noopSubmitSuccess = 0;
+    uint64_t emptyCommandSubmitAttempts = 0;
+    uint64_t emptyCommandSubmitSuccess = 0;
     std::string detail = "not_submitted";
 };
 
@@ -66,6 +72,11 @@ inline void SubmitOverlayGpuCommands(
     status.preparedTrailSegments = 0;
     status.preparedTrailTriangles = 0;
     status.preparedUploadBytes = 0;
+    status.preparedParticleBatches = 0;
+    status.preparedParticleSprites = 0;
+    status.preparedParticleUploadBytes = 0;
+    status.preprocessWorkers = 1;
+    status.preprocessParallel = false;
     for (const auto& cmd : stream.Commands()) {
         switch (cmd.type) {
         case OverlayGpuCommandType::TrailPolyline:
@@ -119,89 +130,53 @@ inline void SubmitOverlayGpuCommands(
         return;
     }
 
-    // Stage 37: build GPU-drawable trail triangle geometry.
-    // No real DrawPass submission yet, but the generated triangles are upload-ready.
-    uint32_t preparedBatches = 0;
-    uint32_t preparedVertices = 0;
-    uint32_t preparedSegments = 0;
-    uint32_t preparedTriangles = 0;
-    uint64_t uploadBytes = 0;
-    std::vector<float> uploadScratch{};
-    constexpr size_t kMaxTrailVerticesPerBatch = 1024;
-    constexpr float kBaseHalfWidth = 2.2f;
-    for (const auto& cmd : stream.Commands()) {
-        if (cmd.type != OverlayGpuCommandType::TrailPolyline) continue;
-        if (cmd.vertices.size() < 2) continue;
-        size_t begin = 0;
-        while (begin + 1 < cmd.vertices.size()) {
-            const size_t remain = cmd.vertices.size() - begin;
-            const size_t take = (remain > kMaxTrailVerticesPerBatch) ? kMaxTrailVerticesPerBatch : remain;
-            if (take < 2) break;
-            ++preparedBatches;
-            preparedVertices += (uint32_t)take;
-            preparedSegments += (uint32_t)(take - 1);
-
-            // Convert polyline into a simple quad-strip (2 triangles per segment).
-            // Packed vertex layout: x, y, rgba_u32_as_f32.
-            const size_t localSegments = take - 1;
-            const size_t outVertexCount = localSegments * 6; // 2 triangles per segment
-            uploadScratch.clear();
-            uploadScratch.reserve(outVertexCount * 3);
-            for (size_t i = 0; i + 1 < take; ++i) {
-                const auto& a = cmd.vertices[begin + i];
-                const auto& b = cmd.vertices[begin + i + 1];
-                float dx = b.x - a.x;
-                float dy = b.y - a.y;
-                float len = std::sqrt(dx * dx + dy * dy);
-                if (len < 0.001f) continue;
-                dx /= len;
-                dy /= len;
-                const float nx = -dy;
-                const float ny = dx;
-                const float halfWidthA = kBaseHalfWidth + 2.0f * a.extra;
-                const float halfWidthB = kBaseHalfWidth + 2.0f * b.extra;
-
-                const float aLx = a.x + nx * halfWidthA;
-                const float aLy = a.y + ny * halfWidthA;
-                const float aRx = a.x - nx * halfWidthA;
-                const float aRy = a.y - ny * halfWidthA;
-                const float bLx = b.x + nx * halfWidthB;
-                const float bLy = b.y + ny * halfWidthB;
-                const float bRx = b.x - nx * halfWidthB;
-                const float bRy = b.y - ny * halfWidthB;
-
-                const float cA = (float)a.colorArgb;
-                const float cB = (float)b.colorArgb;
-                // tri0: aL, aR, bL
-                uploadScratch.push_back(aLx); uploadScratch.push_back(aLy); uploadScratch.push_back(cA);
-                uploadScratch.push_back(aRx); uploadScratch.push_back(aRy); uploadScratch.push_back(cA);
-                uploadScratch.push_back(bLx); uploadScratch.push_back(bLy); uploadScratch.push_back(cB);
-                // tri1: bL, aR, bR
-                uploadScratch.push_back(bLx); uploadScratch.push_back(bLy); uploadScratch.push_back(cB);
-                uploadScratch.push_back(aRx); uploadScratch.push_back(aRy); uploadScratch.push_back(cA);
-                uploadScratch.push_back(bRx); uploadScratch.push_back(bRy); uploadScratch.push_back(cB);
-            }
-            const uint32_t triangles = (uint32_t)(uploadScratch.size() / 9); // 3 floats per vertex, 3 vertices per tri
-            preparedTriangles += triangles;
-            uploadBytes += (uint64_t)uploadScratch.size() * sizeof(float);
-            begin += (take - 1); // keep one overlap vertex between batches
-        }
-    }
-    status.preparedTrailBatches = preparedBatches;
-    status.preparedTrailVertices = preparedVertices;
-    status.preparedTrailSegments = preparedSegments;
-    status.preparedTrailTriangles = preparedTriangles;
-    status.preparedUploadBytes = (uploadBytes > 0xFFFFFFFFull) ? 0xFFFFFFFFu : (uint32_t)uploadBytes;
-
     status.accepted = true;
-    if (preparedTriangles > 0) {
+    if (!runtime.queueReady) {
+        // Queue is not ready yet: avoid CPU-heavy preprocessing while only diagnostics are active.
+        // This keeps fallback behavior stable and reduces wasted work before real GPU submission is possible.
+        status.detail = runtime.modernAbiDetected
+            ? "accepted_waiting_queue_modern_abi_preprocess_skipped"
+            : "accepted_waiting_queue_preprocess_skipped";
+        ++status.acceptedFrames;
+        return;
+    }
+
+    const TrailGeometryPrepResult prep = PreprocessTrailGeometry(stream);
+    status.preparedTrailBatches = prep.batches;
+    status.preparedTrailVertices = prep.vertices;
+    status.preparedTrailSegments = prep.segments;
+    status.preparedTrailTriangles = prep.triangles;
+    status.preparedUploadBytes = prep.uploadBytes;
+    status.preparedParticleBatches = prep.particleBatches;
+    status.preparedParticleSprites = prep.particleSprites;
+    status.preparedParticleUploadBytes = prep.particleUploadBytes;
+    status.preprocessWorkers = prep.workers;
+    status.preprocessParallel = prep.usedParallel;
+
+    if (prep.triangles > 0) {
         ++status.noopSubmitAttempts;
         std::string submitDetail;
         if (TrySubmitNoopQueueWork(&submitDetail)) {
             ++status.noopSubmitSuccess;
-            status.detail = "accepted_trail_geometry_prepared_and_submitted";
+            ++status.emptyCommandSubmitAttempts;
+            std::string cmdSubmitDetail;
+            if (TrySubmitEmptyCommandBuffer(&cmdSubmitDetail)) {
+                ++status.emptyCommandSubmitSuccess;
+                status.detail = prep.usedParallel
+                    ? "accepted_trail_geometry_prepared_parallel_and_cmd_submit"
+                    : "accepted_trail_geometry_prepared_and_cmd_submit";
+            } else {
+                status.detail = prep.usedParallel
+                    ? "accepted_trail_geometry_prepared_parallel_cmd_submit_pending"
+                    : "accepted_trail_geometry_prepared_cmd_submit_pending";
+                if (!cmdSubmitDetail.empty()) {
+                    status.detail += "_" + cmdSubmitDetail;
+                }
+            }
         } else {
-            status.detail = "accepted_trail_geometry_prepared_submit_pending";
+            status.detail = prep.usedParallel
+                ? "accepted_trail_geometry_prepared_parallel_submit_pending"
+                : "accepted_trail_geometry_prepared_submit_pending";
             if (!submitDetail.empty()) {
                 status.detail += "_" + submitDetail;
             }

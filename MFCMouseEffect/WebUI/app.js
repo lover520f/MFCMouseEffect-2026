@@ -1,15 +1,27 @@
 (() => {
   const token = new URL(location.href).searchParams.get('token') || '';
+  const diagMode = (new URL(location.href)).searchParams.get('diag') === '1';
   const el = (id) => document.getElementById(id);
   const statusEl = document.getElementById('status');
   const gpuBannerEl = document.getElementById('gpuBanner');
   const gpuBannerTextEl = document.getElementById('gpuBannerText');
   const btnGpuActionEl = document.getElementById('btnGpuAction');
   const btnGpuProbeEl = document.getElementById('btnGpuProbe');
+  const diagPanelEl = document.getElementById('diagPanel');
+  const diagLogEl = document.getElementById('diagLog');
+  const btnDiagSymbolEl = document.getElementById('btnDiagSymbol');
+  const btnDiagCopyEl = document.getElementById('btnDiagCopy');
+  const btnDiagClearEl = document.getElementById('btnDiagClear');
   const healthCheckMs = 3000;
+  const diagPollMs = 500;
   let healthTimer = 0;
+  let diagTimer = 0;
   let connectionState = 'unknown';
   let latestState = null;
+  let lastStateSyncAtMs = 0;
+  const diagMaxLines = 280;
+  let diagLines = [];
+  let lastDiagSignature = '';
 
   const I18N = {
     "en-US": {
@@ -235,6 +247,71 @@
     statusEl.className = cls;
   }
 
+  function formatDiagLine(st){
+    if (!st) return '';
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const ms = String(now.getMilliseconds()).padStart(3, '0');
+    const ts = `${hh}:${mm}:${ss}.${ms}`;
+    const cs = st.gpu_command_stream || {};
+    const cc = st.dawn_command_consumer || {};
+    const ds = st.dawn_status || {};
+    const cmd = `${cs.command_count || 0}/${cs.trail_commands || 0}/${cs.ripple_commands || 0}/${cs.particle_commands || 0}`;
+    const queue = `${ds.queue_ready ? 'Q1' : 'Q0'}:${ds.command_encoder_ready ? 'E1' : 'E0'}:${ds.modern_abi_detected ? 'M1' : 'M0'}:${ds.modern_abi_native_ready ? 'N1' : 'N0'}`;
+    const strategy = ds.modern_abi_strategy || 'n/a';
+    const nativeDetail = ds.modern_abi_native_detail || 'n/a';
+    const prime = ds.modern_abi_prime_detail || 'n/a';
+    const submit = `${cc.noop_submit_success || 0}/${cc.noop_submit_attempts || 0}`;
+    const cmdSubmit = `${cc.empty_command_submit_success || 0}/${cc.empty_command_submit_attempts || 0}`;
+    const detail = cc.detail || 'unknown';
+    return `${ts} | backend=${st.render_backend_active || 'cpu'} | cmd=${cmd} | ${queue} | strategy=${strategy} | native=${nativeDetail} | prime=${prime} | submit=${submit} | cmdbuf=${cmdSubmit} | ${detail}`;
+  }
+
+  function appendDiagLine(st){
+    if (!diagMode || !diagLogEl || !diagPanelEl) return;
+    const sig = JSON.stringify({
+      b: st && st.render_backend_active,
+      c: st && st.gpu_command_stream ? st.gpu_command_stream.command_count : 0,
+      t: st && st.gpu_command_stream ? st.gpu_command_stream.trail_commands : 0,
+      r: st && st.gpu_command_stream ? st.gpu_command_stream.ripple_commands : 0,
+      p: st && st.gpu_command_stream ? st.gpu_command_stream.particle_commands : 0,
+      q: st && st.dawn_status ? st.dawn_status.queue_ready : false,
+      e: st && st.dawn_status ? st.dawn_status.command_encoder_ready : false,
+      m: st && st.dawn_status ? st.dawn_status.modern_abi_detected : false,
+      n: st && st.dawn_status ? st.dawn_status.modern_abi_native_ready : false,
+      y: st && st.dawn_status ? st.dawn_status.modern_abi_strategy : '',
+      z: st && st.dawn_status ? st.dawn_status.modern_abi_native_detail : '',
+      d: st && st.dawn_command_consumer ? st.dawn_command_consumer.detail : ''
+    });
+    if (sig === lastDiagSignature) return;
+    lastDiagSignature = sig;
+    const line = formatDiagLine(st);
+    if (!line) return;
+    diagLines.push(line);
+    if (diagLines.length > diagMaxLines) {
+      diagLines.splice(0, diagLines.length - diagMaxLines);
+    }
+    diagLogEl.value = diagLines.join('\n');
+    diagLogEl.scrollTop = diagLogEl.scrollHeight;
+  }
+
+  function appendDiagTextLine(line){
+    if (!diagMode || !diagLogEl || !diagPanelEl || !line) return;
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const ms = String(now.getMilliseconds()).padStart(3, '0');
+    diagLines.push(`${hh}:${mm}:${ss}.${ms} | ${line}`);
+    if (diagLines.length > diagMaxLines) {
+      diagLines.splice(0, diagLines.length - diagMaxLines);
+    }
+    diagLogEl.value = diagLines.join('\n');
+    diagLogEl.scrollTop = diagLogEl.scrollHeight;
+  }
+
   function pipelineLabel(mode, lang){
     const zh = {
       cpu_layered: 'CPU \u5206\u5c42\u6e32\u67d3',
@@ -296,6 +373,14 @@
         return (lang === 'zh-CN')
           ? '\u5f53\u524d\u4f7f\u7528 CPU\uff1aGPU \u8fd0\u884c\u5e93\u53ef\u7528\uff0c\u4f46\u5c1a\u672a\u5b8c\u6210\u5207\u6362\u3002'
           : 'CPU mode: GPU runtime is available, but backend switch is not completed yet.';
+      case 'overlay_bridge_ready_modern_abi_queue_ready':
+        return (lang === 'zh-CN')
+          ? '\u5f53\u524d\u4f7f\u7528 CPU\uff1aGPU \u8fd0\u884c\u65f6\u4e0e queue \u63e1\u624b\u5df2\u5c31\u7eea\uff0c\u53ef\u5207\u6362\u5230 GPU \u8def\u5f84\u3002'
+          : 'CPU mode: GPU runtime and queue handshake are ready; you can switch to GPU path now.';
+      case 'queue_not_ready':
+        return (lang === 'zh-CN')
+          ? '\u5f53\u524d\u4f7f\u7528 CPU\uff1aGPU \u8fd0\u884c\u5e93\u5df2\u5c31\u7eea\uff0c\u4f46\u547d\u4ee4\u961f\u5217\u63e1\u624b\u5c1a\u672a\u5b8c\u6210\u3002'
+          : 'CPU mode: GPU runtime is detected, but command queue handshake is not completed yet.';
       default:
         return (lang === 'zh-CN')
           ? ((banner && (banner.text_zh || banner.text_en)) || '\u5f53\u524d\u4e3a CPU \u515c\u5e95\u6a21\u5f0f\u3002')
@@ -352,6 +437,18 @@
         return (lang === 'zh-CN')
           ? '\u53ef\u5c1d\u8bd5\u5207\u6362\u5230 GPU \u6a21\u5f0f\u5e76\u91cd\u65b0\u63a2\u6d4b\u3002'
           : 'Try switching to GPU mode and rechecking.';
+      case 'overlay_bridge_ready_modern_abi_queue_ready':
+        return (lang === 'zh-CN')
+          ? '\u5df2\u53ef\u8fdb\u5165 GPU \u63d0\u4ea4\u9636\u6bb5\uff0c\u5982\u9700\u53ef\u91cd\u65b0\u63a2\u6d4b\u5237\u65b0\u72b6\u6001\u3002'
+          : 'Ready for GPU submission stage; re-probe if you want to refresh diagnostics.';
+      case 'queue_not_ready':
+        return (lang === 'zh-CN')
+          ? '\u8fd9\u8868\u793a modern ABI \u4e0b\u7684 queue \u63e1\u624b\u8fd8\u6ca1\u63a5\u901a\uff0c\u5f53\u524d\u4ecd\u7531 CPU \u515c\u5e95\u3002'
+          : 'This means modern-ABI queue wiring is not completed yet; CPU fallback remains active.';
+      case 'overlay_bridge_ready_modern_abi':
+        return (lang === 'zh-CN')
+          ? '\u68c0\u6d4b\u5230 modern ABI\uff0clegacy \u56de\u8c03\u9884\u70ed\u5df2\u8df3\u8fc7\uff0c\u5f53\u524d\u4fdd\u6301 CPU \u515c\u5e95\u3002'
+          : 'Modern ABI detected; legacy callback priming is skipped, CPU fallback remains active.';
       default:
         if (actionCode === 'switch_bridge_host_compat') {
           return (lang === 'zh-CN')
@@ -367,8 +464,10 @@
     if (!st || !st.gpu_status_banner) {
       gpuBannerEl.className = 'gpu-banner hidden';
       if (gpuBannerTextEl) gpuBannerTextEl.textContent = '';
+      if (diagPanelEl) diagPanelEl.classList.toggle('hidden', !diagMode);
       return;
     }
+    if (diagPanelEl) diagPanelEl.classList.toggle('hidden', !diagMode);
     const banner = st.gpu_status_banner || {};
     const action = banner.action || {};
     const actionCode = action.action_code || '';
@@ -385,6 +484,12 @@
         ? `加速级别: ${accelLabel}`
         : `Acceleration: ${accelLabel}`;
       finalText = `${finalText} ${accelText}`;
+    }
+    if (st && st.dawn_status && st.gpu_in_use && !st.dawn_status.queue_ready) {
+      const queueHint = (lang === 'zh-CN')
+        ? 'GPU命令队列未就绪，当前仍以CPU路径为主。'
+        : 'GPU command queue is not ready; CPU path is still primary.';
+      finalText = `${finalText} ${queueHint}`;
     }
     if (st && st.render_pipeline_mode) {
       const pipelineLabelText = pipelineLabel(st.render_pipeline_mode, lang);
@@ -416,13 +521,28 @@
         : (compReady ? 'Advanced compositor: Ready' : 'Advanced compositor: Not ready');
       finalText = `${finalText} ${compText}`;
     }
-    const showDiagCode = (new URL(location.href)).searchParams.get('diag') === '1';
+    const showDiagCode = diagMode;
     if (showDiagCode && st && st.gpu_command_stream) {
       const cs = st.gpu_command_stream;
       const diagText = (lang === 'zh-CN')
-        ? `命令流: ${cs.command_count || 0} (trail ${cs.trail_commands || 0}, ripple ${cs.ripple_commands || 0}, particle ${cs.particle_commands || 0})`
-        : `Command stream: ${cs.command_count || 0} (trail ${cs.trail_commands || 0}, ripple ${cs.ripple_commands || 0}, particle ${cs.particle_commands || 0})`;
+        ? `命令流: ${cs.command_count || 0} (trail ${cs.trail_commands || 0}, ripple ${cs.ripple_commands || 0}, particle ${cs.particle_commands || 0}, tick ${cs.frame_tick_ms || 0})`
+        : `Command stream: ${cs.command_count || 0} (trail ${cs.trail_commands || 0}, ripple ${cs.ripple_commands || 0}, particle ${cs.particle_commands || 0}, tick ${cs.frame_tick_ms || 0})`;
       finalText = `${finalText} ${diagText}`;
+    }
+    if (showDiagCode) {
+      const now = Date.now();
+      const ageMs = (lastStateSyncAtMs > 0 && now >= lastStateSyncAtMs) ? (now - lastStateSyncAtMs) : 0;
+      const refreshText = (lang === 'zh-CN')
+        ? `刷新: ${ageMs}ms前`
+        : `Refresh: ${ageMs}ms ago`;
+      finalText = `${finalText} ${refreshText}`;
+    }
+    if (showDiagCode && st && st.dawn_status) {
+      const ds = st.dawn_status;
+      const runtimeReadyText = (lang === 'zh-CN')
+        ? `Runtime就绪: queue ${ds.queue_ready ? 'ready' : 'not_ready'}, encoder ${ds.command_encoder_ready ? 'ready' : 'not_ready'}, modernABI ${ds.modern_abi_detected ? 'yes' : 'no'}, native ${ds.modern_abi_native_ready ? 'yes' : 'no'}, nativeDetail ${ds.modern_abi_native_detail || 'n/a'}, strategy ${ds.modern_abi_strategy || 'n/a'}, prime ${ds.modern_abi_prime_detail || 'n/a'}`
+        : `Runtime: queue ${ds.queue_ready ? 'ready' : 'not_ready'}, encoder ${ds.command_encoder_ready ? 'ready' : 'not_ready'}, modernABI ${ds.modern_abi_detected ? 'yes' : 'no'}, native ${ds.modern_abi_native_ready ? 'yes' : 'no'}, nativeDetail ${ds.modern_abi_native_detail || 'n/a'}, strategy ${ds.modern_abi_strategy || 'n/a'}, prime ${ds.modern_abi_prime_detail || 'n/a'}`;
+      finalText = `${finalText} ${runtimeReadyText}`;
     }
     if (showDiagCode && st && st.dawn_command_consumer) {
       const cc = st.dawn_command_consumer;
@@ -432,10 +552,19 @@
       const prepText = (lang === 'zh-CN')
         ? `Trail预处理: b${cc.prepared_trail_batches || 0} v${cc.prepared_trail_vertices || 0} s${cc.prepared_trail_segments || 0} t${cc.prepared_trail_triangles || 0} u${cc.prepared_upload_bytes || 0}`
         : `Trail prep: b${cc.prepared_trail_batches || 0} v${cc.prepared_trail_vertices || 0} s${cc.prepared_trail_segments || 0} t${cc.prepared_trail_triangles || 0} u${cc.prepared_upload_bytes || 0}`;
+      const particlePrepText = (lang === 'zh-CN')
+        ? `粒子预处理: b${cc.prepared_particle_batches || 0} p${cc.prepared_particle_sprites || 0} u${cc.prepared_particle_upload_bytes || 0}`
+        : `Particle prep: b${cc.prepared_particle_batches || 0} p${cc.prepared_particle_sprites || 0} u${cc.prepared_particle_upload_bytes || 0}`;
+      const prepModeText = (lang === 'zh-CN')
+        ? `预处理并行: ${cc.preprocess_parallel ? '是' : '否'} (w${cc.preprocess_workers || 1})`
+        : `Prep parallel: ${cc.preprocess_parallel ? 'yes' : 'no'} (w${cc.preprocess_workers || 1})`;
       const submitText = (lang === 'zh-CN')
         ? `提交: ${cc.noop_submit_success || 0}/${cc.noop_submit_attempts || 0}`
         : `Submit: ${cc.noop_submit_success || 0}/${cc.noop_submit_attempts || 0}`;
-      finalText = `${finalText} ${consumerText} ${prepText} ${submitText}`;
+      const cmdSubmitText = (lang === 'zh-CN')
+        ? `命令缓冲提交: ${cc.empty_command_submit_success || 0}/${cc.empty_command_submit_attempts || 0}`
+        : `CmdBuffer submit: ${cc.empty_command_submit_success || 0}/${cc.empty_command_submit_attempts || 0}`;
+      finalText = `${finalText} ${consumerText} ${prepText} ${particlePrepText} ${prepModeText} ${submitText} ${cmdSubmitText}`;
     }
     const prefix = st.gpu_in_use ? '[GPU] ' : '[CPU] ';
     if (gpuBannerTextEl) {
@@ -444,6 +573,7 @@
     renderGpuActionButton(actionCode);
     const tone = banner.tone || (st.gpu_in_use ? 'ok' : 'warn');
     gpuBannerEl.className = `gpu-banner ${tone}`;
+    appendDiagLine(st);
   }
 
   function isGpuActionSupported(actionCode){
@@ -483,6 +613,7 @@
   async function refreshStateFromServer(){
     const st = await apiGet('/api/state');
     latestState = st;
+    lastStateSyncAtMs = Date.now();
     renderGpuBanner(st);
   }
 
@@ -592,6 +723,7 @@
       try {
         const st = await r.json();
         latestState = st;
+        lastStateSyncAtMs = Date.now();
         renderGpuBanner(st);
       } catch(_e) {}
       markConnection('online');
@@ -608,10 +740,24 @@
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) probeConnection();
     });
+    if (diagMode && !diagTimer) {
+      diagTimer = window.setInterval(async () => {
+        if (document.hidden) return;
+        try {
+          await refreshStateFromServer();
+          if (connectionState !== 'online') markConnection('online');
+        } catch (e) {
+          if (e && e.code === 'unauthorized') return;
+        }
+      }, diagPollMs);
+    }
   }
 
   async function apiGet(path){
-    const r = await fetch(path, {headers: {'X-MFCMouseEffect-Token': token}});
+    const r = await fetch(path, {
+      headers: {'X-MFCMouseEffect-Token': token},
+      cache: 'no-store'
+    });
     if(!r.ok) {
       if (r.status === 401) {
         showUnauthorized();
@@ -767,6 +913,50 @@
 
     markConnection('online');
     renderGpuBanner(st);
+  }
+
+  if (diagMode && btnDiagClearEl && diagLogEl) {
+    btnDiagClearEl.addEventListener('click', () => {
+      diagLines = [];
+      lastDiagSignature = '';
+      diagLogEl.value = '';
+    });
+  }
+
+  if (diagMode && btnDiagCopyEl && diagLogEl) {
+    btnDiagCopyEl.addEventListener('click', async () => {
+      const text = diagLogEl.value || '';
+      if (!text) return;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          setStatus('Diag copied.', 'ok');
+          return;
+        }
+      } catch(_e) {}
+      diagLogEl.focus();
+      diagLogEl.select();
+      try { document.execCommand('copy'); } catch(_e) {}
+      setStatus('Diag copied.', 'ok');
+    });
+  }
+
+  if (diagMode && btnDiagSymbolEl) {
+    btnDiagSymbolEl.addEventListener('click', async () => {
+      try {
+        const res = await apiPost('/api/gpu/runtime_symbol_check', {});
+        const s = res && res.dawn_runtime_symbol ? res.dawn_runtime_symbol : null;
+        if (!s) {
+          appendDiagTextLine('symbol-check: invalid_response');
+          return;
+        }
+        appendDiagTextLine(
+          `symbol-check: summary=${s.summary || 'unknown'} mod=${s.module_name || 'n/a'} modernAdapter=${s.has_request_adapter_modern ? 1 : 0} modernDevice=${s.has_request_device_modern ? 1 : 0} legacyAdapter=${s.has_request_adapter_legacy ? 1 : 0} legacyDevice=${s.has_request_device_legacy ? 1 : 0} waitAny=${s.has_wait_any ? 1 : 0} processEvents=${s.has_instance_process_events ? 1 : 0}`
+        );
+      } catch (e) {
+        appendDiagTextLine(`symbol-check: failed ${(e && e.message) ? e.message : String(e || '')}`);
+      }
+    });
   }
 
   function buildState(){

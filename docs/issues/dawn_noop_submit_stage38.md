@@ -22,6 +22,13 @@
   - 提交成功返回 `queue_submit_noop_ok`
   - 提交异常返回 `queue_submit_noop_exception`
 
+### 2.1 C2712 编译兼容修正（2026-02）
+- 问题：`TrySubmitNoopQueueWork` 中 `std::lock_guard` 与 `__try/__except` 同作用域，触发 `C2712`。
+- 修正：
+  - 新增 `SafeQueueSubmitNoopCall(proc, queue)` 作为纯 SEH 辅助函数；
+  - 外层函数先加锁拷贝 `queue/proc` 到局部变量，再在无 RAII 对象作用域内执行 SEH 调用。
+- 结果：保持行为一致，同时兼容 MSVC 对 `__try` 的栈展开限制。
+
 ### 3. DawnCommandConsumer 集成
 - 在有拖尾三角几何输出时触发 noop submit。
 - 增加统计字段：

@@ -131,10 +131,19 @@ uint32_t OverlayHostService::GetLastGpuParticleCommandCount() const {
 bool OverlayHostService::Initialize() {
     if (host_) return true;
 
+    auto resolveDawnActivation = [&](const gpu::DawnRuntimeInitResult& dawn) {
+        if (!dawn.ok || dawn.backend != "dawn") return false;
+        const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatus();
+        if (runtime.queueReady) return true;
+        // Modern ABI runtime can still provide bridge-level GPU composition while queue handshake is pending.
+        // Keep backend active so users can run with latest runtime binaries, and expose queue readiness via diagnostics.
+        return runtime.modernAbiDetected;
+    };
+
     const std::string pref = NormalizeRenderBackend(requestedBackend_);
     if (pref == "dawn") {
         const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
-        if (dawn.ok) {
+        if (resolveDawnActivation(dawn)) {
             activeBackend_ = dawn.backend;
             backendDetail_ = dawn.detail;
             const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
@@ -145,12 +154,16 @@ bool OverlayHostService::Initialize() {
             }
         } else {
             activeBackend_ = "cpu";
-            backendDetail_ = dawn.detail;
+            if (dawn.ok && dawn.backend == "dawn") {
+                backendDetail_ = "dawn_queue_not_ready";
+            } else {
+                backendDetail_ = dawn.detail;
+            }
             pipelineMode_ = "cpu_layered";
         }
     } else if (pref == "auto") {
         const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
-        if (dawn.ok) {
+        if (resolveDawnActivation(dawn)) {
             activeBackend_ = dawn.backend;
             backendDetail_ = dawn.detail;
             const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
@@ -161,7 +174,11 @@ bool OverlayHostService::Initialize() {
             }
         } else {
             activeBackend_ = "cpu";
-            backendDetail_ = dawn.detail;
+            if (dawn.ok && dawn.backend == "dawn") {
+                backendDetail_ = "dawn_queue_not_ready";
+            } else {
+                backendDetail_ = dawn.detail;
+            }
             pipelineMode_ = "cpu_layered";
         }
     } else {

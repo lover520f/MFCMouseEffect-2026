@@ -23,6 +23,10 @@ struct DawnRuntimeProbeInfo {
     bool hasCreateSurface = false;
     bool hasGetQueue = false;
     bool hasSurfacePresent = false;
+    bool hasWaitAny = false;
+    bool hasModernRequestAdapter = false;
+    bool hasModernRequestDevice = false;
+    bool hasInstanceProcessEvents = false;
     bool canCreateInstance = false;
     bool canRequestAdapter = false;
     bool canCreateDevice = false;
@@ -36,6 +40,27 @@ struct DawnRuntimeStatus {
     uint64_t initAttempts = 0;
     uint64_t lastInitTickMs = 0;
     bool readyForDeviceStage = false;
+    bool queueReady = false;
+    bool commandEncoderReady = false;
+    bool modernAbiDetected = false;
+    bool modernAbiNativeReady = false;
+    std::string modernAbiStrategy = "none";
+    std::string modernAbiNativeDetail = "unknown";
+    std::string modernAbiPrimeDetail = "not_attempted";
+};
+
+struct DawnRuntimeSymbolStatus {
+    bool moduleLoaded = false;
+    std::string moduleName = "";
+    bool hasWgpuGetProcAddress = false;
+    bool hasCreateInstance = false;
+    bool hasRequestAdapterLegacy = false;
+    bool hasRequestDeviceLegacy = false;
+    bool hasRequestAdapterModern = false;
+    bool hasRequestDeviceModern = false;
+    bool hasWaitAny = false;
+    bool hasInstanceProcessEvents = false;
+    std::string summary = "unknown";
 };
 
 bool IsDawnCompiled();
@@ -45,5 +70,7 @@ DawnRuntimeProbeInfo GetDawnRuntimeProbeInfo();
 DawnRuntimeStatus GetDawnRuntimeStatus();
 void ResetDawnRuntimeProbe();
 bool TrySubmitNoopQueueWork(std::string* detailOut = nullptr);
+bool TrySubmitEmptyCommandBuffer(std::string* detailOut = nullptr);
+DawnRuntimeSymbolStatus GetDawnRuntimeSymbolStatus();
 
 } // namespace mousefx::gpu

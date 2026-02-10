@@ -116,6 +116,10 @@ static json BuildDawnProbeJson(const gpu::DawnRuntimeProbeInfo& probe) {
         {"has_create_surface", probe.hasCreateSurface},
         {"has_get_queue", probe.hasGetQueue},
         {"has_surface_present", probe.hasSurfacePresent},
+        {"has_wait_any", probe.hasWaitAny},
+        {"has_modern_request_adapter", probe.hasModernRequestAdapter},
+        {"has_modern_request_device", probe.hasModernRequestDevice},
+        {"has_instance_process_events", probe.hasInstanceProcessEvents},
         {"can_create_instance", probe.canCreateInstance},
         {"can_request_adapter", probe.canRequestAdapter},
         {"can_create_device", probe.canCreateDevice},
@@ -149,12 +153,38 @@ static json BuildDawnOverlayBridgeJson(const gpu::DawnOverlayBridgeStatus& bridg
     };
 }
 
-static json BuildGpuAccelerationJson(const std::string& activeBackend, const gpu::DawnOverlayBridgeStatus& bridge) {
+static json BuildDawnRuntimeSymbolJson(const gpu::DawnRuntimeSymbolStatus& s) {
+    return json{
+        {"module_loaded", s.moduleLoaded},
+        {"module_name", s.moduleName},
+        {"has_wgpu_get_proc_address", s.hasWgpuGetProcAddress},
+        {"has_create_instance", s.hasCreateInstance},
+        {"has_request_adapter_legacy", s.hasRequestAdapterLegacy},
+        {"has_request_device_legacy", s.hasRequestDeviceLegacy},
+        {"has_request_adapter_modern", s.hasRequestAdapterModern},
+        {"has_request_device_modern", s.hasRequestDeviceModern},
+        {"has_wait_any", s.hasWaitAny},
+        {"has_instance_process_events", s.hasInstanceProcessEvents},
+        {"summary", s.summary},
+    };
+}
+
+static json BuildGpuAccelerationJson(
+    const std::string& activeBackend,
+    const gpu::DawnOverlayBridgeStatus& bridge,
+    const gpu::DawnRuntimeStatus& runtime) {
     if (activeBackend != "dawn") {
         return json{
             {"level", "none"},
             {"label_en", "CPU Fallback"},
             {"label_zh", u8"\u0043\u0050\u0055 \u515c\u5e95"},
+        };
+    }
+    if (!runtime.queueReady) {
+        return json{
+            {"level", "partial"},
+            {"label_en", "GPU backend selected, but command queue is not ready (CPU path still active)"},
+            {"label_zh", u8"\u5df2\u9009\u62e9 GPU \u540e\u7aef\uff0c\u4f46\u547d\u4ee4\u961f\u5217\u672a\u5c31\u7eea\uff08\u5f53\u524d\u4ecd\u4ee5 CPU \u8def\u5f84\u4e3a\u4e3b\uff09"},
         };
     }
     const bool compositorRequested = (bridge.mode == "compositor");
@@ -178,6 +208,7 @@ static const char* DawnStateCodeFromDetail(const std::string& detail) {
     if (detail == "dawn_create_instance_proc_missing") return "create_proc_missing";
     if (detail == "dawn_create_instance_failed") return "create_failed";
     if (detail == "dawn_handshake_skipped_debugger") return "handshake_skipped_debugger";
+    if (detail == "dawn_overlay_bridge_ready_modern_abi_queue_ready") return "overlay_bridge_ready_modern_abi_queue_ready";
     if (detail == "dawn_overlay_bridge_ready_modern_abi") return "overlay_bridge_ready_modern_abi";
     if (detail == "dawn_modern_abi_bridge_pending") return "modern_abi_bridge_pending";
     if (detail == "dawn_instance_ok_no_device") return "instance_ok_no_device";
@@ -191,6 +222,7 @@ static const char* DawnStateCodeFromDetail(const std::string& detail) {
     if (detail == "dawn_request_device_timeout") return "request_device_timeout";
     if (detail == "dawn_request_device_failed") return "request_device_failed";
     if (detail == "dawn_overlay_bridge_ready") return "overlay_bridge_ready";
+    if (detail == "dawn_queue_not_ready") return "queue_not_ready";
     if (detail == "dawn_runtime_ready_for_device_stage") return "ready_for_device_stage";
     if (detail == "init_not_run") return "init_not_run";
     return "unknown";
@@ -208,6 +240,13 @@ static json BuildDawnStatusJson(const gpu::DawnRuntimeStatus& status) {
         {"last_init_tick_ms", status.lastInitTickMs},
         {"ready_for_device_stage", status.readyForDeviceStage},
         {"legacy_ready_for_device_stage", status.readyForDeviceStage},
+        {"queue_ready", status.queueReady},
+        {"command_encoder_ready", status.commandEncoderReady},
+        {"modern_abi_detected", status.modernAbiDetected},
+        {"modern_abi_native_ready", status.modernAbiNativeReady},
+        {"modern_abi_strategy", status.modernAbiStrategy},
+        {"modern_abi_native_detail", status.modernAbiNativeDetail},
+        {"modern_abi_prime_detail", status.modernAbiPrimeDetail},
         {"probe", BuildDawnProbeJson(status.probe)},
     };
 }
@@ -237,6 +276,14 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
             {"tone", "ok"},
         };
     }
+    if (stateCode == "overlay_bridge_ready_modern_abi_queue_ready") {
+        return json{
+            {"action_code", "trigger_probe_now"},
+            {"action_text_en", "Modern ABI queue handshake is ready. GPU path can be activated now."},
+            {"action_text_zh", u8"\u73b0\u4ee3 ABI \u7684 queue \u63e1\u624b\u5df2\u5c31\u7eea\uff0c\u73b0\u5728\u53ef\u542f\u7528 GPU \u8def\u5f84\u3002"},
+            {"tone", "ok"},
+        };
+    }
     if (stateCode == "modern_abi_bridge_pending") {
         return json{
             {"action_code", "wire_overlay_gpu_bridge"},
@@ -251,6 +298,14 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
             {"action_text_en", "Adapter/device handshake succeeded. Next wire OverlayHost rendering bridge to Dawn backend."},
             {"action_text_zh", u8"\u5df2\u5b8c\u6210 \u0061\u0064\u0061\u0070\u0074\u0065\u0072\u002f\u0064\u0065\u0076\u0069\u0063\u0065 \u63e1\u624b\u3002\u4e0b\u4e00\u6b65\u8bf7\u5c06 \u004f\u0076\u0065\u0072\u006c\u0061\u0079\u0048\u006f\u0073\u0074 \u6e32\u67d3\u6865\u63a5\u5165 \u0044\u0061\u0077\u006e \u540e\u7aef\u3002"},
             {"tone", "info"},
+        };
+    }
+    if (stateCode == "queue_not_ready") {
+        return json{
+            {"action_code", "review_logs"},
+            {"action_text_en", "GPU runtime is detected but queue is not ready yet. Keep CPU fallback and continue modern ABI queue wiring."},
+            {"action_text_zh", u8"\u5df2\u68c0\u6d4b\u5230 GPU \u8fd0\u884c\u65f6\uff0c\u4f46 queue \u5c1a\u672a\u5c31\u7eea\u3002\u5f53\u524d\u4fdd\u6301 CPU \u515c\u5e95\uff0c\u9700\u7ee7\u7eed\u63a5\u5165 modern ABI \u7684 queue \u63e1\u624b\u6d41\u7a0b\u3002"},
+            {"tone", "warn"},
         };
     }
     if (stateCode == "request_adapter_proc_missing" || stateCode == "request_device_proc_missing") {
@@ -357,7 +412,7 @@ static json BuildGpuBannerJson(const std::string& backendPreference, const std::
             };
         }
     }
-    const json accel = BuildGpuAccelerationJson(activeBackend, bridge);
+    const json accel = BuildGpuAccelerationJson(activeBackend, bridge, status);
     if (!gpuInUse && backendPreference == "cpu") {
         return json{
             {"code", "cpu_forced"},
@@ -513,10 +568,17 @@ bool WebSettingsServer::Start() {
                         {"prepared_trail_segments", consume.preparedTrailSegments},
                         {"prepared_trail_triangles", consume.preparedTrailTriangles},
                         {"prepared_upload_bytes", consume.preparedUploadBytes},
+                        {"prepared_particle_batches", consume.preparedParticleBatches},
+                        {"prepared_particle_sprites", consume.preparedParticleSprites},
+                        {"prepared_particle_upload_bytes", consume.preparedParticleUploadBytes},
+                        {"preprocess_workers", consume.preprocessWorkers},
+                        {"preprocess_parallel", consume.preprocessParallel},
                         {"noop_submit_attempts", consume.noopSubmitAttempts},
                         {"noop_submit_success", consume.noopSubmitSuccess},
+                        {"empty_command_submit_attempts", consume.emptyCommandSubmitAttempts},
+                        {"empty_command_submit_success", consume.emptyCommandSubmitSuccess},
                     }},
-                    {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge)},
+                    {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus)},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
                 }).dump();
                 return;
@@ -564,11 +626,39 @@ bool WebSettingsServer::Start() {
                         {"prepared_trail_segments", consume.preparedTrailSegments},
                         {"prepared_trail_triangles", consume.preparedTrailTriangles},
                         {"prepared_upload_bytes", consume.preparedUploadBytes},
+                        {"prepared_particle_batches", consume.preparedParticleBatches},
+                        {"prepared_particle_sprites", consume.preparedParticleSprites},
+                        {"prepared_particle_upload_bytes", consume.preparedParticleUploadBytes},
+                        {"preprocess_workers", consume.preprocessWorkers},
+                        {"preprocess_parallel", consume.preprocessParallel},
                         {"noop_submit_attempts", consume.noopSubmitAttempts},
                         {"noop_submit_success", consume.noopSubmitSuccess},
+                        {"empty_command_submit_attempts", consume.emptyCommandSubmitAttempts},
+                        {"empty_command_submit_success", consume.emptyCommandSubmitSuccess},
                     }},
-                    {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge)},
+                    {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus)},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
+                }).dump();
+                return;
+            }
+            if (req.method == "POST" && path == "/api/gpu/runtime_symbol_check") {
+                bool refresh = false;
+                if (!req.body.empty()) {
+                    try {
+                        json in = json::parse(req.body);
+                        if (in.contains("refresh") && in["refresh"].is_boolean()) {
+                            refresh = in["refresh"].get<bool>();
+                        }
+                    } catch (...) {}
+                }
+                if (refresh) {
+                    OverlayHostService::Instance().ProbeDawnRuntimeNow(true);
+                }
+                const gpu::DawnRuntimeSymbolStatus symbol = gpu::GetDawnRuntimeSymbolStatus();
+                resp.contentType = "application/json; charset=utf-8";
+                resp.body = json({
+                    {"ok", true},
+                    {"dawn_runtime_symbol", BuildDawnRuntimeSymbolJson(symbol)},
                 }).dump();
                 return;
             }
@@ -821,11 +911,18 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"prepared_trail_segments", consume.preparedTrailSegments},
         {"prepared_trail_triangles", consume.preparedTrailTriangles},
         {"prepared_upload_bytes", consume.preparedUploadBytes},
+        {"prepared_particle_batches", consume.preparedParticleBatches},
+        {"prepared_particle_sprites", consume.preparedParticleSprites},
+        {"prepared_particle_upload_bytes", consume.preparedParticleUploadBytes},
+        {"preprocess_workers", consume.preprocessWorkers},
+        {"preprocess_parallel", consume.preprocessParallel},
         {"noop_submit_attempts", consume.noopSubmitAttempts},
         {"noop_submit_success", consume.noopSubmitSuccess},
+        {"empty_command_submit_attempts", consume.emptyCommandSubmitAttempts},
+        {"empty_command_submit_success", consume.emptyCommandSubmitSuccess},
     };
     out["gpu_bridge_mode_request"] = EnsureUtf8(cfg.gpuBridgeModeRequest);
-    out["gpu_acceleration"] = BuildGpuAccelerationJson(activeBackend, dawnBridge);
+    out["gpu_acceleration"] = BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus);
     out["gpu_status_banner"] = BuildGpuBannerJson(cfg.renderBackend, activeBackend, dawnStatus, dawnBridge);
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
     out["active"] = {
