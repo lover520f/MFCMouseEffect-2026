@@ -130,10 +130,23 @@ bool AppController::Start() {
     configDir_ = ResolveConfigDirectory();
     config_ = EffectConfig::Load(configDir_);
     config_.renderBackend = NormalizeRenderBackend(config_.renderBackend);
-    // Startup fast-path: bootstrap with CPU first, then apply the configured backend asynchronously.
-    (void)OverlayHostService::Instance().SetRenderBackendPreference("cpu");
     OverlayHostService::Instance().SetGpuBridgeModeRequest(config_.gpuBridgeModeRequest);
-    deferredBackendApplyPending_ = (config_.renderBackend != "cpu");
+    // Startup tightening:
+    // - If configured backend is dawn/auto and queue is already ready, start directly on target backend.
+    // - Otherwise fallback to CPU first, then apply backend asynchronously.
+    if (config_.renderBackend == "cpu") {
+        (void)OverlayHostService::Instance().SetRenderBackendPreference("cpu");
+        deferredBackendApplyPending_ = false;
+    } else {
+        const bool startedOnTarget =
+            OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
+        if (startedOnTarget) {
+            deferredBackendApplyPending_ = false;
+        } else {
+            (void)OverlayHostService::Instance().SetRenderBackendPreference("cpu");
+            deferredBackendApplyPending_ = true;
+        }
+    }
 
     diag_.stage = StartStage::GdiPlusStartup;
     if (!gdiplus_.Startup()) {
