@@ -12,6 +12,11 @@ bool RectanglesOverlap(int l1, int t1, int r1, int b1, int l2, int t2, int r2, i
     return !(r1 <= l2 || r2 <= l1 || b1 <= t2 || b2 <= t1);
 }
 
+uint64_t MinGpuContinuousIntervalMs(bool hoverContinuous) {
+    // Keep hover command flow smooth enough while preventing per-frame packet storms.
+    return hoverContinuous ? 14ull : 10ull;
+}
+
 } // namespace
 
 uint64_t RippleOverlayLayer::NowMs() {
@@ -152,6 +157,7 @@ void RippleOverlayLayer::Update(uint64_t nowMs) {
         }
         instances_.pop_back();
         idToIndex_.erase(removedId);
+        lastGpuEmitTickById_.erase(removedId);
     }
 }
 
@@ -205,6 +211,11 @@ void RippleOverlayLayer::AppendGpuCommands(gpu::OverlayGpuCommandStream& stream,
     for (const auto& instance : instances_) {
         if (!instance.active || !instance.renderer) continue;
 
+        const bool hoverContinuous = instance.continuous && instance.params.loop;
+        if (instance.continuous && !ShouldEmitGpuContinuous(instance.id, hoverContinuous, nowMs)) {
+            continue;
+        }
+
         gpu::OverlayGpuCommand cmd{};
         cmd.type = gpu::OverlayGpuCommandType::RipplePulse;
         if (!instance.continuous) {
@@ -241,6 +252,20 @@ void RippleOverlayLayer::AppendGpuCommands(gpu::OverlayGpuCommandStream& stream,
         stream.Add(std::move(cmd));
     }
     (void)nowMs;
+}
+
+bool RippleOverlayLayer::ShouldEmitGpuContinuous(uint64_t id, bool hoverContinuous, uint64_t nowMs) const {
+    const uint64_t minIntervalMs = MinGpuContinuousIntervalMs(hoverContinuous);
+    auto it = lastGpuEmitTickById_.find(id);
+    if (it == lastGpuEmitTickById_.end()) {
+        lastGpuEmitTickById_[id] = nowMs;
+        return true;
+    }
+    if (nowMs >= it->second && (nowMs - it->second) >= minIntervalMs) {
+        it->second = nowMs;
+        return true;
+    }
+    return false;
 }
 
 RippleOverlayLayer::RippleInstance* RippleOverlayLayer::FindById(uint64_t id) {

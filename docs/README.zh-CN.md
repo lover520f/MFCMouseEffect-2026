@@ -10,6 +10,13 @@
 - 问题记录：`docs/issues/web-settings-server-lifecycle.zh-CN.md`（浏览器设置页：idle 重启崩溃 + token 轮换）
 - 问题记录：`docs/issues/web-settings-state-payload-prune.zh-CN.md`（设置页 apply 改为仅提交变化字段）
 - 问题记录：`docs/issues/web-settings-diag-trim-and-file-dump.zh-CN.md`（诊断瘦身 + 全量状态导出到本地未跟踪文件）
+- 问题记录：`docs/issues/dawn_mixed_packet_branch_stage75.md`（Dawn non-trail mixed packet 提交分支）
+- 问题记录：`docs/issues/dawn_ripple_kind_packet_stage76.md`（Dawn ripple click/hover/hold packet 拆分）
+- 问题记录：`docs/issues/dawn_pass_warmup_stage77.md`（Dawn pass 预热以降低首帧卡顿）
+- 问题记录：`docs/issues/dawn_trail_nontrail_same_frame_stage78.md`（同帧提交 trail + non-trail）
+- 问题记录：`docs/issues/dawn_hold_first_scheduling_stage79.md`（trail 压力下 hold-first 调度）
+- 问题记录：`docs/issues/dawn_diag_timeline_stage80.md`（state 诊断时间线）
+- 问题记录：`docs/issues/dawn_continuous_ripple_throttle_stage82.md`（continuous ripple 命令节流）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
 - 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）
 - 架构整理：`docs/architecture/ui-folder-structure.zh-CN.md`（UI 文件夹结构整理）

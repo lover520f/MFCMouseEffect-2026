@@ -2,8 +2,6 @@
 #include "WebSettingsServer.h"
 
 #include <algorithm>
-#include <filesystem>
-#include <fstream>
 #include <random>
 #include <sstream>
 
@@ -1073,7 +1071,7 @@ std::string WebSettingsServer::BuildStateJson() const {
     };
 
     const std::string stateJson = out.dump();
-    WriteLocalDiagStateSnapshot(stateJson);
+    diagStateWriter_.TryWriteSnapshot(ExeDirW(), stateJson, NowMs());
     return stateJson;
 }
 
@@ -1092,41 +1090,6 @@ std::string WebSettingsServer::ApplyStateJson(const std::string& body) {
     cmd["payload"] = j;
     controller_->HandleCommand(cmd.dump());
     return json({{"ok", true}}).dump();
-}
-
-void WebSettingsServer::WriteLocalDiagStateSnapshot(const std::string& stateJson) const {
-    try {
-        static std::atomic<uint64_t> s_lastDumpMs{0};
-        constexpr uint64_t kDumpIntervalMs = 1500;
-        const uint64_t now = NowMs();
-        const uint64_t prev = s_lastDumpMs.load(std::memory_order_relaxed);
-        if (now >= prev && (now - prev) < kDumpIntervalMs) {
-            return;
-        }
-        s_lastDumpMs.store(now, std::memory_order_relaxed);
-
-        const std::wstring exeDir = ExeDirW();
-        if (exeDir.empty()) {
-            return;
-        }
-
-        const std::filesystem::path dir = std::filesystem::path(exeDir) / L".local" / L"diag";
-        const std::filesystem::path file = dir / L"web_state_auto.json";
-        std::error_code ec;
-        std::filesystem::create_directories(dir, ec);
-        if (ec) {
-            return;
-        }
-
-        std::ofstream out(file, std::ios::binary | std::ios::trunc);
-        if (!out.is_open()) {
-            return;
-        }
-        out.write(stateJson.data(), static_cast<std::streamsize>(stateJson.size()));
-        out.flush();
-    } catch (...) {
-        return;
-    }
 }
 
 std::string WebSettingsServer::MakeToken() {

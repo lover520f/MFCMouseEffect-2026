@@ -1827,19 +1827,19 @@ bool TrySubmitTrailBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std
     return true;
 }
 
-bool TrySubmitRippleBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut) {
+bool TrySubmitRipplePacketByTag(uint32_t bakedVertices, uint32_t uploadBytes, const char* passTag, const char* detailPrefix, std::string* detailOut) {
     if (bakedVertices == 0 || uploadBytes == 0) {
         if (detailOut) *detailOut = "ripple_packet_empty";
         return false;
     }
 
     std::string submitDetail;
-    if (!TrySubmitEmptyCommandBufferTagged("ripple_pass", &submitDetail)) {
+    if (!TrySubmitEmptyCommandBufferTagged(passTag, &submitDetail)) {
         if (detailOut) {
             if (submitDetail.empty()) {
-                *detailOut = "ripple_packet_submit_fail";
+                *detailOut = std::string(detailPrefix) + "_submit_fail";
             } else {
-                *detailOut = std::string("ripple_packet_submit_fail_") + submitDetail;
+                *detailOut = std::string(detailPrefix) + "_submit_fail_" + submitDetail;
             }
         }
         return false;
@@ -1847,10 +1847,26 @@ bool TrySubmitRippleBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, st
 
     if (detailOut) {
         std::ostringstream oss;
-        oss << "ripple_packet_submit_ok_v" << bakedVertices << "_u" << uploadBytes;
+        oss << detailPrefix << "_submit_ok_v" << bakedVertices << "_u" << uploadBytes;
         *detailOut = oss.str();
     }
     return true;
+}
+
+bool TrySubmitRippleBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut) {
+    return TrySubmitRipplePacketByTag(bakedVertices, uploadBytes, "ripple_pass", "ripple_packet", detailOut);
+}
+
+bool TrySubmitRippleClickBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut) {
+    return TrySubmitRipplePacketByTag(bakedVertices, uploadBytes, "ripple_click_pass", "ripple_click_packet", detailOut);
+}
+
+bool TrySubmitRippleHoverBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut) {
+    return TrySubmitRipplePacketByTag(bakedVertices, uploadBytes, "ripple_hover_pass", "ripple_hover_packet", detailOut);
+}
+
+bool TrySubmitRippleHoldBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut) {
+    return TrySubmitRipplePacketByTag(bakedVertices, uploadBytes, "ripple_hold_pass", "ripple_hold_packet", detailOut);
 }
 
 bool TrySubmitParticleBakedPacket(uint32_t bakedSprites, uint32_t uploadBytes, std::string* detailOut) {
@@ -1874,6 +1890,34 @@ bool TrySubmitParticleBakedPacket(uint32_t bakedSprites, uint32_t uploadBytes, s
     if (detailOut) {
         std::ostringstream oss;
         oss << "particle_packet_submit_ok_s" << bakedSprites << "_u" << uploadBytes;
+        *detailOut = oss.str();
+    }
+    return true;
+}
+
+bool TrySubmitMixedBakedPacket(uint32_t rippleVertices, uint32_t particleSprites, uint32_t uploadBytes, std::string* detailOut) {
+    if ((rippleVertices == 0 && particleSprites == 0) || uploadBytes == 0) {
+        if (detailOut) *detailOut = "mixed_packet_empty";
+        return false;
+    }
+
+    std::string submitDetail;
+    if (!TrySubmitEmptyCommandBufferTagged("mixed_pass", &submitDetail)) {
+        if (detailOut) {
+            if (submitDetail.empty()) {
+                *detailOut = "mixed_packet_submit_fail";
+            } else {
+                *detailOut = std::string("mixed_packet_submit_fail_") + submitDetail;
+            }
+        }
+        return false;
+    }
+
+    if (detailOut) {
+        std::ostringstream oss;
+        oss << "mixed_packet_submit_ok_r" << rippleVertices
+            << "_p" << particleSprites
+            << "_u" << uploadBytes;
         *detailOut = oss.str();
     }
     return true;

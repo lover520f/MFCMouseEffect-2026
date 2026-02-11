@@ -7,6 +7,8 @@
 #include <string>
 #include <thread>
 
+#include "MouseFx/Server/LocalDiagStateWriter.h"
+
 namespace mousefx {
 
 class AppController;
@@ -33,7 +35,6 @@ public:
 private:
     std::string BuildSchemaJson() const;
     std::string BuildStateJson() const;
-    void WriteLocalDiagStateSnapshot(const std::string& stateJson) const;
     std::string ApplyStateJson(const std::string& body);
 
     static std::string MakeToken();
@@ -54,6 +55,7 @@ private:
     std::atomic<uint64_t> lastRequestMs_{0};
     std::atomic<bool> monitorRunning_{false};
     std::thread monitorThread_{};
+    mutable LocalDiagStateWriter diagStateWriter_{};
     int idleTimeoutMs_ = 5 * 60 * 1000;
 };
 

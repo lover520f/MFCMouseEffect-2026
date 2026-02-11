@@ -48,11 +48,13 @@ private:
     };
 
     static uint64_t NowMs();
+    bool ShouldEmitGpuContinuous(uint64_t id, bool hoverContinuous, uint64_t nowMs) const;
     RippleInstance* FindById(uint64_t id);
     const RippleInstance* FindById(uint64_t id) const;
 
     std::vector<RippleInstance> instances_{};
     std::unordered_map<uint64_t, size_t> idToIndex_{};
+    mutable std::unordered_map<uint64_t, uint64_t> lastGpuEmitTickById_{};
     uint64_t nextId_ = 1;
 };
 

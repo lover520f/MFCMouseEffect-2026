@@ -233,6 +233,7 @@
     <ClInclude Include="MouseFx\Core\JsonLite.h" />
     <ClInclude Include="MouseFx\MouseFxMessages.h" />
     <ClInclude Include="MouseFx\Server\HttpServer.h" />
+    <ClInclude Include="MouseFx\Server\LocalDiagStateWriter.h" />
     <ClInclude Include="MouseFx\Server\WebUiAssets.h" />
     <ClInclude Include="MouseFx\Server\WebSettingsServer.h" />
     <ClInclude Include="MouseFx\Effects\RippleEffect.h" />
@@ -311,6 +312,7 @@
     <ClCompile Include="MouseFx\Effects\HoverEffect.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfig.cpp" />
     <ClCompile Include="MouseFx\Server\HttpServer.cpp" />
+    <ClCompile Include="MouseFx\Server\LocalDiagStateWriter.cpp" />
     <ClCompile Include="MouseFx\Server\WebUiAssets.cpp" />
     <ClCompile Include="MouseFx\Server\WebSettingsServer.cpp" />
     <ClCompile Include="UI\Settings\SettingsWnd.cpp" />

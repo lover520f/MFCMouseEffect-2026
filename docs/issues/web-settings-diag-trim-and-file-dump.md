@@ -7,6 +7,9 @@
 - Large state JSON stayed in the page, causing UI lag.
 
 ## Changes
+- `MFCMouseEffect/MouseFx/Server/LocalDiagStateWriter.h`
+- `MFCMouseEffect/MouseFx/Server/LocalDiagStateWriter.cpp`
+- Extracted local state snapshot writing into a dedicated writer to keep `WebSettingsServer` focused on HTTP/schema/state assembly.
 - `MFCMouseEffect/WebUI/app.js`
 - Restored diag gating: diagnostics are enabled only when URL has `diag=1`.
 - Reduced diag polling interval from `500ms` to `2500ms`.

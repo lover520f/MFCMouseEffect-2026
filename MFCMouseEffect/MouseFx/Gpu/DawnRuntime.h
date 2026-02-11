@@ -77,7 +77,11 @@ bool TrySubmitEmptyCommandBuffer(std::string* detailOut = nullptr);
 bool TrySubmitEmptyCommandBufferTagged(const char* tag, std::string* detailOut = nullptr);
 bool TrySubmitTrailBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut = nullptr);
 bool TrySubmitRippleBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut = nullptr);
+bool TrySubmitRippleClickBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut = nullptr);
+bool TrySubmitRippleHoverBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut = nullptr);
+bool TrySubmitRippleHoldBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut = nullptr);
 bool TrySubmitParticleBakedPacket(uint32_t bakedSprites, uint32_t uploadBytes, std::string* detailOut = nullptr);
+bool TrySubmitMixedBakedPacket(uint32_t rippleVertices, uint32_t particleSprites, uint32_t uploadBytes, std::string* detailOut = nullptr);
 DawnRuntimeSymbolStatus GetDawnRuntimeSymbolStatus();
 
 } // namespace mousefx::gpu

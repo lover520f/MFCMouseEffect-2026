@@ -7,6 +7,9 @@
 - 大 JSON 常驻页面，导致设置页卡顿。
 
 ## 改动
+- `MFCMouseEffect/MouseFx/Server/LocalDiagStateWriter.h`
+- `MFCMouseEffect/MouseFx/Server/LocalDiagStateWriter.cpp`
+- 将本地状态快照写入逻辑独立成专用写入器，`WebSettingsServer` 仅负责 HTTP/schema/state 组装。
 - `MFCMouseEffect/WebUI/app.js`
 - 恢复诊断开关：仅当 URL 带 `diag=1` 时启用诊断。
 - 诊断轮询间隔由 `500ms` 调整为 `2500ms`。

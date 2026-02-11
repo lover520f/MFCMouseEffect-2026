@@ -133,14 +133,17 @@ inline TrailGeometryPrepResult BuildTrailGeometryRange(
 } // namespace detail
 
 inline TrailGeometryPrepResult PreprocessTrailGeometry(
-    const OverlayGpuCommandStream& stream) {
+    const OverlayGpuCommandStream& stream,
+    bool skipTrailGeometryBuild = false) {
     std::vector<const OverlayGpuCommand*> trails{};
     trails.reserve(stream.Commands().size());
     uint64_t totalVertices = 0;
-    for (const auto& cmd : stream.Commands()) {
-        if (cmd.type != OverlayGpuCommandType::TrailPolyline || cmd.vertices.size() < 2) continue;
-        trails.push_back(&cmd);
-        totalVertices += cmd.vertices.size();
+    if (!skipTrailGeometryBuild) {
+        for (const auto& cmd : stream.Commands()) {
+            if (cmd.type != OverlayGpuCommandType::TrailPolyline || cmd.vertices.size() < 2) continue;
+            trails.push_back(&cmd);
+            totalVertices += cmd.vertices.size();
+        }
     }
 
     TrailGeometryPrepResult base{};
@@ -166,7 +169,7 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
     const unsigned hw = std::thread::hardware_concurrency();
     const uint32_t maxWorkers = (hw > 0) ? hw : 2;
     const uint32_t workerCount = (uint32_t)std::min<size_t>(trails.size(), maxWorkers);
-    const bool shouldParallel = (workerCount >= 2 && totalVertices >= 2048);
+    const bool shouldParallel = (workerCount >= 2 && totalVertices >= 1024);
     if (!shouldParallel) {
         TrailGeometryPrepResult out = detail::BuildTrailGeometryRange(trails, 0, trails.size());
         out.workers = 1;
