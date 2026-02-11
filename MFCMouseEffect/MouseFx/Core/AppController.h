@@ -92,6 +92,7 @@ private:
     void SetActiveEffectType(EffectCategory category, const std::string& type);
     void ReloadConfigFromDisk();
     void RecreateActiveEffects();
+    bool IsBackendSwitchIdleWindow() const;
 
     HWND dispatchHwnd_ = nullptr;
 
@@ -115,6 +116,7 @@ private:
     static constexpr UINT_PTR kHoldTimerId = 5;
     static constexpr UINT_PTR kDeferredBackendTimerId = 6;
     static constexpr DWORD kHoldDelayMs = 350; // Increased to 350ms to distinguish from click
+    static constexpr DWORD kDeferredBackendIdleThresholdMs = 240;
     struct PendingHold {
         POINT pt;
         int button;

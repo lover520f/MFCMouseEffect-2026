@@ -281,7 +281,15 @@ void AppController::SetRenderBackend(const std::string& backend) {
 
     const bool shouldRecreateNow = OverlayHostService::Instance().SetRenderBackendPreference(normalized);
     if (shouldRecreateNow) {
-        RecreateActiveEffects();
+        if (normalized != "cpu" && !IsBackendSwitchIdleWindow()) {
+            deferredDawnUpgradePending_ = true;
+            deferredDawnUpgradeRetryCount_ = 0;
+            if (dispatchHwnd_) {
+                SetTimer(dispatchHwnd_, kDeferredBackendTimerId, 80, nullptr);
+            }
+        } else {
+            RecreateActiveEffects();
+        }
     }
 
     if ((normalized == "dawn" || normalized == "auto") &&
@@ -415,6 +423,12 @@ IMouseEffect* AppController::GetEffect(EffectCategory category) const {
     size_t idx = static_cast<size_t>(category);
     if (idx >= kCategoryCount) return nullptr;
     return effects_[idx].get();
+}
+
+bool AppController::IsBackendSwitchIdleWindow() const {
+    const uint64_t now = GetTickCount64();
+    const uint64_t elapsed = (now >= lastInputTime_) ? (now - lastInputTime_) : 0;
+    return elapsed >= kDeferredBackendIdleThresholdMs;
 }
 
 void AppController::RecreateActiveEffects() {
@@ -823,7 +837,13 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
                     OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
                 if (config_.renderBackend != "cpu") {
                     if (shouldRecreateNow) {
-                        RecreateActiveEffects();
+                        if (IsBackendSwitchIdleWindow()) {
+                            RecreateActiveEffects();
+                        } else {
+                            deferredDawnUpgradePending_ = true;
+                            deferredDawnUpgradeRetryCount_ = 0;
+                            SetTimer(hwnd, kDeferredBackendTimerId, 80, nullptr);
+                        }
                     }
                     if (!OverlayHostService::Instance().IsDawnQueueReady()) {
                         deferredDawnUpgradePending_ = true;
@@ -841,9 +861,20 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
             }
             if (deferredDawnUpgradePending_) {
                 if (OverlayHostService::Instance().IsDawnQueueReady()) {
-                    RecreateActiveEffects();
-                    deferredDawnUpgradePending_ = false;
-                    deferredDawnUpgradeRetryCount_ = 0;
+                    if (IsBackendSwitchIdleWindow()) {
+                        RecreateActiveEffects();
+                        deferredDawnUpgradePending_ = false;
+                        deferredDawnUpgradeRetryCount_ = 0;
+                    } else {
+                        ++deferredDawnUpgradeRetryCount_;
+                        if (deferredDawnUpgradeRetryCount_ < 50) {
+                            SetTimer(hwnd, kDeferredBackendTimerId, 80, nullptr);
+                        } else {
+                            RecreateActiveEffects();
+                            deferredDawnUpgradePending_ = false;
+                            deferredDawnUpgradeRetryCount_ = 0;
+                        }
+                    }
                 } else {
                     ++deferredDawnUpgradeRetryCount_;
                     if (deferredDawnUpgradeRetryCount_ < 50) {
