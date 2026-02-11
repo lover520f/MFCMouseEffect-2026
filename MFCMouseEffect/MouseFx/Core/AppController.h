@@ -93,6 +93,8 @@ private:
     void ReloadConfigFromDisk();
     void RecreateActiveEffects();
     bool IsBackendSwitchIdleWindow() const;
+    bool IsLikelySystemWindowDrag(HWND dispatchHwnd) const;
+    bool ShouldDispatchDragMove(uint64_t nowTick);
 
     HWND dispatchHwnd_ = nullptr;
 
@@ -117,6 +119,7 @@ private:
     static constexpr UINT_PTR kDeferredBackendTimerId = 6;
     static constexpr DWORD kHoldDelayMs = 350; // Increased to 350ms to distinguish from click
     static constexpr DWORD kDeferredBackendIdleThresholdMs = 240;
+    static constexpr DWORD kWindowDragDispatchIntervalMs = 20;
     struct PendingHold {
         POINT pt;
         int button;
@@ -129,6 +132,7 @@ private:
     bool deferredBackendApplyPending_ = false;
     bool deferredDawnUpgradePending_ = false;
     uint32_t deferredDawnUpgradeRetryCount_ = 0;
+    uint64_t lastDragMoveDispatchTick_ = 0;
 
 #ifdef _DEBUG
     uint32_t debugClickCount_ = 0;

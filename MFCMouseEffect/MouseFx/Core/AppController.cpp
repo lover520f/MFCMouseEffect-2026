@@ -426,6 +426,24 @@ bool AppController::IsBackendSwitchIdleWindow() const {
     return elapsed >= kDeferredBackendIdleThresholdMs;
 }
 
+bool AppController::IsLikelySystemWindowDrag(HWND dispatchHwnd) const {
+    // During window move/resize, system usually captures mouse to the dragged window.
+    // We treat "captured by another hwnd while button is down" as drag-like workload.
+    const HWND capture = GetCapture();
+    return (capture != nullptr && capture != dispatchHwnd);
+}
+
+bool AppController::ShouldDispatchDragMove(uint64_t nowTick) {
+    const uint64_t elapsed = (nowTick >= lastDragMoveDispatchTick_)
+        ? (nowTick - lastDragMoveDispatchTick_)
+        : 0;
+    if (elapsed < kWindowDragDispatchIntervalMs) {
+        return false;
+    }
+    lastDragMoveDispatchTick_ = nowTick;
+    return true;
+}
+
 void AppController::RecreateActiveEffects() {
     const std::string clickType = config_.active.click.empty()
         ? (config_.defaultEffect.empty() ? "ripple" : config_.defaultEffect)
@@ -753,19 +771,30 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
             pt.x = static_cast<LONG>(wParam);
             pt.y = static_cast<LONG>(lParam);
         }
+
+        const uint64_t nowTick = GetTickCount64();
+        const bool dragLikeMove = holdButtonDown_ && IsLikelySystemWindowDrag(hwnd);
+        const bool allowMoveDispatch = !dragLikeMove || ShouldDispatchDragMove(nowTick);
+
         // Dispatch to Trail category effect
-        if (auto* effect = GetEffect(EffectCategory::Trail)) {
-            effect->OnMouseMove(pt);
+        if (allowMoveDispatch) {
+            if (auto* effect = GetEffect(EffectCategory::Trail)) {
+                effect->OnMouseMove(pt);
+            }
         }
         // Dispatch to Hold category effect (to update position if following mouse)
-        if (auto* effect = GetEffect(EffectCategory::Hold)) {
-            DWORD holdMs = 0;
-            if (holdButtonDown_ && holdDownTick_ != 0) {
-                const uint64_t now = GetTickCount64();
-                const uint64_t delta = (now >= holdDownTick_) ? (now - holdDownTick_) : 0;
-                holdMs = (DWORD)std::min<uint64_t>(delta, 0xFFFFFFFFu);
+        // Keep hold updates in sync with trail throttle during drag-like system move.
+        if (allowMoveDispatch) {
+            if (auto* effect = GetEffect(EffectCategory::Hold)) {
+                DWORD holdMs = 0;
+                if (holdButtonDown_ && holdDownTick_ != 0) {
+                    const uint64_t delta = (nowTick >= holdDownTick_) ? (nowTick - holdDownTick_) : 0;
+                    holdMs = (DWORD)std::min<uint64_t>(delta, 0xFFFFFFFFu);
+                }
+                effect->OnHoldUpdate(pt, holdMs);
             }
-            effect->OnHoldUpdate(pt, holdMs);
+        } else if (holdButtonDown_) {
+            // Consume suppressed move quietly during drag throttling.
         }
         return 0;
     }

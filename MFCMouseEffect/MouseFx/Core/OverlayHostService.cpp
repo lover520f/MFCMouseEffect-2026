@@ -30,6 +30,82 @@ std::string ResolveDawnBackendDetail(const gpu::DawnRuntimeStatus& runtime) {
     return runtime.lastInitDetail.empty() ? "queue_ready" : runtime.lastInitDetail;
 }
 
+uint64_t GetSystemInputIdleMs() {
+    LASTINPUTINFO info{};
+    info.cbSize = sizeof(info);
+    if (!GetLastInputInfo(&info)) return 0;
+    const DWORD now = GetTickCount();
+    return (now >= info.dwTime) ? (uint64_t)(now - info.dwTime) : 0;
+}
+
+void WaitForShortInputIdleWindow() {
+    constexpr uint32_t kIdleThresholdMs = 320;
+    constexpr uint32_t kMaxWaitMs = 4200;
+    constexpr uint32_t kPollMs = 50;
+    constexpr uint32_t kStableSamples = 3;
+
+    const uint64_t startTick = GetTickCount64();
+    uint32_t stable = 0;
+    while (GetTickCount64() - startTick < kMaxWaitMs) {
+        if (GetSystemInputIdleMs() >= kIdleThresholdMs) {
+            ++stable;
+        } else {
+            stable = 0;
+        }
+        if (stable >= kStableSamples) {
+            return;
+        }
+        Sleep(kPollMs);
+    }
+}
+
+std::atomic<int> g_dawnStartupWarmupState{0}; // 0=not_started,1=running,2=done
+std::atomic<bool> g_dawnFirstProbePending{true};
+
+bool WaitForLongInputIdleWindow() {
+    constexpr uint32_t kIdleThresholdMs = 1100;
+    constexpr uint32_t kMaxWaitMs = 18000;
+    constexpr uint32_t kPollMs = 100;
+    constexpr uint32_t kStableSamples = 4;
+
+    const uint64_t startTick = GetTickCount64();
+    uint32_t stable = 0;
+    while (GetTickCount64() - startTick < kMaxWaitMs) {
+        if (GetSystemInputIdleMs() >= kIdleThresholdMs) {
+            ++stable;
+        } else {
+            stable = 0;
+        }
+        if (stable >= kStableSamples) {
+            return true;
+        }
+        Sleep(kPollMs);
+    }
+    return false;
+}
+
+void RunDawnSubmitWarmupOnce(bool requireLongIdleWindow) {
+    int expected = 0;
+    if (!g_dawnStartupWarmupState.compare_exchange_strong(expected, 1, std::memory_order_acq_rel)) {
+        return;
+    }
+
+    if (requireLongIdleWindow) {
+        // Do not inject warmup work into active interaction.
+        if (!WaitForLongInputIdleWindow()) {
+            g_dawnStartupWarmupState.store(0, std::memory_order_release);
+            return;
+        }
+    }
+
+    std::string detail;
+    (void)gpu::TrySubmitNoopQueueWork(&detail);
+    (void)gpu::TrySubmitEmptyCommandBufferTagged("startup_warmup", &detail);
+    // Keep startup warmup lightweight; avoid extra packet submit that may spike CPU/GPU momentarily.
+
+    g_dawnStartupWarmupState.store(2, std::memory_order_release);
+}
+
 } // namespace
 
 std::string OverlayHostService::NormalizeRenderBackend(std::string backend) {
@@ -191,7 +267,22 @@ void OverlayHostService::RefreshGpuRuntimeProbeAsync() {
             const uint64_t token = asyncProbeToken_.load(std::memory_order_acquire);
             const std::string requested = requestedBackend_;
             if (requested == "dawn" || requested == "auto") {
-                (void)gpu::TryInitializeDawnRuntime();
+                const bool firstProbe = g_dawnFirstProbePending.exchange(false, std::memory_order_acq_rel);
+                gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatus();
+                if (!runtime.queueReady) {
+                    // First probe: initialize immediately to avoid delayed "few seconds later" hitch.
+                    // Follow-up probes: keep idle-window gating to avoid interaction-time spikes.
+                    if (!firstProbe) {
+                        WaitForShortInputIdleWindow();
+                    }
+                    (void)gpu::TryInitializeDawnRuntime();
+                    runtime = gpu::GetDawnRuntimeStatus();
+                }
+                if (runtime.queueReady) {
+                    // First probe warmup runs immediately (startup-frontloaded).
+                    // Later retries still require long idle window.
+                    RunDawnSubmitWarmupOnce(!firstProbe);
+                }
             }
             asyncProbeDoneToken_.store(token, std::memory_order_release);
             if (asyncProbeToken_.load(std::memory_order_acquire) == token) {

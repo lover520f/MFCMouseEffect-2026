@@ -180,6 +180,22 @@ body.mfx-modal-open{overflow:hidden}
   line-height:1.35;
   font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
 }
+#diagState{
+  width:100%;
+  box-sizing:border-box;
+  margin-top:8px;
+  min-height:140px;
+  max-height:260px;
+  resize:vertical;
+  border:1px solid rgba(255,255,255,.12);
+  background:#090f1c;
+  color:#b9d5ff;
+  border-radius:8px;
+  padding:8px 10px;
+  font-size:12px;
+  line-height:1.35;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+}
 .brand{display:flex;flex-direction:column;gap:2px}
 .brand .t{font-size:20px;font-weight:700;letter-spacing:.2px}
 .brand .s{font-size:12px;color:var(--muted)}

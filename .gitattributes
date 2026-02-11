@@ -1,0 +1,5 @@
+* text=auto
+
+MFCMouseEffect/WebUI/*.js text eol=crlf
+MFCMouseEffect/WebUI/*.css text eol=crlf
+MFCMouseEffect/WebUI/*.html text eol=crlf

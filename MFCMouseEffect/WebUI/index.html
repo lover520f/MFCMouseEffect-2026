@@ -36,12 +36,15 @@
       <div class="diag-head">
         <div class="diag-title">Diag Stream</div>
         <div class="diag-actions">
+          <button id="btnDiagState" class="probe-btn" type="button">Dump /api/state</button>
+          <button id="btnDiagStateCopy" class="probe-btn" type="button">Copy State</button>
           <button id="btnDiagSymbol" class="probe-btn" type="button">Check Symbols</button>
           <button id="btnDiagCopy" class="probe-btn" type="button">Copy</button>
           <button id="btnDiagClear" class="probe-btn" type="button">Clear</button>
         </div>
       </div>
       <textarea id="diagLog" readonly spellcheck="false"></textarea>
+      <textarea id="diagState" readonly spellcheck="false" placeholder="/api/state JSON snapshot"></textarea>
     </div>
 
     <div class="row">

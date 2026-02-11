@@ -9,6 +9,9 @@
   const btnGpuProbeEl = document.getElementById('btnGpuProbe');
   const diagPanelEl = document.getElementById('diagPanel');
   const diagLogEl = document.getElementById('diagLog');
+  const diagStateEl = document.getElementById('diagState');
+  const btnDiagStateEl = document.getElementById('btnDiagState');
+  const btnDiagStateCopyEl = document.getElementById('btnDiagStateCopy');
   const btnDiagSymbolEl = document.getElementById('btnDiagSymbol');
   const btnDiagCopyEl = document.getElementById('btnDiagCopy');
   const btnDiagClearEl = document.getElementById('btnDiagClear');
@@ -102,6 +105,9 @@
       status_gpu_action_running: "Applying optimization suggestion...",
       status_gpu_action_done: "Optimization action completed.",
       status_gpu_action_failed: "Action failed: ",
+      status_diag_state_loaded: "State snapshot updated.",
+      status_diag_state_failed: "State snapshot failed: ",
+      status_diag_state_copied: "State JSON copied.",
       status_bridge_switching: "Switching compatibility mode...",
       status_bridge_switched: "Compatibility mode switched.",
       status_bridge_switch_failed: "Compatibility mode switch failed: ",
@@ -189,6 +195,9 @@
       status_gpu_action_running: "\u6b63\u5728\u6267\u884c\u4f18\u5316\u5efa\u8bae...",
       status_gpu_action_done: "\u4f18\u5316\u64cd\u4f5c\u5df2\u5b8c\u6210\u3002",
       status_gpu_action_failed: "\u64cd\u4f5c\u5931\u8d25\uff1a",
+      status_diag_state_loaded: "\u72b6\u6001\u5feb\u7167\u5df2\u66f4\u65b0\u3002",
+      status_diag_state_failed: "\u72b6\u6001\u5feb\u7167\u83b7\u53d6\u5931\u8d25\uff1a",
+      status_diag_state_copied: "\u72b6\u6001 JSON \u5df2\u590d\u5236\u3002",
       status_bridge_switching: "\u6b63\u5728\u5207\u6362\u517c\u5bb9\u7b56\u7565...",
       status_bridge_switched: "\u517c\u5bb9\u7b56\u7565\u5df2\u5207\u6362\u3002",
       status_bridge_switch_failed: "\u517c\u5bb9\u7b56\u7565\u5207\u6362\u5931\u8d25\uff1a",
@@ -314,6 +323,15 @@
     }
     diagLogEl.value = diagLines.join('\n');
     diagLogEl.scrollTop = diagLogEl.scrollHeight;
+  }
+
+  function renderDiagStateJson(st){
+    if (!diagMode || !diagStateEl) return;
+    try {
+      diagStateEl.value = JSON.stringify(st || {}, null, 2);
+    } catch (_e) {
+      diagStateEl.value = '{"error":"state_serialize_failed"}';
+    }
   }
 
   function pipelineLabel(mode, lang){
@@ -631,6 +649,7 @@
     latestState = st;
     lastStateSyncAtMs = Date.now();
     renderGpuBanner(st);
+    renderDiagStateJson(st);
   }
 
   function currentText(){
@@ -741,6 +760,7 @@
         latestState = st;
         lastStateSyncAtMs = Date.now();
         renderGpuBanner(st);
+        renderDiagStateJson(st);
       } catch(_e) {}
       markConnection('online');
       return true;
@@ -892,6 +912,7 @@
     const schema = await apiGet('/api/schema');
     const st = await apiGet('/api/state');
     latestState = st;
+    renderDiagStateJson(st);
 
     applyI18n(st.ui_language || 'en-US');
 
@@ -954,6 +975,39 @@
       diagLogEl.select();
       try { document.execCommand('copy'); } catch(_e) {}
       setStatus('Diag copied.', 'ok');
+    });
+  }
+
+  if (diagMode && btnDiagStateEl) {
+    btnDiagStateEl.addEventListener('click', async () => {
+      try {
+        const st = await apiGet('/api/state');
+        latestState = st;
+        renderDiagStateJson(st);
+        appendDiagTextLine(`state-snapshot: backend=${st.render_backend_active || 'unknown'} queue=${st.dawn_status && st.dawn_status.queue_ready ? 1 : 0} encoder=${st.dawn_status && st.dawn_status.command_encoder_ready ? 1 : 0}`);
+        setStatus(statusText('status_diag_state_loaded', 'State snapshot updated.'), 'ok');
+      } catch (e) {
+        if (e && e.code === 'unauthorized') return;
+        setStatus(statusError('status_diag_state_failed', 'State snapshot failed: ', e), 'warn');
+      }
+    });
+  }
+
+  if (diagMode && btnDiagStateCopyEl && diagStateEl) {
+    btnDiagStateCopyEl.addEventListener('click', async () => {
+      const text = diagStateEl.value || '';
+      if (!text) return;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          setStatus(statusText('status_diag_state_copied', 'State JSON copied.'), 'ok');
+          return;
+        }
+      } catch(_e) {}
+      diagStateEl.focus();
+      diagStateEl.select();
+      try { document.execCommand('copy'); } catch(_e) {}
+      setStatus(statusText('status_diag_state_copied', 'State JSON copied.'), 'ok');
     });
   }
 

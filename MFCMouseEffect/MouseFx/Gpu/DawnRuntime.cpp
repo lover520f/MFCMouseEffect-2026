@@ -1801,6 +1801,32 @@ bool TrySubmitEmptyCommandBuffer(std::string* detailOut) {
     return TrySubmitEmptyCommandBufferTagged(nullptr, detailOut);
 }
 
+bool TrySubmitTrailBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut) {
+    if (bakedVertices == 0 || uploadBytes == 0) {
+        if (detailOut) *detailOut = "trail_packet_empty";
+        return false;
+    }
+
+    std::string submitDetail;
+    if (!TrySubmitEmptyCommandBufferTagged("trail_pass", &submitDetail)) {
+        if (detailOut) {
+            if (submitDetail.empty()) {
+                *detailOut = "trail_packet_submit_fail";
+            } else {
+                *detailOut = std::string("trail_packet_submit_fail_") + submitDetail;
+            }
+        }
+        return false;
+    }
+
+    if (detailOut) {
+        std::ostringstream oss;
+        oss << "trail_packet_submit_ok_v" << bakedVertices << "_u" << uploadBytes;
+        *detailOut = oss.str();
+    }
+    return true;
+}
+
 bool TrySubmitRippleBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, std::string* detailOut) {
     if (bakedVertices == 0 || uploadBytes == 0) {
         if (detailOut) *detailOut = "ripple_packet_empty";
@@ -1822,6 +1848,32 @@ bool TrySubmitRippleBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes, st
     if (detailOut) {
         std::ostringstream oss;
         oss << "ripple_packet_submit_ok_v" << bakedVertices << "_u" << uploadBytes;
+        *detailOut = oss.str();
+    }
+    return true;
+}
+
+bool TrySubmitParticleBakedPacket(uint32_t bakedSprites, uint32_t uploadBytes, std::string* detailOut) {
+    if (bakedSprites == 0 || uploadBytes == 0) {
+        if (detailOut) *detailOut = "particle_packet_empty";
+        return false;
+    }
+
+    std::string submitDetail;
+    if (!TrySubmitEmptyCommandBufferTagged("particle_pass", &submitDetail)) {
+        if (detailOut) {
+            if (submitDetail.empty()) {
+                *detailOut = "particle_packet_submit_fail";
+            } else {
+                *detailOut = std::string("particle_packet_submit_fail_") + submitDetail;
+            }
+        }
+        return false;
+    }
+
+    if (detailOut) {
+        std::ostringstream oss;
+        oss << "particle_packet_submit_ok_s" << bakedSprites << "_u" << uploadBytes;
         *detailOut = oss.str();
     }
     return true;

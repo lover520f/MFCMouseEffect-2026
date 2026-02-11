@@ -47,8 +47,12 @@ struct DawnCommandConsumeStatus {
     uint64_t emptyCommandSubmitAttempts = 0;
     uint64_t emptyCommandSubmitSuccess = 0;
     uint64_t nonTrailSubmitThrottled = 0;
+    uint64_t trailPacketSubmitAttempts = 0;
+    uint64_t trailPacketSubmitSuccess = 0;
     uint64_t ripplePacketSubmitAttempts = 0;
     uint64_t ripplePacketSubmitSuccess = 0;
+    uint64_t particlePacketSubmitAttempts = 0;
+    uint64_t particlePacketSubmitSuccess = 0;
     std::string detail = "not_submitted";
 };
 
@@ -306,11 +310,23 @@ inline void SubmitOverlayGpuCommands(
             ++status.emptyCommandSubmitAttempts;
             std::string cmdSubmitDetail;
             bool cmdSubmitOk = false;
-            if (!hasTrailGeometry && nonTrailRippleOnly && prep.rippleBakedVertices > 0) {
+            if (hasTrailGeometry && prep.vertices > 0) {
+                ++status.trailPacketSubmitAttempts;
+                cmdSubmitOk = TrySubmitTrailBakedPacket(prep.vertices, prep.uploadBytes, &cmdSubmitDetail);
+                if (cmdSubmitOk) {
+                    ++status.trailPacketSubmitSuccess;
+                }
+            } else if (!hasTrailGeometry && nonTrailRippleOnly && prep.rippleBakedVertices > 0) {
                 ++status.ripplePacketSubmitAttempts;
                 cmdSubmitOk = TrySubmitRippleBakedPacket(prep.rippleBakedVertices, prep.rippleUploadBytes, &cmdSubmitDetail);
                 if (cmdSubmitOk) {
                     ++status.ripplePacketSubmitSuccess;
+                }
+            } else if (!hasTrailGeometry && nonTrailParticleOnly && prep.particleSprites > 0) {
+                ++status.particlePacketSubmitAttempts;
+                cmdSubmitOk = TrySubmitParticleBakedPacket(prep.particleSprites, prep.particleUploadBytes, &cmdSubmitDetail);
+                if (cmdSubmitOk) {
+                    ++status.particlePacketSubmitSuccess;
                 }
             } else {
                 const char* submitTag = hasTrailGeometry ? "trail" : (nonTrailRippleOnly ? "ripple" : (nonTrailParticleOnly ? "particle" : "mixed"));
@@ -322,13 +338,21 @@ inline void SubmitOverlayGpuCommands(
                     status.detail = prep.usedParallel
                         ? "accepted_trail_geometry_prepared_parallel_and_cmd_submit"
                         : "accepted_trail_geometry_prepared_and_cmd_submit";
+                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("trail_packet_submit_ok_") == 0) {
+                        status.detail += "_trail_baked_packet";
+                    }
                 } else {
                     const bool rippleBakedReady = (prep.rippleBakedVertices > 0);
+                    const bool particleBakedReady = (prep.particleSprites > 0 && nonTrailParticleOnly);
                     status.detail = prep.usedParallel
                         ? nonTrailDetail("accepted_nontrail_geometry_prepared_parallel_and_cmd_submit")
                         : nonTrailDetail("accepted_nontrail_geometry_prepared_and_cmd_submit");
                     if (rippleBakedReady) status.detail += "_ripple_baked";
+                    if (particleBakedReady) status.detail += "_particle_baked";
                     if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_packet_submit_ok_") == 0) {
+                        status.detail += "_packet";
+                    }
+                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("particle_packet_submit_ok_") == 0) {
                         status.detail += "_packet";
                     }
                 }

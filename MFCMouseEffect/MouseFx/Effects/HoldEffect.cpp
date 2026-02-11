@@ -18,6 +18,46 @@
 #include <cmath>
 
 namespace mousefx {
+namespace {
+
+bool IsHeavyHoldRendererType(const std::string& type) {
+    const std::string t = ToLowerAscii(type);
+    return t == "neon3d" || t == "hold_neon3d" || t == "hologram_hud";
+}
+
+Argb ZeroAlpha(Argb c) {
+    c.value &= 0x00FFFFFFu;
+    return c;
+}
+
+void PrewarmHoldRenderer(const std::string& type, const RippleStyle& baseStyle) {
+    if (!IsHeavyHoldRendererType(type)) return;
+
+    std::unique_ptr<IRippleRenderer> renderer = RendererRegistry::Instance().Create(type);
+    if (!renderer) return;
+
+    RippleStyle warmStyle = baseStyle;
+    warmStyle.durationMs = 24;
+    warmStyle.windowSize = std::max(96, std::min(baseStyle.windowSize, 192));
+    warmStyle.startRadius = std::max(6.0f, std::min(baseStyle.startRadius, 16.0f));
+    warmStyle.endRadius = std::max(warmStyle.startRadius + 6.0f, std::min(baseStyle.endRadius, 28.0f));
+    warmStyle.strokeWidth = std::max(1.0f, std::min(baseStyle.strokeWidth, 2.0f));
+    warmStyle.fill = ZeroAlpha(baseStyle.fill);
+    warmStyle.stroke = ZeroAlpha(baseStyle.stroke);
+    warmStyle.glow = ZeroAlpha(baseStyle.glow);
+
+    Gdiplus::Bitmap bmp(warmStyle.windowSize, warmStyle.windowSize, PixelFormat32bppARGB);
+    Gdiplus::Graphics g(&bmp);
+    g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+
+    renderer->Start(warmStyle);
+    renderer->Render(g, 0.0f, 0, warmStyle.windowSize, warmStyle);
+    renderer->SetHoldElapsedMs(std::max<uint32_t>(1, warmStyle.durationMs / 2));
+    renderer->SetHoldDurationMs(std::max<uint32_t>(1, warmStyle.durationMs));
+    renderer->Render(g, 0.5f, std::max<uint64_t>(1, warmStyle.durationMs / 2), warmStyle.windowSize, warmStyle);
+}
+
+} // namespace
 
 HoldEffect::HoldEffect(const std::string& themeName, const std::string& type, const std::string& followMode)
     : type_(type), followMode_(ParseFollowMode(followMode)) {
@@ -30,6 +70,8 @@ HoldEffect::~HoldEffect() {
 }
 
 bool HoldEffect::Initialize() {
+    // Prewarm heavy hold renderers at startup so the first real hold interaction is smoother.
+    PrewarmHoldRenderer(type_, style_);
     return true;
 }
 
