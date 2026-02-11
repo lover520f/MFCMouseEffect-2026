@@ -36,6 +36,7 @@ ipch/
 *.log?
 *.tmp
 *.bak
+/.local/
 Thumbs.db
 ehthumbs.db
 Desktop.ini

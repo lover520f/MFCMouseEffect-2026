@@ -2,6 +2,8 @@
 #include "WebSettingsServer.h"
 
 #include <algorithm>
+#include <filesystem>
+#include <fstream>
 #include <random>
 #include <sstream>
 
@@ -591,8 +593,20 @@ bool WebSettingsServer::Start() {
                         {"trail_packet_submit_success", consume.trailPacketSubmitSuccess},
                         {"ripple_packet_submit_attempts", consume.ripplePacketSubmitAttempts},
                         {"ripple_packet_submit_success", consume.ripplePacketSubmitSuccess},
+                        {"ripple_click_packet_submit_attempts", consume.rippleClickPacketSubmitAttempts},
+                        {"ripple_click_packet_submit_success", consume.rippleClickPacketSubmitSuccess},
+                        {"ripple_hover_packet_submit_attempts", consume.rippleHoverPacketSubmitAttempts},
+                        {"ripple_hover_packet_submit_success", consume.rippleHoverPacketSubmitSuccess},
+                        {"ripple_hold_packet_submit_attempts", consume.rippleHoldPacketSubmitAttempts},
+                        {"ripple_hold_packet_submit_success", consume.rippleHoldPacketSubmitSuccess},
                         {"particle_packet_submit_attempts", consume.particlePacketSubmitAttempts},
                         {"particle_packet_submit_success", consume.particlePacketSubmitSuccess},
+                        {"mixed_packet_submit_attempts", consume.mixedPacketSubmitAttempts},
+                        {"mixed_packet_submit_success", consume.mixedPacketSubmitSuccess},
+                        {"pass_warmup_index", consume.passWarmupIndex},
+                        {"pass_warmup_total", consume.passWarmupTotal},
+                        {"pass_warmup_done", consume.passWarmupDone},
+                        {"pass_warmup_tag", consume.passWarmupTag},
                     }},
                     {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus)},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
@@ -665,8 +679,20 @@ bool WebSettingsServer::Start() {
                         {"trail_packet_submit_success", consume.trailPacketSubmitSuccess},
                         {"ripple_packet_submit_attempts", consume.ripplePacketSubmitAttempts},
                         {"ripple_packet_submit_success", consume.ripplePacketSubmitSuccess},
+                        {"ripple_click_packet_submit_attempts", consume.rippleClickPacketSubmitAttempts},
+                        {"ripple_click_packet_submit_success", consume.rippleClickPacketSubmitSuccess},
+                        {"ripple_hover_packet_submit_attempts", consume.rippleHoverPacketSubmitAttempts},
+                        {"ripple_hover_packet_submit_success", consume.rippleHoverPacketSubmitSuccess},
+                        {"ripple_hold_packet_submit_attempts", consume.rippleHoldPacketSubmitAttempts},
+                        {"ripple_hold_packet_submit_success", consume.rippleHoldPacketSubmitSuccess},
                         {"particle_packet_submit_attempts", consume.particlePacketSubmitAttempts},
                         {"particle_packet_submit_success", consume.particlePacketSubmitSuccess},
+                        {"mixed_packet_submit_attempts", consume.mixedPacketSubmitAttempts},
+                        {"mixed_packet_submit_success", consume.mixedPacketSubmitSuccess},
+                        {"pass_warmup_index", consume.passWarmupIndex},
+                        {"pass_warmup_total", consume.passWarmupTotal},
+                        {"pass_warmup_done", consume.passWarmupDone},
+                        {"pass_warmup_tag", consume.passWarmupTag},
                     }},
                     {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus)},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
@@ -928,6 +954,7 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"particle_commands", OverlayHostService::Instance().GetLastGpuParticleCommandCount()},
     };
     const gpu::DawnCommandConsumeStatus consume = gpu::GetDawnCommandConsumeStatus();
+    const auto consumeTimeline = gpu::GetDawnCommandConsumeTimeline();
     out["dawn_command_consumer"] = {
         {"submit_tick_ms", consume.submitTickMs},
         {"accepted", consume.accepted},
@@ -966,9 +993,47 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"trail_packet_submit_success", consume.trailPacketSubmitSuccess},
         {"ripple_packet_submit_attempts", consume.ripplePacketSubmitAttempts},
         {"ripple_packet_submit_success", consume.ripplePacketSubmitSuccess},
+        {"ripple_click_packet_submit_attempts", consume.rippleClickPacketSubmitAttempts},
+        {"ripple_click_packet_submit_success", consume.rippleClickPacketSubmitSuccess},
+        {"ripple_hover_packet_submit_attempts", consume.rippleHoverPacketSubmitAttempts},
+        {"ripple_hover_packet_submit_success", consume.rippleHoverPacketSubmitSuccess},
+        {"ripple_hold_packet_submit_attempts", consume.rippleHoldPacketSubmitAttempts},
+        {"ripple_hold_packet_submit_success", consume.rippleHoldPacketSubmitSuccess},
         {"particle_packet_submit_attempts", consume.particlePacketSubmitAttempts},
         {"particle_packet_submit_success", consume.particlePacketSubmitSuccess},
+        {"mixed_packet_submit_attempts", consume.mixedPacketSubmitAttempts},
+        {"mixed_packet_submit_success", consume.mixedPacketSubmitSuccess},
+        {"pass_warmup_index", consume.passWarmupIndex},
+        {"pass_warmup_total", consume.passWarmupTotal},
+        {"pass_warmup_done", consume.passWarmupDone},
+        {"pass_warmup_tag", consume.passWarmupTag},
     };
+    json consumeTimelineJson = json::array();
+    for (const auto& p : consumeTimeline) {
+        consumeTimelineJson.push_back({
+            {"submit_tick_ms", p.submitTickMs},
+            {"command_count", p.commandCount},
+            {"trail_commands", p.trailCommandCount},
+            {"ripple_commands", p.rippleCommandCount},
+            {"ripple_click_commands", p.rippleClickCommandCount},
+            {"ripple_hover_commands", p.rippleHoverCommandCount},
+            {"ripple_hold_commands", p.rippleHoldCommandCount},
+            {"particle_commands", p.particleCommandCount},
+            {"prepared_trail_triangles", p.preparedTrailTriangles},
+            {"prepared_ripple_triangles", p.preparedRippleTriangles},
+            {"prepared_particle_sprites", p.preparedParticleSprites},
+            {"prepared_upload_bytes", p.preparedUploadBytes},
+            {"preprocess_workers", p.preprocessWorkers},
+            {"preprocess_parallel", p.preprocessParallel},
+            {"pass_warmup_index", p.passWarmupIndex},
+            {"pass_warmup_total", p.passWarmupTotal},
+            {"pass_warmup_done", p.passWarmupDone},
+            {"pass_warmup_tag", p.passWarmupTag},
+            {"detail", p.detail},
+        });
+    }
+    out["dawn_command_consumer_timeline"] = std::move(consumeTimelineJson);
+    out["dawn_command_consumer_timeline_max"] = static_cast<uint32_t>(gpu::kDawnConsumerTimelineMax);
     out["gpu_bridge_mode_request"] = EnsureUtf8(cfg.gpuBridgeModeRequest);
     out["gpu_acceleration"] = BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus);
     out["gpu_status_banner"] = BuildGpuBannerJson(cfg.renderBackend, activeBackend, dawnStatus, dawnBridge);
@@ -1007,7 +1072,9 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"idle_fade_end_ms", cfg.trailParams.idleFade.endMs},
     };
 
-    return out.dump();
+    const std::string stateJson = out.dump();
+    WriteLocalDiagStateSnapshot(stateJson);
+    return stateJson;
 }
 
 std::string WebSettingsServer::ApplyStateJson(const std::string& body) {
@@ -1025,6 +1092,41 @@ std::string WebSettingsServer::ApplyStateJson(const std::string& body) {
     cmd["payload"] = j;
     controller_->HandleCommand(cmd.dump());
     return json({{"ok", true}}).dump();
+}
+
+void WebSettingsServer::WriteLocalDiagStateSnapshot(const std::string& stateJson) const {
+    try {
+        static std::atomic<uint64_t> s_lastDumpMs{0};
+        constexpr uint64_t kDumpIntervalMs = 1500;
+        const uint64_t now = NowMs();
+        const uint64_t prev = s_lastDumpMs.load(std::memory_order_relaxed);
+        if (now >= prev && (now - prev) < kDumpIntervalMs) {
+            return;
+        }
+        s_lastDumpMs.store(now, std::memory_order_relaxed);
+
+        const std::wstring exeDir = ExeDirW();
+        if (exeDir.empty()) {
+            return;
+        }
+
+        const std::filesystem::path dir = std::filesystem::path(exeDir) / L".local" / L"diag";
+        const std::filesystem::path file = dir / L"web_state_auto.json";
+        std::error_code ec;
+        std::filesystem::create_directories(dir, ec);
+        if (ec) {
+            return;
+        }
+
+        std::ofstream out(file, std::ios::binary | std::ios::trunc);
+        if (!out.is_open()) {
+            return;
+        }
+        out.write(stateJson.data(), static_cast<std::streamsize>(stateJson.size()));
+        out.flush();
+    } catch (...) {
+        return;
+    }
 }
 
 std::string WebSettingsServer::MakeToken() {

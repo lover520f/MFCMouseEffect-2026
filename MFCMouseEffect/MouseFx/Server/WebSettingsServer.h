@@ -33,6 +33,7 @@ public:
 private:
     std::string BuildSchemaJson() const;
     std::string BuildStateJson() const;
+    void WriteLocalDiagStateSnapshot(const std::string& stateJson) const;
     std::string ApplyStateJson(const std::string& body);
 
     static std::string MakeToken();

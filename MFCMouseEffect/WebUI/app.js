@@ -9,20 +9,17 @@
   const btnGpuProbeEl = document.getElementById('btnGpuProbe');
   const diagPanelEl = document.getElementById('diagPanel');
   const diagLogEl = document.getElementById('diagLog');
-  const diagStateEl = document.getElementById('diagState');
-  const btnDiagStateEl = document.getElementById('btnDiagState');
-  const btnDiagStateCopyEl = document.getElementById('btnDiagStateCopy');
   const btnDiagSymbolEl = document.getElementById('btnDiagSymbol');
   const btnDiagCopyEl = document.getElementById('btnDiagCopy');
   const btnDiagClearEl = document.getElementById('btnDiagClear');
   const healthCheckMs = 3000;
-  const diagPollMs = 500;
+  const diagPollMs = 2500;
   let healthTimer = 0;
   let diagTimer = 0;
   let connectionState = 'unknown';
   let latestState = null;
   let lastStateSyncAtMs = 0;
-  const diagMaxLines = 280;
+  const diagMaxLines = 120;
   let diagLines = [];
   let lastDiagSignature = '';
 
@@ -105,9 +102,6 @@
       status_gpu_action_running: "Applying optimization suggestion...",
       status_gpu_action_done: "Optimization action completed.",
       status_gpu_action_failed: "Action failed: ",
-      status_diag_state_loaded: "State snapshot updated.",
-      status_diag_state_failed: "State snapshot failed: ",
-      status_diag_state_copied: "State JSON copied.",
       status_bridge_switching: "Switching compatibility mode...",
       status_bridge_switched: "Compatibility mode switched.",
       status_bridge_switch_failed: "Compatibility mode switch failed: ",
@@ -195,9 +189,6 @@
       status_gpu_action_running: "\u6b63\u5728\u6267\u884c\u4f18\u5316\u5efa\u8bae...",
       status_gpu_action_done: "\u4f18\u5316\u64cd\u4f5c\u5df2\u5b8c\u6210\u3002",
       status_gpu_action_failed: "\u64cd\u4f5c\u5931\u8d25\uff1a",
-      status_diag_state_loaded: "\u72b6\u6001\u5feb\u7167\u5df2\u66f4\u65b0\u3002",
-      status_diag_state_failed: "\u72b6\u6001\u5feb\u7167\u83b7\u53d6\u5931\u8d25\uff1a",
-      status_diag_state_copied: "\u72b6\u6001 JSON \u5df2\u590d\u5236\u3002",
       status_bridge_switching: "\u6b63\u5728\u5207\u6362\u517c\u5bb9\u7b56\u7565...",
       status_bridge_switched: "\u517c\u5bb9\u7b56\u7565\u5df2\u5207\u6362\u3002",
       status_bridge_switch_failed: "\u517c\u5bb9\u7b56\u7565\u5207\u6362\u5931\u8d25\uff1a",
@@ -283,19 +274,9 @@
     if (!diagMode || !diagLogEl || !diagPanelEl) return;
     const sig = JSON.stringify({
       b: st && st.render_backend_active,
-      c: st && st.gpu_command_stream ? st.gpu_command_stream.command_count : 0,
-      t: st && st.gpu_command_stream ? st.gpu_command_stream.trail_commands : 0,
-      r: st && st.gpu_command_stream ? st.gpu_command_stream.ripple_commands : 0,
-      p: st && st.gpu_command_stream ? st.gpu_command_stream.particle_commands : 0,
-      rc: st && st.dawn_command_consumer ? st.dawn_command_consumer.ripple_click_commands : 0,
-      rh: st && st.dawn_command_consumer ? st.dawn_command_consumer.ripple_hover_commands : 0,
-      rd: st && st.dawn_command_consumer ? st.dawn_command_consumer.ripple_hold_commands : 0,
       q: st && st.dawn_status ? st.dawn_status.queue_ready : false,
       e: st && st.dawn_status ? st.dawn_status.command_encoder_ready : false,
-      m: st && st.dawn_status ? st.dawn_status.modern_abi_detected : false,
-      n: st && st.dawn_status ? st.dawn_status.modern_abi_native_ready : false,
-      y: st && st.dawn_status ? st.dawn_status.modern_abi_strategy : '',
-      z: st && st.dawn_status ? st.dawn_status.modern_abi_native_detail : '',
+      c: st && st.gpu_command_stream ? st.gpu_command_stream.command_count : 0,
       d: st && st.dawn_command_consumer ? st.dawn_command_consumer.detail : ''
     });
     if (sig === lastDiagSignature) return;
@@ -323,15 +304,6 @@
     }
     diagLogEl.value = diagLines.join('\n');
     diagLogEl.scrollTop = diagLogEl.scrollHeight;
-  }
-
-  function renderDiagStateJson(st){
-    if (!diagMode || !diagStateEl) return;
-    try {
-      diagStateEl.value = JSON.stringify(st || {}, null, 2);
-    } catch (_e) {
-      diagStateEl.value = '{"error":"state_serialize_failed"}';
-    }
   }
 
   function pipelineLabel(mode, lang){
@@ -544,13 +516,6 @@
       finalText = `${finalText} ${compText}`;
     }
     const showDiagCode = diagMode;
-    if (showDiagCode && st && st.gpu_command_stream) {
-      const cs = st.gpu_command_stream;
-      const diagText = (lang === 'zh-CN')
-        ? `命令流: ${cs.command_count || 0} (trail ${cs.trail_commands || 0}, ripple ${cs.ripple_commands || 0}, particle ${cs.particle_commands || 0}, tick ${cs.frame_tick_ms || 0})`
-        : `Command stream: ${cs.command_count || 0} (trail ${cs.trail_commands || 0}, ripple ${cs.ripple_commands || 0}, particle ${cs.particle_commands || 0}, tick ${cs.frame_tick_ms || 0})`;
-      finalText = `${finalText} ${diagText}`;
-    }
     if (showDiagCode) {
       const now = Date.now();
       const ageMs = (lastStateSyncAtMs > 0 && now >= lastStateSyncAtMs) ? (now - lastStateSyncAtMs) : 0;
@@ -558,47 +523,20 @@
         ? `刷新: ${ageMs}ms前`
         : `Refresh: ${ageMs}ms ago`;
       finalText = `${finalText} ${refreshText}`;
-    }
-    if (showDiagCode && st && st.dawn_status) {
-      const ds = st.dawn_status;
-      const runtimeReadyText = (lang === 'zh-CN')
-        ? `Runtime就绪: queue ${ds.queue_ready ? 'ready' : 'not_ready'}, encoder ${ds.command_encoder_ready ? 'ready' : 'not_ready'}, modernABI ${ds.modern_abi_detected ? 'yes' : 'no'}, native ${ds.modern_abi_native_ready ? 'yes' : 'no'}, nativeDetail ${ds.modern_abi_native_detail || 'n/a'}, strategy ${ds.modern_abi_strategy || 'n/a'}, prime ${ds.modern_abi_prime_detail || 'n/a'}`
-        : `Runtime: queue ${ds.queue_ready ? 'ready' : 'not_ready'}, encoder ${ds.command_encoder_ready ? 'ready' : 'not_ready'}, modernABI ${ds.modern_abi_detected ? 'yes' : 'no'}, native ${ds.modern_abi_native_ready ? 'yes' : 'no'}, nativeDetail ${ds.modern_abi_native_detail || 'n/a'}, strategy ${ds.modern_abi_strategy || 'n/a'}, prime ${ds.modern_abi_prime_detail || 'n/a'}`;
-      finalText = `${finalText} ${runtimeReadyText}`;
-    }
-    if (showDiagCode && st && st.dawn_command_consumer) {
-      const cc = st.dawn_command_consumer;
-      const consumerText = (lang === 'zh-CN')
-        ? `消费: ${cc.accepted ? '已接收' : '未接收'} (${cc.detail || 'unknown'})`
-        : `Consumer: ${cc.accepted ? 'accepted' : 'rejected'} (${cc.detail || 'unknown'})`;
-      const rippleKindsText = (lang === 'zh-CN')
-        ? `Ripple类型: click ${cc.ripple_click_commands || 0}, hover ${cc.ripple_hover_commands || 0}, hold ${cc.ripple_hold_commands || 0}`
-        : `Ripple kinds: click ${cc.ripple_click_commands || 0}, hover ${cc.ripple_hover_commands || 0}, hold ${cc.ripple_hold_commands || 0}`;
-      const prepText = (lang === 'zh-CN')
-        ? `Trail预处理: b${cc.prepared_trail_batches || 0} v${cc.prepared_trail_vertices || 0} s${cc.prepared_trail_segments || 0} t${cc.prepared_trail_triangles || 0} u${cc.prepared_upload_bytes || 0}`
-        : `Trail prep: b${cc.prepared_trail_batches || 0} v${cc.prepared_trail_vertices || 0} s${cc.prepared_trail_segments || 0} t${cc.prepared_trail_triangles || 0} u${cc.prepared_upload_bytes || 0}`;
-      const ripplePrepText = (lang === 'zh-CN')
-        ? `涟漪预处理: b${cc.prepared_ripple_batches || 0} p${cc.prepared_ripple_pulses || 0} t${cc.prepared_ripple_triangles || 0} u${cc.prepared_ripple_upload_bytes || 0} q${cc.prepared_ripple_baked_quads || 0} v${cc.prepared_ripple_baked_vertices || 0}`
-        : `Ripple prep: b${cc.prepared_ripple_batches || 0} p${cc.prepared_ripple_pulses || 0} t${cc.prepared_ripple_triangles || 0} u${cc.prepared_ripple_upload_bytes || 0} q${cc.prepared_ripple_baked_quads || 0} v${cc.prepared_ripple_baked_vertices || 0}`;
-      const particlePrepText = (lang === 'zh-CN')
-        ? `粒子预处理: b${cc.prepared_particle_batches || 0} p${cc.prepared_particle_sprites || 0} u${cc.prepared_particle_upload_bytes || 0}`
-        : `Particle prep: b${cc.prepared_particle_batches || 0} p${cc.prepared_particle_sprites || 0} u${cc.prepared_particle_upload_bytes || 0}`;
-      const prepModeText = (lang === 'zh-CN')
-        ? `预处理并行: ${cc.preprocess_parallel ? '是' : '否'} (w${cc.preprocess_workers || 1})`
-        : `Prep parallel: ${cc.preprocess_parallel ? 'yes' : 'no'} (w${cc.preprocess_workers || 1})`;
-      const submitText = (lang === 'zh-CN')
-        ? `提交: ${cc.noop_submit_success || 0}/${cc.noop_submit_attempts || 0}`
-        : `Submit: ${cc.noop_submit_success || 0}/${cc.noop_submit_attempts || 0}`;
-      const cmdSubmitText = (lang === 'zh-CN')
-        ? `命令缓冲提交: ${cc.empty_command_submit_success || 0}/${cc.empty_command_submit_attempts || 0}`
-        : `CmdBuffer submit: ${cc.empty_command_submit_success || 0}/${cc.empty_command_submit_attempts || 0}`;
-      const ripplePacketText = (lang === 'zh-CN')
-        ? `Ripple包提交: ${cc.ripple_packet_submit_success || 0}/${cc.ripple_packet_submit_attempts || 0}`
-        : `Ripple packet submit: ${cc.ripple_packet_submit_success || 0}/${cc.ripple_packet_submit_attempts || 0}`;
-      const nonTrailThrottleText = (lang === 'zh-CN')
-        ? `NonTrail节流: ${cc.nontrail_submit_throttled || 0}`
-        : `NonTrail throttle: ${cc.nontrail_submit_throttled || 0}`;
-      finalText = `${finalText} ${consumerText} ${rippleKindsText} ${prepText} ${ripplePrepText} ${particlePrepText} ${prepModeText} ${submitText} ${cmdSubmitText} ${ripplePacketText} ${nonTrailThrottleText}`;
+      if (st && st.gpu_command_stream) {
+        const cs = st.gpu_command_stream;
+        const diagText = (lang === 'zh-CN')
+          ? `命令: ${cs.command_count || 0} (trail ${cs.trail_commands || 0}, ripple ${cs.ripple_commands || 0}, particle ${cs.particle_commands || 0})`
+          : `Commands: ${cs.command_count || 0} (trail ${cs.trail_commands || 0}, ripple ${cs.ripple_commands || 0}, particle ${cs.particle_commands || 0})`;
+        finalText = `${finalText} ${diagText}`;
+      }
+      if (st && st.dawn_status) {
+        const ds = st.dawn_status;
+        const runtimeText = (lang === 'zh-CN')
+          ? `Runtime: queue ${ds.queue_ready ? 'ready' : 'not_ready'}, encoder ${ds.command_encoder_ready ? 'ready' : 'not_ready'}`
+          : `Runtime: queue ${ds.queue_ready ? 'ready' : 'not_ready'}, encoder ${ds.command_encoder_ready ? 'ready' : 'not_ready'}`;
+        finalText = `${finalText} ${runtimeText}`;
+      }
     }
     const prefix = st.gpu_in_use ? '[GPU] ' : '[CPU] ';
     if (gpuBannerTextEl) {
@@ -649,7 +587,6 @@
     latestState = st;
     lastStateSyncAtMs = Date.now();
     renderGpuBanner(st);
-    renderDiagStateJson(st);
   }
 
   function currentText(){
@@ -760,7 +697,6 @@
         latestState = st;
         lastStateSyncAtMs = Date.now();
         renderGpuBanner(st);
-        renderDiagStateJson(st);
       } catch(_e) {}
       markConnection('online');
       return true;
@@ -899,6 +835,7 @@
 
   function num(id, v){ el(id).value = (v ?? '').toString(); }
   function getNum(id){ return Number(el(id).value || 0); }
+  function hasOwnKeys(obj){ return !!obj && Object.keys(obj).length > 0; }
 
   function scrollToHash(){
     const h = (location.hash || '').replace('#','');
@@ -912,7 +849,6 @@
     const schema = await apiGet('/api/schema');
     const st = await apiGet('/api/state');
     latestState = st;
-    renderDiagStateJson(st);
 
     applyI18n(st.ui_language || 'en-US');
 
@@ -978,39 +914,6 @@
     });
   }
 
-  if (diagMode && btnDiagStateEl) {
-    btnDiagStateEl.addEventListener('click', async () => {
-      try {
-        const st = await apiGet('/api/state');
-        latestState = st;
-        renderDiagStateJson(st);
-        appendDiagTextLine(`state-snapshot: backend=${st.render_backend_active || 'unknown'} queue=${st.dawn_status && st.dawn_status.queue_ready ? 1 : 0} encoder=${st.dawn_status && st.dawn_status.command_encoder_ready ? 1 : 0}`);
-        setStatus(statusText('status_diag_state_loaded', 'State snapshot updated.'), 'ok');
-      } catch (e) {
-        if (e && e.code === 'unauthorized') return;
-        setStatus(statusError('status_diag_state_failed', 'State snapshot failed: ', e), 'warn');
-      }
-    });
-  }
-
-  if (diagMode && btnDiagStateCopyEl && diagStateEl) {
-    btnDiagStateCopyEl.addEventListener('click', async () => {
-      const text = diagStateEl.value || '';
-      if (!text) return;
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(text);
-          setStatus(statusText('status_diag_state_copied', 'State JSON copied.'), 'ok');
-          return;
-        }
-      } catch(_e) {}
-      diagStateEl.focus();
-      diagStateEl.select();
-      try { document.execCommand('copy'); } catch(_e) {}
-      setStatus(statusText('status_diag_state_copied', 'State JSON copied.'), 'ok');
-    });
-  }
-
   if (diagMode && btnDiagSymbolEl) {
     btnDiagSymbolEl.addEventListener('click', async () => {
       try {
@@ -1030,7 +933,7 @@
   }
 
   function buildState(){
-    return {
+    const full = {
       ui_language: el('ui_language').value,
       theme: el('theme').value,
       render_backend: el('render_backend').value,
@@ -1070,6 +973,86 @@
         idle_fade_end_ms: getNum('k_idle_fade_end'),
       }
     };
+
+    const base = latestState || {};
+    const patch = {};
+
+    if (full.ui_language !== (base.ui_language || '')) patch.ui_language = full.ui_language;
+    if (full.theme !== (base.theme || '')) patch.theme = full.theme;
+    if (full.render_backend !== (base.render_backend || '')) patch.render_backend = full.render_backend;
+    if (full.gpu_bridge_mode_request !== (base.gpu_bridge_mode_request || '')) {
+      patch.gpu_bridge_mode_request = full.gpu_bridge_mode_request;
+    }
+    if (full.hold_follow_mode !== (base.hold_follow_mode || '')) patch.hold_follow_mode = full.hold_follow_mode;
+    if (full.text_content !== (base.text_content || '')) patch.text_content = full.text_content;
+    if (full.trail_style !== (base.trail_style || '')) patch.trail_style = full.trail_style;
+
+    const baseActive = base.active || {};
+    const activePatch = {};
+    if (full.active.click !== (baseActive.click || '')) activePatch.click = full.active.click;
+    if (full.active.trail !== (baseActive.trail || '')) activePatch.trail = full.active.trail;
+    if (full.active.scroll !== (baseActive.scroll || '')) activePatch.scroll = full.active.scroll;
+    if (full.active.hold !== (baseActive.hold || '')) activePatch.hold = full.active.hold;
+    if (full.active.hover !== (baseActive.hover || '')) activePatch.hover = full.active.hover;
+    if (hasOwnKeys(activePatch)) patch.active = activePatch;
+
+    const baseProfiles = base.trail_profiles || {};
+    const profilePatch = {};
+    ['line', 'streamer', 'electric', 'meteor', 'tubes'].forEach((key) => {
+      const dst = full.trail_profiles[key] || {};
+      const src = baseProfiles[key] || {};
+      const item = {};
+      if (dst.duration_ms !== src.duration_ms) item.duration_ms = dst.duration_ms;
+      if (dst.max_points !== src.max_points) item.max_points = dst.max_points;
+      if (hasOwnKeys(item)) profilePatch[key] = item;
+    });
+    if (hasOwnKeys(profilePatch)) patch.trail_profiles = profilePatch;
+
+    const baseParams = base.trail_params || {};
+    const paramsPatch = {};
+
+    const baseStreamer = baseParams.streamer || {};
+    const streamerPatch = {};
+    if (full.trail_params.streamer.glow_width_scale !== baseStreamer.glow_width_scale) {
+      streamerPatch.glow_width_scale = full.trail_params.streamer.glow_width_scale;
+    }
+    if (full.trail_params.streamer.core_width_scale !== baseStreamer.core_width_scale) {
+      streamerPatch.core_width_scale = full.trail_params.streamer.core_width_scale;
+    }
+    if (full.trail_params.streamer.head_power !== baseStreamer.head_power) {
+      streamerPatch.head_power = full.trail_params.streamer.head_power;
+    }
+    if (hasOwnKeys(streamerPatch)) paramsPatch.streamer = streamerPatch;
+
+    const baseElectric = baseParams.electric || {};
+    const electricPatch = {};
+    if (full.trail_params.electric.amplitude_scale !== baseElectric.amplitude_scale) {
+      electricPatch.amplitude_scale = full.trail_params.electric.amplitude_scale;
+    }
+    if (full.trail_params.electric.fork_chance !== baseElectric.fork_chance) {
+      electricPatch.fork_chance = full.trail_params.electric.fork_chance;
+    }
+    if (hasOwnKeys(electricPatch)) paramsPatch.electric = electricPatch;
+
+    const baseMeteor = baseParams.meteor || {};
+    const meteorPatch = {};
+    if (full.trail_params.meteor.spark_rate_scale !== baseMeteor.spark_rate_scale) {
+      meteorPatch.spark_rate_scale = full.trail_params.meteor.spark_rate_scale;
+    }
+    if (full.trail_params.meteor.spark_speed_scale !== baseMeteor.spark_speed_scale) {
+      meteorPatch.spark_speed_scale = full.trail_params.meteor.spark_speed_scale;
+    }
+    if (hasOwnKeys(meteorPatch)) paramsPatch.meteor = meteorPatch;
+
+    if (full.trail_params.idle_fade_start_ms !== baseParams.idle_fade_start_ms) {
+      paramsPatch.idle_fade_start_ms = full.trail_params.idle_fade_start_ms;
+    }
+    if (full.trail_params.idle_fade_end_ms !== baseParams.idle_fade_end_ms) {
+      paramsPatch.idle_fade_end_ms = full.trail_params.idle_fade_end_ms;
+    }
+    if (hasOwnKeys(paramsPatch)) patch.trail_params = paramsPatch;
+
+    return patch;
   }
 
   el('btnReload').addEventListener('click', async () => {
@@ -1090,8 +1073,13 @@
       if (blockActionWhenDisconnected()) return;
       setStatus(statusText('status_applying', 'Applying...'));
       const st = buildState();
+      if (!hasOwnKeys(st)) {
+        setStatus(statusText('status_applied', 'Applied.'), 'ok');
+        return;
+      }
       const res = await apiPost('/api/state', st);
       if (res.ok) {
+        await refreshStateFromServer();
         setStatus(statusText('status_applied', 'Applied.'), 'ok');
       } else {
         setStatus('Failed: ' + (res.error || ''), 'warn');
