@@ -48,7 +48,7 @@ private:
     };
 
     static uint64_t NowMs();
-    bool ShouldEmitGpuContinuous(uint64_t id, bool hoverContinuous, uint64_t nowMs) const;
+    bool ShouldEmitGpuContinuous(uint64_t id, bool hoverContinuous, bool holdContinuous, uint64_t nowMs) const;
     RippleInstance* FindById(uint64_t id);
     const RippleInstance* FindById(uint64_t id) const;
 

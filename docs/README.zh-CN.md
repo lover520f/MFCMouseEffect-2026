@@ -17,6 +17,8 @@
 - 问题记录：`docs/issues/dawn_hold_first_scheduling_stage79.md`（trail 压力下 hold-first 调度）
 - 问题记录：`docs/issues/dawn_diag_timeline_stage80.md`（state 诊断时间线）
 - 问题记录：`docs/issues/dawn_continuous_ripple_throttle_stage82.md`（continuous ripple 命令节流）
+- 问题记录：`docs/issues/dawn_gpu_action_coverage_stage83.md`（Web GPU 建议动作 code 覆盖补全）
+- 问题记录：`docs/issues/dawn_hold_neon3d_latency_stage84.md`（Dawn 路径下 hold_neon3d 延迟优先调优）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
 - 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）
 - 架构整理：`docs/architecture/ui-folder-structure.zh-CN.md`（UI 文件夹结构整理）

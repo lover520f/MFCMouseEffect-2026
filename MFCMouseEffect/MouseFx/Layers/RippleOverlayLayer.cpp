@@ -12,9 +12,12 @@ bool RectanglesOverlap(int l1, int t1, int r1, int b1, int l2, int t2, int r2, i
     return !(r1 <= l2 || r2 <= l1 || b1 <= t2 || b2 <= t1);
 }
 
-uint64_t MinGpuContinuousIntervalMs(bool hoverContinuous) {
+uint64_t MinGpuContinuousIntervalMs(bool hoverContinuous, bool holdContinuous) {
     // Keep hover command flow smooth enough while preventing per-frame packet storms.
-    return hoverContinuous ? 14ull : 10ull;
+    if (hoverContinuous) return 14ull;
+    // Hold-neon path is highly sensitive to perceived latency.
+    if (holdContinuous) return 6ull;
+    return 10ull;
 }
 
 } // namespace
@@ -212,7 +215,8 @@ void RippleOverlayLayer::AppendGpuCommands(gpu::OverlayGpuCommandStream& stream,
         if (!instance.active || !instance.renderer) continue;
 
         const bool hoverContinuous = instance.continuous && instance.params.loop;
-        if (instance.continuous && !ShouldEmitGpuContinuous(instance.id, hoverContinuous, nowMs)) {
+        const bool holdContinuous = instance.continuous && !instance.params.loop;
+        if (instance.continuous && !ShouldEmitGpuContinuous(instance.id, hoverContinuous, holdContinuous, nowMs)) {
             continue;
         }
 
@@ -254,8 +258,8 @@ void RippleOverlayLayer::AppendGpuCommands(gpu::OverlayGpuCommandStream& stream,
     (void)nowMs;
 }
 
-bool RippleOverlayLayer::ShouldEmitGpuContinuous(uint64_t id, bool hoverContinuous, uint64_t nowMs) const {
-    const uint64_t minIntervalMs = MinGpuContinuousIntervalMs(hoverContinuous);
+bool RippleOverlayLayer::ShouldEmitGpuContinuous(uint64_t id, bool hoverContinuous, bool holdContinuous, uint64_t nowMs) const {
+    const uint64_t minIntervalMs = MinGpuContinuousIntervalMs(hoverContinuous, holdContinuous);
     auto it = lastGpuEmitTickById_.find(id);
     if (it == lastGpuEmitTickById_.end()) {
         lastGpuEmitTickById_[id] = nowMs;

@@ -25,6 +25,11 @@ bool IsHeavyHoldRendererType(const std::string& type) {
     return t == "neon3d" || t == "hold_neon3d" || t == "hologram_hud";
 }
 
+bool IsNeon3DHoldType(const std::string& type) {
+    const std::string t = ToLowerAscii(type);
+    return t == "neon3d" || t == "hold_neon3d";
+}
+
 Argb ZeroAlpha(Argb c) {
     c.value &= 0x00FFFFFFu;
     return c;
@@ -128,7 +133,7 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
             shouldUpdatePos = true;
             break;
         case FollowMode::Smooth: {
-            const float alpha = 0.35f;
+            const float alpha = IsNeon3DHoldType(type_) ? 0.58f : 0.35f;
             if (!hasSmoothedPoint_) {
                 smoothedX_ = (float)pt.x;
                 smoothedY_ = (float)pt.y;
@@ -159,7 +164,9 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
     }
 
     uint64_t cmdIntervalMs = 0;
-    if (followMode_ == FollowMode::Smooth) cmdIntervalMs = 8;
+    if (followMode_ == FollowMode::Smooth) {
+        cmdIntervalMs = IsNeon3DHoldType(type_) ? 4 : 8;
+    }
     if (followMode_ == FollowMode::Efficient) cmdIntervalMs = 20;
     if (cmdIntervalMs == 0 || nowMs - lastHoldCommandMs_ >= cmdIntervalMs) {
         lastHoldCommandMs_ = nowMs;

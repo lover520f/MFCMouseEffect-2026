@@ -554,10 +554,14 @@
       actionCode === 'wire_overlay_gpu_bridge' ||
       actionCode === 'switch_bridge_host_compat' ||
       actionCode === 'enable_dawn_backend' ||
+      actionCode === 'install_dawn_runtime' ||
+      actionCode === 'replace_runtime_binary' ||
       actionCode === 'run_without_debugger_for_gpu_probe' ||
       actionCode === 'review_logs' ||
       actionCode === 'check_driver_and_backend' ||
-      actionCode === 'validate_runtime_abi';
+      actionCode === 'validate_runtime_abi' ||
+      actionCode === 'enable_dawn_build_flag' ||
+      actionCode === 'check_display_adapter';
   }
 
   function gpuActionLabel(actionCode){
