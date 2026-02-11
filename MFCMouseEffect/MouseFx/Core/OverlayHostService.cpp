@@ -17,6 +17,20 @@
 #include <thread>
 
 namespace mousefx {
+namespace {
+
+std::string ResolveDawnPipelineMode(const gpu::DawnOverlayBridgeStatus& bridge) {
+    if (bridge.mode == "compositor" && bridge.compositorApisReady) {
+        return "dawn_compositor";
+    }
+    return "dawn_host_compat_layered";
+}
+
+std::string ResolveDawnBackendDetail(const gpu::DawnRuntimeStatus& runtime) {
+    return runtime.lastInitDetail.empty() ? "queue_ready" : runtime.lastInitDetail;
+}
+
+} // namespace
 
 std::string OverlayHostService::NormalizeRenderBackend(std::string backend) {
     for (char& c : backend) {
@@ -53,16 +67,40 @@ bool OverlayHostService::SetRenderBackendPreference(const std::string& backend) 
     if (previousActive == "dawn" && prevGpuPreferred && nextGpuPreferred) {
         return false;
     }
-    if (normalized == "dawn" || normalized == "auto") {
-        RefreshGpuRuntimeProbeAsync();
-        const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatus();
-        if (previousActive == "cpu" && !runtime.queueReady) {
-            backendDetail_ = "dawn_probe_pending";
-            return false;
+
+    if (normalized == "cpu") {
+        activeBackend_ = "cpu";
+        backendDetail_ = "cpu_forced";
+        pipelineMode_ = "cpu_layered";
+        gpu::ResetDawnCommandConsumeStatus();
+        if (host_) {
+            host_->SetGpuSubmitContext(activeBackend_, pipelineMode_);
         }
+        return false;
     }
-    Shutdown();
-    return true;
+
+    // normalized is dawn/auto
+    RefreshGpuRuntimeProbeAsync();
+    const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatus();
+    if (runtime.queueReady) {
+        const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
+        activeBackend_ = "dawn";
+        backendDetail_ = ResolveDawnBackendDetail(runtime);
+        pipelineMode_ = ResolveDawnPipelineMode(bridge);
+    } else {
+        activeBackend_ = "cpu";
+        if (runtime.lastInitDetail.empty() || runtime.lastInitDetail == "init_not_run") {
+            backendDetail_ = "dawn_probe_pending";
+        } else {
+            backendDetail_ = runtime.lastInitDetail;
+        }
+        pipelineMode_ = "cpu_layered";
+    }
+
+    if (host_) {
+        host_->SetGpuSubmitContext(activeBackend_, pipelineMode_);
+    }
+    return false;
 }
 
 std::string OverlayHostService::GetRenderBackendPreference() const {
@@ -189,13 +227,9 @@ bool OverlayHostService::Initialize() {
         const bool dawnReady = runtime.queueReady;
         if (dawnReady) {
             activeBackend_ = "dawn";
-            backendDetail_ = runtime.lastInitDetail.empty() ? "queue_ready" : runtime.lastInitDetail;
+            backendDetail_ = ResolveDawnBackendDetail(runtime);
             const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
-            if (bridge.mode == "compositor" && bridge.compositorApisReady) {
-                pipelineMode_ = "dawn_compositor";
-            } else {
-                pipelineMode_ = "dawn_host_compat_layered";
-            }
+            pipelineMode_ = ResolveDawnPipelineMode(bridge);
         } else {
             activeBackend_ = "cpu";
             if (runtime.lastInitDetail.empty() || runtime.lastInitDetail == "init_not_run") {
