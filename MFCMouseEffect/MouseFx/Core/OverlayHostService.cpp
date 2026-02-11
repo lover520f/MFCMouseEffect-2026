@@ -57,37 +57,35 @@ OverlayHostService& OverlayHostService::Instance() {
 bool OverlayHostService::SetRenderBackendPreference(const std::string& backend) {
     const std::string normalized = NormalizeRenderBackend(backend);
     const std::string previousRequested = requestedBackend_;
-    const std::string previousActive = activeBackend_;
-    if (previousRequested == normalized) return false;
-    requestedBackend_ = normalized;
-    const bool prevGpuPreferred = (previousRequested == "dawn" || previousRequested == "auto");
-    const bool nextGpuPreferred = (normalized == "dawn" || normalized == "auto");
-    // If runtime is already on Dawn, switching between auto<->dawn preference
-    // should not force a host reset/recreate cycle.
-    if (previousActive == "dawn" && prevGpuPreferred && nextGpuPreferred) {
-        return false;
-    }
-
-    if (normalized == "cpu") {
+    auto applyCpuFallback = [&](const char* detail) {
         activeBackend_ = "cpu";
-        backendDetail_ = "cpu_forced";
+        backendDetail_ = (detail && *detail) ? detail : "cpu_forced";
         pipelineMode_ = "cpu_layered";
         gpu::ResetDawnCommandConsumeStatus();
         if (host_) {
             host_->SetGpuSubmitContext(activeBackend_, pipelineMode_);
         }
-        return false;
-    }
+    };
 
-    // normalized is dawn/auto
-    RefreshGpuRuntimeProbeAsync();
-    const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatus();
-    if (runtime.queueReady) {
+    auto applyDawnReady = [&](const gpu::DawnRuntimeStatus& runtime) {
         const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
         activeBackend_ = "dawn";
         backendDetail_ = ResolveDawnBackendDetail(runtime);
         pipelineMode_ = ResolveDawnPipelineMode(bridge);
-    } else {
+        if (host_) {
+            host_->SetGpuSubmitContext(activeBackend_, pipelineMode_);
+        }
+    };
+
+    auto tryActivateDawnWithoutBlocking = [&]() -> bool {
+        if (asyncProbeRunning_.load(std::memory_order_acquire)) {
+            return false;
+        }
+        const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatus();
+        if (runtime.queueReady) {
+            applyDawnReady(runtime);
+            return true;
+        }
         activeBackend_ = "cpu";
         if (runtime.lastInitDetail.empty() || runtime.lastInitDetail == "init_not_run") {
             backendDetail_ = "dawn_probe_pending";
@@ -95,10 +93,34 @@ bool OverlayHostService::SetRenderBackendPreference(const std::string& backend) 
             backendDetail_ = runtime.lastInitDetail;
         }
         pipelineMode_ = "cpu_layered";
+        if (host_) {
+            host_->SetGpuSubmitContext(activeBackend_, pipelineMode_);
+        }
+        return false;
+    };
+
+    if (previousRequested == normalized) {
+        if (normalized == "cpu") {
+            if (activeBackend_ != "cpu" || pipelineMode_ != "cpu_layered") {
+                applyCpuFallback("cpu_forced");
+            }
+            return false;
+        }
+        if (!tryActivateDawnWithoutBlocking()) {
+            RefreshGpuRuntimeProbeAsync();
+        }
+        return false;
     }
 
-    if (host_) {
-        host_->SetGpuSubmitContext(activeBackend_, pipelineMode_);
+    requestedBackend_ = normalized;
+
+    if (normalized == "cpu") {
+        applyCpuFallback("cpu_forced");
+        return false;
+    }
+
+    if (!tryActivateDawnWithoutBlocking()) {
+        RefreshGpuRuntimeProbeAsync();
     }
     return false;
 }
@@ -164,7 +186,7 @@ void OverlayHostService::RefreshGpuRuntimeProbeAsync() {
         return;
     }
     std::thread([this]() {
-        SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
+        SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_LOWEST);
         for (;;) {
             const uint64_t token = asyncProbeToken_.load(std::memory_order_acquire);
             const std::string requested = requestedBackend_;

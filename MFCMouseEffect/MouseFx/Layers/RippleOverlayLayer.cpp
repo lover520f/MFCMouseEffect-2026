@@ -207,9 +207,24 @@ void RippleOverlayLayer::AppendGpuCommands(gpu::OverlayGpuCommandStream& stream,
 
         gpu::OverlayGpuCommand cmd{};
         cmd.type = gpu::OverlayGpuCommandType::RipplePulse;
-        cmd.effectTag = instance.continuous ? "hover_hold_continuous" : "ripple";
+        if (!instance.continuous) {
+            cmd.effectTag = "ripple";
+        } else if (instance.params.loop) {
+            cmd.effectTag = "hover_continuous";
+        } else {
+            cmd.effectTag = "hold_continuous";
+        }
         cmd.effectInstanceId = instance.id;
-        cmd.flags = instance.continuous ? 1u : 0u;
+        cmd.flags = 0u;
+        if (instance.continuous) {
+            cmd.flags |= gpu::OverlayGpuCommandFlags::kContinuous;
+            if (instance.params.loop) {
+                cmd.flags |= gpu::OverlayGpuCommandFlags::kLoop;
+                cmd.flags |= gpu::OverlayGpuCommandFlags::kHoverContinuous;
+            } else {
+                cmd.flags |= gpu::OverlayGpuCommandFlags::kHoldContinuous;
+            }
+        }
         cmd.param0 = (float)instance.style.windowSize;
         cmd.param1 = instance.t;
         cmd.param2 = (float)instance.elapsedMs;

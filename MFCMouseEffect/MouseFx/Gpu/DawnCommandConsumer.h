@@ -19,6 +19,9 @@ struct DawnCommandConsumeStatus {
     uint32_t commandCount = 0;
     uint32_t trailCommandCount = 0;
     uint32_t rippleCommandCount = 0;
+    uint32_t rippleClickCommandCount = 0;
+    uint32_t rippleHoverCommandCount = 0;
+    uint32_t rippleHoldCommandCount = 0;
     uint32_t particleCommandCount = 0;
     bool accepted = false;
     uint64_t acceptedFrames = 0;
@@ -84,6 +87,9 @@ inline void SubmitOverlayGpuCommands(
     status.commandCount = (uint32_t)stream.Commands().size();
     status.trailCommandCount = 0;
     status.rippleCommandCount = 0;
+    status.rippleClickCommandCount = 0;
+    status.rippleHoverCommandCount = 0;
+    status.rippleHoldCommandCount = 0;
     status.particleCommandCount = 0;
     status.preparedTrailBatches = 0;
     status.preparedTrailVertices = 0;
@@ -108,6 +114,13 @@ inline void SubmitOverlayGpuCommands(
             break;
         case OverlayGpuCommandType::RipplePulse:
             ++status.rippleCommandCount;
+            if ((cmd.flags & OverlayGpuCommandFlags::kHoverContinuous) != 0) {
+                ++status.rippleHoverCommandCount;
+            } else if ((cmd.flags & OverlayGpuCommandFlags::kHoldContinuous) != 0) {
+                ++status.rippleHoldCommandCount;
+            } else {
+                ++status.rippleClickCommandCount;
+            }
             break;
         case OverlayGpuCommandType::ParticleSprites:
             ++status.particleCommandCount;
@@ -121,8 +134,18 @@ inline void SubmitOverlayGpuCommands(
     const bool bridgeCompositor = (bridge.mode == "compositor");
     const bool runtimeReady = runtime.probe.moduleLoaded && runtime.probe.canCreateInstance;
     const bool compositorPath = (pipelineMode == "dawn_compositor");
+    static std::atomic<int> s_prevBackendDawn{0};
+    static std::atomic<int> s_prevRuntimeQueueReady{0};
+    static std::atomic<uint64_t> s_dawnWarmupUntilTickMs{0};
+    static std::atomic<uint32_t> s_dawnWarmupFramesLeft{0};
+    constexpr uint64_t kDawnWarmupDurationMs = 1800;
+    constexpr uint32_t kDawnWarmupMaxFrames = 96;
 
     if (!backendDawn) {
+        s_prevBackendDawn.store(0, std::memory_order_relaxed);
+        s_prevRuntimeQueueReady.store(0, std::memory_order_relaxed);
+        s_dawnWarmupUntilTickMs.store(0, std::memory_order_relaxed);
+        s_dawnWarmupFramesLeft.store(0, std::memory_order_relaxed);
         status.accepted = false;
         status.detail = "backend_not_dawn";
         ++status.rejectedFrames;
@@ -151,6 +174,16 @@ inline void SubmitOverlayGpuCommands(
         return;
     }
 
+    const int previousBackendDawn = s_prevBackendDawn.exchange(1, std::memory_order_relaxed);
+    const int currentQueueReady = runtime.queueReady ? 1 : 0;
+    const int previousQueueReady = s_prevRuntimeQueueReady.exchange(currentQueueReady, std::memory_order_relaxed);
+    const bool queueBecameReady = (currentQueueReady == 1) && (previousQueueReady == 0);
+    if (previousBackendDawn == 0 || queueBecameReady) {
+        const uint64_t nowTick = (status.submitTickMs > 0) ? status.submitTickMs : GetTickCount64();
+        s_dawnWarmupUntilTickMs.store(nowTick + kDawnWarmupDurationMs, std::memory_order_relaxed);
+        s_dawnWarmupFramesLeft.store(kDawnWarmupMaxFrames, std::memory_order_relaxed);
+    }
+
     if (status.commandCount == 0) {
         status.accepted = true;
         status.detail = "accepted_empty_frame";
@@ -166,6 +199,30 @@ inline void SubmitOverlayGpuCommands(
         status.detail = runtime.modernAbiDetected
             ? "accepted_waiting_queue_modern_abi_preprocess_skipped"
             : "accepted_waiting_queue_preprocess_skipped";
+        ++status.acceptedFrames;
+        publish();
+        return;
+    }
+
+    const uint64_t warmupUntilTick = s_dawnWarmupUntilTickMs.load(std::memory_order_relaxed);
+    uint32_t warmupFramesLeft = s_dawnWarmupFramesLeft.load(std::memory_order_relaxed);
+    const bool warmupByTime = (status.submitTickMs > 0) && (warmupUntilTick > 0) && (status.submitTickMs < warmupUntilTick);
+    const bool warmupByFrames = (warmupFramesLeft > 0);
+    if ((warmupByTime || warmupByFrames) && status.trailCommandCount > 0) {
+        if (warmupFramesLeft > 0) {
+            s_dawnWarmupFramesLeft.store(warmupFramesLeft - 1, std::memory_order_relaxed);
+        }
+        ++status.noopSubmitAttempts;
+        std::string warmupSubmitDetail;
+        if (TrySubmitNoopQueueWork(&warmupSubmitDetail)) {
+            ++status.noopSubmitSuccess;
+            status.detail = "accepted_queue_ready_warmup_trail_preprocess_skipped";
+        } else {
+            status.detail = "accepted_queue_ready_warmup_trail_preprocess_skipped_submit_pending";
+            if (!warmupSubmitDetail.empty()) {
+                status.detail += "_" + warmupSubmitDetail;
+            }
+        }
         ++status.acceptedFrames;
         publish();
         return;
@@ -196,8 +253,33 @@ inline void SubmitOverlayGpuCommands(
     const bool nonTrailMixed = hasRippleGeometry && hasParticleGeometry;
     const bool nonTrailRippleOnly = hasRippleGeometry && !hasParticleGeometry;
     const bool nonTrailParticleOnly = hasParticleGeometry && !hasRippleGeometry;
+    auto rippleModeSuffix = [&]() -> const char* {
+        if (status.rippleHoverCommandCount > 0 &&
+            status.rippleHoldCommandCount == 0 &&
+            status.rippleClickCommandCount == 0) {
+            return "_hover";
+        }
+        if (status.rippleHoldCommandCount > 0 &&
+            status.rippleHoverCommandCount == 0 &&
+            status.rippleClickCommandCount == 0) {
+            return "_hold";
+        }
+        if (status.rippleClickCommandCount > 0 &&
+            status.rippleHoverCommandCount == 0 &&
+            status.rippleHoldCommandCount == 0) {
+            return "_click";
+        }
+        if (status.rippleCommandCount > 0) {
+            return "_mixed";
+        }
+        return "";
+    };
     auto nonTrailDetail = [&](const char* base) -> std::string {
-        if (nonTrailRippleOnly) return std::string(base) + "_ripple";
+        if (nonTrailRippleOnly) {
+            std::string out = std::string(base) + "_ripple";
+            out += rippleModeSuffix();
+            return out;
+        }
         if (nonTrailParticleOnly) return std::string(base) + "_particle";
         if (nonTrailMixed) return std::string(base) + "_mixed";
         return std::string(base);

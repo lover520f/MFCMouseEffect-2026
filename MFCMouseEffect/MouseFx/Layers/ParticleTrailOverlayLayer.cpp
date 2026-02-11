@@ -152,7 +152,7 @@ void ParticleTrailOverlayLayer::AppendGpuCommands(gpu::OverlayGpuCommandStream& 
     gpu::OverlayGpuCommand cmd{};
     cmd.type = gpu::OverlayGpuCommandType::ParticleSprites;
     cmd.effectTag = "particle_trail";
-    cmd.flags = isChromatic_ ? 1u : 0u;
+    cmd.flags = isChromatic_ ? gpu::OverlayGpuCommandFlags::kParticleChromatic : 0u;
     const size_t maxVertices = 256;
     const size_t start = (particles_.size() > maxVertices) ? (particles_.size() - maxVertices) : 0;
     cmd.vertices.reserve(particles_.size() - start);

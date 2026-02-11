@@ -8,9 +8,11 @@
 #include <condition_variable>
 #include <cstring>
 #include <windows.h>
+#include <atomic>
 #include <mutex>
 #include <sstream>
 #include <vector>
+#include <memory>
 
 namespace mousefx::gpu {
 namespace {
@@ -25,6 +27,12 @@ uint64_t g_lastInitTickMs = 0;
 std::string g_lastInitDetail = "init_not_run";
 std::string g_modernAbiPrimeDetail = "not_attempted";
 bool g_legacyPrimeCompatBlocked = false;
+std::shared_ptr<const DawnRuntimeStatus> g_cachedRuntimeStatus{};
+DawnRuntimeSymbolStatus g_cachedSymbolStatus{};
+uint64_t g_cachedSymbolStatusTickMs = 0;
+uint64_t g_cachedSymbolStatusProbeGeneration = 0;
+bool g_cachedSymbolStatusValid = false;
+constexpr uint64_t kSymbolStatusCacheMs = 2000;
 
 using PFN_wgpuCreateInstance = void* (*)(const void*);
 using PFN_wgpuInstanceRelease = void (*)(void*);
@@ -1291,36 +1299,7 @@ DawnRuntimeInitResult FailLocked(const char* detail) {
     return result;
 }
 
-} // namespace
-
-DawnRuntimeProbeInfo GetDawnRuntimeProbeInfo() {
-    std::lock_guard<std::mutex> lock(g_probeMutex);
-    RunProbeIfNeededLocked();
-    return g_probe;
-}
-
-void ResetDawnRuntimeProbe() {
-    std::lock_guard<std::mutex> lock(g_probeMutex);
-    ReleaseLiveQueueContextLocked();
-    if (g_dawnModule) {
-        FreeLibrary(g_dawnModule);
-        g_dawnModule = nullptr;
-    }
-    g_dawnProbeAttempted = false;
-    g_probe = {};
-    g_probe.detail = "probe_reset";
-    g_probe.generation = ++g_probeGeneration;
-    g_initAttempts = 0;
-    g_lastInitTickMs = 0;
-    g_lastInitDetail = "init_not_run";
-    g_modernAbiPrimeDetail = "not_attempted";
-    g_legacyPrimeCompatBlocked = false;
-}
-
-DawnRuntimeStatus GetDawnRuntimeStatus() {
-    std::lock_guard<std::mutex> lock(g_probeMutex);
-    RunProbeIfNeededLocked();
-
+DawnRuntimeStatus BuildRuntimeStatusLocked() {
     DawnRuntimeStatus status{};
     status.probe = g_probe;
     status.lastInitDetail = g_lastInitDetail;
@@ -1356,6 +1335,7 @@ DawnRuntimeStatus GetDawnRuntimeStatus() {
     } else {
         status.modernAbiNativeDetail = "modern_native_symbols_ready";
     }
+    status.modernAbiPrimeDetail = g_modernAbiPrimeDetail;
     if (!status.modernAbiDetected) {
         status.modernAbiStrategy = "legacy_callbacks";
     } else if (g_legacyPrimeCompatBlocked && g_modernAbiPrimeDetail.rfind("legacy_", 0) == 0) {
@@ -1365,13 +1345,90 @@ DawnRuntimeStatus GetDawnRuntimeStatus() {
     } else {
         status.modernAbiStrategy = "modern_waitany_prime";
     }
-    status.modernAbiPrimeDetail = g_modernAbiPrimeDetail;
     return status;
+}
+
+void StoreRuntimeStatusSnapshotLocked(const DawnRuntimeStatus& status) {
+    std::shared_ptr<const DawnRuntimeStatus> snapshot =
+        std::make_shared<DawnRuntimeStatus>(status);
+    std::atomic_store_explicit(
+        &g_cachedRuntimeStatus,
+        snapshot,
+        std::memory_order_release);
+}
+
+} // namespace
+
+DawnRuntimeProbeInfo GetDawnRuntimeProbeInfo() {
+    std::lock_guard<std::mutex> lock(g_probeMutex);
+    RunProbeIfNeededLocked();
+    return g_probe;
+}
+
+void ResetDawnRuntimeProbe() {
+    std::lock_guard<std::mutex> lock(g_probeMutex);
+    ReleaseLiveQueueContextLocked();
+    if (g_dawnModule) {
+        FreeLibrary(g_dawnModule);
+        g_dawnModule = nullptr;
+    }
+    g_dawnProbeAttempted = false;
+    g_probe = {};
+    g_probe.detail = "probe_reset";
+    g_probe.generation = ++g_probeGeneration;
+    g_initAttempts = 0;
+    g_lastInitTickMs = 0;
+    g_lastInitDetail = "init_not_run";
+    g_modernAbiPrimeDetail = "not_attempted";
+    g_legacyPrimeCompatBlocked = false;
+    g_cachedRuntimeStatus.reset();
+    g_cachedSymbolStatusValid = false;
+    g_cachedSymbolStatusTickMs = 0;
+    g_cachedSymbolStatusProbeGeneration = 0;
+    g_cachedSymbolStatus = DawnRuntimeSymbolStatus{};
+}
+
+DawnRuntimeStatus GetDawnRuntimeStatus() {
+    std::lock_guard<std::mutex> lock(g_probeMutex);
+    RunProbeIfNeededLocked();
+    DawnRuntimeStatus status = BuildRuntimeStatusLocked();
+    StoreRuntimeStatusSnapshotLocked(status);
+    return status;
+}
+
+DawnRuntimeStatus GetDawnRuntimeStatusFast() {
+    {
+        std::unique_lock<std::mutex> lock(g_probeMutex, std::try_to_lock);
+        if (lock.owns_lock()) {
+            RunProbeIfNeededLocked();
+            DawnRuntimeStatus status = BuildRuntimeStatusLocked();
+            StoreRuntimeStatusSnapshotLocked(status);
+            return status;
+        }
+    }
+
+    auto cached = std::atomic_load_explicit(&g_cachedRuntimeStatus, std::memory_order_acquire);
+    if (cached) {
+        return *cached;
+    }
+
+    DawnRuntimeStatus fallback{};
+    fallback.lastInitDetail = "status_snapshot_not_ready";
+    fallback.modernAbiPrimeDetail = "status_snapshot_not_ready";
+    return fallback;
 }
 
 DawnRuntimeSymbolStatus GetDawnRuntimeSymbolStatus() {
     std::lock_guard<std::mutex> lock(g_probeMutex);
     RunProbeIfNeededLocked();
+
+    const uint64_t nowMs = GetTickCount64();
+    if (g_cachedSymbolStatusValid &&
+        g_cachedSymbolStatusProbeGeneration == g_probe.generation &&
+        nowMs >= g_cachedSymbolStatusTickMs &&
+        (nowMs - g_cachedSymbolStatusTickMs) <= kSymbolStatusCacheMs) {
+        return g_cachedSymbolStatus;
+    }
 
     DawnRuntimeSymbolStatus out{};
     out.moduleLoaded = (g_dawnModule != nullptr);
@@ -1397,6 +1454,11 @@ DawnRuntimeSymbolStatus GetDawnRuntimeSymbolStatus() {
     } else {
         out.summary = "request_symbols_incomplete";
     }
+
+    g_cachedSymbolStatus = out;
+    g_cachedSymbolStatusTickMs = nowMs;
+    g_cachedSymbolStatusProbeGeneration = g_probe.generation;
+    g_cachedSymbolStatusValid = true;
     return out;
 }
 

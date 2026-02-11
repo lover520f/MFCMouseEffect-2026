@@ -259,6 +259,7 @@
     const cc = st.dawn_command_consumer || {};
     const ds = st.dawn_status || {};
     const cmd = `${cs.command_count || 0}/${cs.trail_commands || 0}/${cs.ripple_commands || 0}/${cs.particle_commands || 0}`;
+    const rippleKinds = `${cc.ripple_click_commands || 0}/${cc.ripple_hover_commands || 0}/${cc.ripple_hold_commands || 0}`;
     const queue = `${ds.queue_ready ? 'Q1' : 'Q0'}:${ds.command_encoder_ready ? 'E1' : 'E0'}:${ds.modern_abi_detected ? 'M1' : 'M0'}:${ds.modern_abi_native_ready ? 'N1' : 'N0'}`;
     const strategy = ds.modern_abi_strategy || 'n/a';
     const nativeDetail = ds.modern_abi_native_detail || 'n/a';
@@ -266,7 +267,7 @@
     const submit = `${cc.noop_submit_success || 0}/${cc.noop_submit_attempts || 0}`;
     const cmdSubmit = `${cc.empty_command_submit_success || 0}/${cc.empty_command_submit_attempts || 0}`;
     const detail = cc.detail || 'unknown';
-    return `${ts} | backend=${st.render_backend_active || 'cpu'} | cmd=${cmd} | ${queue} | strategy=${strategy} | native=${nativeDetail} | prime=${prime} | submit=${submit} | cmdbuf=${cmdSubmit} | ${detail}`;
+    return `${ts} | backend=${st.render_backend_active || 'cpu'} | cmd=${cmd} | ripple(c/h/hd)=${rippleKinds} | ${queue} | strategy=${strategy} | native=${nativeDetail} | prime=${prime} | submit=${submit} | cmdbuf=${cmdSubmit} | ${detail}`;
   }
 
   function appendDiagLine(st){
@@ -277,6 +278,9 @@
       t: st && st.gpu_command_stream ? st.gpu_command_stream.trail_commands : 0,
       r: st && st.gpu_command_stream ? st.gpu_command_stream.ripple_commands : 0,
       p: st && st.gpu_command_stream ? st.gpu_command_stream.particle_commands : 0,
+      rc: st && st.dawn_command_consumer ? st.dawn_command_consumer.ripple_click_commands : 0,
+      rh: st && st.dawn_command_consumer ? st.dawn_command_consumer.ripple_hover_commands : 0,
+      rd: st && st.dawn_command_consumer ? st.dawn_command_consumer.ripple_hold_commands : 0,
       q: st && st.dawn_status ? st.dawn_status.queue_ready : false,
       e: st && st.dawn_status ? st.dawn_status.command_encoder_ready : false,
       m: st && st.dawn_status ? st.dawn_status.modern_abi_detected : false,
@@ -549,6 +553,9 @@
       const consumerText = (lang === 'zh-CN')
         ? `消费: ${cc.accepted ? '已接收' : '未接收'} (${cc.detail || 'unknown'})`
         : `Consumer: ${cc.accepted ? 'accepted' : 'rejected'} (${cc.detail || 'unknown'})`;
+      const rippleKindsText = (lang === 'zh-CN')
+        ? `Ripple类型: click ${cc.ripple_click_commands || 0}, hover ${cc.ripple_hover_commands || 0}, hold ${cc.ripple_hold_commands || 0}`
+        : `Ripple kinds: click ${cc.ripple_click_commands || 0}, hover ${cc.ripple_hover_commands || 0}, hold ${cc.ripple_hold_commands || 0}`;
       const prepText = (lang === 'zh-CN')
         ? `Trail预处理: b${cc.prepared_trail_batches || 0} v${cc.prepared_trail_vertices || 0} s${cc.prepared_trail_segments || 0} t${cc.prepared_trail_triangles || 0} u${cc.prepared_upload_bytes || 0}`
         : `Trail prep: b${cc.prepared_trail_batches || 0} v${cc.prepared_trail_vertices || 0} s${cc.prepared_trail_segments || 0} t${cc.prepared_trail_triangles || 0} u${cc.prepared_upload_bytes || 0}`;
@@ -573,7 +580,7 @@
       const nonTrailThrottleText = (lang === 'zh-CN')
         ? `NonTrail节流: ${cc.nontrail_submit_throttled || 0}`
         : `NonTrail throttle: ${cc.nontrail_submit_throttled || 0}`;
-      finalText = `${finalText} ${consumerText} ${prepText} ${ripplePrepText} ${particlePrepText} ${prepModeText} ${submitText} ${cmdSubmitText} ${ripplePacketText} ${nonTrailThrottleText}`;
+      finalText = `${finalText} ${consumerText} ${rippleKindsText} ${prepText} ${ripplePrepText} ${particlePrepText} ${prepModeText} ${submitText} ${cmdSubmitText} ${ripplePacketText} ${nonTrailThrottleText}`;
     }
     const prefix = st.gpu_in_use ? '[GPU] ' : '[CPU] ';
     if (gpuBannerTextEl) {

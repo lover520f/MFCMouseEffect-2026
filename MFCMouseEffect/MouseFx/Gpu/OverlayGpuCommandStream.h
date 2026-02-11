@@ -13,6 +13,15 @@ enum class OverlayGpuCommandType : uint8_t {
     ParticleSprites = 2,
 };
 
+namespace OverlayGpuCommandFlags {
+constexpr uint32_t kContinuous = 1u << 0;
+constexpr uint32_t kLoop = 1u << 1;
+constexpr uint32_t kHoverContinuous = 1u << 2;
+constexpr uint32_t kHoldContinuous = 1u << 3;
+constexpr uint32_t kTrailChromatic = 1u << 4;
+constexpr uint32_t kParticleChromatic = 1u << 5;
+} // namespace OverlayGpuCommandFlags
+
 struct OverlayGpuVertex {
     float x = 0.0f;
     float y = 0.0f;
@@ -60,4 +69,3 @@ private:
 };
 
 } // namespace mousefx::gpu
-

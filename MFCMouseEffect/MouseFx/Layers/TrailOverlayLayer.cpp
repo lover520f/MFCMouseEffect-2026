@@ -97,7 +97,7 @@ void TrailOverlayLayer::AppendGpuCommands(gpu::OverlayGpuCommandStream& stream, 
     gpu::OverlayGpuCommand cmd{};
     cmd.type = gpu::OverlayGpuCommandType::TrailPolyline;
     cmd.effectTag = "trail";
-    cmd.flags = isChromatic_ ? 1u : 0u;
+    cmd.flags = isChromatic_ ? gpu::OverlayGpuCommandFlags::kTrailChromatic : 0u;
     cmd.param0 = (float)durationMs_;
     cmd.vertices.reserve(points_.size());
 

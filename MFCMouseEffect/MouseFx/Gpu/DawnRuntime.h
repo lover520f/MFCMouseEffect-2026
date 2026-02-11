@@ -68,6 +68,9 @@ bool IsDawnCompiled();
 DawnRuntimeInitResult TryInitializeDawnRuntime();
 DawnRuntimeProbeInfo GetDawnRuntimeProbeInfo();
 DawnRuntimeStatus GetDawnRuntimeStatus();
+// Non-blocking status query for hot paths (render ticks).
+// If runtime mutex is busy, returns last cached snapshot.
+DawnRuntimeStatus GetDawnRuntimeStatusFast();
 void ResetDawnRuntimeProbe();
 bool TrySubmitNoopQueueWork(std::string* detailOut = nullptr);
 bool TrySubmitEmptyCommandBuffer(std::string* detailOut = nullptr);

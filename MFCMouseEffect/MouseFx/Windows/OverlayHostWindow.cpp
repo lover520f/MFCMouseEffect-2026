@@ -403,7 +403,7 @@ void OverlayHostWindow::CollectGpuCommandStream(uint64_t nowMs) {
     gpuRippleCommandCount_.store(rippleCount, std::memory_order_release);
     gpuParticleCommandCount_.store(particleCount, std::memory_order_release);
 
-    const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatus();
+    const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatusFast();
     const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
     gpu::SubmitOverlayGpuCommands(
         gpuCommandStream_,

@@ -133,19 +133,14 @@ bool AppController::Start() {
     OverlayHostService::Instance().SetGpuBridgeModeRequest(config_.gpuBridgeModeRequest);
     // Startup tightening:
     // - If configured backend is dawn/auto and queue is already ready, start directly on target backend.
-    // - Otherwise fallback to CPU first, then apply backend asynchronously.
+    // - Otherwise keep target preference and let async probe promote to Dawn.
     if (config_.renderBackend == "cpu") {
         (void)OverlayHostService::Instance().SetRenderBackendPreference("cpu");
         deferredBackendApplyPending_ = false;
     } else {
-        const bool startedOnTarget =
-            OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
-        if (startedOnTarget) {
-            deferredBackendApplyPending_ = false;
-        } else {
-            (void)OverlayHostService::Instance().SetRenderBackendPreference("cpu");
-            deferredBackendApplyPending_ = true;
-        }
+        (void)OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
+        deferredBackendApplyPending_ =
+            (OverlayHostService::Instance().GetActiveRenderBackend() != "dawn");
     }
 
     diag_.stage = StartStage::GdiPlusStartup;
@@ -861,20 +856,9 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
             }
             if (deferredDawnUpgradePending_) {
                 if (OverlayHostService::Instance().IsDawnQueueReady()) {
-                    if (IsBackendSwitchIdleWindow()) {
-                        RecreateActiveEffects();
-                        deferredDawnUpgradePending_ = false;
-                        deferredDawnUpgradeRetryCount_ = 0;
-                    } else {
-                        ++deferredDawnUpgradeRetryCount_;
-                        if (deferredDawnUpgradeRetryCount_ < 50) {
-                            SetTimer(hwnd, kDeferredBackendTimerId, 80, nullptr);
-                        } else {
-                            RecreateActiveEffects();
-                            deferredDawnUpgradePending_ = false;
-                            deferredDawnUpgradeRetryCount_ = 0;
-                        }
-                    }
+                    (void)OverlayHostService::Instance().SetRenderBackendPreference(config_.renderBackend);
+                    deferredDawnUpgradePending_ = false;
+                    deferredDawnUpgradeRetryCount_ = 0;
                 } else {
                     ++deferredDawnUpgradeRetryCount_;
                     if (deferredDawnUpgradeRetryCount_ < 50) {
