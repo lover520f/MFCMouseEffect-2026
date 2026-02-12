@@ -264,6 +264,8 @@ static json BuildDawnCommandConsumeJson(const gpu::DawnCommandConsumeStatus& con
         {"prepared_ripple_upload_bytes", consume.preparedRippleUploadBytes},
         {"prepared_ripple_baked_quads", consume.preparedRippleBakedQuads},
         {"prepared_ripple_baked_vertices", consume.preparedRippleBakedVertices},
+        {"trail_vertex_cap_per_command", consume.trailVertexCapPerCommand},
+        {"trail_cap_mode", consume.trailCapMode},
         {"preprocess_workers", consume.preprocessWorkers},
         {"preprocess_parallel", consume.preprocessParallel},
         {"noop_submit_attempts", consume.noopSubmitAttempts},

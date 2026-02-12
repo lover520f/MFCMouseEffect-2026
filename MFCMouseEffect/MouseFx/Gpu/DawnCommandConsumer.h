@@ -41,6 +41,8 @@ struct DawnCommandConsumeStatus {
     uint32_t preparedRippleUploadBytes = 0;
     uint32_t preparedRippleBakedQuads = 0;
     uint32_t preparedRippleBakedVertices = 0;
+    uint32_t trailVertexCapPerCommand = 0;
+    std::string trailCapMode = "none";
     uint32_t preprocessWorkers = 1;
     bool preprocessParallel = false;
     uint64_t noopSubmitAttempts = 0;
@@ -178,6 +180,8 @@ inline void SubmitOverlayGpuCommands(
     status.preparedRippleUploadBytes = 0;
     status.preparedRippleBakedQuads = 0;
     status.preparedRippleBakedVertices = 0;
+    status.trailVertexCapPerCommand = 0;
+    status.trailCapMode = "none";
     status.preprocessWorkers = 1;
     status.preprocessParallel = false;
     for (const auto& cmd : stream.Commands()) {
@@ -373,6 +377,10 @@ inline void SubmitOverlayGpuCommands(
     const size_t trailVertexCapPerCommand = holdActive
         ? kHoldTrailVertexCapPerCommand
         : (mixedFrame ? kTrailVertexCapPerCommandMixed : kTrailVertexCapPerCommand);
+    status.trailVertexCapPerCommand = static_cast<uint32_t>(trailVertexCapPerCommand);
+    status.trailCapMode = holdActive
+        ? "hold"
+        : (mixedFrame ? "mixed_non_hold" : "trail_non_hold");
     const TrailGeometryPrepResult prep = PreprocessTrailGeometry(
         stream,
         skipTrailGeometryBuild,
