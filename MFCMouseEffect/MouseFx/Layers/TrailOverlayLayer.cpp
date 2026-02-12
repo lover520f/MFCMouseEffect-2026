@@ -8,6 +8,8 @@ namespace {
 constexpr int kTrailScreenCullPadding = 220;
 constexpr uint64_t kCursorFallbackSampleIntervalMs = 24;
 constexpr uint64_t kCursorFallbackSampleIntervalLatencyMs = 32;
+constexpr int kTrailLatencyPriorityDurationCapMs = 180;
+constexpr int kTrailLatencyPriorityMaxPointsCap = 24;
 
 bool RectanglesOverlap(int l1, int t1, int r1, int b1, int l2, int t2, int r2, int b2) {
     return !(r1 <= l2 || r2 <= l1 || b1 <= t2 || b2 <= t1);
@@ -45,8 +47,11 @@ void TrailOverlayLayer::SetLatencyPriorityMode(bool enabled) {
 
 void TrailOverlayLayer::Update(uint64_t nowMs) {
     SampleCursorPoint(nowMs);
+    const int effectiveDurationMs = latencyPriorityMode_
+        ? (std::min)(durationMs_, kTrailLatencyPriorityDurationCapMs)
+        : durationMs_;
     while (!points_.empty()) {
-        if (nowMs - points_.front().addedTime > (uint64_t)durationMs_) {
+        if (nowMs - points_.front().addedTime > (uint64_t)effectiveDurationMs) {
             points_.pop_front();
         } else {
             break;
@@ -162,7 +167,10 @@ void TrailOverlayLayer::SampleCursorPoint(uint64_t nowMs) {
     trailPoint.pt = pt;
     trailPoint.addedTime = nowMs;
     points_.push_back(trailPoint);
-    if (points_.size() > (size_t)maxPoints_) {
+    const size_t effectiveMaxPoints = (size_t)(latencyPriorityMode_
+        ? (std::min)(maxPoints_, kTrailLatencyPriorityMaxPointsCap)
+        : maxPoints_);
+    if (points_.size() > effectiveMaxPoints) {
         points_.pop_front();
     }
     lastSamplePt_ = pt;
