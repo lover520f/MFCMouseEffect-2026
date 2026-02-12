@@ -159,6 +159,9 @@ static constexpr UINT kFrameTimerIntervalHoldMs = 4;
 static constexpr UINT kFrameTimerIntervalDawnActiveMs = 4;
 static constexpr uint64_t kGpuPresentRollbackCooldownMs = 2500;
 static constexpr uint32_t kGpuPresentRollbackFailureThreshold = 2;
+// Non-layered final-present requires dedicated host-chain takeover wiring.
+// Keep disabled until takeover path is fully integrated.
+static constexpr bool kGpuFinalPresentTakeoverReady = false;
 static OverlayHostWindow* g_overlayForegroundHookOwner = nullptr;
 static const uint64_t g_processStartTickMs = GetTickCount64();
 
@@ -583,6 +586,7 @@ gpu::GpuFinalPresentPolicyDecision OverlayHostWindow::EvaluateGpuFinalPresentPol
         const gpu::GpuFinalPresentHostChainStatus hostChain = gpu::GetGpuFinalPresentHostChainStatus(false);
         in.hostChainActive = hostChain.active;
     }
+    in.hostChainTakeoverReady = kGpuFinalPresentTakeoverReady;
 
     return gpu::ResolveGpuFinalPresentPolicy(in);
 }

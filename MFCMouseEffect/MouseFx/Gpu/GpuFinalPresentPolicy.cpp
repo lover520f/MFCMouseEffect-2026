@@ -49,6 +49,10 @@ GpuFinalPresentPolicyDecision ResolveGpuFinalPresentPolicy(const GpuFinalPresent
         out.detail = "gpu_present_host_chain_not_active";
         return out;
     }
+    if (!input.hostChainTakeoverReady) {
+        out.detail = "gpu_present_host_chain_takeover_not_ready";
+        return out;
+    }
 
     out.useLayeredSurfaces = false;
     out.eligibleForGpuFinalPresent = true;

@@ -16,6 +16,7 @@ struct GpuFinalPresentPolicyInput {
     uint64_t processUptimeMs = 0;
     bool hasRecentGpuCommandActivity = false;
     bool hostChainActive = false;
+    bool hostChainTakeoverReady = false;
 };
 
 struct GpuFinalPresentPolicyDecision {
