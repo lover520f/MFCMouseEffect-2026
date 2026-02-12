@@ -62,7 +62,8 @@ inline TrailGeometryPrepResult MergeTrailPrep(
 inline TrailGeometryPrepResult BuildTrailGeometryRange(
     const std::vector<const OverlayGpuCommand*>& trails,
     size_t begin,
-    size_t end) {
+    size_t end,
+    size_t trailVertexCapPerCommand = 0) {
     TrailGeometryPrepResult result{};
     constexpr size_t kMaxTrailVerticesPerBatch = 1024;
     constexpr float kBaseHalfWidth = 2.2f;
@@ -71,10 +72,18 @@ inline TrailGeometryPrepResult BuildTrailGeometryRange(
     for (size_t t = begin; t < end; ++t) {
         const OverlayGpuCommand* cmd = trails[t];
         if (!cmd || cmd->vertices.size() < 2) continue;
+        const size_t cmdVertexCount = cmd->vertices.size();
+        size_t cmdBegin = 0;
+        size_t cmdEnd = cmdVertexCount;
+        if (trailVertexCapPerCommand > 1 && cmdVertexCount > trailVertexCapPerCommand) {
+            // Keep the latest points to preserve current cursor-follow responsiveness.
+            cmdBegin = cmdVertexCount - trailVertexCapPerCommand;
+        }
+        if (cmdEnd - cmdBegin < 2) continue;
 
-        size_t offset = 0;
-        while (offset + 1 < cmd->vertices.size()) {
-            const size_t remain = cmd->vertices.size() - offset;
+        size_t offset = cmdBegin;
+        while (offset + 1 < cmdEnd) {
+            const size_t remain = cmdEnd - offset;
             const size_t take = (remain > kMaxTrailVerticesPerBatch) ? kMaxTrailVerticesPerBatch : remain;
             if (take < 2) break;
 
@@ -134,7 +143,8 @@ inline TrailGeometryPrepResult BuildTrailGeometryRange(
 
 inline TrailGeometryPrepResult PreprocessTrailGeometry(
     const OverlayGpuCommandStream& stream,
-    bool skipTrailGeometryBuild = false) {
+    bool skipTrailGeometryBuild = false,
+    size_t trailVertexCapPerCommand = 0) {
     std::vector<const OverlayGpuCommand*> trails{};
     trails.reserve(stream.Commands().size());
     uint64_t totalVertices = 0;
@@ -171,7 +181,8 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
     const uint32_t workerCount = (uint32_t)std::min<size_t>(trails.size(), maxWorkers);
     const bool shouldParallel = (workerCount >= 2 && totalVertices >= 1024);
     if (!shouldParallel) {
-        TrailGeometryPrepResult out = detail::BuildTrailGeometryRange(trails, 0, trails.size());
+        TrailGeometryPrepResult out = detail::BuildTrailGeometryRange(
+            trails, 0, trails.size(), trailVertexCapPerCommand);
         out.workers = 1;
         out.usedParallel = false;
         out.particleBatches = base.particleBatches;
@@ -195,8 +206,8 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
             const size_t begin = cursor;
             const size_t end = std::min(trails.size(), begin + chunk);
             cursor = end;
-            futures.push_back(std::async(std::launch::async, [begin, end, &trails]() {
-                return detail::BuildTrailGeometryRange(trails, begin, end);
+            futures.push_back(std::async(std::launch::async, [begin, end, trailVertexCapPerCommand, &trails]() {
+                return detail::BuildTrailGeometryRange(trails, begin, end, trailVertexCapPerCommand);
             }));
         }
 
@@ -217,7 +228,8 @@ inline TrailGeometryPrepResult PreprocessTrailGeometry(
         merged.rippleBakedVertices = base.rippleBakedVertices;
         return merged;
     } catch (...) {
-        TrailGeometryPrepResult out = detail::BuildTrailGeometryRange(trails, 0, trails.size());
+        TrailGeometryPrepResult out = detail::BuildTrailGeometryRange(
+            trails, 0, trails.size(), trailVertexCapPerCommand);
         out.workers = 1;
         out.usedParallel = false;
         out.particleBatches = base.particleBatches;

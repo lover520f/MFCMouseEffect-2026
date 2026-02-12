@@ -361,7 +361,12 @@ inline void SubmitOverlayGpuCommands(
         }
     }
 
-    const TrailGeometryPrepResult prep = PreprocessTrailGeometry(stream, skipTrailGeometryBuild);
+    constexpr size_t kHoldTrailVertexCapPerCommand = 24;
+    const size_t trailVertexCapPerCommand = holdActive ? kHoldTrailVertexCapPerCommand : 0;
+    const TrailGeometryPrepResult prep = PreprocessTrailGeometry(
+        stream,
+        skipTrailGeometryBuild,
+        trailVertexCapPerCommand);
     status.preparedTrailBatches = prep.batches;
     status.preparedTrailVertices = prep.vertices;
     status.preparedTrailSegments = prep.segments;
