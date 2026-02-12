@@ -728,6 +728,15 @@ void OverlayHostWindow::StartFrameLoop() {
         timerResolutionRaised_ = (mm == TIMERR_NOERROR);
     }
     SyncBoundsWithVirtualScreen(false);
+    // Warm a first frame before showing windows to avoid startup black flash.
+    const uint64_t nowMs = NowMs();
+    for (auto& layer : layers_) {
+        if (layer) {
+            layer->Update(nowMs);
+        }
+    }
+    CollectGpuCommandStream(nowMs);
+    Render();
     for (auto& surface : surfaces_) {
         if (surface.hwnd) ShowWindow(surface.hwnd, SW_SHOWNA);
     }
