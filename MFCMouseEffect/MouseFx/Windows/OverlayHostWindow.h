@@ -52,6 +52,7 @@ public:
         int width = 0;
         int height = 0;
         bool hadVisibleContent = false;
+        bool hadPresentedFrame = false;
     };
 
 private:

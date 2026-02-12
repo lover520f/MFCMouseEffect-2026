@@ -15,9 +15,10 @@ bool OverlayLayeredCpuPresenter::Present(const OverlayPresentFrame& frame) {
     const int surfaceX = frame.surfaceX;
     const int surfaceY = frame.surfaceY;
     bool* hadVisibleContent = frame.hadVisibleContent;
+    bool* hadPresentedFrame = frame.hadPresentedFrame;
     const std::vector<IOverlayLayer*>* layers = frame.layers;
     if (!hwnd || !memDc || !bits || width <= 0 || height <= 0) return false;
-    if (!hadVisibleContent || !layers) return false;
+    if (!hadVisibleContent || !hadPresentedFrame || !layers) return false;
 
     const int surfaceLeft = surfaceX;
     const int surfaceTop = surfaceY;
@@ -33,7 +34,9 @@ bool OverlayLayeredCpuPresenter::Present(const OverlayPresentFrame& frame) {
         }
     }
     const bool hasAnyLayerVisibleOnSurface = !visibleLayers.empty();
-    if (!hasAnyLayerVisibleOnSurface && !(*hadVisibleContent)) {
+    // First present must still submit a fully transparent frame, otherwise a newly
+    // shown layered window can appear as transient black on some systems.
+    if (!hasAnyLayerVisibleOnSurface && !(*hadVisibleContent) && *hadPresentedFrame) {
         return true;
     }
 
@@ -52,6 +55,7 @@ bool OverlayLayeredCpuPresenter::Present(const OverlayPresentFrame& frame) {
     BLENDFUNCTION bf{AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
     UpdateLayeredWindow(hwnd, nullptr, &ptDst, &sizeWnd, memDc, &ptSrc, 0, &bf, ULW_ALPHA);
     *hadVisibleContent = hasAnyLayerVisibleOnSurface;
+    *hadPresentedFrame = true;
     return true;
 }
 

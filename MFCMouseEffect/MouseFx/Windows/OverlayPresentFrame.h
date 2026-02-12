@@ -21,6 +21,7 @@ struct OverlayPresentFrame {
     int surfaceX = 0;
     int surfaceY = 0;
     bool* hadVisibleContent = nullptr;
+    bool* hadPresentedFrame = nullptr;
     const std::vector<IOverlayLayer*>* layers = nullptr;
     const gpu::OverlayGpuCommandStream* gpuCommandStream = nullptr;
 };

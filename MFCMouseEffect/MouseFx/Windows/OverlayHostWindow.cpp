@@ -403,6 +403,7 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     frame.surfaceX = surface.x;
     frame.surfaceY = surface.y;
     frame.hadVisibleContent = &surface.hadVisibleContent;
+    frame.hadPresentedFrame = &surface.hadPresentedFrame;
     frame.layers = &layerRefs;
     frame.gpuCommandStream = &gpuCommandStream_;
 
@@ -676,6 +677,7 @@ void OverlayHostWindow::DestroySurfaces() {
         surface.width = 0;
         surface.height = 0;
         surface.hadVisibleContent = false;
+        surface.hadPresentedFrame = false;
     }
     surfaces_.clear();
     timerHwnd_ = nullptr;
