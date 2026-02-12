@@ -4,6 +4,7 @@
 #include "MouseFx/Core/OverlayCoordSpace.h"
 #include "MouseFx/Gpu/DawnCommandConsumer.h"
 #include "MouseFx/Gpu/GpuFinalPresentCapabilityProbe.h"
+#include "MouseFx/Gpu/GpuFinalPresentHostChain.h"
 #include "MouseFx/Gpu/GpuFinalPresentPolicy.h"
 
 #include <algorithm>
@@ -585,6 +586,20 @@ gpu::GpuFinalPresentPolicyDecision OverlayHostWindow::EvaluateGpuFinalPresentPol
     in.processUptimeMs = (nowMs >= g_processStartTickMs) ? (nowMs - g_processStartTickMs) : 0;
     const uint64_t lastNonEmptyMs = lastNonEmptyGpuCommandTickMs_.load(std::memory_order_acquire);
     in.hasRecentGpuCommandActivity = (lastNonEmptyMs != 0) && (nowMs - lastNonEmptyMs <= 1200);
+    const bool canProbeHostChain =
+        in.optInEnabled &&
+        !in.forceLayeredCpuFallback &&
+        in.activeBackend == "dawn" &&
+        in.pipelineMode == "dawn_compositor" &&
+        in.activeLayerCount > 0 &&
+        in.allLayersGpuExclusive &&
+        in.runtimeCapabilityLikelyAvailable &&
+        in.processUptimeMs >= 3000 &&
+        in.hasRecentGpuCommandActivity;
+    if (canProbeHostChain) {
+        const gpu::GpuFinalPresentHostChainStatus hostChain = gpu::GetGpuFinalPresentHostChainStatus(false);
+        in.hostChainActive = hostChain.active;
+    }
 
     return gpu::ResolveGpuFinalPresentPolicy(in);
 }

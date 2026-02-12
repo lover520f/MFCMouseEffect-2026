@@ -45,6 +45,10 @@ GpuFinalPresentPolicyDecision ResolveGpuFinalPresentPolicy(const GpuFinalPresent
         out.detail = "gpu_present_waiting_for_interaction_window";
         return out;
     }
+    if (!input.hostChainActive) {
+        out.detail = "gpu_present_host_chain_not_active";
+        return out;
+    }
 
     out.useLayeredSurfaces = false;
     out.eligibleForGpuFinalPresent = true;
