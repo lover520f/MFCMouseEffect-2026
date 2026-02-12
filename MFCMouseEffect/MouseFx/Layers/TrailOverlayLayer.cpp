@@ -9,7 +9,7 @@ constexpr int kTrailScreenCullPadding = 220;
 constexpr uint64_t kCursorFallbackSampleIntervalMs = 24;
 constexpr uint64_t kCursorFallbackSampleIntervalLatencyMs = 8;
 constexpr int kTrailLatencyPriorityDurationCapMs = 180;
-constexpr int kTrailLatencyPriorityMaxPointsCap = 24;
+constexpr int kTrailLatencyPriorityMaxPointsCap = 18;
 constexpr size_t kPendingCursorQueueCap = 32;
 
 bool RectanglesOverlap(int l1, int t1, int r1, int b1, int l2, int t2, int r2, int b2) {

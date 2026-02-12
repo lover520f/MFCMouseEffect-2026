@@ -139,12 +139,15 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
             if (latencyPriorityActive_ && IsNeon3DHoldType(type_)) {
                 alpha = 0.82f;
             }
+            float speedPxPerMs = 0.0f;
+            bool hasSpeedSample = false;
             if (hasLastRawPoint_ && nowMs > lastRawPointTickMs_) {
                 const float dx = static_cast<float>(pt.x - lastRawPoint_.x);
                 const float dy = static_cast<float>(pt.y - lastRawPoint_.y);
                 const float dtMs = static_cast<float>(nowMs - lastRawPointTickMs_);
                 if (dtMs > 0.0f) {
-                    const float speedPxPerMs = std::sqrt(dx * dx + dy * dy) / dtMs;
+                    speedPxPerMs = std::sqrt(dx * dx + dy * dy) / dtMs;
+                    hasSpeedSample = true;
                     if (IsNeon3DHoldType(type_)) {
                         // Layered CPU final-present path needs stronger follow to keep cursor sync.
                         const bool layeredFinalPresent = !OverlayHostService::Instance().IsGpuPresentActive();
@@ -170,10 +173,21 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
             lastRawPoint_ = pt;
             hasLastRawPoint_ = true;
             lastRawPointTickMs_ = nowMs;
+
+            bool directFollow = false;
+            if (latencyPriorityActive_ && IsNeon3DHoldType(type_) && hasSpeedSample) {
+                const bool layeredFinalPresent = !OverlayHostService::Instance().IsGpuPresentActive();
+                if (layeredFinalPresent && speedPxPerMs >= 1.8f) {
+                    directFollow = true;
+                }
+            }
             if (!hasSmoothedPoint_) {
                 smoothedX_ = (float)pt.x;
                 smoothedY_ = (float)pt.y;
                 hasSmoothedPoint_ = true;
+            } else if (directFollow) {
+                smoothedX_ = (float)pt.x;
+                smoothedY_ = (float)pt.y;
             } else {
                 smoothedX_ += ((float)pt.x - smoothedX_) * alpha;
                 smoothedY_ += ((float)pt.y - smoothedY_) * alpha;
