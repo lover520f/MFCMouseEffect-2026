@@ -2,6 +2,7 @@
 
 #include "D3D11DCompPresenter.h"
 
+#include <filesystem>
 #include <iterator>
 
 #pragma comment(lib, "d3d11.lib")
@@ -11,11 +12,46 @@
 namespace mousefx::gpu {
 
 namespace {
-bool IsTakeoverEnabledByEnv() {
+struct TakeoverControlResult {
+    bool enabled = false;
+    std::string source = "default_off";
+};
+
+bool IsTruthyLeadingChar(wchar_t ch) {
+    return ch == L'1' || ch == L't' || ch == L'T' || ch == L'y' || ch == L'Y';
+}
+
+TakeoverControlResult ResolveTakeoverControl() {
+    TakeoverControlResult result{};
+    wchar_t modulePath[MAX_PATH]{};
+    const DWORD n = GetModuleFileNameW(nullptr, modulePath, MAX_PATH);
+    if (n > 0 && n < MAX_PATH) {
+        const std::filesystem::path exePath(modulePath);
+        const std::filesystem::path diagDir = exePath.parent_path() / L".local" / L"diag";
+        const std::filesystem::path offFile = diagDir / L"gpu_final_present_takeover.off";
+        const std::filesystem::path onFile = diagDir / L"gpu_final_present_takeover.on";
+        std::error_code ec;
+        if (std::filesystem::exists(offFile, ec) && !ec) {
+            result.enabled = false;
+            result.source = "file_off";
+            return result;
+        }
+        ec.clear();
+        if (std::filesystem::exists(onFile, ec) && !ec) {
+            result.enabled = true;
+            result.source = "file_on";
+            return result;
+        }
+    }
+
     wchar_t value[8]{};
-    const DWORD n = GetEnvironmentVariableW(L"MOUSEFX_GPU_DCOMP_TAKEOVER", value, static_cast<DWORD>(std::size(value)));
-    if (n == 0 || n >= std::size(value)) return false;
-    return value[0] == L'1' || value[0] == L't' || value[0] == L'T' || value[0] == L'y' || value[0] == L'Y';
+    const DWORD envN = GetEnvironmentVariableW(L"MOUSEFX_GPU_DCOMP_TAKEOVER", value, static_cast<DWORD>(std::size(value)));
+    if (envN == 0 || envN >= std::size(value)) {
+        return result;
+    }
+    result.enabled = IsTruthyLeadingChar(value[0]);
+    result.source = "env";
+    return result;
 }
 } // namespace
 
@@ -121,7 +157,9 @@ bool D3D11DCompPresenter::Initialize() {
     dcompTarget_.Reset();
     dcompRootVisual_.Reset();
     probeHwnd_ = nullptr;
-    status_.takeoverEnabled = IsTakeoverEnabledByEnv();
+    const TakeoverControlResult control = ResolveTakeoverControl();
+    status_.takeoverEnabled = control.enabled;
+    status_.takeoverControl = control.source;
 
     UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)

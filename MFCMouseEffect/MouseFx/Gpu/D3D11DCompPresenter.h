@@ -17,6 +17,7 @@ struct D3D11DCompPresenterStatus {
     bool dcompTargetReady = false;
     bool takeoverEnabled = false;
     bool takeoverEligible = false;
+    std::string takeoverControl = "default_off";
     std::string detail = "not_initialized";
 };
 
