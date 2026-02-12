@@ -156,6 +156,10 @@ OverlayHostWindow::~OverlayHostWindow() {
     Shutdown();
 }
 
+gpu::D3D11DCompPresenterStatus OverlayHostWindow::GetGpuPresentHostStatus() const {
+    return d3d11DcompPresenter_.GetStatus();
+}
+
 const wchar_t* OverlayHostWindow::ClassName() {
     return L"MouseFxOverlayHostWindow";
 }
@@ -180,6 +184,7 @@ bool OverlayHostWindow::EnsureClassRegistered() {
 bool OverlayHostWindow::Create() {
     if (timerHwnd_) return true;
     if (!EnsureClassRegistered()) return false;
+    InitializeGpuPresentHost();
     if (!RebuildSurfaces()) return false;
 
     for (auto& surface : surfaces_) {
@@ -195,9 +200,19 @@ void OverlayHostWindow::Shutdown() {
     StopFrameLoop();
     UnregisterForegroundHook();
     DestroySurfaces();
+    ShutdownGpuPresentHost();
     layers_.clear();
     ClearOverlayWindowHandle();
     ClearOverlayOriginOverride();
+}
+
+void OverlayHostWindow::InitializeGpuPresentHost() {
+    // Stage-2: host-chain device bring-up is best-effort and does not affect current layered path.
+    (void)d3d11DcompPresenter_.Initialize();
+}
+
+void OverlayHostWindow::ShutdownGpuPresentHost() {
+    d3d11DcompPresenter_.Shutdown();
 }
 
 IOverlayLayer* OverlayHostWindow::AddLayer(std::unique_ptr<IOverlayLayer> layer) {

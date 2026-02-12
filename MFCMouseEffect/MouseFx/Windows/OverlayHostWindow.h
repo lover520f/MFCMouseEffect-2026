@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "MouseFx/Gpu/D3D11DCompPresenter.h"
 #include "MouseFx/Interfaces/IOverlayLayer.h"
 
 namespace mousefx {
@@ -18,6 +19,7 @@ public:
 
     bool Create();
     void Shutdown();
+    gpu::D3D11DCompPresenterStatus GetGpuPresentHostStatus() const;
 
     IOverlayLayer* AddLayer(std::unique_ptr<IOverlayLayer> layer);
     void RemoveLayer(IOverlayLayer* layer);
@@ -56,6 +58,8 @@ private:
     void EnsureTopmostZOrder(bool force = false);
     void RegisterForegroundHook();
     void UnregisterForegroundHook();
+    void InitializeGpuPresentHost();
+    void ShutdownGpuPresentHost();
 
     std::vector<HostSurface> surfaces_{};
     HWND timerHwnd_ = nullptr;
@@ -67,6 +71,7 @@ private:
     uint64_t lastTopmostEnsureMs_ = 0;
     HWINEVENTHOOK foregroundHook_ = nullptr;
     std::vector<std::unique_ptr<IOverlayLayer>> layers_{};
+    gpu::D3D11DCompPresenter d3d11DcompPresenter_{};
 };
 
 } // namespace mousefx
