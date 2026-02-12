@@ -5,6 +5,7 @@
 #include <string>
 
 #include "MouseFx/Core/GlobalMouseHook.h"
+#include "MouseFx/Gpu/D3D11DCompPresenter.h"
 #include "MouseFx/Styles/RippleStyle.h"
 
 namespace mousefx {
@@ -39,6 +40,7 @@ public:
     void BroadcastRippleCommand(const std::string& cmd, const std::string& args);
     bool ShowText(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config);
     void DetachLayer(IOverlayLayer* layer);
+    gpu::D3D11DCompPresenterStatus GetGpuPresentHostStatus() const;
 
 private:
     OverlayHostService() = default;

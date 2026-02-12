@@ -112,6 +112,15 @@ void OverlayHostService::DetachLayer(IOverlayLayer* layer) {
     host_->RemoveLayer(layer);
 }
 
+gpu::D3D11DCompPresenterStatus OverlayHostService::GetGpuPresentHostStatus() const {
+    if (!host_) {
+        gpu::D3D11DCompPresenterStatus status;
+        status.detail = "host_not_initialized";
+        return status;
+    }
+    return host_->GetGpuPresentHostStatus();
+}
+
 RippleOverlayLayer* OverlayHostService::EnsureRippleLayer() {
     if (rippleLayer_) return rippleLayer_;
     auto layer = std::make_unique<RippleOverlayLayer>();

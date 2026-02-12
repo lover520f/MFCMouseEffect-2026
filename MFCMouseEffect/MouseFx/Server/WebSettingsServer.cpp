@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "MouseFx/Core/AppController.h"
+#include "MouseFx/Core/OverlayHostService.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/WebUiAssets.h"
 #include "MouseFx/ThirdParty/json.hpp"
@@ -312,6 +313,14 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"meteor", {{"spark_rate_scale", cfg.trailParams.meteor.sparkRateScale}, {"spark_speed_scale", cfg.trailParams.meteor.sparkSpeedScale}}},
         {"idle_fade_start_ms", cfg.trailParams.idleFade.startMs},
         {"idle_fade_end_ms", cfg.trailParams.idleFade.endMs},
+    };
+
+    const auto gpuPresentHost = OverlayHostService::Instance().GetGpuPresentHostStatus();
+    out["gpu_present_host"] = {
+        {"initialized", gpuPresentHost.initialized},
+        {"d3d11_device_ready", gpuPresentHost.d3d11DeviceReady},
+        {"dcomp_device_ready", gpuPresentHost.dcompDeviceReady},
+        {"detail", gpuPresentHost.detail},
     };
 
     return out.dump();
