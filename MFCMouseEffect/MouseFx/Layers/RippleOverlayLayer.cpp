@@ -16,7 +16,7 @@ uint64_t MinGpuContinuousIntervalMs(bool hoverContinuous, bool holdContinuous) {
     // Keep hover command flow smooth enough while preventing per-frame packet storms.
     if (hoverContinuous) return 14ull;
     // Hold-neon path is highly sensitive to perceived latency.
-    if (holdContinuous) return 6ull;
+    if (holdContinuous) return 2ull;
     return 10ull;
 }
 

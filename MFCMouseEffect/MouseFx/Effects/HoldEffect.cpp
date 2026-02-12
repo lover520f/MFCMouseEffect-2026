@@ -136,6 +136,7 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
             break;
         case FollowMode::Smooth: {
             float alpha = IsNeon3DHoldType(type_) ? 0.58f : 0.35f;
+            const bool layeredFinalPresent = !OverlayHostService::Instance().IsGpuPresentActive();
             if (latencyPriorityActive_ && IsNeon3DHoldType(type_)) {
                 alpha = 0.82f;
             }
@@ -150,7 +151,6 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
                     hasSpeedSample = true;
                     if (IsNeon3DHoldType(type_)) {
                         // Layered CPU final-present path needs stronger follow to keep cursor sync.
-                        const bool layeredFinalPresent = !OverlayHostService::Instance().IsGpuPresentActive();
                         if (layeredFinalPresent) {
                             if (latencyPriorityActive_) {
                                 if (speedPxPerMs >= 2.0f) alpha = 0.96f;
@@ -161,7 +161,7 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
                                 if (speedPxPerMs >= 2.2f) alpha = 0.94f;
                                 else if (speedPxPerMs >= 1.2f) alpha = 0.88f;
                                 else if (speedPxPerMs >= 0.6f) alpha = 0.78f;
-                                else alpha = 0.66f;
+                                else alpha = 0.72f;
                             }
                         } else {
                             if (speedPxPerMs >= 1.8f) alpha = 0.86f;
@@ -175,10 +175,16 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
             lastRawPointTickMs_ = nowMs;
 
             bool directFollow = false;
-            if (latencyPriorityActive_ && IsNeon3DHoldType(type_) && hasSpeedSample) {
-                const bool layeredFinalPresent = !OverlayHostService::Instance().IsGpuPresentActive();
-                if (layeredFinalPresent && speedPxPerMs >= 1.8f) {
+            if (IsNeon3DHoldType(type_) && layeredFinalPresent) {
+                if (hasSpeedSample && speedPxPerMs >= (latencyPriorityActive_ ? 1.8f : 1.2f)) {
                     directFollow = true;
+                } else if (hasSmoothedPoint_) {
+                    const float dx = std::fabs(static_cast<float>(pt.x) - smoothedX_);
+                    const float dy = std::fabs(static_cast<float>(pt.y) - smoothedY_);
+                    if ((dx + dy) >= 14.0f) {
+                        // Large cursor jumps should snap to cursor to avoid visible tail lag.
+                        directFollow = true;
+                    }
                 }
             }
             if (!hasSmoothedPoint_) {
