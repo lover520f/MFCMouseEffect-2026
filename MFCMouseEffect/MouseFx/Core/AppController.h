@@ -94,7 +94,7 @@ private:
     void RecreateActiveEffects();
     bool IsBackendSwitchIdleWindow() const;
     bool IsLikelySystemWindowDrag(HWND dispatchHwnd) const;
-    bool ShouldDispatchDragMove(uint64_t nowTick);
+    bool ShouldDispatchDragMove(uint64_t nowTick, DWORD intervalMs);
     void SetTrailLatencyPriorityMode(bool enabled);
     static bool IsHoldNeon3DTypeName(const std::string& type);
     bool ShouldPrioritizeHoldLatency() const;
@@ -123,6 +123,7 @@ private:
     static constexpr DWORD kHoldDelayMs = 350; // Increased to 350ms to distinguish from click
     static constexpr DWORD kDeferredBackendIdleThresholdMs = 240;
     static constexpr DWORD kWindowDragDispatchIntervalMs = 20;
+    static constexpr DWORD kWindowDragDispatchIntervalHoldLatencyMs = 8;
     struct PendingHold {
         POINT pt;
         int button;

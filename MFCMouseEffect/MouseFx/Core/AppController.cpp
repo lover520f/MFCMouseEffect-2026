@@ -433,11 +433,11 @@ bool AppController::IsLikelySystemWindowDrag(HWND dispatchHwnd) const {
     return (capture != nullptr && capture != dispatchHwnd);
 }
 
-bool AppController::ShouldDispatchDragMove(uint64_t nowTick) {
+bool AppController::ShouldDispatchDragMove(uint64_t nowTick, DWORD intervalMs) {
     const uint64_t elapsed = (nowTick >= lastDragMoveDispatchTick_)
         ? (nowTick - lastDragMoveDispatchTick_)
         : 0;
-    if (elapsed < kWindowDragDispatchIntervalMs) {
+    if (elapsed < intervalMs) {
         return false;
     }
     lastDragMoveDispatchTick_ = nowTick;
@@ -798,10 +798,13 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         hasLastMovePt_ = true;
 
         const uint64_t nowTick = GetTickCount64();
-        const bool dragLikeMove = holdButtonDown_ && IsLikelySystemWindowDrag(hwnd);
-        const bool allowMoveDispatch = !dragLikeMove || ShouldDispatchDragMove(nowTick);
         const bool holdLatencyPriority = ShouldPrioritizeHoldLatency();
         SetTrailLatencyPriorityMode(holdLatencyPriority);
+        const bool dragLikeMove = holdButtonDown_ && IsLikelySystemWindowDrag(hwnd);
+        const DWORD dragDispatchIntervalMs = holdLatencyPriority
+            ? kWindowDragDispatchIntervalHoldLatencyMs
+            : kWindowDragDispatchIntervalMs;
+        const bool allowMoveDispatch = !dragLikeMove || ShouldDispatchDragMove(nowTick, dragDispatchIntervalMs);
         const bool allowTrailDispatch = allowMoveDispatch;
 
         // Dispatch to Trail category effect
