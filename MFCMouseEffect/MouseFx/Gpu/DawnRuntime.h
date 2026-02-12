@@ -63,6 +63,41 @@ struct DawnRuntimeSymbolStatus {
     std::string summary = "unknown";
 };
 
+struct DawnRuntimePresentContext {
+    bool ready = false;
+    void* module = nullptr;
+    void* instance = nullptr;
+    void* device = nullptr;
+    void* queue = nullptr;
+    void* procInstanceCreateSurface = nullptr;
+    void* procSurfaceConfigure = nullptr;
+    void* procSurfaceGetCurrentTexture = nullptr;
+    void* procSurfacePresent = nullptr;
+    void* procSurfaceUnconfigure = nullptr;
+    void* procSurfaceRelease = nullptr;
+    void* procTextureRelease = nullptr;
+    void* procTextureCreateView = nullptr;
+    void* procTextureViewRelease = nullptr;
+    void* procDeviceCreateCommandEncoder = nullptr;
+    void* procCommandEncoderBeginRenderPass = nullptr;
+    void* procCommandEncoderFinish = nullptr;
+    void* procCommandEncoderRelease = nullptr;
+    void* procCommandBufferRelease = nullptr;
+    void* procQueueSubmit = nullptr;
+    void* procQueueWriteBuffer = nullptr;
+    void* procDeviceCreateBuffer = nullptr;
+    void* procBufferRelease = nullptr;
+    void* procDeviceCreateShaderModule = nullptr;
+    void* procShaderModuleRelease = nullptr;
+    void* procDeviceCreateRenderPipeline = nullptr;
+    void* procRenderPipelineRelease = nullptr;
+    void* procRenderPassEncoderEnd = nullptr;
+    void* procRenderPassEncoderRelease = nullptr;
+    void* procRenderPassEncoderSetPipeline = nullptr;
+    void* procRenderPassEncoderSetVertexBuffer = nullptr;
+    void* procRenderPassEncoderDraw = nullptr;
+};
+
 bool IsDawnCompiled();
 
 DawnRuntimeInitResult TryInitializeDawnRuntime();
@@ -83,5 +118,6 @@ bool TrySubmitRippleHoldBakedPacket(uint32_t bakedVertices, uint32_t uploadBytes
 bool TrySubmitParticleBakedPacket(uint32_t bakedSprites, uint32_t uploadBytes, std::string* detailOut = nullptr);
 bool TrySubmitMixedBakedPacket(uint32_t rippleVertices, uint32_t particleSprites, uint32_t uploadBytes, std::string* detailOut = nullptr);
 DawnRuntimeSymbolStatus GetDawnRuntimeSymbolStatus();
+DawnRuntimePresentContext GetDawnRuntimePresentContext();
 
 } // namespace mousefx::gpu

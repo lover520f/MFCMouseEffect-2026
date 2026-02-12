@@ -91,7 +91,7 @@ struct DawnCommandConsumeTimelinePoint {
     std::string detail = "not_submitted";
 };
 
-inline constexpr size_t kDawnConsumerTimelineMax = 180;
+inline constexpr size_t kDawnConsumerTimelineMax = 1800;
 
 inline std::mutex& DawnConsumerMutex() {
     static std::mutex m;
@@ -307,6 +307,8 @@ inline void SubmitOverlayGpuCommands(
         return;
     }
 
+    const bool holdActive = (status.rippleHoldCommandCount > 0);
+
     if (!status.passWarmupDone) {
         const uint64_t nowTick = (status.submitTickMs > 0) ? status.submitTickMs : GetTickCount64();
         const uint64_t lastTick = s_lastPassWarmupTickMs.load(std::memory_order_relaxed);
@@ -329,7 +331,7 @@ inline void SubmitOverlayGpuCommands(
     uint32_t warmupFramesLeft = s_dawnWarmupFramesLeft.load(std::memory_order_relaxed);
     const bool warmupByTime = (status.submitTickMs > 0) && (warmupUntilTick > 0) && (status.submitTickMs < warmupUntilTick);
     const bool warmupByFrames = (warmupFramesLeft > 0);
-    if ((warmupByTime || warmupByFrames) && status.trailCommandCount > 0) {
+    if ((warmupByTime || warmupByFrames) && status.trailCommandCount > 0 && !holdActive) {
         if (warmupFramesLeft > 0) {
             s_dawnWarmupFramesLeft.store(warmupFramesLeft - 1, std::memory_order_relaxed);
         }
@@ -349,7 +351,6 @@ inline void SubmitOverlayGpuCommands(
         return;
     }
 
-    const bool holdActive = (status.rippleHoldCommandCount > 0);
     bool skipTrailGeometryBuild = false;
     if (holdActive && status.trailCommandCount > 0) {
         constexpr uint64_t kTrailSubmitIntervalWhenHoldMs = 20;
@@ -418,13 +419,19 @@ inline void SubmitOverlayGpuCommands(
     };
     static std::atomic<uint64_t> s_lastNonTrailSubmitTickMs{0};
     constexpr uint64_t kNonTrailSubmitIntervalMs = 8; // cap non-trail submit to ~120Hz
+    constexpr uint64_t kNonTrailSubmitIntervalWhenHoldMs = 2; // hold path prefers latency while still rate-limited
     if (hasTrailGeometry || hasRippleGeometry || hasParticleGeometry) {
         if (hasOnlyNonTrailGeometry && status.submitTickMs > 0) {
+            const uint64_t nonTrailIntervalMs = holdActive
+                ? kNonTrailSubmitIntervalWhenHoldMs
+                : kNonTrailSubmitIntervalMs;
             const uint64_t lastNonTrailTick = s_lastNonTrailSubmitTickMs.load(std::memory_order_relaxed);
             if (lastNonTrailTick > 0 &&
-                status.submitTickMs - lastNonTrailTick < kNonTrailSubmitIntervalMs) {
+                status.submitTickMs - lastNonTrailTick < nonTrailIntervalMs) {
                 ++status.nonTrailSubmitThrottled;
-                status.detail = nonTrailDetail("accepted_nontrail_geometry_submit_throttled");
+                status.detail = nonTrailDetail(holdActive
+                    ? "accepted_nontrail_geometry_submit_throttled_hold_priority"
+                    : "accepted_nontrail_geometry_submit_throttled");
                 ++status.acceptedFrames;
                 publish();
                 return;
@@ -489,26 +496,48 @@ inline void SubmitOverlayGpuCommands(
             };
 
             if (hasTrailGeometry && prep.vertices > 0) {
-                ++status.trailPacketSubmitAttempts;
-                std::string trailDetail;
-                const bool trailOk = TrySubmitTrailBakedPacket(prep.vertices, prep.uploadBytes, &trailDetail);
-                if (trailOk) {
-                    ++status.trailPacketSubmitSuccess;
-                    if (holdActive && status.submitTickMs > 0) {
-                        s_lastTrailSubmitWhenHoldTickMs.store(status.submitTickMs, std::memory_order_relaxed);
-                    }
-                }
-
                 std::string nonTrailDetailOnly;
                 bool nonTrailOk = true;
-                if (hasRippleGeometry || hasParticleGeometry) {
+                const bool hasNonTrailGeometry = (hasRippleGeometry || hasParticleGeometry);
+                bool trailOk = true;
+                std::string trailDetail;
+                if (holdActive && hasNonTrailGeometry) {
+                    nonTrailOk = submitNonTrailPacket(&nonTrailDetailOnly);
+                    ++status.trailPacketSubmitAttempts;
+                    trailOk = TrySubmitTrailBakedPacket(prep.vertices, prep.uploadBytes, &trailDetail);
+                    if (trailOk) {
+                        ++status.trailPacketSubmitSuccess;
+                        if (status.submitTickMs > 0) {
+                            s_lastTrailSubmitWhenHoldTickMs.store(status.submitTickMs, std::memory_order_relaxed);
+                        }
+                    }
+                } else {
+                    ++status.trailPacketSubmitAttempts;
+                    trailOk = TrySubmitTrailBakedPacket(prep.vertices, prep.uploadBytes, &trailDetail);
+                    if (trailOk) {
+                        ++status.trailPacketSubmitSuccess;
+                        if (holdActive && status.submitTickMs > 0) {
+                            s_lastTrailSubmitWhenHoldTickMs.store(status.submitTickMs, std::memory_order_relaxed);
+                        }
+                    }
+                }
+                if (!holdActive && hasNonTrailGeometry) {
                     nonTrailOk = submitNonTrailPacket(&nonTrailDetailOnly);
                 }
                 cmdSubmitOk = trailOk && nonTrailOk;
-                cmdSubmitDetail = trailDetail;
-                if (!nonTrailDetailOnly.empty()) {
-                    if (!cmdSubmitDetail.empty()) cmdSubmitDetail += "|";
-                    cmdSubmitDetail += nonTrailDetailOnly;
+                cmdSubmitDetail.clear();
+                if (holdActive && hasNonTrailGeometry) {
+                    cmdSubmitDetail = nonTrailDetailOnly;
+                    if (!trailDetail.empty()) {
+                        if (!cmdSubmitDetail.empty()) cmdSubmitDetail += "|";
+                        cmdSubmitDetail += trailDetail;
+                    }
+                } else {
+                    cmdSubmitDetail = trailDetail;
+                    if (!nonTrailDetailOnly.empty()) {
+                        if (!cmdSubmitDetail.empty()) cmdSubmitDetail += "|";
+                        cmdSubmitDetail += nonTrailDetailOnly;
+                    }
                 }
             } else if (!hasTrailGeometry && (hasRippleGeometry || hasParticleGeometry)) {
                 cmdSubmitOk = submitNonTrailPacket(&cmdSubmitDetail);
@@ -621,6 +650,19 @@ inline DawnCommandConsumeStatus GetDawnCommandConsumeStatus() {
 inline std::vector<DawnCommandConsumeTimelinePoint> GetDawnCommandConsumeTimeline() {
     std::lock_guard<std::mutex> lock(DawnConsumerMutex());
     return DawnConsumerTimelineStorage();
+}
+
+inline std::vector<DawnCommandConsumeTimelinePoint> GetDawnCommandConsumeTimelineTail(size_t maxPoints) {
+    std::lock_guard<std::mutex> lock(DawnConsumerMutex());
+    const auto& timeline = DawnConsumerTimelineStorage();
+    if (maxPoints == 0 || timeline.empty()) {
+        return {};
+    }
+    if (timeline.size() <= maxPoints) {
+        return timeline;
+    }
+    const size_t begin = timeline.size() - maxPoints;
+    return std::vector<DawnCommandConsumeTimelinePoint>(timeline.begin() + begin, timeline.end());
 }
 
 } // namespace mousefx::gpu

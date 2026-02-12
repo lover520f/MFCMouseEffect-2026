@@ -24,6 +24,9 @@ public:
         (void)stream;
         (void)nowMs;
     }
+    virtual bool SupportsGpuExclusivePresent() const {
+        return false;
+    }
 };
 
 } // namespace mousefx

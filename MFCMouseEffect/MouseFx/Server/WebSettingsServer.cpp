@@ -169,10 +169,96 @@ static json BuildDawnRuntimeSymbolJson(const gpu::DawnRuntimeSymbolStatus& s) {
     };
 }
 
+static json BuildDawnCommandConsumeJson(const gpu::DawnCommandConsumeStatus& consume) {
+    return json{
+        {"submit_tick_ms", consume.submitTickMs},
+        {"accepted", consume.accepted},
+        {"detail", consume.detail},
+        {"accepted_frames", consume.acceptedFrames},
+        {"rejected_frames", consume.rejectedFrames},
+        {"command_count", consume.commandCount},
+        {"trail_commands", consume.trailCommandCount},
+        {"ripple_commands", consume.rippleCommandCount},
+        {"ripple_click_commands", consume.rippleClickCommandCount},
+        {"ripple_hover_commands", consume.rippleHoverCommandCount},
+        {"ripple_hold_commands", consume.rippleHoldCommandCount},
+        {"particle_commands", consume.particleCommandCount},
+        {"prepared_trail_batches", consume.preparedTrailBatches},
+        {"prepared_trail_vertices", consume.preparedTrailVertices},
+        {"prepared_trail_segments", consume.preparedTrailSegments},
+        {"prepared_trail_triangles", consume.preparedTrailTriangles},
+        {"prepared_upload_bytes", consume.preparedUploadBytes},
+        {"prepared_particle_batches", consume.preparedParticleBatches},
+        {"prepared_particle_sprites", consume.preparedParticleSprites},
+        {"prepared_particle_upload_bytes", consume.preparedParticleUploadBytes},
+        {"prepared_ripple_batches", consume.preparedRippleBatches},
+        {"prepared_ripple_pulses", consume.preparedRipplePulses},
+        {"prepared_ripple_triangles", consume.preparedRippleTriangles},
+        {"prepared_ripple_upload_bytes", consume.preparedRippleUploadBytes},
+        {"prepared_ripple_baked_quads", consume.preparedRippleBakedQuads},
+        {"prepared_ripple_baked_vertices", consume.preparedRippleBakedVertices},
+        {"preprocess_workers", consume.preprocessWorkers},
+        {"preprocess_parallel", consume.preprocessParallel},
+        {"noop_submit_attempts", consume.noopSubmitAttempts},
+        {"noop_submit_success", consume.noopSubmitSuccess},
+        {"empty_command_submit_attempts", consume.emptyCommandSubmitAttempts},
+        {"empty_command_submit_success", consume.emptyCommandSubmitSuccess},
+        {"nontrail_submit_throttled", consume.nonTrailSubmitThrottled},
+        {"trail_packet_submit_attempts", consume.trailPacketSubmitAttempts},
+        {"trail_packet_submit_success", consume.trailPacketSubmitSuccess},
+        {"ripple_packet_submit_attempts", consume.ripplePacketSubmitAttempts},
+        {"ripple_packet_submit_success", consume.ripplePacketSubmitSuccess},
+        {"ripple_click_packet_submit_attempts", consume.rippleClickPacketSubmitAttempts},
+        {"ripple_click_packet_submit_success", consume.rippleClickPacketSubmitSuccess},
+        {"ripple_hover_packet_submit_attempts", consume.rippleHoverPacketSubmitAttempts},
+        {"ripple_hover_packet_submit_success", consume.rippleHoverPacketSubmitSuccess},
+        {"ripple_hold_packet_submit_attempts", consume.rippleHoldPacketSubmitAttempts},
+        {"ripple_hold_packet_submit_success", consume.rippleHoldPacketSubmitSuccess},
+        {"particle_packet_submit_attempts", consume.particlePacketSubmitAttempts},
+        {"particle_packet_submit_success", consume.particlePacketSubmitSuccess},
+        {"mixed_packet_submit_attempts", consume.mixedPacketSubmitAttempts},
+        {"mixed_packet_submit_success", consume.mixedPacketSubmitSuccess},
+        {"pass_warmup_index", consume.passWarmupIndex},
+        {"pass_warmup_total", consume.passWarmupTotal},
+        {"pass_warmup_done", consume.passWarmupDone},
+        {"pass_warmup_tag", consume.passWarmupTag},
+    };
+}
+
+static json BuildDawnCommandConsumeTimelineJson(
+    const std::vector<gpu::DawnCommandConsumeTimelinePoint>& timeline) {
+    json out = json::array();
+    for (const auto& p : timeline) {
+        out.push_back({
+            {"submit_tick_ms", p.submitTickMs},
+            {"command_count", p.commandCount},
+            {"trail_commands", p.trailCommandCount},
+            {"ripple_commands", p.rippleCommandCount},
+            {"ripple_click_commands", p.rippleClickCommandCount},
+            {"ripple_hover_commands", p.rippleHoverCommandCount},
+            {"ripple_hold_commands", p.rippleHoldCommandCount},
+            {"particle_commands", p.particleCommandCount},
+            {"prepared_trail_triangles", p.preparedTrailTriangles},
+            {"prepared_ripple_triangles", p.preparedRippleTriangles},
+            {"prepared_particle_sprites", p.preparedParticleSprites},
+            {"prepared_upload_bytes", p.preparedUploadBytes},
+            {"preprocess_workers", p.preprocessWorkers},
+            {"preprocess_parallel", p.preprocessParallel},
+            {"pass_warmup_index", p.passWarmupIndex},
+            {"pass_warmup_total", p.passWarmupTotal},
+            {"pass_warmup_done", p.passWarmupDone},
+            {"pass_warmup_tag", p.passWarmupTag},
+            {"detail", p.detail},
+        });
+    }
+    return out;
+}
+
 static json BuildGpuAccelerationJson(
     const std::string& activeBackend,
     const gpu::DawnOverlayBridgeStatus& bridge,
-    const gpu::DawnRuntimeStatus& runtime) {
+    const gpu::DawnRuntimeStatus& runtime,
+    bool gpuPresenterActive) {
     if (activeBackend != "dawn") {
         return json{
             {"level", "none"},
@@ -185,6 +271,13 @@ static json BuildGpuAccelerationJson(
             {"level", "partial"},
             {"label_en", "GPU backend selected, command queue is not ready yet"},
             {"label_zh", u8"\u5df2\u9009\u62e9 GPU \u540e\u7aef\uff0c\u547d\u4ee4\u961f\u5217\u5c1a\u672a\u5c31\u7eea"},
+        };
+    }
+    if (gpuPresenterActive) {
+        return json{
+            {"level", "full"},
+            {"label_en", "GPU Presenter Path (Full)"},
+            {"label_zh", u8"GPU \u4e3b\u5448\u73b0\u8def\u5f84\uff08\u5b8c\u6574\uff09"},
         };
     }
     const bool compositorRequested = (bridge.mode == "compositor");
@@ -412,7 +505,8 @@ static json BuildGpuBannerJson(const std::string& backendPreference, const std::
             };
         }
     }
-    const json accel = BuildGpuAccelerationJson(activeBackend, bridge, status);
+    const bool gpuPresenterActive = OverlayHostService::Instance().IsGpuPresentActive();
+    const json accel = BuildGpuAccelerationJson(activeBackend, bridge, status, gpuPresenterActive);
     if (!gpuInUse && backendPreference == "cpu") {
         return json{
             {"code", "cpu_forced"},
@@ -606,7 +700,11 @@ bool WebSettingsServer::Start() {
                         {"pass_warmup_done", consume.passWarmupDone},
                         {"pass_warmup_tag", consume.passWarmupTag},
                     }},
-                    {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus)},
+                    {"gpu_acceleration", BuildGpuAccelerationJson(
+                        activeBackend,
+                        dawnBridge,
+                        dawnStatus,
+                        OverlayHostService::Instance().IsGpuPresentActive())},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
                 }).dump();
                 return;
@@ -692,7 +790,11 @@ bool WebSettingsServer::Start() {
                         {"pass_warmup_done", consume.passWarmupDone},
                         {"pass_warmup_tag", consume.passWarmupTag},
                     }},
-                    {"gpu_acceleration", BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus)},
+                    {"gpu_acceleration", BuildGpuAccelerationJson(
+                        activeBackend,
+                        dawnBridge,
+                        dawnStatus,
+                        OverlayHostService::Instance().IsGpuPresentActive())},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
                 }).dump();
                 return;
@@ -951,89 +1053,29 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"ripple_commands", OverlayHostService::Instance().GetLastGpuRippleCommandCount()},
         {"particle_commands", OverlayHostService::Instance().GetLastGpuParticleCommandCount()},
     };
-    const gpu::DawnCommandConsumeStatus consume = gpu::GetDawnCommandConsumeStatus();
-    const auto consumeTimeline = gpu::GetDawnCommandConsumeTimeline();
-    out["dawn_command_consumer"] = {
-        {"submit_tick_ms", consume.submitTickMs},
-        {"accepted", consume.accepted},
-        {"detail", consume.detail},
-        {"accepted_frames", consume.acceptedFrames},
-        {"rejected_frames", consume.rejectedFrames},
-        {"command_count", consume.commandCount},
-        {"trail_commands", consume.trailCommandCount},
-        {"ripple_commands", consume.rippleCommandCount},
-        {"ripple_click_commands", consume.rippleClickCommandCount},
-        {"ripple_hover_commands", consume.rippleHoverCommandCount},
-        {"ripple_hold_commands", consume.rippleHoldCommandCount},
-        {"particle_commands", consume.particleCommandCount},
-        {"prepared_trail_batches", consume.preparedTrailBatches},
-        {"prepared_trail_vertices", consume.preparedTrailVertices},
-        {"prepared_trail_segments", consume.preparedTrailSegments},
-        {"prepared_trail_triangles", consume.preparedTrailTriangles},
-        {"prepared_upload_bytes", consume.preparedUploadBytes},
-        {"prepared_particle_batches", consume.preparedParticleBatches},
-        {"prepared_particle_sprites", consume.preparedParticleSprites},
-        {"prepared_particle_upload_bytes", consume.preparedParticleUploadBytes},
-        {"prepared_ripple_batches", consume.preparedRippleBatches},
-        {"prepared_ripple_pulses", consume.preparedRipplePulses},
-        {"prepared_ripple_triangles", consume.preparedRippleTriangles},
-        {"prepared_ripple_upload_bytes", consume.preparedRippleUploadBytes},
-        {"prepared_ripple_baked_quads", consume.preparedRippleBakedQuads},
-        {"prepared_ripple_baked_vertices", consume.preparedRippleBakedVertices},
-        {"preprocess_workers", consume.preprocessWorkers},
-        {"preprocess_parallel", consume.preprocessParallel},
-        {"noop_submit_attempts", consume.noopSubmitAttempts},
-        {"noop_submit_success", consume.noopSubmitSuccess},
-        {"empty_command_submit_attempts", consume.emptyCommandSubmitAttempts},
-        {"empty_command_submit_success", consume.emptyCommandSubmitSuccess},
-        {"nontrail_submit_throttled", consume.nonTrailSubmitThrottled},
-        {"trail_packet_submit_attempts", consume.trailPacketSubmitAttempts},
-        {"trail_packet_submit_success", consume.trailPacketSubmitSuccess},
-        {"ripple_packet_submit_attempts", consume.ripplePacketSubmitAttempts},
-        {"ripple_packet_submit_success", consume.ripplePacketSubmitSuccess},
-        {"ripple_click_packet_submit_attempts", consume.rippleClickPacketSubmitAttempts},
-        {"ripple_click_packet_submit_success", consume.rippleClickPacketSubmitSuccess},
-        {"ripple_hover_packet_submit_attempts", consume.rippleHoverPacketSubmitAttempts},
-        {"ripple_hover_packet_submit_success", consume.rippleHoverPacketSubmitSuccess},
-        {"ripple_hold_packet_submit_attempts", consume.rippleHoldPacketSubmitAttempts},
-        {"ripple_hold_packet_submit_success", consume.rippleHoldPacketSubmitSuccess},
-        {"particle_packet_submit_attempts", consume.particlePacketSubmitAttempts},
-        {"particle_packet_submit_success", consume.particlePacketSubmitSuccess},
-        {"mixed_packet_submit_attempts", consume.mixedPacketSubmitAttempts},
-        {"mixed_packet_submit_success", consume.mixedPacketSubmitSuccess},
-        {"pass_warmup_index", consume.passWarmupIndex},
-        {"pass_warmup_total", consume.passWarmupTotal},
-        {"pass_warmup_done", consume.passWarmupDone},
-        {"pass_warmup_tag", consume.passWarmupTag},
+    out["gpu_presenter"] = {
+        {"attempts", OverlayHostService::Instance().GetGpuPresentAttemptCount()},
+        {"success", OverlayHostService::Instance().GetGpuPresentSuccessCount()},
+        {"fallback", OverlayHostService::Instance().GetGpuPresentFallbackCount()},
+        {"active", OverlayHostService::Instance().IsGpuPresentActive()},
+        {"detail", OverlayHostService::Instance().GetGpuPresentLastDetail()},
     };
-    json consumeTimelineJson = json::array();
-    for (const auto& p : consumeTimeline) {
-        consumeTimelineJson.push_back({
-            {"submit_tick_ms", p.submitTickMs},
-            {"command_count", p.commandCount},
-            {"trail_commands", p.trailCommandCount},
-            {"ripple_commands", p.rippleCommandCount},
-            {"ripple_click_commands", p.rippleClickCommandCount},
-            {"ripple_hover_commands", p.rippleHoverCommandCount},
-            {"ripple_hold_commands", p.rippleHoldCommandCount},
-            {"particle_commands", p.particleCommandCount},
-            {"prepared_trail_triangles", p.preparedTrailTriangles},
-            {"prepared_ripple_triangles", p.preparedRippleTriangles},
-            {"prepared_particle_sprites", p.preparedParticleSprites},
-            {"prepared_upload_bytes", p.preparedUploadBytes},
-            {"preprocess_workers", p.preprocessWorkers},
-            {"preprocess_parallel", p.preprocessParallel},
-            {"pass_warmup_index", p.passWarmupIndex},
-            {"pass_warmup_total", p.passWarmupTotal},
-            {"pass_warmup_done", p.passWarmupDone},
-            {"pass_warmup_tag", p.passWarmupTag},
-            {"detail", p.detail},
-        });
-    }
-    out["dawn_command_consumer_timeline"] = std::move(consumeTimelineJson);
+    constexpr size_t kWebTimelineTailPoints = 64;
+    const uint64_t nowMs = NowMs();
+    const bool shouldWriteFullDiag = diagStateWriter_.ShouldWriteSnapshot(nowMs);
+    const gpu::DawnCommandConsumeStatus consume = gpu::GetDawnCommandConsumeStatus();
+    const auto consumeTimelineTail = gpu::GetDawnCommandConsumeTimelineTail(kWebTimelineTailPoints);
+    out["dawn_command_consumer"] = BuildDawnCommandConsumeJson(consume);
+    out["dawn_command_consumer_timeline"] = BuildDawnCommandConsumeTimelineJson(consumeTimelineTail);
+    out["dawn_command_consumer_timeline_tail_max"] = static_cast<uint32_t>(kWebTimelineTailPoints);
     out["dawn_command_consumer_timeline_max"] = static_cast<uint32_t>(gpu::kDawnConsumerTimelineMax);
+    out["dawn_command_consumer_timeline_truncated"] = true;
     out["gpu_bridge_mode_request"] = EnsureUtf8(cfg.gpuBridgeModeRequest);
-    out["gpu_acceleration"] = BuildGpuAccelerationJson(activeBackend, dawnBridge, dawnStatus);
+    out["gpu_acceleration"] = BuildGpuAccelerationJson(
+        activeBackend,
+        dawnBridge,
+        dawnStatus,
+        OverlayHostService::Instance().IsGpuPresentActive());
     out["gpu_status_banner"] = BuildGpuBannerJson(cfg.renderBackend, activeBackend, dawnStatus, dawnBridge);
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
     out["active"] = {
@@ -1070,8 +1112,21 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"idle_fade_end_ms", cfg.trailParams.idleFade.endMs},
     };
 
+    const std::wstring exeDir = ExeDirW();
     const std::string stateJson = out.dump();
-    diagStateWriter_.TryWriteSnapshot(ExeDirW(), stateJson, NowMs());
+    if (shouldWriteFullDiag) {
+        // Default local snapshot should stay slim for fast diagnostics and low context pressure.
+        diagStateWriter_.WriteSnapshotNow(exeDir, L"web_state_auto.json", stateJson);
+
+        // Keep full timeline in a separate file for deep debugging only.
+        json diagOut = out;
+        const auto consumeTimelineFull = gpu::GetDawnCommandConsumeTimeline();
+        diagOut["dawn_command_consumer_timeline"] = BuildDawnCommandConsumeTimelineJson(consumeTimelineFull);
+        diagOut["dawn_command_consumer_timeline_size"] = static_cast<uint32_t>(consumeTimelineFull.size());
+        diagOut["dawn_runtime_symbol"] = BuildDawnRuntimeSymbolJson(gpu::GetDawnRuntimeSymbolStatus());
+        diagOut["dawn_command_consumer_timeline_truncated"] = false;
+        diagStateWriter_.WriteSnapshotNow(exeDir, L"web_state_full_auto.json", diagOut.dump());
+    }
     return stateJson;
 }
 

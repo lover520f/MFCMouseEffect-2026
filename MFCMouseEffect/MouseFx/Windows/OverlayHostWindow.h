@@ -5,12 +5,15 @@
 
 #include <atomic>
 #include <cstdint>
+#include <mutex>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "MouseFx/Gpu/OverlayGpuCommandStream.h"
 #include "MouseFx/Interfaces/IOverlayLayer.h"
+#include "MouseFx/Windows/DawnGpuPresenter.h"
+#include "MouseFx/Windows/OverlayLayeredCpuPresenter.h"
 
 namespace mousefx {
 
@@ -31,6 +34,11 @@ public:
     uint32_t GetLastGpuTrailCommandCount() const;
     uint32_t GetLastGpuRippleCommandCount() const;
     uint32_t GetLastGpuParticleCommandCount() const;
+    uint64_t GetGpuPresentAttemptCount() const;
+    uint64_t GetGpuPresentSuccessCount() const;
+    uint64_t GetGpuPresentFallbackCount() const;
+    std::string GetGpuPresentLastDetail() const;
+    bool IsGpuPresentActive() const;
 
     struct HostSurface {
         HWND hwnd = nullptr;
@@ -59,6 +67,8 @@ private:
     void Render();
     void RenderSurface(HostSurface& surface);
     void CollectGpuCommandStream(uint64_t nowMs);
+    void UpdateFrameLoopTimerInterval(UINT intervalMs);
+    UINT ResolveNextTimerIntervalMs() const;
     bool RebuildSurfaces();
     void DestroySurfaces();
     void SyncBoundsWithVirtualScreen(bool forceMove);
@@ -75,6 +85,8 @@ private:
     int virtualW_ = 0;
     int virtualH_ = 0;
     bool ticking_ = false;
+    bool timerResolutionRaised_ = false;
+    UINT currentTimerIntervalMs_ = 0;
     uint64_t lastTopmostEnsureMs_ = 0;
     HWINEVENTHOOK foregroundHook_ = nullptr;
     std::vector<std::unique_ptr<IOverlayLayer>> layers_{};
@@ -84,6 +96,14 @@ private:
     std::atomic<uint32_t> gpuTrailCommandCount_{0};
     std::atomic<uint32_t> gpuRippleCommandCount_{0};
     std::atomic<uint32_t> gpuParticleCommandCount_{0};
+    std::atomic<uint32_t> gpuRippleHoldCommandCount_{0};
+    std::atomic<uint64_t> gpuPresentAttemptCount_{0};
+    std::atomic<uint64_t> gpuPresentSuccessCount_{0};
+    std::atomic<uint64_t> gpuPresentFallbackCount_{0};
+    mutable std::mutex gpuPresentDetailMutex_{};
+    std::string gpuPresentLastDetail_ = "cpu_present_path";
+    DawnGpuPresenter dawnPresenter_{};
+    OverlayLayeredCpuPresenter cpuPresenter_{};
     std::string gpuSubmitActiveBackend_ = "cpu";
     std::string gpuSubmitPipelineMode_ = "cpu_layered";
 };

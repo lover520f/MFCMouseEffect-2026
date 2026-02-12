@@ -47,6 +47,11 @@ public:
     uint32_t GetLastGpuTrailCommandCount() const;
     uint32_t GetLastGpuRippleCommandCount() const;
     uint32_t GetLastGpuParticleCommandCount() const;
+    uint64_t GetGpuPresentAttemptCount() const;
+    uint64_t GetGpuPresentSuccessCount() const;
+    uint64_t GetGpuPresentFallbackCount() const;
+    std::string GetGpuPresentLastDetail() const;
+    bool IsGpuPresentActive() const;
 
     bool Initialize();
     void Shutdown();

@@ -331,6 +331,31 @@ uint32_t OverlayHostService::GetLastGpuParticleCommandCount() const {
     return host_->GetLastGpuParticleCommandCount();
 }
 
+uint64_t OverlayHostService::GetGpuPresentAttemptCount() const {
+    if (!host_) return 0;
+    return host_->GetGpuPresentAttemptCount();
+}
+
+uint64_t OverlayHostService::GetGpuPresentSuccessCount() const {
+    if (!host_) return 0;
+    return host_->GetGpuPresentSuccessCount();
+}
+
+uint64_t OverlayHostService::GetGpuPresentFallbackCount() const {
+    if (!host_) return 0;
+    return host_->GetGpuPresentFallbackCount();
+}
+
+std::string OverlayHostService::GetGpuPresentLastDetail() const {
+    if (!host_) return "host_not_initialized";
+    return host_->GetGpuPresentLastDetail();
+}
+
+bool OverlayHostService::IsGpuPresentActive() const {
+    if (!host_) return false;
+    return host_->IsGpuPresentActive();
+}
+
 bool OverlayHostService::Initialize() {
     if (host_) return true;
 

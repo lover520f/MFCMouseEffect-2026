@@ -5,7 +5,10 @@
 #include "MouseFx/Gpu/DawnCommandConsumer.h"
 
 #include <algorithm>
+#include <mmsystem.h>
 #include <vector>
+
+#pragma comment(lib, "winmm.lib")
 
 namespace mousefx {
 namespace {
@@ -147,6 +150,8 @@ void RefreshSurfaceRect(OverlayHostWindow::HostSurface& surface) {
 }
 
 static const uint64_t kTopmostReassertIntervalMs = 2500;
+static constexpr UINT kFrameTimerIntervalDefaultMs = 8;
+static constexpr UINT kFrameTimerIntervalHoldMs = 4;
 static OverlayHostWindow* g_overlayForegroundHookOwner = nullptr;
 
 } // namespace
@@ -175,6 +180,27 @@ uint32_t OverlayHostWindow::GetLastGpuRippleCommandCount() const {
 
 uint32_t OverlayHostWindow::GetLastGpuParticleCommandCount() const {
     return gpuParticleCommandCount_.load(std::memory_order_acquire);
+}
+
+uint64_t OverlayHostWindow::GetGpuPresentAttemptCount() const {
+    return gpuPresentAttemptCount_.load(std::memory_order_acquire);
+}
+
+uint64_t OverlayHostWindow::GetGpuPresentSuccessCount() const {
+    return gpuPresentSuccessCount_.load(std::memory_order_acquire);
+}
+
+uint64_t OverlayHostWindow::GetGpuPresentFallbackCount() const {
+    return gpuPresentFallbackCount_.load(std::memory_order_acquire);
+}
+
+std::string OverlayHostWindow::GetGpuPresentLastDetail() const {
+    std::lock_guard<std::mutex> lock(gpuPresentDetailMutex_);
+    return gpuPresentLastDetail_;
+}
+
+bool OverlayHostWindow::IsGpuPresentActive() const {
+    return gpuPresentSuccessCount_.load(std::memory_order_acquire) > 0;
 }
 
 const wchar_t* OverlayHostWindow::ClassName() {
@@ -319,6 +345,7 @@ void OverlayHostWindow::OnTick() {
         layers_.end());
 
     CollectGpuCommandStream(nowMs);
+    UpdateFrameLoopTimerInterval(ResolveNextTimerIntervalMs());
     Render();
 }
 
@@ -332,42 +359,70 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     if (!surface.hwnd || !surface.memDc || !surface.bits || surface.width <= 0 || surface.height <= 0) return;
 
     SetOverlayOriginOverride(surface.x, surface.y);
-    const int surfaceLeft = surface.x;
-    const int surfaceTop = surface.y;
-    const int surfaceRight = surface.x + surface.width;
-    const int surfaceBottom = surface.y + surface.height;
-    std::vector<IOverlayLayer*> visibleLayers{};
-    visibleLayers.reserve(layers_.size());
+
+    std::vector<IOverlayLayer*> layerRefs{};
+    layerRefs.reserve(layers_.size());
     for (const auto& layer : layers_) {
-        if (layer && layer->IsAlive() &&
-            layer->IntersectsScreenRect(surfaceLeft, surfaceTop, surfaceRight, surfaceBottom)) {
-            visibleLayers.push_back(layer.get());
+        if (layer) {
+            layerRefs.push_back(layer.get());
         }
     }
-    const bool hasAnyLayerVisibleOnSurface = !visibleLayers.empty();
+    OverlayPresentFrame frame{};
+    frame.hwnd = surface.hwnd;
+    frame.memDc = surface.memDc;
+    frame.bits = surface.bits;
+    frame.width = surface.width;
+    frame.height = surface.height;
+    frame.surfaceX = surface.x;
+    frame.surfaceY = surface.y;
+    frame.hadVisibleContent = &surface.hadVisibleContent;
+    frame.layers = &layerRefs;
+    frame.gpuCommandStream = &gpuCommandStream_;
 
-    // If the surface is already empty and still no visible layer intersects it,
-    // skip expensive buffer clear + UpdateLayeredWindow for this frame.
-    if (!hasAnyLayerVisibleOnSurface && !surface.hadVisibleContent) {
-        return;
+    const bool wantsGpuPresent =
+        (gpuSubmitActiveBackend_ == "dawn") &&
+        (gpuSubmitPipelineMode_ == "dawn_compositor");
+    bool gpuExclusiveEligible = true;
+    if (wantsGpuPresent) {
+        const int left = surface.x;
+        const int top = surface.y;
+        const int right = surface.x + surface.width;
+        const int bottom = surface.y + surface.height;
+        for (IOverlayLayer* layer : layerRefs) {
+            if (!layer || !layer->IsAlive()) continue;
+            if (!layer->IntersectsScreenRect(left, top, right, bottom)) continue;
+            if (!layer->SupportsGpuExclusivePresent()) {
+                gpuExclusiveEligible = false;
+                break;
+            }
+        }
     }
-
-    ZeroMemory(surface.bits, (size_t)surface.width * (size_t)surface.height * 4);
-
-    Gdiplus::Bitmap bmp(surface.width, surface.height, surface.width * 4, PixelFormat32bppPARGB, static_cast<BYTE*>(surface.bits));
-    Gdiplus::Graphics graphics(&bmp);
-    graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-
-    for (IOverlayLayer* layer : visibleLayers) {
-        if (layer) layer->Render(graphics);
+    bool presented = false;
+    std::string presentDetail = "cpu_present_path";
+    if (wantsGpuPresent) {
+        gpuPresentAttemptCount_.fetch_add(1, std::memory_order_relaxed);
+        presented = dawnPresenter_.Present(frame);
+        presentDetail = dawnPresenter_.LastDetail();
+        if (presented && !gpuExclusiveEligible) {
+            presented = false;
+            presentDetail += "_fallback_nonexclusive_layer_visible";
+        }
+        if (presented) {
+            gpuPresentSuccessCount_.fetch_add(1, std::memory_order_relaxed);
+        } else {
+            gpuPresentFallbackCount_.fetch_add(1, std::memory_order_relaxed);
+        }
     }
-
-    POINT ptSrc{0, 0};
-    SIZE sizeWnd{surface.width, surface.height};
-    POINT ptDst{surface.x, surface.y};
-    BLENDFUNCTION bf{AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
-    UpdateLayeredWindow(surface.hwnd, nullptr, &ptDst, &sizeWnd, surface.memDc, &ptSrc, 0, &bf, ULW_ALPHA);
-    surface.hadVisibleContent = hasAnyLayerVisibleOnSurface;
+    if (!presented) {
+        cpuPresenter_.Present(frame);
+        if (wantsGpuPresent && presentDetail.empty()) {
+            presentDetail = "gpu_present_fallback_cpu";
+        }
+    }
+    {
+        std::lock_guard<std::mutex> lock(gpuPresentDetailMutex_);
+        gpuPresentLastDetail_ = presentDetail;
+    }
 }
 
 void OverlayHostWindow::CollectGpuCommandStream(uint64_t nowMs) {
@@ -382,6 +437,7 @@ void OverlayHostWindow::CollectGpuCommandStream(uint64_t nowMs) {
     uint32_t trailCount = 0;
     uint32_t rippleCount = 0;
     uint32_t particleCount = 0;
+    uint32_t rippleHoldCount = 0;
     for (const auto& cmd : gpuCommandStream_.Commands()) {
         switch (cmd.type) {
         case gpu::OverlayGpuCommandType::TrailPolyline:
@@ -389,6 +445,9 @@ void OverlayHostWindow::CollectGpuCommandStream(uint64_t nowMs) {
             break;
         case gpu::OverlayGpuCommandType::RipplePulse:
             ++rippleCount;
+            if ((cmd.flags & gpu::OverlayGpuCommandFlags::kHoldContinuous) != 0) {
+                ++rippleHoldCount;
+            }
             break;
         case gpu::OverlayGpuCommandType::ParticleSprites:
             ++particleCount;
@@ -402,6 +461,7 @@ void OverlayHostWindow::CollectGpuCommandStream(uint64_t nowMs) {
     gpuTrailCommandCount_.store(trailCount, std::memory_order_release);
     gpuRippleCommandCount_.store(rippleCount, std::memory_order_release);
     gpuParticleCommandCount_.store(particleCount, std::memory_order_release);
+    gpuRippleHoldCommandCount_.store(rippleHoldCount, std::memory_order_release);
 
     const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatusFast();
     const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
@@ -411,6 +471,21 @@ void OverlayHostWindow::CollectGpuCommandStream(uint64_t nowMs) {
         bridge,
         gpuSubmitActiveBackend_,
         gpuSubmitPipelineMode_);
+}
+
+void OverlayHostWindow::UpdateFrameLoopTimerInterval(UINT intervalMs) {
+    if (!ticking_ || !timerHwnd_) return;
+    const UINT safeIntervalMs = intervalMs == 0 ? kFrameTimerIntervalDefaultMs : intervalMs;
+    if (currentTimerIntervalMs_ == safeIntervalMs) return;
+    currentTimerIntervalMs_ = safeIntervalMs;
+    KillTimer(timerHwnd_, kTimerId);
+    SetTimer(timerHwnd_, kTimerId, currentTimerIntervalMs_, nullptr);
+}
+
+UINT OverlayHostWindow::ResolveNextTimerIntervalMs() const {
+    const uint32_t holdCount = gpuRippleHoldCommandCount_.load(std::memory_order_acquire);
+    if (holdCount > 0) return kFrameTimerIntervalHoldMs;
+    return kFrameTimerIntervalDefaultMs;
 }
 
 bool OverlayHostWindow::RebuildSurfaces() {
@@ -530,11 +605,16 @@ void OverlayHostWindow::StartFrameLoop() {
     if (!timerHwnd_) return;
     if (ticking_) return;
     ticking_ = true;
+    if (!timerResolutionRaised_) {
+        const MMRESULT mm = timeBeginPeriod(1);
+        timerResolutionRaised_ = (mm == TIMERR_NOERROR);
+    }
     SyncBoundsWithVirtualScreen(false);
     for (auto& surface : surfaces_) {
         if (surface.hwnd) ShowWindow(surface.hwnd, SW_SHOWNA);
     }
-    SetTimer(timerHwnd_, kTimerId, 16, nullptr);
+    currentTimerIntervalMs_ = kFrameTimerIntervalDefaultMs;
+    SetTimer(timerHwnd_, kTimerId, currentTimerIntervalMs_, nullptr);
     EnsureTopmostZOrder(true);
 }
 
@@ -543,6 +623,12 @@ void OverlayHostWindow::StopFrameLoop() {
     ticking_ = false;
     if (timerHwnd_) {
         KillTimer(timerHwnd_, kTimerId);
+    }
+    currentTimerIntervalMs_ = 0;
+    gpuRippleHoldCommandCount_.store(0, std::memory_order_release);
+    if (timerResolutionRaised_) {
+        timeEndPeriod(1);
+        timerResolutionRaised_ = false;
     }
     for (auto& surface : surfaces_) {
         if (surface.hwnd) ShowWindow(surface.hwnd, SW_HIDE);

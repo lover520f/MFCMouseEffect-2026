@@ -112,8 +112,10 @@ constexpr uint32_t kWGPUFeatureLevelCompatibility = 1u;
 
 void* g_liveDevice = nullptr;
 void* g_liveQueue = nullptr;
+void* g_liveInstance = nullptr;
 FARPROC g_liveDeviceReleaseProc = nullptr;
 FARPROC g_liveQueueReleaseProc = nullptr;
+FARPROC g_liveInstanceReleaseProc = nullptr;
 FARPROC g_liveQueueSubmitProc = nullptr;
 FARPROC g_liveCreateCommandEncoderProc = nullptr;
 FARPROC g_liveCommandEncoderFinishProc = nullptr;
@@ -485,11 +487,123 @@ FARPROC ResolveQueueSubmitProc(HMODULE mod) {
     return GetProcAddress(mod, "webgpuQueueSubmit");
 }
 
+FARPROC ResolveQueueWriteBufferProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuQueueWriteBuffer");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuQueueWriteBuffer");
+}
+
 FARPROC ResolveQueueReleaseProc(HMODULE mod) {
     if (!mod) return nullptr;
     FARPROC p0 = GetProcAddress(mod, "wgpuQueueRelease");
     if (p0) return p0;
     return GetProcAddress(mod, "webgpuQueueRelease");
+}
+
+FARPROC ResolveInstanceCreateSurfaceProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuInstanceCreateSurface");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuInstanceCreateSurface");
+}
+
+FARPROC ResolveSurfaceConfigureProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuSurfaceConfigure");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuSurfaceConfigure");
+}
+
+FARPROC ResolveSurfaceGetCurrentTextureProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuSurfaceGetCurrentTexture");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuSurfaceGetCurrentTexture");
+}
+
+FARPROC ResolveSurfacePresentProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuSurfacePresent");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuSurfacePresent");
+}
+
+FARPROC ResolveSurfaceUnconfigureProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuSurfaceUnconfigure");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuSurfaceUnconfigure");
+}
+
+FARPROC ResolveSurfaceReleaseProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuSurfaceRelease");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuSurfaceRelease");
+}
+
+FARPROC ResolveTextureReleaseProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuTextureRelease");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuTextureRelease");
+}
+
+FARPROC ResolveTextureCreateViewProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuTextureCreateView");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuTextureCreateView");
+}
+
+FARPROC ResolveTextureViewReleaseProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuTextureViewRelease");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuTextureViewRelease");
+}
+
+FARPROC ResolveCommandEncoderBeginRenderPassProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuCommandEncoderBeginRenderPass");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuCommandEncoderBeginRenderPass");
+}
+
+FARPROC ResolveRenderPassEncoderEndProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuRenderPassEncoderEnd");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuRenderPassEncoderEnd");
+}
+
+FARPROC ResolveRenderPassEncoderReleaseProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuRenderPassEncoderRelease");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuRenderPassEncoderRelease");
+}
+
+FARPROC ResolveRenderPassEncoderSetPipelineProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuRenderPassEncoderSetPipeline");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuRenderPassEncoderSetPipeline");
+}
+
+FARPROC ResolveRenderPassEncoderSetVertexBufferProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuRenderPassEncoderSetVertexBuffer");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuRenderPassEncoderSetVertexBuffer");
+}
+
+FARPROC ResolveRenderPassEncoderDrawProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuRenderPassEncoderDraw");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuRenderPassEncoderDraw");
 }
 
 bool HasExport(HMODULE mod, const char* name) {
@@ -502,6 +616,48 @@ FARPROC ResolveDeviceCreateCommandEncoderProc(HMODULE mod) {
     FARPROC p0 = GetProcAddress(mod, "wgpuDeviceCreateCommandEncoder");
     if (p0) return p0;
     return GetProcAddress(mod, "webgpuDeviceCreateCommandEncoder");
+}
+
+FARPROC ResolveDeviceCreateBufferProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuDeviceCreateBuffer");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuDeviceCreateBuffer");
+}
+
+FARPROC ResolveBufferReleaseProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuBufferRelease");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuBufferRelease");
+}
+
+FARPROC ResolveDeviceCreateShaderModuleProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuDeviceCreateShaderModule");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuDeviceCreateShaderModule");
+}
+
+FARPROC ResolveShaderModuleReleaseProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuShaderModuleRelease");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuShaderModuleRelease");
+}
+
+FARPROC ResolveDeviceCreateRenderPipelineProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuDeviceCreateRenderPipeline");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuDeviceCreateRenderPipeline");
+}
+
+FARPROC ResolveRenderPipelineReleaseProc(HMODULE mod) {
+    if (!mod) return nullptr;
+    FARPROC p0 = GetProcAddress(mod, "wgpuRenderPipelineRelease");
+    if (p0) return p0;
+    return GetProcAddress(mod, "webgpuRenderPipelineRelease");
 }
 
 FARPROC ResolveCommandEncoderFinishProc(HMODULE mod) {
@@ -560,10 +716,15 @@ void ReleaseLiveQueueContextLocked() {
     if (g_liveDevice && g_liveDeviceReleaseProc) {
         reinterpret_cast<PFN_wgpuDeviceRelease>(g_liveDeviceReleaseProc)(g_liveDevice);
     }
+    if (g_liveInstance && g_liveInstanceReleaseProc) {
+        reinterpret_cast<PFN_wgpuInstanceRelease>(g_liveInstanceReleaseProc)(g_liveInstance);
+    }
     g_liveQueue = nullptr;
     g_liveDevice = nullptr;
+    g_liveInstance = nullptr;
     g_liveQueueReleaseProc = nullptr;
     g_liveDeviceReleaseProc = nullptr;
+    g_liveInstanceReleaseProc = nullptr;
     g_liveQueueSubmitProc = nullptr;
     g_liveCreateCommandEncoderProc = nullptr;
     g_liveCommandEncoderFinishProc = nullptr;
@@ -981,8 +1142,10 @@ bool TryPrimeQueueWithLegacyCallbacks(
 
     g_liveDevice = deviceResult.handle;
     g_liveQueue = queue;
+    g_liveInstance = instance;
     g_liveDeviceReleaseProc = deviceReleaseProc;
     g_liveQueueReleaseProc = queueReleaseProc;
+    g_liveInstanceReleaseProc = ResolveInstanceReleaseProc(g_dawnModule);
     g_liveQueueSubmitProc = queueSubmitProc;
     g_liveCreateCommandEncoderProc = createEncoderProc;
     g_liveCommandEncoderFinishProc = finishProc;
@@ -1177,8 +1340,10 @@ bool TryPrimeQueueWithModernWaitAny(
 
     g_liveDevice = deviceResult.handle;
     g_liveQueue = queue;
+    g_liveInstance = instance;
     g_liveDeviceReleaseProc = deviceReleaseProc;
     g_liveQueueReleaseProc = queueReleaseProc;
+    g_liveInstanceReleaseProc = ResolveInstanceReleaseProc(g_dawnModule);
     g_liveQueueSubmitProc = queueSubmitProc;
     g_liveCreateCommandEncoderProc = createEncoderProc;
     g_liveCommandEncoderFinishProc = finishProc;
@@ -1462,6 +1627,63 @@ DawnRuntimeSymbolStatus GetDawnRuntimeSymbolStatus() {
     return out;
 }
 
+DawnRuntimePresentContext GetDawnRuntimePresentContext() {
+    std::lock_guard<std::mutex> lock(g_probeMutex);
+    RunProbeIfNeededLocked();
+
+    DawnRuntimePresentContext out{};
+    out.module = g_dawnModule;
+    out.instance = g_liveInstance;
+    out.device = g_liveDevice;
+    out.queue = g_liveQueue;
+    if (!g_dawnModule || !g_liveInstance || !g_liveDevice || !g_liveQueue) {
+        return out;
+    }
+
+    out.procInstanceCreateSurface = ResolveInstanceCreateSurfaceProc(g_dawnModule);
+    out.procSurfaceConfigure = ResolveSurfaceConfigureProc(g_dawnModule);
+    out.procSurfaceGetCurrentTexture = ResolveSurfaceGetCurrentTextureProc(g_dawnModule);
+    out.procSurfacePresent = ResolveSurfacePresentProc(g_dawnModule);
+    out.procSurfaceUnconfigure = ResolveSurfaceUnconfigureProc(g_dawnModule);
+    out.procSurfaceRelease = ResolveSurfaceReleaseProc(g_dawnModule);
+    out.procTextureRelease = ResolveTextureReleaseProc(g_dawnModule);
+    out.procTextureCreateView = ResolveTextureCreateViewProc(g_dawnModule);
+    out.procTextureViewRelease = ResolveTextureViewReleaseProc(g_dawnModule);
+    out.procDeviceCreateCommandEncoder = g_liveCreateCommandEncoderProc;
+    out.procCommandEncoderBeginRenderPass = ResolveCommandEncoderBeginRenderPassProc(g_dawnModule);
+    out.procCommandEncoderFinish = g_liveCommandEncoderFinishProc;
+    out.procCommandEncoderRelease = g_liveCommandEncoderReleaseProc;
+    out.procCommandBufferRelease = g_liveCommandBufferReleaseProc;
+    out.procQueueSubmit = g_liveQueueSubmitProc;
+    out.procQueueWriteBuffer = ResolveQueueWriteBufferProc(g_dawnModule);
+    out.procDeviceCreateBuffer = ResolveDeviceCreateBufferProc(g_dawnModule);
+    out.procBufferRelease = ResolveBufferReleaseProc(g_dawnModule);
+    out.procDeviceCreateShaderModule = ResolveDeviceCreateShaderModuleProc(g_dawnModule);
+    out.procShaderModuleRelease = ResolveShaderModuleReleaseProc(g_dawnModule);
+    out.procDeviceCreateRenderPipeline = ResolveDeviceCreateRenderPipelineProc(g_dawnModule);
+    out.procRenderPipelineRelease = ResolveRenderPipelineReleaseProc(g_dawnModule);
+    out.procRenderPassEncoderEnd = ResolveRenderPassEncoderEndProc(g_dawnModule);
+    out.procRenderPassEncoderRelease = ResolveRenderPassEncoderReleaseProc(g_dawnModule);
+    out.procRenderPassEncoderSetPipeline = ResolveRenderPassEncoderSetPipelineProc(g_dawnModule);
+    out.procRenderPassEncoderSetVertexBuffer = ResolveRenderPassEncoderSetVertexBufferProc(g_dawnModule);
+    out.procRenderPassEncoderDraw = ResolveRenderPassEncoderDrawProc(g_dawnModule);
+    out.ready =
+        out.procInstanceCreateSurface &&
+        out.procSurfaceConfigure &&
+        out.procSurfaceGetCurrentTexture &&
+        out.procSurfacePresent &&
+        out.procSurfaceRelease &&
+        out.procTextureRelease &&
+        out.procTextureCreateView &&
+        out.procTextureViewRelease &&
+        out.procDeviceCreateCommandEncoder &&
+        out.procCommandEncoderBeginRenderPass &&
+        out.procCommandEncoderFinish &&
+        out.procQueueSubmit &&
+        out.procRenderPassEncoderEnd;
+    return out;
+}
+
 bool IsDawnCompiled() {
 #ifdef MOUSEFX_ENABLE_DAWN
     return true;
@@ -1581,6 +1803,9 @@ DawnRuntimeInitResult TryInitializeDawnRuntime() {
              g_modernAbiPrimeDetail == "modern_request_device_exception")) {
             g_legacyPrimeCompatBlocked = true;
         }
+        if (primed && g_liveInstance == instance) {
+            instance = nullptr;
+        }
         releaseInstance();
 
         if (IsOverlayBridgeCompiled()) {
@@ -1690,6 +1915,9 @@ DawnRuntimeInitResult TryInitializeDawnRuntime() {
 
     releaseDevice();
     releaseAdapter();
+    if (g_liveInstance == instance) {
+        instance = nullptr;
+    }
     releaseInstance();
 
     // Stage 16 status:
