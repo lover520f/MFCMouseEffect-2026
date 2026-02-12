@@ -5,10 +5,10 @@
 #include "MouseFx/Gpu/DawnCommandConsumer.h"
 #include "MouseFx/Gpu/GpuFinalPresentCapabilityProbe.h"
 #include "MouseFx/Gpu/GpuFinalPresentHostChain.h"
+#include "MouseFx/Gpu/GpuFinalPresentOptIn.h"
 #include "MouseFx/Gpu/GpuFinalPresentPolicy.h"
 
 #include <algorithm>
-#include <fstream>
 #include <mmsystem.h>
 #include <vector>
 
@@ -159,29 +159,6 @@ static constexpr UINT kFrameTimerIntervalHoldMs = 4;
 static constexpr UINT kFrameTimerIntervalDawnActiveMs = 4;
 static OverlayHostWindow* g_overlayForegroundHookOwner = nullptr;
 static const uint64_t g_processStartTickMs = GetTickCount64();
-
-bool IsGpuFinalPresentOptInEnabled() {
-    static std::atomic<int> cached{-1}; // -1 unknown, 0 disabled, 1 enabled
-    const int v = cached.load(std::memory_order_acquire);
-    if (v >= 0) {
-        return v == 1;
-    }
-
-    wchar_t modulePath[MAX_PATH] = {};
-    DWORD len = GetModuleFileNameW(nullptr, modulePath, MAX_PATH);
-    if (len == 0 || len >= MAX_PATH) {
-        cached.store(0, std::memory_order_release);
-        return false;
-    }
-    std::wstring exePath(modulePath, modulePath + len);
-    const size_t pos = exePath.find_last_of(L"\\/");
-    std::wstring exeDir = (pos == std::wstring::npos) ? L"." : exePath.substr(0, pos);
-    const std::wstring optInPath = exeDir + L"\\.local\\diag\\gpu_final_present.optin";
-    std::ifstream fin(optInPath, std::ios::binary);
-    const bool enabled = fin.good();
-    cached.store(enabled ? 1 : 0, std::memory_order_release);
-    return enabled;
-}
 
 } // namespace
 
@@ -561,7 +538,7 @@ UINT OverlayHostWindow::ResolveNextTimerIntervalMs() const {
 
 gpu::GpuFinalPresentPolicyDecision OverlayHostWindow::EvaluateGpuFinalPresentPolicy() const {
     gpu::GpuFinalPresentPolicyInput in{};
-    in.optInEnabled = IsGpuFinalPresentOptInEnabled();
+    in.optInEnabled = gpu::IsGpuFinalPresentOptInEnabled();
     in.forceLayeredCpuFallback = forceLayeredCpuFallback_.load(std::memory_order_acquire);
     in.activeBackend = gpuSubmitActiveBackend_;
     in.pipelineMode = gpuSubmitPipelineMode_;

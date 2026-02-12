@@ -198,6 +198,9 @@
     <ClInclude Include="MouseFx\Gpu\GpuFinalPresentPolicy.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Gpu\GpuFinalPresentOptIn.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Gpu\GpuFinalPresentHostChain.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -273,6 +276,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Gpu\GpuFinalPresentPolicy.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Gpu\GpuFinalPresentOptIn.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Gpu\GpuFinalPresentHostChain.cpp">

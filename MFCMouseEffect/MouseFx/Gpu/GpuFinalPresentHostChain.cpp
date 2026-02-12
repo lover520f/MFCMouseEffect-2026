@@ -3,10 +3,10 @@
 #include "GpuFinalPresentHostChain.h"
 
 #include "GpuFinalPresentCapabilityProbe.h"
+#include "GpuFinalPresentOptIn.h"
 
 #include <d3d11.h>
 #include <dcomp.h>
-#include <fstream>
 #include <mutex>
 
 namespace mousefx::gpu {
@@ -118,19 +118,6 @@ void ReleaseRuntimeState(HostChainRuntimeState* state, const char* detail) {
     }
     state->active = false;
     state->lastDetail = (detail && *detail) ? detail : "host_chain_released";
-}
-
-bool IsGpuFinalPresentOptInEnabled() {
-    wchar_t modulePath[MAX_PATH] = {};
-    const DWORD len = GetModuleFileNameW(nullptr, modulePath, MAX_PATH);
-    if (len == 0 || len >= MAX_PATH) return false;
-
-    std::wstring exePath(modulePath, modulePath + len);
-    const size_t pos = exePath.find_last_of(L"\\/");
-    const std::wstring exeDir = (pos == std::wstring::npos) ? L"." : exePath.substr(0, pos);
-    const std::wstring optInPath = exeDir + L"\\.local\\diag\\gpu_final_present.optin";
-    std::ifstream fin(optInPath, std::ios::binary);
-    return fin.good();
 }
 
 bool TryActivateHostChain(HostChainRuntimeState* state, std::string* detailOut) {
