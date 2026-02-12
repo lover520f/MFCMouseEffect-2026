@@ -421,7 +421,9 @@ inline void SubmitOverlayGpuCommands(
     static std::atomic<uint64_t> s_lastHoldMixedNonTrailSubmitTickMs{0};
     constexpr uint64_t kNonTrailSubmitIntervalMs = 8; // cap non-trail submit to ~120Hz
     constexpr uint64_t kNonTrailSubmitIntervalWhenHoldMs = 2; // hold path prefers latency while still rate-limited
-    constexpr uint64_t kHoldMixedNonTrailSubmitIntervalMs = 8; // prioritize trail continuity during hold
+    constexpr uint64_t kHoldMixedNonTrailSubmitIntervalMs = 8; // baseline hold mixed-frame non-trail pacing
+    constexpr uint64_t kHoldMixedNonTrailSubmitIntervalHeavyMs = 16; // heavier trail load favors trail continuity
+    constexpr uint32_t kHoldMixedTrailHeavyTriangleThreshold = 6;
     if (hasTrailGeometry || hasRippleGeometry || hasParticleGeometry) {
         if (hasOnlyNonTrailGeometry && status.submitTickMs > 0) {
             const uint64_t nonTrailIntervalMs = holdActive
@@ -441,11 +443,17 @@ inline void SubmitOverlayGpuCommands(
             s_lastNonTrailSubmitTickMs.store(status.submitTickMs, std::memory_order_relaxed);
         }
         bool submitNonTrailWithTrail = true;
+        bool holdMixedHeavyTrail = false;
         if (holdActive && hasTrailGeometry && (hasRippleGeometry || hasParticleGeometry) && status.submitTickMs > 0) {
+            holdMixedHeavyTrail = (prep.triangles >= kHoldMixedTrailHeavyTriangleThreshold);
+            const uint64_t holdMixedNonTrailIntervalMs =
+                holdMixedHeavyTrail
+                ? kHoldMixedNonTrailSubmitIntervalHeavyMs
+                : kHoldMixedNonTrailSubmitIntervalMs;
             const uint64_t lastHoldMixedTick =
                 s_lastHoldMixedNonTrailSubmitTickMs.load(std::memory_order_relaxed);
             if (lastHoldMixedTick > 0 &&
-                status.submitTickMs - lastHoldMixedTick < kHoldMixedNonTrailSubmitIntervalMs) {
+                status.submitTickMs - lastHoldMixedTick < holdMixedNonTrailIntervalMs) {
                 submitNonTrailWithTrail = false;
                 ++status.nonTrailSubmitThrottled;
             } else {
@@ -516,7 +524,9 @@ inline void SubmitOverlayGpuCommands(
                 if (submitNonTrailWithTrail) {
                     nonTrailOk = submitNonTrailPacket(&nonTrailDetailOnly);
                 } else {
-                    nonTrailDetailOnly = "nontrail_submit_skipped_hold_priority";
+                    nonTrailDetailOnly = holdMixedHeavyTrail
+                        ? "nontrail_submit_skipped_hold_priority_heavy_trail"
+                        : "nontrail_submit_skipped_hold_priority";
                 }
                 ++status.trailPacketSubmitAttempts;
                 trailOk = TrySubmitTrailBakedPacket(prep.vertices, prep.uploadBytes, &trailDetail);

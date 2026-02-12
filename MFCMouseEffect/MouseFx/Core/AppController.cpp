@@ -951,6 +951,15 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         if (wParam == kHoldTimerId) {
             KillTimer(hwnd, kHoldTimerId);
             if (pendingHold_.active) {
+                if (auto* trailEffect = GetEffect(EffectCategory::Trail)) {
+                    // Seed trail path when hold is promoted, reducing early hold-only frames.
+                    trailEffect->OnMouseMove(pendingHold_.pt);
+                    POINT nowPt{};
+                    if (GetCursorPos(&nowPt) &&
+                        (nowPt.x != pendingHold_.pt.x || nowPt.y != pendingHold_.pt.y)) {
+                        trailEffect->OnMouseMove(nowPt);
+                    }
+                }
                 // Timer elapsed, this is a real hold: trigger effect
                 if (auto* effect = GetEffect(EffectCategory::Hold)) {
                     effect->OnHoldStart(pendingHold_.pt, pendingHold_.button);

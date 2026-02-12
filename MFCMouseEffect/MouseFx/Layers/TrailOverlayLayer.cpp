@@ -10,6 +10,7 @@ constexpr uint64_t kCursorFallbackSampleIntervalMs = 24;
 constexpr uint64_t kCursorFallbackSampleIntervalLatencyMs = 32;
 constexpr int kTrailLatencyPriorityDurationCapMs = 180;
 constexpr int kTrailLatencyPriorityMaxPointsCap = 24;
+constexpr size_t kPendingCursorQueueCap = 32;
 
 bool RectanglesOverlap(int l1, int t1, int r1, int b1, int l2, int t2, int r2, int b2) {
     return !(r1 <= l2 || r2 <= l1 || b1 <= t2 || b2 <= t1);
@@ -30,12 +31,21 @@ TrailOverlayLayer::TrailOverlayLayer(std::unique_ptr<ITrailRenderer> renderer, i
 }
 
 void TrailOverlayLayer::AddPoint(const POINT& pt) {
-    latestCursorPt_ = pt;
-    hasLatestCursorPt_ = true;
+    if (!pendingCursorPts_.empty()) {
+        const POINT& last = pendingCursorPts_.back();
+        if (last.x == pt.x && last.y == pt.y) {
+            return;
+        }
+    }
+    pendingCursorPts_.push_back(pt);
+    while (pendingCursorPts_.size() > kPendingCursorQueueCap) {
+        pendingCursorPts_.pop_front();
+    }
 }
 
 void TrailOverlayLayer::Clear() {
     points_.clear();
+    pendingCursorPts_.clear();
     hasLastSamplePt_ = false;
     lastCursorFallbackSampleMs_ = 0;
 }
@@ -89,9 +99,10 @@ bool TrailOverlayLayer::IntersectsScreenRect(int left, int top, int right, int b
         minX = maxX = lastSamplePt_.x;
         minY = maxY = lastSamplePt_.y;
         hasBounds = true;
-    } else if (hasLatestCursorPt_) {
-        minX = maxX = latestCursorPt_.x;
-        minY = maxY = latestCursorPt_.y;
+    } else if (!pendingCursorPts_.empty()) {
+        const POINT& pending = pendingCursorPts_.back();
+        minX = maxX = pending.x;
+        minY = maxY = pending.y;
         hasBounds = true;
     }
 
@@ -136,31 +147,9 @@ void TrailOverlayLayer::AppendGpuCommands(gpu::OverlayGpuCommandStream& stream, 
     }
 }
 
-void TrailOverlayLayer::SampleCursorPoint(uint64_t nowMs) {
-    POINT pt{};
-    bool havePoint = false;
-    if (hasLatestCursorPt_) {
-        pt = latestCursorPt_;
-        hasLatestCursorPt_ = false;
-        havePoint = true;
-    } else {
-        const uint64_t fallbackIntervalMs = latencyPriorityMode_
-            ? kCursorFallbackSampleIntervalLatencyMs
-            : kCursorFallbackSampleIntervalMs;
-        const uint64_t elapsed = (nowMs >= lastCursorFallbackSampleMs_)
-            ? (nowMs - lastCursorFallbackSampleMs_)
-            : 0;
-        if (lastCursorFallbackSampleMs_ == 0 || elapsed >= fallbackIntervalMs) {
-            if (GetCursorPos(&pt)) {
-                havePoint = true;
-                lastCursorFallbackSampleMs_ = nowMs;
-            }
-        }
-    }
-    if (!havePoint) return;
-
+bool TrailOverlayLayer::AppendSamplePoint(const POINT& pt, uint64_t nowMs) {
     if (hasLastSamplePt_ && pt.x == lastSamplePt_.x && pt.y == lastSamplePt_.y) {
-        return;
+        return false;
     }
 
     TrailPoint trailPoint{};
@@ -170,11 +159,39 @@ void TrailOverlayLayer::SampleCursorPoint(uint64_t nowMs) {
     const size_t effectiveMaxPoints = (size_t)(latencyPriorityMode_
         ? (std::min)(maxPoints_, kTrailLatencyPriorityMaxPointsCap)
         : maxPoints_);
-    if (points_.size() > effectiveMaxPoints) {
+    while (points_.size() > effectiveMaxPoints) {
         points_.pop_front();
     }
     lastSamplePt_ = pt;
     hasLastSamplePt_ = true;
+    return true;
+}
+
+void TrailOverlayLayer::SampleCursorPoint(uint64_t nowMs) {
+    bool consumedPending = false;
+    while (!pendingCursorPts_.empty()) {
+        const POINT pt = pendingCursorPts_.front();
+        pendingCursorPts_.pop_front();
+        consumedPending = true;
+        (void)AppendSamplePoint(pt, nowMs);
+    }
+    if (consumedPending) {
+        return;
+    }
+
+    POINT pt{};
+    const uint64_t fallbackIntervalMs = latencyPriorityMode_
+        ? kCursorFallbackSampleIntervalLatencyMs
+        : kCursorFallbackSampleIntervalMs;
+    const uint64_t elapsed = (nowMs >= lastCursorFallbackSampleMs_)
+        ? (nowMs - lastCursorFallbackSampleMs_)
+        : 0;
+    if (lastCursorFallbackSampleMs_ == 0 || elapsed >= fallbackIntervalMs) {
+        if (GetCursorPos(&pt)) {
+            lastCursorFallbackSampleMs_ = nowMs;
+            (void)AppendSamplePoint(pt, nowMs);
+        }
+    }
 }
 
 } // namespace mousefx

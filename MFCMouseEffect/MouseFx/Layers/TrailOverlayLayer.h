@@ -24,6 +24,7 @@ public:
     void AppendGpuCommands(gpu::OverlayGpuCommandStream& stream, uint64_t nowMs) const override;
 
 private:
+    bool AppendSamplePoint(const POINT& pt, uint64_t nowMs);
     void SampleCursorPoint(uint64_t nowMs);
 
     std::deque<TrailPoint> points_{};
@@ -33,8 +34,7 @@ private:
     Gdiplus::Color color_{220, 100, 255, 218};
     bool isChromatic_ = false;
     bool latencyPriorityMode_ = false;
-    POINT latestCursorPt_{};
-    bool hasLatestCursorPt_ = false;
+    std::deque<POINT> pendingCursorPts_{};
     uint64_t lastCursorFallbackSampleMs_ = 0;
     POINT lastSamplePt_{};
     bool hasLastSamplePt_ = false;
