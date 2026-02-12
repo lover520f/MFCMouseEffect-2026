@@ -368,9 +368,11 @@ inline void SubmitOverlayGpuCommands(
 
     constexpr size_t kHoldTrailVertexCapPerCommand = 18;
     constexpr size_t kTrailVertexCapPerCommand = 24;
+    constexpr size_t kTrailVertexCapPerCommandMixed = 20;
+    const bool mixedFrame = (status.rippleCommandCount > 0) || (status.particleCommandCount > 0);
     const size_t trailVertexCapPerCommand = holdActive
         ? kHoldTrailVertexCapPerCommand
-        : kTrailVertexCapPerCommand;
+        : (mixedFrame ? kTrailVertexCapPerCommandMixed : kTrailVertexCapPerCommand);
     const TrailGeometryPrepResult prep = PreprocessTrailGeometry(
         stream,
         skipTrailGeometryBuild,
