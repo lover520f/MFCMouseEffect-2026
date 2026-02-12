@@ -221,6 +221,7 @@
     <ClInclude Include="MouseFx\Core\OverlayCoordSpace.h" />
     <ClInclude Include="MouseFx\Core\OverlayHostService.h" />
     <ClInclude Include="MouseFx\Core\GdiPlusSession.h" />
+    <ClInclude Include="MouseFx\Gpu\D3D11DCompPresenter.h" />
     <ClInclude Include="MouseFx\Core\GlobalMouseHook.h" />
     <ClInclude Include="MouseFx\Effects\IconEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IMouseEffect.h" />
@@ -282,6 +283,7 @@
     <ClCompile Include="MouseFx\Core\EffectFactory.cpp" />
     <ClCompile Include="MouseFx\Core\OverlayCoordSpace.cpp" />
     <ClCompile Include="MouseFx\Core\OverlayHostService.cpp" />
+    <ClCompile Include="MouseFx\Gpu\D3D11DCompPresenter.cpp" />
     <ClCompile Include="MouseFx\Core\GlobalMouseHook.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
     <ClCompile Include="MouseFx\Core\IpcController.cpp" />
