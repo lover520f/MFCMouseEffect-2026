@@ -458,8 +458,12 @@ void AppController::SetTrailLatencyPriorityMode(bool enabled) {
     OverlayHostService::Instance().RequestImmediateFrame();
 }
 
-bool AppController::ShouldPrioritizeHoldLatency() const {
-    if (!holdEffectRunning_) return false;
+bool AppController::ShouldPrioritizeHoldLatency(bool dragLikeMove) const {
+    const bool holdCandidateActive = holdButtonDown_ && pendingHold_.active;
+    if (!holdEffectRunning_) {
+        // Keep pre-hold latency-priority only for drag-like workload; normal hold keeps original feel.
+        if (!(holdCandidateActive && dragLikeMove)) return false;
+    }
     if (!IsHoldNeon3DTypeName(config_.active.hold)) return false;
     if (OverlayHostService::Instance().GetActiveRenderBackend() != "dawn") return false;
     // When final present is still layered CPU fallback, prioritize hold follow latency.
@@ -798,9 +802,9 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         hasLastMovePt_ = true;
 
         const uint64_t nowTick = GetTickCount64();
-        const bool holdLatencyPriority = ShouldPrioritizeHoldLatency();
-        SetTrailLatencyPriorityMode(holdLatencyPriority);
         const bool dragLikeMove = holdButtonDown_ && IsLikelySystemWindowDrag(hwnd);
+        const bool holdLatencyPriority = ShouldPrioritizeHoldLatency(dragLikeMove);
+        SetTrailLatencyPriorityMode(holdLatencyPriority);
         const DWORD dragDispatchIntervalMs = holdLatencyPriority
             ? kWindowDragDispatchIntervalHoldLatencyMs
             : kWindowDragDispatchIntervalMs;

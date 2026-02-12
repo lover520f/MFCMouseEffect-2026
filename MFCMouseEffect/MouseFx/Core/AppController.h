@@ -97,7 +97,7 @@ private:
     bool ShouldDispatchDragMove(uint64_t nowTick, DWORD intervalMs);
     void SetTrailLatencyPriorityMode(bool enabled);
     static bool IsHoldNeon3DTypeName(const std::string& type);
-    bool ShouldPrioritizeHoldLatency() const;
+    bool ShouldPrioritizeHoldLatency(bool dragLikeMove) const;
 
     HWND dispatchHwnd_ = nullptr;
 
