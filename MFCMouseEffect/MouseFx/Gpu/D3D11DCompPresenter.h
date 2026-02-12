@@ -5,6 +5,7 @@
 #include <dxgi.h>
 #include <wrl/client.h>
 
+#include <cstdint>
 #include <mutex>
 #include <string>
 
@@ -17,6 +18,9 @@ struct D3D11DCompPresenterStatus {
     bool dcompTargetReady = false;
     bool takeoverEnabled = false;
     bool takeoverEligible = false;
+    bool takeoverActive = false;
+    uint32_t takeoverAttempts = 0;
+    uint32_t takeoverFallbacks = 0;
     std::string takeoverControl = "default_off";
     std::string detail = "not_initialized";
 };
@@ -31,6 +35,7 @@ public:
     bool Initialize();
     void Shutdown();
     D3D11DCompPresenterStatus GetStatus() const;
+    bool TryActivateTakeoverPath();
 
 private:
     static const wchar_t* ProbeClassName();
@@ -48,6 +53,7 @@ private:
     Microsoft::WRL::ComPtr<IDCompositionTarget> dcompTarget_{};
     Microsoft::WRL::ComPtr<IDCompositionVisual> dcompRootVisual_{};
     HWND probeHwnd_ = nullptr;
+    bool takeoverAttempted_ = false;
 };
 
 } // namespace mousefx::gpu

@@ -345,6 +345,9 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"dcomp_target_ready", gpuPresentHost.dcompTargetReady},
         {"takeover_enabled", gpuPresentHost.takeoverEnabled},
         {"takeover_eligible", gpuPresentHost.takeoverEligible},
+        {"takeover_active", gpuPresentHost.takeoverActive},
+        {"takeover_attempts", gpuPresentHost.takeoverAttempts},
+        {"takeover_fallbacks", gpuPresentHost.takeoverFallbacks},
         {"takeover_control", gpuPresentHost.takeoverControl},
         {"detail", gpuPresentHost.detail},
     };

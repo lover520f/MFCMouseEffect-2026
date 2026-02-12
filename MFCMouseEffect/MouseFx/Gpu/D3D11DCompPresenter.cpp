@@ -143,6 +143,38 @@ void D3D11DCompPresenter::DestroyProbeWindowAndTarget() {
     }
 }
 
+bool D3D11DCompPresenter::TryActivateTakeoverPath() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!status_.initialized) {
+        status_.detail = "takeover_skipped_not_initialized";
+        return false;
+    }
+    if (status_.takeoverActive) {
+        return true;
+    }
+    if (!status_.takeoverEnabled) {
+        status_.detail = "takeover_disabled";
+        return false;
+    }
+    if (!status_.takeoverEligible) {
+        status_.detail = "takeover_not_eligible";
+        return false;
+    }
+    if (takeoverAttempted_) {
+        return false;
+    }
+
+    takeoverAttempted_ = true;
+    status_.takeoverAttempts += 1;
+
+    // Stage-7 safety policy:
+    // keep layered final present as the only visible path until the full DComp presenter is implemented.
+    status_.takeoverFallbacks += 1;
+    status_.takeoverActive = false;
+    status_.detail = "takeover_trial_not_implemented_fallback_layered";
+    return false;
+}
+
 bool D3D11DCompPresenter::Initialize() {
     std::lock_guard<std::mutex> lock(mutex_);
     if (status_.initialized) {
@@ -157,6 +189,7 @@ bool D3D11DCompPresenter::Initialize() {
     dcompTarget_.Reset();
     dcompRootVisual_.Reset();
     probeHwnd_ = nullptr;
+    takeoverAttempted_ = false;
     const TakeoverControlResult control = ResolveTakeoverControl();
     status_.takeoverEnabled = control.enabled;
     status_.takeoverControl = control.source;
@@ -239,6 +272,7 @@ void D3D11DCompPresenter::Shutdown() {
     dxgiDevice_.Reset();
     d3d11Context_.Reset();
     d3d11Device_.Reset();
+    takeoverAttempted_ = false;
     status_ = D3D11DCompPresenterStatus{};
     status_.detail = "shutdown";
 }
