@@ -2,6 +2,8 @@
 #include "WebSettingsServer.h"
 
 #include <algorithm>
+#include <filesystem>
+#include <fstream>
 #include <random>
 #include <sstream>
 
@@ -15,6 +17,26 @@
 using json = nlohmann::json;
 
 namespace mousefx {
+namespace {
+
+void WriteStateSnapshotToLocalDiag(const std::string& stateJson) {
+    if (stateJson.empty()) return;
+    wchar_t path[MAX_PATH]{};
+    const DWORD n = GetModuleFileNameW(nullptr, path, MAX_PATH);
+    if (n == 0 || n >= MAX_PATH) return;
+    std::filesystem::path exePath(path);
+    std::error_code ec;
+    std::filesystem::path diagDir = exePath.parent_path() / L".local" / L"diag";
+    std::filesystem::create_directories(diagDir, ec);
+    if (ec) return;
+
+    const std::filesystem::path autoState = diagDir / L"web_state_auto.json";
+    std::ofstream out(autoState, std::ios::binary | std::ios::trunc);
+    if (!out.is_open()) return;
+    out.write(stateJson.data(), static_cast<std::streamsize>(stateJson.size()));
+}
+
+} // namespace
 
 static std::string TrimAscii(std::string s) {
     auto is_space = [](unsigned char ch) {
@@ -326,7 +348,9 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"detail", gpuPresentHost.detail},
     };
 
-    return out.dump();
+    const std::string state = out.dump();
+    WriteStateSnapshotToLocalDiag(state);
+    return state;
 }
 
 std::string WebSettingsServer::ApplyStateJson(const std::string& body) {
