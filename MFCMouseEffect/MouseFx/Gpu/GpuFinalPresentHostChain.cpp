@@ -32,15 +32,74 @@ struct HostChainRuntimeState {
     ID3D11Device* d3d11Device = nullptr;
     ID3D11DeviceContext* d3d11Context = nullptr;
     IDCompositionDevice* dcompDevice = nullptr;
+    IDCompositionTarget* dcompTarget = nullptr;
+    IDCompositionVisual* dcompRootVisual = nullptr;
+    HWND probeHwnd = nullptr;
     bool active = false;
+    bool classRegistered = false;
     uint64_t activationAttempts = 0;
     uint64_t activationSuccess = 0;
     uint64_t activationFailure = 0;
     std::string lastDetail = "host_chain_not_initialized";
 };
 
+const wchar_t* ProbeWindowClassName() {
+    return L"MouseFxGpuFinalPresentProbeWindow";
+}
+
+LRESULT CALLBACK ProbeWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+    case WM_NCHITTEST:
+        return HTTRANSPARENT;
+    default:
+        break;
+    }
+    return DefWindowProcW(hwnd, msg, wParam, lParam);
+}
+
+bool EnsureProbeWindowClass(HostChainRuntimeState* state) {
+    if (!state) return false;
+    if (state->classRegistered) return true;
+    WNDCLASSEXW wc{};
+    wc.cbSize = sizeof(wc);
+    wc.lpfnWndProc = ProbeWindowProc;
+    wc.hInstance = GetModuleHandleW(nullptr);
+    wc.lpszClassName = ProbeWindowClassName();
+    const ATOM atom = RegisterClassExW(&wc);
+    if (atom == 0 && GetLastError() != ERROR_CLASS_ALREADY_EXISTS) {
+        return false;
+    }
+    state->classRegistered = true;
+    return true;
+}
+
+bool EnsureProbeWindow(HostChainRuntimeState* state) {
+    if (!state) return false;
+    if (state->probeHwnd && IsWindow(state->probeHwnd)) return true;
+    if (!EnsureProbeWindowClass(state)) return false;
+    state->probeHwnd = CreateWindowExW(
+        WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+        ProbeWindowClassName(),
+        L"",
+        WS_POPUP,
+        0, 0, 1, 1,
+        nullptr,
+        nullptr,
+        GetModuleHandleW(nullptr),
+        nullptr);
+    return state->probeHwnd != nullptr;
+}
+
 void ReleaseRuntimeState(HostChainRuntimeState* state, const char* detail) {
     if (!state) return;
+    if (state->dcompRootVisual) {
+        state->dcompRootVisual->Release();
+        state->dcompRootVisual = nullptr;
+    }
+    if (state->dcompTarget) {
+        state->dcompTarget->Release();
+        state->dcompTarget = nullptr;
+    }
     if (state->dcompDevice) {
         state->dcompDevice->Release();
         state->dcompDevice = nullptr;
@@ -52,6 +111,10 @@ void ReleaseRuntimeState(HostChainRuntimeState* state, const char* detail) {
     if (state->d3d11Device) {
         state->d3d11Device->Release();
         state->d3d11Device = nullptr;
+    }
+    if (state->probeHwnd) {
+        DestroyWindow(state->probeHwnd);
+        state->probeHwnd = nullptr;
     }
     state->active = false;
     state->lastDetail = (detail && *detail) ? detail : "host_chain_released";
@@ -72,8 +135,13 @@ bool IsGpuFinalPresentOptInEnabled() {
 
 bool TryActivateHostChain(HostChainRuntimeState* state, std::string* detailOut) {
     if (!state) return false;
-    if (state->active && state->d3d11Device && state->dcompDevice) {
-        if (detailOut) *detailOut = "host_chain_active_d3d11_dcomp_device_ready";
+    if (state->active &&
+        state->d3d11Device &&
+        state->dcompDevice &&
+        state->probeHwnd &&
+        state->dcompTarget &&
+        state->dcompRootVisual) {
+        if (detailOut) *detailOut = "host_chain_active_d3d11_dcomp_hwnd_target_visual_ready";
         return true;
     }
 
@@ -170,13 +238,110 @@ bool TryActivateHostChain(HostChainRuntimeState* state, std::string* detailOut) 
         return false;
     }
 
+    HostChainRuntimeState tmp{};
+    tmp.classRegistered = state->classRegistered;
+    tmp.probeHwnd = state->probeHwnd;
+    if (!EnsureProbeWindow(&tmp)) {
+        detail = "host_chain_probe_hwnd_create_failed";
+        state->activationFailure += 1;
+        dcompDevice->Release();
+        d3d11Context->Release();
+        d3d11Device->Release();
+        if (detailOut) *detailOut = detail;
+        state->lastDetail = detail;
+        FreeLibrary(dcomp);
+        FreeLibrary(d3d11);
+        return false;
+    }
+
+    IDCompositionTarget* dcompTarget = nullptr;
+    hr = dcompDevice->CreateTargetForHwnd(tmp.probeHwnd, TRUE, &dcompTarget);
+    if (FAILED(hr) || !dcompTarget) {
+        detail = "host_chain_dcomp_target_create_failed";
+        state->activationFailure += 1;
+        if (tmp.probeHwnd) {
+            DestroyWindow(tmp.probeHwnd);
+            tmp.probeHwnd = nullptr;
+        }
+        dcompDevice->Release();
+        d3d11Context->Release();
+        d3d11Device->Release();
+        if (detailOut) *detailOut = detail;
+        state->lastDetail = detail;
+        FreeLibrary(dcomp);
+        FreeLibrary(d3d11);
+        return false;
+    }
+
+    IDCompositionVisual* rootVisual = nullptr;
+    hr = dcompDevice->CreateVisual(&rootVisual);
+    if (FAILED(hr) || !rootVisual) {
+        detail = "host_chain_dcomp_root_visual_create_failed";
+        state->activationFailure += 1;
+        dcompTarget->Release();
+        if (tmp.probeHwnd) {
+            DestroyWindow(tmp.probeHwnd);
+            tmp.probeHwnd = nullptr;
+        }
+        dcompDevice->Release();
+        d3d11Context->Release();
+        d3d11Device->Release();
+        if (detailOut) *detailOut = detail;
+        state->lastDetail = detail;
+        FreeLibrary(dcomp);
+        FreeLibrary(d3d11);
+        return false;
+    }
+    hr = dcompTarget->SetRoot(rootVisual);
+    if (FAILED(hr)) {
+        detail = "host_chain_dcomp_set_root_failed";
+        state->activationFailure += 1;
+        rootVisual->Release();
+        dcompTarget->Release();
+        if (tmp.probeHwnd) {
+            DestroyWindow(tmp.probeHwnd);
+            tmp.probeHwnd = nullptr;
+        }
+        dcompDevice->Release();
+        d3d11Context->Release();
+        d3d11Device->Release();
+        if (detailOut) *detailOut = detail;
+        state->lastDetail = detail;
+        FreeLibrary(dcomp);
+        FreeLibrary(d3d11);
+        return false;
+    }
+    hr = dcompDevice->Commit();
+    if (FAILED(hr)) {
+        detail = "host_chain_dcomp_commit_failed";
+        state->activationFailure += 1;
+        rootVisual->Release();
+        dcompTarget->Release();
+        if (tmp.probeHwnd) {
+            DestroyWindow(tmp.probeHwnd);
+            tmp.probeHwnd = nullptr;
+        }
+        dcompDevice->Release();
+        d3d11Context->Release();
+        d3d11Device->Release();
+        if (detailOut) *detailOut = detail;
+        state->lastDetail = detail;
+        FreeLibrary(dcomp);
+        FreeLibrary(d3d11);
+        return false;
+    }
+
     ReleaseRuntimeState(state, "host_chain_replaced");
+    state->classRegistered = tmp.classRegistered;
+    state->probeHwnd = tmp.probeHwnd;
     state->d3d11Device = d3d11Device;
     state->d3d11Context = d3d11Context;
     state->dcompDevice = dcompDevice;
+    state->dcompTarget = dcompTarget;
+    state->dcompRootVisual = rootVisual;
     state->active = true;
     state->activationSuccess += 1;
-    detail = "host_chain_active_d3d11_dcomp_device_ready";
+    detail = "host_chain_active_d3d11_dcomp_hwnd_target_visual_ready";
     state->lastDetail = detail;
     if (detailOut) *detailOut = detail;
 
@@ -226,6 +391,9 @@ GpuFinalPresentHostChainStatus BuildStatus(bool refresh) {
     out.activationAttempts = s_runtime.activationAttempts;
     out.activationSuccess = s_runtime.activationSuccess;
     out.activationFailure = s_runtime.activationFailure;
+    out.probeHwndCreated = (s_runtime.probeHwnd != nullptr);
+    out.dcompTargetCreated = (s_runtime.dcompTarget != nullptr);
+    out.dcompRootVisualCreated = (s_runtime.dcompRootVisual != nullptr);
     s_cached = out;
     return s_cached;
 }

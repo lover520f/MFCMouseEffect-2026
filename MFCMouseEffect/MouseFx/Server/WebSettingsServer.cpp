@@ -203,6 +203,9 @@ static json BuildGpuFinalPresentHostChainJson(const gpu::GpuFinalPresentHostChai
         {"runtime_capability_likely_available", chain.runtimeCapabilityLikelyAvailable},
         {"ready_for_activation", chain.readyForActivation},
         {"active", chain.active},
+        {"probe_hwnd_created", chain.probeHwndCreated},
+        {"dcomp_target_created", chain.dcompTargetCreated},
+        {"dcomp_root_visual_created", chain.dcompRootVisualCreated},
         {"detail", chain.detail},
     };
 }

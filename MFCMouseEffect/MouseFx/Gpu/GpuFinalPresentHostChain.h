@@ -14,6 +14,9 @@ struct GpuFinalPresentHostChainStatus {
     bool runtimeCapabilityLikelyAvailable = false;
     bool readyForActivation = false;
     bool active = false;
+    bool probeHwndCreated = false;
+    bool dcompTargetCreated = false;
+    bool dcompRootVisualCreated = false;
     std::string detail = "host_chain_not_probed";
 };
 
