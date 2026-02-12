@@ -366,7 +366,7 @@ inline void SubmitOverlayGpuCommands(
         }
     }
 
-    constexpr size_t kHoldTrailVertexCapPerCommand = 24;
+    constexpr size_t kHoldTrailVertexCapPerCommand = 18;
     const size_t trailVertexCapPerCommand = holdActive ? kHoldTrailVertexCapPerCommand : 0;
     const TrailGeometryPrepResult prep = PreprocessTrailGeometry(
         stream,
