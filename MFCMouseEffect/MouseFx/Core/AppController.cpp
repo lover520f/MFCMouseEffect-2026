@@ -794,6 +794,8 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
             pt.x = static_cast<LONG>(wParam);
             pt.y = static_cast<LONG>(lParam);
         }
+        lastMovePt_ = pt;
+        hasLastMovePt_ = true;
 
         const uint64_t nowTick = GetTickCount64();
         const bool dragLikeMove = holdButtonDown_ && IsLikelySystemWindowDrag(hwnd);
@@ -954,8 +956,15 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
                 if (auto* trailEffect = GetEffect(EffectCategory::Trail)) {
                     // Seed trail path when hold is promoted, reducing early hold-only frames.
                     trailEffect->OnMouseMove(pendingHold_.pt);
+                    bool seededSecondPoint = false;
+                    if (hasLastMovePt_ &&
+                        (lastMovePt_.x != pendingHold_.pt.x || lastMovePt_.y != pendingHold_.pt.y)) {
+                        trailEffect->OnMouseMove(lastMovePt_);
+                        seededSecondPoint = true;
+                    }
                     POINT nowPt{};
-                    if (GetCursorPos(&nowPt) &&
+                    if (!seededSecondPoint &&
+                        GetCursorPos(&nowPt) &&
                         (nowPt.x != pendingHold_.pt.x || nowPt.y != pendingHold_.pt.y)) {
                         trailEffect->OnMouseMove(nowPt);
                     }

@@ -138,6 +138,8 @@ private:
     bool deferredDawnUpgradePending_ = false;
     uint32_t deferredDawnUpgradeRetryCount_ = 0;
     uint64_t lastDragMoveDispatchTick_ = 0;
+    POINT lastMovePt_{};
+    bool hasLastMovePt_ = false;
 
 #ifdef _DEBUG
     uint32_t debugClickCount_ = 0;
