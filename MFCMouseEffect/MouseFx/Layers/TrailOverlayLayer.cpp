@@ -7,7 +7,7 @@ namespace {
 
 constexpr int kTrailScreenCullPadding = 220;
 constexpr uint64_t kCursorFallbackSampleIntervalMs = 24;
-constexpr uint64_t kCursorFallbackSampleIntervalLatencyMs = 32;
+constexpr uint64_t kCursorFallbackSampleIntervalLatencyMs = 8;
 constexpr int kTrailLatencyPriorityDurationCapMs = 180;
 constexpr int kTrailLatencyPriorityMaxPointsCap = 24;
 constexpr size_t kPendingCursorQueueCap = 32;
