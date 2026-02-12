@@ -69,9 +69,6 @@ void TrailEffect::OnCommand(const std::string& cmd, const std::string& args) {
         const std::string a = ToLowerAscii(args);
         const bool enabled = (a == "on" || a == "1" || a == "true");
         hostLayer_->SetLatencyPriorityMode(enabled);
-        if (enabled) {
-            hostLayer_->Clear();
-        }
     }
 }
 

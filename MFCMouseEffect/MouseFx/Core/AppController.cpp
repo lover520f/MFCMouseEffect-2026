@@ -454,9 +454,6 @@ void AppController::SetTrailLatencyPriorityMode(bool enabled) {
     trailLatencyPriorityActive_ = enabled;
     if (auto* effect = GetEffect(EffectCategory::Trail)) {
         effect->OnCommand("latency_priority", enabled ? "on" : "off");
-        if (enabled) {
-            effect->OnCommand("clear", "hold_priority");
-        }
     }
     OverlayHostService::Instance().RequestImmediateFrame();
 }
@@ -467,17 +464,6 @@ bool AppController::ShouldPrioritizeHoldLatency() const {
     if (OverlayHostService::Instance().GetActiveRenderBackend() != "dawn") return false;
     // When final present is still layered CPU fallback, prioritize hold follow latency.
     return !OverlayHostService::Instance().IsGpuPresentActive();
-}
-
-bool AppController::ShouldDispatchTrailDuringHoldPriority(uint64_t nowTick) {
-    const uint64_t elapsed = (nowTick >= lastHoldPriorityTrailDispatchTick_)
-        ? (nowTick - lastHoldPriorityTrailDispatchTick_)
-        : 0;
-    if (elapsed < kHoldNeon3DTrailDispatchIntervalMs) {
-        return false;
-    }
-    lastHoldPriorityTrailDispatchTick_ = nowTick;
-    return true;
 }
 
 void AppController::RecreateActiveEffects() {
@@ -814,9 +800,7 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         const bool allowMoveDispatch = !dragLikeMove || ShouldDispatchDragMove(nowTick);
         const bool holdLatencyPriority = ShouldPrioritizeHoldLatency();
         SetTrailLatencyPriorityMode(holdLatencyPriority);
-        const bool allowTrailDispatch =
-            allowMoveDispatch &&
-            (!holdLatencyPriority || ShouldDispatchTrailDuringHoldPriority(nowTick));
+        const bool allowTrailDispatch = allowMoveDispatch;
 
         // Dispatch to Trail category effect
         if (allowTrailDispatch) {
@@ -824,8 +808,8 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
                 effect->OnMouseMove(pt);
             }
         }
-        // Dispatch to Hold category effect (to update position if following mouse)
-        // Keep hold updates in sync with trail throttle during drag-like system move.
+        // Dispatch to Hold category effect (to update position if following mouse).
+        // During drag-like move, both trail and hold follow the same move gating.
         if (allowMoveDispatch) {
             if (auto* effect = GetEffect(EffectCategory::Hold)) {
                 DWORD holdMs = 0;
@@ -868,7 +852,6 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         holdButtonDown_ = true;
         holdEffectRunning_ = false;
         holdDownTick_ = GetTickCount64();
-        lastHoldPriorityTrailDispatchTick_ = 0;
         
         // Start delayed hold
         pendingHold_.pt = pt;
@@ -884,7 +867,6 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         holdButtonDown_ = false;
         holdEffectRunning_ = false;
         holdDownTick_ = 0;
-        lastHoldPriorityTrailDispatchTick_ = 0;
         SetTrailLatencyPriorityMode(false);
 
         // Cancel pending hold if quick click

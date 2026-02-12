@@ -353,7 +353,7 @@ inline void SubmitOverlayGpuCommands(
 
     bool skipTrailGeometryBuild = false;
     if (holdActive && status.trailCommandCount > 0) {
-        constexpr uint64_t kTrailSubmitIntervalWhenHoldMs = 20;
+        constexpr uint64_t kTrailSubmitIntervalWhenHoldMs = 8;
         const uint64_t nowTick = (status.submitTickMs > 0) ? status.submitTickMs : GetTickCount64();
         const uint64_t lastTrailTick = s_lastTrailSubmitWhenHoldTickMs.load(std::memory_order_relaxed);
         if (lastTrailTick > 0 && (nowTick - lastTrailTick) < kTrailSubmitIntervalWhenHoldMs) {
@@ -418,8 +418,10 @@ inline void SubmitOverlayGpuCommands(
         return std::string(base);
     };
     static std::atomic<uint64_t> s_lastNonTrailSubmitTickMs{0};
+    static std::atomic<uint64_t> s_lastHoldMixedNonTrailSubmitTickMs{0};
     constexpr uint64_t kNonTrailSubmitIntervalMs = 8; // cap non-trail submit to ~120Hz
     constexpr uint64_t kNonTrailSubmitIntervalWhenHoldMs = 2; // hold path prefers latency while still rate-limited
+    constexpr uint64_t kHoldMixedNonTrailSubmitIntervalMs = 8; // prioritize trail continuity during hold
     if (hasTrailGeometry || hasRippleGeometry || hasParticleGeometry) {
         if (hasOnlyNonTrailGeometry && status.submitTickMs > 0) {
             const uint64_t nonTrailIntervalMs = holdActive
@@ -438,201 +440,200 @@ inline void SubmitOverlayGpuCommands(
             }
             s_lastNonTrailSubmitTickMs.store(status.submitTickMs, std::memory_order_relaxed);
         }
-        ++status.noopSubmitAttempts;
-        std::string submitDetail;
-        if (TrySubmitNoopQueueWork(&submitDetail)) {
-            ++status.noopSubmitSuccess;
-            ++status.emptyCommandSubmitAttempts;
-            std::string cmdSubmitDetail;
-            bool cmdSubmitOk = false;
-            auto submitNonTrailPacket = [&](std::string* detailOut) -> bool {
-                std::string localDetail;
-                bool localOk = false;
-                if (nonTrailRippleOnly && prep.rippleBakedVertices > 0) {
-                    ++status.ripplePacketSubmitAttempts;
-                    const bool clickOnly = status.rippleClickCommandCount > 0 &&
-                        status.rippleHoverCommandCount == 0 &&
-                        status.rippleHoldCommandCount == 0;
-                    const bool hoverOnly = status.rippleHoverCommandCount > 0 &&
-                        status.rippleClickCommandCount == 0 &&
-                        status.rippleHoldCommandCount == 0;
-                    const bool holdOnly = status.rippleHoldCommandCount > 0 &&
-                        status.rippleClickCommandCount == 0 &&
-                        status.rippleHoverCommandCount == 0;
-                    if (clickOnly) {
-                        ++status.rippleClickPacketSubmitAttempts;
-                        localOk = TrySubmitRippleClickBakedPacket(prep.rippleBakedVertices, prep.rippleUploadBytes, &localDetail);
-                        if (localOk) ++status.rippleClickPacketSubmitSuccess;
-                    } else if (hoverOnly) {
-                        ++status.rippleHoverPacketSubmitAttempts;
-                        localOk = TrySubmitRippleHoverBakedPacket(prep.rippleBakedVertices, prep.rippleUploadBytes, &localDetail);
-                        if (localOk) ++status.rippleHoverPacketSubmitSuccess;
-                    } else if (holdOnly) {
-                        ++status.rippleHoldPacketSubmitAttempts;
-                        localOk = TrySubmitRippleHoldBakedPacket(prep.rippleBakedVertices, prep.rippleUploadBytes, &localDetail);
-                        if (localOk) ++status.rippleHoldPacketSubmitSuccess;
-                    } else {
-                        localOk = TrySubmitRippleBakedPacket(prep.rippleBakedVertices, prep.rippleUploadBytes, &localDetail);
-                    }
-                    if (localOk) ++status.ripplePacketSubmitSuccess;
-                } else if (nonTrailParticleOnly && prep.particleSprites > 0) {
-                    ++status.particlePacketSubmitAttempts;
-                    localOk = TrySubmitParticleBakedPacket(prep.particleSprites, prep.particleUploadBytes, &localDetail);
-                    if (localOk) ++status.particlePacketSubmitSuccess;
-                } else if (nonTrailMixed && (prep.rippleBakedVertices > 0 || prep.particleSprites > 0)) {
-                    ++status.mixedPacketSubmitAttempts;
-                    const uint32_t mixedUploadBytes = prep.rippleUploadBytes + prep.particleUploadBytes;
-                    localOk = TrySubmitMixedBakedPacket(
-                        prep.rippleBakedVertices,
-                        prep.particleSprites,
-                        mixedUploadBytes,
-                        &localDetail);
-                    if (localOk) ++status.mixedPacketSubmitSuccess;
-                } else {
-                    localOk = TrySubmitEmptyCommandBufferTagged("nontrail", &localDetail);
-                }
-                if (detailOut) *detailOut = localDetail;
-                return localOk;
-            };
-
-            if (hasTrailGeometry && prep.vertices > 0) {
-                std::string nonTrailDetailOnly;
-                bool nonTrailOk = true;
-                const bool hasNonTrailGeometry = (hasRippleGeometry || hasParticleGeometry);
-                bool trailOk = true;
-                std::string trailDetail;
-                if (holdActive && hasNonTrailGeometry) {
-                    nonTrailOk = submitNonTrailPacket(&nonTrailDetailOnly);
-                    ++status.trailPacketSubmitAttempts;
-                    trailOk = TrySubmitTrailBakedPacket(prep.vertices, prep.uploadBytes, &trailDetail);
-                    if (trailOk) {
-                        ++status.trailPacketSubmitSuccess;
-                        if (status.submitTickMs > 0) {
-                            s_lastTrailSubmitWhenHoldTickMs.store(status.submitTickMs, std::memory_order_relaxed);
-                        }
-                    }
-                } else {
-                    ++status.trailPacketSubmitAttempts;
-                    trailOk = TrySubmitTrailBakedPacket(prep.vertices, prep.uploadBytes, &trailDetail);
-                    if (trailOk) {
-                        ++status.trailPacketSubmitSuccess;
-                        if (holdActive && status.submitTickMs > 0) {
-                            s_lastTrailSubmitWhenHoldTickMs.store(status.submitTickMs, std::memory_order_relaxed);
-                        }
-                    }
-                }
-                if (!holdActive && hasNonTrailGeometry) {
-                    nonTrailOk = submitNonTrailPacket(&nonTrailDetailOnly);
-                }
-                cmdSubmitOk = trailOk && nonTrailOk;
-                cmdSubmitDetail.clear();
-                if (holdActive && hasNonTrailGeometry) {
-                    cmdSubmitDetail = nonTrailDetailOnly;
-                    if (!trailDetail.empty()) {
-                        if (!cmdSubmitDetail.empty()) cmdSubmitDetail += "|";
-                        cmdSubmitDetail += trailDetail;
-                    }
-                } else {
-                    cmdSubmitDetail = trailDetail;
-                    if (!nonTrailDetailOnly.empty()) {
-                        if (!cmdSubmitDetail.empty()) cmdSubmitDetail += "|";
-                        cmdSubmitDetail += nonTrailDetailOnly;
-                    }
-                }
-            } else if (!hasTrailGeometry && (hasRippleGeometry || hasParticleGeometry)) {
-                cmdSubmitOk = submitNonTrailPacket(&cmdSubmitDetail);
+        bool submitNonTrailWithTrail = true;
+        if (holdActive && hasTrailGeometry && (hasRippleGeometry || hasParticleGeometry) && status.submitTickMs > 0) {
+            const uint64_t lastHoldMixedTick =
+                s_lastHoldMixedNonTrailSubmitTickMs.load(std::memory_order_relaxed);
+            if (lastHoldMixedTick > 0 &&
+                status.submitTickMs - lastHoldMixedTick < kHoldMixedNonTrailSubmitIntervalMs) {
+                submitNonTrailWithTrail = false;
+                ++status.nonTrailSubmitThrottled;
             } else {
-                const char* submitTag = hasTrailGeometry ? "trail" : (nonTrailRippleOnly ? "ripple" : (nonTrailParticleOnly ? "particle" : "mixed"));
-                cmdSubmitOk = TrySubmitEmptyCommandBufferTagged(submitTag, &cmdSubmitDetail);
+                s_lastHoldMixedNonTrailSubmitTickMs.store(status.submitTickMs, std::memory_order_relaxed);
             }
-            if (cmdSubmitOk) {
-                ++status.emptyCommandSubmitSuccess;
-                if (hasTrailGeometry && (hasRippleGeometry || hasParticleGeometry)) {
-                    status.detail = prep.usedParallel
-                        ? "accepted_trail_and_nontrail_geometry_prepared_parallel_and_cmd_submit"
-                        : "accepted_trail_and_nontrail_geometry_prepared_and_cmd_submit";
-                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("trail_packet_submit_ok_") != std::string::npos) {
-                        status.detail += "_trail_baked_packet";
-                    }
-                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_click_packet_submit_ok_") != std::string::npos) {
-                        status.detail += "_packet_click";
-                    } else if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_hover_packet_submit_ok_") != std::string::npos) {
-                        status.detail += "_packet_hover";
-                    } else if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_hold_packet_submit_ok_") != std::string::npos) {
-                        status.detail += "_packet_hold";
-                    } else if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_packet_submit_ok_") != std::string::npos) {
-                        status.detail += "_packet";
-                    }
-                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("particle_packet_submit_ok_") != std::string::npos) {
-                        status.detail += "_particle_packet";
-                    }
-                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("mixed_packet_submit_ok_") != std::string::npos) {
-                        status.detail += "_mixed_baked_packet";
-                    }
-                } else if (hasTrailGeometry) {
-                    status.detail = prep.usedParallel
-                        ? "accepted_trail_geometry_prepared_parallel_and_cmd_submit"
-                        : "accepted_trail_geometry_prepared_and_cmd_submit";
-                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("trail_packet_submit_ok_") == 0) {
-                        status.detail += "_trail_baked_packet";
-                    }
+        }
+
+        ++status.emptyCommandSubmitAttempts;
+        std::string cmdSubmitDetail;
+        bool cmdSubmitOk = false;
+        auto submitNonTrailPacket = [&](std::string* detailOut) -> bool {
+            std::string localDetail;
+            bool localOk = false;
+            if (nonTrailRippleOnly && prep.rippleBakedVertices > 0) {
+                ++status.ripplePacketSubmitAttempts;
+                const bool clickOnly = status.rippleClickCommandCount > 0 &&
+                    status.rippleHoverCommandCount == 0 &&
+                    status.rippleHoldCommandCount == 0;
+                const bool hoverOnly = status.rippleHoverCommandCount > 0 &&
+                    status.rippleClickCommandCount == 0 &&
+                    status.rippleHoldCommandCount == 0;
+                const bool holdOnly = status.rippleHoldCommandCount > 0 &&
+                    status.rippleClickCommandCount == 0 &&
+                    status.rippleHoverCommandCount == 0;
+                if (clickOnly) {
+                    ++status.rippleClickPacketSubmitAttempts;
+                    localOk = TrySubmitRippleClickBakedPacket(prep.rippleBakedVertices, prep.rippleUploadBytes, &localDetail);
+                    if (localOk) ++status.rippleClickPacketSubmitSuccess;
+                } else if (hoverOnly) {
+                    ++status.rippleHoverPacketSubmitAttempts;
+                    localOk = TrySubmitRippleHoverBakedPacket(prep.rippleBakedVertices, prep.rippleUploadBytes, &localDetail);
+                    if (localOk) ++status.rippleHoverPacketSubmitSuccess;
+                } else if (holdOnly) {
+                    ++status.rippleHoldPacketSubmitAttempts;
+                    localOk = TrySubmitRippleHoldBakedPacket(prep.rippleBakedVertices, prep.rippleUploadBytes, &localDetail);
+                    if (localOk) ++status.rippleHoldPacketSubmitSuccess;
                 } else {
-                    const bool rippleBakedReady = (prep.rippleBakedVertices > 0);
-                    const bool particleBakedReady = (prep.particleSprites > 0 && nonTrailParticleOnly);
-                    status.detail = prep.usedParallel
-                        ? nonTrailDetail("accepted_nontrail_geometry_prepared_parallel_and_cmd_submit")
-                        : nonTrailDetail("accepted_nontrail_geometry_prepared_and_cmd_submit");
-                    if (rippleBakedReady) status.detail += "_ripple_baked";
-                    if (particleBakedReady) status.detail += "_particle_baked";
-                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_packet_submit_ok_") == 0) {
-                        status.detail += "_packet";
-                    }
-                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_click_packet_submit_ok_") == 0) {
-                        status.detail += "_packet_click";
-                    }
-                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_hover_packet_submit_ok_") == 0) {
-                        status.detail += "_packet_hover";
-                    }
-                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_hold_packet_submit_ok_") == 0) {
-                        status.detail += "_packet_hold";
-                    }
-                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("particle_packet_submit_ok_") == 0) {
-                        status.detail += "_packet";
-                    }
-                    if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("mixed_packet_submit_ok_") == 0) {
-                        status.detail += "_mixed_baked_packet";
+                    localOk = TrySubmitRippleBakedPacket(prep.rippleBakedVertices, prep.rippleUploadBytes, &localDetail);
+                }
+                if (localOk) ++status.ripplePacketSubmitSuccess;
+            } else if (nonTrailParticleOnly && prep.particleSprites > 0) {
+                ++status.particlePacketSubmitAttempts;
+                localOk = TrySubmitParticleBakedPacket(prep.particleSprites, prep.particleUploadBytes, &localDetail);
+                if (localOk) ++status.particlePacketSubmitSuccess;
+            } else if (nonTrailMixed && (prep.rippleBakedVertices > 0 || prep.particleSprites > 0)) {
+                ++status.mixedPacketSubmitAttempts;
+                const uint32_t mixedUploadBytes = prep.rippleUploadBytes + prep.particleUploadBytes;
+                localOk = TrySubmitMixedBakedPacket(
+                    prep.rippleBakedVertices,
+                    prep.particleSprites,
+                    mixedUploadBytes,
+                    &localDetail);
+                if (localOk) ++status.mixedPacketSubmitSuccess;
+            } else {
+                localOk = TrySubmitEmptyCommandBufferTagged("nontrail", &localDetail);
+            }
+            if (detailOut) *detailOut = localDetail;
+            return localOk;
+        };
+
+        if (hasTrailGeometry && prep.vertices > 0) {
+            std::string nonTrailDetailOnly;
+            bool nonTrailOk = true;
+            const bool hasNonTrailGeometry = (hasRippleGeometry || hasParticleGeometry);
+            bool trailOk = true;
+            std::string trailDetail;
+            if (holdActive && hasNonTrailGeometry) {
+                if (submitNonTrailWithTrail) {
+                    nonTrailOk = submitNonTrailPacket(&nonTrailDetailOnly);
+                } else {
+                    nonTrailDetailOnly = "nontrail_submit_skipped_hold_priority";
+                }
+                ++status.trailPacketSubmitAttempts;
+                trailOk = TrySubmitTrailBakedPacket(prep.vertices, prep.uploadBytes, &trailDetail);
+                if (trailOk) {
+                    ++status.trailPacketSubmitSuccess;
+                    if (status.submitTickMs > 0) {
+                        s_lastTrailSubmitWhenHoldTickMs.store(status.submitTickMs, std::memory_order_relaxed);
                     }
                 }
             } else {
-                if (hasTrailGeometry && (hasRippleGeometry || hasParticleGeometry)) {
-                    status.detail = prep.usedParallel
-                        ? "accepted_trail_and_nontrail_geometry_prepared_parallel_cmd_submit_pending"
-                        : "accepted_trail_and_nontrail_geometry_prepared_cmd_submit_pending";
-                } else if (hasTrailGeometry) {
-                    status.detail = prep.usedParallel
-                        ? "accepted_trail_geometry_prepared_parallel_cmd_submit_pending"
-                        : "accepted_trail_geometry_prepared_cmd_submit_pending";
-                } else {
-                    status.detail = prep.usedParallel
-                        ? nonTrailDetail("accepted_nontrail_geometry_prepared_parallel_cmd_submit_pending")
-                        : nonTrailDetail("accepted_nontrail_geometry_prepared_cmd_submit_pending");
+                ++status.trailPacketSubmitAttempts;
+                trailOk = TrySubmitTrailBakedPacket(prep.vertices, prep.uploadBytes, &trailDetail);
+                if (trailOk) {
+                    ++status.trailPacketSubmitSuccess;
+                    if (holdActive && status.submitTickMs > 0) {
+                        s_lastTrailSubmitWhenHoldTickMs.store(status.submitTickMs, std::memory_order_relaxed);
+                    }
                 }
-                if (!cmdSubmitDetail.empty()) {
-                    status.detail += "_" + cmdSubmitDetail;
+            }
+            if (!holdActive && hasNonTrailGeometry) {
+                nonTrailOk = submitNonTrailPacket(&nonTrailDetailOnly);
+            }
+            cmdSubmitOk = trailOk && nonTrailOk;
+            cmdSubmitDetail.clear();
+            if (holdActive && hasNonTrailGeometry) {
+                cmdSubmitDetail = nonTrailDetailOnly;
+                if (!trailDetail.empty()) {
+                    if (!cmdSubmitDetail.empty()) cmdSubmitDetail += "|";
+                    cmdSubmitDetail += trailDetail;
+                }
+            } else {
+                cmdSubmitDetail = trailDetail;
+                if (!nonTrailDetailOnly.empty()) {
+                    if (!cmdSubmitDetail.empty()) cmdSubmitDetail += "|";
+                    cmdSubmitDetail += nonTrailDetailOnly;
+                }
+            }
+        } else if (!hasTrailGeometry && (hasRippleGeometry || hasParticleGeometry)) {
+            cmdSubmitOk = submitNonTrailPacket(&cmdSubmitDetail);
+        } else {
+            const char* submitTag = hasTrailGeometry ? "trail" : (nonTrailRippleOnly ? "ripple" : (nonTrailParticleOnly ? "particle" : "mixed"));
+            cmdSubmitOk = TrySubmitEmptyCommandBufferTagged(submitTag, &cmdSubmitDetail);
+        }
+        if (cmdSubmitOk) {
+            ++status.emptyCommandSubmitSuccess;
+            if (hasTrailGeometry && (hasRippleGeometry || hasParticleGeometry)) {
+                status.detail = prep.usedParallel
+                    ? "accepted_trail_and_nontrail_geometry_prepared_parallel_and_cmd_submit"
+                    : "accepted_trail_and_nontrail_geometry_prepared_and_cmd_submit";
+                if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("trail_packet_submit_ok_") != std::string::npos) {
+                    status.detail += "_trail_baked_packet";
+                }
+                if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_click_packet_submit_ok_") != std::string::npos) {
+                    status.detail += "_packet_click";
+                } else if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_hover_packet_submit_ok_") != std::string::npos) {
+                    status.detail += "_packet_hover";
+                } else if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_hold_packet_submit_ok_") != std::string::npos) {
+                    status.detail += "_packet_hold";
+                } else if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_packet_submit_ok_") != std::string::npos) {
+                    status.detail += "_packet";
+                }
+                if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("particle_packet_submit_ok_") != std::string::npos) {
+                    status.detail += "_particle_packet";
+                }
+                if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("mixed_packet_submit_ok_") != std::string::npos) {
+                    status.detail += "_mixed_baked_packet";
+                }
+            } else if (hasTrailGeometry) {
+                status.detail = prep.usedParallel
+                    ? "accepted_trail_geometry_prepared_parallel_and_cmd_submit"
+                    : "accepted_trail_geometry_prepared_and_cmd_submit";
+                if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("trail_packet_submit_ok_") == 0) {
+                    status.detail += "_trail_baked_packet";
+                }
+            } else {
+                const bool rippleBakedReady = (prep.rippleBakedVertices > 0);
+                const bool particleBakedReady = (prep.particleSprites > 0 && nonTrailParticleOnly);
+                status.detail = prep.usedParallel
+                    ? nonTrailDetail("accepted_nontrail_geometry_prepared_parallel_and_cmd_submit")
+                    : nonTrailDetail("accepted_nontrail_geometry_prepared_and_cmd_submit");
+                if (rippleBakedReady) status.detail += "_ripple_baked";
+                if (particleBakedReady) status.detail += "_particle_baked";
+                if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_packet_submit_ok_") == 0) {
+                    status.detail += "_packet";
+                }
+                if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_click_packet_submit_ok_") == 0) {
+                    status.detail += "_packet_click";
+                }
+                if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_hover_packet_submit_ok_") == 0) {
+                    status.detail += "_packet_hover";
+                }
+                if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("ripple_hold_packet_submit_ok_") == 0) {
+                    status.detail += "_packet_hold";
+                }
+                if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("particle_packet_submit_ok_") == 0) {
+                    status.detail += "_packet";
+                }
+                if (!cmdSubmitDetail.empty() && cmdSubmitDetail.find("mixed_packet_submit_ok_") == 0) {
+                    status.detail += "_mixed_baked_packet";
                 }
             }
         } else {
-            if (hasTrailGeometry) {
+            if (hasTrailGeometry && (hasRippleGeometry || hasParticleGeometry)) {
                 status.detail = prep.usedParallel
-                    ? "accepted_trail_geometry_prepared_parallel_submit_pending"
-                    : "accepted_trail_geometry_prepared_submit_pending";
+                    ? "accepted_trail_and_nontrail_geometry_prepared_parallel_cmd_submit_pending"
+                    : "accepted_trail_and_nontrail_geometry_prepared_cmd_submit_pending";
+            } else if (hasTrailGeometry) {
+                status.detail = prep.usedParallel
+                    ? "accepted_trail_geometry_prepared_parallel_cmd_submit_pending"
+                    : "accepted_trail_geometry_prepared_cmd_submit_pending";
             } else {
                 status.detail = prep.usedParallel
-                    ? nonTrailDetail("accepted_nontrail_geometry_prepared_parallel_submit_pending")
-                    : nonTrailDetail("accepted_nontrail_geometry_prepared_submit_pending");
+                    ? nonTrailDetail("accepted_nontrail_geometry_prepared_parallel_cmd_submit_pending")
+                    : nonTrailDetail("accepted_nontrail_geometry_prepared_cmd_submit_pending");
             }
-            if (!submitDetail.empty()) {
-                status.detail += "_" + submitDetail;
+            if (!cmdSubmitDetail.empty()) {
+                status.detail += "_" + cmdSubmitDetail;
             }
         }
     } else {
