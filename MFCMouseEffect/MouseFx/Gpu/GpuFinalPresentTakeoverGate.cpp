@@ -94,6 +94,10 @@ GpuFinalPresentTakeoverGateStatus GetGpuFinalPresentTakeoverGateStatus(
         out.detail = "takeover_forced_off_by_file";
         return out;
     }
+    if (!out.explicitOnByFile) {
+        out.detail = "takeover_not_explicitly_enabled_by_file";
+        return out;
+    }
     if (!out.optInEnabled) {
         out.detail = "takeover_opt_in_disabled";
         return out;
@@ -108,9 +112,7 @@ GpuFinalPresentTakeoverGateStatus GetGpuFinalPresentTakeoverGateStatus(
     }
 
     out.ready = true;
-    out.detail = out.explicitOnByFile
-        ? "takeover_ready_explicit_on"
-        : "takeover_ready_default_on";
+    out.detail = "takeover_ready_explicit_on";
     return out;
 }
 
