@@ -157,6 +157,8 @@ static const uint64_t kTopmostReassertIntervalMs = 2500;
 static constexpr UINT kFrameTimerIntervalDefaultMs = 8;
 static constexpr UINT kFrameTimerIntervalHoldMs = 4;
 static constexpr UINT kFrameTimerIntervalDawnActiveMs = 4;
+static constexpr uint64_t kGpuPresentRollbackCooldownMs = 2500;
+static constexpr uint32_t kGpuPresentRollbackFailureThreshold = 2;
 static OverlayHostWindow* g_overlayForegroundHookOwner = nullptr;
 static const uint64_t g_processStartTickMs = GetTickCount64();
 
@@ -289,8 +291,8 @@ void OverlayHostWindow::SetGpuSubmitContext(const std::string& activeBackend, co
     gpuSubmitActiveBackend_ = activeBackend.empty() ? "cpu" : activeBackend;
     gpuSubmitPipelineMode_ = pipelineMode.empty() ? "cpu_layered" : pipelineMode;
     if (backendChanged || pipelineChanged) {
-        forceLayeredCpuFallback_.store(false, std::memory_order_release);
         pendingLayeredRollback_.store(false, std::memory_order_release);
+        layeredCpuFallbackUntilMs_.store(0, std::memory_order_release);
         gpuPresentConsecutiveFailures_.store(0, std::memory_order_release);
         lastNonEmptyGpuCommandTickMs_.store(0, std::memory_order_release);
     }
@@ -370,7 +372,6 @@ void OverlayHostWindow::OnTick() {
     UpdateFrameLoopTimerInterval(ResolveNextTimerIntervalMs());
     Render();
     if (pendingLayeredRollback_.exchange(false, std::memory_order_acq_rel)) {
-        forceLayeredCpuFallback_.store(true, std::memory_order_release);
         (void)EnsureSurfaceMode(true);
     }
 }
@@ -444,12 +445,15 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
             gpuPresentFallbackCount_.fetch_add(1, std::memory_order_relaxed);
             const uint32_t failures =
                 gpuPresentConsecutiveFailures_.fetch_add(1, std::memory_order_acq_rel) + 1;
-            if (failures >= 1) {
+            if (failures >= kGpuPresentRollbackFailureThreshold) {
+                layeredCpuFallbackUntilMs_.store(
+                    NowMs() + kGpuPresentRollbackCooldownMs,
+                    std::memory_order_release);
                 pendingLayeredRollback_.store(true, std::memory_order_release);
                 if (presentDetail.empty()) {
                     presentDetail = "gpu_present_failed";
                 }
-                presentDetail += "_auto_rollback_layered_cpu";
+                presentDetail += "_auto_rollback_layered_cpu_cooldown";
             }
         }
     }
@@ -539,7 +543,9 @@ UINT OverlayHostWindow::ResolveNextTimerIntervalMs() const {
 gpu::GpuFinalPresentPolicyDecision OverlayHostWindow::EvaluateGpuFinalPresentPolicy() const {
     gpu::GpuFinalPresentPolicyInput in{};
     in.optInEnabled = gpu::IsGpuFinalPresentOptInEnabled();
-    in.forceLayeredCpuFallback = forceLayeredCpuFallback_.load(std::memory_order_acquire);
+    const uint64_t nowMs = GetTickCount64();
+    const uint64_t fallbackUntilMs = layeredCpuFallbackUntilMs_.load(std::memory_order_acquire);
+    in.forceLayeredCpuFallback = (fallbackUntilMs != 0 && nowMs < fallbackUntilMs);
     in.activeBackend = gpuSubmitActiveBackend_;
     in.pipelineMode = gpuSubmitPipelineMode_;
 
@@ -559,7 +565,6 @@ gpu::GpuFinalPresentPolicyDecision OverlayHostWindow::EvaluateGpuFinalPresentPol
     const gpu::GpuFinalPresentCapability cap = gpu::GetGpuFinalPresentCapability();
     in.runtimeCapabilityLikelyAvailable = cap.likelyAvailable;
 
-    const uint64_t nowMs = GetTickCount64();
     in.processUptimeMs = (nowMs >= g_processStartTickMs) ? (nowMs - g_processStartTickMs) : 0;
     const uint64_t lastNonEmptyMs = lastNonEmptyGpuCommandTickMs_.load(std::memory_order_acquire);
     in.hasRecentGpuCommandActivity = (lastNonEmptyMs != 0) && (nowMs - lastNonEmptyMs <= 1200);

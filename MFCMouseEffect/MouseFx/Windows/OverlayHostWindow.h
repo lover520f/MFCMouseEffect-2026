@@ -113,8 +113,8 @@ private:
     std::string gpuSubmitActiveBackend_ = "cpu";
     std::string gpuSubmitPipelineMode_ = "cpu_layered";
     bool useLayeredSurfaces_ = true;
-    std::atomic<bool> forceLayeredCpuFallback_{false};
     std::atomic<bool> pendingLayeredRollback_{false};
+    std::atomic<uint64_t> layeredCpuFallbackUntilMs_{0};
     std::atomic<uint32_t> gpuPresentConsecutiveFailures_{0};
 };
 

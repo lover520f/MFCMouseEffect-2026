@@ -37,7 +37,7 @@ GpuFinalPresentPolicyDecision ResolveGpuFinalPresentPolicy(const GpuFinalPresent
         out.detail = "gpu_present_runtime_capability_missing";
         return out;
     }
-    if (input.processUptimeMs < 3000) {
+    if (input.processUptimeMs < 6000) {
         out.detail = "gpu_present_startup_guard_active";
         return out;
     }
