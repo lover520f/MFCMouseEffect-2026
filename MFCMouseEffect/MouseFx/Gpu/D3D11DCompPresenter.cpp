@@ -3,6 +3,7 @@
 #include "D3D11DCompPresenter.h"
 
 #include <filesystem>
+#include <fstream>
 #include <iterator>
 
 #pragma comment(lib, "d3d11.lib")
@@ -12,6 +13,26 @@
 namespace mousefx::gpu {
 
 namespace {
+std::filesystem::path ResolveDiagDirFromCurrentModule() {
+    wchar_t modulePath[MAX_PATH]{};
+    const DWORD n = GetModuleFileNameW(nullptr, modulePath, MAX_PATH);
+    if (n == 0 || n >= MAX_PATH) return {};
+    return std::filesystem::path(modulePath).parent_path() / L".local" / L"diag";
+}
+
+void WriteAutoDisableMarker(const char* reason) {
+    const std::filesystem::path diagDir = ResolveDiagDirFromCurrentModule();
+    if (diagDir.empty()) return;
+    std::error_code ec;
+    std::filesystem::create_directories(diagDir, ec);
+    if (ec) return;
+
+    const std::filesystem::path marker = diagDir / L"gpu_final_present_takeover.off.disabled_by_codex";
+    std::ofstream out(marker, std::ios::binary | std::ios::trunc);
+    if (!out.is_open()) return;
+    out << (reason ? reason : "unknown");
+}
+
 struct TakeoverControlResult {
     bool enabled = false;
     std::string source = "default_off";
@@ -23,13 +44,11 @@ bool IsTruthyLeadingChar(wchar_t ch) {
 
 TakeoverControlResult ResolveTakeoverControl() {
     TakeoverControlResult result{};
-    wchar_t modulePath[MAX_PATH]{};
-    const DWORD n = GetModuleFileNameW(nullptr, modulePath, MAX_PATH);
-    if (n > 0 && n < MAX_PATH) {
-        const std::filesystem::path exePath(modulePath);
-        const std::filesystem::path diagDir = exePath.parent_path() / L".local" / L"diag";
+    const std::filesystem::path diagDir = ResolveDiagDirFromCurrentModule();
+    if (!diagDir.empty()) {
         const std::filesystem::path offFile = diagDir / L"gpu_final_present_takeover.off";
         const std::filesystem::path onFile = diagDir / L"gpu_final_present_takeover.on";
+        const std::filesystem::path autoOffFile = diagDir / L"gpu_final_present_takeover.off.disabled_by_codex";
         std::error_code ec;
         if (std::filesystem::exists(offFile, ec) && !ec) {
             result.enabled = false;
@@ -40,6 +59,12 @@ TakeoverControlResult ResolveTakeoverControl() {
         if (std::filesystem::exists(onFile, ec) && !ec) {
             result.enabled = true;
             result.source = "file_on";
+            return result;
+        }
+        ec.clear();
+        if (std::filesystem::exists(autoOffFile, ec) && !ec) {
+            result.enabled = false;
+            result.source = "file_off_auto";
             return result;
         }
     }
@@ -171,7 +196,10 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
     // keep layered final present as the only visible path until the full DComp presenter is implemented.
     status_.takeoverFallbacks += 1;
     status_.takeoverActive = false;
+    status_.takeoverEnabled = false;
+    status_.takeoverControl = "runtime_auto_off";
     status_.detail = "takeover_trial_not_implemented_fallback_layered";
+    WriteAutoDisableMarker("takeover_trial_not_implemented_fallback_layered");
     return false;
 }
 
