@@ -195,6 +195,12 @@
     <ClInclude Include="MouseFx\Gpu\DawnRuntime.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Gpu\GpuFinalPresentPolicy.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Gpu\GpuFinalPresentHostChain.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Gpu\DawnOverlayBridge.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -214,6 +220,9 @@
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Gpu\GpuHardwareProbe.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Gpu\GpuFinalPresentCapabilityProbe.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
   </ItemGroup>
@@ -263,6 +272,12 @@
     <ClCompile Include="MouseFx\Gpu\DawnRuntime.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Gpu\GpuFinalPresentPolicy.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Gpu\GpuFinalPresentHostChain.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Gpu\DawnOverlayBridge.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
@@ -279,6 +294,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Gpu\DawnSurfaceInterop.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Gpu\GpuFinalPresentCapabilityProbe.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Server\HttpServer.cpp">

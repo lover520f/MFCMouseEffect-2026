@@ -3,8 +3,11 @@
 #include "OverlayHostWindow.h"
 #include "MouseFx/Core/OverlayCoordSpace.h"
 #include "MouseFx/Gpu/DawnCommandConsumer.h"
+#include "MouseFx/Gpu/GpuFinalPresentCapabilityProbe.h"
+#include "MouseFx/Gpu/GpuFinalPresentPolicy.h"
 
 #include <algorithm>
+#include <fstream>
 #include <mmsystem.h>
 #include <vector>
 
@@ -152,7 +155,32 @@ void RefreshSurfaceRect(OverlayHostWindow::HostSurface& surface) {
 static const uint64_t kTopmostReassertIntervalMs = 2500;
 static constexpr UINT kFrameTimerIntervalDefaultMs = 8;
 static constexpr UINT kFrameTimerIntervalHoldMs = 4;
+static constexpr UINT kFrameTimerIntervalDawnActiveMs = 4;
 static OverlayHostWindow* g_overlayForegroundHookOwner = nullptr;
+static const uint64_t g_processStartTickMs = GetTickCount64();
+
+bool IsGpuFinalPresentOptInEnabled() {
+    static std::atomic<int> cached{-1}; // -1 unknown, 0 disabled, 1 enabled
+    const int v = cached.load(std::memory_order_acquire);
+    if (v >= 0) {
+        return v == 1;
+    }
+
+    wchar_t modulePath[MAX_PATH] = {};
+    DWORD len = GetModuleFileNameW(nullptr, modulePath, MAX_PATH);
+    if (len == 0 || len >= MAX_PATH) {
+        cached.store(0, std::memory_order_release);
+        return false;
+    }
+    std::wstring exePath(modulePath, modulePath + len);
+    const size_t pos = exePath.find_last_of(L"\\/");
+    std::wstring exeDir = (pos == std::wstring::npos) ? L"." : exePath.substr(0, pos);
+    const std::wstring optInPath = exeDir + L"\\.local\\diag\\gpu_final_present.optin";
+    std::ifstream fin(optInPath, std::ios::binary);
+    const bool enabled = fin.good();
+    cached.store(enabled ? 1 : 0, std::memory_order_release);
+    return enabled;
+}
 
 } // namespace
 
@@ -201,6 +229,10 @@ std::string OverlayHostWindow::GetGpuPresentLastDetail() const {
 
 bool OverlayHostWindow::IsGpuPresentActive() const {
     return gpuPresentSuccessCount_.load(std::memory_order_acquire) > 0;
+}
+
+gpu::GpuFinalPresentPolicyDecision OverlayHostWindow::GetGpuFinalPresentPolicyDecision() const {
+    return EvaluateGpuFinalPresentPolicy();
 }
 
 const wchar_t* OverlayHostWindow::ClassName() {
@@ -274,8 +306,17 @@ void OverlayHostWindow::ClearLayers() {
 }
 
 void OverlayHostWindow::SetGpuSubmitContext(const std::string& activeBackend, const std::string& pipelineMode) {
+    const bool backendChanged = (gpuSubmitActiveBackend_ != activeBackend);
+    const bool pipelineChanged = (gpuSubmitPipelineMode_ != pipelineMode);
     gpuSubmitActiveBackend_ = activeBackend.empty() ? "cpu" : activeBackend;
     gpuSubmitPipelineMode_ = pipelineMode.empty() ? "cpu_layered" : pipelineMode;
+    if (backendChanged || pipelineChanged) {
+        forceLayeredCpuFallback_.store(false, std::memory_order_release);
+        pendingLayeredRollback_.store(false, std::memory_order_release);
+        gpuPresentConsecutiveFailures_.store(0, std::memory_order_release);
+        lastNonEmptyGpuCommandTickMs_.store(0, std::memory_order_release);
+    }
+    (void)EnsureSurfaceMode(false);
 }
 
 LRESULT CALLBACK OverlayHostWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -331,6 +372,9 @@ void OverlayHostWindow::OnTick() {
         return;
     }
 
+    if (!EnsureSurfaceMode(false)) {
+        return;
+    }
     SyncBoundsWithVirtualScreen(false);
     EnsureTopmostZOrder(false);
     const uint64_t nowMs = NowMs();
@@ -347,6 +391,10 @@ void OverlayHostWindow::OnTick() {
     CollectGpuCommandStream(nowMs);
     UpdateFrameLoopTimerInterval(ResolveNextTimerIntervalMs());
     Render();
+    if (pendingLayeredRollback_.exchange(false, std::memory_order_acq_rel)) {
+        forceLayeredCpuFallback_.store(true, std::memory_order_release);
+        (void)EnsureSurfaceMode(true);
+    }
 }
 
 void OverlayHostWindow::Render() {
@@ -379,9 +427,10 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     frame.layers = &layerRefs;
     frame.gpuCommandStream = &gpuCommandStream_;
 
-    const bool wantsGpuPresent =
+    const bool dawnBackendSelected =
         (gpuSubmitActiveBackend_ == "dawn") &&
         (gpuSubmitPipelineMode_ == "dawn_compositor");
+    const bool wantsGpuPresent = dawnBackendSelected && !useLayeredSurfaces_;
     bool gpuExclusiveEligible = true;
     if (wantsGpuPresent) {
         const int left = surface.x;
@@ -399,6 +448,9 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     }
     bool presented = false;
     std::string presentDetail = "cpu_present_path";
+    if (dawnBackendSelected && useLayeredSurfaces_) {
+        presentDetail = EvaluateGpuFinalPresentPolicy().detail;
+    }
     if (wantsGpuPresent) {
         gpuPresentAttemptCount_.fetch_add(1, std::memory_order_relaxed);
         presented = dawnPresenter_.Present(frame);
@@ -409,14 +461,28 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
         }
         if (presented) {
             gpuPresentSuccessCount_.fetch_add(1, std::memory_order_relaxed);
+            gpuPresentConsecutiveFailures_.store(0, std::memory_order_release);
         } else {
             gpuPresentFallbackCount_.fetch_add(1, std::memory_order_relaxed);
+            const uint32_t failures =
+                gpuPresentConsecutiveFailures_.fetch_add(1, std::memory_order_acq_rel) + 1;
+            if (failures >= 1) {
+                pendingLayeredRollback_.store(true, std::memory_order_release);
+                if (presentDetail.empty()) {
+                    presentDetail = "gpu_present_failed";
+                }
+                presentDetail += "_auto_rollback_layered_cpu";
+            }
         }
     }
     if (!presented) {
-        cpuPresenter_.Present(frame);
-        if (wantsGpuPresent && presentDetail.empty()) {
-            presentDetail = "gpu_present_fallback_cpu";
+        if (useLayeredSurfaces_ || !wantsGpuPresent) {
+            cpuPresenter_.Present(frame);
+            if (wantsGpuPresent && presentDetail.empty()) {
+                presentDetail = "gpu_present_fallback_cpu";
+            }
+        } else if (presentDetail.empty()) {
+            presentDetail = "gpu_present_failed_nonlayered";
         }
     }
     {
@@ -462,6 +528,9 @@ void OverlayHostWindow::CollectGpuCommandStream(uint64_t nowMs) {
     gpuRippleCommandCount_.store(rippleCount, std::memory_order_release);
     gpuParticleCommandCount_.store(particleCount, std::memory_order_release);
     gpuRippleHoldCommandCount_.store(rippleHoldCount, std::memory_order_release);
+    if (!gpuCommandStream_.Commands().empty()) {
+        lastNonEmptyGpuCommandTickMs_.store(nowMs, std::memory_order_release);
+    }
 
     const gpu::DawnRuntimeStatus runtime = gpu::GetDawnRuntimeStatusFast();
     const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
@@ -485,7 +554,56 @@ void OverlayHostWindow::UpdateFrameLoopTimerInterval(UINT intervalMs) {
 UINT OverlayHostWindow::ResolveNextTimerIntervalMs() const {
     const uint32_t holdCount = gpuRippleHoldCommandCount_.load(std::memory_order_acquire);
     if (holdCount > 0) return kFrameTimerIntervalHoldMs;
+    if (gpuSubmitActiveBackend_ == "dawn") return kFrameTimerIntervalDawnActiveMs;
     return kFrameTimerIntervalDefaultMs;
+}
+
+gpu::GpuFinalPresentPolicyDecision OverlayHostWindow::EvaluateGpuFinalPresentPolicy() const {
+    gpu::GpuFinalPresentPolicyInput in{};
+    in.optInEnabled = IsGpuFinalPresentOptInEnabled();
+    in.forceLayeredCpuFallback = forceLayeredCpuFallback_.load(std::memory_order_acquire);
+    in.activeBackend = gpuSubmitActiveBackend_;
+    in.pipelineMode = gpuSubmitPipelineMode_;
+
+    uint32_t layerCount = 0;
+    bool allGpuExclusive = true;
+    for (const auto& layer : layers_) {
+        if (!layer || !layer->IsAlive()) continue;
+        ++layerCount;
+        if (!layer->SupportsGpuExclusivePresent()) {
+            allGpuExclusive = false;
+            break;
+        }
+    }
+    in.activeLayerCount = layerCount;
+    in.allLayersGpuExclusive = allGpuExclusive;
+
+    const gpu::GpuFinalPresentCapability cap = gpu::GetGpuFinalPresentCapability();
+    in.runtimeCapabilityLikelyAvailable = cap.likelyAvailable;
+
+    const uint64_t nowMs = GetTickCount64();
+    in.processUptimeMs = (nowMs >= g_processStartTickMs) ? (nowMs - g_processStartTickMs) : 0;
+    const uint64_t lastNonEmptyMs = lastNonEmptyGpuCommandTickMs_.load(std::memory_order_acquire);
+    in.hasRecentGpuCommandActivity = (lastNonEmptyMs != 0) && (nowMs - lastNonEmptyMs <= 1200);
+
+    return gpu::ResolveGpuFinalPresentPolicy(in);
+}
+
+bool OverlayHostWindow::ShouldUseLayeredSurfaces() const {
+    const gpu::GpuFinalPresentPolicyDecision decision = EvaluateGpuFinalPresentPolicy();
+    return decision.useLayeredSurfaces;
+}
+
+bool OverlayHostWindow::EnsureSurfaceMode(bool forceRebuild) {
+    const bool desiredLayered = ShouldUseLayeredSurfaces();
+    if (!forceRebuild && desiredLayered == useLayeredSurfaces_) {
+        return true;
+    }
+    useLayeredSurfaces_ = desiredLayered;
+    if (surfaces_.empty()) {
+        return true;
+    }
+    return RebuildSurfaces();
 }
 
 bool OverlayHostWindow::RebuildSurfaces() {
@@ -498,7 +616,10 @@ bool OverlayHostWindow::RebuildSurfaces() {
 
     for (const auto& r : desired) {
         HostSurface surface{};
-        const DWORD ex = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_NOACTIVATE;
+        DWORD ex = WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_NOACTIVATE;
+        if (useLayeredSurfaces_) {
+            ex |= WS_EX_LAYERED;
+        }
         surface.hwnd = CreateWindowExW(
             ex,
             ClassName(),

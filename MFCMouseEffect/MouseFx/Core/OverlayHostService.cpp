@@ -4,6 +4,7 @@
 
 #include "MouseFx/Gpu/DawnOverlayBridge.h"
 #include "MouseFx/Gpu/DawnCommandConsumer.h"
+#include "MouseFx/Gpu/GpuFinalPresentHostChain.h"
 #include "MouseFx/Gpu/DawnRuntime.h"
 #include "MouseFx/Gpu/GpuHardwareProbe.h"
 #include "MouseFx/Interfaces/IRippleRenderer.h"
@@ -130,6 +131,29 @@ OverlayHostService& OverlayHostService::Instance() {
     return instance;
 }
 
+void OverlayHostService::SyncBackendActivationFromRuntime(const gpu::DawnRuntimeStatus& runtime) {
+    if (requestedBackend_ != "dawn" && requestedBackend_ != "auto") {
+        return;
+    }
+    if (runtime.queueReady) {
+        const gpu::DawnOverlayBridgeStatus bridge = gpu::GetDawnOverlayBridgeStatus();
+        activeBackend_ = "dawn";
+        backendDetail_ = ResolveDawnBackendDetail(runtime);
+        pipelineMode_ = ResolveDawnPipelineMode(bridge);
+    } else {
+        activeBackend_ = "cpu";
+        if (runtime.lastInitDetail.empty() || runtime.lastInitDetail == "init_not_run") {
+            backendDetail_ = "dawn_probe_pending";
+        } else {
+            backendDetail_ = runtime.lastInitDetail;
+        }
+        pipelineMode_ = "cpu_layered";
+    }
+    if (host_) {
+        host_->SetGpuSubmitContext(activeBackend_, pipelineMode_);
+    }
+}
+
 bool OverlayHostService::SetRenderBackendPreference(const std::string& backend) {
     const std::string normalized = NormalizeRenderBackend(backend);
     const std::string previousRequested = requestedBackend_;
@@ -253,6 +277,7 @@ void OverlayHostService::RefreshGpuRuntimeProbe() {
     if (requestedBackend_ == "dawn" || requestedBackend_ == "auto") {
         const gpu::DawnRuntimeInitResult dawn = gpu::TryInitializeDawnRuntime();
         backendDetail_ = dawn.detail;
+        SyncBackendActivationFromRuntime(gpu::GetDawnRuntimeStatus());
     }
 }
 
@@ -283,6 +308,7 @@ void OverlayHostService::RefreshGpuRuntimeProbeAsync() {
                     // Later retries still require long idle window.
                     RunDawnSubmitWarmupOnce(!firstProbe);
                 }
+                SyncBackendActivationFromRuntime(runtime);
             }
             asyncProbeDoneToken_.store(token, std::memory_order_release);
             if (asyncProbeToken_.load(std::memory_order_acquire) == token) {
@@ -354,6 +380,21 @@ std::string OverlayHostService::GetGpuPresentLastDetail() const {
 bool OverlayHostService::IsGpuPresentActive() const {
     if (!host_) return false;
     return host_->IsGpuPresentActive();
+}
+
+gpu::GpuFinalPresentPolicyDecision OverlayHostService::GetGpuFinalPresentPolicyDecision() const {
+    if (!host_) {
+        gpu::GpuFinalPresentPolicyDecision out{};
+        out.useLayeredSurfaces = true;
+        out.eligibleForGpuFinalPresent = false;
+        out.detail = "host_not_initialized";
+        return out;
+    }
+    return host_->GetGpuFinalPresentPolicyDecision();
+}
+
+gpu::GpuFinalPresentHostChainStatus OverlayHostService::GetGpuFinalPresentHostChainStatus(bool refresh) const {
+    return gpu::GetGpuFinalPresentHostChainStatus(refresh);
 }
 
 bool OverlayHostService::Initialize() {

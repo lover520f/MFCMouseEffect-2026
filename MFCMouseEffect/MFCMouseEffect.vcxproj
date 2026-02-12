@@ -262,6 +262,9 @@
     <ClInclude Include="MouseFx\Gpu\DawnParticleSurfaceRenderer.h" />
     <ClInclude Include="MouseFx\Gpu\DawnSurfaceInterop.h" />
     <ClInclude Include="MouseFx\Gpu\DawnRuntime.h" />
+    <ClInclude Include="MouseFx\Gpu\GpuFinalPresentPolicy.h" />
+    <ClInclude Include="MouseFx\Gpu\GpuFinalPresentHostChain.h" />
+    <ClInclude Include="MouseFx\Gpu\GpuFinalPresentCapabilityProbe.h" />
     <ClInclude Include="MouseFx\Gpu\GpuHardwareProbe.h" />
     <ClInclude Include="MouseFx\ThirdParty\json.hpp" />
     <ClInclude Include="UI\Settings\SettingsWnd.h" />
@@ -300,6 +303,9 @@
     <ClCompile Include="MouseFx\Gpu\DawnParticleSurfaceRenderer.cpp" />
     <ClCompile Include="MouseFx\Gpu\DawnSurfaceInterop.cpp" />
     <ClCompile Include="MouseFx\Gpu\DawnRuntime.cpp" />
+    <ClCompile Include="MouseFx\Gpu\GpuFinalPresentPolicy.cpp" />
+    <ClCompile Include="MouseFx\Gpu\GpuFinalPresentHostChain.cpp" />
+    <ClCompile Include="MouseFx\Gpu\GpuFinalPresentCapabilityProbe.cpp" />
     <ClCompile Include="MouseFx\Core\OverlayCoordSpace.cpp" />
     <ClCompile Include="MouseFx\Core\OverlayHostService.cpp" />
     <ClCompile Include="MouseFx\Core\GlobalMouseHook.cpp" />

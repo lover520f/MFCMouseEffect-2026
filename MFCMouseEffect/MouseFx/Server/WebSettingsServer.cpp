@@ -9,6 +9,8 @@
 #include "MouseFx/Core/OverlayHostService.h"
 #include "MouseFx/Gpu/DawnOverlayBridge.h"
 #include "MouseFx/Gpu/DawnCommandConsumer.h"
+#include "MouseFx/Gpu/GpuFinalPresentCapabilityProbe.h"
+#include "MouseFx/Gpu/GpuFinalPresentHostChain.h"
 #include "MouseFx/Gpu/DawnRuntime.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/WebUiAssets.h"
@@ -166,6 +168,42 @@ static json BuildDawnRuntimeSymbolJson(const gpu::DawnRuntimeSymbolStatus& s) {
         {"has_wait_any", s.hasWaitAny},
         {"has_instance_process_events", s.hasInstanceProcessEvents},
         {"summary", s.summary},
+    };
+}
+
+static json BuildGpuFinalPresentCapabilityJson(const gpu::GpuFinalPresentCapability& cap) {
+    return json{
+        {"probe_tick_ms", cap.probeTickMs},
+        {"likely_available", cap.likelyAvailable},
+        {"detail", cap.detail},
+        {"dcomp_dll_loaded", cap.dcompDllLoaded},
+        {"dcomp_create_device_proc", cap.dcompCreateDeviceProc},
+        {"d3d11_dll_loaded", cap.d3d11DllLoaded},
+        {"d3d11_create_device_proc", cap.d3d11CreateDeviceProc},
+        {"dxgi_dll_loaded", cap.dxgiDllLoaded},
+        {"dxgi_factory_proc", cap.createDxgiFactoryProc},
+    };
+}
+
+static json BuildGpuFinalPresentPolicyJson(const gpu::GpuFinalPresentPolicyDecision& policy) {
+    return json{
+        {"use_layered_surfaces", policy.useLayeredSurfaces},
+        {"eligible_for_gpu_final_present", policy.eligibleForGpuFinalPresent},
+        {"detail", policy.detail},
+    };
+}
+
+static json BuildGpuFinalPresentHostChainJson(const gpu::GpuFinalPresentHostChainStatus& chain) {
+    return json{
+        {"probe_tick_ms", chain.probeTickMs},
+        {"activation_attempts", chain.activationAttempts},
+        {"activation_success", chain.activationSuccess},
+        {"activation_failure", chain.activationFailure},
+        {"opt_in_enabled", chain.optInEnabled},
+        {"runtime_capability_likely_available", chain.runtimeCapabilityLikelyAvailable},
+        {"ready_for_activation", chain.readyForActivation},
+        {"active", chain.active},
+        {"detail", chain.detail},
     };
 }
 
@@ -484,11 +522,11 @@ static json BuildDawnAdviceJson(const std::string& stateCode) {
 }
 
 static json BuildGpuBannerJson(const std::string& backendPreference, const std::string& activeBackend, const gpu::DawnRuntimeStatus& status, const gpu::DawnOverlayBridgeStatus& bridge) {
-    const bool gpuInUse = (activeBackend == "dawn");
+    const bool gpuBackendActive = (activeBackend == "dawn");
     const std::string statusDetail = status.lastInitDetail.empty() ? status.probe.detail : status.lastInitDetail;
     const std::string stateCode = DawnStateCodeFromDetail(statusDetail);
     json advice = BuildDawnAdviceJson(stateCode);
-    if (gpuInUse) {
+    if (gpuBackendActive) {
         if (bridge.detail == "bridge_fallback_host_compat_compositor_not_ready") {
             advice = json{
                 {"action_code", "switch_bridge_host_compat"},
@@ -507,7 +545,7 @@ static json BuildGpuBannerJson(const std::string& backendPreference, const std::
     }
     const bool gpuPresenterActive = OverlayHostService::Instance().IsGpuPresentActive();
     const json accel = BuildGpuAccelerationJson(activeBackend, bridge, status, gpuPresenterActive);
-    if (!gpuInUse && backendPreference == "cpu") {
+    if (!gpuBackendActive && backendPreference == "cpu") {
         return json{
             {"code", "cpu_forced"},
             {"tone", "info"},
@@ -523,7 +561,7 @@ static json BuildGpuBannerJson(const std::string& backendPreference, const std::
             }},
         };
     }
-    if (!gpuInUse && backendPreference == "auto" && stateCode == "loader_missing") {
+    if (!gpuBackendActive && backendPreference == "auto" && stateCode == "loader_missing") {
         return json{
             {"code", "cpu_auto_no_dawn_runtime"},
             {"tone", "info"},
@@ -539,15 +577,31 @@ static json BuildGpuBannerJson(const std::string& backendPreference, const std::
             }},
         };
     }
-    if (gpuInUse) {
+    if (gpuPresenterActive) {
         return json{
             {"code", "gpu_active"},
             {"tone", "info"},
-            {"text_en", "GPU backend active."},
-            {"text_zh", u8"\u5f53\u524d\u5df2\u542f\u7528 GPU \u540e\u7aef\u3002"},
+            {"text_en", "GPU presenter active."},
+            {"text_zh", u8"\u5f53\u524d\u5df2\u542f\u7528 GPU \u4e3b\u5448\u73b0\u8def\u5f84\u3002"},
             {"state_code", stateCode},
             {"acceleration", accel},
             {"action", advice},
+        };
+    }
+    if (gpuBackendActive) {
+        return json{
+            {"code", "gpu_backend_active_cpu_present"},
+            {"tone", "warn"},
+            {"text_en", "GPU backend active, but final present is still CPU path."},
+            {"text_zh", u8"\u5df2\u542f\u7528 GPU \u540e\u7aef\uff0c\u4f46\u6700\u7ec8\u5448\u73b0\u4ecd\u4e3a CPU \u8def\u5f84\u3002"},
+            {"state_code", stateCode},
+            {"acceleration", accel},
+            {"action", json{
+                {"action_code", "gpu_final_present_not_yet_enabled"},
+                {"action_text_en", "GPU command path is active. Final presenter is still layered CPU fallback in current architecture."},
+                {"action_text_zh", u8"GPU \u547d\u4ee4\u8def\u5f84\u5df2\u542f\u7528\uff0c\u4f46\u5728\u5f53\u524d\u67b6\u6784\u4e0b\u6700\u7ec8\u5448\u73b0\u4ecd\u4e3a layered CPU \u515c\u5e95\u3002"},
+                {"tone", "info"},
+            }},
         };
     }
     return json{
@@ -636,6 +690,11 @@ bool WebSettingsServer::Start() {
                 const gpu::DawnRuntimeStatus dawnStatus = gpu::GetDawnRuntimeStatus();
                 const gpu::DawnOverlayBridgeStatus dawnBridge = gpu::GetDawnOverlayBridgeStatus();
                 const gpu::DawnCommandConsumeStatus consume = gpu::GetDawnCommandConsumeStatus();
+                const gpu::GpuFinalPresentCapability finalPresentCap = gpu::GetGpuFinalPresentCapability();
+                const gpu::GpuFinalPresentPolicyDecision finalPresentPolicy =
+                    OverlayHostService::Instance().GetGpuFinalPresentPolicyDecision();
+                const gpu::GpuFinalPresentHostChainStatus finalPresentHostChain =
+                    OverlayHostService::Instance().GetGpuFinalPresentHostChainStatus(false);
                 resp.contentType = "application/json; charset=utf-8";
                 resp.body = json({
                     {"ok", true},
@@ -647,6 +706,9 @@ bool WebSettingsServer::Start() {
                     {"gpu_in_use", activeBackend == "dawn"},
                     {"dawn_status", BuildDawnStatusJson(dawnStatus)},
                     {"dawn_overlay_bridge", BuildDawnOverlayBridgeJson(dawnBridge)},
+                    {"gpu_final_present_capability", BuildGpuFinalPresentCapabilityJson(finalPresentCap)},
+                    {"gpu_final_present_policy", BuildGpuFinalPresentPolicyJson(finalPresentPolicy)},
+                    {"gpu_final_present_host_chain", BuildGpuFinalPresentHostChainJson(finalPresentHostChain)},
                     {"dawn_command_consumer", {
                         {"submit_tick_ms", consume.submitTickMs},
                         {"accepted", consume.accepted},
@@ -724,6 +786,11 @@ bool WebSettingsServer::Start() {
                 const gpu::DawnRuntimeStatus dawnStatus = gpu::GetDawnRuntimeStatus();
                 const gpu::DawnOverlayBridgeStatus dawnBridge = gpu::GetDawnOverlayBridgeStatus();
                 const gpu::DawnCommandConsumeStatus consume = gpu::GetDawnCommandConsumeStatus();
+                const gpu::GpuFinalPresentCapability finalPresentCap = gpu::GetGpuFinalPresentCapability(refresh);
+                const gpu::GpuFinalPresentPolicyDecision finalPresentPolicy =
+                    OverlayHostService::Instance().GetGpuFinalPresentPolicyDecision();
+                const gpu::GpuFinalPresentHostChainStatus finalPresentHostChain =
+                    OverlayHostService::Instance().GetGpuFinalPresentHostChainStatus(refresh);
                 resp.contentType = "application/json; charset=utf-8";
                 resp.body = json({
                     {"ok", true},
@@ -737,6 +804,9 @@ bool WebSettingsServer::Start() {
                     {"dawn_probe", BuildDawnProbeJson(dawnStatus.probe)},
                     {"dawn_status", BuildDawnStatusJson(dawnStatus)},
                     {"dawn_overlay_bridge", BuildDawnOverlayBridgeJson(dawnBridge)},
+                    {"gpu_final_present_capability", BuildGpuFinalPresentCapabilityJson(finalPresentCap)},
+                    {"gpu_final_present_policy", BuildGpuFinalPresentPolicyJson(finalPresentPolicy)},
+                    {"gpu_final_present_host_chain", BuildGpuFinalPresentHostChainJson(finalPresentHostChain)},
                     {"dawn_command_consumer", {
                         {"submit_tick_ms", consume.submitTickMs},
                         {"accepted", consume.accepted},
@@ -796,6 +866,31 @@ bool WebSettingsServer::Start() {
                         dawnStatus,
                         OverlayHostService::Instance().IsGpuPresentActive())},
                     {"gpu_status_banner", BuildGpuBannerJson(OverlayHostService::Instance().GetRenderBackendPreference(), activeBackend, dawnStatus, dawnBridge)},
+                }).dump();
+                return;
+            }
+            if (req.method == "POST" && path == "/api/gpu/host_chain_probe_now") {
+                bool refresh = true;
+                if (!req.body.empty()) {
+                    try {
+                        json in = json::parse(req.body);
+                        if (in.contains("refresh") && in["refresh"].is_boolean()) {
+                            refresh = in["refresh"].get<bool>();
+                        }
+                    } catch (...) {}
+                }
+                const gpu::GpuFinalPresentCapability finalPresentCap =
+                    gpu::GetGpuFinalPresentCapability(refresh);
+                const gpu::GpuFinalPresentPolicyDecision finalPresentPolicy =
+                    OverlayHostService::Instance().GetGpuFinalPresentPolicyDecision();
+                const gpu::GpuFinalPresentHostChainStatus finalPresentHostChain =
+                    OverlayHostService::Instance().GetGpuFinalPresentHostChainStatus(refresh);
+                resp.contentType = "application/json; charset=utf-8";
+                resp.body = json({
+                    {"ok", true},
+                    {"gpu_final_present_capability", BuildGpuFinalPresentCapabilityJson(finalPresentCap)},
+                    {"gpu_final_present_policy", BuildGpuFinalPresentPolicyJson(finalPresentPolicy)},
+                    {"gpu_final_present_host_chain", BuildGpuFinalPresentHostChainJson(finalPresentHostChain)},
                 }).dump();
                 return;
             }
@@ -1043,9 +1138,17 @@ std::string WebSettingsServer::BuildStateJson() const {
     out["dawn_available"] = OverlayHostService::Instance().IsGpuBackendAvailable("dawn");
     const gpu::DawnRuntimeStatus dawnStatus = gpu::GetDawnRuntimeStatus();
     const gpu::DawnOverlayBridgeStatus dawnBridge = gpu::GetDawnOverlayBridgeStatus();
+    const gpu::GpuFinalPresentCapability finalPresentCap = gpu::GetGpuFinalPresentCapability();
+    const gpu::GpuFinalPresentPolicyDecision finalPresentPolicy =
+        OverlayHostService::Instance().GetGpuFinalPresentPolicyDecision();
+    const gpu::GpuFinalPresentHostChainStatus finalPresentHostChain =
+        OverlayHostService::Instance().GetGpuFinalPresentHostChainStatus(false);
     out["dawn_probe"] = BuildDawnProbeJson(dawnStatus.probe);
     out["dawn_status"] = BuildDawnStatusJson(dawnStatus);
     out["dawn_overlay_bridge"] = BuildDawnOverlayBridgeJson(dawnBridge);
+    out["gpu_final_present_capability"] = BuildGpuFinalPresentCapabilityJson(finalPresentCap);
+    out["gpu_final_present_policy"] = BuildGpuFinalPresentPolicyJson(finalPresentPolicy);
+    out["gpu_final_present_host_chain"] = BuildGpuFinalPresentHostChainJson(finalPresentHostChain);
     out["gpu_command_stream"] = {
         {"frame_tick_ms", OverlayHostService::Instance().GetLastGpuCommandFrameTickMs()},
         {"command_count", OverlayHostService::Instance().GetLastGpuCommandCount()},

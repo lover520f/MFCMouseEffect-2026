@@ -14,6 +14,8 @@ Provide project-local guidance for agents working in this repo.
 - Prefer small, incremental changes; keep effects responsive and lightweight.
 - Avoid adding heavy dependencies unless explicitly requested.
 - Favor clear separation between UI/tray code and effect rendering.
+- Do not break current architecture by default. If a better architecture is identified, propose it proactively with tradeoffs/impact, get review feedback, then execute.
+- When changes accumulate across multiple features/files, prioritize a checkpoint commit to avoid long-running stacked diffs.
 
 ## C++ (MFC/Win32)
 - Use `rg` for searching.

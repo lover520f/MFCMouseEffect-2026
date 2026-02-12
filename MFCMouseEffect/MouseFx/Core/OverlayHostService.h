@@ -7,6 +7,9 @@
 #include <string>
 
 #include "MouseFx/Core/GlobalMouseHook.h"
+#include "MouseFx/Gpu/GpuFinalPresentHostChain.h"
+#include "MouseFx/Gpu/GpuFinalPresentPolicy.h"
+#include "MouseFx/Gpu/DawnRuntime.h"
 #include "MouseFx/Styles/RippleStyle.h"
 
 namespace mousefx {
@@ -52,6 +55,8 @@ public:
     uint64_t GetGpuPresentFallbackCount() const;
     std::string GetGpuPresentLastDetail() const;
     bool IsGpuPresentActive() const;
+    gpu::GpuFinalPresentPolicyDecision GetGpuFinalPresentPolicyDecision() const;
+    gpu::GpuFinalPresentHostChainStatus GetGpuFinalPresentHostChainStatus(bool refresh = false) const;
 
     bool Initialize();
     void Shutdown();
@@ -94,6 +99,7 @@ private:
     TextOverlayLayer* EnsureTextLayer();
     static std::string NormalizeRenderBackend(std::string backend);
     static std::string NormalizeGpuBridgeMode(std::string mode);
+    void SyncBackendActivationFromRuntime(const gpu::DawnRuntimeStatus& runtime);
 };
 
 } // namespace mousefx

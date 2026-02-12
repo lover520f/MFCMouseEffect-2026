@@ -14,6 +14,7 @@
 #include "MouseFx/Interfaces/IOverlayLayer.h"
 #include "MouseFx/Windows/DawnGpuPresenter.h"
 #include "MouseFx/Windows/OverlayLayeredCpuPresenter.h"
+#include "MouseFx/Gpu/GpuFinalPresentPolicy.h"
 
 namespace mousefx {
 
@@ -39,6 +40,7 @@ public:
     uint64_t GetGpuPresentFallbackCount() const;
     std::string GetGpuPresentLastDetail() const;
     bool IsGpuPresentActive() const;
+    gpu::GpuFinalPresentPolicyDecision GetGpuFinalPresentPolicyDecision() const;
 
     struct HostSurface {
         HWND hwnd = nullptr;
@@ -69,6 +71,9 @@ private:
     void CollectGpuCommandStream(uint64_t nowMs);
     void UpdateFrameLoopTimerInterval(UINT intervalMs);
     UINT ResolveNextTimerIntervalMs() const;
+    gpu::GpuFinalPresentPolicyDecision EvaluateGpuFinalPresentPolicy() const;
+    bool ShouldUseLayeredSurfaces() const;
+    bool EnsureSurfaceMode(bool forceRebuild);
     bool RebuildSurfaces();
     void DestroySurfaces();
     void SyncBoundsWithVirtualScreen(bool forceMove);
@@ -97,6 +102,7 @@ private:
     std::atomic<uint32_t> gpuRippleCommandCount_{0};
     std::atomic<uint32_t> gpuParticleCommandCount_{0};
     std::atomic<uint32_t> gpuRippleHoldCommandCount_{0};
+    std::atomic<uint64_t> lastNonEmptyGpuCommandTickMs_{0};
     std::atomic<uint64_t> gpuPresentAttemptCount_{0};
     std::atomic<uint64_t> gpuPresentSuccessCount_{0};
     std::atomic<uint64_t> gpuPresentFallbackCount_{0};
@@ -106,6 +112,10 @@ private:
     OverlayLayeredCpuPresenter cpuPresenter_{};
     std::string gpuSubmitActiveBackend_ = "cpu";
     std::string gpuSubmitPipelineMode_ = "cpu_layered";
+    bool useLayeredSurfaces_ = true;
+    std::atomic<bool> forceLayeredCpuFallback_{false};
+    std::atomic<bool> pendingLayeredRollback_{false};
+    std::atomic<uint32_t> gpuPresentConsecutiveFailures_{0};
 };
 
 } // namespace mousefx

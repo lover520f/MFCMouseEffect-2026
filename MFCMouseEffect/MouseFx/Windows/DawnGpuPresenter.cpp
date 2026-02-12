@@ -42,11 +42,6 @@ bool DawnGpuPresenter::Present(const OverlayPresentFrame& frame) {
     }
 
     const gpu::DawnSurfaceCommandStats stats = gpu::BuildDawnSurfaceCommandStats(frame.gpuCommandStream);
-    const bool hasUnsupportedCommand = (stats.trailCount > 0) || (stats.particleCount > 0);
-    const bool rippleOnlyCommandStream =
-        (stats.commandCount > 0) &&
-        (stats.rippleCount == stats.commandCount) &&
-        !hasUnsupportedCommand;
 
     std::string interopDetail;
     const gpu::DawnRuntimePresentContext presentContext = gpu::GetDawnRuntimePresentContext();
@@ -72,16 +67,10 @@ bool DawnGpuPresenter::Present(const OverlayPresentFrame& frame) {
 
     std::lock_guard<std::mutex> lock(detailMutex_);
     lastDetail_ = interopDetail.empty() ? "gpu_present_surface_submit_ok" : interopDetail;
-    if (hadGpuVisualContent && rippleOnlyCommandStream) {
-        lastDetail_ += "_exclusive_ripple";
-        return true;
+    if (!hadGpuVisualContent && stats.commandCount == 0) {
+        lastDetail_ += "_clearpass_no_visible_commands";
     }
-    if (hasUnsupportedCommand) {
-        lastDetail_ += "_fallback_for_unimplemented_command_types";
-    } else if (!hadGpuVisualContent) {
-        lastDetail_ += "_fallback_no_gpu_visual_content";
-    }
-    return false;
+    return true;
 }
 
 std::string DawnGpuPresenter::LastDetail() const {

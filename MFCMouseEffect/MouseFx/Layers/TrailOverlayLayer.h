@@ -18,6 +18,7 @@ public:
     void Update(uint64_t nowMs) override;
     void Render(Gdiplus::Graphics& graphics) override;
     bool IsAlive() const override { return true; }
+    bool SupportsGpuExclusivePresent() const override { return true; }
     bool IntersectsScreenRect(int left, int top, int right, int bottom) const override;
     void AppendGpuCommands(gpu::OverlayGpuCommandStream& stream, uint64_t nowMs) const override;
 
