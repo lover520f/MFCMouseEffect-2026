@@ -489,6 +489,7 @@ uint64_t OverlayHostService::ShowContinuousRipple(const ClickEvent& ev, const Ri
 void OverlayHostService::UpdateRipplePosition(uint64_t id, const POINT& pt) {
     if (!rippleLayer_) return;
     rippleLayer_->UpdatePosition(id, pt);
+    RequestImmediateFrame();
 }
 
 void OverlayHostService::StopRipple(uint64_t id) {
@@ -504,11 +505,13 @@ bool OverlayHostService::IsRippleActive(uint64_t id) const {
 void OverlayHostService::UpdateRippleHoldElapsed(uint64_t id, uint32_t holdMs) {
     if (!rippleLayer_) return;
     rippleLayer_->SendHoldElapsed(id, holdMs);
+    RequestImmediateFrame();
 }
 
 void OverlayHostService::UpdateRippleHoldThreshold(uint64_t id, uint32_t thresholdMs) {
     if (!rippleLayer_) return;
     rippleLayer_->SendHoldThreshold(id, thresholdMs);
+    RequestImmediateFrame();
 }
 
 void OverlayHostService::SendRippleCommand(uint64_t id, const std::string& cmd, const std::string& args) {
