@@ -367,7 +367,7 @@ inline void SubmitOverlayGpuCommands(
     }
 
     constexpr size_t kHoldTrailVertexCapPerCommand = 18;
-    constexpr size_t kTrailVertexCapPerCommand = 28;
+    constexpr size_t kTrailVertexCapPerCommand = 24;
     const size_t trailVertexCapPerCommand = holdActive
         ? kHoldTrailVertexCapPerCommand
         : kTrailVertexCapPerCommand;
