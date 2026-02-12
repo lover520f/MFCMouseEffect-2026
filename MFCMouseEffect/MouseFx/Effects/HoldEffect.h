@@ -51,6 +51,7 @@ private:
     bool hasLastSentPoint_ = false;
     uint64_t lastHoldCommandMs_ = 0;
     uint64_t lastEfficientPosMs_ = 0;
+    bool latencyPriorityActive_ = false;
 };
 
 } // namespace mousefx

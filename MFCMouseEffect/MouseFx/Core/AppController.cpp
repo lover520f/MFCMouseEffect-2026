@@ -455,6 +455,9 @@ void AppController::SetTrailLatencyPriorityMode(bool enabled) {
     if (auto* effect = GetEffect(EffectCategory::Trail)) {
         effect->OnCommand("latency_priority", enabled ? "on" : "off");
     }
+    if (auto* effect = GetEffect(EffectCategory::Hold)) {
+        effect->OnCommand("latency_priority", enabled ? "on" : "off");
+    }
     OverlayHostService::Instance().RequestImmediateFrame();
 }
 

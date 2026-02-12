@@ -136,6 +136,9 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
             break;
         case FollowMode::Smooth: {
             float alpha = IsNeon3DHoldType(type_) ? 0.58f : 0.35f;
+            if (latencyPriorityActive_ && IsNeon3DHoldType(type_)) {
+                alpha = 0.82f;
+            }
             if (hasLastRawPoint_ && nowMs > lastRawPointTickMs_) {
                 const float dx = static_cast<float>(pt.x - lastRawPoint_.x);
                 const float dy = static_cast<float>(pt.y - lastRawPoint_.y);
@@ -146,10 +149,17 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
                         // Layered CPU final-present path needs stronger follow to keep cursor sync.
                         const bool layeredFinalPresent = !OverlayHostService::Instance().IsGpuPresentActive();
                         if (layeredFinalPresent) {
-                            if (speedPxPerMs >= 2.2f) alpha = 0.94f;
-                            else if (speedPxPerMs >= 1.2f) alpha = 0.88f;
-                            else if (speedPxPerMs >= 0.6f) alpha = 0.78f;
-                            else alpha = 0.66f;
+                            if (latencyPriorityActive_) {
+                                if (speedPxPerMs >= 2.0f) alpha = 0.96f;
+                                else if (speedPxPerMs >= 1.0f) alpha = 0.92f;
+                                else if (speedPxPerMs >= 0.5f) alpha = 0.86f;
+                                else alpha = 0.80f;
+                            } else {
+                                if (speedPxPerMs >= 2.2f) alpha = 0.94f;
+                                else if (speedPxPerMs >= 1.2f) alpha = 0.88f;
+                                else if (speedPxPerMs >= 0.6f) alpha = 0.78f;
+                                else alpha = 0.66f;
+                            }
                         } else {
                             if (speedPxPerMs >= 1.8f) alpha = 0.86f;
                             else if (speedPxPerMs >= 0.9f) alpha = 0.74f;
@@ -191,7 +201,11 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
 
     uint64_t cmdIntervalMs = 0;
     if (followMode_ == FollowMode::Smooth) {
-        cmdIntervalMs = IsNeon3DHoldType(type_) ? 4 : 8;
+        if (latencyPriorityActive_ && IsNeon3DHoldType(type_)) {
+            cmdIntervalMs = 2;
+        } else {
+            cmdIntervalMs = IsNeon3DHoldType(type_) ? 4 : 8;
+        }
     }
     if (followMode_ == FollowMode::Efficient) cmdIntervalMs = 20;
     if (cmdIntervalMs == 0 || nowMs - lastHoldCommandMs_ >= cmdIntervalMs) {
@@ -215,6 +229,11 @@ void HoldEffect::OnHoldEnd() {
 }
 
 void HoldEffect::OnCommand(const std::string& cmd, const std::string& args) {
+    if (cmd == "latency_priority") {
+        const std::string v = ToLowerAscii(args);
+        latencyPriorityActive_ = (v == "on" || v == "1" || v == "true");
+        return;
+    }
     OverlayHostService::Instance().BroadcastRippleCommand(cmd, args);
 }
 
