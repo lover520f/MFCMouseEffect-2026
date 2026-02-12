@@ -163,6 +163,7 @@ inline void SubmitOverlayGpuCommands(
     status.rippleHoverCommandCount = 0;
     status.rippleHoldCommandCount = 0;
     status.particleCommandCount = 0;
+    bool trailLatencyPriorityActive = false;
     status.preparedTrailBatches = 0;
     status.preparedTrailVertices = 0;
     status.preparedTrailSegments = 0;
@@ -183,6 +184,9 @@ inline void SubmitOverlayGpuCommands(
         switch (cmd.type) {
         case OverlayGpuCommandType::TrailPolyline:
             ++status.trailCommandCount;
+            if ((cmd.flags & OverlayGpuCommandFlags::kTrailLatencyPriority) != 0) {
+                trailLatencyPriorityActive = true;
+            }
             break;
         case OverlayGpuCommandType::RipplePulse:
             ++status.rippleCommandCount;
@@ -307,7 +311,8 @@ inline void SubmitOverlayGpuCommands(
         return;
     }
 
-    const bool holdActive = (status.rippleHoldCommandCount > 0);
+    // hold_neon3d path may not emit ripple-hold commands; use trail latency-priority flag as hold signal too.
+    const bool holdActive = (status.rippleHoldCommandCount > 0) || trailLatencyPriorityActive;
 
     if (!status.passWarmupDone) {
         const uint64_t nowTick = (status.submitTickMs > 0) ? status.submitTickMs : GetTickCount64();

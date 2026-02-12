@@ -20,6 +20,7 @@ constexpr uint32_t kHoverContinuous = 1u << 2;
 constexpr uint32_t kHoldContinuous = 1u << 3;
 constexpr uint32_t kTrailChromatic = 1u << 4;
 constexpr uint32_t kParticleChromatic = 1u << 5;
+constexpr uint32_t kTrailLatencyPriority = 1u << 6;
 } // namespace OverlayGpuCommandFlags
 
 struct OverlayGpuVertex {
