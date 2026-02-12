@@ -397,6 +397,11 @@ gpu::GpuFinalPresentHostChainStatus OverlayHostService::GetGpuFinalPresentHostCh
     return gpu::GetGpuFinalPresentHostChainStatus(refresh);
 }
 
+void OverlayHostService::RequestImmediateFrame() {
+    if (!host_) return;
+    host_->RequestImmediateFrame();
+}
+
 bool OverlayHostService::Initialize() {
     if (host_) return true;
 

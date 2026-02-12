@@ -57,6 +57,7 @@ public:
     bool IsGpuPresentActive() const;
     gpu::GpuFinalPresentPolicyDecision GetGpuFinalPresentPolicyDecision() const;
     gpu::GpuFinalPresentHostChainStatus GetGpuFinalPresentHostChainStatus(bool refresh = false) const;
+    void RequestImmediateFrame();
 
     bool Initialize();
     void Shutdown();

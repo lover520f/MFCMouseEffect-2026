@@ -16,6 +16,8 @@ Provide project-local guidance for agents working in this repo.
 - Favor clear separation between UI/tray code and effect rendering.
 - Do not break current architecture by default. If a better architecture is identified, propose it proactively with tradeoffs/impact, get review feedback, then execute.
 - When changes accumulate across multiple features/files, prioritize a checkpoint commit to avoid long-running stacked diffs.
+- For each GPU landing iteration result, always include a fixed progress line in the response:
+  `GPU 全量落地进度：X%（较上次 +Y% / -Y%）`.
 
 ## C++ (MFC/Win32)
 - Use `rg` for searching.

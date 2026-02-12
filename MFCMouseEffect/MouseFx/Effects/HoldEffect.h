@@ -44,6 +44,9 @@ private:
     bool hasSmoothedPoint_ = false;
     float smoothedX_ = 0.0f;
     float smoothedY_ = 0.0f;
+    POINT lastRawPoint_{};
+    bool hasLastRawPoint_ = false;
+    uint64_t lastRawPointTickMs_ = 0;
     POINT lastSentPoint_{};
     bool hasLastSentPoint_ = false;
     uint64_t lastHoldCommandMs_ = 0;

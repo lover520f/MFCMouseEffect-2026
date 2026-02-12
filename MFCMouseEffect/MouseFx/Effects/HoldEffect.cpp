@@ -90,6 +90,8 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
     holdPoint_ = pt;
     holdButton_ = button;
     hasSmoothedPoint_ = false;
+    hasLastRawPoint_ = false;
+    lastRawPointTickMs_ = 0;
     hasLastSentPoint_ = false;
     lastHoldCommandMs_ = 0;
     lastEfficientPosMs_ = 0;
@@ -133,7 +135,31 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
             shouldUpdatePos = true;
             break;
         case FollowMode::Smooth: {
-            const float alpha = IsNeon3DHoldType(type_) ? 0.58f : 0.35f;
+            float alpha = IsNeon3DHoldType(type_) ? 0.58f : 0.35f;
+            if (hasLastRawPoint_ && nowMs > lastRawPointTickMs_) {
+                const float dx = static_cast<float>(pt.x - lastRawPoint_.x);
+                const float dy = static_cast<float>(pt.y - lastRawPoint_.y);
+                const float dtMs = static_cast<float>(nowMs - lastRawPointTickMs_);
+                if (dtMs > 0.0f) {
+                    const float speedPxPerMs = std::sqrt(dx * dx + dy * dy) / dtMs;
+                    if (IsNeon3DHoldType(type_)) {
+                        // Layered CPU final-present path needs stronger follow to keep cursor sync.
+                        const bool layeredFinalPresent = !OverlayHostService::Instance().IsGpuPresentActive();
+                        if (layeredFinalPresent) {
+                            if (speedPxPerMs >= 2.2f) alpha = 0.94f;
+                            else if (speedPxPerMs >= 1.2f) alpha = 0.88f;
+                            else if (speedPxPerMs >= 0.6f) alpha = 0.78f;
+                            else alpha = 0.66f;
+                        } else {
+                            if (speedPxPerMs >= 1.8f) alpha = 0.86f;
+                            else if (speedPxPerMs >= 0.9f) alpha = 0.74f;
+                        }
+                    }
+                }
+            }
+            lastRawPoint_ = pt;
+            hasLastRawPoint_ = true;
+            lastRawPointTickMs_ = nowMs;
             if (!hasSmoothedPoint_) {
                 smoothedX_ = (float)pt.x;
                 smoothedY_ = (float)pt.y;
@@ -181,6 +207,8 @@ void HoldEffect::OnHoldEnd() {
     }
     holdButton_ = 0;
     hasSmoothedPoint_ = false;
+    hasLastRawPoint_ = false;
+    lastRawPointTickMs_ = 0;
     hasLastSentPoint_ = false;
     lastHoldCommandMs_ = 0;
     lastEfficientPosMs_ = 0;

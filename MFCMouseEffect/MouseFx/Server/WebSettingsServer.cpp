@@ -11,6 +11,7 @@
 #include "MouseFx/Gpu/DawnCommandConsumer.h"
 #include "MouseFx/Gpu/GpuFinalPresentCapabilityProbe.h"
 #include "MouseFx/Gpu/GpuFinalPresentHostChain.h"
+#include "MouseFx/Gpu/GpuFinalPresentTakeoverGate.h"
 #include "MouseFx/Gpu/DawnRuntime.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/WebUiAssets.h"
@@ -207,6 +208,31 @@ static json BuildGpuFinalPresentHostChainJson(const gpu::GpuFinalPresentHostChai
         {"dcomp_target_created", chain.dcompTargetCreated},
         {"dcomp_root_visual_created", chain.dcompRootVisualCreated},
         {"detail", chain.detail},
+    };
+}
+
+static gpu::GpuFinalPresentTakeoverGateStatus QueryGpuFinalPresentTakeoverGateStatus(
+    const gpu::GpuFinalPresentCapability& cap,
+    const gpu::GpuFinalPresentHostChainStatus& hostChain,
+    bool refresh) {
+    gpu::GpuFinalPresentTakeoverGateInput in{};
+    in.optInEnabled = hostChain.optInEnabled;
+    in.runtimeCapabilityLikelyAvailable = cap.likelyAvailable;
+    in.hostChainActive = hostChain.active;
+    return gpu::GetGpuFinalPresentTakeoverGateStatus(in, refresh);
+}
+
+static json BuildGpuFinalPresentTakeoverGateJson(const gpu::GpuFinalPresentTakeoverGateStatus& gate) {
+    return json{
+        {"probe_tick_ms", gate.probeTickMs},
+        {"integration_enabled_at_build", gate.integrationEnabledAtBuild},
+        {"explicit_on_by_file", gate.explicitOnByFile},
+        {"forced_off_by_file", gate.forcedOffByFile},
+        {"opt_in_enabled", gate.optInEnabled},
+        {"runtime_capability_likely_available", gate.runtimeCapabilityLikelyAvailable},
+        {"host_chain_active", gate.hostChainActive},
+        {"ready", gate.ready},
+        {"detail", gate.detail},
     };
 }
 
@@ -698,6 +724,8 @@ bool WebSettingsServer::Start() {
                     OverlayHostService::Instance().GetGpuFinalPresentPolicyDecision();
                 const gpu::GpuFinalPresentHostChainStatus finalPresentHostChain =
                     OverlayHostService::Instance().GetGpuFinalPresentHostChainStatus(false);
+                const gpu::GpuFinalPresentTakeoverGateStatus finalPresentTakeoverGate =
+                    QueryGpuFinalPresentTakeoverGateStatus(finalPresentCap, finalPresentHostChain, false);
                 resp.contentType = "application/json; charset=utf-8";
                 resp.body = json({
                     {"ok", true},
@@ -712,6 +740,7 @@ bool WebSettingsServer::Start() {
                     {"gpu_final_present_capability", BuildGpuFinalPresentCapabilityJson(finalPresentCap)},
                     {"gpu_final_present_policy", BuildGpuFinalPresentPolicyJson(finalPresentPolicy)},
                     {"gpu_final_present_host_chain", BuildGpuFinalPresentHostChainJson(finalPresentHostChain)},
+                    {"gpu_final_present_takeover_gate", BuildGpuFinalPresentTakeoverGateJson(finalPresentTakeoverGate)},
                     {"dawn_command_consumer", {
                         {"submit_tick_ms", consume.submitTickMs},
                         {"accepted", consume.accepted},
@@ -794,6 +823,8 @@ bool WebSettingsServer::Start() {
                     OverlayHostService::Instance().GetGpuFinalPresentPolicyDecision();
                 const gpu::GpuFinalPresentHostChainStatus finalPresentHostChain =
                     OverlayHostService::Instance().GetGpuFinalPresentHostChainStatus(refresh);
+                const gpu::GpuFinalPresentTakeoverGateStatus finalPresentTakeoverGate =
+                    QueryGpuFinalPresentTakeoverGateStatus(finalPresentCap, finalPresentHostChain, refresh);
                 resp.contentType = "application/json; charset=utf-8";
                 resp.body = json({
                     {"ok", true},
@@ -810,6 +841,7 @@ bool WebSettingsServer::Start() {
                     {"gpu_final_present_capability", BuildGpuFinalPresentCapabilityJson(finalPresentCap)},
                     {"gpu_final_present_policy", BuildGpuFinalPresentPolicyJson(finalPresentPolicy)},
                     {"gpu_final_present_host_chain", BuildGpuFinalPresentHostChainJson(finalPresentHostChain)},
+                    {"gpu_final_present_takeover_gate", BuildGpuFinalPresentTakeoverGateJson(finalPresentTakeoverGate)},
                     {"dawn_command_consumer", {
                         {"submit_tick_ms", consume.submitTickMs},
                         {"accepted", consume.accepted},
@@ -888,12 +920,15 @@ bool WebSettingsServer::Start() {
                     OverlayHostService::Instance().GetGpuFinalPresentPolicyDecision();
                 const gpu::GpuFinalPresentHostChainStatus finalPresentHostChain =
                     OverlayHostService::Instance().GetGpuFinalPresentHostChainStatus(refresh);
+                const gpu::GpuFinalPresentTakeoverGateStatus finalPresentTakeoverGate =
+                    QueryGpuFinalPresentTakeoverGateStatus(finalPresentCap, finalPresentHostChain, refresh);
                 resp.contentType = "application/json; charset=utf-8";
                 resp.body = json({
                     {"ok", true},
                     {"gpu_final_present_capability", BuildGpuFinalPresentCapabilityJson(finalPresentCap)},
                     {"gpu_final_present_policy", BuildGpuFinalPresentPolicyJson(finalPresentPolicy)},
                     {"gpu_final_present_host_chain", BuildGpuFinalPresentHostChainJson(finalPresentHostChain)},
+                    {"gpu_final_present_takeover_gate", BuildGpuFinalPresentTakeoverGateJson(finalPresentTakeoverGate)},
                 }).dump();
                 return;
             }
@@ -1146,12 +1181,15 @@ std::string WebSettingsServer::BuildStateJson() const {
         OverlayHostService::Instance().GetGpuFinalPresentPolicyDecision();
     const gpu::GpuFinalPresentHostChainStatus finalPresentHostChain =
         OverlayHostService::Instance().GetGpuFinalPresentHostChainStatus(false);
+    const gpu::GpuFinalPresentTakeoverGateStatus finalPresentTakeoverGate =
+        QueryGpuFinalPresentTakeoverGateStatus(finalPresentCap, finalPresentHostChain, false);
     out["dawn_probe"] = BuildDawnProbeJson(dawnStatus.probe);
     out["dawn_status"] = BuildDawnStatusJson(dawnStatus);
     out["dawn_overlay_bridge"] = BuildDawnOverlayBridgeJson(dawnBridge);
     out["gpu_final_present_capability"] = BuildGpuFinalPresentCapabilityJson(finalPresentCap);
     out["gpu_final_present_policy"] = BuildGpuFinalPresentPolicyJson(finalPresentPolicy);
     out["gpu_final_present_host_chain"] = BuildGpuFinalPresentHostChainJson(finalPresentHostChain);
+    out["gpu_final_present_takeover_gate"] = BuildGpuFinalPresentTakeoverGateJson(finalPresentTakeoverGate);
     out["gpu_command_stream"] = {
         {"frame_tick_ms", OverlayHostService::Instance().GetLastGpuCommandFrameTickMs()},
         {"command_count", OverlayHostService::Instance().GetLastGpuCommandCount()},

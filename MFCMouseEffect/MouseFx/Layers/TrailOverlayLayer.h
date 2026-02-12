@@ -14,6 +14,7 @@ public:
 
     void AddPoint(const POINT& pt);
     void Clear();
+    void SetLatencyPriorityMode(bool enabled);
 
     void Update(uint64_t nowMs) override;
     void Render(Gdiplus::Graphics& graphics) override;
@@ -31,8 +32,10 @@ private:
     int maxPoints_ = 40;
     Gdiplus::Color color_{220, 100, 255, 218};
     bool isChromatic_ = false;
+    bool latencyPriorityMode_ = false;
     POINT latestCursorPt_{};
     bool hasLatestCursorPt_ = false;
+    uint64_t lastCursorFallbackSampleMs_ = 0;
     POINT lastSamplePt_{};
     bool hasLastSamplePt_ = false;
 };

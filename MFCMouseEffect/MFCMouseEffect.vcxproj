@@ -99,7 +99,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_DEBUG;MOUSEFX_ENABLE_DAWN;MOUSEFX_ENABLE_DAWN_OVERLAY_BRIDGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_DEBUG;MOUSEFX_ENABLE_DAWN;MOUSEFX_ENABLE_DAWN_OVERLAY_BRIDGE;MOUSEFX_ENABLE_GPU_FINAL_PRESENT_TAKEOVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -126,7 +126,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;MOUSEFX_ENABLE_DAWN;MOUSEFX_ENABLE_DAWN_OVERLAY_BRIDGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;MOUSEFX_ENABLE_DAWN;MOUSEFX_ENABLE_DAWN_OVERLAY_BRIDGE;MOUSEFX_ENABLE_GPU_FINAL_PRESENT_TAKEOVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -152,7 +152,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;MOUSEFX_ENABLE_DAWN;MOUSEFX_ENABLE_DAWN_OVERLAY_BRIDGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;MOUSEFX_ENABLE_DAWN;MOUSEFX_ENABLE_DAWN_OVERLAY_BRIDGE;MOUSEFX_ENABLE_GPU_FINAL_PRESENT_TAKEOVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -180,7 +180,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;NDEBUG;MOUSEFX_ENABLE_DAWN;MOUSEFX_ENABLE_DAWN_OVERLAY_BRIDGE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;NDEBUG;MOUSEFX_ENABLE_DAWN;MOUSEFX_ENABLE_DAWN_OVERLAY_BRIDGE;MOUSEFX_ENABLE_GPU_FINAL_PRESENT_TAKEOVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -265,6 +265,7 @@
     <ClInclude Include="MouseFx\Gpu\GpuFinalPresentPolicy.h" />
     <ClInclude Include="MouseFx\Gpu\GpuFinalPresentOptIn.h" />
     <ClInclude Include="MouseFx\Gpu\GpuFinalPresentHostChain.h" />
+    <ClInclude Include="MouseFx\Gpu\GpuFinalPresentTakeoverGate.h" />
     <ClInclude Include="MouseFx\Gpu\GpuFinalPresentCapabilityProbe.h" />
     <ClInclude Include="MouseFx\Gpu\GpuHardwareProbe.h" />
     <ClInclude Include="MouseFx\ThirdParty\json.hpp" />
@@ -307,6 +308,7 @@
     <ClCompile Include="MouseFx\Gpu\GpuFinalPresentPolicy.cpp" />
     <ClCompile Include="MouseFx\Gpu\GpuFinalPresentOptIn.cpp" />
     <ClCompile Include="MouseFx\Gpu\GpuFinalPresentHostChain.cpp" />
+    <ClCompile Include="MouseFx\Gpu\GpuFinalPresentTakeoverGate.cpp" />
     <ClCompile Include="MouseFx\Gpu\GpuFinalPresentCapabilityProbe.cpp" />
     <ClCompile Include="MouseFx\Core\OverlayCoordSpace.cpp" />
     <ClCompile Include="MouseFx\Core\OverlayHostService.cpp" />

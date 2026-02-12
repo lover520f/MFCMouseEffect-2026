@@ -6,6 +6,7 @@ namespace mousefx {
 namespace {
 
 constexpr int kTrailScreenCullPadding = 220;
+constexpr uint64_t kCursorFallbackSampleIntervalMs = 24;
 
 bool RectanglesOverlap(int l1, int t1, int r1, int b1, int l2, int t2, int r2, int b2) {
     return !(r1 <= l2 || r2 <= l1 || b1 <= t2 || b2 <= t1);
@@ -33,9 +34,23 @@ void TrailOverlayLayer::AddPoint(const POINT& pt) {
 void TrailOverlayLayer::Clear() {
     points_.clear();
     hasLastSamplePt_ = false;
+    lastCursorFallbackSampleMs_ = 0;
+}
+
+void TrailOverlayLayer::SetLatencyPriorityMode(bool enabled) {
+    if (latencyPriorityMode_ == enabled) return;
+    latencyPriorityMode_ = enabled;
+    if (latencyPriorityMode_) {
+        Clear();
+        hasLatestCursorPt_ = false;
+    }
 }
 
 void TrailOverlayLayer::Update(uint64_t nowMs) {
+    if (latencyPriorityMode_) {
+        // Hold-latency priority: fully pause trail path to avoid CPU contention.
+        return;
+    }
     SampleCursorPoint(nowMs);
     while (!points_.empty()) {
         if (nowMs - points_.front().addedTime > (uint64_t)durationMs_) {
@@ -47,6 +62,7 @@ void TrailOverlayLayer::Update(uint64_t nowMs) {
 }
 
 void TrailOverlayLayer::Render(Gdiplus::Graphics& graphics) {
+    if (latencyPriorityMode_) return;
     if (!renderer_) return;
     const int width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
     const int height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
@@ -54,6 +70,7 @@ void TrailOverlayLayer::Render(Gdiplus::Graphics& graphics) {
 }
 
 bool TrailOverlayLayer::IntersectsScreenRect(int left, int top, int right, int bottom) const {
+    if (latencyPriorityMode_) return false;
     if (left >= right || top >= bottom) return false;
 
     int minX = 0;
@@ -92,6 +109,7 @@ bool TrailOverlayLayer::IntersectsScreenRect(int left, int top, int right, int b
 }
 
 void TrailOverlayLayer::AppendGpuCommands(gpu::OverlayGpuCommandStream& stream, uint64_t nowMs) const {
+    if (latencyPriorityMode_) return;
     if (points_.size() < 2) return;
 
     gpu::OverlayGpuCommand cmd{};
@@ -130,8 +148,16 @@ void TrailOverlayLayer::SampleCursorPoint(uint64_t nowMs) {
         pt = latestCursorPt_;
         hasLatestCursorPt_ = false;
         havePoint = true;
-    } else if (GetCursorPos(&pt)) {
-        havePoint = true;
+    } else {
+        const uint64_t elapsed = (nowMs >= lastCursorFallbackSampleMs_)
+            ? (nowMs - lastCursorFallbackSampleMs_)
+            : 0;
+        if (lastCursorFallbackSampleMs_ == 0 || elapsed >= kCursorFallbackSampleIntervalMs) {
+            if (GetCursorPos(&pt)) {
+                havePoint = true;
+                lastCursorFallbackSampleMs_ = nowMs;
+            }
+        }
     }
     if (!havePoint) return;
 

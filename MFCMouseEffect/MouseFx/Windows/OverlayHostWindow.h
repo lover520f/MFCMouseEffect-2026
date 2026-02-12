@@ -41,6 +41,7 @@ public:
     std::string GetGpuPresentLastDetail() const;
     bool IsGpuPresentActive() const;
     gpu::GpuFinalPresentPolicyDecision GetGpuFinalPresentPolicyDecision() const;
+    void RequestImmediateFrame();
 
     struct HostSurface {
         HWND hwnd = nullptr;
@@ -58,6 +59,7 @@ public:
 private:
     static constexpr UINT_PTR kTimerId = 5;
     static constexpr UINT kMsgEnsureTopmost = WM_APP + 0x33;
+    static constexpr UINT kMsgRequestImmediateFrame = WM_APP + 0x34;
 
     static void CALLBACK ForegroundEventProc(HWINEVENTHOOK hook, DWORD event, HWND hwnd, LONG idObject, LONG idChild, DWORD idEventThread, DWORD eventTime);
 
@@ -115,6 +117,8 @@ private:
     std::string gpuSubmitPipelineMode_ = "cpu_layered";
     bool useLayeredSurfaces_ = true;
     std::atomic<bool> pendingLayeredRollback_{false};
+    std::atomic<bool> immediateFrameKickPending_{false};
+    std::atomic<uint64_t> lastImmediateFrameKickMs_{0};
     std::atomic<uint64_t> layeredCpuFallbackUntilMs_{0};
     std::atomic<uint32_t> gpuPresentConsecutiveFailures_{0};
 };

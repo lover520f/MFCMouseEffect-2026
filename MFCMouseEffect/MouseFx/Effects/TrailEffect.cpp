@@ -58,6 +58,23 @@ void TrailEffect::OnMouseMove(const POINT& pt) {
     }
 }
 
+void TrailEffect::OnCommand(const std::string& cmd, const std::string& args) {
+    if (!hostLayer_) return;
+    const std::string c = ToLowerAscii(cmd);
+    if (c == "clear") {
+        hostLayer_->Clear();
+        return;
+    }
+    if (c == "latency_priority") {
+        const std::string a = ToLowerAscii(args);
+        const bool enabled = (a == "on" || a == "1" || a == "true");
+        hostLayer_->SetLatencyPriorityMode(enabled);
+        if (enabled) {
+            hostLayer_->Clear();
+        }
+    }
+}
+
 std::unique_ptr<ITrailRenderer> TrailEffect::CreateRenderer() const {
     if (type_ == "electric") {
         return std::make_unique<ElectricTrailRenderer>(durationMs_, params_);

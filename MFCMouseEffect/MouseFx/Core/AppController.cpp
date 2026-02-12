@@ -444,6 +444,42 @@ bool AppController::ShouldDispatchDragMove(uint64_t nowTick) {
     return true;
 }
 
+bool AppController::IsHoldNeon3DTypeName(const std::string& type) {
+    const std::string t = ToLowerAscii(type);
+    return t == "neon3d" || t == "hold_neon3d";
+}
+
+void AppController::SetTrailLatencyPriorityMode(bool enabled) {
+    if (trailLatencyPriorityActive_ == enabled) return;
+    trailLatencyPriorityActive_ = enabled;
+    if (auto* effect = GetEffect(EffectCategory::Trail)) {
+        effect->OnCommand("latency_priority", enabled ? "on" : "off");
+        if (enabled) {
+            effect->OnCommand("clear", "hold_priority");
+        }
+    }
+    OverlayHostService::Instance().RequestImmediateFrame();
+}
+
+bool AppController::ShouldPrioritizeHoldLatency() const {
+    if (!holdEffectRunning_) return false;
+    if (!IsHoldNeon3DTypeName(config_.active.hold)) return false;
+    if (OverlayHostService::Instance().GetActiveRenderBackend() != "dawn") return false;
+    // When final present is still layered CPU fallback, prioritize hold follow latency.
+    return !OverlayHostService::Instance().IsGpuPresentActive();
+}
+
+bool AppController::ShouldDispatchTrailDuringHoldPriority(uint64_t nowTick) {
+    const uint64_t elapsed = (nowTick >= lastHoldPriorityTrailDispatchTick_)
+        ? (nowTick - lastHoldPriorityTrailDispatchTick_)
+        : 0;
+    if (elapsed < kHoldNeon3DTrailDispatchIntervalMs) {
+        return false;
+    }
+    lastHoldPriorityTrailDispatchTick_ = nowTick;
+    return true;
+}
+
 void AppController::RecreateActiveEffects() {
     const std::string clickType = config_.active.click.empty()
         ? (config_.defaultEffect.empty() ? "ripple" : config_.defaultEffect)
@@ -761,6 +797,7 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
                 effect->OnClick(*ev);
             }
             delete ev;
+            OverlayHostService::Instance().RequestImmediateFrame();
         }
         return 0;
     } 
@@ -775,9 +812,14 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         const uint64_t nowTick = GetTickCount64();
         const bool dragLikeMove = holdButtonDown_ && IsLikelySystemWindowDrag(hwnd);
         const bool allowMoveDispatch = !dragLikeMove || ShouldDispatchDragMove(nowTick);
+        const bool holdLatencyPriority = ShouldPrioritizeHoldLatency();
+        SetTrailLatencyPriorityMode(holdLatencyPriority);
+        const bool allowTrailDispatch =
+            allowMoveDispatch &&
+            (!holdLatencyPriority || ShouldDispatchTrailDuringHoldPriority(nowTick));
 
         // Dispatch to Trail category effect
-        if (allowMoveDispatch) {
+        if (allowTrailDispatch) {
             if (auto* effect = GetEffect(EffectCategory::Trail)) {
                 effect->OnMouseMove(pt);
             }
@@ -796,6 +838,7 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         } else if (holdButtonDown_) {
             // Consume suppressed move quietly during drag throttling.
         }
+        OverlayHostService::Instance().RequestImmediateFrame();
         return 0;
     }
 
@@ -812,6 +855,7 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
             ev.horizontal = false;
             effect->OnScroll(ev);
         }
+        OverlayHostService::Instance().RequestImmediateFrame();
         return 0;
     }
 
@@ -822,7 +866,9 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         pt.y = GET_Y_LPARAM(lParam);
 
         holdButtonDown_ = true;
+        holdEffectRunning_ = false;
         holdDownTick_ = GetTickCount64();
+        lastHoldPriorityTrailDispatchTick_ = 0;
         
         // Start delayed hold
         pendingHold_.pt = pt;
@@ -836,7 +882,10 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
     if (msg == WM_MFX_BUTTON_UP) {
         holdButtonDown_ = false;
+        holdEffectRunning_ = false;
         holdDownTick_ = 0;
+        lastHoldPriorityTrailDispatchTick_ = 0;
+        SetTrailLatencyPriorityMode(false);
 
         // Cancel pending hold if quick click
         if (pendingHold_.active) {
@@ -848,6 +897,7 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         if (auto* effect = GetEffect(EffectCategory::Hold)) {
             effect->OnHoldEnd();
         }
+        OverlayHostService::Instance().RequestImmediateFrame();
         return 0;
     }
 
@@ -922,7 +972,9 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
                 // Timer elapsed, this is a real hold: trigger effect
                 if (auto* effect = GetEffect(EffectCategory::Hold)) {
                     effect->OnHoldStart(pendingHold_.pt, pendingHold_.button);
+                    holdEffectRunning_ = true;
                 }
+                OverlayHostService::Instance().RequestImmediateFrame();
                 // Keep active true so we know we triggered it (moved/up logic might use it)
                 // But actually once triggered, the Effect manages state independently.
                 // We just mark it inactive here to avoid double Trigger? No, logic is fine.

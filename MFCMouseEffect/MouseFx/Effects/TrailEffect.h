@@ -21,6 +21,7 @@ public:
     bool Initialize() override;
     void Shutdown() override;
     void OnMouseMove(const POINT& pt) override;
+    void OnCommand(const std::string& cmd, const std::string& args) override;
 
 private:
     std::unique_ptr<ITrailRenderer> CreateRenderer() const;
