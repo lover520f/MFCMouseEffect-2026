@@ -9,5 +9,8 @@ namespace mousefx {
 // Falls back to the EXE directory.
 std::wstring ResolveConfigDirectory();
 
-} // namespace mousefx
+// Resolves local diagnostic directory near executable:
+// <exe_dir>\\.local\\diag
+std::wstring ResolveLocalDiagDirectory();
 
+} // namespace mousefx

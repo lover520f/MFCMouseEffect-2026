@@ -13,6 +13,9 @@
 #include <new>
 #include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM
 #include <cctype>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 namespace mousefx {
 
@@ -95,6 +98,57 @@ void AppController::PersistConfig() {
     }
 }
 
+std::string AppController::ResolveRuntimeEffectType(
+    EffectCategory category,
+    const std::string& requestedType,
+    std::string* outReason) const {
+    if (outReason) outReason->clear();
+    if (category != EffectCategory::Hold) {
+        return requestedType;
+    }
+    if (requestedType != "hold_neon3d_gpu_v2") {
+        return requestedType;
+    }
+
+    // Stage-1: Dawn native hold route not integrated yet.
+    if (outReason) *outReason = "dawn_native_backend_not_ready";
+    return "hold_neon3d";
+}
+
+void AppController::NotifyGpuFallbackIfNeeded(const std::string& reason) {
+    if (gpuFallbackNotifiedThisSession_) return;
+    gpuFallbackNotifiedThisSession_ = true;
+    CString msg = L"GPU effect route is not available on this build/device. Switched to CPU fallback (Neon HUD).";
+    if (!reason.empty()) {
+        msg += L"\n\n";
+        msg += L"Reason: ";
+        msg += Utf8ToWString(reason).c_str();
+    }
+    AfxMessageBox(msg, MB_OK | MB_ICONINFORMATION);
+}
+
+void AppController::WriteGpuRouteStatusSnapshot(
+    const std::string& requestedType,
+    const std::string& effectiveType,
+    const std::string& reason) const {
+    const std::wstring diagDir = ResolveLocalDiagDirectory();
+    if (diagDir.empty()) return;
+    std::error_code ec;
+    std::filesystem::create_directories(diagDir, ec);
+    if (ec) return;
+    const std::filesystem::path file = std::filesystem::path(diagDir) / L"gpu_route_status_auto.json";
+    std::ofstream out(file, std::ios::binary | std::ios::trunc);
+    if (!out.is_open()) return;
+    std::ostringstream ss;
+    ss << "{"
+       << "\"requested\":\"" << requestedType << "\","
+       << "\"effective\":\"" << effectiveType << "\","
+       << "\"fallback_applied\":" << (requestedType == effectiveType ? "false" : "true") << ","
+       << "\"reason\":\"" << reason << "\""
+       << "}";
+    out << ss.str();
+}
+
 void AppController::SetActiveEffectType(EffectCategory category, const std::string& type) {
     switch (category) {
         case EffectCategory::Click: config_.active.click = type; break;
@@ -141,6 +195,25 @@ bool AppController::Start() {
     SetEffect(EffectCategory::Scroll, config_.active.scroll);
     SetEffect(EffectCategory::Hold, config_.active.hold);
     SetEffect(EffectCategory::Hover, config_.active.hover);
+
+    bool normalizedChanged = false;
+    auto normalizeActive = [&](EffectCategory category, std::string* slot) {
+        if (!slot) return;
+        std::string reason;
+        const std::string effective = ResolveRuntimeEffectType(category, *slot, &reason);
+        if (*slot != effective) {
+            *slot = effective;
+            normalizedChanged = true;
+        }
+    };
+    normalizeActive(EffectCategory::Click, &config_.active.click);
+    normalizeActive(EffectCategory::Trail, &config_.active.trail);
+    normalizeActive(EffectCategory::Scroll, &config_.active.scroll);
+    normalizeActive(EffectCategory::Hold, &config_.active.hold);
+    normalizeActive(EffectCategory::Hover, &config_.active.hover);
+    if (normalizedChanged) {
+        PersistConfig();
+    }
 
     lastInputTime_ = GetTickCount64();
     SetTimer(dispatchHwnd_, kHoverTimerId, 100, nullptr);
@@ -190,6 +263,13 @@ void AppController::SetEffect(EffectCategory category, const std::string& type) 
     size_t idx = static_cast<size_t>(category);
     if (idx >= kCategoryCount) return;
 
+    std::string fallbackReason;
+    const std::string effectiveType = ResolveRuntimeEffectType(category, type, &fallbackReason);
+    if (!fallbackReason.empty() && effectiveType != type) {
+        NotifyGpuFallbackIfNeeded(fallbackReason);
+    }
+    WriteGpuRouteStatusSnapshot(type, effectiveType, fallbackReason);
+
     // Shutdown existing effect for this category
     if (effects_[idx]) {
         effects_[idx]->Shutdown();
@@ -197,7 +277,7 @@ void AppController::SetEffect(EffectCategory category, const std::string& type) 
     }
 
     // Create and initialize new effect
-    effects_[idx] = CreateEffect(category, type);
+    effects_[idx] = CreateEffect(category, effectiveType);
     if (effects_[idx]) {
         effects_[idx]->Initialize();
     }
@@ -205,7 +285,7 @@ void AppController::SetEffect(EffectCategory category, const std::string& type) 
 #ifdef _DEBUG
     wchar_t buf[256]{};
     wsprintfW(buf, L"MouseFx: SetEffect category=%hs type=%hs\n", 
-              CategoryToString(category), type.c_str());
+              CategoryToString(category), effectiveType.c_str());
     OutputDebugStringW(buf);
 #endif
 }
@@ -303,6 +383,25 @@ void AppController::ReloadConfigFromDisk() {
     SetEffect(EffectCategory::Hold, config_.active.hold);
     SetEffect(EffectCategory::Hover, config_.active.hover);
 
+    bool normalizedChanged = false;
+    auto normalizeActive = [&](EffectCategory category, std::string* slot) {
+        if (!slot) return;
+        std::string reason;
+        const std::string effective = ResolveRuntimeEffectType(category, *slot, &reason);
+        if (*slot != effective) {
+            *slot = effective;
+            normalizedChanged = true;
+        }
+    };
+    normalizeActive(EffectCategory::Click, &config_.active.click);
+    normalizeActive(EffectCategory::Trail, &config_.active.trail);
+    normalizeActive(EffectCategory::Scroll, &config_.active.scroll);
+    normalizeActive(EffectCategory::Hold, &config_.active.hold);
+    normalizeActive(EffectCategory::Hover, &config_.active.hover);
+    if (normalizedChanged) {
+        PersistConfig();
+    }
+
 #ifdef _DEBUG
     OutputDebugStringW(L"MouseFx: reload_config applied.\n");
 #endif
@@ -333,12 +432,16 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
         if (category.empty()) {
             // Legacy format: {"cmd": "set_effect", "type": "ripple"}
             // Assume click category for backward compatibility
+            std::string reason;
+            const std::string effectiveType = ResolveRuntimeEffectType(EffectCategory::Click, type, &reason);
             SetEffect(EffectCategory::Click, type);
-            SetActiveEffectType(EffectCategory::Click, type);
+            SetActiveEffectType(EffectCategory::Click, effectiveType);
         } else {
             const auto cat = CategoryFromString(category);
+            std::string reason;
+            const std::string effectiveType = ResolveRuntimeEffectType(cat, type, &reason);
             SetEffect(cat, type);
-            SetActiveEffectType(cat, type);
+            SetActiveEffectType(cat, effectiveType);
         }
         PersistConfig();
     } else if (cmd == "clear_effect") {
@@ -387,13 +490,15 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
                 if (!a.contains(key) || !a[key].is_string()) return;
                 std::string type = a[key].get<std::string>();
                 if (type.empty()) return;
+                std::string reason;
+                const std::string effectiveType = ResolveRuntimeEffectType(category, type, &reason);
 
-                if (type == "none") {
+                if (effectiveType == "none") {
                     ClearEffect(category);
                 } else {
                     SetEffect(category, type);
                 }
-                SetActiveEffectType(category, type);
+                SetActiveEffectType(category, effectiveType);
                 activeChanged = true;
             };
 

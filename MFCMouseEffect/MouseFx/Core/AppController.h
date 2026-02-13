@@ -87,6 +87,9 @@ private:
     void PersistConfig();
     void SetActiveEffectType(EffectCategory category, const std::string& type);
     void ReloadConfigFromDisk();
+    std::string ResolveRuntimeEffectType(EffectCategory category, const std::string& requestedType, std::string* outReason) const;
+    void NotifyGpuFallbackIfNeeded(const std::string& reason);
+    void WriteGpuRouteStatusSnapshot(const std::string& requestedType, const std::string& effectiveType, const std::string& reason) const;
 
     HWND dispatchHwnd_ = nullptr;
 
@@ -118,6 +121,7 @@ private:
 
     bool holdButtonDown_ = false;
     uint64_t holdDownTick_ = 0;
+    bool gpuFallbackNotifiedThisSession_ = false;
 
 #ifdef _DEBUG
     uint32_t debugClickCount_ = 0;
