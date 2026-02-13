@@ -339,11 +339,16 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
 
     // Stage-16: optional trial-path upload to DComp swapchain for observability.
     // Failure here must never affect the authoritative layered present path.
-    (void)d3d11DcompPresenter_.SubmitTrialFrameBGRAIfEnabled(
-        surface.bits,
-        surface.width,
-        surface.height,
-        surface.width * 4);
+    // Visible-trial path binds to a single host hwnd. In multi-monitor mode we
+    // must only upload that hwnd's surface, otherwise frames from other monitors
+    // are mirrored into the bound swapchain target.
+    if (surface.hwnd == timerHwnd_) {
+        (void)d3d11DcompPresenter_.SubmitTrialFrameBGRAIfEnabled(
+            surface.bits,
+            surface.width,
+            surface.height,
+            surface.width * 4);
+    }
 }
 
 bool OverlayHostWindow::RebuildSurfaces() {
