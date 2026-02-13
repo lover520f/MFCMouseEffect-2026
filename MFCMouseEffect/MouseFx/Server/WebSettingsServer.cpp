@@ -347,6 +347,11 @@ std::string WebSettingsServer::BuildStateJson() const {
         takeoverBlockReason = "takeover_active";
     }
     const bool trialUploadGateOpen = gpuPresentHost.visibleTrialEnabled && gpuPresentHost.takeoverEnabled;
+    const bool takeoverAttemptGuardOpen =
+        gpuPresentHost.takeoverEnabled &&
+        gpuPresentHost.takeoverEligible &&
+        !gpuPresentHost.takeoverActive &&
+        gpuPresentHost.takeoverAttempts == 0;
     out["gpu_present_host"] = {
         {"initialized", gpuPresentHost.initialized},
         {"d3d11_device_ready", gpuPresentHost.d3d11DeviceReady},
@@ -361,6 +366,7 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"takeover_active", gpuPresentHost.takeoverActive},
         {"takeover_attempts", gpuPresentHost.takeoverAttempts},
         {"takeover_fallbacks", gpuPresentHost.takeoverFallbacks},
+        {"takeover_attempt_guard_open", takeoverAttemptGuardOpen},
         {"trial_frame_submit_attempts", gpuPresentHost.trialFrameSubmitAttempts},
         {"trial_frame_submit_success", gpuPresentHost.trialFrameSubmitSuccess},
         {"trial_frame_submit_failure", gpuPresentHost.trialFrameSubmitFailure},
