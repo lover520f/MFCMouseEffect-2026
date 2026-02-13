@@ -33,6 +33,16 @@ bool ConsumeRearmRequest(const std::filesystem::path& diagDir) {
     return true;
 }
 
+bool ConsumeOneShotEnableRequest(const std::filesystem::path& diagDir) {
+    if (diagDir.empty()) return false;
+    const std::filesystem::path onceFile = diagDir / L"gpu_final_present_takeover.once";
+    std::error_code ec;
+    if (!std::filesystem::exists(onceFile, ec) || ec) return false;
+    ec.clear();
+    std::filesystem::remove(onceFile, ec);
+    return true;
+}
+
 void ArchiveStaleAutoOffMarker(const std::filesystem::path& autoOffFile) {
     if (autoOffFile.empty()) return;
     std::error_code ec;
@@ -70,8 +80,12 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
     TakeoverControlDecision result{};
     const std::filesystem::path diagDir = ResolveGpuDiagDirFromCurrentModule();
     const bool rearmed = ConsumeRearmRequest(diagDir);
+    const bool onceEnabled = ConsumeOneShotEnableRequest(diagDir);
     result.visibleTrialEnabled = IsVisibleTrialEnabledByFile(diagDir);
+    result.visibleTrialFilePresent = result.visibleTrialEnabled;
     result.rearmProcessed = rearmed;
+    result.onceFilePresent = onceEnabled;
+    result.onceFileConsumed = onceEnabled;
 
     const std::filesystem::path exePath = []() -> std::filesystem::path {
         wchar_t modulePath[MAX_PATH]{};
@@ -85,27 +99,34 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
         const std::filesystem::path onFile = diagDir / L"gpu_final_present_takeover.on";
         const std::filesystem::path autoOffFile = diagDir / L"gpu_final_present_takeover.off.disabled_by_codex";
         std::error_code ec;
-        if (std::filesystem::exists(offFile, ec) && !ec) {
+        const bool offFilePresent = std::filesystem::exists(offFile, ec) && !ec;
+        result.offFilePresent = offFilePresent;
+        if (offFilePresent) {
             result.takeoverEnabled = false;
             result.source = "file_off";
             result.detail = "manual_off_file_present";
             return result;
         }
         ec.clear();
-        if (std::filesystem::exists(onFile, ec) && !ec) {
+        const bool onFilePresent = std::filesystem::exists(onFile, ec) && !ec;
+        result.onFilePresent = onFilePresent;
+        if (onFilePresent) {
             result.takeoverEnabled = true;
             result.source = "file_on";
             result.detail = rearmed ? "rearmed_then_manual_on_file_present" : "manual_on_file_present";
             return result;
         }
         ec.clear();
-        if (std::filesystem::exists(autoOffFile, ec) && !ec) {
+        const bool autoOffPresent = std::filesystem::exists(autoOffFile, ec) && !ec;
+        result.autoOffFilePresent = autoOffPresent;
+        if (autoOffPresent) {
             std::error_code fileEc;
             const auto autoOffTime = std::filesystem::last_write_time(autoOffFile, fileEc);
             std::error_code exeEc;
             const auto exeTime = exePath.empty() ? std::filesystem::file_time_type{} : std::filesystem::last_write_time(exePath, exeEc);
             if (!fileEc && !exeEc && !exePath.empty() && autoOffTime < exeTime) {
                 ArchiveStaleAutoOffMarker(autoOffFile);
+                result.autoOffFilePresent = false;
                 result.takeoverEnabled = false;
                 result.source = "auto_off_ignored_after_new_build";
                 result.detail = "auto_off_marker_older_than_exe_archived";
@@ -116,6 +137,13 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
                 return result;
             }
         }
+    }
+
+    if (onceEnabled) {
+        result.takeoverEnabled = true;
+        result.source = "file_once";
+        result.detail = rearmed ? "rearmed_then_once_file_consumed" : "once_file_consumed";
+        return result;
     }
 
     wchar_t value[8]{};
@@ -135,4 +163,3 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
 }
 
 } // namespace mousefx::gpu
-

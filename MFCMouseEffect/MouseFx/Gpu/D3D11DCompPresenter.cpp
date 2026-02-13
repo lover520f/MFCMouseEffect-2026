@@ -480,6 +480,12 @@ bool D3D11DCompPresenter::Initialize() {
     const TakeoverControlDecision control = ResolveTakeoverControlDecision();
     status_.visibleTrialEnabled = control.visibleTrialEnabled;
     status_.rearmProcessed = control.rearmProcessed;
+    status_.controlOnFilePresent = control.onFilePresent;
+    status_.controlOffFilePresent = control.offFilePresent;
+    status_.controlAutoOffFilePresent = control.autoOffFilePresent;
+    status_.controlVisibleTrialFilePresent = control.visibleTrialFilePresent;
+    status_.controlOnceFilePresent = control.onceFilePresent;
+    status_.controlOnceFileConsumed = control.onceFileConsumed;
     status_.takeoverEnabled = control.takeoverEnabled;
     status_.takeoverControl = control.source;
     status_.takeoverControlDetail = control.detail;
