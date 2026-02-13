@@ -33,23 +33,19 @@ bool ConsumeRearmRequest(const std::filesystem::path& diagDir) {
     return true;
 }
 
-bool ConsumeOneShotEnableRequest(const std::filesystem::path& diagDir) {
+bool IsOneShotEnableRequested(const std::filesystem::path& diagDir) {
     if (diagDir.empty()) return false;
     const std::filesystem::path onceFile = diagDir / L"gpu_final_present_takeover.once";
     std::error_code ec;
     if (!std::filesystem::exists(onceFile, ec) || ec) return false;
-    ec.clear();
-    std::filesystem::remove(onceFile, ec);
     return true;
 }
 
-bool ConsumeVisibleTrialOneShotEnableRequest(const std::filesystem::path& diagDir) {
+bool IsVisibleTrialOneShotEnableRequested(const std::filesystem::path& diagDir) {
     if (diagDir.empty()) return false;
     const std::filesystem::path onceFile = diagDir / L"gpu_final_present_takeover.visible_trial.once";
     std::error_code ec;
     if (!std::filesystem::exists(onceFile, ec) || ec) return false;
-    ec.clear();
-    std::filesystem::remove(onceFile, ec);
     return true;
 }
 
@@ -90,15 +86,15 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
     TakeoverControlDecision result{};
     const std::filesystem::path diagDir = ResolveGpuDiagDirFromCurrentModule();
     const bool rearmed = ConsumeRearmRequest(diagDir);
-    const bool visibleTrialOnceEnabled = ConsumeVisibleTrialOneShotEnableRequest(diagDir);
-    const bool onceEnabled = ConsumeOneShotEnableRequest(diagDir);
+    const bool visibleTrialOnceEnabled = IsVisibleTrialOneShotEnableRequested(diagDir);
+    const bool onceEnabled = IsOneShotEnableRequested(diagDir);
     result.visibleTrialEnabled = IsVisibleTrialEnabledByFile(diagDir);
     result.visibleTrialFilePresent = result.visibleTrialEnabled;
     result.rearmProcessed = rearmed;
     result.onceFilePresent = onceEnabled;
-    result.onceFileConsumed = onceEnabled;
+    result.onceFileConsumed = false;
     result.visibleTrialOnceFilePresent = visibleTrialOnceEnabled;
-    result.visibleTrialOnceFileConsumed = visibleTrialOnceEnabled;
+    result.visibleTrialOnceFileConsumed = false;
     if (visibleTrialOnceEnabled) {
         result.visibleTrialEnabled = true;
         result.visibleTrialFilePresent = true;
@@ -182,6 +178,25 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
         ? (rearmed ? "rearmed_then_env_enabled" : "env_enabled")
         : (rearmed ? "rearmed_then_env_disabled" : "env_disabled");
     return result;
+}
+
+bool ConsumeOneShotControlFileForSource(const char* source) {
+    const std::filesystem::path diagDir = ResolveGpuDiagDirFromCurrentModule();
+    if (diagDir.empty()) return false;
+
+    std::filesystem::path target;
+    if (source && std::string(source) == "file_once") {
+        target = diagDir / L"gpu_final_present_takeover.once";
+    } else if (source && std::string(source) == "file_visible_trial_once") {
+        target = diagDir / L"gpu_final_present_takeover.visible_trial.once";
+    } else {
+        return false;
+    }
+
+    std::error_code ec;
+    if (!std::filesystem::exists(target, ec) || ec) return false;
+    ec.clear();
+    return std::filesystem::remove(target, ec) && !ec;
 }
 
 } // namespace mousefx::gpu

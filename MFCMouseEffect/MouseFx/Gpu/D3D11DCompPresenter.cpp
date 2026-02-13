@@ -327,6 +327,12 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
         return false;
     }
 
+    if (status_.takeoverControl == "file_once") {
+        status_.controlOnceFileConsumed = ConsumeOneShotControlFileForSource("file_once");
+    } else if (status_.takeoverControl == "file_visible_trial_once") {
+        status_.controlVisibleTrialOnceFileConsumed = ConsumeOneShotControlFileForSource("file_visible_trial_once");
+    }
+
     takeoverAttempted_ = true;
     status_.lastTrialTickMs = GetTickCount64();
     status_.lastTrialResult = "attempt_started";

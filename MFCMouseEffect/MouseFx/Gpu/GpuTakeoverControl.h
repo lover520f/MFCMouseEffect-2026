@@ -24,5 +24,6 @@ struct TakeoverControlDecision {
 std::filesystem::path ResolveGpuDiagDirFromCurrentModule();
 void WriteGpuAutoDisableMarker(const char* reason);
 TakeoverControlDecision ResolveTakeoverControlDecision();
+bool ConsumeOneShotControlFileForSource(const char* source);
 
 } // namespace mousefx::gpu
