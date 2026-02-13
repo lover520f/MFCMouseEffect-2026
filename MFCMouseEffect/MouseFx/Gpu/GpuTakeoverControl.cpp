@@ -102,12 +102,14 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
     const bool multiMonitor = IsMultiMonitorEnvironment();
     if (multiMonitor && result.visibleTrialEnabled) {
         result.visibleTrialEnabled = false;
+        result.visibleTrialDowngradedByMultiMonitor = true;
         result.detail = "visible_trial_file_ignored_multimon";
     }
     if (visibleTrialOnceEnabled) {
         result.visibleTrialEnabled = !multiMonitor;
         result.visibleTrialFilePresent = !multiMonitor;
         if (multiMonitor) {
+            result.visibleTrialDowngradedByMultiMonitor = true;
             result.detail = "visible_trial_once_downgraded_multimon";
         }
     }

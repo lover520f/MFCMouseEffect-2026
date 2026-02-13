@@ -503,6 +503,7 @@ bool D3D11DCompPresenter::Initialize() {
     status_.controlOnceFileConsumed = control.onceFileConsumed;
     status_.controlVisibleTrialOnceFilePresent = control.visibleTrialOnceFilePresent;
     status_.controlVisibleTrialOnceFileConsumed = control.visibleTrialOnceFileConsumed;
+    status_.controlVisibleTrialDowngradedByMultiMonitor = control.visibleTrialDowngradedByMultiMonitor;
     status_.takeoverEnabled = control.takeoverEnabled;
     status_.trialFrameUploadEnabled = false;
     status_.takeoverControl = control.source;

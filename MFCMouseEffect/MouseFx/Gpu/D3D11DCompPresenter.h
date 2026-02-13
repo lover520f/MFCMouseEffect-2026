@@ -28,6 +28,7 @@ struct D3D11DCompPresenterStatus {
     bool controlOnceFileConsumed = false;
     bool controlVisibleTrialOnceFilePresent = false;
     bool controlVisibleTrialOnceFileConsumed = false;
+    bool controlVisibleTrialDowngradedByMultiMonitor = false;
     bool takeoverEnabled = false;
     bool takeoverEligible = false;
     bool takeoverActive = false;
