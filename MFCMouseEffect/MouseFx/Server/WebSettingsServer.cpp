@@ -367,6 +367,8 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"control_visible_trial_file_present", gpuPresentHost.controlVisibleTrialFilePresent},
         {"control_once_file_present", gpuPresentHost.controlOnceFilePresent},
         {"control_once_file_consumed", gpuPresentHost.controlOnceFileConsumed},
+        {"control_visible_trial_once_file_present", gpuPresentHost.controlVisibleTrialOnceFilePresent},
+        {"control_visible_trial_once_file_consumed", gpuPresentHost.controlVisibleTrialOnceFileConsumed},
         {"takeover_enabled", gpuPresentHost.takeoverEnabled},
         {"takeover_eligible", gpuPresentHost.takeoverEligible},
         {"takeover_active", gpuPresentHost.takeoverActive},

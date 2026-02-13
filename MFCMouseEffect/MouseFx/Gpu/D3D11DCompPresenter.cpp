@@ -486,6 +486,8 @@ bool D3D11DCompPresenter::Initialize() {
     status_.controlVisibleTrialFilePresent = control.visibleTrialFilePresent;
     status_.controlOnceFilePresent = control.onceFilePresent;
     status_.controlOnceFileConsumed = control.onceFileConsumed;
+    status_.controlVisibleTrialOnceFilePresent = control.visibleTrialOnceFilePresent;
+    status_.controlVisibleTrialOnceFileConsumed = control.visibleTrialOnceFileConsumed;
     status_.takeoverEnabled = control.takeoverEnabled;
     status_.takeoverControl = control.source;
     status_.takeoverControlDetail = control.detail;

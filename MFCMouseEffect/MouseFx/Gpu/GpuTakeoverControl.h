@@ -15,6 +15,8 @@ struct TakeoverControlDecision {
     bool visibleTrialFilePresent = false;
     bool onceFilePresent = false;
     bool onceFileConsumed = false;
+    bool visibleTrialOnceFilePresent = false;
+    bool visibleTrialOnceFileConsumed = false;
     std::string source = "default_off";
     std::string detail = "no_control_file_or_env";
 };

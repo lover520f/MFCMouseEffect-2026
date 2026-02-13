@@ -43,6 +43,16 @@ bool ConsumeOneShotEnableRequest(const std::filesystem::path& diagDir) {
     return true;
 }
 
+bool ConsumeVisibleTrialOneShotEnableRequest(const std::filesystem::path& diagDir) {
+    if (diagDir.empty()) return false;
+    const std::filesystem::path onceFile = diagDir / L"gpu_final_present_takeover.visible_trial.once";
+    std::error_code ec;
+    if (!std::filesystem::exists(onceFile, ec) || ec) return false;
+    ec.clear();
+    std::filesystem::remove(onceFile, ec);
+    return true;
+}
+
 void ArchiveStaleAutoOffMarker(const std::filesystem::path& autoOffFile) {
     if (autoOffFile.empty()) return;
     std::error_code ec;
@@ -80,12 +90,19 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
     TakeoverControlDecision result{};
     const std::filesystem::path diagDir = ResolveGpuDiagDirFromCurrentModule();
     const bool rearmed = ConsumeRearmRequest(diagDir);
+    const bool visibleTrialOnceEnabled = ConsumeVisibleTrialOneShotEnableRequest(diagDir);
     const bool onceEnabled = ConsumeOneShotEnableRequest(diagDir);
     result.visibleTrialEnabled = IsVisibleTrialEnabledByFile(diagDir);
     result.visibleTrialFilePresent = result.visibleTrialEnabled;
     result.rearmProcessed = rearmed;
     result.onceFilePresent = onceEnabled;
     result.onceFileConsumed = onceEnabled;
+    result.visibleTrialOnceFilePresent = visibleTrialOnceEnabled;
+    result.visibleTrialOnceFileConsumed = visibleTrialOnceEnabled;
+    if (visibleTrialOnceEnabled) {
+        result.visibleTrialEnabled = true;
+        result.visibleTrialFilePresent = true;
+    }
 
     const std::filesystem::path exePath = []() -> std::filesystem::path {
         wchar_t modulePath[MAX_PATH]{};
@@ -116,6 +133,18 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
             result.detail = rearmed ? "rearmed_then_manual_on_file_present" : "manual_on_file_present";
             return result;
         }
+        if (visibleTrialOnceEnabled) {
+            result.takeoverEnabled = true;
+            result.source = "file_visible_trial_once";
+            result.detail = rearmed ? "rearmed_then_visible_trial_once_file_consumed" : "visible_trial_once_file_consumed";
+            return result;
+        }
+        if (onceEnabled) {
+            result.takeoverEnabled = true;
+            result.source = "file_once";
+            result.detail = rearmed ? "rearmed_then_once_file_consumed" : "once_file_consumed";
+            return result;
+        }
         ec.clear();
         const bool autoOffPresent = std::filesystem::exists(autoOffFile, ec) && !ec;
         result.autoOffFilePresent = autoOffPresent;
@@ -137,13 +166,6 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
                 return result;
             }
         }
-    }
-
-    if (onceEnabled) {
-        result.takeoverEnabled = true;
-        result.source = "file_once";
-        result.detail = rearmed ? "rearmed_then_once_file_consumed" : "once_file_consumed";
-        return result;
     }
 
     wchar_t value[8]{};
