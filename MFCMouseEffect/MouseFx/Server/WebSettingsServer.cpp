@@ -349,6 +349,7 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"takeover_attempts", gpuPresentHost.takeoverAttempts},
         {"takeover_fallbacks", gpuPresentHost.takeoverFallbacks},
         {"takeover_control", gpuPresentHost.takeoverControl},
+        {"takeover_control_detail", gpuPresentHost.takeoverControlDetail},
         {"detail", gpuPresentHost.detail},
     };
 

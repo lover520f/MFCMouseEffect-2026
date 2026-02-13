@@ -36,6 +36,7 @@ void WriteAutoDisableMarker(const char* reason) {
 struct TakeoverControlResult {
     bool enabled = false;
     std::string source = "default_off";
+    std::string detail = "";
 };
 
 bool IsTruthyLeadingChar(wchar_t ch) {
@@ -44,6 +45,13 @@ bool IsTruthyLeadingChar(wchar_t ch) {
 
 TakeoverControlResult ResolveTakeoverControl() {
     TakeoverControlResult result{};
+    result.detail = "no_control_file_or_env";
+    const std::filesystem::path exePath = []() -> std::filesystem::path {
+        wchar_t modulePath[MAX_PATH]{};
+        const DWORD n = GetModuleFileNameW(nullptr, modulePath, MAX_PATH);
+        if (n == 0 || n >= MAX_PATH) return {};
+        return std::filesystem::path(modulePath);
+    }();
     const std::filesystem::path diagDir = ResolveDiagDirFromCurrentModule();
     if (!diagDir.empty()) {
         const std::filesystem::path offFile = diagDir / L"gpu_final_present_takeover.off";
@@ -53,19 +61,32 @@ TakeoverControlResult ResolveTakeoverControl() {
         if (std::filesystem::exists(offFile, ec) && !ec) {
             result.enabled = false;
             result.source = "file_off";
+            result.detail = "manual_off_file_present";
             return result;
         }
         ec.clear();
         if (std::filesystem::exists(onFile, ec) && !ec) {
             result.enabled = true;
             result.source = "file_on";
+            result.detail = "manual_on_file_present";
             return result;
         }
         ec.clear();
         if (std::filesystem::exists(autoOffFile, ec) && !ec) {
-            result.enabled = false;
-            result.source = "file_off_auto";
-            return result;
+            std::error_code fileEc;
+            const auto autoOffTime = std::filesystem::last_write_time(autoOffFile, fileEc);
+            std::error_code exeEc;
+            const auto exeTime = exePath.empty() ? std::filesystem::file_time_type{} : std::filesystem::last_write_time(exePath, exeEc);
+            if (!fileEc && !exeEc && !exePath.empty() && autoOffTime < exeTime) {
+                result.enabled = false;
+                result.source = "auto_off_ignored_after_new_build";
+                result.detail = "auto_off_marker_older_than_exe";
+            } else {
+                result.enabled = false;
+                result.source = "file_off_auto";
+                result.detail = "auto_off_marker_active";
+                return result;
+            }
         }
     }
 
@@ -76,6 +97,7 @@ TakeoverControlResult ResolveTakeoverControl() {
     }
     result.enabled = IsTruthyLeadingChar(value[0]);
     result.source = "env";
+    result.detail = result.enabled ? "env_enabled" : "env_disabled";
     return result;
 }
 } // namespace
@@ -221,6 +243,7 @@ bool D3D11DCompPresenter::Initialize() {
     const TakeoverControlResult control = ResolveTakeoverControl();
     status_.takeoverEnabled = control.enabled;
     status_.takeoverControl = control.source;
+    status_.takeoverControlDetail = control.detail;
 
     UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if defined(_DEBUG)
