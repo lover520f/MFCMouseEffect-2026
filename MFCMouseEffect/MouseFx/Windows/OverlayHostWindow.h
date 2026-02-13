@@ -71,6 +71,7 @@ private:
     int virtualH_ = 0;
     bool ticking_ = false;
     bool holdNeon3dGpuTrialActive_ = false;
+    bool holdNeon3dGpuTrialNeedsClear_ = false;
     uint64_t lastTopmostEnsureMs_ = 0;
     HWINEVENTHOOK foregroundHook_ = nullptr;
     std::vector<std::unique_ptr<IOverlayLayer>> layers_{};

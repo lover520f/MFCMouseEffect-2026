@@ -161,6 +161,9 @@ gpu::D3D11DCompPresenterStatus OverlayHostWindow::GetGpuPresentHostStatus() cons
 }
 
 void OverlayHostWindow::SetHoldNeon3dGpuTrialActive(bool active) {
+    if (!active && holdNeon3dGpuTrialActive_) {
+        holdNeon3dGpuTrialNeedsClear_ = true;
+    }
     holdNeon3dGpuTrialActive_ = active;
 }
 
@@ -350,12 +353,15 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     // Visible-trial path binds to a single host hwnd. In multi-monitor mode we
     // must only upload that hwnd's surface, otherwise frames from other monitors
     // are mirrored into the bound swapchain target.
-    if (surface.hwnd == timerHwnd_ && holdNeon3dGpuTrialActive_) {
+    if (surface.hwnd == timerHwnd_ && (holdNeon3dGpuTrialActive_ || holdNeon3dGpuTrialNeedsClear_)) {
         (void)d3d11DcompPresenter_.SubmitTrialFrameBGRAIfEnabled(
             surface.bits,
             surface.width,
             surface.height,
             surface.width * 4);
+        if (!holdNeon3dGpuTrialActive_) {
+            holdNeon3dGpuTrialNeedsClear_ = false;
+        }
     }
 }
 
