@@ -32,6 +32,8 @@ private:
 
     static FollowMode ParseFollowMode(const std::string& mode);
     static bool IsSamePoint(const POINT& a, const POINT& b);
+    static bool IsGpuV2RouteType(const std::string& type);
+    void SendHoldStateCommand(DWORD durationMs, const POINT& pt) const;
 
     POINT holdPoint_{};
     int holdButton_ = 0;
@@ -39,6 +41,7 @@ private:
     uint64_t currentRippleId_ = 0;
     RippleStyle style_{};
     std::string type_; // Renderer type name
+    bool isGpuV2Route_ = false;
     bool isChromatic_ = false;
     FollowMode followMode_ = FollowMode::Smooth;
     bool hasSmoothedPoint_ = false;

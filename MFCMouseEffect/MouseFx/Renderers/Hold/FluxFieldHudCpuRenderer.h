@@ -5,6 +5,8 @@
 
 #include <vector>
 #include <cmath>
+#include <cstdio>
+#include <string>
 
 namespace mousefx {
 
@@ -18,6 +20,10 @@ public:
     };
 
     void Start(const RippleStyle& style) override {
+        currentHoldMs_ = 0;
+        thresholdMs_ = style.durationMs;
+        holdBiasMs_ = 0;
+        holdBiasValid_ = false;
         particles_.clear();
         const float base = (style.endRadius > 0.0f) ? style.endRadius : 96.0f;
         for (int i = 0; i < 84; ++i) {
@@ -30,13 +36,35 @@ public:
         }
     }
 
+    void OnCommand(const std::string& cmd, const std::string& args) override {
+        if (cmd == "hold_ms") {
+            uint32_t ms = 0;
+            if (sscanf_s(args.c_str(), "%u", &ms) == 1) currentHoldMs_ = ms;
+            return;
+        }
+        if (cmd == "threshold_ms") {
+            uint32_t ms = 0;
+            if (sscanf_s(args.c_str(), "%u", &ms) == 1) thresholdMs_ = ms;
+            return;
+        }
+        if (cmd == "hold_state") {
+            uint32_t ms = 0;
+            int x = 0;
+            int y = 0;
+            if (sscanf_s(args.c_str(), "%u,%d,%d", &ms, &x, &y) >= 1) {
+                currentHoldMs_ = ms;
+            }
+            return;
+        }
+    }
+
     void Render(Gdiplus::Graphics& g, float t, uint64_t elapsedMs, int sizePx, const RippleStyle& style) override {
         using namespace render_utils;
         if (particles_.empty()) Start(style);
 
         const float cx = sizePx * 0.5f;
         const float cy = sizePx * 0.5f;
-        const float progress = Clamp01(t);
+        const float progress = ComputeProgress(t, elapsedMs, style.durationMs);
         const float timeSec = (float)elapsedMs / 1000.0f;
         const float radius = style.startRadius + (style.endRadius - style.startRadius) * progress;
         const Gdiplus::Color stroke = ToGdiPlus(style.stroke);
@@ -103,7 +131,27 @@ public:
     }
 
 private:
+    float ComputeProgress(float t01, uint64_t elapsedMs, uint32_t defaultThresholdMs) {
+        using namespace render_utils;
+        const uint32_t threshold = thresholdMs_ ? thresholdMs_ : defaultThresholdMs;
+        if (threshold == 0) return Clamp01(t01);
+
+        if (currentHoldMs_ > 0 && !holdBiasValid_) {
+            holdBiasMs_ = (int64_t)currentHoldMs_ - (int64_t)elapsedMs;
+            holdBiasValid_ = true;
+        }
+
+        int64_t effectiveMs = (int64_t)elapsedMs;
+        if (holdBiasValid_) effectiveMs += holdBiasMs_;
+        if (effectiveMs < 0) effectiveMs = 0;
+        return Clamp01((float)effectiveMs / (float)threshold);
+    }
+
     std::vector<OrbitParticle> particles_{};
+    uint32_t currentHoldMs_ = 0;
+    uint32_t thresholdMs_ = 0;
+    int64_t holdBiasMs_ = 0;
+    bool holdBiasValid_ = false;
 };
 
 REGISTER_RENDERER("hold_fluxfield_cpu", FluxFieldHudCpuRenderer)

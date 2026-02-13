@@ -25,6 +25,7 @@ namespace mousefx {
 HoldEffect::HoldEffect(const std::string& themeName, const std::string& type, const std::string& followMode)
     : type_(type), followMode_(ParseFollowMode(followMode)) {
     style_ = GetThemePalette(themeName).hold;
+    isGpuV2Route_ = IsGpuV2RouteType(type_);
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
 }
 
@@ -75,6 +76,9 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
         char buf[32]{};
         snprintf(buf, sizeof(buf), "%u", finalStyle.durationMs);
         OverlayHostService::Instance().SendRippleCommand(currentRippleId_, "threshold_ms", buf);
+        if (isGpuV2Route_) {
+            SendHoldStateCommand(0, pt);
+        }
     }
 }
 
@@ -129,11 +133,18 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
         char buf[32]{};
         snprintf(buf, sizeof(buf), "%u", (uint32_t)durationMs);
         OverlayHostService::Instance().SendRippleCommand(currentRippleId_, "hold_ms", buf);
+        if (isGpuV2Route_) {
+            const POINT statePt = hasLastSentPoint_ ? lastSentPoint_ : outPt;
+            SendHoldStateCommand(durationMs, statePt);
+        }
     }
 }
 
 void HoldEffect::OnHoldEnd() {
     if (currentRippleId_ != 0) {
+        if (isGpuV2Route_) {
+            SendHoldStateCommand(0, holdPoint_);
+        }
         OverlayHostService::Instance().StopRipple(currentRippleId_);
         currentRippleId_ = 0;
     }
@@ -157,6 +168,17 @@ HoldEffect::FollowMode HoldEffect::ParseFollowMode(const std::string& mode) {
 
 bool HoldEffect::IsSamePoint(const POINT& a, const POINT& b) {
     return a.x == b.x && a.y == b.y;
+}
+
+bool HoldEffect::IsGpuV2RouteType(const std::string& type) {
+    return type.find("_gpu_v2") != std::string::npos;
+}
+
+void HoldEffect::SendHoldStateCommand(DWORD durationMs, const POINT& pt) const {
+    if (currentRippleId_ == 0) return;
+    char buf[96]{};
+    snprintf(buf, sizeof(buf), "%u,%ld,%ld", (uint32_t)durationMs, (long)pt.x, (long)pt.y);
+    OverlayHostService::Instance().SendRippleCommand(currentRippleId_, "hold_state", buf);
 }
 
 } // namespace mousefx
