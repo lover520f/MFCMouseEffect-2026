@@ -199,6 +199,8 @@ bool D3D11DCompPresenter::CreateProbeCompositionSwapChain() {
         return false;
     }
     status_.compositionSwapChainReady = true;
+    compositionWidth_ = 1;
+    compositionHeight_ = 1;
     return true;
 }
 
@@ -269,6 +271,8 @@ void D3D11DCompPresenter::DestroyProbeWindowAndTarget() {
     visibleTrialRootVisual_.Reset();
     visibleTrialTarget_.Reset();
     compositionSwapChain_.Reset();
+    compositionWidth_ = 0;
+    compositionHeight_ = 0;
     dcompRootVisual_.Reset();
     dcompTarget_.Reset();
     if (probeHwnd_) {
@@ -370,6 +374,78 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
     return false;
 }
 
+bool D3D11DCompPresenter::SubmitTrialFrameBGRA(const void* pixels, int width, int height, int strideBytes) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    status_.trialFrameSubmitAttempts += 1;
+
+    if (!pixels || width <= 0 || height <= 0 || strideBytes < (width * 4)) {
+        status_.trialFrameSubmitFailure += 1;
+        status_.detail = "trial_frame_invalid_args";
+        return false;
+    }
+    if (!compositionSwapChain_ || !d3d11Context_) {
+        status_.trialFrameSubmitFailure += 1;
+        status_.detail = "trial_frame_swapchain_not_ready";
+        return false;
+    }
+    if (!status_.visibleTrialEnabled || !status_.visibleTrialReady) {
+        status_.trialFrameSubmitFailure += 1;
+        status_.detail = "trial_frame_visible_trial_not_ready";
+        return false;
+    }
+
+    if (compositionWidth_ != width || compositionHeight_ != height) {
+        HRESULT hrResize = compositionSwapChain_->ResizeBuffers(
+            0,
+            static_cast<UINT>(width),
+            static_cast<UINT>(height),
+            DXGI_FORMAT_B8G8R8A8_UNORM,
+            0);
+        if (FAILED(hrResize)) {
+            status_.trialFrameSubmitFailure += 1;
+            status_.detail = "trial_frame_resize_buffers_failed";
+            return false;
+        }
+        compositionWidth_ = width;
+        compositionHeight_ = height;
+    }
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
+    HRESULT hr = compositionSwapChain_->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer.GetAddressOf()));
+    if (FAILED(hr) || !backBuffer) {
+        status_.trialFrameSubmitFailure += 1;
+        status_.detail = "trial_frame_get_backbuffer_failed";
+        return false;
+    }
+
+    const D3D11_BOX fullRegion = {
+        0u,
+        0u,
+        0u,
+        static_cast<UINT>(width),
+        static_cast<UINT>(height),
+        1u
+    };
+    d3d11Context_->UpdateSubresource(
+        backBuffer.Get(),
+        0,
+        &fullRegion,
+        pixels,
+        static_cast<UINT>(strideBytes),
+        0);
+
+    hr = compositionSwapChain_->Present(0, 0);
+    if (FAILED(hr)) {
+        status_.trialFrameSubmitFailure += 1;
+        status_.detail = "trial_frame_present_failed";
+        return false;
+    }
+
+    status_.trialFrameSubmitSuccess += 1;
+    status_.detail = "trial_frame_submit_ok";
+    return true;
+}
+
 bool D3D11DCompPresenter::Initialize() {
     std::lock_guard<std::mutex> lock(mutex_);
     if (status_.initialized) {
@@ -384,6 +460,8 @@ bool D3D11DCompPresenter::Initialize() {
     dcompTarget_.Reset();
     dcompRootVisual_.Reset();
     compositionSwapChain_.Reset();
+    compositionWidth_ = 0;
+    compositionHeight_ = 0;
     probeHwnd_ = nullptr;
     visibleTrialHwnd_ = nullptr;
     takeoverAttempted_ = false;

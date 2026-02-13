@@ -25,6 +25,9 @@ struct D3D11DCompPresenterStatus {
     bool takeoverActive = false;
     uint32_t takeoverAttempts = 0;
     uint32_t takeoverFallbacks = 0;
+    uint32_t trialFrameSubmitAttempts = 0;
+    uint32_t trialFrameSubmitSuccess = 0;
+    uint32_t trialFrameSubmitFailure = 0;
     uint64_t lastTrialTickMs = 0;
     std::string lastTrialResult = "none";
     std::string takeoverControl = "default_off";
@@ -44,6 +47,7 @@ public:
     D3D11DCompPresenterStatus GetStatus() const;
     void SetVisibleTrialHwnd(HWND hwnd);
     bool TryActivateTakeoverPath();
+    bool SubmitTrialFrameBGRA(const void* pixels, int width, int height, int strideBytes);
 
 private:
     static const wchar_t* ProbeClassName();
@@ -65,6 +69,8 @@ private:
     Microsoft::WRL::ComPtr<IDXGISwapChain1> compositionSwapChain_{};
     Microsoft::WRL::ComPtr<IDCompositionTarget> visibleTrialTarget_{};
     Microsoft::WRL::ComPtr<IDCompositionVisual> visibleTrialRootVisual_{};
+    int compositionWidth_ = 0;
+    int compositionHeight_ = 0;
     HWND probeHwnd_ = nullptr;
     HWND visibleTrialHwnd_ = nullptr;
     bool takeoverAttempted_ = false;

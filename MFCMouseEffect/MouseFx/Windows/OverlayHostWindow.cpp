@@ -336,6 +336,14 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     POINT ptDst{surface.x, surface.y};
     BLENDFUNCTION bf{AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
     UpdateLayeredWindow(surface.hwnd, nullptr, &ptDst, &sizeWnd, surface.memDc, &ptSrc, 0, &bf, ULW_ALPHA);
+
+    // Stage-16: optional trial-path upload to DComp swapchain for observability.
+    // Failure here must never affect the authoritative layered present path.
+    (void)d3d11DcompPresenter_.SubmitTrialFrameBGRA(
+        surface.bits,
+        surface.width,
+        surface.height,
+        surface.width * 4);
 }
 
 bool OverlayHostWindow::RebuildSurfaces() {
