@@ -48,6 +48,7 @@ public:
     void Shutdown();
     D3D11DCompPresenterStatus GetStatus() const;
     bool ShouldAttemptTakeover() const;
+    void RecordTakeoverNotAttempted(const char* reason);
     bool IsTrialFrameUploadEnabled() const;
     bool SubmitTrialFrameBGRAIfEnabled(const void* pixels, int width, int height, int strideBytes);
     void SetVisibleTrialHwnd(HWND hwnd);

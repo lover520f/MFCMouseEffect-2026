@@ -465,6 +465,8 @@ void OverlayHostWindow::StartFrameLoop() {
     d3d11DcompPresenter_.SetVisibleTrialHwnd(timerHwnd_);
     if (d3d11DcompPresenter_.ShouldAttemptTakeover()) {
         (void)d3d11DcompPresenter_.TryActivateTakeoverPath();
+    } else {
+        d3d11DcompPresenter_.RecordTakeoverNotAttempted("takeover_not_attempted_by_fast_guard");
     }
     SyncBoundsWithVirtualScreen(false);
     for (auto& surface : surfaces_) {

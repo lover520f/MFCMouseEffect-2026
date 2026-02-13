@@ -582,6 +582,16 @@ bool D3D11DCompPresenter::ShouldAttemptTakeover() const {
     return true;
 }
 
+void D3D11DCompPresenter::RecordTakeoverNotAttempted(const char* reason) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    status_.lastTrialTickMs = GetTickCount64();
+    status_.lastTrialResult = "not_attempted";
+    if (reason && *reason) {
+        status_.detail = reason;
+    }
+    WriteTrialResultSnapshot(status_);
+}
+
 bool D3D11DCompPresenter::IsTrialFrameUploadEnabled() const {
     std::lock_guard<std::mutex> lock(mutex_);
     return status_.visibleTrialEnabled && status_.takeoverEnabled;
