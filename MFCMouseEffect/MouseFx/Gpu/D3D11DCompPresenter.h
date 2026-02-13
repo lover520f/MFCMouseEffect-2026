@@ -57,7 +57,8 @@ public:
     bool Initialize();
     void Shutdown();
     D3D11DCompPresenterStatus GetStatus() const;
-    bool ShouldAttemptTakeover() const;
+    bool ShouldAttemptTakeover(bool holdNeon3dActive) const;
+    std::string GetTakeoverFastGuardReason(bool holdNeon3dActive) const;
     void RecordTakeoverNotAttempted(const char* reason);
     bool IsTrialFrameUploadEnabled() const;
     bool SubmitTrialFrameBGRAIfEnabled(const void* pixels, int width, int height, int strideBytes);

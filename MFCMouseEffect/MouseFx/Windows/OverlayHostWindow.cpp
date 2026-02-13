@@ -165,6 +165,9 @@ void OverlayHostWindow::SetHoldNeon3dGpuTrialActive(bool active) {
         holdNeon3dGpuTrialClearFramesPending_ = 3;
     }
     holdNeon3dGpuTrialActive_ = active;
+    if (active) {
+        TryActivateTakeoverIfReady();
+    }
 }
 
 bool OverlayHostWindow::IsHoldNeon3dGpuTrialActive() const {
@@ -482,11 +485,7 @@ void OverlayHostWindow::StartFrameLoop() {
     if (ticking_) return;
     ticking_ = true;
     d3d11DcompPresenter_.SetVisibleTrialHwnd(timerHwnd_);
-    if (d3d11DcompPresenter_.ShouldAttemptTakeover()) {
-        (void)d3d11DcompPresenter_.TryActivateTakeoverPath();
-    } else {
-        d3d11DcompPresenter_.RecordTakeoverNotAttempted("takeover_not_attempted_by_fast_guard");
-    }
+    TryActivateTakeoverIfReady();
     SyncBoundsWithVirtualScreen(false);
     for (auto& surface : surfaces_) {
         if (surface.hwnd) ShowWindow(surface.hwnd, SW_SHOWNA);
@@ -504,6 +503,19 @@ void OverlayHostWindow::StopFrameLoop() {
     for (auto& surface : surfaces_) {
         if (surface.hwnd) ShowWindow(surface.hwnd, SW_HIDE);
     }
+}
+
+void OverlayHostWindow::TryActivateTakeoverIfReady() {
+    if (!ticking_ || !timerHwnd_) {
+        return;
+    }
+    d3d11DcompPresenter_.SetVisibleTrialHwnd(timerHwnd_);
+    if (d3d11DcompPresenter_.ShouldAttemptTakeover(holdNeon3dGpuTrialActive_)) {
+        (void)d3d11DcompPresenter_.TryActivateTakeoverPath();
+        return;
+    }
+    const std::string reason = d3d11DcompPresenter_.GetTakeoverFastGuardReason(holdNeon3dGpuTrialActive_);
+    d3d11DcompPresenter_.RecordTakeoverNotAttempted(reason.c_str());
 }
 
 void OverlayHostWindow::EnsureTopmostZOrder(bool force) {

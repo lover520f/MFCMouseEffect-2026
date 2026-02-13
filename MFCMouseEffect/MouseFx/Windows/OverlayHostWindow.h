@@ -62,6 +62,7 @@ private:
     void UnregisterForegroundHook();
     void InitializeGpuPresentHost();
     void ShutdownGpuPresentHost();
+    void TryActivateTakeoverIfReady();
 
     std::vector<HostSurface> surfaces_{};
     HWND timerHwnd_ = nullptr;

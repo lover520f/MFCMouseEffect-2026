@@ -14,6 +14,21 @@
 namespace mousefx::gpu {
 
 namespace {
+const char* ResolveTakeoverFastGuardReasonUnlocked(
+    const D3D11DCompPresenterStatus& status,
+    bool takeoverAttempted,
+    bool holdNeon3dActive) {
+    if (!status.initialized) return "takeover_not_initialized";
+    if (!status.takeoverEnabled) return "takeover_disabled";
+    if (!status.takeoverEligible) return "takeover_not_eligible";
+    if (status.takeoverActive) return "takeover_already_active";
+    if (takeoverAttempted) return "takeover_already_attempted";
+    if (status.visibleTrialEnabled && !holdNeon3dActive) {
+        return "takeover_wait_hold_neon3d_active";
+    }
+    return nullptr;
+}
+
 bool IsVisibleTrialFallbackLayered(const D3D11DCompPresenterStatus& status) {
     return status.takeoverControl == "runtime_auto_off" &&
            status.takeoverControlDetail == "visible_trial_ready_fallback_layered";
@@ -597,14 +612,15 @@ D3D11DCompPresenterStatus D3D11DCompPresenter::GetStatus() const {
     return status_;
 }
 
-bool D3D11DCompPresenter::ShouldAttemptTakeover() const {
+bool D3D11DCompPresenter::ShouldAttemptTakeover(bool holdNeon3dActive) const {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (!status_.initialized) return false;
-    if (!status_.takeoverEnabled) return false;
-    if (!status_.takeoverEligible) return false;
-    if (status_.takeoverActive) return false;
-    if (takeoverAttempted_) return false;
-    return true;
+    return ResolveTakeoverFastGuardReasonUnlocked(status_, takeoverAttempted_, holdNeon3dActive) == nullptr;
+}
+
+std::string D3D11DCompPresenter::GetTakeoverFastGuardReason(bool holdNeon3dActive) const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    const char* reason = ResolveTakeoverFastGuardReasonUnlocked(status_, takeoverAttempted_, holdNeon3dActive);
+    return reason ? reason : "takeover_fast_guard_open";
 }
 
 void D3D11DCompPresenter::RecordTakeoverNotAttempted(const char* reason) {
