@@ -572,6 +572,16 @@ D3D11DCompPresenterStatus D3D11DCompPresenter::GetStatus() const {
     return status_;
 }
 
+bool D3D11DCompPresenter::ShouldAttemptTakeover() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!status_.initialized) return false;
+    if (!status_.takeoverEnabled) return false;
+    if (!status_.takeoverEligible) return false;
+    if (status_.takeoverActive) return false;
+    if (takeoverAttempted_) return false;
+    return true;
+}
+
 bool D3D11DCompPresenter::IsTrialFrameUploadEnabled() const {
     std::lock_guard<std::mutex> lock(mutex_);
     return status_.visibleTrialEnabled && status_.takeoverEnabled;
