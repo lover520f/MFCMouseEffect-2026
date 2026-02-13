@@ -160,9 +160,10 @@ std::string AppController::ResolveRuntimeEffectType(
         return "hold_neon3d";
     }
 
-    // Runtime binary is loadable; backend integration is still pending.
-    if (outReason) *outReason = "dawn_runtime_ready_but_backend_not_integrated";
-    return "hold_neon3d";
+    // Runtime binary is loadable; keep gpu-v2 route selected.
+    // Current renderer is placeholder and will be replaced by Dawn backend in later stages.
+    if (outReason) *outReason = "dawn_runtime_ready_placeholder_renderer";
+    return requestedType;
 }
 
 void AppController::NotifyGpuFallbackIfNeeded(const std::string& reason) {
