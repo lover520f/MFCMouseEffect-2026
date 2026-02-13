@@ -339,13 +339,11 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
 
     // Stage-16: optional trial-path upload to DComp swapchain for observability.
     // Failure here must never affect the authoritative layered present path.
-    if (d3d11DcompPresenter_.IsTrialFrameUploadEnabled()) {
-        (void)d3d11DcompPresenter_.SubmitTrialFrameBGRA(
-            surface.bits,
-            surface.width,
-            surface.height,
-            surface.width * 4);
-    }
+    (void)d3d11DcompPresenter_.SubmitTrialFrameBGRAIfEnabled(
+        surface.bits,
+        surface.width,
+        surface.height,
+        surface.width * 4);
 }
 
 bool OverlayHostWindow::RebuildSurfaces() {

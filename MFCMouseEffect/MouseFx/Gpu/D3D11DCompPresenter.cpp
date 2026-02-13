@@ -374,8 +374,7 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
     return false;
 }
 
-bool D3D11DCompPresenter::SubmitTrialFrameBGRA(const void* pixels, int width, int height, int strideBytes) {
-    std::lock_guard<std::mutex> lock(mutex_);
+bool D3D11DCompPresenter::SubmitTrialFrameBGRAUnlocked(const void* pixels, int width, int height, int strideBytes) {
     if (!status_.visibleTrialEnabled) {
         status_.trialFrameSubmitSkippedDisabled += 1;
         status_.detail = "trial_frame_skip_visible_trial_disabled";
@@ -444,6 +443,19 @@ bool D3D11DCompPresenter::SubmitTrialFrameBGRA(const void* pixels, int width, in
     status_.trialFrameSubmitSuccess += 1;
     status_.detail = "trial_frame_submit_ok";
     return true;
+}
+
+bool D3D11DCompPresenter::SubmitTrialFrameBGRAIfEnabled(const void* pixels, int width, int height, int strideBytes) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!status_.visibleTrialEnabled || !status_.takeoverEnabled) {
+        return false;
+    }
+    return SubmitTrialFrameBGRAUnlocked(pixels, width, height, strideBytes);
+}
+
+bool D3D11DCompPresenter::SubmitTrialFrameBGRA(const void* pixels, int width, int height, int strideBytes) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return SubmitTrialFrameBGRAUnlocked(pixels, width, height, strideBytes);
 }
 
 bool D3D11DCompPresenter::Initialize() {

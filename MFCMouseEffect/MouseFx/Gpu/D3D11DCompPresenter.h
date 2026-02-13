@@ -48,6 +48,7 @@ public:
     void Shutdown();
     D3D11DCompPresenterStatus GetStatus() const;
     bool IsTrialFrameUploadEnabled() const;
+    bool SubmitTrialFrameBGRAIfEnabled(const void* pixels, int width, int height, int strideBytes);
     void SetVisibleTrialHwnd(HWND hwnd);
     bool TryActivateTakeoverPath();
     bool SubmitTrialFrameBGRA(const void* pixels, int width, int height, int strideBytes);
@@ -58,6 +59,7 @@ private:
     bool CreateProbeWindowAndTarget();
     bool CreateProbeCompositionSwapChain();
     bool TryPrepareVisibleTrialTarget();
+    bool SubmitTrialFrameBGRAUnlocked(const void* pixels, int width, int height, int strideBytes);
     void DestroyProbeWindowAndTarget();
     static LRESULT CALLBACK ProbeWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
