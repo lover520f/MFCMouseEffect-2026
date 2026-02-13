@@ -16,6 +16,8 @@
 #include "MouseFx/Renderers/Hold/HologramHudRenderer.h"
 #include "MouseFx/Renderers/Hold/HoldNeon3DRenderer.h"
 #include "MouseFx/Renderers/Hold/HoldNeon3DGpuV2Renderer.h"
+#include "MouseFx/Renderers/Hold/FluxFieldHudCpuRenderer.h"
+#include "MouseFx/Renderers/Hold/FluxFieldHudGpuV2Renderer.h"
 #include <cmath>
 
 namespace mousefx {

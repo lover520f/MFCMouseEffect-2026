@@ -137,6 +137,8 @@ inline const EffectOption* HoldMetadata(size_t& n) {
         {"hologram",  kCmdHoldHologram, L"\u516E\u606F\u6295\u5F71 (3D)", L"Hologram (3D)", "scifi3d"},
         {"hold_neon3d", kCmdHoldNeon3D, L"\u9713\u8679 HUD (3D)",        L"Neon HUD (3D)", "neon3d"},
         {"hold_neon3d_gpu_v2", kCmdHoldNeon3DGpuV2, L"\u9713\u8679 HUD GPU v2", L"Neon HUD GPU v2"},
+        {"hold_fluxfield_cpu", kCmdHoldFluxFieldCpu, L"\u78C1\u901A\u573A HUD (CPU)", L"FluxField HUD (CPU)"},
+        {"hold_fluxfield_gpu_v2", kCmdHoldFluxFieldGpuV2, L"\u78C1\u901A\u573A HUD GPU v2", L"FluxField HUD GPU v2"},
         {"none",      kCmdHoldNone,     L"\u65E0",                    L"None"},
     };
     n = _countof(opts);

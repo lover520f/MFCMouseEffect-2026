@@ -163,19 +163,26 @@ std::string AppController::ResolveRuntimeEffectType(
     if (category != EffectCategory::Hold) {
         return requestedType;
     }
-    if (requestedType != "hold_neon3d_gpu_v2") {
+    const bool isHoldNeonGpuV2 = (requestedType == "hold_neon3d_gpu_v2");
+    const bool isHoldFluxGpuV2 = (requestedType == "hold_fluxfield_gpu_v2");
+    if (!isHoldNeonGpuV2 && !isHoldFluxGpuV2) {
         return requestedType;
     }
 
     const DawnRuntimeProbeResult probe = ProbeDawnRuntimeOnce();
     if (!probe.available) {
         if (outReason) *outReason = probe.reason;
-        return "hold_neon3d";
+        if (isHoldNeonGpuV2) return "hold_neon3d";
+        return "hold_fluxfield_cpu";
     }
 
     // Runtime binary is loadable; keep gpu-v2 route selected.
     // Current renderer is placeholder and will be replaced by Dawn backend in later stages.
-    if (outReason) *outReason = "dawn_runtime_ready_placeholder_renderer";
+    if (outReason) {
+        *outReason = isHoldNeonGpuV2
+            ? "dawn_runtime_ready_placeholder_renderer"
+            : "dawn_runtime_ready_fluxfield_placeholder_renderer";
+    }
     return requestedType;
 }
 

@@ -49,6 +49,8 @@ enum TrayMenuCmd : UINT {
     kCmdHoldTechRing = 7006,
     kCmdHoldNeon3D = 7007,
     kCmdHoldNeon3DGpuV2 = 7008,
+    kCmdHoldFluxFieldCpu = 7009,
+    kCmdHoldFluxFieldGpuV2 = 7010,
 
     // Theme
     kCmdThemeChromatic = 8000,

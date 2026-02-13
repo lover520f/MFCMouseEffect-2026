@@ -64,6 +64,8 @@ static CString FallbackOptionLabel(UINT cmd, bool zh) {
         case kCmdHoldHologram: return PickLabel(L"\u516E\u606F\u6295\u5F71 (3D)", L"Hologram (3D)", zh);
         case kCmdHoldNeon3D: return PickLabel(L"\u9713\u8679 HUD (3D)", L"Neon HUD (3D)", zh);
         case kCmdHoldNeon3DGpuV2: return PickLabel(L"\u9713\u8679 HUD GPU v2", L"Neon HUD GPU v2", zh);
+        case kCmdHoldFluxFieldCpu: return PickLabel(L"\u78C1\u901A\u573A HUD (CPU)", L"FluxField HUD (CPU)", zh);
+        case kCmdHoldFluxFieldGpuV2: return PickLabel(L"\u78C1\u901A\u573A HUD GPU v2", L"FluxField HUD GPU v2", zh);
         case kCmdHoldNone: return PickLabel(L"\u65E0", L"None", zh);
 
         case kCmdHoverGlow: return PickLabel(L"\u547C\u5438\u706F", L"Glow", zh);
@@ -109,6 +111,8 @@ static bool IsCurrentTypeMatchByCommand(const std::string& currentType, UINT cmd
         case kCmdHoldHologram: return currentType == "hologram" || currentType == "scifi3d";
         case kCmdHoldNeon3D: return currentType == "hold_neon3d" || currentType == "neon3d";
         case kCmdHoldNeon3DGpuV2: return currentType == "hold_neon3d_gpu_v2";
+        case kCmdHoldFluxFieldCpu: return currentType == "hold_fluxfield_cpu";
+        case kCmdHoldFluxFieldGpuV2: return currentType == "hold_fluxfield_gpu_v2";
         case kCmdHoldNone: return currentType == "none";
 
         case kCmdHoverGlow: return currentType == "glow";
@@ -235,6 +239,8 @@ static bool TryBuildEffectJsonByCommand(UINT cmd, std::string* outJson) {
         case kCmdHoldHologram: setEffect("hold", "hologram"); return true;
         case kCmdHoldNeon3D: setEffect("hold", "hold_neon3d"); return true;
         case kCmdHoldNeon3DGpuV2: setEffect("hold", "hold_neon3d_gpu_v2"); return true;
+        case kCmdHoldFluxFieldCpu: setEffect("hold", "hold_fluxfield_cpu"); return true;
+        case kCmdHoldFluxFieldGpuV2: setEffect("hold", "hold_fluxfield_gpu_v2"); return true;
         case kCmdHoldNone: clearEffect("hold"); return true;
 
         case kCmdHoverGlow: setEffect("hover", "glow"); return true;
