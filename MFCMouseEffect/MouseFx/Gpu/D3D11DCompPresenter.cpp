@@ -1,8 +1,8 @@
 #include "pch.h"
 
 #include "D3D11DCompPresenter.h"
+#include "GpuTakeoverControl.h"
 
-#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <sstream>
@@ -14,37 +14,6 @@
 namespace mousefx::gpu {
 
 namespace {
-std::filesystem::path ResolveDiagDirFromCurrentModule() {
-    wchar_t modulePath[MAX_PATH]{};
-    const DWORD n = GetModuleFileNameW(nullptr, modulePath, MAX_PATH);
-    if (n == 0 || n >= MAX_PATH) return {};
-    return std::filesystem::path(modulePath).parent_path() / L".local" / L"diag";
-}
-
-void WriteAutoDisableMarker(const char* reason) {
-    const std::filesystem::path diagDir = ResolveDiagDirFromCurrentModule();
-    if (diagDir.empty()) return;
-    std::error_code ec;
-    std::filesystem::create_directories(diagDir, ec);
-    if (ec) return;
-
-    const std::filesystem::path marker = diagDir / L"gpu_final_present_takeover.off.disabled_by_codex";
-    std::ofstream out(marker, std::ios::binary | std::ios::trunc);
-    if (!out.is_open()) return;
-    out << (reason ? reason : "unknown");
-}
-
-void ArchiveStaleAutoOffMarker(const std::filesystem::path& autoOffFile) {
-    if (autoOffFile.empty()) return;
-    std::error_code ec;
-    if (!std::filesystem::exists(autoOffFile, ec) || ec) return;
-    const auto ts = GetTickCount64();
-    std::filesystem::path archived = autoOffFile;
-    archived += L".stale_ignored_";
-    archived += std::to_wstring(ts);
-    std::filesystem::rename(autoOffFile, archived, ec);
-}
-
 std::string JsonEscape(const std::string& s) {
     std::string out;
     out.reserve(s.size() + 8);
@@ -62,7 +31,7 @@ std::string JsonEscape(const std::string& s) {
 }
 
 void WriteTrialResultSnapshot(const D3D11DCompPresenterStatus& status) {
-    const std::filesystem::path diagDir = ResolveDiagDirFromCurrentModule();
+    const std::filesystem::path diagDir = ResolveGpuDiagDirFromCurrentModule();
     if (diagDir.empty()) return;
     std::error_code ec;
     std::filesystem::create_directories(diagDir, ec);
@@ -81,104 +50,6 @@ void WriteTrialResultSnapshot(const D3D11DCompPresenterStatus& status) {
         << "\"takeover_attempts\":" << status.takeoverAttempts << ","
         << "\"takeover_fallbacks\":" << status.takeoverFallbacks
         << "}";
-}
-
-struct TakeoverControlResult {
-    bool enabled = false;
-    std::string source = "default_off";
-    std::string detail = "";
-};
-
-bool IsVisibleTrialEnabledByFile() {
-    const std::filesystem::path diagDir = ResolveDiagDirFromCurrentModule();
-    if (diagDir.empty()) return false;
-    const std::filesystem::path onFile = diagDir / L"gpu_final_present_takeover.visible_trial.on";
-    std::error_code ec;
-    return std::filesystem::exists(onFile, ec) && !ec;
-}
-
-bool ConsumeRearmRequest() {
-    const std::filesystem::path diagDir = ResolveDiagDirFromCurrentModule();
-    if (diagDir.empty()) return false;
-    const std::filesystem::path rearmFile = diagDir / L"gpu_final_present_takeover.rearm";
-    std::error_code ec;
-    if (!std::filesystem::exists(rearmFile, ec) || ec) return false;
-
-    const std::filesystem::path autoOffFile = diagDir / L"gpu_final_present_takeover.off.disabled_by_codex";
-    ec.clear();
-    std::filesystem::remove(autoOffFile, ec);
-    ec.clear();
-    std::filesystem::remove(rearmFile, ec);
-    return true;
-}
-
-bool IsTruthyLeadingChar(wchar_t ch) {
-    return ch == L'1' || ch == L't' || ch == L'T' || ch == L'y' || ch == L'Y';
-}
-
-TakeoverControlResult ResolveTakeoverControl() {
-    TakeoverControlResult result{};
-    result.detail = "no_control_file_or_env";
-    const std::filesystem::path exePath = []() -> std::filesystem::path {
-        wchar_t modulePath[MAX_PATH]{};
-        const DWORD n = GetModuleFileNameW(nullptr, modulePath, MAX_PATH);
-        if (n == 0 || n >= MAX_PATH) return {};
-        return std::filesystem::path(modulePath);
-    }();
-    const bool rearmed = ConsumeRearmRequest();
-    const std::filesystem::path diagDir = ResolveDiagDirFromCurrentModule();
-    if (!diagDir.empty()) {
-        const std::filesystem::path offFile = diagDir / L"gpu_final_present_takeover.off";
-        const std::filesystem::path onFile = diagDir / L"gpu_final_present_takeover.on";
-        const std::filesystem::path autoOffFile = diagDir / L"gpu_final_present_takeover.off.disabled_by_codex";
-        std::error_code ec;
-        if (std::filesystem::exists(offFile, ec) && !ec) {
-            result.enabled = false;
-            result.source = "file_off";
-            result.detail = "manual_off_file_present";
-            return result;
-        }
-        ec.clear();
-        if (std::filesystem::exists(onFile, ec) && !ec) {
-            result.enabled = true;
-            result.source = "file_on";
-            result.detail = rearmed ? "rearmed_then_manual_on_file_present" : "manual_on_file_present";
-            return result;
-        }
-        ec.clear();
-        if (std::filesystem::exists(autoOffFile, ec) && !ec) {
-            std::error_code fileEc;
-            const auto autoOffTime = std::filesystem::last_write_time(autoOffFile, fileEc);
-            std::error_code exeEc;
-            const auto exeTime = exePath.empty() ? std::filesystem::file_time_type{} : std::filesystem::last_write_time(exePath, exeEc);
-            if (!fileEc && !exeEc && !exePath.empty() && autoOffTime < exeTime) {
-                ArchiveStaleAutoOffMarker(autoOffFile);
-                result.enabled = false;
-                result.source = "auto_off_ignored_after_new_build";
-                result.detail = "auto_off_marker_older_than_exe_archived";
-            } else {
-                result.enabled = false;
-                result.source = "file_off_auto";
-                result.detail = rearmed ? "rearm_failed_auto_off_still_active" : "auto_off_marker_active";
-                return result;
-            }
-        }
-    }
-
-    wchar_t value[8]{};
-    const DWORD envN = GetEnvironmentVariableW(L"MOUSEFX_GPU_DCOMP_TAKEOVER", value, static_cast<DWORD>(std::size(value)));
-    if (envN == 0 || envN >= std::size(value)) {
-        if (rearmed) {
-            result.detail = "rearmed_no_explicit_enable";
-        }
-        return result;
-    }
-    result.enabled = IsTruthyLeadingChar(value[0]);
-    result.source = "env";
-    result.detail = result.enabled
-        ? (rearmed ? "rearmed_then_env_enabled" : "env_enabled")
-        : (rearmed ? "rearmed_then_env_disabled" : "env_disabled");
-    return result;
 }
 } // namespace
 
@@ -459,7 +330,7 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
         status_.takeoverControl = "runtime_auto_off";
         status_.takeoverControlDetail = "takeover_trial_swapchain_create_failed";
         status_.lastTrialResult = "swapchain_create_failed";
-        WriteAutoDisableMarker("takeover_trial_swapchain_create_failed");
+        WriteGpuAutoDisableMarker("takeover_trial_swapchain_create_failed");
         WriteTrialResultSnapshot(status_);
         return false;
     }
@@ -472,7 +343,7 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
             status_.takeoverControl = "runtime_auto_off";
             status_.takeoverControlDetail = "visible_trial_prepare_failed";
             status_.lastTrialResult = "visible_trial_prepare_failed";
-            WriteAutoDisableMarker("visible_trial_prepare_failed");
+            WriteGpuAutoDisableMarker("visible_trial_prepare_failed");
             WriteTrialResultSnapshot(status_);
             return false;
         }
@@ -488,12 +359,12 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
         status_.takeoverControlDetail = "visible_trial_ready_fallback_layered";
         status_.detail = "visible_trial_ready_fallback_layered";
         status_.lastTrialResult = "visible_trial_ready_fallback_layered";
-        WriteAutoDisableMarker("visible_trial_ready_fallback_layered");
+        WriteGpuAutoDisableMarker("visible_trial_ready_fallback_layered");
     } else {
         status_.takeoverControlDetail = "takeover_trial_swapchain_ready_fallback_layered";
         status_.detail = "takeover_trial_swapchain_ready_fallback_layered";
         status_.lastTrialResult = "probe_swapchain_ready_fallback_layered";
-        WriteAutoDisableMarker("takeover_trial_swapchain_ready_fallback_layered");
+        WriteGpuAutoDisableMarker("takeover_trial_swapchain_ready_fallback_layered");
     }
     WriteTrialResultSnapshot(status_);
     return false;
@@ -516,10 +387,10 @@ bool D3D11DCompPresenter::Initialize() {
     probeHwnd_ = nullptr;
     visibleTrialHwnd_ = nullptr;
     takeoverAttempted_ = false;
-    status_.visibleTrialEnabled = IsVisibleTrialEnabledByFile();
-    const TakeoverControlResult control = ResolveTakeoverControl();
-    status_.rearmProcessed = (control.detail.rfind("rearmed", 0) == 0);
-    status_.takeoverEnabled = control.enabled;
+    const TakeoverControlDecision control = ResolveTakeoverControlDecision();
+    status_.visibleTrialEnabled = control.visibleTrialEnabled;
+    status_.rearmProcessed = control.rearmProcessed;
+    status_.takeoverEnabled = control.takeoverEnabled;
     status_.takeoverControl = control.source;
     status_.takeoverControlDetail = control.detail;
 
