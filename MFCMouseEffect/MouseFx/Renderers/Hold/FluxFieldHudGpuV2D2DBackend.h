@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MouseFx/Styles/RippleStyle.h"
+#include "MouseFx/Core/OverlayCoordSpace.h"
 
 #include <gdiplus.h>
 #include <d2d1.h>
@@ -9,105 +10,173 @@
 #include <windows.h>
 
 #include <cmath>
+#include <algorithm>
+#include <comdef.h>
 #include <cstdint>
+#include <atomic>
 
 namespace mousefx {
 
 class FluxFieldHudGpuV2D2DBackend final {
 public:
     void ResetSession() {
+        if (globalBlocked_.load()) {
+            disabled_ = true;
+            return;
+        }
         disabled_ = false;
         failureCount_ = 0;
     }
 
     bool IsAvailable() const {
-        return !disabled_;
+        return !disabled_ && !globalBlocked_.load();
     }
 
-    bool Render(Gdiplus::Graphics& g, float t, uint64_t elapsedMs, int sizePx, const RippleStyle& style, uint32_t holdMs) {
-        if (disabled_) return false;
+    bool Render(
+        Gdiplus::Graphics& g,
+        float t,
+        uint64_t elapsedMs,
+        int sizePx,
+        const RippleStyle& style,
+        uint32_t holdMs,
+        bool hasCursorState,
+        int cursorScreenX,
+        int cursorScreenY) {
+        if (disabled_ || globalBlocked_.load()) return false;
         if (sizePx <= 0) return false;
-
-        if (!EnsureResources()) {
-            MarkFailure();
-            return false;
-        }
-
-        Gdiplus::Matrix world;
-        if (g.GetTransform(&world) != Gdiplus::Ok) {
-            MarkFailure();
-            return false;
-        }
-        Gdiplus::REAL m[6] = {};
-        if (world.GetElements(m) != Gdiplus::Ok) {
-            MarkFailure();
-            return false;
-        }
-
-        HDC hdc = g.GetHDC();
-        if (!hdc) {
-            MarkFailure();
-            return false;
-        }
-
-        bool ok = false;
-        do {
-            RECT rc = { 0, 0, sizePx, sizePx };
-            if (FAILED(target_->BindDC(hdc, &rc))) break;
-
-            target_->BeginDraw();
-            target_->SetTransform(D2D1::Matrix3x2F::Translation(m[4], m[5]));
-            target_->SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-
-            const float progress = ComputeProgress(t, elapsedMs, style.durationMs, holdMs);
-            const float timeSec = static_cast<float>(elapsedMs) / 1000.0f;
-            const float cx = sizePx * 0.5f;
-            const float cy = sizePx * 0.5f;
-            const float radius = style.startRadius + (style.endRadius - style.startRadius) * progress;
-            const uint32_t stroke = style.stroke.value;
-            const float baseAlpha = ClampF(static_cast<float>((stroke >> 24) & 0xFFu) / 255.0f, 0.05f, 1.0f);
-
-            const float r = static_cast<float>((stroke >> 16) & 0xFFu) / 255.0f;
-            const float gg = static_cast<float>((stroke >> 8) & 0xFFu) / 255.0f;
-            const float b = static_cast<float>(stroke & 0xFFu) / 255.0f;
-
-            for (int i = 0; i < 5; ++i) {
-                const float frac = (i + 1) / 5.0f;
-                const float ringR = radius * (0.35f + frac * 0.65f);
-                const float pulse = 0.55f + 0.45f * std::sinf(timeSec * (1.2f + frac) + frac * 3.7f);
-                const float alpha = baseAlpha * (0.12f + 0.18f * frac) * pulse;
-                brush_->SetColor(D2D1::ColorF(r, gg, b, alpha));
-                target_->DrawEllipse(D2D1::Ellipse(D2D1::Point2F(cx, cy), ringR, ringR), brush_.Get(), 1.5f + frac * 2.2f);
+        HDC hdc = nullptr;
+        try {
+            if (!EnsureResources()) {
+                MarkFailure();
+                return false;
             }
 
-            const float mainR = radius * 0.92f;
-            brush_->SetColor(D2D1::ColorF(r, gg, b, baseAlpha * 0.70f));
-            target_->DrawEllipse(D2D1::Ellipse(D2D1::Point2F(cx, cy), mainR, mainR), brush_.Get(), 3.0f);
+            Gdiplus::Matrix world;
+            if (g.GetTransform(&world) != Gdiplus::Ok) {
+                MarkFailure();
+                return false;
+            }
+            Gdiplus::REAL m[6] = {};
+            if (world.GetElements(m) != Gdiplus::Ok) {
+                MarkFailure();
+                return false;
+            }
 
-            const float headAngle = progress * 6.2831853f + timeSec * 0.9f;
-            const float hx = cx + std::cos(headAngle) * mainR;
-            const float hy = cy + std::sin(headAngle) * mainR;
-            brush_->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, baseAlpha * 0.88f));
-            target_->FillEllipse(D2D1::Ellipse(D2D1::Point2F(hx, hy), 2.8f, 2.8f), brush_.Get());
+            hdc = g.GetHDC();
+            if (!hdc) {
+                MarkFailure();
+                return false;
+            }
 
-            // Fallback-safe center marker (cheap)
-            brush_->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, baseAlpha * 0.42f));
-            const float core = std::max(2.0f, style.strokeWidth * 1.4f);
-            target_->FillEllipse(D2D1::Ellipse(D2D1::Point2F(cx, cy), core, core), brush_.Get());
+            bool ok = false;
+            do {
+                LONG left = static_cast<LONG>(std::lround(m[4]));
+                LONG top = static_cast<LONG>(std::lround(m[5]));
+                const int dcW = GetDeviceCaps(hdc, HORZRES);
+                const int dcH = GetDeviceCaps(hdc, VERTRES);
+                if (hasCursorState) {
+                    POINT screenPt{};
+                    screenPt.x = cursorScreenX;
+                    screenPt.y = cursorScreenY;
+                    const POINT localPt = ScreenToOverlayPoint(screenPt);
+                    // This renderer is invoked once per monitor-surface. Skip off-surface calls.
+                    if (dcW > 0 && dcH > 0) {
+                        if (localPt.x < -sizePx || localPt.x > dcW + sizePx ||
+                            localPt.y < -sizePx || localPt.y > dcH + sizePx) {
+                            ok = true;
+                            break;
+                        }
+                    }
+                    left = static_cast<LONG>(localPt.x - sizePx / 2);
+                    top = static_cast<LONG>(localPt.y - sizePx / 2);
+                }
 
-            const HRESULT endHr = target_->EndDraw();
-            if (FAILED(endHr)) break;
+                LONG rcLeft = left;
+                LONG rcTop = top;
+                LONG rcRight = left + sizePx;
+                LONG rcBottom = top + sizePx;
+                if (dcW > 0 && dcH > 0) {
+                    rcLeft = (std::max)(0L, rcLeft);
+                    rcTop = (std::max)(0L, rcTop);
+                    rcRight = (std::min)(rcRight, static_cast<LONG>(dcW));
+                    rcBottom = (std::min)(rcBottom, static_cast<LONG>(dcH));
+                }
+                if (rcRight <= rcLeft || rcBottom <= rcTop) {
+                    ok = true;
+                    break;
+                }
+                RECT rc = { rcLeft, rcTop, rcRight, rcBottom };
+                if (FAILED(target_->BindDC(hdc, &rc))) break;
 
-            ok = true;
-        } while (false);
+                target_->BeginDraw();
+                target_->SetTransform(D2D1::Matrix3x2F::Identity());
+                target_->SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
 
-        g.ReleaseHDC(hdc);
+                const float progress = ComputeProgress(t, elapsedMs, style.durationMs, holdMs);
+                const float timeSec = static_cast<float>(elapsedMs) / 1000.0f;
+                const float cx = static_cast<float>(left) + sizePx * 0.5f;
+                const float cy = static_cast<float>(top) + sizePx * 0.5f;
+                const float radius = style.startRadius + (style.endRadius - style.startRadius) * progress;
+                const uint32_t stroke = style.stroke.value;
+                const float baseAlpha = ClampF(static_cast<float>((stroke >> 24) & 0xFFu) / 255.0f, 0.05f, 1.0f);
 
-        if (!ok) {
-            MarkFailure();
+                const float r = static_cast<float>((stroke >> 16) & 0xFFu) / 255.0f;
+                const float gg = static_cast<float>((stroke >> 8) & 0xFFu) / 255.0f;
+                const float b = static_cast<float>(stroke & 0xFFu) / 255.0f;
+
+                for (int i = 0; i < 5; ++i) {
+                    const float frac = (i + 1) / 5.0f;
+                    const float ringR = radius * (0.35f + frac * 0.65f);
+                    const float pulse = 0.55f + 0.45f * std::sinf(timeSec * (1.2f + frac) + frac * 3.7f);
+                    const float alpha = baseAlpha * (0.12f + 0.18f * frac) * pulse;
+                    brush_->SetColor(D2D1::ColorF(r, gg, b, alpha));
+                    target_->DrawEllipse(D2D1::Ellipse(D2D1::Point2F(cx, cy), ringR, ringR), brush_.Get(), 1.5f + frac * 2.2f);
+                }
+
+                const float mainR = radius * 0.92f;
+                brush_->SetColor(D2D1::ColorF(r, gg, b, baseAlpha * 0.70f));
+                target_->DrawEllipse(D2D1::Ellipse(D2D1::Point2F(cx, cy), mainR, mainR), brush_.Get(), 3.0f);
+
+                const float headAngle = progress * 6.2831853f + timeSec * 0.9f;
+                const float hx = cx + std::cos(headAngle) * mainR;
+                const float hy = cy + std::sin(headAngle) * mainR;
+                brush_->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, baseAlpha * 0.88f));
+                target_->FillEllipse(D2D1::Ellipse(D2D1::Point2F(hx, hy), 2.8f, 2.8f), brush_.Get());
+
+                // Fallback-safe center marker (cheap)
+                brush_->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, baseAlpha * 0.42f));
+                const float core = std::max(2.0f, style.strokeWidth * 1.4f);
+                target_->FillEllipse(D2D1::Ellipse(D2D1::Point2F(cx, cy), core, core), brush_.Get());
+
+                const HRESULT endHr = target_->EndDraw();
+                if (FAILED(endHr)) break;
+
+                ok = true;
+            } while (false);
+
+            g.ReleaseHDC(hdc);
+            hdc = nullptr;
+
+            if (!ok) {
+                MarkFailure();
+                return false;
+            }
+            return true;
+        } catch (const _com_error&) {
+            if (hdc) {
+                g.ReleaseHDC(hdc);
+                hdc = nullptr;
+            }
+            MarkComExceptionFailure();
+            return false;
+        } catch (...) {
+            if (hdc) {
+                g.ReleaseHDC(hdc);
+                hdc = nullptr;
+            }
+            MarkComExceptionFailure();
             return false;
         }
-        return true;
     }
 
 private:
@@ -154,11 +223,17 @@ private:
         }
     }
 
+    void MarkComExceptionFailure() {
+        disabled_ = true;
+        globalBlocked_.store(true);
+    }
+
     Microsoft::WRL::ComPtr<ID2D1Factory> factory_{};
     Microsoft::WRL::ComPtr<ID2D1DCRenderTarget> target_{};
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brush_{};
     int failureCount_ = 0;
     bool disabled_ = false;
+    inline static std::atomic<bool> globalBlocked_{false};
 };
 
 } // namespace mousefx

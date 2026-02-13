@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "HoldEffect.h"
+#include "MouseFx/Core/ConfigPathResolver.h"
 #include "MouseFx/Core/OverlayHostService.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Renderers/RendererRegistry.h"
@@ -19,11 +20,50 @@
 #include "MouseFx/Renderers/Hold/FluxFieldHudCpuRenderer.h"
 #include "MouseFx/Renderers/Hold/FluxFieldHudGpuV2Renderer.h"
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 namespace mousefx {
 
-HoldEffect::HoldEffect(const std::string& themeName, const std::string& type, const std::string& followMode)
-    : type_(type), followMode_(ParseFollowMode(followMode)) {
+static void WriteHoldRuntimeSnapshot(
+    const char* eventName,
+    const std::string& type,
+    bool gpuV2Route,
+    bool fluxD2dEnabled,
+    uint64_t rippleId,
+    const POINT& pt,
+    DWORD holdMs) {
+    const std::wstring diagDir = ResolveLocalDiagDirectory();
+    if (diagDir.empty()) return;
+    std::error_code ec;
+    std::filesystem::create_directories(diagDir, ec);
+    if (ec) return;
+    const std::filesystem::path outFile = std::filesystem::path(diagDir) / L"hold_runtime_auto.json";
+    std::ofstream out(outFile, std::ios::binary | std::ios::trunc);
+    if (!out.is_open()) return;
+    std::ostringstream ss;
+    ss << "{"
+       << "\"event\":\"" << (eventName ? eventName : "") << "\","
+       << "\"type\":\"" << type << "\","
+       << "\"gpu_v2_route\":" << (gpuV2Route ? "true" : "false") << ","
+       << "\"flux_gpu_v2_d2d_experimental\":" << (fluxD2dEnabled ? "true" : "false") << ","
+       << "\"ripple_id\":" << rippleId << ","
+       << "\"x\":" << pt.x << ","
+       << "\"y\":" << pt.y << ","
+       << "\"hold_ms\":" << holdMs
+       << "}";
+    out << ss.str();
+}
+
+HoldEffect::HoldEffect(
+    const std::string& themeName,
+    const std::string& type,
+    const std::string& followMode,
+    bool fluxGpuV2D2dExperimentalEnabled)
+    : type_(type),
+      fluxGpuV2D2dExperimentalEnabled_(fluxGpuV2D2dExperimentalEnabled),
+      followMode_(ParseFollowMode(followMode)) {
     style_ = GetThemePalette(themeName).hold;
     isGpuV2Route_ = IsGpuV2RouteType(type_);
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
@@ -77,9 +117,21 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
         snprintf(buf, sizeof(buf), "%u", finalStyle.durationMs);
         OverlayHostService::Instance().SendRippleCommand(currentRippleId_, "threshold_ms", buf);
         if (isGpuV2Route_) {
+            OverlayHostService::Instance().SendRippleCommand(
+                currentRippleId_,
+                "gpu_v2_d2d_experimental",
+                fluxGpuV2D2dExperimentalEnabled_ ? "1" : "0");
             SendHoldStateCommand(0, pt);
         }
     }
+    WriteHoldRuntimeSnapshot(
+        "hold_start",
+        type_,
+        isGpuV2Route_,
+        fluxGpuV2D2dExperimentalEnabled_,
+        currentRippleId_,
+        pt,
+        0);
 }
 
 void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
@@ -146,6 +198,14 @@ void HoldEffect::OnHoldEnd() {
             SendHoldStateCommand(0, holdPoint_);
         }
         OverlayHostService::Instance().StopRipple(currentRippleId_);
+        WriteHoldRuntimeSnapshot(
+            "hold_end",
+            type_,
+            isGpuV2Route_,
+            fluxGpuV2D2dExperimentalEnabled_,
+            currentRippleId_,
+            holdPoint_,
+            0);
         currentRippleId_ = 0;
     }
     holdButton_ = 0;

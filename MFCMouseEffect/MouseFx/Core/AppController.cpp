@@ -130,22 +130,6 @@ static DawnRuntimeProbeResult ProbeDawnRuntimeOnce() {
     return r;
 }
 
-static bool IsFluxGpuV2ExperimentalEnabled() {
-    wchar_t envValue[16] = {};
-    const DWORD envLen = GetEnvironmentVariableW(L"MFX_FLUX_GPU_V2_D2D", envValue, 16);
-    if (envLen > 0 && envLen < 16) {
-        std::wstring v(envValue, envValue + envLen);
-        for (wchar_t& c : v) {
-            if (c >= L'A' && c <= L'Z') c = (wchar_t)(c - L'A' + L'a');
-        }
-        if (v == L"1" || v == L"true" || v == L"on") return true;
-    }
-
-    const std::filesystem::path control =
-        std::filesystem::path(GetExeDirW()) / L".local" / L"diag" / L"flux_gpu_v2_d2d.on";
-    return std::filesystem::exists(control);
-}
-
 AppController::AppController() = default;
 
 AppController::~AppController() {
@@ -186,11 +170,7 @@ std::string AppController::ResolveRuntimeEffectType(
     }
 
     if (isHoldFluxGpuV2) {
-        if (outReason) {
-            *outReason = IsFluxGpuV2ExperimentalEnabled()
-                ? "flux_gpu_v2_d2d_experimental_enabled"
-                : "flux_gpu_v2_placeholder_cpu_renderer";
-        }
+        if (outReason) *outReason = "flux_gpu_v2_d3d11_compute_route";
         return requestedType;
     }
 
@@ -631,6 +611,17 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
 
         if (p.contains("hold_follow_mode") && p["hold_follow_mode"].is_string()) {
             SetHoldFollowMode(p["hold_follow_mode"].get<std::string>());
+        }
+
+        if (p.contains("flux_gpu_v2_d2d_experimental") && p["flux_gpu_v2_d2d_experimental"].is_boolean()) {
+            const bool enabled = p["flux_gpu_v2_d2d_experimental"].get<bool>();
+            if (config_.fluxGpuV2D2dExperimental != enabled) {
+                config_.fluxGpuV2D2dExperimental = enabled;
+                PersistConfig();
+                if (config_.active.hold == "hold_fluxfield_gpu_v2") {
+                    SetEffect(EffectCategory::Hold, config_.active.hold);
+                }
+            }
         }
 
         // Trail tuning (optional fields).

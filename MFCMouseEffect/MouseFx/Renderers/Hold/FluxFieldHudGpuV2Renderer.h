@@ -1,37 +1,41 @@
 #pragma once
 
-#include "FluxFieldHudCpuRenderer.h"
-#include "FluxFieldHudGpuV2D2DBackend.h"
+#include "FluxFieldGpuV2ComputeEngine.h"
+#include "FluxFieldHudGpuV2VisualRenderer.h"
+#include "MouseFx/Core/ConfigPathResolver.h"
+
 #include <cstdio>
 #include <filesystem>
+#include <fstream>
+#include <sstream>
 #include <string>
 
 namespace mousefx {
 
-// Stability-first fallback implementation.
-// Keep dedicated GPU-v2 route id for pipeline wiring/diagnostics while
-// rendering uses proven CPU path until GPU backend is fully stabilized.
 class FluxFieldHudGpuV2Renderer final : public IRippleRenderer {
 public:
     void Start(const RippleStyle& style) override {
         state_ = {};
-        d2dExperimentalEnabled_ = IsD2dExperimentalEnabled();
-        if (d2dExperimentalEnabled_) {
-            d2dBackend_.ResetSession();
-        }
-        cpuImpl_.Start(style);
+        experimentalFlag_ = false;
+        visualImpl_.Start(style);
+        gpuStarted_ = gpuCompute_.Start();
     }
 
     void Render(Gdiplus::Graphics& g, float t, uint64_t elapsedMs, int sizePx, const RippleStyle& style) override {
-        if (d2dExperimentalEnabled_ && d2dBackend_.IsAvailable()) {
-            if (d2dBackend_.Render(g, t, elapsedMs, sizePx, style, state_.holdMs)) {
-                return;
-            }
+        if (gpuStarted_ && gpuCompute_.IsActive()) {
+            gpuCompute_.Tick(elapsedMs, state_.holdMs);
         }
-        cpuImpl_.Render(g, t, elapsedMs, sizePx, style);
+        visualImpl_.Render(g, t, elapsedMs, sizePx, style);
     }
 
     void OnCommand(const std::string& cmd, const std::string& args) override {
+        if (cmd == "gpu_v2_d2d_experimental") {
+            std::string value = args;
+            for (char& c : value) {
+                if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
+            }
+            experimentalFlag_ = (value == "1" || value == "true" || value == "on");
+        }
         if (cmd == "hold_state") {
             uint32_t ms = 0;
             int x = 0;
@@ -41,28 +45,37 @@ public:
                 state_.holdMs = ms;
                 state_.cursorX = x;
                 state_.cursorY = y;
+                if (ms == 0) {
+                    state_.active = false;
+                    WriteGpuSnapshot();
+                }
             }
         }
-        cpuImpl_.OnCommand(cmd, args);
+        visualImpl_.OnCommand(cmd, args);
     }
 
 private:
-    static bool IsD2dExperimentalEnabled() {
-        wchar_t envValue[16] = {};
-        const DWORD envLen = GetEnvironmentVariableW(L"MFX_FLUX_GPU_V2_D2D", envValue, 16);
-        if (envLen > 0 && envLen < 16) {
-            std::wstring v(envValue, envValue + envLen);
-            for (wchar_t& c : v) {
-                if (c >= L'A' && c <= L'Z') c = (wchar_t)(c - L'A' + L'a');
-            }
-            if (v == L"1" || v == L"true" || v == L"on") return true;
-        }
-
-        wchar_t exePath[MAX_PATH] = {};
-        GetModuleFileNameW(nullptr, exePath, MAX_PATH);
-        std::filesystem::path p(exePath);
-        p = p.parent_path() / L".local" / L"diag" / L"flux_gpu_v2_d2d.on";
-        return std::filesystem::exists(p);
+    void WriteGpuSnapshot() const {
+        const std::wstring diagDir = ResolveLocalDiagDirectory();
+        if (diagDir.empty()) return;
+        std::error_code ec;
+        std::filesystem::create_directories(diagDir, ec);
+        if (ec) return;
+        const std::filesystem::path outFile =
+            std::filesystem::path(diagDir) / L"flux_gpu_v2_compute_status_auto.json";
+        std::ofstream out(outFile, std::ios::binary | std::ios::trunc);
+        if (!out.is_open()) return;
+        const auto snap = gpuCompute_.GetSnapshot();
+        std::ostringstream ss;
+        ss << "{"
+           << "\"gpu_started\":" << (gpuStarted_ ? "true" : "false") << ","
+           << "\"gpu_active\":" << (snap.active ? "true" : "false") << ","
+           << "\"gpu_reason\":\"" << snap.reason << "\","
+           << "\"gpu_tick_count\":" << snap.tickCount << ","
+           << "\"gpu_last_passes\":" << snap.lastPasses << ","
+           << "\"experimental_flag\":" << (experimentalFlag_ ? "true" : "false")
+           << "}";
+        out << ss.str();
     }
 
     struct HoldState {
@@ -72,10 +85,11 @@ private:
         int cursorY = 0;
     };
 
-    FluxFieldHudCpuRenderer cpuImpl_{};
-    FluxFieldHudGpuV2D2DBackend d2dBackend_{};
+    FluxFieldHudGpuV2VisualRenderer visualImpl_{};
+    FluxFieldGpuV2ComputeEngine gpuCompute_{};
     HoldState state_{};
-    bool d2dExperimentalEnabled_ = false;
+    bool gpuStarted_ = false;
+    bool experimentalFlag_ = false;
 };
 
 REGISTER_RENDERER("hold_fluxfield_gpu_v2", FluxFieldHudGpuV2Renderer)

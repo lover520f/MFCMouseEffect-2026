@@ -52,6 +52,8 @@
       label_theme: "Theme",
       label_hold_follow_mode: "Hold Tracking",
       tip_hold_follow_mode: "Choose by feel and CPU budget: Precise (lowest latency, best for aiming/drawing), Smooth (recommended default, balanced response and stability), Performance First (reduced update rate for heavy effects or weaker CPUs).",
+      label_flux_gpu_v2_d2d_experimental: "FluxField GPU-v2 D2D (Experimental)",
+      tip_flux_gpu_v2_d2d_experimental: "Enable D2D GPU backend for hold_fluxfield_gpu_v2. If disabled, this route falls back to stable CPU renderer.",
       label_click: "Click",
       label_trail: "Trail",
       label_scroll: "Scroll",
@@ -124,6 +126,8 @@
       label_theme: "\u4e3b\u9898",
       label_hold_follow_mode: "\u957f\u6309\u8ddf\u968f\u6a21\u5f0f",
       tip_hold_follow_mode: "\u6309\u4f53\u611f\u548c CPU \u9884\u7b97\u9009\u62e9\uff1a\u7cbe\u51c6\u8ddf\u968f\uff08\u5ef6\u8fdf\u6700\u4f4e\uff0c\u9002\u5408\u6e38\u620f/\u7ed8\u56fe\uff09\uff1b\u5e73\u6ed1\u8ddf\u968f\uff08\u9ed8\u8ba4\u63a8\u8350\uff0c\u8ddf\u624b\u4e0e\u7a33\u5b9a\u66f4\u5747\u8861\uff09\uff1b\u6027\u80fd\u4f18\u5148\uff08\u964d\u4f4e\u66f4\u65b0\u9891\u7387\uff0c\u9002\u5408\u7279\u6548\u8f83\u91cd\u6216 CPU \u7d27\u5f20\u573a\u666f\uff09\u3002",
+      label_flux_gpu_v2_d2d_experimental: "FluxField GPU-v2 D2D\uff08\u5b9e\u9a8c\uff09",
+      tip_flux_gpu_v2_d2d_experimental: "\u4e3a hold_fluxfield_gpu_v2 \u5f00\u542f D2D GPU \u540e\u7aef\u3002\u5173\u95ed\u65f6\u56de\u9000\u5230\u7a33\u5b9a CPU \u6e32\u67d3\u3002",
       label_click: "\u70b9\u51fb",
       label_trail: "\u62d6\u5c3e",
       label_scroll: "\u6eda\u8f6e",
@@ -375,6 +379,7 @@
     fillSelect(el('ui_language'), schema.ui_languages, st.ui_language);
     fillSelect(el('theme'), schema.themes, st.theme);
     fillSelect(el('hold_follow_mode'), schema.hold_follow_modes, st.hold_follow_mode || 'smooth');
+    el('flux_gpu_v2_d2d_experimental').checked = !!st.flux_gpu_v2_d2d_experimental;
     fillSelect(el('click'), schema.effects?.click, st.active?.click);
     fillSelect(el('trail'), schema.effects?.trail, st.active?.trail);
     fillSelect(el('scroll'), schema.effects?.scroll, st.active?.scroll);
@@ -410,6 +415,7 @@
       ui_language: el('ui_language').value,
       theme: el('theme').value,
       hold_follow_mode: el('hold_follow_mode').value,
+      flux_gpu_v2_d2d_experimental: !!el('flux_gpu_v2_d2d_experimental').checked,
       active: {
         click: el('click').value,
         trail: el('trail').value,

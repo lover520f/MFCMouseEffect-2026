@@ -35,7 +35,11 @@ std::unique_ptr<IMouseEffect> EffectFactory::Create(EffectCategory category, con
             if (type == "arrow" || type == "helix") return std::make_unique<ScrollEffect>(config.theme, type);
             break;
         case EffectCategory::Hold:
-            return std::make_unique<HoldEffect>(config.theme, type, config.holdFollowMode);
+            return std::make_unique<HoldEffect>(
+                config.theme,
+                type,
+                config.holdFollowMode,
+                config.fluxGpuV2D2dExperimental);
         case EffectCategory::Hover:
             return std::make_unique<HoverEffect>(config.theme, type);
         case EffectCategory::Edge:

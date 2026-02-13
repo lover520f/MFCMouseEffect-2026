@@ -219,6 +219,7 @@ EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
     cfg.theme = GetOr<std::string>(root, "theme", cfg.theme);
     cfg.uiLanguage = GetOr<std::string>(root, "ui_language", cfg.uiLanguage);
     cfg.holdFollowMode = NormalizeHoldFollowMode(GetOr<std::string>(root, "hold_follow_mode", cfg.holdFollowMode));
+    cfg.fluxGpuV2D2dExperimental = GetOr<bool>(root, "flux_gpu_v2_d2d_experimental", cfg.fluxGpuV2D2dExperimental);
     if (root.contains("active_effects") && root["active_effects"].is_object()) {
         const auto& a = root["active_effects"];
         cfg.active.click = GetOr<std::string>(a, "click", cfg.active.click);
@@ -384,6 +385,7 @@ bool EffectConfig::Save(const std::wstring& exeDir, const EffectConfig& cfg) {
     root["theme"] = cfg.theme;
     root["ui_language"] = cfg.uiLanguage;
     root["hold_follow_mode"] = NormalizeHoldFollowMode(cfg.holdFollowMode);
+    root["flux_gpu_v2_d2d_experimental"] = cfg.fluxGpuV2D2dExperimental;
     root["trail_style"] = cfg.trailStyle;
 
     // Trail history profiles (strategy-based trail renderers)

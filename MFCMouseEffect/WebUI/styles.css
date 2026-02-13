@@ -137,6 +137,13 @@ select,input,textarea{
   font-size:13px;
   outline:none
 }
+input[type="checkbox"]{
+  width:20px;
+  height:20px;
+  padding:0;
+  justify-self:start;
+  accent-color:var(--accent)
+}
 textarea{min-height:84px;resize:vertical}
 .btns{display:flex;gap:10px;flex-wrap:wrap}
 button{

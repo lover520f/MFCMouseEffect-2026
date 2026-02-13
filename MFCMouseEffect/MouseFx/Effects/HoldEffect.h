@@ -10,7 +10,11 @@ namespace mousefx {
 // Hold effect: shows growing ring while button is held down.
 class HoldEffect final : public IMouseEffect {
 public:
-    explicit HoldEffect(const std::string& themeName, const std::string& type, const std::string& followMode);
+    explicit HoldEffect(
+        const std::string& themeName,
+        const std::string& type,
+        const std::string& followMode,
+        bool fluxGpuV2D2dExperimentalEnabled);
     ~HoldEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Hold; }
@@ -42,6 +46,7 @@ private:
     RippleStyle style_{};
     std::string type_; // Renderer type name
     bool isGpuV2Route_ = false;
+    bool fluxGpuV2D2dExperimentalEnabled_ = false;
     bool isChromatic_ = false;
     FollowMode followMode_ = FollowMode::Smooth;
     bool hasSmoothedPoint_ = false;

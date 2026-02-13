@@ -280,6 +280,7 @@ std::string WebSettingsServer::BuildStateJson() const {
     out["ui_language"] = EnsureUtf8(cfg.uiLanguage);
     out["theme"] = EnsureUtf8(cfg.theme);
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
+    out["flux_gpu_v2_d2d_experimental"] = cfg.fluxGpuV2D2dExperimental;
     out["active"] = {
         {"click", EnsureUtf8(cfg.active.click)},
         {"trail", EnsureUtf8(cfg.active.trail)},

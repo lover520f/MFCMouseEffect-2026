@@ -8,6 +8,14 @@
 - 问题记录：`docs/issues/text-effect-motion.md`（切换到 DWrite 后的飘散路径一致性）
 - 问题记录：`docs/issues/settings-emoji-preview.md`（设置页表情彩色预览叠层）
 - 问题记录：`docs/issues/web-settings-server-lifecycle.zh-CN.md`（浏览器设置页：idle 重启崩溃 + token 轮换）
+- 问题记录：`docs/issues/dawn_native_stage14_fluxfield_d2d_ui_switch.md`（FluxField D2D 实验开关接入设置页，不再依赖手工创建门控文件）
+- 问题记录：`docs/issues/dawn_native_stage15_fluxfield_d2d_com_error_fuse_and_settings_only_gate.md`（FluxField D2D 路径加入 COM 异常熔断，并移除旧门控干扰）
+- 问题记录：`docs/issues/dawn_native_stage16_hold_runtime_diag_write_throttle_fix.md`（移除长按更新阶段高频写盘诊断，修复长按卡顿和 CPU 占用上升）
+- 问题记录：`docs/issues/dawn_native_stage17_fluxfield_d2d_binddc_clip_transform_fix.md`（修复 D2D BindDC 裁剪矩形与世界变换不一致导致的“GPU路径完全不可见”）
+- 问题记录：`docs/issues/dawn_native_stage18_fluxfield_gpu_v2_cursor_state_anchor_fix.md`（使用 hold_state 光标坐标做 GPU-v2 D2D 定位锚点，修复定位不稳/不可见）
+- 问题记录：`docs/issues/dawn_native_stage19_fluxfield_gpu_v2_multisurface_offscreen_guard.md`（为多屏 surface 增加离屏判定和 BindDC 裁剪钳制，避免离屏失败触发 GPU 路径熔断）
+- 问题记录：`docs/issues/dawn_native_stage20_fluxfield_gpu_v2_d3d11_compute_pivot.md`（将 FluxField GPU-v2 切换为稳定的 D3D11 计算负载路线，并保留可见叠层反馈）
+- 问题记录：`docs/issues/dawn_native_stage21_fluxfield_gpu_v2_visual_decouple.md`（保持 D3D11 GPU 计算链路不变，替换临时圆环为独立 FluxField 视觉渲染器）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
 - 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）
 - 架构整理：`docs/architecture/ui-folder-structure.zh-CN.md`（UI 文件夹结构整理）
