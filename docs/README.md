@@ -14,6 +14,8 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Issues: `docs/issues/dawn_native_stage3_runtime_dll_probe.md` (restore Dawn runtime DLLs and wire real runtime load probe into fallback reasoning)
 - Issues: `docs/issues/dawn_native_stage4_keep_gpu_route_when_runtime_ready.md` (keep `hold_neon3d_gpu_v2` selected when Dawn runtime is loadable; fallback only when runtime probe fails)
 - Issues: `docs/issues/dawn_native_stage5_hold_route_snapshot_scope.md` (limit gpu route snapshot to hold category to avoid non-hold overwrite noise)
+- Issues: `docs/issues/dawn_native_stage6_repo_runtime_probe_path.md` (add repo runtime DLL probe path so dev layout can load Dawn binaries)
+- Issues: docs/issues/dawn_native_stage7_postbuild_copy_dawn_runtime.md (post-build copy Dawn runtime DLLs beside exe to avoid missing runtime at launch)
 - Architecture: `docs/architecture/tray-and-appcontroller-refactor.md` (tray menu table-driven + AppController cleanup)
 - Architecture: `docs/architecture/settingswnd-emoji-split.md` (SettingsWnd emoji logic split)
 - Architecture: `docs/architecture/ui-folder-structure.md` (UI folder layout refolder)
@@ -77,3 +79,4 @@ Tray menus are fine for quick toggles. For full configuration (including advance
 ## SDI / Single-Window Notes
 - The app now uses an SDI frame: one top-level window hosts the view; ripples are still rendered in separate transparent layered windows, so UI and effect remain decoupled.
 - If you need multiple windows, create multiple top-level frames (no MDI children/tabs), or run multiple instances.
+
