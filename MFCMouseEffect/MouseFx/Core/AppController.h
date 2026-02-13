@@ -89,7 +89,7 @@ private:
     void ReloadConfigFromDisk();
     std::string ResolveRuntimeEffectType(EffectCategory category, const std::string& requestedType, std::string* outReason) const;
     void NotifyGpuFallbackIfNeeded(const std::string& reason);
-    void WriteGpuRouteStatusSnapshot(const std::string& requestedType, const std::string& effectiveType, const std::string& reason) const;
+    void WriteGpuRouteStatusSnapshot(EffectCategory category, const std::string& requestedType, const std::string& effectiveType, const std::string& reason) const;
 
     HWND dispatchHwnd_ = nullptr;
 

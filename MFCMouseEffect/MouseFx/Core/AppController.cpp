@@ -179,9 +179,13 @@ void AppController::NotifyGpuFallbackIfNeeded(const std::string& reason) {
 }
 
 void AppController::WriteGpuRouteStatusSnapshot(
+    EffectCategory category,
     const std::string& requestedType,
     const std::string& effectiveType,
     const std::string& reason) const {
+    if (category != EffectCategory::Hold) {
+        return;
+    }
     const std::wstring diagDir = ResolveLocalDiagDirectory();
     if (diagDir.empty()) return;
     std::error_code ec;
@@ -192,6 +196,7 @@ void AppController::WriteGpuRouteStatusSnapshot(
     if (!out.is_open()) return;
     std::ostringstream ss;
     ss << "{"
+       << "\"category\":\"hold\","
        << "\"requested\":\"" << requestedType << "\","
        << "\"effective\":\"" << effectiveType << "\","
        << "\"fallback_applied\":" << (requestedType == effectiveType ? "false" : "true") << ","
@@ -319,7 +324,7 @@ void AppController::SetEffect(EffectCategory category, const std::string& type) 
     if (!fallbackReason.empty() && effectiveType != type) {
         NotifyGpuFallbackIfNeeded(fallbackReason);
     }
-    WriteGpuRouteStatusSnapshot(type, effectiveType, fallbackReason);
+    WriteGpuRouteStatusSnapshot(category, type, effectiveType, fallbackReason);
 
     // Shutdown existing effect for this category
     if (effects_[idx]) {
