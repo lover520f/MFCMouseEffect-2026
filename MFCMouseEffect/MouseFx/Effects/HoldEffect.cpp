@@ -16,7 +16,7 @@
 #include "MouseFx/Renderers/Hold/TechRingRenderer.h"
 #include "MouseFx/Renderers/Hold/HologramHudRenderer.h"
 #include "MouseFx/Renderers/Hold/HoldNeon3DRenderer.h"
-#include "MouseFx/Renderers/Hold/HoldNeon3DGpuV2Renderer.h"
+#include "MouseFx/Renderers/Hold/HoldQuantumHaloGpuV2Renderer.h"
 #include "MouseFx/Renderers/Hold/FluxFieldHudCpuRenderer.h"
 #include "MouseFx/Renderers/Hold/FluxFieldHudGpuV2Renderer.h"
 #include <cmath>
@@ -30,7 +30,6 @@ static void WriteHoldRuntimeSnapshot(
     const char* eventName,
     const std::string& type,
     bool gpuV2Route,
-    bool fluxD2dEnabled,
     uint64_t rippleId,
     const POINT& pt,
     DWORD holdMs) {
@@ -47,7 +46,6 @@ static void WriteHoldRuntimeSnapshot(
        << "\"event\":\"" << (eventName ? eventName : "") << "\","
        << "\"type\":\"" << type << "\","
        << "\"gpu_v2_route\":" << (gpuV2Route ? "true" : "false") << ","
-       << "\"flux_gpu_v2_d2d_experimental\":" << (fluxD2dEnabled ? "true" : "false") << ","
        << "\"ripple_id\":" << rippleId << ","
        << "\"x\":" << pt.x << ","
        << "\"y\":" << pt.y << ","
@@ -59,13 +57,12 @@ static void WriteHoldRuntimeSnapshot(
 HoldEffect::HoldEffect(
     const std::string& themeName,
     const std::string& type,
-    const std::string& followMode,
-    bool fluxGpuV2D2dExperimentalEnabled)
+    const std::string& followMode)
     : type_(type),
-      fluxGpuV2D2dExperimentalEnabled_(fluxGpuV2D2dExperimentalEnabled),
       followMode_(ParseFollowMode(followMode)) {
     style_ = GetThemePalette(themeName).hold;
     isGpuV2Route_ = IsGpuV2RouteType(type_);
+    isQuantumHaloGpuV2Direct_ = IsQuantumHaloGpuV2DirectType(type_);
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
 }
 
@@ -91,6 +88,24 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
     lastHoldCommandMs_ = 0;
     lastEfficientPosMs_ = 0;
     
+    RippleStyle finalStyle = style_;
+    if (isChromatic_) {
+        finalStyle = MakeRandomStyle(style_);
+    }
+
+    if (isQuantumHaloGpuV2Direct_) {
+        quantumHaloGpuDirectRuntime_.Start(finalStyle, pt);
+        quantumHaloGpuDirectRuntime_.Update(0u, pt);
+        WriteHoldRuntimeSnapshot(
+            "hold_start",
+            type_,
+            isGpuV2Route_,
+            0,
+            pt,
+            0);
+        return;
+    }
+
     ClickEvent ev{};
     ev.pt = pt;
     ev.button = MouseButton::Left;
@@ -105,11 +120,6 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
         renderer = RendererRegistry::Instance().Create("charge");
     }
 
-    RippleStyle finalStyle = style_;
-    if (isChromatic_) {
-        finalStyle = MakeRandomStyle(style_);
-    }
-
     currentRippleId_ = OverlayHostService::Instance().ShowContinuousRipple(
         ev, finalStyle, std::move(renderer), params);
     if (currentRippleId_ != 0) {
@@ -117,10 +127,6 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
         snprintf(buf, sizeof(buf), "%u", finalStyle.durationMs);
         OverlayHostService::Instance().SendRippleCommand(currentRippleId_, "threshold_ms", buf);
         if (isGpuV2Route_) {
-            OverlayHostService::Instance().SendRippleCommand(
-                currentRippleId_,
-                "gpu_v2_d2d_experimental",
-                fluxGpuV2D2dExperimentalEnabled_ ? "1" : "0");
             SendHoldStateCommand(0, pt);
         }
     }
@@ -128,7 +134,6 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
         "hold_start",
         type_,
         isGpuV2Route_,
-        fluxGpuV2D2dExperimentalEnabled_,
         currentRippleId_,
         pt,
         0);
@@ -136,7 +141,6 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
 
 void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
     holdPoint_ = pt;
-    if (currentRippleId_ == 0) return;
 
     const uint64_t nowMs = GetTickCount64();
     POINT outPt = pt;
@@ -169,6 +173,15 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
             break;
     }
 
+    if (isQuantumHaloGpuV2Direct_) {
+        if (shouldUpdatePos || durationMs == 0u) {
+            quantumHaloGpuDirectRuntime_.Update(durationMs, outPt);
+        }
+        return;
+    }
+
+    if (currentRippleId_ == 0) return;
+
     if (shouldUpdatePos) {
         if (!hasLastSentPoint_ || !IsSamePoint(lastSentPoint_, outPt)) {
             OverlayHostService::Instance().UpdateRipplePosition(currentRippleId_, outPt);
@@ -193,7 +206,17 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
 }
 
 void HoldEffect::OnHoldEnd() {
-    if (currentRippleId_ != 0) {
+    if (isQuantumHaloGpuV2Direct_) {
+        quantumHaloGpuDirectRuntime_.Update(0u, holdPoint_);
+        quantumHaloGpuDirectRuntime_.Stop();
+        WriteHoldRuntimeSnapshot(
+            "hold_end",
+            type_,
+            isGpuV2Route_,
+            0,
+            holdPoint_,
+            0);
+    } else if (currentRippleId_ != 0) {
         if (isGpuV2Route_) {
             SendHoldStateCommand(0, holdPoint_);
         }
@@ -202,7 +225,6 @@ void HoldEffect::OnHoldEnd() {
             "hold_end",
             type_,
             isGpuV2Route_,
-            fluxGpuV2D2dExperimentalEnabled_,
             currentRippleId_,
             holdPoint_,
             0);
@@ -216,6 +238,11 @@ void HoldEffect::OnHoldEnd() {
 }
 
 void HoldEffect::OnCommand(const std::string& cmd, const std::string& args) {
+    if (isQuantumHaloGpuV2Direct_) {
+        (void)cmd;
+        (void)args;
+        return;
+    }
     OverlayHostService::Instance().BroadcastRippleCommand(cmd, args);
 }
 
@@ -232,6 +259,11 @@ bool HoldEffect::IsSamePoint(const POINT& a, const POINT& b) {
 
 bool HoldEffect::IsGpuV2RouteType(const std::string& type) {
     return type.find("_gpu_v2") != std::string::npos;
+}
+
+bool HoldEffect::IsQuantumHaloGpuV2DirectType(const std::string& type) {
+    // Compatibility: old config id is accepted and mapped to the direct runtime route.
+    return type == "hold_quantum_halo_gpu_v2" || type == "hold_neon3d_gpu_v2";
 }
 
 void HoldEffect::SendHoldStateCommand(DWORD durationMs, const POINT& pt) const {

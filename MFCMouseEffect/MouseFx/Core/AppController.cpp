@@ -50,6 +50,14 @@ static std::string NormalizeHoldFollowMode(std::string mode) {
     return "smooth";
 }
 
+static std::string NormalizeHoldEffectTypeAlias(const std::string& type) {
+    // Backward compatibility for renamed GPU hold effect id.
+    if (type == "hold_neon3d_gpu_v2") {
+        return "hold_quantum_halo_gpu_v2";
+    }
+    return type;
+}
+
 static std::wstring Utf8ToWString(const std::string& s) {
     if (s.empty()) return {};
     int len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
@@ -163,40 +171,47 @@ std::string AppController::ResolveRuntimeEffectType(
     if (category != EffectCategory::Hold) {
         return requestedType;
     }
-    const bool isHoldNeonGpuV2 = (requestedType == "hold_neon3d_gpu_v2");
-    const bool isHoldFluxGpuV2 = (requestedType == "hold_fluxfield_gpu_v2");
-    if (!isHoldNeonGpuV2 && !isHoldFluxGpuV2) {
-        return requestedType;
+    const std::string normalizedType = NormalizeHoldEffectTypeAlias(requestedType);
+    const bool isHoldQuantumHaloGpuV2 = (normalizedType == "hold_quantum_halo_gpu_v2");
+    const bool isHoldFluxGpuV2 = (normalizedType == "hold_fluxfield_gpu_v2");
+    if (!isHoldQuantumHaloGpuV2 && !isHoldFluxGpuV2) {
+        return normalizedType;
     }
 
     if (isHoldFluxGpuV2) {
         if (outReason) *outReason = "flux_gpu_v2_d3d11_compute_route";
-        return requestedType;
+        return normalizedType;
+    }
+    if (isHoldQuantumHaloGpuV2) {
+        if (outReason) *outReason = "quantum_halo_gpu_v2_d3d11_dcomp_direct_runtime_route";
+        return normalizedType;
     }
 
     const DawnRuntimeProbeResult probe = ProbeDawnRuntimeOnce();
     if (!probe.available) {
         if (outReason) *outReason = probe.reason;
-        if (isHoldNeonGpuV2) return "hold_neon3d";
-        return requestedType;
+        return normalizedType;
     }
 
     // Runtime binary is loadable; keep gpu-v2 route selected.
     // Current renderer is placeholder and will be replaced by Dawn backend in later stages.
     if (outReason) *outReason = "dawn_runtime_ready_placeholder_renderer";
-    return requestedType;
+    return normalizedType;
 }
 
 void AppController::NotifyGpuFallbackIfNeeded(const std::string& reason) {
     if (gpuFallbackNotifiedThisSession_) return;
     gpuFallbackNotifiedThisSession_ = true;
-    CString msg = L"GPU effect route is not available on this build/device. Switched to CPU fallback (Neon HUD).";
-    if (!reason.empty()) {
-        msg += L"\n\n";
-        msg += L"Reason: ";
-        msg += Utf8ToWString(reason).c_str();
-    }
-    AfxMessageBox(msg, MB_OK | MB_ICONINFORMATION);
+    // UX decision: do not block runtime with modal dialogs.
+    // Fallback status is exposed through Web settings state and local diagnostics.
+#ifdef _DEBUG
+    std::wstring dbg = L"MouseFx: GPU route fallback detected. reason=";
+    dbg += Utf8ToWString(reason);
+    dbg += L"\n";
+    OutputDebugStringW(dbg.c_str());
+#else
+    (void)reason;
+#endif
 }
 
 void AppController::WriteGpuRouteStatusSnapshot(
@@ -215,12 +230,14 @@ void AppController::WriteGpuRouteStatusSnapshot(
     const std::filesystem::path file = std::filesystem::path(diagDir) / L"gpu_route_status_auto.json";
     std::ofstream out(file, std::ios::binary | std::ios::trunc);
     if (!out.is_open()) return;
+    const std::string requestedNormalized = NormalizeHoldEffectTypeAlias(requestedType);
     std::ostringstream ss;
     ss << "{"
        << "\"category\":\"hold\","
        << "\"requested\":\"" << requestedType << "\","
+       << "\"requested_normalized\":\"" << requestedNormalized << "\","
        << "\"effective\":\"" << effectiveType << "\","
-       << "\"fallback_applied\":" << (requestedType == effectiveType ? "false" : "true") << ","
+       << "\"fallback_applied\":" << (requestedNormalized == effectiveType ? "false" : "true") << ","
        << "\"reason\":\"" << reason << "\""
        << "}";
     out << ss.str();
@@ -341,8 +358,10 @@ void AppController::SetEffect(EffectCategory category, const std::string& type) 
     if (idx >= kCategoryCount) return;
 
     std::string fallbackReason;
+    const std::string requestedNormalized =
+        (category == EffectCategory::Hold) ? NormalizeHoldEffectTypeAlias(type) : type;
     const std::string effectiveType = ResolveRuntimeEffectType(category, type, &fallbackReason);
-    if (!fallbackReason.empty() && effectiveType != type) {
+    if (!fallbackReason.empty() && effectiveType != requestedNormalized) {
         NotifyGpuFallbackIfNeeded(fallbackReason);
     }
     WriteGpuRouteStatusSnapshot(category, type, effectiveType, fallbackReason);
@@ -613,17 +632,6 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
             SetHoldFollowMode(p["hold_follow_mode"].get<std::string>());
         }
 
-        if (p.contains("flux_gpu_v2_d2d_experimental") && p["flux_gpu_v2_d2d_experimental"].is_boolean()) {
-            const bool enabled = p["flux_gpu_v2_d2d_experimental"].get<bool>();
-            if (config_.fluxGpuV2D2dExperimental != enabled) {
-                config_.fluxGpuV2D2dExperimental = enabled;
-                PersistConfig();
-                if (config_.active.hold == "hold_fluxfield_gpu_v2") {
-                    SetEffect(EffectCategory::Hold, config_.active.hold);
-                }
-            }
-        }
-
         // Trail tuning (optional fields).
         bool trailTouched = false;
         std::string style = config_.trailStyle.empty() ? "default" : config_.trailStyle;
@@ -830,9 +838,11 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
     if (msg == WM_MFX_SCROLL) {
         short delta = static_cast<short>(wParam);
-        POINT pt;
-        pt.x = GET_X_LPARAM(lParam);
-        pt.y = GET_Y_LPARAM(lParam);
+        POINT pt{};
+        if (!GetCursorPos(&pt)) {
+            pt.x = GET_X_LPARAM(lParam);
+            pt.y = GET_Y_LPARAM(lParam);
+        }
         // Dispatch to Scroll category effect
         if (auto* effect = GetEffect(EffectCategory::Scroll)) {
             ScrollEvent ev{};
@@ -846,9 +856,11 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
     if (msg == WM_MFX_BUTTON_DOWN) {
         int button = static_cast<int>(wParam);
-        POINT pt;
-        pt.x = GET_X_LPARAM(lParam);
-        pt.y = GET_Y_LPARAM(lParam);
+        POINT pt{};
+        if (!GetCursorPos(&pt)) {
+            pt.x = GET_X_LPARAM(lParam);
+            pt.y = GET_Y_LPARAM(lParam);
+        }
 
         holdButtonDown_ = true;
         holdDownTick_ = GetTickCount64();

@@ -2,10 +2,13 @@
 #include "WebSettingsServer.h"
 
 #include <algorithm>
+#include <filesystem>
+#include <fstream>
 #include <random>
 #include <sstream>
 
 #include "MouseFx/Core/AppController.h"
+#include "MouseFx/Core/ConfigPathResolver.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/WebUiAssets.h"
 #include "MouseFx/ThirdParty/json.hpp"
@@ -96,6 +99,69 @@ static json MakeOpt(const char* value, const wchar_t* zh, const wchar_t* en, con
     if (label.empty()) label = value ? value : "";
     o["label"] = label;
     return o;
+}
+
+static json ReadGpuRouteStatusSnapshot() {
+    const std::wstring diagDir = ResolveLocalDiagDirectory();
+    if (diagDir.empty()) return {};
+
+    const std::filesystem::path file = std::filesystem::path(diagDir) / L"gpu_route_status_auto.json";
+    std::error_code ec;
+    if (!std::filesystem::exists(file, ec) || ec) {
+        return {};
+    }
+
+    std::ifstream in(file, std::ios::binary);
+    if (!in.is_open()) return {};
+
+    std::ostringstream ss;
+    ss << in.rdbuf();
+    const std::string body = ss.str();
+    if (body.empty()) return {};
+
+    try {
+        return json::parse(body);
+    } catch (...) {
+        return {};
+    }
+}
+
+static json BuildGpuRouteNotice(
+    const json& routeStatus,
+    const std::string& lang,
+    const std::string& activeHoldType) {
+    if (!routeStatus.is_object()) return {};
+
+    bool fallbackApplied = false;
+    if (routeStatus.contains("fallback_applied") && routeStatus["fallback_applied"].is_boolean()) {
+        fallbackApplied = routeStatus["fallback_applied"].get<bool>();
+    }
+    if (!fallbackApplied) return {};
+
+    const std::string requestedNorm = routeStatus.value(
+        "requested_normalized",
+        routeStatus.value("requested", std::string{}));
+    const std::string effective = routeStatus.value("effective", std::string{});
+    const std::string reason = routeStatus.value("reason", std::string{});
+
+    // Show notice only when it matches current active hold route.
+    if (!activeHoldType.empty() && activeHoldType != effective && activeHoldType != requestedNorm) {
+        return {};
+    }
+
+    json notice;
+    notice["level"] = "warn";
+    if (lang == "zh-CN") {
+        notice["message"] = std::string("GPU 路线当前不可用，已切换到兼容回退。原因：")
+            + (reason.empty() ? "unknown" : reason);
+    } else {
+        notice["message"] = std::string("GPU route is not available on this build/device. Switched to compatible fallback. Reason: ")
+            + (reason.empty() ? "unknown" : reason);
+    }
+    notice["reason"] = reason;
+    notice["requested"] = requestedNorm;
+    notice["effective"] = effective;
+    return notice;
 }
 
 WebSettingsServer::WebSettingsServer(AppController* controller) : controller_(controller) {
@@ -247,8 +313,8 @@ std::string WebSettingsServer::BuildSchemaJson() const {
 
     out["hold_follow_modes"] = json::array({
         {{"value","precise"},{"label", LabelByLang(L"\u7cbe\u51c6\u8ddf\u968f\uff08\u4f4e\u5ef6\u8fdf\uff09", L"Precise (Low Latency)", lang)}},
-        {{"value","smooth"},{"label", LabelByLang(L"\u5e73\u6ed1\u8ddf\u968f\uff08\u63a8\u8350\uff09", L"Smooth (Recommended)", lang)}},
-        {{"value","efficient"},{"label", LabelByLang(L"\u6027\u80fd\u4f18\u5148\uff08\u7701CPU\uff09", L"Performance First (Lower CPU)", lang)}}
+        {{"value","smooth"},{"label", LabelByLang(L"\u5149\u6807\u4f18\u5148\uff08\u63a8\u8350\uff09", L"Cursor Priority (Recommended)", lang)}},
+        {{"value","efficient"},{"label", LabelByLang(L"\u6027\u80fd\u4f18\u5148\uff08CPU\u53cb\u597d\uff09", L"Performance First (CPU Saver)", lang)}}
     });
 
     auto build = [&](const EffectOption* (*fn)(size_t&), const char* key) {
@@ -275,17 +341,18 @@ std::string WebSettingsServer::BuildStateJson() const {
         return json({{"error","no controller"}}).dump();
     }
     const auto cfg = controller_->GetConfigSnapshot();
+    const std::string lang = EnsureUtf8(cfg.uiLanguage);
 
     json out;
-    out["ui_language"] = EnsureUtf8(cfg.uiLanguage);
+    out["ui_language"] = lang;
     out["theme"] = EnsureUtf8(cfg.theme);
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
-    out["flux_gpu_v2_d2d_experimental"] = cfg.fluxGpuV2D2dExperimental;
+    const std::string activeHoldType = EnsureUtf8(cfg.active.hold);
     out["active"] = {
         {"click", EnsureUtf8(cfg.active.click)},
         {"trail", EnsureUtf8(cfg.active.trail)},
         {"scroll", EnsureUtf8(cfg.active.scroll)},
-        {"hold", EnsureUtf8(cfg.active.hold)},
+        {"hold", activeHoldType},
         {"hover", EnsureUtf8(cfg.active.hover)},
     };
 
@@ -314,6 +381,15 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"idle_fade_start_ms", cfg.trailParams.idleFade.startMs},
         {"idle_fade_end_ms", cfg.trailParams.idleFade.endMs},
     };
+
+    const json routeStatus = ReadGpuRouteStatusSnapshot();
+    if (routeStatus.is_object()) {
+        out["gpu_route_status"] = routeStatus;
+    }
+    const json routeNotice = BuildGpuRouteNotice(routeStatus, lang.empty() ? "zh-CN" : lang, activeHoldType);
+    if (routeNotice.is_object() && !routeNotice.empty()) {
+        out["gpu_route_notice"] = routeNotice;
+    }
 
     return out.dump();
 }

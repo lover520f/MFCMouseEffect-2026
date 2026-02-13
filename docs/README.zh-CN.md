@@ -16,6 +16,25 @@
 - 问题记录：`docs/issues/dawn_native_stage19_fluxfield_gpu_v2_multisurface_offscreen_guard.md`（为多屏 surface 增加离屏判定和 BindDC 裁剪钳制，避免离屏失败触发 GPU 路径熔断）
 - 问题记录：`docs/issues/dawn_native_stage20_fluxfield_gpu_v2_d3d11_compute_pivot.md`（将 FluxField GPU-v2 切换为稳定的 D3D11 计算负载路线，并保留可见叠层反馈）
 - 问题记录：`docs/issues/dawn_native_stage21_fluxfield_gpu_v2_visual_decouple.md`（保持 D3D11 GPU 计算链路不变，替换临时圆环为独立 FluxField 视觉渲染器）
+- 问题记录：`docs/issues/dawn_native_stage22_neon_gpu_v2_d3d11_compute_route.md`（将 hold_neon3d_gpu_v2 从占位路线升级为真实 D3D11 GPU 计算路径，并保留 NeonHUD3D 视觉）
+- 问题记录：`docs/issues/dawn_native_stage23_neon_gpu_v2_full_visual_gpu_path.md`（将 hold_neon3d_gpu_v2 升级为 D2D GPU 可视渲染优先，CPU 仅作安全回退）
+- 问题记录：`docs/issues/dawn_native_stage24_neon_gpu_v2_direct_runtime_full_gpu.md`（`hold_neon3d_gpu_v2` 绕过 OverlayHost 的整屏 GDI 循环，改为 D3D11+DComp 直接运行时，优先解决长按性能与延迟）
+- 问题记录：`docs/issues/dawn_native_stage25_neon_gpu_v2_direct_runtime_visibility_fix.md`（修复 direct runtime “不卡但无图像”：在线程内初始化 COM，并调整 presenter 窗口样式兼容性）
+- 问题记录：`docs/issues/dawn_native_stage26_neon_gpu_v2_render_loop_and_coord_fix.md`（修复“进入 GPU 路径但持续无渲染”：补齐 runtime 线程消息泵，并对长按起点坐标改为优先 GetCursorPos）
+- 问题记录：`docs/issues/dawn_native_stage27_neon_gpu_v2_presenter_error_telemetry.md`（为 presenter 增加 API 级失败原因采集，并把详细 reason 回写到 runtime 诊断）
+- 问题记录：`docs/issues/dawn_native_stage28_neon_gpu_v2_swapchain_prereq_order_fix.md`（修复 RenderFrame 前置条件顺序错误，确保懒创建 swapchain 在首帧可执行）
+- 问题记录：`docs/issues/dawn_native_stage29_neon_gpu_v2_full_d3d11_presenter.md`（将 Neon GPU-v2 presenter 改为纯 D3D11 着色器渲染 + DComp 呈现，移除 `CreateBitmapFromDxgiSurface` 失败链路）
+- 问题记录：`docs/issues/dawn_native_stage30_neon_gpu_v2_hardware_adapter_and_alpha_cleanup.md`（优先显式选择硬件适配器创建设备，并收紧 shader 透明覆盖，减少 WARP 探测噪音与整块暗底）
+- 问题记录：`docs/issues/dawn_native_stage31_neon_gpu_v2_formal_hud3d_shader.md`（将临时测试圈样式替换为正式 Neon HUD3D 分层 shader 视觉，并保持全 GPU 呈现链路）
+- 问题记录：`docs/issues/dawn_native_stage32_neon_gpu_v2_angular_wrap_fix.md`（修复角度包裹数学导致的白色扇形伪像，避免指数项异常爆亮）
+- 问题记录：`docs/issues/dawn_native_stage33_quantum_halo_gpu_v2_rename_and_high_fidelity_shader.md`（将 Neon GPU-v2 正式更名为 Quantum Halo GPU-v2，补齐旧 id 兼容别名，并升级为更高复杂度多层 shader 视觉）
+- 问题记录：`docs/issues/dawn_native_stage34_gpu_fallback_notice_webui_and_false_positive_fix.md`（移除阻塞式回退弹窗，修复别名映射导致的误判回退提示，并将真实回退信息改为 Web 设置页状态栏提示）
+- 问题记录：`docs/issues/dawn_native_stage35_gpu_display_name_normalization.md`（统一设置元数据/托盘/Web 的 GPU 与 CPU 显示命名：GPU 保留 GPU 标识并去掉 v2，CPU 去掉 (CPU) 后缀）
+- 问题记录：`docs/issues/dawn_native_stage36_remove_fluxfield_gpu_d2d_experimental_switch.md`（移除已失效的 FluxField GPU D2D 实验开关，清理 UI/配置/运行时链路，避免误导性设置项）
+- 问题记录：`docs/issues/dawn_native_stage37_fluxfield_gpu_single_route_with_cpu_fallback.md`（将 FluxField GPU 路径改为“GPU 视觉优先，失败才 CPU 兜底”，并保证同一帧只显示一条渲染路线；同时在选项名明确 CPU-only / Auto-fallback 语义）
+- 问题记录：`docs/issues/dawn_native_stage38_fluxfield_single_option_in_settings.md`（设置项中移除 FluxField 的 CPU-only 入口，只保留一个“GPU 优先 + 自动 CPU 兜底”的用户选项）
+- 问题记录：`docs/issues/dawn_native_stage39_fluxfield_gpu_visibility_matrix_anchor_fallback.md`（修复 FluxField GPU 在光标映射离屏时“判定成功但不绘制”的不可见问题，改为回退到矩阵锚点继续渲染）
+- 问题记录：`docs/issues/dawn_native_stage40_follow_mode_and_flux_label_copy_cleanup.md`（统一长按跟随模式文案语义：将 smooth 明确为“光标优先（推荐）”，并将 FluxField GPU 标签统一为“CPU兜底”）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
 - 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）
 - 架构整理：`docs/architecture/ui-folder-structure.zh-CN.md`（UI 文件夹结构整理）

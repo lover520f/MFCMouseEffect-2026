@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
+#include "MouseFx/Effects/HoldQuantumHaloGpuV2DirectRuntime.h"
 #include "MouseFx/Styles/RippleStyle.h"
 #include <cstdint>
 #include <string>
@@ -13,8 +14,7 @@ public:
     explicit HoldEffect(
         const std::string& themeName,
         const std::string& type,
-        const std::string& followMode,
-        bool fluxGpuV2D2dExperimentalEnabled);
+        const std::string& followMode);
     ~HoldEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Hold; }
@@ -37,6 +37,7 @@ private:
     static FollowMode ParseFollowMode(const std::string& mode);
     static bool IsSamePoint(const POINT& a, const POINT& b);
     static bool IsGpuV2RouteType(const std::string& type);
+    static bool IsQuantumHaloGpuV2DirectType(const std::string& type);
     void SendHoldStateCommand(DWORD durationMs, const POINT& pt) const;
 
     POINT holdPoint_{};
@@ -46,7 +47,7 @@ private:
     RippleStyle style_{};
     std::string type_; // Renderer type name
     bool isGpuV2Route_ = false;
-    bool fluxGpuV2D2dExperimentalEnabled_ = false;
+    bool isQuantumHaloGpuV2Direct_ = false;
     bool isChromatic_ = false;
     FollowMode followMode_ = FollowMode::Smooth;
     bool hasSmoothedPoint_ = false;
@@ -56,6 +57,7 @@ private:
     bool hasLastSentPoint_ = false;
     uint64_t lastHoldCommandMs_ = 0;
     uint64_t lastEfficientPosMs_ = 0;
+    HoldQuantumHaloGpuV2DirectRuntime quantumHaloGpuDirectRuntime_{};
 };
 
 } // namespace mousefx

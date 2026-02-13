@@ -135,8 +135,6 @@ struct EffectConfig {
     // Hold follow strategy:
     // precise | smooth | efficient
     std::string holdFollowMode = "smooth";
-    // Experimental switch for FluxField GPU-v2 D2D backend.
-    bool fluxGpuV2D2dExperimental = false;
     ActiveEffectConfig active;
     
     RippleConfig ripple;

@@ -63,9 +63,9 @@ static CString FallbackOptionLabel(UINT cmd, bool zh) {
         case kCmdHoldTechRing: return PickLabel(L"\u79D1\u6280\u5708 (3D)", L"Tech Ring (3D)", zh);
         case kCmdHoldHologram: return PickLabel(L"\u516E\u606F\u6295\u5F71 (3D)", L"Hologram (3D)", zh);
         case kCmdHoldNeon3D: return PickLabel(L"\u9713\u8679 HUD (3D)", L"Neon HUD (3D)", zh);
-        case kCmdHoldNeon3DGpuV2: return PickLabel(L"\u9713\u8679 HUD GPU v2", L"Neon HUD GPU v2", zh);
-        case kCmdHoldFluxFieldCpu: return PickLabel(L"\u78C1\u901A\u573A HUD (CPU)", L"FluxField HUD (CPU)", zh);
-        case kCmdHoldFluxFieldGpuV2: return PickLabel(L"\u78C1\u901A\u573A HUD GPU v2", L"FluxField HUD GPU v2", zh);
+        case kCmdHoldQuantumHaloGpuV2: return PickLabel(L"\u91CF\u5B50\u5149\u73AF GPU", L"Quantum Halo GPU", zh);
+        case kCmdHoldFluxFieldCpu: return PickLabel(L"\u78C1\u901A\u573A HUD\uff08CPU\u4EC5\uff09", L"FluxField HUD (CPU Only)", zh);
+        case kCmdHoldFluxFieldGpuV2: return PickLabel(L"\u78C1\u901A\u573A HUD GPU\uff08CPU\u515C\u5E95\uff09", L"FluxField HUD GPU (CPU Fallback)", zh);
         case kCmdHoldNone: return PickLabel(L"\u65E0", L"None", zh);
 
         case kCmdHoverGlow: return PickLabel(L"\u547C\u5438\u706F", L"Glow", zh);
@@ -110,7 +110,8 @@ static bool IsCurrentTypeMatchByCommand(const std::string& currentType, UINT cmd
         case kCmdHoldTechRing: return currentType == "tech_ring";
         case kCmdHoldHologram: return currentType == "hologram" || currentType == "scifi3d";
         case kCmdHoldNeon3D: return currentType == "hold_neon3d" || currentType == "neon3d";
-        case kCmdHoldNeon3DGpuV2: return currentType == "hold_neon3d_gpu_v2";
+        case kCmdHoldQuantumHaloGpuV2:
+            return currentType == "hold_quantum_halo_gpu_v2" || currentType == "hold_neon3d_gpu_v2";
         case kCmdHoldFluxFieldCpu: return currentType == "hold_fluxfield_cpu";
         case kCmdHoldFluxFieldGpuV2: return currentType == "hold_fluxfield_gpu_v2";
         case kCmdHoldNone: return currentType == "none";
@@ -238,7 +239,7 @@ static bool TryBuildEffectJsonByCommand(UINT cmd, std::string* outJson) {
         case kCmdHoldTechRing: setEffect("hold", "tech_ring"); return true;
         case kCmdHoldHologram: setEffect("hold", "hologram"); return true;
         case kCmdHoldNeon3D: setEffect("hold", "hold_neon3d"); return true;
-        case kCmdHoldNeon3DGpuV2: setEffect("hold", "hold_neon3d_gpu_v2"); return true;
+        case kCmdHoldQuantumHaloGpuV2: setEffect("hold", "hold_quantum_halo_gpu_v2"); return true;
         case kCmdHoldFluxFieldCpu: setEffect("hold", "hold_fluxfield_cpu"); return true;
         case kCmdHoldFluxFieldGpuV2: setEffect("hold", "hold_fluxfield_gpu_v2"); return true;
         case kCmdHoldNone: clearEffect("hold"); return true;

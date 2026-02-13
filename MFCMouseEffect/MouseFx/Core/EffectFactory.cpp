@@ -38,8 +38,7 @@ std::unique_ptr<IMouseEffect> EffectFactory::Create(EffectCategory category, con
             return std::make_unique<HoldEffect>(
                 config.theme,
                 type,
-                config.holdFollowMode,
-                config.fluxGpuV2D2dExperimental);
+                config.holdFollowMode);
         case EffectCategory::Hover:
             return std::make_unique<HoverEffect>(config.theme, type);
         case EffectCategory::Edge:
