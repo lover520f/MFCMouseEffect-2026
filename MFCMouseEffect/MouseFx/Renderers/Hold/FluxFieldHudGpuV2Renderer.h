@@ -1,7 +1,10 @@
 #pragma once
 
 #include "FluxFieldHudCpuRenderer.h"
+#include "FluxFieldHudGpuV2D2DBackend.h"
 #include <cstdio>
+#include <filesystem>
+#include <string>
 
 namespace mousefx {
 
@@ -12,10 +15,19 @@ class FluxFieldHudGpuV2Renderer final : public IRippleRenderer {
 public:
     void Start(const RippleStyle& style) override {
         state_ = {};
+        d2dExperimentalEnabled_ = IsD2dExperimentalEnabled();
+        if (d2dExperimentalEnabled_) {
+            d2dBackend_.ResetSession();
+        }
         cpuImpl_.Start(style);
     }
 
     void Render(Gdiplus::Graphics& g, float t, uint64_t elapsedMs, int sizePx, const RippleStyle& style) override {
+        if (d2dExperimentalEnabled_ && d2dBackend_.IsAvailable()) {
+            if (d2dBackend_.Render(g, t, elapsedMs, sizePx, style, state_.holdMs)) {
+                return;
+            }
+        }
         cpuImpl_.Render(g, t, elapsedMs, sizePx, style);
     }
 
@@ -35,6 +47,24 @@ public:
     }
 
 private:
+    static bool IsD2dExperimentalEnabled() {
+        wchar_t envValue[16] = {};
+        const DWORD envLen = GetEnvironmentVariableW(L"MFX_FLUX_GPU_V2_D2D", envValue, 16);
+        if (envLen > 0 && envLen < 16) {
+            std::wstring v(envValue, envValue + envLen);
+            for (wchar_t& c : v) {
+                if (c >= L'A' && c <= L'Z') c = (wchar_t)(c - L'A' + L'a');
+            }
+            if (v == L"1" || v == L"true" || v == L"on") return true;
+        }
+
+        wchar_t exePath[MAX_PATH] = {};
+        GetModuleFileNameW(nullptr, exePath, MAX_PATH);
+        std::filesystem::path p(exePath);
+        p = p.parent_path() / L".local" / L"diag" / L"flux_gpu_v2_d2d.on";
+        return std::filesystem::exists(p);
+    }
+
     struct HoldState {
         bool active = false;
         uint32_t holdMs = 0;
@@ -43,7 +73,9 @@ private:
     };
 
     FluxFieldHudCpuRenderer cpuImpl_{};
+    FluxFieldHudGpuV2D2DBackend d2dBackend_{};
     HoldState state_{};
+    bool d2dExperimentalEnabled_ = false;
 };
 
 REGISTER_RENDERER("hold_fluxfield_gpu_v2", FluxFieldHudGpuV2Renderer)
