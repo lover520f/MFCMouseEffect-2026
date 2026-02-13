@@ -250,11 +250,20 @@ void TrayMenuBuilder::BuildTrayMenu(CMenu& menu, mousefx::AppController* mouseFx
     size_t n = 0;
     const bool zh = IsZhUi(mouseFx);
 
-    AppendEffectSubMenu(menu, PickLabel(L"\u70b9\u51fb\u7279\u6548", L"Click Effects", zh), mouseFx, mousefx::EffectCategory::Click, mousefx::ClickMetadata(n), n);
-    AppendEffectSubMenu(menu, PickLabel(L"\u62d6\u5c3e\u7279\u6548", L"Trail Effects", zh), mouseFx, mousefx::EffectCategory::Trail, mousefx::TrailMetadata(n), n);
-    AppendEffectSubMenu(menu, PickLabel(L"\u6eda\u8f6e\u7279\u6548", L"Scroll Effects", zh), mouseFx, mousefx::EffectCategory::Scroll, mousefx::ScrollMetadata(n), n);
-    AppendEffectSubMenu(menu, PickLabel(L"\u957f\u6309\u7279\u6548", L"Hold Effects", zh), mouseFx, mousefx::EffectCategory::Hold, mousefx::HoldMetadata(n), n);
-    AppendEffectSubMenu(menu, PickLabel(L"\u60ac\u505c\u7279\u6548", L"Hover Effects", zh), mouseFx, mousefx::EffectCategory::Hover, mousefx::HoverMetadata(n), n);
+    const mousefx::EffectOption* clickOpts = mousefx::ClickMetadata(n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u70b9\u51fb\u7279\u6548", L"Click Effects", zh), mouseFx, mousefx::EffectCategory::Click, clickOpts, n);
+
+    const mousefx::EffectOption* trailOpts = mousefx::TrailMetadata(n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u62d6\u5c3e\u7279\u6548", L"Trail Effects", zh), mouseFx, mousefx::EffectCategory::Trail, trailOpts, n);
+
+    const mousefx::EffectOption* scrollOpts = mousefx::ScrollMetadata(n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u6eda\u8f6e\u7279\u6548", L"Scroll Effects", zh), mouseFx, mousefx::EffectCategory::Scroll, scrollOpts, n);
+
+    const mousefx::EffectOption* holdOpts = mousefx::HoldMetadata(n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u957f\u6309\u7279\u6548", L"Hold Effects", zh), mouseFx, mousefx::EffectCategory::Hold, holdOpts, n);
+
+    const mousefx::EffectOption* hoverOpts = mousefx::HoverMetadata(n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u60ac\u505c\u7279\u6548", L"Hover Effects", zh), mouseFx, mousefx::EffectCategory::Hover, hoverOpts, n);
 
     AppendThemeSubMenu(menu, mouseFx);
 
