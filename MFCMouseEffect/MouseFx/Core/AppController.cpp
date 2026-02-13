@@ -9,6 +9,7 @@
 #include "OverlayHostService.h"
 #include "JsonLite.h"
 #include "MouseFx/ThirdParty/json.hpp"
+#include "VmForegroundDetector.h"
 
 #include <new>
 #include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM
@@ -374,7 +375,7 @@ void AppController::SetEffect(EffectCategory category, const std::string& type) 
 
     // Create and initialize new effect
     effects_[idx] = CreateEffect(category, effectiveType);
-    if (effects_[idx]) {
+    if (effects_[idx] && !vmEffectsSuppressed_) {
         effects_[idx]->Initialize();
     }
 
@@ -772,6 +773,43 @@ void AppController::DestroyDispatchWindow() {
     }
 }
 
+void AppController::UpdateVmSuppressionState() {
+    const uint64_t now = GetTickCount64();
+    const bool suppress = vmForegroundDetector_.ShouldSuppress(now);
+    if (suppress == vmEffectsSuppressed_) return;
+    ApplyVmSuppression(suppress);
+}
+
+void AppController::ApplyVmSuppression(bool suppressed) {
+    if (suppressed) {
+        SuspendEffectsForVm();
+    } else {
+        ResumeEffectsAfterVm();
+    }
+    vmEffectsSuppressed_ = suppressed;
+}
+
+void AppController::SuspendEffectsForVm() {
+    if (dispatchHwnd_) {
+        KillTimer(dispatchHwnd_, kHoldTimerId);
+    }
+    pendingHold_.active = false;
+    ignoreNextClick_ = false;
+    holdButtonDown_ = false;
+    holdDownTick_ = 0;
+    hovering_ = false;
+
+    for (auto& effect : effects_) {
+        if (effect) effect->Shutdown();
+    }
+}
+
+void AppController::ResumeEffectsAfterVm() {
+    for (auto& effect : effects_) {
+        if (effect) effect->Initialize();
+    }
+}
+
 LRESULT CALLBACK AppController::DispatchWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     AppController* self = nullptr;
     if (msg == WM_NCCREATE) {
@@ -790,9 +828,17 @@ LRESULT CALLBACK AppController::DispatchWndProc(HWND hwnd, UINT msg, WPARAM wPar
 }
 
 LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    const bool isMouseInputMsg =
+        (msg == WM_MFX_CLICK || msg == WM_MFX_MOVE || msg == WM_MFX_SCROLL ||
+         msg == WM_MFX_BUTTON_DOWN || msg == WM_MFX_BUTTON_UP);
+    const bool isStateTimerMsg =
+        (msg == WM_TIMER && (wParam == kHoverTimerId || wParam == kHoldTimerId));
+    if (isMouseInputMsg || isStateTimerMsg) {
+        UpdateVmSuppressionState();
+    }
+
     // Reset idle timer on any mouse input
-    if (msg == WM_MFX_CLICK || msg == WM_MFX_MOVE || msg == WM_MFX_SCROLL || 
-        msg == WM_MFX_BUTTON_DOWN || msg == WM_MFX_BUTTON_UP) 
+    if (isMouseInputMsg)
     {
         lastInputTime_ = GetTickCount64();
         if (hovering_) {
@@ -804,12 +850,16 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
     }
 
     if (msg == WM_MFX_CLICK) {
+        auto* ev = reinterpret_cast<ClickEvent*>(lParam);
+        if (vmEffectsSuppressed_) {
+            if (ev) delete ev;
+            return 0;
+        }
         if (ignoreNextClick_) {
             ignoreNextClick_ = false;
             return 0; // Suppress click after a long hold
         }
 
-        auto* ev = reinterpret_cast<ClickEvent*>(lParam);
         if (ev) {
 #ifdef _DEBUG
             if (debugClickCount_ < 5) {
@@ -830,6 +880,9 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
     } 
     
     if (msg == WM_MFX_MOVE) {
+        if (vmEffectsSuppressed_) {
+            return 0;
+        }
         POINT pt{};
         if (!hook_.ConsumeLatestMove(pt)) {
             pt.x = static_cast<LONG>(wParam);
@@ -853,6 +906,9 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
     }
 
     if (msg == WM_MFX_SCROLL) {
+        if (vmEffectsSuppressed_) {
+            return 0;
+        }
         short delta = static_cast<short>(wParam);
         POINT pt{};
         if (!GetCursorPos(&pt)) {
@@ -871,6 +927,10 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
     }
 
     if (msg == WM_MFX_BUTTON_DOWN) {
+        if (vmEffectsSuppressed_) {
+            pendingHold_.active = false;
+            return 0;
+        }
         int button = static_cast<int>(wParam);
         POINT pt{};
         if (!GetCursorPos(&pt)) {
@@ -901,6 +961,10 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
             pendingHold_.active = false;
         }
 
+        if (vmEffectsSuppressed_) {
+            return 0;
+        }
+
         // End hold effect if it was started
         if (auto* effect = GetEffect(EffectCategory::Hold)) {
             effect->OnHoldEnd();
@@ -910,6 +974,9 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
     if (msg == WM_TIMER) {
         if (wParam == kHoverTimerId) {
+            if (vmEffectsSuppressed_) {
+                return 0;
+            }
             if (!hovering_) {
                 uint64_t elapsed = GetTickCount64() - lastInputTime_;
                 if (elapsed >= kHoverThresholdMs) {
@@ -926,6 +993,10 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         
         if (wParam == kHoldTimerId) {
             KillTimer(hwnd, kHoldTimerId);
+            if (vmEffectsSuppressed_) {
+                pendingHold_.active = false;
+                return 0;
+            }
             if (pendingHold_.active) {
                 // Timer elapsed, this is a real hold: trigger effect
                 if (auto* effect = GetEffect(EffectCategory::Hold)) {
