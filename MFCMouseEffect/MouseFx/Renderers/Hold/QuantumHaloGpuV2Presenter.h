@@ -110,21 +110,39 @@ public:
             return true;
         }
 
-        if (!pipeline_.Render(elapsedMs, holdMs, clampedSize, style)) {
+        unsigned long sehCode = 0ul;
+        bool pipelineOk = false;
+        HRESULT presentHr = S_OK;
+        HRESULT commitHr = S_OK;
+        const bool submitOk = TryGpuSubmitSeh(
+            &pipeline_,
+            swapChain_.Get(),
+            dcompDevice_.Get(),
+            elapsedMs,
+            holdMs,
+            clampedSize,
+            &style,
+            &sehCode,
+            &pipelineOk,
+            &presentHr,
+            &commitHr);
+        if (!submitOk) {
+            SetError("gpu_driver_seh_" + Hex32(sehCode));
+            MarkFailure();
+            return false;
+        }
+        if (!pipelineOk) {
             SetError("pipeline_render_failed_" + pipeline_.LastErrorReason());
             MarkFailure();
             return false;
         }
-
-        HRESULT hr = swapChain_->Present(0, 0);
-        if (FAILED(hr)) {
-            SetError("present_failed_" + HexHr(hr));
+        if (FAILED(presentHr)) {
+            SetError("present_failed_" + HexHr(presentHr));
             MarkFailure();
             return false;
         }
-        hr = dcompDevice_->Commit();
-        if (FAILED(hr)) {
-            SetError("dcomp_commit_failed_" + HexHr(hr));
+        if (FAILED(commitHr)) {
+            SetError("dcomp_commit_failed_" + HexHr(commitHr));
             MarkFailure();
             return false;
         }
@@ -389,6 +407,46 @@ private:
         if (v < lo) return lo;
         if (v > hi) return hi;
         return v;
+    }
+
+    static bool TryGpuSubmitSeh(
+        QuantumHaloGpuV2ShaderPipeline* pipeline,
+        IDXGISwapChain1* swapChain,
+        IDCompositionDevice* dcompDevice,
+        uint64_t elapsedMs,
+        uint32_t holdMs,
+        int clampedSize,
+        const RippleStyle* style,
+        unsigned long* outSehCode,
+        bool* outPipelineOk,
+        HRESULT* outPresentHr,
+        HRESULT* outCommitHr) {
+        if (outSehCode) *outSehCode = 0ul;
+        if (outPipelineOk) *outPipelineOk = false;
+        if (outPresentHr) *outPresentHr = E_FAIL;
+        if (outCommitHr) *outCommitHr = E_FAIL;
+        if (!pipeline || !swapChain || !dcompDevice || !style) {
+            return true;
+        }
+
+        __try {
+            const bool pipelineOk = pipeline->Render(elapsedMs, holdMs, clampedSize, *style);
+            if (outPipelineOk) *outPipelineOk = pipelineOk;
+            if (!pipelineOk) {
+                if (outPresentHr) *outPresentHr = S_OK;
+                if (outCommitHr) *outCommitHr = S_OK;
+                return true;
+            }
+
+            const HRESULT presentHr = swapChain->Present(0, 0);
+            const HRESULT commitHr = dcompDevice->Commit();
+            if (outPresentHr) *outPresentHr = presentHr;
+            if (outCommitHr) *outCommitHr = commitHr;
+            return true;
+        } __except (EXCEPTION_EXECUTE_HANDLER) {
+            if (outSehCode) *outSehCode = static_cast<unsigned long>(GetExceptionCode());
+            return false;
+        }
     }
 
     static void PickBestHardwareAdapter(Microsoft::WRL::ComPtr<IDXGIAdapter1>& outAdapter) {
