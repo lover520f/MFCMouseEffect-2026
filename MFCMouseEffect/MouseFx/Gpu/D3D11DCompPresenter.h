@@ -47,6 +47,7 @@ public:
     bool Initialize();
     void Shutdown();
     D3D11DCompPresenterStatus GetStatus() const;
+    bool IsTrialFrameUploadEnabled() const;
     void SetVisibleTrialHwnd(HWND hwnd);
     bool TryActivateTakeoverPath();
     bool SubmitTrialFrameBGRA(const void* pixels, int width, int height, int strideBytes);

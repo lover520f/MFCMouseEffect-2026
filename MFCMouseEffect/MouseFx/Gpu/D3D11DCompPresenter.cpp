@@ -560,4 +560,9 @@ D3D11DCompPresenterStatus D3D11DCompPresenter::GetStatus() const {
     return status_;
 }
 
+bool D3D11DCompPresenter::IsTrialFrameUploadEnabled() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return status_.visibleTrialEnabled && status_.takeoverEnabled;
+}
+
 } // namespace mousefx::gpu
