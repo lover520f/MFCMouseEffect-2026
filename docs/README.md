@@ -17,6 +17,9 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Issues: `docs/issues/dawn_native_stage6_repo_runtime_probe_path.md` (add repo runtime DLL probe path so dev layout can load Dawn binaries)
 - Issues: `docs/issues/dawn_native_stage7_postbuild_copy_dawn_runtime.md` (post-build copy Dawn runtime DLLs beside exe to avoid missing runtime at launch)
 - Issues: `docs/issues/dawn_native_stage8_fluxfield_dual_route_entry.md` (add complex FluxField hold effect with explicit CPU/GPU-v2 route IDs for A/B testing)
+- Issues: `docs/issues/dawn_native_stage9_fluxfield_gpu_v2_d2d_backend.md` (switch FluxField GPU-v2 from placeholder to real D2D GPU backend with runtime gate + CPU fallback)
+- Issues: `docs/issues/dawn_native_stage10_fluxfield_gpu_transform_fix.md` (fix FluxField GPU-v2 transform to follow mouse-local coordinates instead of screen origin)
+- Issues: `docs/issues/dawn_native_stage11_fluxfield_gpu_placeholder_rollback.md` (rollback FluxField GPU-v2 renderer to stable placeholder after COM-error/no-effect regression)
 - Architecture: `docs/architecture/tray-and-appcontroller-refactor.md` (tray menu table-driven + AppController cleanup)
 - Architecture: `docs/architecture/settingswnd-emoji-split.md` (SettingsWnd emoji logic split)
 - Architecture: `docs/architecture/ui-folder-structure.md` (UI folder layout refolder)
@@ -27,7 +30,6 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Architecture: `docs/architecture/web-settings-ui.md` (browser settings via loopback HTTP server)
 - Architecture: `docs/architecture/dawn-native-effects-route.md` (postmortem + new Dawn-native effect route from clean main)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
-
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.
 - Click-through: does not block the underlying app.
@@ -80,4 +82,5 @@ Tray menus are fine for quick toggles. For full configuration (including advance
 ## SDI / Single-Window Notes
 - The app now uses an SDI frame: one top-level window hosts the view; ripples are still rendered in separate transparent layered windows, so UI and effect remain decoupled.
 - If you need multiple windows, create multiple top-level frames (no MDI children/tabs), or run multiple instances.
+
 

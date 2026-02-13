@@ -4,14 +4,17 @@
 
 namespace mousefx {
 
-// GPU route placeholder for FluxField HUD.
-// Stage-1 keeps visual parity with CPU renderer while runtime/path gating is validated.
+// Stability-first fallback implementation.
+// Keep dedicated GPU-v2 route id for pipeline wiring/diagnostics while
+// rendering uses proven CPU path until GPU backend is fully stabilized.
 class FluxFieldHudGpuV2Renderer final : public IRippleRenderer {
 public:
     void Start(const RippleStyle& style) override { cpuImpl_.Start(style); }
+
     void Render(Gdiplus::Graphics& g, float t, uint64_t elapsedMs, int sizePx, const RippleStyle& style) override {
         cpuImpl_.Render(g, t, elapsedMs, sizePx, style);
     }
+
     void OnCommand(const std::string& cmd, const std::string& args) override { cpuImpl_.OnCommand(cmd, args); }
 
 private:
@@ -21,3 +24,4 @@ private:
 REGISTER_RENDERER("hold_fluxfield_gpu_v2", FluxFieldHudGpuV2Renderer)
 
 } // namespace mousefx
+
