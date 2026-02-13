@@ -33,6 +33,17 @@ void WriteAutoDisableMarker(const char* reason) {
     out << (reason ? reason : "unknown");
 }
 
+void ArchiveStaleAutoOffMarker(const std::filesystem::path& autoOffFile) {
+    if (autoOffFile.empty()) return;
+    std::error_code ec;
+    if (!std::filesystem::exists(autoOffFile, ec) || ec) return;
+    const auto ts = GetTickCount64();
+    std::filesystem::path archived = autoOffFile;
+    archived += L".stale_ignored_";
+    archived += std::to_wstring(ts);
+    std::filesystem::rename(autoOffFile, archived, ec);
+}
+
 struct TakeoverControlResult {
     bool enabled = false;
     std::string source = "default_off";
@@ -78,9 +89,10 @@ TakeoverControlResult ResolveTakeoverControl() {
             std::error_code exeEc;
             const auto exeTime = exePath.empty() ? std::filesystem::file_time_type{} : std::filesystem::last_write_time(exePath, exeEc);
             if (!fileEc && !exeEc && !exePath.empty() && autoOffTime < exeTime) {
+                ArchiveStaleAutoOffMarker(autoOffFile);
                 result.enabled = false;
                 result.source = "auto_off_ignored_after_new_build";
-                result.detail = "auto_off_marker_older_than_exe";
+                result.detail = "auto_off_marker_older_than_exe_archived";
             } else {
                 result.enabled = false;
                 result.source = "file_off_auto";
