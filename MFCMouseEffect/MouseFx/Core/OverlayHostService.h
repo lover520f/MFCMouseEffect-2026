@@ -38,6 +38,8 @@ public:
     bool IsRippleActive(uint64_t id) const;
     void SendRippleCommand(uint64_t id, const std::string& cmd, const std::string& args);
     void BroadcastRippleCommand(const std::string& cmd, const std::string& args);
+    void SetHoldNeon3dGpuTrialActive(bool active);
+    bool IsHoldNeon3dGpuTrialActive() const;
     bool ShowText(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config);
     void DetachLayer(IOverlayLayer* layer);
     gpu::D3D11DCompPresenterStatus GetGpuPresentHostStatus() const;

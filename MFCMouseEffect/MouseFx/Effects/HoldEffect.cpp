@@ -68,6 +68,7 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
 
     currentRippleId_ = OverlayHostService::Instance().ShowContinuousRipple(
         ev, finalStyle, std::move(renderer), params);
+    OverlayHostService::Instance().SetHoldNeon3dGpuTrialActive(type_ == "hold_neon3d" || type_ == "neon3d");
     if (currentRippleId_ != 0) {
         char buf[32]{};
         snprintf(buf, sizeof(buf), "%u", finalStyle.durationMs);
@@ -135,6 +136,7 @@ void HoldEffect::OnHoldEnd() {
         currentRippleId_ = 0;
     }
     holdButton_ = 0;
+    OverlayHostService::Instance().SetHoldNeon3dGpuTrialActive(false);
     hasSmoothedPoint_ = false;
     hasLastSentPoint_ = false;
     lastHoldCommandMs_ = 0;

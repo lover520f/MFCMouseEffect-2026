@@ -94,6 +94,16 @@ void OverlayHostService::BroadcastRippleCommand(const std::string& cmd, const st
     rippleLayer_->BroadcastCommand(cmd, args);
 }
 
+void OverlayHostService::SetHoldNeon3dGpuTrialActive(bool active) {
+    if (!host_) return;
+    host_->SetHoldNeon3dGpuTrialActive(active);
+}
+
+bool OverlayHostService::IsHoldNeon3dGpuTrialActive() const {
+    if (!host_) return false;
+    return host_->IsHoldNeon3dGpuTrialActive();
+}
+
 bool OverlayHostService::ShowText(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config) {
     TextOverlayLayer* layer = EnsureTextLayer();
     if (!layer) return false;

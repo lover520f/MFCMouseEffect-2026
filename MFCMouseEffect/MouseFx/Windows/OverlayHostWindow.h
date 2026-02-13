@@ -20,6 +20,8 @@ public:
     bool Create();
     void Shutdown();
     gpu::D3D11DCompPresenterStatus GetGpuPresentHostStatus() const;
+    void SetHoldNeon3dGpuTrialActive(bool active);
+    bool IsHoldNeon3dGpuTrialActive() const;
 
     IOverlayLayer* AddLayer(std::unique_ptr<IOverlayLayer> layer);
     void RemoveLayer(IOverlayLayer* layer);
@@ -68,6 +70,7 @@ private:
     int virtualW_ = 0;
     int virtualH_ = 0;
     bool ticking_ = false;
+    bool holdNeon3dGpuTrialActive_ = false;
     uint64_t lastTopmostEnsureMs_ = 0;
     HWINEVENTHOOK foregroundHook_ = nullptr;
     std::vector<std::unique_ptr<IOverlayLayer>> layers_{};

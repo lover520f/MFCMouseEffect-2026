@@ -338,6 +338,7 @@ std::string WebSettingsServer::BuildStateJson() const {
     };
 
     const auto gpuPresentHost = OverlayHostService::Instance().GetGpuPresentHostStatus();
+    const bool holdNeon3dGpuTrialActive = OverlayHostService::Instance().IsHoldNeon3dGpuTrialActive();
     std::string takeoverBlockReason = "none";
     if (!gpuPresentHost.takeoverEnabled) {
         takeoverBlockReason = "takeover_disabled";
@@ -381,6 +382,7 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"trial_frame_submit_skipped_disabled", gpuPresentHost.trialFrameSubmitSkippedDisabled},
         {"trial_frame_submit_skipped_not_ready", gpuPresentHost.trialFrameSubmitSkippedNotReady},
         {"trial_frame_upload_enabled", gpuPresentHost.trialFrameUploadEnabled},
+        {"hold_neon3d_gpu_trial_active", holdNeon3dGpuTrialActive},
         {"trial_upload_gate_open", trialUploadGateOpen},
         {"last_trial_tick_ms", gpuPresentHost.lastTrialTickMs},
         {"last_trial_result", gpuPresentHost.lastTrialResult},
