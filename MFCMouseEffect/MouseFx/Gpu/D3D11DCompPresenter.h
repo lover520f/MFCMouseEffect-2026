@@ -19,6 +19,7 @@ struct D3D11DCompPresenterStatus {
     bool compositionSwapChainReady = false;
     bool visibleTrialEnabled = false;
     bool visibleTrialReady = false;
+    bool rearmProcessed = false;
     bool takeoverEnabled = false;
     bool takeoverEligible = false;
     bool takeoverActive = false;

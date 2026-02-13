@@ -346,6 +346,7 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"composition_swapchain_ready", gpuPresentHost.compositionSwapChainReady},
         {"visible_trial_enabled", gpuPresentHost.visibleTrialEnabled},
         {"visible_trial_ready", gpuPresentHost.visibleTrialReady},
+        {"rearm_processed", gpuPresentHost.rearmProcessed},
         {"takeover_enabled", gpuPresentHost.takeoverEnabled},
         {"takeover_eligible", gpuPresentHost.takeoverEligible},
         {"takeover_active", gpuPresentHost.takeoverActive},

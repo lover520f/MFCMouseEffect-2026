@@ -97,6 +97,21 @@ bool IsVisibleTrialEnabledByFile() {
     return std::filesystem::exists(onFile, ec) && !ec;
 }
 
+bool ConsumeRearmRequest() {
+    const std::filesystem::path diagDir = ResolveDiagDirFromCurrentModule();
+    if (diagDir.empty()) return false;
+    const std::filesystem::path rearmFile = diagDir / L"gpu_final_present_takeover.rearm";
+    std::error_code ec;
+    if (!std::filesystem::exists(rearmFile, ec) || ec) return false;
+
+    const std::filesystem::path autoOffFile = diagDir / L"gpu_final_present_takeover.off.disabled_by_codex";
+    ec.clear();
+    std::filesystem::remove(autoOffFile, ec);
+    ec.clear();
+    std::filesystem::remove(rearmFile, ec);
+    return true;
+}
+
 bool IsTruthyLeadingChar(wchar_t ch) {
     return ch == L'1' || ch == L't' || ch == L'T' || ch == L'y' || ch == L'Y';
 }
@@ -110,6 +125,7 @@ TakeoverControlResult ResolveTakeoverControl() {
         if (n == 0 || n >= MAX_PATH) return {};
         return std::filesystem::path(modulePath);
     }();
+    const bool rearmed = ConsumeRearmRequest();
     const std::filesystem::path diagDir = ResolveDiagDirFromCurrentModule();
     if (!diagDir.empty()) {
         const std::filesystem::path offFile = diagDir / L"gpu_final_present_takeover.off";
@@ -126,7 +142,7 @@ TakeoverControlResult ResolveTakeoverControl() {
         if (std::filesystem::exists(onFile, ec) && !ec) {
             result.enabled = true;
             result.source = "file_on";
-            result.detail = "manual_on_file_present";
+            result.detail = rearmed ? "rearmed_then_manual_on_file_present" : "manual_on_file_present";
             return result;
         }
         ec.clear();
@@ -143,7 +159,7 @@ TakeoverControlResult ResolveTakeoverControl() {
             } else {
                 result.enabled = false;
                 result.source = "file_off_auto";
-                result.detail = "auto_off_marker_active";
+                result.detail = rearmed ? "rearm_failed_auto_off_still_active" : "auto_off_marker_active";
                 return result;
             }
         }
@@ -152,11 +168,16 @@ TakeoverControlResult ResolveTakeoverControl() {
     wchar_t value[8]{};
     const DWORD envN = GetEnvironmentVariableW(L"MOUSEFX_GPU_DCOMP_TAKEOVER", value, static_cast<DWORD>(std::size(value)));
     if (envN == 0 || envN >= std::size(value)) {
+        if (rearmed) {
+            result.detail = "rearmed_no_explicit_enable";
+        }
         return result;
     }
     result.enabled = IsTruthyLeadingChar(value[0]);
     result.source = "env";
-    result.detail = result.enabled ? "env_enabled" : "env_disabled";
+    result.detail = result.enabled
+        ? (rearmed ? "rearmed_then_env_enabled" : "env_enabled")
+        : (rearmed ? "rearmed_then_env_disabled" : "env_disabled");
     return result;
 }
 } // namespace
@@ -497,6 +518,7 @@ bool D3D11DCompPresenter::Initialize() {
     takeoverAttempted_ = false;
     status_.visibleTrialEnabled = IsVisibleTrialEnabledByFile();
     const TakeoverControlResult control = ResolveTakeoverControl();
+    status_.rearmProcessed = (control.detail.rfind("rearmed", 0) == 0);
     status_.takeoverEnabled = control.enabled;
     status_.takeoverControl = control.source;
     status_.takeoverControlDetail = control.detail;
