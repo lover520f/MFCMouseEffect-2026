@@ -380,6 +380,7 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"trial_frame_submit_failure", gpuPresentHost.trialFrameSubmitFailure},
         {"trial_frame_submit_skipped_disabled", gpuPresentHost.trialFrameSubmitSkippedDisabled},
         {"trial_frame_submit_skipped_not_ready", gpuPresentHost.trialFrameSubmitSkippedNotReady},
+        {"trial_frame_upload_enabled", gpuPresentHost.trialFrameUploadEnabled},
         {"trial_upload_gate_open", trialUploadGateOpen},
         {"last_trial_tick_ms", gpuPresentHost.lastTrialTickMs},
         {"last_trial_result", gpuPresentHost.lastTrialResult},

@@ -14,6 +14,11 @@
 namespace mousefx::gpu {
 
 namespace {
+bool IsVisibleTrialFallbackLayered(const D3D11DCompPresenterStatus& status) {
+    return status.takeoverControl == "runtime_auto_off" &&
+           status.takeoverControlDetail == "visible_trial_ready_fallback_layered";
+}
+
 std::string JsonEscape(const std::string& s) {
     std::string out;
     out.reserve(s.size() + 8);
@@ -447,7 +452,10 @@ bool D3D11DCompPresenter::SubmitTrialFrameBGRAUnlocked(const void* pixels, int w
 
 bool D3D11DCompPresenter::SubmitTrialFrameBGRAIfEnabled(const void* pixels, int width, int height, int strideBytes) {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (!status_.visibleTrialEnabled || !status_.takeoverEnabled) {
+    const bool allowedByPolicy = (status_.visibleTrialEnabled && status_.takeoverEnabled) ||
+                                 (status_.visibleTrialReady && IsVisibleTrialFallbackLayered(status_));
+    status_.trialFrameUploadEnabled = allowedByPolicy;
+    if (!allowedByPolicy) {
         return false;
     }
     return SubmitTrialFrameBGRAUnlocked(pixels, width, height, strideBytes);
@@ -489,6 +497,7 @@ bool D3D11DCompPresenter::Initialize() {
     status_.controlVisibleTrialOnceFilePresent = control.visibleTrialOnceFilePresent;
     status_.controlVisibleTrialOnceFileConsumed = control.visibleTrialOnceFileConsumed;
     status_.takeoverEnabled = control.takeoverEnabled;
+    status_.trialFrameUploadEnabled = false;
     status_.takeoverControl = control.source;
     status_.takeoverControlDetail = control.detail;
 
@@ -602,7 +611,8 @@ void D3D11DCompPresenter::RecordTakeoverNotAttempted(const char* reason) {
 
 bool D3D11DCompPresenter::IsTrialFrameUploadEnabled() const {
     std::lock_guard<std::mutex> lock(mutex_);
-    return status_.visibleTrialEnabled && status_.takeoverEnabled;
+    return (status_.visibleTrialEnabled && status_.takeoverEnabled) ||
+           (status_.visibleTrialReady && IsVisibleTrialFallbackLayered(status_));
 }
 
 } // namespace mousefx::gpu

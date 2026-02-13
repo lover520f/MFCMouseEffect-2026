@@ -38,6 +38,7 @@ struct D3D11DCompPresenterStatus {
     uint32_t trialFrameSubmitFailure = 0;
     uint32_t trialFrameSubmitSkippedDisabled = 0;
     uint32_t trialFrameSubmitSkippedNotReady = 0;
+    bool trialFrameUploadEnabled = false;
     uint64_t lastTrialTickMs = 0;
     std::string lastTrialResult = "none";
     std::string takeoverControl = "default_off";
