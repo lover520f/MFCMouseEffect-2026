@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <sstream>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -42,6 +43,44 @@ void ArchiveStaleAutoOffMarker(const std::filesystem::path& autoOffFile) {
     archived += L".stale_ignored_";
     archived += std::to_wstring(ts);
     std::filesystem::rename(autoOffFile, archived, ec);
+}
+
+std::string JsonEscape(const std::string& s) {
+    std::string out;
+    out.reserve(s.size() + 8);
+    for (char ch : s) {
+        switch (ch) {
+        case '\\': out += "\\\\"; break;
+        case '"': out += "\\\""; break;
+        case '\n': out += "\\n"; break;
+        case '\r': out += "\\r"; break;
+        case '\t': out += "\\t"; break;
+        default: out.push_back(ch); break;
+        }
+    }
+    return out;
+}
+
+void WriteTrialResultSnapshot(const D3D11DCompPresenterStatus& status) {
+    const std::filesystem::path diagDir = ResolveDiagDirFromCurrentModule();
+    if (diagDir.empty()) return;
+    std::error_code ec;
+    std::filesystem::create_directories(diagDir, ec);
+    if (ec) return;
+
+    const std::filesystem::path file = diagDir / L"gpu_takeover_trial_result_auto.json";
+    std::ofstream out(file, std::ios::binary | std::ios::trunc);
+    if (!out.is_open()) return;
+    out
+        << "{"
+        << "\"last_trial_tick_ms\":" << status.lastTrialTickMs << ","
+        << "\"last_trial_result\":\"" << JsonEscape(status.lastTrialResult) << "\","
+        << "\"detail\":\"" << JsonEscape(status.detail) << "\","
+        << "\"takeover_control\":\"" << JsonEscape(status.takeoverControl) << "\","
+        << "\"takeover_control_detail\":\"" << JsonEscape(status.takeoverControlDetail) << "\","
+        << "\"takeover_attempts\":" << status.takeoverAttempts << ","
+        << "\"takeover_fallbacks\":" << status.takeoverFallbacks
+        << "}";
 }
 
 struct TakeoverControlResult {
@@ -354,25 +393,42 @@ void D3D11DCompPresenter::SetVisibleTrialHwnd(HWND hwnd) {
 bool D3D11DCompPresenter::TryActivateTakeoverPath() {
     std::lock_guard<std::mutex> lock(mutex_);
     if (!status_.initialized) {
+        status_.lastTrialTickMs = GetTickCount64();
+        status_.lastTrialResult = "skip_not_initialized";
         status_.detail = "takeover_skipped_not_initialized";
+        WriteTrialResultSnapshot(status_);
         return false;
     }
     if (status_.takeoverActive) {
+        status_.lastTrialTickMs = GetTickCount64();
+        status_.lastTrialResult = "already_active";
+        WriteTrialResultSnapshot(status_);
         return true;
     }
     if (!status_.takeoverEnabled) {
+        status_.lastTrialTickMs = GetTickCount64();
+        status_.lastTrialResult = "skip_disabled";
         status_.detail = "takeover_disabled";
+        WriteTrialResultSnapshot(status_);
         return false;
     }
     if (!status_.takeoverEligible) {
+        status_.lastTrialTickMs = GetTickCount64();
+        status_.lastTrialResult = "skip_not_eligible";
         status_.detail = "takeover_not_eligible";
+        WriteTrialResultSnapshot(status_);
         return false;
     }
     if (takeoverAttempted_) {
+        status_.lastTrialTickMs = GetTickCount64();
+        status_.lastTrialResult = "skip_already_attempted";
+        WriteTrialResultSnapshot(status_);
         return false;
     }
 
     takeoverAttempted_ = true;
+    status_.lastTrialTickMs = GetTickCount64();
+    status_.lastTrialResult = "attempt_started";
     status_.takeoverAttempts += 1;
 
     if (!CreateProbeCompositionSwapChain()) {
@@ -381,7 +437,9 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
         status_.takeoverEnabled = false;
         status_.takeoverControl = "runtime_auto_off";
         status_.takeoverControlDetail = "takeover_trial_swapchain_create_failed";
+        status_.lastTrialResult = "swapchain_create_failed";
         WriteAutoDisableMarker("takeover_trial_swapchain_create_failed");
+        WriteTrialResultSnapshot(status_);
         return false;
     }
 
@@ -392,7 +450,9 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
             status_.takeoverEnabled = false;
             status_.takeoverControl = "runtime_auto_off";
             status_.takeoverControlDetail = "visible_trial_prepare_failed";
+            status_.lastTrialResult = "visible_trial_prepare_failed";
             WriteAutoDisableMarker("visible_trial_prepare_failed");
+            WriteTrialResultSnapshot(status_);
             return false;
         }
     }
@@ -406,12 +466,15 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
     if (status_.visibleTrialEnabled) {
         status_.takeoverControlDetail = "visible_trial_ready_fallback_layered";
         status_.detail = "visible_trial_ready_fallback_layered";
+        status_.lastTrialResult = "visible_trial_ready_fallback_layered";
         WriteAutoDisableMarker("visible_trial_ready_fallback_layered");
     } else {
         status_.takeoverControlDetail = "takeover_trial_swapchain_ready_fallback_layered";
         status_.detail = "takeover_trial_swapchain_ready_fallback_layered";
+        status_.lastTrialResult = "probe_swapchain_ready_fallback_layered";
         WriteAutoDisableMarker("takeover_trial_swapchain_ready_fallback_layered");
     }
+    WriteTrialResultSnapshot(status_);
     return false;
 }
 

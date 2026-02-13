@@ -24,6 +24,8 @@ struct D3D11DCompPresenterStatus {
     bool takeoverActive = false;
     uint32_t takeoverAttempts = 0;
     uint32_t takeoverFallbacks = 0;
+    uint64_t lastTrialTickMs = 0;
+    std::string lastTrialResult = "none";
     std::string takeoverControl = "default_off";
     std::string takeoverControlDetail = "";
     std::string detail = "not_initialized";
