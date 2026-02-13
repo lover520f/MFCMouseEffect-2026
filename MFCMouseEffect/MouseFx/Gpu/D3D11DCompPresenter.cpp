@@ -376,21 +376,21 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
 
 bool D3D11DCompPresenter::SubmitTrialFrameBGRA(const void* pixels, int width, int height, int strideBytes) {
     std::lock_guard<std::mutex> lock(mutex_);
+    if (!status_.visibleTrialEnabled) {
+        status_.trialFrameSubmitSkippedDisabled += 1;
+        status_.detail = "trial_frame_skip_visible_trial_disabled";
+        return false;
+    }
+    if (!status_.visibleTrialReady || !compositionSwapChain_ || !d3d11Context_) {
+        status_.trialFrameSubmitSkippedNotReady += 1;
+        status_.detail = "trial_frame_skip_visible_trial_not_ready";
+        return false;
+    }
     status_.trialFrameSubmitAttempts += 1;
 
     if (!pixels || width <= 0 || height <= 0 || strideBytes < (width * 4)) {
         status_.trialFrameSubmitFailure += 1;
         status_.detail = "trial_frame_invalid_args";
-        return false;
-    }
-    if (!compositionSwapChain_ || !d3d11Context_) {
-        status_.trialFrameSubmitFailure += 1;
-        status_.detail = "trial_frame_swapchain_not_ready";
-        return false;
-    }
-    if (!status_.visibleTrialEnabled || !status_.visibleTrialReady) {
-        status_.trialFrameSubmitFailure += 1;
-        status_.detail = "trial_frame_visible_trial_not_ready";
         return false;
     }
 
