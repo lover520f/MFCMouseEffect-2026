@@ -58,6 +58,7 @@
       label_hold: "Hold",
       label_hover: "Hover",
       label_texts: "Comma separated",
+      label_text_font_size: "Text font size (pt)",
       placeholder_texts: "happy,healthy",
       hint_texts: "Use English comma \",\" to separate words.",
       label_style_preset: "Style preset",
@@ -130,6 +131,7 @@
       label_hold: "\u957f\u6309",
       label_hover: "\u60ac\u505c",
       label_texts: "\u9017\u53f7\u5206\u9694",
+      label_text_font_size: "\u6587\u5b57\u5927\u5c0f\uff08pt\uff09",
       placeholder_texts: "\u7f8e\u4e3d,\u5065\u5eb7,\u5e78\u798f",
       hint_texts: "\u8bf7\u4f7f\u7528\u82f1\u6587\u9017\u53f7 \",\" \u5206\u9694\u3002",
       label_style_preset: "\u9884\u8bbe\u98ce\u683c",
@@ -382,6 +384,7 @@
     fillSelect(el('hover'), schema.effects?.hover, st.active?.hover);
 
     el('text_content').value = st.text_content || '';
+    num('text_font_size', st.text_font_size);
 
     el('trail_style').value = st.trail_style || 'default';
     const p = st.trail_profiles || {};
@@ -422,6 +425,7 @@
         hover: el('hover').value,
       },
       text_content: el('text_content').value || '',
+      text_font_size: getNum('text_font_size'),
       trail_style: el('trail_style').value,
       trail_profiles: {
         line:     {duration_ms: getNum('p_line_duration'),     max_points: getNum('p_line_max')},

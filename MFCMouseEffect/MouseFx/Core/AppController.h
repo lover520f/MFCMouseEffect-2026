@@ -54,6 +54,8 @@ public:
     
     // Set custom text content for Text Effect
     void SetTextEffectContent(const std::vector<std::wstring>& texts);
+    // Set text click font size in point units.
+    void SetTextEffectFontSize(float sizePt);
     // Set hold follow mode (precise|smooth|efficient).
     void SetHoldFollowMode(const std::string& mode);
 

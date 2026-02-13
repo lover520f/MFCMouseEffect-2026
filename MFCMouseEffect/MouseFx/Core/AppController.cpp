@@ -421,6 +421,18 @@ void AppController::SetTextEffectContent(const std::vector<std::wstring>& texts)
     }
 }
 
+void AppController::SetTextEffectFontSize(float sizePt) {
+    const float clamped = ClampFloat(sizePt, 6.0f, 96.0f);
+    if (std::fabs(config_.textClick.fontSize - clamped) < 0.01f) return;
+    config_.textClick.fontSize = clamped;
+    PersistConfig();
+    if (auto* effect = GetEffect(EffectCategory::Click)) {
+        if (config_.active.click == "text") {
+            SetEffect(EffectCategory::Click, "text");
+        }
+    }
+}
+
 void AppController::SetHoldFollowMode(const std::string& mode) {
     const std::string normalized = NormalizeHoldFollowMode(mode);
     if (config_.holdFollowMode == normalized) return;
@@ -626,6 +638,10 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
             std::string last = TrimAscii(raw.substr(start));
             if (!last.empty()) texts.push_back(Utf8ToWString(last));
             SetTextEffectContent(texts);
+        }
+
+        if (p.contains("text_font_size") && p["text_font_size"].is_number()) {
+            SetTextEffectFontSize(p["text_font_size"].get<float>());
         }
 
         if (p.contains("hold_follow_mode") && p["hold_follow_mode"].is_string()) {

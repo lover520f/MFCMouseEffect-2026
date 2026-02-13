@@ -35,6 +35,7 @@
 - 问题记录：`docs/issues/dawn_native_stage38_fluxfield_single_option_in_settings.md`（设置项中移除 FluxField 的 CPU-only 入口，只保留一个“GPU 优先 + 自动 CPU 兜底”的用户选项）
 - 问题记录：`docs/issues/dawn_native_stage39_fluxfield_gpu_visibility_matrix_anchor_fallback.md`（修复 FluxField GPU 在光标映射离屏时“判定成功但不绘制”的不可见问题，改为回退到矩阵锚点继续渲染）
 - 问题记录：`docs/issues/dawn_native_stage40_follow_mode_and_flux_label_copy_cleanup.md`（统一长按跟随模式文案语义：将 smooth 明确为“光标优先（推荐）”，并将 FluxField GPU 标签统一为“CPU兜底”）
+- 问题记录：`docs/issues/dawn_native_stage41_text_click_font_size_configurable.md`（点击文字特效支持在 Web 设置中调整字体大小，补齐 state/apply/persist 全链路）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
 - 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）
 - 架构整理：`docs/architecture/ui-folder-structure.zh-CN.md`（UI 文件夹结构整理）

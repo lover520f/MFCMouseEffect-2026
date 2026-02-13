@@ -364,6 +364,7 @@ std::string WebSettingsServer::BuildStateJson() const {
         text += utf8;
     }
     out["text_content"] = text;
+    out["text_font_size"] = cfg.textClick.fontSize;
 
     out["trail_style"] = EnsureUtf8(cfg.trailStyle);
     out["trail_profiles"] = {
