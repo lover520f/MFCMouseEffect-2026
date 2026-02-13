@@ -193,7 +193,78 @@ bool D3D11DCompPresenter::CreateProbeWindowAndTarget() {
     return true;
 }
 
+bool D3D11DCompPresenter::CreateProbeCompositionSwapChain() {
+    if (!dxgiDevice_ || !dcompRootVisual_ || !dcompDevice_) {
+        status_.detail = "takeover_swapchain_missing_prerequisites";
+        return false;
+    }
+
+    Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+    HRESULT hr = dxgiDevice_->GetAdapter(adapter.GetAddressOf());
+    if (FAILED(hr) || !adapter) {
+        status_.detail = "takeover_swapchain_get_adapter_failed";
+        return false;
+    }
+
+    Microsoft::WRL::ComPtr<IDXGIFactory2> factory2;
+    hr = adapter->GetParent(__uuidof(IDXGIFactory2), reinterpret_cast<void**>(factory2.GetAddressOf()));
+    if (FAILED(hr) || !factory2) {
+        status_.detail = "takeover_swapchain_get_factory2_failed";
+        return false;
+    }
+
+    DXGI_SWAP_CHAIN_DESC1 desc{};
+    desc.Width = 1;
+    desc.Height = 1;
+    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    desc.Stereo = FALSE;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    desc.BufferCount = 2;
+    desc.Scaling = DXGI_SCALING_STRETCH;
+    desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+    desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
+    desc.Flags = 0;
+
+    compositionSwapChain_.Reset();
+    hr = factory2->CreateSwapChainForComposition(
+        d3d11Device_.Get(),
+        &desc,
+        nullptr,
+        compositionSwapChain_.GetAddressOf());
+    if (FAILED(hr) || !compositionSwapChain_) {
+        status_.detail = "takeover_swapchain_create_failed";
+        return false;
+    }
+
+    hr = dcompRootVisual_->SetContent(compositionSwapChain_.Get());
+    if (FAILED(hr)) {
+        status_.detail = "takeover_swapchain_set_content_failed";
+        compositionSwapChain_.Reset();
+        return false;
+    }
+
+    hr = dcompDevice_->Commit();
+    if (FAILED(hr)) {
+        status_.detail = "takeover_swapchain_commit_failed";
+        compositionSwapChain_.Reset();
+        return false;
+    }
+
+    // Probe present once with transparent frame to validate end-to-end composition chain.
+    hr = compositionSwapChain_->Present(0, 0);
+    if (FAILED(hr)) {
+        status_.detail = "takeover_swapchain_present_failed";
+        compositionSwapChain_.Reset();
+        return false;
+    }
+    status_.compositionSwapChainReady = true;
+    return true;
+}
+
 void D3D11DCompPresenter::DestroyProbeWindowAndTarget() {
+    compositionSwapChain_.Reset();
     dcompRootVisual_.Reset();
     dcompTarget_.Reset();
     if (probeHwnd_) {
@@ -226,14 +297,25 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
     takeoverAttempted_ = true;
     status_.takeoverAttempts += 1;
 
-    // Stage-7 safety policy:
-    // keep layered final present as the only visible path until the full DComp presenter is implemented.
+    if (!CreateProbeCompositionSwapChain()) {
+        status_.takeoverFallbacks += 1;
+        status_.takeoverActive = false;
+        status_.takeoverEnabled = false;
+        status_.takeoverControl = "runtime_auto_off";
+        status_.takeoverControlDetail = "takeover_trial_swapchain_create_failed";
+        WriteAutoDisableMarker("takeover_trial_swapchain_create_failed");
+        return false;
+    }
+
+    // Stage-11 safety policy:
+    // takeover chain is proven on hidden probe path, but visible layered present remains authoritative.
     status_.takeoverFallbacks += 1;
     status_.takeoverActive = false;
     status_.takeoverEnabled = false;
     status_.takeoverControl = "runtime_auto_off";
-    status_.detail = "takeover_trial_not_implemented_fallback_layered";
-    WriteAutoDisableMarker("takeover_trial_not_implemented_fallback_layered");
+    status_.takeoverControlDetail = "takeover_trial_swapchain_ready_fallback_layered";
+    status_.detail = "takeover_trial_swapchain_ready_fallback_layered";
+    WriteAutoDisableMarker("takeover_trial_swapchain_ready_fallback_layered");
     return false;
 }
 
@@ -250,6 +332,7 @@ bool D3D11DCompPresenter::Initialize() {
     dcompDevice_.Reset();
     dcompTarget_.Reset();
     dcompRootVisual_.Reset();
+    compositionSwapChain_.Reset();
     probeHwnd_ = nullptr;
     takeoverAttempted_ = false;
     const TakeoverControlResult control = ResolveTakeoverControl();

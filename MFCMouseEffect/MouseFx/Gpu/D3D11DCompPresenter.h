@@ -16,6 +16,7 @@ struct D3D11DCompPresenterStatus {
     bool d3d11DeviceReady = false;
     bool dcompDeviceReady = false;
     bool dcompTargetReady = false;
+    bool compositionSwapChainReady = false;
     bool takeoverEnabled = false;
     bool takeoverEligible = false;
     bool takeoverActive = false;
@@ -42,6 +43,7 @@ private:
     static const wchar_t* ProbeClassName();
     static bool EnsureProbeClassRegistered();
     bool CreateProbeWindowAndTarget();
+    bool CreateProbeCompositionSwapChain();
     void DestroyProbeWindowAndTarget();
     static LRESULT CALLBACK ProbeWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -53,6 +55,7 @@ private:
     Microsoft::WRL::ComPtr<IDCompositionDevice> dcompDevice_{};
     Microsoft::WRL::ComPtr<IDCompositionTarget> dcompTarget_{};
     Microsoft::WRL::ComPtr<IDCompositionVisual> dcompRootVisual_{};
+    Microsoft::WRL::ComPtr<IDXGISwapChain1> compositionSwapChain_{};
     HWND probeHwnd_ = nullptr;
     bool takeoverAttempted_ = false;
 };
