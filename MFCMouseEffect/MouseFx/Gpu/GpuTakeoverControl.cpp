@@ -99,8 +99,12 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
     result.onceFileConsumed = false;
     result.visibleTrialOnceFilePresent = visibleTrialOnceEnabled;
     result.visibleTrialOnceFileConsumed = false;
+    const bool multiMonitor = IsMultiMonitorEnvironment();
+    if (multiMonitor && result.visibleTrialEnabled) {
+        result.visibleTrialEnabled = false;
+        result.detail = "visible_trial_file_ignored_multimon";
+    }
     if (visibleTrialOnceEnabled) {
-        const bool multiMonitor = IsMultiMonitorEnvironment();
         result.visibleTrialEnabled = !multiMonitor;
         result.visibleTrialFilePresent = !multiMonitor;
         if (multiMonitor) {
