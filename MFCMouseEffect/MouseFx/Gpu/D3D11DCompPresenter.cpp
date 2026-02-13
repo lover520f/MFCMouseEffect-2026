@@ -50,6 +50,14 @@ struct TakeoverControlResult {
     std::string detail = "";
 };
 
+bool IsVisibleTrialEnabledByFile() {
+    const std::filesystem::path diagDir = ResolveDiagDirFromCurrentModule();
+    if (diagDir.empty()) return false;
+    const std::filesystem::path onFile = diagDir / L"gpu_final_present_takeover.visible_trial.on";
+    std::error_code ec;
+    return std::filesystem::exists(onFile, ec) && !ec;
+}
+
 bool IsTruthyLeadingChar(wchar_t ch) {
     return ch == L'1' || ch == L't' || ch == L'T' || ch == L'y' || ch == L'Y';
 }
@@ -263,7 +271,72 @@ bool D3D11DCompPresenter::CreateProbeCompositionSwapChain() {
     return true;
 }
 
+bool D3D11DCompPresenter::TryPrepareVisibleTrialTarget() {
+    if (!status_.visibleTrialEnabled) return false;
+    if (!visibleTrialHwnd_ || !IsWindow(visibleTrialHwnd_)) {
+        status_.detail = "visible_trial_missing_hwnd";
+        return false;
+    }
+    if (!dcompDevice_ || !compositionSwapChain_) {
+        status_.detail = "visible_trial_missing_prerequisites";
+        return false;
+    }
+
+    visibleTrialRootVisual_.Reset();
+    visibleTrialTarget_.Reset();
+
+    HRESULT hr = dcompDevice_->CreateTargetForHwnd(visibleTrialHwnd_, TRUE, visibleTrialTarget_.GetAddressOf());
+    if (FAILED(hr) || !visibleTrialTarget_) {
+        status_.detail = "visible_trial_create_target_failed";
+        return false;
+    }
+
+    hr = dcompDevice_->CreateVisual(visibleTrialRootVisual_.GetAddressOf());
+    if (FAILED(hr) || !visibleTrialRootVisual_) {
+        status_.detail = "visible_trial_create_visual_failed";
+        visibleTrialTarget_.Reset();
+        return false;
+    }
+
+    hr = visibleTrialRootVisual_->SetContent(compositionSwapChain_.Get());
+    if (FAILED(hr)) {
+        status_.detail = "visible_trial_set_content_failed";
+        visibleTrialRootVisual_.Reset();
+        visibleTrialTarget_.Reset();
+        return false;
+    }
+
+    hr = visibleTrialTarget_->SetRoot(visibleTrialRootVisual_.Get());
+    if (FAILED(hr)) {
+        status_.detail = "visible_trial_set_root_failed";
+        visibleTrialRootVisual_.Reset();
+        visibleTrialTarget_.Reset();
+        return false;
+    }
+
+    hr = dcompDevice_->Commit();
+    if (FAILED(hr)) {
+        status_.detail = "visible_trial_commit_failed";
+        visibleTrialRootVisual_.Reset();
+        visibleTrialTarget_.Reset();
+        return false;
+    }
+
+    hr = compositionSwapChain_->Present(0, 0);
+    if (FAILED(hr)) {
+        status_.detail = "visible_trial_present_failed";
+        visibleTrialRootVisual_.Reset();
+        visibleTrialTarget_.Reset();
+        return false;
+    }
+
+    status_.visibleTrialReady = true;
+    return true;
+}
+
 void D3D11DCompPresenter::DestroyProbeWindowAndTarget() {
+    visibleTrialRootVisual_.Reset();
+    visibleTrialTarget_.Reset();
     compositionSwapChain_.Reset();
     dcompRootVisual_.Reset();
     dcompTarget_.Reset();
@@ -271,6 +344,11 @@ void D3D11DCompPresenter::DestroyProbeWindowAndTarget() {
         DestroyWindow(probeHwnd_);
         probeHwnd_ = nullptr;
     }
+}
+
+void D3D11DCompPresenter::SetVisibleTrialHwnd(HWND hwnd) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    visibleTrialHwnd_ = hwnd;
 }
 
 bool D3D11DCompPresenter::TryActivateTakeoverPath() {
@@ -307,15 +385,33 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
         return false;
     }
 
+    if (status_.visibleTrialEnabled) {
+        if (!TryPrepareVisibleTrialTarget()) {
+            status_.takeoverFallbacks += 1;
+            status_.takeoverActive = false;
+            status_.takeoverEnabled = false;
+            status_.takeoverControl = "runtime_auto_off";
+            status_.takeoverControlDetail = "visible_trial_prepare_failed";
+            WriteAutoDisableMarker("visible_trial_prepare_failed");
+            return false;
+        }
+    }
+
     // Stage-11 safety policy:
     // takeover chain is proven on hidden probe path, but visible layered present remains authoritative.
     status_.takeoverFallbacks += 1;
     status_.takeoverActive = false;
     status_.takeoverEnabled = false;
     status_.takeoverControl = "runtime_auto_off";
-    status_.takeoverControlDetail = "takeover_trial_swapchain_ready_fallback_layered";
-    status_.detail = "takeover_trial_swapchain_ready_fallback_layered";
-    WriteAutoDisableMarker("takeover_trial_swapchain_ready_fallback_layered");
+    if (status_.visibleTrialEnabled) {
+        status_.takeoverControlDetail = "visible_trial_ready_fallback_layered";
+        status_.detail = "visible_trial_ready_fallback_layered";
+        WriteAutoDisableMarker("visible_trial_ready_fallback_layered");
+    } else {
+        status_.takeoverControlDetail = "takeover_trial_swapchain_ready_fallback_layered";
+        status_.detail = "takeover_trial_swapchain_ready_fallback_layered";
+        WriteAutoDisableMarker("takeover_trial_swapchain_ready_fallback_layered");
+    }
     return false;
 }
 
@@ -334,7 +430,9 @@ bool D3D11DCompPresenter::Initialize() {
     dcompRootVisual_.Reset();
     compositionSwapChain_.Reset();
     probeHwnd_ = nullptr;
+    visibleTrialHwnd_ = nullptr;
     takeoverAttempted_ = false;
+    status_.visibleTrialEnabled = IsVisibleTrialEnabledByFile();
     const TakeoverControlResult control = ResolveTakeoverControl();
     status_.takeoverEnabled = control.enabled;
     status_.takeoverControl = control.source;

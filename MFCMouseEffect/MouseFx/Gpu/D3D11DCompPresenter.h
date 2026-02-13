@@ -17,6 +17,8 @@ struct D3D11DCompPresenterStatus {
     bool dcompDeviceReady = false;
     bool dcompTargetReady = false;
     bool compositionSwapChainReady = false;
+    bool visibleTrialEnabled = false;
+    bool visibleTrialReady = false;
     bool takeoverEnabled = false;
     bool takeoverEligible = false;
     bool takeoverActive = false;
@@ -37,6 +39,7 @@ public:
     bool Initialize();
     void Shutdown();
     D3D11DCompPresenterStatus GetStatus() const;
+    void SetVisibleTrialHwnd(HWND hwnd);
     bool TryActivateTakeoverPath();
 
 private:
@@ -44,6 +47,7 @@ private:
     static bool EnsureProbeClassRegistered();
     bool CreateProbeWindowAndTarget();
     bool CreateProbeCompositionSwapChain();
+    bool TryPrepareVisibleTrialTarget();
     void DestroyProbeWindowAndTarget();
     static LRESULT CALLBACK ProbeWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -56,7 +60,10 @@ private:
     Microsoft::WRL::ComPtr<IDCompositionTarget> dcompTarget_{};
     Microsoft::WRL::ComPtr<IDCompositionVisual> dcompRootVisual_{};
     Microsoft::WRL::ComPtr<IDXGISwapChain1> compositionSwapChain_{};
+    Microsoft::WRL::ComPtr<IDCompositionTarget> visibleTrialTarget_{};
+    Microsoft::WRL::ComPtr<IDCompositionVisual> visibleTrialRootVisual_{};
     HWND probeHwnd_ = nullptr;
+    HWND visibleTrialHwnd_ = nullptr;
     bool takeoverAttempted_ = false;
 };
 

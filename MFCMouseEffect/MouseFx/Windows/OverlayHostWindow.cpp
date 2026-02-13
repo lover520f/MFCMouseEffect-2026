@@ -454,6 +454,7 @@ void OverlayHostWindow::StartFrameLoop() {
     if (!timerHwnd_) return;
     if (ticking_) return;
     ticking_ = true;
+    d3d11DcompPresenter_.SetVisibleTrialHwnd(timerHwnd_);
     (void)d3d11DcompPresenter_.TryActivateTakeoverPath();
     SyncBoundsWithVirtualScreen(false);
     for (auto& surface : surfaces_) {

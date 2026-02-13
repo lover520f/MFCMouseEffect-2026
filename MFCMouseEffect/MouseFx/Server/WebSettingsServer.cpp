@@ -344,6 +344,8 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"dcomp_device_ready", gpuPresentHost.dcompDeviceReady},
         {"dcomp_target_ready", gpuPresentHost.dcompTargetReady},
         {"composition_swapchain_ready", gpuPresentHost.compositionSwapChainReady},
+        {"visible_trial_enabled", gpuPresentHost.visibleTrialEnabled},
+        {"visible_trial_ready", gpuPresentHost.visibleTrialReady},
         {"takeover_enabled", gpuPresentHost.takeoverEnabled},
         {"takeover_eligible", gpuPresentHost.takeoverEligible},
         {"takeover_active", gpuPresentHost.takeoverActive},
