@@ -73,6 +73,50 @@ static float ClampFloat(float x, float lo, float hi) {
     return x;
 }
 
+struct DawnRuntimeProbeResult {
+    bool available = false;
+    std::string reason = "unknown";
+};
+
+static std::wstring GetExeDirW() {
+    wchar_t exePath[MAX_PATH] = {};
+    GetModuleFileNameW(nullptr, exePath, MAX_PATH);
+    std::wstring p(exePath);
+    const size_t pos = p.find_last_of(L"\\/");
+    if (pos == std::wstring::npos) return L".";
+    return p.substr(0, pos);
+}
+
+static DawnRuntimeProbeResult ProbeDawnRuntimeOnce() {
+    const std::wstring exeDir = GetExeDirW();
+    const std::filesystem::path primary = std::filesystem::path(exeDir) / L"webgpu_dawn.dll";
+    const std::filesystem::path fallback = std::filesystem::path(exeDir) / L"Runtime" / L"Dawn" / L"webgpu_dawn.dll";
+
+    auto tryLoad = [](const std::filesystem::path& p) -> bool {
+        if (p.empty()) return false;
+        if (!std::filesystem::exists(p)) return false;
+        HMODULE h = LoadLibraryW(p.c_str());
+        if (!h) return false;
+        FreeLibrary(h);
+        return true;
+    };
+
+    DawnRuntimeProbeResult r{};
+    if (tryLoad(primary)) {
+        r.available = true;
+        r.reason = "dawn_runtime_loaded_from_exe_dir";
+        return r;
+    }
+    if (tryLoad(fallback)) {
+        r.available = true;
+        r.reason = "dawn_runtime_loaded_from_runtime_fallback_dir";
+        return r;
+    }
+    r.available = false;
+    r.reason = "dawn_runtime_binary_missing_or_load_failed";
+    return r;
+}
+
 AppController::AppController() = default;
 
 AppController::~AppController() {
@@ -110,8 +154,14 @@ std::string AppController::ResolveRuntimeEffectType(
         return requestedType;
     }
 
-    // Stage-1: Dawn native hold route not integrated yet.
-    if (outReason) *outReason = "dawn_native_backend_not_ready";
+    const DawnRuntimeProbeResult probe = ProbeDawnRuntimeOnce();
+    if (!probe.available) {
+        if (outReason) *outReason = probe.reason;
+        return "hold_neon3d";
+    }
+
+    // Runtime binary is loadable; backend integration is still pending.
+    if (outReason) *outReason = "dawn_runtime_ready_but_backend_not_integrated";
     return "hold_neon3d";
 }
 
