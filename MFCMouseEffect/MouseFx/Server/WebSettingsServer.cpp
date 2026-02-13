@@ -338,6 +338,15 @@ std::string WebSettingsServer::BuildStateJson() const {
     };
 
     const auto gpuPresentHost = OverlayHostService::Instance().GetGpuPresentHostStatus();
+    std::string takeoverBlockReason = "none";
+    if (!gpuPresentHost.takeoverEnabled) {
+        takeoverBlockReason = "takeover_disabled";
+    } else if (!gpuPresentHost.takeoverEligible) {
+        takeoverBlockReason = "takeover_not_eligible";
+    } else if (gpuPresentHost.takeoverActive) {
+        takeoverBlockReason = "takeover_active";
+    }
+    const bool trialUploadGateOpen = gpuPresentHost.visibleTrialEnabled && gpuPresentHost.takeoverEnabled;
     out["gpu_present_host"] = {
         {"initialized", gpuPresentHost.initialized},
         {"d3d11_device_ready", gpuPresentHost.d3d11DeviceReady},
@@ -357,10 +366,12 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"trial_frame_submit_failure", gpuPresentHost.trialFrameSubmitFailure},
         {"trial_frame_submit_skipped_disabled", gpuPresentHost.trialFrameSubmitSkippedDisabled},
         {"trial_frame_submit_skipped_not_ready", gpuPresentHost.trialFrameSubmitSkippedNotReady},
+        {"trial_upload_gate_open", trialUploadGateOpen},
         {"last_trial_tick_ms", gpuPresentHost.lastTrialTickMs},
         {"last_trial_result", gpuPresentHost.lastTrialResult},
         {"takeover_control", gpuPresentHost.takeoverControl},
         {"takeover_control_detail", gpuPresentHost.takeoverControlDetail},
+        {"takeover_block_reason", takeoverBlockReason},
         {"detail", gpuPresentHost.detail},
     };
 
