@@ -19,6 +19,10 @@ bool IsVisibleTrialEnabledByFile(const std::filesystem::path& diagDir) {
     return std::filesystem::exists(onFile, ec) && !ec;
 }
 
+bool IsMultiMonitorEnvironment() {
+    return GetSystemMetrics(SM_CMONITORS) > 1;
+}
+
 bool ConsumeRearmRequest(const std::filesystem::path& diagDir) {
     if (diagDir.empty()) return false;
     const std::filesystem::path rearmFile = diagDir / L"gpu_final_present_takeover.rearm";
@@ -96,8 +100,12 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
     result.visibleTrialOnceFilePresent = visibleTrialOnceEnabled;
     result.visibleTrialOnceFileConsumed = false;
     if (visibleTrialOnceEnabled) {
-        result.visibleTrialEnabled = true;
-        result.visibleTrialFilePresent = true;
+        const bool multiMonitor = IsMultiMonitorEnvironment();
+        result.visibleTrialEnabled = !multiMonitor;
+        result.visibleTrialFilePresent = !multiMonitor;
+        if (multiMonitor) {
+            result.detail = "visible_trial_once_downgraded_multimon";
+        }
     }
 
     const std::filesystem::path exePath = []() -> std::filesystem::path {
@@ -131,8 +139,13 @@ TakeoverControlDecision ResolveTakeoverControlDecision() {
         }
         if (visibleTrialOnceEnabled) {
             result.takeoverEnabled = true;
-            result.source = "file_visible_trial_once";
-            result.detail = rearmed ? "rearmed_then_visible_trial_once_file_consumed" : "visible_trial_once_file_consumed";
+            if (result.visibleTrialEnabled) {
+                result.source = "file_visible_trial_once";
+                result.detail = rearmed ? "rearmed_then_visible_trial_once_file_consumed" : "visible_trial_once_file_consumed";
+            } else {
+                result.source = "file_visible_trial_once_downgraded";
+                result.detail = rearmed ? "rearmed_then_visible_trial_once_downgraded_multimon" : "visible_trial_once_downgraded_multimon";
+            }
             return result;
         }
         if (onceEnabled) {

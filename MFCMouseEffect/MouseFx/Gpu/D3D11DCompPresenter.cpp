@@ -329,7 +329,8 @@ bool D3D11DCompPresenter::TryActivateTakeoverPath() {
 
     if (status_.takeoverControl == "file_once") {
         status_.controlOnceFileConsumed = ConsumeOneShotControlFileForSource("file_once");
-    } else if (status_.takeoverControl == "file_visible_trial_once") {
+    } else if (status_.takeoverControl == "file_visible_trial_once" ||
+               status_.takeoverControl == "file_visible_trial_once_downgraded") {
         status_.controlVisibleTrialOnceFileConsumed = ConsumeOneShotControlFileForSource("file_visible_trial_once");
     }
 
