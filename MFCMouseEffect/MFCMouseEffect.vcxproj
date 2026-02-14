@@ -224,6 +224,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\EffectFactory.h" />
     <ClInclude Include="MouseFx\Core\OverlayCoordSpace.h" />
     <ClInclude Include="MouseFx\Core\OverlayHostService.h" />
+    <ClInclude Include="MouseFx\Core\MouseActionIndicator.h" />
+    <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
     <ClInclude Include="MouseFx\Core\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\GlobalMouseHook.h" />
     <ClInclude Include="MouseFx\Effects\IconEffect.h" />
@@ -286,12 +288,14 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\EffectFactory.cpp" />
     <ClCompile Include="MouseFx\Core\OverlayCoordSpace.cpp" />
     <ClCompile Include="MouseFx\Core\OverlayHostService.cpp" />
+    <ClCompile Include="MouseFx\Core\MouseActionIndicator.cpp" />
     <ClCompile Include="MouseFx\Core\GlobalMouseHook.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
     <ClCompile Include="MouseFx\Core\IpcController.cpp" />
     <ClCompile Include="MouseFx\Core\JsonLite.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleEffect.cpp" />
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />
+    <ClCompile Include="MouseFx\Renderers\Indicator\IndicatorRenderer.cpp" />
     <ClCompile Include="MouseFx\Styles\ThemeStyle.cpp" />
     <ClCompile Include="MouseFx\Effects\TextEffect.cpp" />
     <ClCompile Include="MouseFx\Windows\TextWindow.cpp" />

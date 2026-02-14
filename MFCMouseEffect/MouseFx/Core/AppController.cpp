@@ -14,6 +14,7 @@
 #include <new>
 #include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM
 #include <cctype>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -262,6 +263,8 @@ bool AppController::Start() {
     // Load config from the best available directory (AppData preferred)
     configDir_ = ResolveConfigDirectory();
     config_ = EffectConfig::Load(configDir_);
+    mouseActionIndicator_.Initialize();
+    mouseActionIndicator_.UpdateConfig(config_.mouseIndicator);
 
     diag_.stage = StartStage::GdiPlusStartup;
     if (!gdiplus_.Startup()) {
@@ -290,6 +293,7 @@ bool AppController::Start() {
     SetEffect(EffectCategory::Scroll, config_.active.scroll);
     SetEffect(EffectCategory::Hold, config_.active.hold);
     SetEffect(EffectCategory::Hover, config_.active.hover);
+    mouseActionIndicator_.UpdateConfig(config_.mouseIndicator);
 
     bool normalizedChanged = false;
     auto normalizeActive = [&](EffectCategory category, std::string* slot) {
@@ -333,6 +337,7 @@ bool AppController::Start() {
 
 void AppController::Stop() {
     hook_.Stop();
+    mouseActionIndicator_.Shutdown();
     for (auto& effect : effects_) {
         if (effect) {
             effect->Shutdown();
@@ -434,6 +439,12 @@ void AppController::SetTextEffectFontSize(float sizePt) {
     }
 }
 
+void AppController::SetMouseIndicatorConfig(const MouseIndicatorConfig& cfg) {
+    config_.mouseIndicator = cfg;
+    mouseActionIndicator_.UpdateConfig(config_.mouseIndicator);
+    PersistConfig();
+}
+
 void AppController::SetHoldFollowMode(const std::string& mode) {
     const std::string normalized = NormalizeHoldFollowMode(mode);
     if (config_.holdFollowMode == normalized) return;
@@ -469,6 +480,7 @@ void AppController::ResetConfig() {
     SetEffect(EffectCategory::Scroll, config_.active.scroll);
     SetEffect(EffectCategory::Hold, config_.active.hold);
     SetEffect(EffectCategory::Hover, config_.active.hover);
+    mouseActionIndicator_.UpdateConfig(config_.mouseIndicator);
     
     // Theme/Language rely on being pulled by UI or re-applied if needed?
     // SettingsWnd calls sync, so it will pull new values.
@@ -645,6 +657,21 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
             SetTextEffectFontSize(p["text_font_size"].get<float>());
         }
 
+        if (p.contains("mouse_indicator") && p["mouse_indicator"].is_object()) {
+            MouseIndicatorConfig mi = config_.mouseIndicator;
+            const json& o = p["mouse_indicator"];
+            if (o.contains("enabled") && o["enabled"].is_boolean()) mi.enabled = o["enabled"].get<bool>();
+            if (o.contains("keyboard_enabled") && o["keyboard_enabled"].is_boolean()) mi.keyboardEnabled = o["keyboard_enabled"].get<bool>();
+            if (o.contains("position_mode") && o["position_mode"].is_string()) mi.positionMode = o["position_mode"].get<std::string>();
+            if (o.contains("offset_x") && o["offset_x"].is_number_integer()) mi.offsetX = o["offset_x"].get<int>();
+            if (o.contains("offset_y") && o["offset_y"].is_number_integer()) mi.offsetY = o["offset_y"].get<int>();
+            if (o.contains("absolute_x") && o["absolute_x"].is_number_integer()) mi.absoluteX = o["absolute_x"].get<int>();
+            if (o.contains("absolute_y") && o["absolute_y"].is_number_integer()) mi.absoluteY = o["absolute_y"].get<int>();
+            if (o.contains("size_px") && o["size_px"].is_number_integer()) mi.sizePx = o["size_px"].get<int>();
+            if (o.contains("duration_ms") && o["duration_ms"].is_number_integer()) mi.durationMs = o["duration_ms"].get<int>();
+            SetMouseIndicatorConfig(mi);
+        }
+
         if (p.contains("hold_follow_mode") && p["hold_follow_mode"].is_string()) {
             SetHoldFollowMode(p["hold_follow_mode"].get<std::string>());
         }
@@ -798,6 +825,7 @@ void AppController::SuspendEffectsForVm() {
     holdButtonDown_ = false;
     holdDownTick_ = 0;
     hovering_ = false;
+    mouseActionIndicator_.Hide();
 
     for (auto& effect : effects_) {
         if (effect) effect->Shutdown();
@@ -830,7 +858,7 @@ LRESULT CALLBACK AppController::DispatchWndProc(HWND hwnd, UINT msg, WPARAM wPar
 LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     const bool isMouseInputMsg =
         (msg == WM_MFX_CLICK || msg == WM_MFX_MOVE || msg == WM_MFX_SCROLL ||
-         msg == WM_MFX_BUTTON_DOWN || msg == WM_MFX_BUTTON_UP);
+         msg == WM_MFX_BUTTON_DOWN || msg == WM_MFX_BUTTON_UP || msg == WM_MFX_KEY);
     const bool isStateTimerMsg =
         (msg == WM_TIMER && (wParam == kHoverTimerId || wParam == kHoldTimerId));
     if (isMouseInputMsg || isStateTimerMsg) {
@@ -857,10 +885,12 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
         }
         if (ignoreNextClick_) {
             ignoreNextClick_ = false;
+            if (ev) delete ev;
             return 0; // Suppress click after a long hold
         }
 
         if (ev) {
+            mouseActionIndicator_.OnClick(*ev);
 #ifdef _DEBUG
             if (debugClickCount_ < 5) {
                 debugClickCount_++;
@@ -915,13 +945,27 @@ LRESULT AppController::OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPA
             pt.x = GET_X_LPARAM(lParam);
             pt.y = GET_Y_LPARAM(lParam);
         }
+        ScrollEvent ev{};
+        ev.pt = pt;
+        ev.delta = delta;
+        ev.horizontal = false;
+        mouseActionIndicator_.OnScroll(ev);
         // Dispatch to Scroll category effect
         if (auto* effect = GetEffect(EffectCategory::Scroll)) {
-            ScrollEvent ev{};
-            ev.pt = pt;
-            ev.delta = delta;
-            ev.horizontal = false;
             effect->OnScroll(ev);
+        }
+        return 0;
+    }
+
+    if (msg == WM_MFX_KEY) {
+        auto* ev = reinterpret_cast<KeyEvent*>(lParam);
+        if (vmEffectsSuppressed_) {
+            if (ev) delete ev;
+            return 0;
+        }
+        if (ev) {
+            mouseActionIndicator_.OnKey(*ev);
+            delete ev;
         }
         return 0;
     }

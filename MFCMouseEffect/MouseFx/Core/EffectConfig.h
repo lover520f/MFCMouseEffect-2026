@@ -116,6 +116,19 @@ struct IconConfig {
     Argb strokeColor{ 0xFFFF8C00 }; // Dark Orange
 };
 
+// Configuration for mouse action indicator (small animated mouse helper).
+struct MouseIndicatorConfig {
+    bool enabled = true;
+    bool keyboardEnabled = true;
+    std::string positionMode = "relative"; // relative | absolute
+    int offsetX = 24;
+    int offsetY = 24;
+    int absoluteX = 40;
+    int absoluteY = 40;
+    int sizePx = 72;
+    int durationMs = 420;
+};
+
 // Active effect selections per category (persisted).
 struct ActiveEffectConfig {
     std::string click = "text";
@@ -144,6 +157,7 @@ struct EffectConfig {
     TrailRendererParamsConfig trailParams;
     IconConfig icon;
     TextConfig textClick;
+    MouseIndicatorConfig mouseIndicator;
     
     TrailHistoryProfile GetTrailHistoryProfile(const std::string& type) const;
     

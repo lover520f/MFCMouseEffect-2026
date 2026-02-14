@@ -9,6 +9,7 @@
 
 #include "GdiPlusSession.h"
 #include "GlobalMouseHook.h"
+#include "MouseActionIndicator.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "EffectConfig.h"
 #include "VmForegroundDetector.h"
@@ -57,6 +58,7 @@ public:
     void SetTextEffectContent(const std::vector<std::wstring>& texts);
     // Set text click font size in point units.
     void SetTextEffectFontSize(float sizePt);
+    void SetMouseIndicatorConfig(const MouseIndicatorConfig& cfg);
     // Set hold follow mode (precise|smooth|efficient).
     void SetHoldFollowMode(const std::string& mode);
 
@@ -129,6 +131,7 @@ private:
     bool holdButtonDown_ = false;
     uint64_t holdDownTick_ = 0;
     bool gpuFallbackNotifiedThisSession_ = false;
+    MouseActionIndicator mouseActionIndicator_{};
     VmForegroundDetector vmForegroundDetector_{};
     bool vmEffectsSuppressed_ = false;
 

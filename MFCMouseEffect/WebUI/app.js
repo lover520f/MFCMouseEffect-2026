@@ -48,6 +48,7 @@
       section_effects: "Active Effects",
       section_text: "Text Content (Click/Text)",
       section_trail_tuning: "Trail Tuning",
+      section_mouse_indicator: "Mouse Action Indicator",
       label_language: "Language",
       label_theme: "Theme",
       label_hold_follow_mode: "Hold Tracking",
@@ -73,6 +74,14 @@
       label_streamer_params: "streamer glow/core/head",
       label_electric_params: "electric amp/fork",
       label_meteor_params: "meteor rate/speed",
+      label_mouse_indicator_enabled: "Enable indicator",
+      label_mouse_indicator_keyboard_enabled: "Enable keyboard indicator",
+      label_mouse_indicator_mode: "Position mode",
+      label_mouse_indicator_offset: "Relative offset X/Y",
+      label_mouse_indicator_absolute: "Absolute X/Y (virtual screen)",
+      label_mouse_indicator_size: "Indicator size (px)",
+      label_mouse_indicator_duration: "Animation duration (ms)",
+      hint_mouse_indicator: "Supports left/right single-double-triple click, middle click, wheel up/down and optional keyboard key display. Absolute mode uses virtual desktop coordinates for multi-monitor setups.",
       hint_clamp: "Values are clamped to safe ranges when applied.",
       style_default: "Default",
       style_snappy: "Snappy",
@@ -121,6 +130,7 @@
       section_effects: "\u7279\u6548\u9009\u62e9",
       section_text: "\u6587\u5b57\u5185\u5bb9\uff08\u70b9\u51fb/\u6587\u5b57\uff09",
       section_trail_tuning: "\u62d6\u5c3e\u8c03\u53c2",
+      section_mouse_indicator: "\u9f20\u6807\u52a8\u4f5c\u6307\u793a\u5668",
       label_language: "\u8bed\u8a00",
       label_theme: "\u4e3b\u9898",
       label_hold_follow_mode: "\u957f\u6309\u8ddf\u968f\u6a21\u5f0f",
@@ -146,6 +156,14 @@
       label_streamer_params: "\u9713\u8679 \u5149\u666f/\u6838\u5fc3/\u5934\u90e8",
       label_electric_params: "\u7535\u5f27 \u632f\u5e45/\u5206\u53c9",
       label_meteor_params: "\u6d41\u661f \u9891\u7387/\u901f\u5ea6",
+      label_mouse_indicator_enabled: "\u542f\u7528\u6307\u793a\u5668",
+      label_mouse_indicator_keyboard_enabled: "\u542f\u7528\u952e\u76d8\u6307\u793a",
+      label_mouse_indicator_mode: "\u5b9a\u4f4d\u6a21\u5f0f",
+      label_mouse_indicator_offset: "\u76f8\u5bf9\u504f\u79fb X/Y",
+      label_mouse_indicator_absolute: "\u7edd\u5bf9\u5750\u6807 X/Y\uff08\u865a\u62df\u5c4f\u5e55\uff09",
+      label_mouse_indicator_size: "\u6307\u793a\u5668\u5927\u5c0f\uff08px\uff09",
+      label_mouse_indicator_duration: "\u52a8\u753b\u65f6\u957f\uff08ms\uff09",
+      hint_mouse_indicator: "\u652f\u6301\u5de6/\u53f3/\u4e2d\u952e\u5355\u51fb\u3001\u53cc\u51fb\u3001\u4e09\u51fb\uff0c\u6eda\u8f6e\u4e0a/\u4e0b\uff0c\u53ef\u9009\u952e\u76d8\u6309\u952e\u663e\u793a\uff1b\u7edd\u5bf9\u6a21\u5f0f\u4f7f\u7528\u865a\u62df\u684c\u9762\u5750\u6807\uff0c\u9002\u914d\u591a\u5c4f\u3002",
       hint_clamp: "\u6570\u503c\u4f1a\u88ab\u5b89\u5168\u533a\u95f4\u8fdb\u884c\u88c1\u526a\u3002",
       style_default: "\u9ed8\u8ba4",
       style_snappy: "\u7d27\u81f4",
@@ -359,6 +377,16 @@
 
   function num(id, v){ el(id).value = (v ?? '').toString(); }
   function getNum(id){ return Number(el(id).value || 0); }
+  function setChecked(id, v){ const n = el(id); if (n) n.checked = !!v; }
+  function getChecked(id){ const n = el(id); return !!(n && n.checked); }
+
+  function syncIndicatorPositionUi(){
+    const mode = el('mi_position_mode')?.value || 'relative';
+    const relativeRow = el('mi_offset_x')?.closest('.pair');
+    const absoluteRow = el('mi_absolute_x')?.closest('.pair');
+    if (relativeRow) relativeRow.style.opacity = (mode === 'relative') ? '1' : '0.45';
+    if (absoluteRow) absoluteRow.style.opacity = (mode === 'absolute') ? '1' : '0.45';
+  }
 
   function scrollToHash(){
     const h = (location.hash || '').replace('#','');
@@ -377,6 +405,7 @@
     fillSelect(el('ui_language'), schema.ui_languages, st.ui_language);
     fillSelect(el('theme'), schema.themes, st.theme);
     fillSelect(el('hold_follow_mode'), schema.hold_follow_modes, st.hold_follow_mode || 'smooth');
+    fillSelect(el('mi_position_mode'), schema.mouse_indicator_position_modes, st.mouse_indicator?.position_mode || 'relative');
     fillSelect(el('click'), schema.effects?.click, st.active?.click);
     fillSelect(el('trail'), schema.effects?.trail, st.active?.trail);
     fillSelect(el('scroll'), schema.effects?.scroll, st.active?.scroll);
@@ -404,6 +433,16 @@
     num('k_meteor_speed', k.meteor?.spark_speed_scale);
     num('k_idle_fade_start', k.idle_fade_start_ms);
     num('k_idle_fade_end', k.idle_fade_end_ms);
+    const mi = st.mouse_indicator || {};
+    setChecked('mi_enabled', mi.enabled);
+    setChecked('mi_keyboard_enabled', mi.keyboard_enabled !== false);
+    num('mi_offset_x', mi.offset_x);
+    num('mi_offset_y', mi.offset_y);
+    num('mi_absolute_x', mi.absolute_x);
+    num('mi_absolute_y', mi.absolute_y);
+    num('mi_size_px', mi.size_px);
+    num('mi_duration_ms', mi.duration_ms);
+    syncIndicatorPositionUi();
 
     markConnection('online');
     const routeNotice = st.gpu_route_notice;
@@ -450,6 +489,17 @@
         },
         idle_fade_start_ms: getNum('k_idle_fade_start'),
         idle_fade_end_ms: getNum('k_idle_fade_end'),
+      },
+      mouse_indicator: {
+        enabled: getChecked('mi_enabled'),
+        keyboard_enabled: getChecked('mi_keyboard_enabled'),
+        position_mode: el('mi_position_mode').value || 'relative',
+        offset_x: getNum('mi_offset_x'),
+        offset_y: getNum('mi_offset_y'),
+        absolute_x: getNum('mi_absolute_x'),
+        absolute_y: getNum('mi_absolute_y'),
+        size_px: getNum('mi_size_px'),
+        duration_ms: getNum('mi_duration_ms'),
       }
     };
   }
@@ -532,6 +582,7 @@
     applyI18n(el('ui_language').value);
     if (connectionState !== 'unknown') markConnection(connectionState, true);
   });
+  el('mi_position_mode').addEventListener('change', syncIndicatorPositionUi);
 
   startHealthCheck();
   reload().then(() => {

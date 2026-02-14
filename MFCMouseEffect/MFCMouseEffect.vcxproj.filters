@@ -177,6 +177,12 @@
     <ClInclude Include="Settings\SettingsOptions.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\MouseActionIndicator.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMouseEffect.cpp">
@@ -277,6 +283,12 @@
     </ClCompile>
     <ClCompile Include="Settings\SettingsBackend.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\MouseActionIndicator.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Renderers\Indicator\IndicatorRenderer.cpp">
+      <Filter>源文件\MouseFx</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

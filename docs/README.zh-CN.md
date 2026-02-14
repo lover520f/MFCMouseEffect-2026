@@ -38,6 +38,7 @@
 - 问题记录：`docs/issues/dawn_native_stage41_text_click_font_size_configurable.md`（点击文字特效支持在 Web 设置中调整字体大小，补齐 state/apply/persist 全链路）
 - 问题记录：`docs/issues/dawn_native_stage42_quantum_halo_gpu_driver_seh_guard.md`（针对 Quantum Halo GPU 在 `nvwgf2umx.dll` 的驱动层访问冲突，增加 SEH 防护，避免进程硬崩并触发受控失败回退）
 - 问题记录：`docs/issues/vm_foreground_effect_suppression.md`（当前台焦点进入虚拟机窗口时自动停用宿主机鼠标特效，离开后自动恢复）
+- 问题记录：`docs/issues/mouse-action-indicator-overlay.zh-CN.md`（新增光标附近鼠标动作指示器：左/右键单击双击三击与滚轮动画，支持相对/绝对坐标并接入 Web 设置）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
 - 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）
 - 架构整理：`docs/architecture/ui-folder-structure.zh-CN.md`（UI 文件夹结构整理）
