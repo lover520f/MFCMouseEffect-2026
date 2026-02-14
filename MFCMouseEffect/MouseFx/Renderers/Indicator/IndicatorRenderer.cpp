@@ -187,7 +187,7 @@ void IndicatorRenderer::DrawLabel(Gdiplus::Graphics& g, int sizePx,
 // Public entry points
 // ============================================================================
 
-void IndicatorRenderer::RenderMouseAction(Gdiplus::Graphics& g, int sizePx,
+void IndicatorRenderer::RenderPointerAction(Gdiplus::Graphics& g, int sizePx,
                                           IndicatorEventKind kind,
                                           const IndicatorAnimParams& anim,
                                           const std::wstring& labelOverride) const {

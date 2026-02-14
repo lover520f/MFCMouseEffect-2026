@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "MouseActionIndicator.h"
+#include "InputIndicatorOverlay.h"
 
 #include <algorithm>
 #include <cmath>
@@ -13,7 +13,7 @@ namespace mousefx {
 
 namespace {
 
-constexpr wchar_t kWindowClassName[] = L"MouseFxMouseActionIndicatorWindow";
+constexpr wchar_t kWindowClassName[] = L"InputIndicatorOverlayWindow";
 constexpr UINT_PTR kIndicatorTimerId = 0x4D49;
 
 static uint64_t TickNow() {
@@ -103,13 +103,13 @@ static std::wstring BuildComboLabel(const KeyEvent& ev) {
 // Lifecycle
 // ============================================================================
 
-bool MouseActionIndicator::Initialize() {
+bool InputIndicatorOverlay::Initialize() {
     if (initialized_) return true;
     initialized_ = true;
     return true;
 }
 
-void MouseActionIndicator::Shutdown() {
+void InputIndicatorOverlay::Shutdown() {
     if (hwnd_) {
         KillTimer(hwnd_, kIndicatorTimerId);
         DestroyWindow(hwnd_);
@@ -119,7 +119,7 @@ void MouseActionIndicator::Shutdown() {
     active_ = false;
 }
 
-void MouseActionIndicator::Hide() {
+void InputIndicatorOverlay::Hide() {
     active_ = false;
     eventKind_ = IndicatorEventKind::None;
     if (hwnd_) {
@@ -128,7 +128,7 @@ void MouseActionIndicator::Hide() {
     }
 }
 
-void MouseActionIndicator::UpdateConfig(const MouseIndicatorConfig& cfg) {
+void InputIndicatorOverlay::UpdateConfig(const InputIndicatorConfig& cfg) {
     config_ = cfg;
     config_.positionMode = IsRelativeMode(config_.positionMode) ? "relative" : "absolute";
     config_.sizePx = ClampInt(config_.sizePx, 40, 200);
@@ -153,7 +153,7 @@ void MouseActionIndicator::UpdateConfig(const MouseIndicatorConfig& cfg) {
 // Event handlers
 // ============================================================================
 
-void MouseActionIndicator::OnClick(const ClickEvent& ev) {
+void InputIndicatorOverlay::OnClick(const ClickEvent& ev) {
     if (!config_.enabled) return;
 
     const uint64_t now = TickNow();
@@ -184,7 +184,7 @@ void MouseActionIndicator::OnClick(const ClickEvent& ev) {
     Trigger(kind, ev.pt);
 }
 
-void MouseActionIndicator::OnScroll(const ScrollEvent& ev) {
+void InputIndicatorOverlay::OnScroll(const ScrollEvent& ev) {
     if (!config_.enabled) return;
     if (ev.delta == 0) return;
 
@@ -216,7 +216,7 @@ void MouseActionIndicator::OnScroll(const ScrollEvent& ev) {
     Trigger(kind, ev.pt, label);
 }
 
-void MouseActionIndicator::OnKey(const KeyEvent& ev) {
+void InputIndicatorOverlay::OnKey(const KeyEvent& ev) {
     if (!config_.enabled || !config_.keyboardEnabled) return;
     std::wstring label = BuildComboLabel(ev);
     Trigger(IndicatorEventKind::KeyInput, ev.pt, std::move(label));
@@ -226,18 +226,18 @@ void MouseActionIndicator::OnKey(const KeyEvent& ev) {
 // Window management
 // ============================================================================
 
-LRESULT CALLBACK MouseActionIndicator::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    auto* self = reinterpret_cast<MouseActionIndicator*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+LRESULT CALLBACK InputIndicatorOverlay::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    auto* self = reinterpret_cast<InputIndicatorOverlay*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
     if (msg == WM_NCCREATE) {
         auto* cs = reinterpret_cast<CREATESTRUCTW*>(lParam);
-        self = reinterpret_cast<MouseActionIndicator*>(cs->lpCreateParams);
+        self = reinterpret_cast<InputIndicatorOverlay*>(cs->lpCreateParams);
         SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
     }
     if (!self) return DefWindowProcW(hwnd, msg, wParam, lParam);
     return self->OnWndProc(hwnd, msg, wParam, lParam);
 }
 
-LRESULT MouseActionIndicator::OnWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+LRESULT InputIndicatorOverlay::OnWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
     case WM_TIMER:
         if (wParam == kIndicatorTimerId) {
@@ -263,13 +263,13 @@ LRESULT MouseActionIndicator::OnWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
-bool MouseActionIndicator::EnsureWindow() {
+bool InputIndicatorOverlay::EnsureWindow() {
     if (hwnd_ && IsWindow(hwnd_)) return true;
 
     if (!windowClassRegistered_) {
         WNDCLASSEXW wc{};
         wc.cbSize = sizeof(wc);
-        wc.lpfnWndProc = &MouseActionIndicator::WndProc;
+        wc.lpfnWndProc = &InputIndicatorOverlay::WndProc;
         wc.hInstance = GetModuleHandleW(nullptr);
         wc.lpszClassName = kWindowClassName;
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -295,7 +295,7 @@ bool MouseActionIndicator::EnsureWindow() {
 // Trigger + Render
 // ============================================================================
 
-void MouseActionIndicator::Trigger(IndicatorEventKind kind, POINT anchorPt, std::wstring label) {
+void InputIndicatorOverlay::Trigger(IndicatorEventKind kind, POINT anchorPt, std::wstring label) {
     if (!initialized_ && !Initialize()) return;
     if (!EnsureWindow()) return;
 
@@ -311,7 +311,7 @@ void MouseActionIndicator::Trigger(IndicatorEventKind kind, POINT anchorPt, std:
     Render();
 }
 
-void MouseActionIndicator::Render() {
+void InputIndicatorOverlay::Render() {
     if (!hwnd_ || !active_) return;
 
     const int size = config_.sizePx;
@@ -338,7 +338,7 @@ void MouseActionIndicator::Render() {
         renderer_.RenderKeyAction(g, size, eventLabel_, anim);
     } else {
         // Pass eventLabel_ (which might contain "W+ 3") as override
-        renderer_.RenderMouseAction(g, size, eventKind_, anim, eventLabel_);
+        renderer_.RenderPointerAction(g, size, eventKind_, anim, eventLabel_);
     }
 
     // Commit to layered window
@@ -356,13 +356,13 @@ void MouseActionIndicator::Render() {
 #ifdef _DEBUG
     if (!ok) {
         wchar_t buf[128]{};
-        wsprintfW(buf, L"MouseFx: MouseActionIndicator UpdateLayeredWindow failed. err=%lu\n", GetLastError());
+        wsprintfW(buf, L"MouseFx: InputIndicatorOverlay UpdateLayeredWindow failed. err=%lu\n", GetLastError());
         OutputDebugStringW(buf);
     }
 #endif
 }
 
-void MouseActionIndicator::UpdatePlacement(POINT anchorPt) {
+void InputIndicatorOverlay::UpdatePlacement(POINT anchorPt) {
     if (!hwnd_) return;
     POINT target{};
     if (IsRelativeMode(config_.positionMode)) {
@@ -394,13 +394,13 @@ void MouseActionIndicator::UpdatePlacement(POINT anchorPt) {
 // Utilities
 // ============================================================================
 
-int MouseActionIndicator::ClampInt(int v, int lo, int hi) {
+int InputIndicatorOverlay::ClampInt(int v, int lo, int hi) {
     if (v < lo) return lo;
     if (v > hi) return hi;
     return v;
 }
 
-bool MouseActionIndicator::IsRelativeMode(const std::string& mode) {
+bool InputIndicatorOverlay::IsRelativeMode(const std::string& mode) {
     return mode == "relative";
 }
 

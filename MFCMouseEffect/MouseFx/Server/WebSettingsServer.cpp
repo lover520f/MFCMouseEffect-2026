@@ -316,7 +316,7 @@ std::string WebSettingsServer::BuildSchemaJson() const {
         {{"value","smooth"},{"label", LabelByLang(L"\u5149\u6807\u4f18\u5148\uff08\u63a8\u8350\uff09", L"Cursor Priority (Recommended)", lang)}},
         {{"value","efficient"},{"label", LabelByLang(L"\u6027\u80fd\u4f18\u5148\uff08CPU\u53cb\u597d\uff09", L"Performance First (CPU Saver)", lang)}}
     });
-    out["mouse_indicator_position_modes"] = json::array({
+    out["input_indicator_position_modes"] = json::array({
         {{"value","relative"},{"label", LabelByLang(L"\u76f8\u5bf9\u5149\u6807", L"Relative To Cursor", lang)}},
         {{"value","absolute"},{"label", LabelByLang(L"\u5c4f\u5e55\u7edd\u5bf9\u5750\u6807", L"Absolute Screen Position", lang)}}
     });
@@ -386,16 +386,16 @@ std::string WebSettingsServer::BuildStateJson() const {
         {"idle_fade_start_ms", cfg.trailParams.idleFade.startMs},
         {"idle_fade_end_ms", cfg.trailParams.idleFade.endMs},
     };
-    out["mouse_indicator"] = {
-        {"enabled", cfg.mouseIndicator.enabled},
-        {"keyboard_enabled", cfg.mouseIndicator.keyboardEnabled},
-        {"position_mode", EnsureUtf8(cfg.mouseIndicator.positionMode)},
-        {"offset_x", cfg.mouseIndicator.offsetX},
-        {"offset_y", cfg.mouseIndicator.offsetY},
-        {"absolute_x", cfg.mouseIndicator.absoluteX},
-        {"absolute_y", cfg.mouseIndicator.absoluteY},
-        {"size_px", cfg.mouseIndicator.sizePx},
-        {"duration_ms", cfg.mouseIndicator.durationMs}
+    out["input_indicator"] = {
+        {"enabled", cfg.inputIndicator.enabled},
+        {"keyboard_enabled", cfg.inputIndicator.keyboardEnabled},
+        {"position_mode", EnsureUtf8(cfg.inputIndicator.positionMode)},
+        {"offset_x", cfg.inputIndicator.offsetX},
+        {"offset_y", cfg.inputIndicator.offsetY},
+        {"absolute_x", cfg.inputIndicator.absoluteX},
+        {"absolute_y", cfg.inputIndicator.absoluteY},
+        {"size_px", cfg.inputIndicator.sizePx},
+        {"duration_ms", cfg.inputIndicator.durationMs}
     };
 
     const json routeStatus = ReadGpuRouteStatusSnapshot();

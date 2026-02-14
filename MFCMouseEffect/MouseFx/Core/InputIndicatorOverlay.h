@@ -15,18 +15,18 @@ namespace mousefx {
 // mouse clicks, scroll wheel events, and keyboard key presses.
 // Window lifecycle and timer management live here; all GDI+
 // drawing is delegated to IndicatorRenderer.
-class MouseActionIndicator final {
+class InputIndicatorOverlay final {
 public:
-    MouseActionIndicator() = default;
-    ~MouseActionIndicator() { Shutdown(); }
+    InputIndicatorOverlay() = default;
+    ~InputIndicatorOverlay() { Shutdown(); }
 
-    MouseActionIndicator(const MouseActionIndicator&) = delete;
-    MouseActionIndicator& operator=(const MouseActionIndicator&) = delete;
+    InputIndicatorOverlay(const InputIndicatorOverlay&) = delete;
+    InputIndicatorOverlay& operator=(const InputIndicatorOverlay&) = delete;
 
     bool Initialize();
     void Shutdown();
     void Hide();
-    void UpdateConfig(const MouseIndicatorConfig& cfg);
+    void UpdateConfig(const InputIndicatorConfig& cfg);
 
     void OnClick(const ClickEvent& ev);
     void OnScroll(const ScrollEvent& ev);
@@ -45,7 +45,7 @@ private:
     static bool IsRelativeMode(const std::string& mode);
 
 private:
-    MouseIndicatorConfig config_{};
+    InputIndicatorConfig config_{};
     IndicatorRenderer renderer_{};
     HWND hwnd_ = nullptr;
     bool initialized_ = false;

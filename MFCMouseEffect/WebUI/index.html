@@ -56,30 +56,30 @@
     </div>
 
     <div class="row" style="margin-top:12px">
-      <div class="card" id="mouse-indicator">
-        <h3 data-i18n="section_mouse_indicator">Mouse Action Indicator</h3>
+      <div class="card" id="input-indicator">
+        <h3 data-i18n="section_input_indicator">Input Indicator</h3>
         <div class="grid">
-          <label data-i18n="label_mouse_indicator_enabled">Enable indicator</label>
-          <input id="mi_enabled" type="checkbox"/>
-          <label data-i18n="label_mouse_indicator_keyboard_enabled">Enable keyboard indicator</label>
-          <input id="mi_keyboard_enabled" type="checkbox"/>
-          <label data-i18n="label_mouse_indicator_mode">Position mode</label>
-          <select id="mi_position_mode"></select>
-          <label data-i18n="label_mouse_indicator_offset">Relative offset X/Y</label>
+          <label data-i18n="label_input_indicator_enabled">Enable indicator</label>
+          <input id="ii_enabled" type="checkbox"/>
+          <label data-i18n="label_input_indicator_keyboard_enabled">Enable keyboard indicator</label>
+          <input id="ii_keyboard_enabled" type="checkbox"/>
+          <label data-i18n="label_input_indicator_mode">Position mode</label>
+          <select id="ii_position_mode"></select>
+          <label data-i18n="label_input_indicator_offset">Relative offset X/Y</label>
           <div class="pair">
-            <input id="mi_offset_x" type="number" min="-2000" max="2000"/>
-            <input id="mi_offset_y" type="number" min="-2000" max="2000"/>
+            <input id="ii_offset_x" type="number" min="-2000" max="2000"/>
+            <input id="ii_offset_y" type="number" min="-2000" max="2000"/>
           </div>
-          <label data-i18n="label_mouse_indicator_absolute">Absolute X/Y (virtual screen)</label>
+          <label data-i18n="label_input_indicator_absolute">Absolute X/Y (virtual screen)</label>
           <div class="pair">
-            <input id="mi_absolute_x" type="number" min="-20000" max="20000"/>
-            <input id="mi_absolute_y" type="number" min="-20000" max="20000"/>
+            <input id="ii_absolute_x" type="number" min="-20000" max="20000"/>
+            <input id="ii_absolute_y" type="number" min="-20000" max="20000"/>
           </div>
-          <label data-i18n="label_mouse_indicator_size">Indicator size (px)</label>
-          <input id="mi_size_px" type="number" min="40" max="200"/>
-          <label data-i18n="label_mouse_indicator_duration">Animation duration (ms)</label>
-          <input id="mi_duration_ms" type="number" min="120" max="2000"/>
-          <div class="hint span2" data-i18n="hint_mouse_indicator">Supports left/right/middle single-double-triple click, wheel up/down and optional keyboard key display. Absolute mode uses virtual desktop coordinates for multi-monitor setups.</div>
+          <label data-i18n="label_input_indicator_size">Indicator size (px)</label>
+          <input id="ii_size_px" type="number" min="40" max="200"/>
+          <label data-i18n="label_input_indicator_duration">Animation duration (ms)</label>
+          <input id="ii_duration_ms" type="number" min="120" max="2000"/>
+          <div class="hint span2" data-i18n="hint_input_indicator">Supports left/right/middle single-double-triple click, wheel up/down and optional keyboard key display. Absolute mode uses virtual desktop coordinates for multi-monitor setups.</div>
         </div>
       </div>
 

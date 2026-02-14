@@ -33,7 +33,7 @@ public:
     IndicatorRenderer() = default;
 
     // Draw the mouse action indicator (body + buttons + wheel + label).
-    void RenderMouseAction(Gdiplus::Graphics& g, int sizePx,
+    void RenderPointerAction(Gdiplus::Graphics& g, int sizePx,
                            IndicatorEventKind kind,
                            const IndicatorAnimParams& anim,
                            const std::wstring& labelOverride = {}) const;

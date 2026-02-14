@@ -120,7 +120,7 @@ static TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig p
     return p;
 }
 
-static MouseIndicatorConfig SanitizeMouseIndicatorConfig(MouseIndicatorConfig c) {
+static InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig c) {
     c.positionMode = (c.positionMode == "absolute") ? "absolute" : "relative";
     c.offsetX = (c.offsetX < -2000) ? -2000 : (c.offsetX > 2000 ? 2000 : c.offsetX);
     c.offsetY = (c.offsetY < -2000) ? -2000 : (c.offsetY > 2000 ? 2000 : c.offsetY);
@@ -244,18 +244,34 @@ EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
 
     cfg.trailStyle = GetOr<std::string>(root, "trail_style", cfg.trailStyle);
 
-    if (root.contains("mouse_indicator") && root["mouse_indicator"].is_object()) {
+    // Input Indicator (default) or fallback to Mouse Indicator (legacy)
+    if (root.contains("input_indicator") && root["input_indicator"].is_object()) {
+        const auto& mi = root["input_indicator"];
+        cfg.inputIndicator.enabled = GetOr<bool>(mi, "enabled", cfg.inputIndicator.enabled);
+        cfg.inputIndicator.keyboardEnabled = GetOr<bool>(mi, "keyboard_enabled", cfg.inputIndicator.keyboardEnabled);
+        cfg.inputIndicator.positionMode = GetOr<std::string>(mi, "position_mode", cfg.inputIndicator.positionMode);
+        cfg.inputIndicator.offsetX = GetOr<int>(mi, "offset_x", cfg.inputIndicator.offsetX);
+        cfg.inputIndicator.offsetY = GetOr<int>(mi, "offset_y", cfg.inputIndicator.offsetY);
+        cfg.inputIndicator.absoluteX = GetOr<int>(mi, "absolute_x", cfg.inputIndicator.absoluteX);
+        cfg.inputIndicator.absoluteY = GetOr<int>(mi, "absolute_y", cfg.inputIndicator.absoluteY);
+        cfg.inputIndicator.sizePx = GetOr<int>(mi, "size_px", cfg.inputIndicator.sizePx);
+        cfg.inputIndicator.durationMs = GetOr<int>(mi, "duration_ms", cfg.inputIndicator.durationMs);
+
+        cfg.inputIndicator = SanitizeInputIndicatorConfig(cfg.inputIndicator);
+    } else if (root.contains("mouse_indicator") && root["mouse_indicator"].is_object()) {
+        // Fallback load
         const auto& mi = root["mouse_indicator"];
-        cfg.mouseIndicator.enabled = GetOr<bool>(mi, "enabled", cfg.mouseIndicator.enabled);
-        cfg.mouseIndicator.keyboardEnabled = GetOr<bool>(mi, "keyboard_enabled", cfg.mouseIndicator.keyboardEnabled);
-        cfg.mouseIndicator.positionMode = GetOr<std::string>(mi, "position_mode", cfg.mouseIndicator.positionMode);
-        cfg.mouseIndicator.offsetX = GetOr<int>(mi, "offset_x", cfg.mouseIndicator.offsetX);
-        cfg.mouseIndicator.offsetY = GetOr<int>(mi, "offset_y", cfg.mouseIndicator.offsetY);
-        cfg.mouseIndicator.absoluteX = GetOr<int>(mi, "absolute_x", cfg.mouseIndicator.absoluteX);
-        cfg.mouseIndicator.absoluteY = GetOr<int>(mi, "absolute_y", cfg.mouseIndicator.absoluteY);
-        cfg.mouseIndicator.sizePx = GetOr<int>(mi, "size_px", cfg.mouseIndicator.sizePx);
-        cfg.mouseIndicator.durationMs = GetOr<int>(mi, "duration_ms", cfg.mouseIndicator.durationMs);
-        cfg.mouseIndicator = SanitizeMouseIndicatorConfig(cfg.mouseIndicator);
+        cfg.inputIndicator.enabled = GetOr<bool>(mi, "enabled", cfg.inputIndicator.enabled);
+        cfg.inputIndicator.keyboardEnabled = GetOr<bool>(mi, "keyboard_enabled", cfg.inputIndicator.keyboardEnabled);
+        cfg.inputIndicator.positionMode = GetOr<std::string>(mi, "position_mode", cfg.inputIndicator.positionMode);
+        cfg.inputIndicator.offsetX = GetOr<int>(mi, "offset_x", cfg.inputIndicator.offsetX);
+        cfg.inputIndicator.offsetY = GetOr<int>(mi, "offset_y", cfg.inputIndicator.offsetY);
+        cfg.inputIndicator.absoluteX = GetOr<int>(mi, "absolute_x", cfg.inputIndicator.absoluteX);
+        cfg.inputIndicator.absoluteY = GetOr<int>(mi, "absolute_y", cfg.inputIndicator.absoluteY);
+        cfg.inputIndicator.sizePx = GetOr<int>(mi, "size_px", cfg.inputIndicator.sizePx);
+        cfg.inputIndicator.durationMs = GetOr<int>(mi, "duration_ms", cfg.inputIndicator.durationMs);
+        
+        cfg.inputIndicator = SanitizeInputIndicatorConfig(cfg.inputIndicator);
     }
 
     // Parse trail renderer params (optional)
@@ -414,8 +430,8 @@ bool EffectConfig::Save(const std::wstring& exeDir, const EffectConfig& cfg) {
     root["hold_follow_mode"] = NormalizeHoldFollowMode(cfg.holdFollowMode);
     root["trail_style"] = cfg.trailStyle;
     {
-        const auto mi = SanitizeMouseIndicatorConfig(cfg.mouseIndicator);
-        root["mouse_indicator"] = {
+        const auto mi = SanitizeInputIndicatorConfig(cfg.inputIndicator);
+        root["input_indicator"] = {
             {"enabled", mi.enabled},
             {"keyboard_enabled", mi.keyboardEnabled},
             {"position_mode", mi.positionMode},
