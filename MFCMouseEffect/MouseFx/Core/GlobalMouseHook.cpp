@@ -12,20 +12,16 @@ namespace mousefx {
 
 GlobalMouseHook* GlobalMouseHook::instance_ = nullptr;
 
-static POINT NormalizeScreenPoint(const POINT& hookPt) {
-    // Some virtual display/secondary-screen setups can produce coordinates in a different
-    // coordinate space than what our layered windows expect. As a best-effort fallback,
-    // prefer GetCursorPos() if the values diverge significantly.
+static POINT ResolveCursorPreferredPoint(const POINT& hookPt) {
     POINT cursor{};
-    if (!GetCursorPos(&cursor)) return hookPt;
-
-    const int dx = cursor.x - hookPt.x;
-    const int dy = cursor.y - hookPt.y;
-    const int kMismatchPx = 64;
-    if ((dx > kMismatchPx) || (dx < -kMismatchPx) || (dy > kMismatchPx) || (dy < -kMismatchPx)) {
+    if (GetCursorPos(&cursor)) {
         return cursor;
     }
     return hookPt;
+}
+
+static POINT NormalizeScreenPoint(const POINT& hookPt) {
+    return ResolveCursorPreferredPoint(hookPt);
 }
 
 static std::wstring FallbackVkName(UINT vkCode) {
@@ -174,7 +170,7 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
             break;
         case WM_MOUSEMOVE:
             if (s) {
-                const POINT pt = NormalizeScreenPoint(s->pt);
+                const POINT pt = ResolveCursorPreferredPoint(s->pt);
                 instance_->latestMoveX_.store(pt.x, std::memory_order_release);
                 instance_->latestMoveY_.store(pt.y, std::memory_order_release);
                 if (!instance_->movePending_.exchange(true, std::memory_order_acq_rel)) {
@@ -222,7 +218,7 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
             // Create click event
             auto* ev = new (std::nothrow) ClickEvent();
             if (ev) {
-                ev->pt = NormalizeScreenPoint(s->pt);
+                ev->pt = ResolveCursorPreferredPoint(s->pt);
                 ev->button = button;
                 PostMessageW(instance_->dispatchHwnd_, WM_MFX_CLICK, 0, reinterpret_cast<LPARAM>(ev));
             }

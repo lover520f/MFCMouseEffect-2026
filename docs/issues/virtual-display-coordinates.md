@@ -16,8 +16,10 @@
   - `GetCursorPos()`
 
 ## Mitigation Implemented
-- Best-effort normalization: if hook coordinates differ significantly from `GetCursorPos()`, prefer `GetCursorPos()`.
-- Current threshold: 64px.
+- Input point resolution is now cursor-first:
+  - Prefer `GetCursorPos()`
+  - Fallback to hook point (`MSLLHOOKSTRUCT.pt`) only when cursor query fails.
+- This keeps point selection consistent across effect paths and reduces mixed-DPI boundary drift.
 
 ## Notes
 - This is a pragmatic fix to keep effects visually attached to the real cursor.

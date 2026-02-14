@@ -37,6 +37,7 @@
 - 问题记录：`docs/issues/dawn_native_stage40_follow_mode_and_flux_label_copy_cleanup.md`（统一长按跟随模式文案语义：将 smooth 明确为“光标优先（推荐）”，并将 FluxField GPU 标签统一为“CPU兜底”）
 - 问题记录：`docs/issues/dawn_native_stage41_text_click_font_size_configurable.md`（点击文字特效支持在 Web 设置中调整字体大小，补齐 state/apply/persist 全链路）
 - 问题记录：`docs/issues/dawn_native_stage42_quantum_halo_gpu_driver_seh_guard.md`（针对 Quantum Halo GPU 在 `nvwgf2umx.dll` 的驱动层访问冲突，增加 SEH 防护，避免进程硬崩并触发受控失败回退）
+- 问题记录：`docs/issues/mixed_dpi_virtual_display_normalization_gate.zh-CN.md`（修复混合 DPI 物理多屏下 Click/Trail 边界错位；输入取点统一为 cursor-first）
 - 问题记录：`docs/issues/vm_foreground_effect_suppression.md`（当前台焦点进入虚拟机窗口时自动停用宿主机鼠标特效，离开后自动恢复）
 - 问题记录：`docs/input_indicator_refactor.md`（重构：通用输入指示器，支持键盘按键显示与鼠标动作增强）
 - 问题记录：`docs/issues/mouse-action-indicator-overlay.zh-CN.md`（旧：新增光标附近鼠标动作指示器）
@@ -97,7 +98,7 @@ Release 版本已改为“完全不创建主框架窗口”，只创建隐藏宿
 - **高 DPI 偏位**：启动时已启用 DPI 感知；确保用最新编译的二进制。
 - **运行错了二进制**：曾经生成过 `MFCMouseEffect\x64\Debug\...` 的旧输出，现已改为 `x64\Debug\...`。请 Clean + Rebuild 后运行新路径。
 - **虚拟副屏/平板副屏偏移**：部分虚拟显示器软件/驱动会导致坐标映射异常或 DPI 坐标系不一致，表现为特效偏移/消失。参见：`docs/issues/virtual-display-coordinates.zh-CN.md`。
-  - 2026-01：已默认启用坐标归一化，大多数虚拟副屏场景已恢复正常；若仍有偏移，请附上副屏软件/驱动与 DPI 信息反馈。
+  - 2026-01：已启用坐标归一化兜底；2026-02：输入取点统一为 cursor-first（`GetCursorPos` 优先），进一步收敛混合 DPI 多屏边界错位。若仍有偏移，请附上副屏软件/驱动与 DPI 信息反馈。
 
 ## SDI/单窗口说明
 - 项目已改为 SDI：一个顶层主窗口承载视图；波纹渲染仍在独立的透明分层窗口中，与主框架解耦。
