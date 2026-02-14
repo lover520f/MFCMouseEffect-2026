@@ -6,15 +6,6 @@
 
 namespace mousefx {
 
-std::string ToLowerAscii(const std::string& s) {
-    std::string out;
-    out.reserve(s.size());
-    for (char c : s) {
-        if (c >= 'A' && c <= 'Z') out.push_back(static_cast<char>(c - 'A' + 'a'));
-        else out.push_back(c);
-    }
-    return out;
-}
 
 static RippleStyle MakeStyle(uint32_t durationMs, int windowSize, float startR, float endR, float stroke, Argb fill, Argb strokeColor, Argb glow) {
     RippleStyle s;

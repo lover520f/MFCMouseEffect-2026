@@ -63,6 +63,9 @@ static CString FallbackOptionLabel(UINT cmd, bool zh) {
         case kCmdHoldTechRing: return PickLabel(L"\u79D1\u6280\u5708 (3D)", L"Tech Ring (3D)", zh);
         case kCmdHoldHologram: return PickLabel(L"\u516E\u606F\u6295\u5F71 (3D)", L"Hologram (3D)", zh);
         case kCmdHoldNeon3D: return PickLabel(L"\u9713\u8679 HUD (3D)", L"Neon HUD (3D)", zh);
+        case kCmdHoldQuantumHaloGpuV2: return PickLabel(L"\u91CF\u5B50\u5149\u73AF GPU", L"Quantum Halo GPU", zh);
+        case kCmdHoldFluxFieldCpu: return PickLabel(L"\u78C1\u901A\u573A HUD\uff08CPU\u4EC5\uff09", L"FluxField HUD (CPU Only)", zh);
+        case kCmdHoldFluxFieldGpuV2: return PickLabel(L"\u78C1\u901A\u573A HUD GPU\uff08CPU\u515C\u5E95\uff09", L"FluxField HUD GPU (CPU Fallback)", zh);
         case kCmdHoldNone: return PickLabel(L"\u65E0", L"None", zh);
 
         case kCmdHoverGlow: return PickLabel(L"\u547C\u5438\u706F", L"Glow", zh);
@@ -107,6 +110,10 @@ static bool IsCurrentTypeMatchByCommand(const std::string& currentType, UINT cmd
         case kCmdHoldTechRing: return currentType == "tech_ring";
         case kCmdHoldHologram: return currentType == "hologram" || currentType == "scifi3d";
         case kCmdHoldNeon3D: return currentType == "hold_neon3d" || currentType == "neon3d";
+        case kCmdHoldQuantumHaloGpuV2:
+            return currentType == "hold_quantum_halo_gpu_v2" || currentType == "hold_neon3d_gpu_v2";
+        case kCmdHoldFluxFieldCpu: return currentType == "hold_fluxfield_cpu";
+        case kCmdHoldFluxFieldGpuV2: return currentType == "hold_fluxfield_gpu_v2";
         case kCmdHoldNone: return currentType == "none";
 
         case kCmdHoverGlow: return currentType == "glow";
@@ -232,6 +239,9 @@ static bool TryBuildEffectJsonByCommand(UINT cmd, std::string* outJson) {
         case kCmdHoldTechRing: setEffect("hold", "tech_ring"); return true;
         case kCmdHoldHologram: setEffect("hold", "hologram"); return true;
         case kCmdHoldNeon3D: setEffect("hold", "hold_neon3d"); return true;
+        case kCmdHoldQuantumHaloGpuV2: setEffect("hold", "hold_quantum_halo_gpu_v2"); return true;
+        case kCmdHoldFluxFieldCpu: setEffect("hold", "hold_fluxfield_cpu"); return true;
+        case kCmdHoldFluxFieldGpuV2: setEffect("hold", "hold_fluxfield_gpu_v2"); return true;
         case kCmdHoldNone: clearEffect("hold"); return true;
 
         case kCmdHoverGlow: setEffect("hover", "glow"); return true;
@@ -250,11 +260,20 @@ void TrayMenuBuilder::BuildTrayMenu(CMenu& menu, mousefx::AppController* mouseFx
     size_t n = 0;
     const bool zh = IsZhUi(mouseFx);
 
-    AppendEffectSubMenu(menu, PickLabel(L"\u70b9\u51fb\u7279\u6548", L"Click Effects", zh), mouseFx, mousefx::EffectCategory::Click, mousefx::ClickMetadata(n), n);
-    AppendEffectSubMenu(menu, PickLabel(L"\u62d6\u5c3e\u7279\u6548", L"Trail Effects", zh), mouseFx, mousefx::EffectCategory::Trail, mousefx::TrailMetadata(n), n);
-    AppendEffectSubMenu(menu, PickLabel(L"\u6eda\u8f6e\u7279\u6548", L"Scroll Effects", zh), mouseFx, mousefx::EffectCategory::Scroll, mousefx::ScrollMetadata(n), n);
-    AppendEffectSubMenu(menu, PickLabel(L"\u957f\u6309\u7279\u6548", L"Hold Effects", zh), mouseFx, mousefx::EffectCategory::Hold, mousefx::HoldMetadata(n), n);
-    AppendEffectSubMenu(menu, PickLabel(L"\u60ac\u505c\u7279\u6548", L"Hover Effects", zh), mouseFx, mousefx::EffectCategory::Hover, mousefx::HoverMetadata(n), n);
+    const mousefx::EffectOption* clickOpts = mousefx::ClickMetadata(n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u70b9\u51fb\u7279\u6548", L"Click Effects", zh), mouseFx, mousefx::EffectCategory::Click, clickOpts, n);
+
+    const mousefx::EffectOption* trailOpts = mousefx::TrailMetadata(n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u62d6\u5c3e\u7279\u6548", L"Trail Effects", zh), mouseFx, mousefx::EffectCategory::Trail, trailOpts, n);
+
+    const mousefx::EffectOption* scrollOpts = mousefx::ScrollMetadata(n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u6eda\u8f6e\u7279\u6548", L"Scroll Effects", zh), mouseFx, mousefx::EffectCategory::Scroll, scrollOpts, n);
+
+    const mousefx::EffectOption* holdOpts = mousefx::HoldMetadata(n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u957f\u6309\u7279\u6548", L"Hold Effects", zh), mouseFx, mousefx::EffectCategory::Hold, holdOpts, n);
+
+    const mousefx::EffectOption* hoverOpts = mousefx::HoverMetadata(n);
+    AppendEffectSubMenu(menu, PickLabel(L"\u60ac\u505c\u7279\u6548", L"Hover Effects", zh), mouseFx, mousefx::EffectCategory::Hover, hoverOpts, n);
 
     AppendThemeSubMenu(menu, mouseFx);
 

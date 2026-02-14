@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "EffectConfig.h"
 #include "MouseFx/ThirdParty/json.hpp"
+#include "MouseFx/Utils/MathUtils.h"
+#include "MouseFx/Utils/StringUtils.h"
 
 #include <fstream>
 #include <sstream>
@@ -73,15 +75,8 @@ static std::string WStringToUtf8(const std::wstring& ws) {
     return out;
 }
 
-static std::string ToLowerAsciiLocal(std::string s) {
-    for (char& c : s) {
-        if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
-    }
-    return s;
-}
-
 static std::string NormalizeHoldFollowMode(std::string s) {
-    s = ToLowerAsciiLocal(s);
+    s = ToLowerAscii(s);
     if (s == "precise") return "precise";
     if (s == "efficient") return "efficient";
     return "smooth";
@@ -93,12 +88,6 @@ static TrailHistoryProfile SanitizeTrailHistoryProfile(TrailHistoryProfile p) {
     if (p.maxPoints < 2) p.maxPoints = 2;
     if (p.maxPoints > 240) p.maxPoints = 240;
     return p;
-}
-
-static float ClampFloat(float x, float lo, float hi) {
-    if (x < lo) return lo;
-    if (x > hi) return hi;
-    return x;
 }
 
 static TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig p) {
@@ -118,6 +107,30 @@ static TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig p
     if (p.idleFade.endMs > 6000) p.idleFade.endMs = 6000;
 
     return p;
+}
+
+
+static InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig c) {
+    c.positionMode = (c.positionMode == "absolute") ? "absolute" : "relative";
+    c.offsetX = ClampInt(c.offsetX, -2000, 2000);
+    c.offsetY = ClampInt(c.offsetY, -2000, 2000);
+    c.absoluteX = ClampInt(c.absoluteX, -20000, 20000);
+    c.absoluteY = ClampInt(c.absoluteY, -20000, 20000);
+    // targetMonitor: allow any string (validated at runtime)
+    
+    if (c.keyDisplayMode != "all" && c.keyDisplayMode != "significant" && c.keyDisplayMode != "shortcut") {
+        c.keyDisplayMode = "all";
+    }
+
+    // Sanitize overrides
+    for (auto& [k, v] : c.perMonitorOverrides) {
+        v.absoluteX = ClampInt(v.absoluteX, -20000, 20000);
+        v.absoluteY = ClampInt(v.absoluteY, -20000, 20000);
+    }
+
+    c.sizePx = ClampInt(c.sizePx, 40, 200);
+    c.durationMs = ClampInt(c.durationMs, 120, 2000);
+    return c;
 }
 
 // ============================================================================
@@ -172,7 +185,7 @@ EffectConfig EffectConfig::GetDefault() {
 }
 
 TrailHistoryProfile EffectConfig::GetTrailHistoryProfile(const std::string& type) const {
-    std::string t = ToLowerAsciiLocal(type);
+    std::string t = ToLowerAscii(type);
     if (t == "scifi" || t == "sci-fi" || t == "sci_fi") t = "tubes";
 
     if (t == "electric") return SanitizeTrailHistoryProfile(trailProfiles.electric);
@@ -203,6 +216,9 @@ EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
     try {
         root = json::parse(jsonContent);
     } catch (const json::exception& e) {
+#ifndef _DEBUG
+        (void)e;
+#endif
 #ifdef _DEBUG
         std::wstringstream ss;
         ss << L"MouseFx: JSON parse error: " << e.what() << L". Recreating config.\n";
@@ -229,6 +245,52 @@ EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
     }
 
     cfg.trailStyle = GetOr<std::string>(root, "trail_style", cfg.trailStyle);
+
+    // Input Indicator (default) or fallback to Mouse Indicator (legacy)
+    if (root.contains("input_indicator") && root["input_indicator"].is_object()) {
+        const auto& mi = root["input_indicator"];
+        cfg.inputIndicator.enabled = GetOr<bool>(mi, "enabled", cfg.inputIndicator.enabled);
+        cfg.inputIndicator.keyboardEnabled = GetOr<bool>(mi, "keyboard_enabled", cfg.inputIndicator.keyboardEnabled);
+        cfg.inputIndicator.positionMode = GetOr<std::string>(mi, "position_mode", cfg.inputIndicator.positionMode);
+        cfg.inputIndicator.offsetX = GetOr<int>(mi, "offset_x", cfg.inputIndicator.offsetX);
+        cfg.inputIndicator.offsetY = GetOr<int>(mi, "offset_y", cfg.inputIndicator.offsetY);
+        cfg.inputIndicator.absoluteX = GetOr<int>(mi, "absolute_x", cfg.inputIndicator.absoluteX);
+        cfg.inputIndicator.absoluteY = GetOr<int>(mi, "absolute_y", cfg.inputIndicator.absoluteY);
+        cfg.inputIndicator.targetMonitor = GetOr<std::string>(mi, "target_monitor", cfg.inputIndicator.targetMonitor);
+        cfg.inputIndicator.keyDisplayMode = GetOr<std::string>(mi, "key_display_mode", cfg.inputIndicator.keyDisplayMode);
+        
+        // Parse per-monitor overrides
+        if (mi.contains("per_monitor_overrides") && mi["per_monitor_overrides"].is_object()) {
+            for (auto& [key, val] : mi["per_monitor_overrides"].items()) {
+                if (val.is_object()) {
+                    PerMonitorPosOverride ov;
+                    ov.enabled = GetOr<bool>(val, "enabled", false);
+                    ov.absoluteX = GetOr<int>(val, "absolute_x", 40);
+                    ov.absoluteY = GetOr<int>(val, "absolute_y", 40);
+                    cfg.inputIndicator.perMonitorOverrides[key] = ov;
+                }
+            }
+        }
+
+        cfg.inputIndicator.sizePx = GetOr<int>(mi, "size_px", cfg.inputIndicator.sizePx);
+        cfg.inputIndicator.durationMs = GetOr<int>(mi, "duration_ms", cfg.inputIndicator.durationMs);
+
+        cfg.inputIndicator = SanitizeInputIndicatorConfig(cfg.inputIndicator);
+    } else if (root.contains("mouse_indicator") && root["mouse_indicator"].is_object()) {
+        // Fallback load
+        const auto& mi = root["mouse_indicator"];
+        cfg.inputIndicator.enabled = GetOr<bool>(mi, "enabled", cfg.inputIndicator.enabled);
+        cfg.inputIndicator.keyboardEnabled = GetOr<bool>(mi, "keyboard_enabled", cfg.inputIndicator.keyboardEnabled);
+        cfg.inputIndicator.positionMode = GetOr<std::string>(mi, "position_mode", cfg.inputIndicator.positionMode);
+        cfg.inputIndicator.offsetX = GetOr<int>(mi, "offset_x", cfg.inputIndicator.offsetX);
+        cfg.inputIndicator.offsetY = GetOr<int>(mi, "offset_y", cfg.inputIndicator.offsetY);
+        cfg.inputIndicator.absoluteX = GetOr<int>(mi, "absolute_x", cfg.inputIndicator.absoluteX);
+        cfg.inputIndicator.absoluteY = GetOr<int>(mi, "absolute_y", cfg.inputIndicator.absoluteY);
+        cfg.inputIndicator.sizePx = GetOr<int>(mi, "size_px", cfg.inputIndicator.sizePx);
+        cfg.inputIndicator.durationMs = GetOr<int>(mi, "duration_ms", cfg.inputIndicator.durationMs);
+        
+        cfg.inputIndicator = SanitizeInputIndicatorConfig(cfg.inputIndicator);
+    }
 
     // Parse trail renderer params (optional)
     if (root.contains("trail_params") && root["trail_params"].is_object()) {
@@ -385,6 +447,29 @@ bool EffectConfig::Save(const std::wstring& exeDir, const EffectConfig& cfg) {
     root["ui_language"] = cfg.uiLanguage;
     root["hold_follow_mode"] = NormalizeHoldFollowMode(cfg.holdFollowMode);
     root["trail_style"] = cfg.trailStyle;
+    {
+        const auto mi = SanitizeInputIndicatorConfig(cfg.inputIndicator);
+        root["input_indicator"] = {
+            {"enabled", mi.enabled},
+            {"keyboard_enabled", mi.keyboardEnabled},
+            {"position_mode", mi.positionMode},
+            {"offset_x", mi.offsetX},
+            {"offset_y", mi.offsetY},
+            {"absolute_x", mi.absoluteX},
+            {"absolute_y", mi.absoluteY},
+            {"target_monitor", mi.targetMonitor},
+            {"key_display_mode", mi.keyDisplayMode},
+            {"size_px", mi.sizePx},
+            {"duration_ms", mi.durationMs},
+            {"per_monitor_overrides", [&](){
+                json j = json::object();
+                for (const auto& [k, v] : mi.perMonitorOverrides) {
+                    j[k] = {{"enabled", v.enabled}, {"absolute_x", v.absoluteX}, {"absolute_y", v.absoluteY}};
+                }
+                return j;
+            }()}
+        };
+    }
 
     // Trail history profiles (strategy-based trail renderers)
     {

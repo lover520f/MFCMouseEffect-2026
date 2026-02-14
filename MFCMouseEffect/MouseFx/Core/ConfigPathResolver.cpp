@@ -33,5 +33,13 @@ std::wstring ResolveConfigDirectory() {
     return L".";
 }
 
-} // namespace mousefx
+std::wstring ResolveLocalDiagDirectory() {
+    wchar_t exePath[MAX_PATH] = {};
+    GetModuleFileNameW(nullptr, exePath, MAX_PATH);
+    std::wstring p(exePath);
+    const size_t pos = p.find_last_of(L"\\/");
+    const std::wstring exeDir = (pos != std::wstring::npos) ? p.substr(0, pos) : L".";
+    return exeDir + L"\\.local\\diag";
+}
 
+} // namespace mousefx

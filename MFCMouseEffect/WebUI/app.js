@@ -48,16 +48,18 @@
       section_effects: "Active Effects",
       section_text: "Text Content (Click/Text)",
       section_trail_tuning: "Trail Tuning",
+      section_input_indicator: "Input Indicator",
       label_language: "Language",
       label_theme: "Theme",
       label_hold_follow_mode: "Hold Tracking",
-      tip_hold_follow_mode: "Choose by feel and CPU budget: Precise (lowest latency, best for aiming/drawing), Smooth (recommended default, balanced response and stability), Performance First (reduced update rate for heavy effects or weaker CPUs).",
+      tip_hold_follow_mode: "Choose by feel and CPU budget: Precise (lowest latency, best for aiming/drawing), Cursor Priority (recommended default, follows cursor movement more tightly), Performance First (reduced update rate to save CPU).",
       label_click: "Click",
       label_trail: "Trail",
       label_scroll: "Scroll",
       label_hold: "Hold",
       label_hover: "Hover",
       label_texts: "Comma separated",
+      label_text_font_size: "Text font size (pt)",
       placeholder_texts: "happy,healthy",
       hint_texts: "Use English comma \",\" to separate words.",
       label_style_preset: "Style preset",
@@ -72,7 +74,21 @@
       label_streamer_params: "streamer glow/core/head",
       label_electric_params: "electric amp/fork",
       label_meteor_params: "meteor rate/speed",
+      label_input_indicator_enabled: "Enable indicator",
+      label_input_indicator_keyboard_enabled: "Enable keyboard indicator",
+      label_input_indicator_position_mode: "Position mode",
+      label_input_indicator_offset: "Relative offset X/Y",
+      label_input_indicator_absolute: "Absolute X/Y",
+      label_input_indicator_target_monitor: "Target monitor (mouse)",
+      label_input_indicator_size: "Indicator size (px)",
+      label_input_indicator_duration: "Animation duration (ms)",
+      hint_input_indicator: "Supports click, scroll, and keyboard display. Choose target monitor for multi-screen setups; select 'Custom Multi-Screen' for simultaneous display on multiple monitors.",
       hint_clamp: "Values are clamped to safe ranges when applied.",
+      label_per_monitor_cfg: "Per-Monitor Position",
+      label_key_display_mode: "Keyboard Display",
+      pm_monitor: "Monitor",
+      pm_no_monitors: "No monitors detected.",
+      pm_primary_badge: "Primary",
       style_default: "Default",
       style_snappy: "Snappy",
       style_long: "Long",
@@ -120,16 +136,18 @@
       section_effects: "\u7279\u6548\u9009\u62e9",
       section_text: "\u6587\u5b57\u5185\u5bb9\uff08\u70b9\u51fb/\u6587\u5b57\uff09",
       section_trail_tuning: "\u62d6\u5c3e\u8c03\u53c2",
+      section_input_indicator: "\u9f20\u6807/\u952e\u76d8\u6307\u793a\u5668",
       label_language: "\u8bed\u8a00",
       label_theme: "\u4e3b\u9898",
       label_hold_follow_mode: "\u957f\u6309\u8ddf\u968f\u6a21\u5f0f",
-      tip_hold_follow_mode: "\u6309\u4f53\u611f\u548c CPU \u9884\u7b97\u9009\u62e9\uff1a\u7cbe\u51c6\u8ddf\u968f\uff08\u5ef6\u8fdf\u6700\u4f4e\uff0c\u9002\u5408\u6e38\u620f/\u7ed8\u56fe\uff09\uff1b\u5e73\u6ed1\u8ddf\u968f\uff08\u9ed8\u8ba4\u63a8\u8350\uff0c\u8ddf\u624b\u4e0e\u7a33\u5b9a\u66f4\u5747\u8861\uff09\uff1b\u6027\u80fd\u4f18\u5148\uff08\u964d\u4f4e\u66f4\u65b0\u9891\u7387\uff0c\u9002\u5408\u7279\u6548\u8f83\u91cd\u6216 CPU \u7d27\u5f20\u573a\u666f\uff09\u3002",
+      tip_hold_follow_mode: "\u6309\u4f53\u611f\u548c CPU \u9884\u7b97\u9009\u62e9\uff1a\u7cbe\u51c6\u8ddf\u968f\uff08\u5ef6\u8fdf\u6700\u4f4e\uff0c\u9002\u5408\u6e38\u620f/\u7ed8\u56fe\uff09\uff1b\u5149\u6807\u4f18\u5148\uff08\u9ed8\u8ba4\u63a8\u8350\uff0c\u66f4\u7d27\u8ddf\u5149\u6807\u79fb\u52a8\uff09\uff1b\u6027\u80fd\u4f18\u5148\uff08\u964d\u4f4e\u66f4\u65b0\u9891\u7387\uff0c\u66f4\u7701 CPU\uff09\u3002",
       label_click: "\u70b9\u51fb",
       label_trail: "\u62d6\u5c3e",
       label_scroll: "\u6eda\u8f6e",
       label_hold: "\u957f\u6309",
       label_hover: "\u60ac\u505c",
       label_texts: "\u9017\u53f7\u5206\u9694",
+      label_text_font_size: "\u6587\u5b57\u5927\u5c0f\uff08pt\uff09",
       placeholder_texts: "\u7f8e\u4e3d,\u5065\u5eb7,\u5e78\u798f",
       hint_texts: "\u8bf7\u4f7f\u7528\u82f1\u6587\u9017\u53f7 \",\" \u5206\u9694\u3002",
       label_style_preset: "\u9884\u8bbe\u98ce\u683c",
@@ -144,7 +162,21 @@
       label_streamer_params: "\u9713\u8679 \u5149\u666f/\u6838\u5fc3/\u5934\u90e8",
       label_electric_params: "\u7535\u5f27 \u632f\u5e45/\u5206\u53c9",
       label_meteor_params: "\u6d41\u661f \u9891\u7387/\u901f\u5ea6",
+      label_input_indicator_enabled: "\u542f\u7528\u6307\u793a\u5668",
+      label_input_indicator_keyboard_enabled: "\u542f\u7528\u952e\u76d8\u6307\u793a",
+      label_input_indicator_position_mode: "\u5b9a\u4f4d\u6a21\u5f0f",
+      label_input_indicator_offset: "\u76f8\u5bf9\u504f\u79fb X/Y",
+      label_input_indicator_absolute: "\u7edd\u5bf9\u5750\u6807 X/Y",
+      label_input_indicator_target_monitor: "\u76ee\u6807\u5c4f\u5e55\uff08\u9f20\u6807\uff09",
+      label_input_indicator_size: "\u6307\u793a\u5668\u5927\u5c0f\uff08px\uff09",
+      label_input_indicator_duration: "\u52a8\u753b\u65f6\u957f\uff08ms\uff09",
+      hint_input_indicator: "\u652f\u6301\u70b9\u51fb\u3001\u6eda\u8f6e\u3001\u952e\u76d8\u663e\u793a\u3002\u53ef\u9009\u62e9\u76ee\u6807\u5c4f\u5e55\u9002\u914d\u591a\u5c4f\uff1b\u9009\u62e9\u201c\u81ea\u5b9a\u4e49\u591a\u5c4f\u201d\u53ef\u540c\u65f6\u5728\u591a\u4e2a\u5c4f\u5e55\u663e\u793a\u3002",
       hint_clamp: "\u6570\u503c\u4f1a\u88ab\u5b89\u5168\u533a\u95f4\u8fdb\u884c\u88c1\u526a\u3002",
+      label_per_monitor_cfg: "\u591a\u5c4f\u72ec\u7acb\u4f4d\u7f6e",
+      label_key_display_mode: "\u6309\u952e\u663e\u793a\u6a21\u5f0f",
+      pm_monitor: "\u663e\u793a\u5668",
+      pm_no_monitors: "\u672a\u68c0\u6d4b\u5230\u663e\u793a\u5668",
+      pm_primary_badge: "\u4e3b\u5c4f",
       style_default: "\u9ed8\u8ba4",
       style_snappy: "\u7d27\u81f4",
       style_long: "\u5ef6\u957f",
@@ -153,7 +185,7 @@
     }
   };
 
-  function applyI18n(lang){
+  function applyI18n(lang) {
     const t = I18N[lang] || I18N["en-US"];
     document.title = t.title;
     document.querySelectorAll('[data-i18n]').forEach(node => {
@@ -185,7 +217,7 @@
     }
   }
 
-  function setStatus(msg, tone){
+  function setStatus(msg, tone) {
     if (!statusEl) return;
     if (!msg) {
       statusEl.textContent = '';
@@ -200,28 +232,28 @@
     statusEl.className = cls;
   }
 
-  function currentText(){
+  function currentText() {
     return I18N[pickLang()] || I18N["en-US"];
   }
 
-  function statusText(key, fallback){
+  function statusText(key, fallback) {
     const t = currentText();
     return t[key] || fallback;
   }
 
-  function statusError(prefixKey, fallbackPrefix, error){
+  function statusError(prefixKey, fallbackPrefix, error) {
     const msg = (error && error.message) ? error.message : String(error || '');
     return statusText(prefixKey, fallbackPrefix) + msg;
   }
 
-  function setActionButtonsEnabled(enabled){
+  function setActionButtonsEnabled(enabled) {
     ['btnReload', 'btnReset', 'btnStop', 'btnSave'].forEach((id) => {
       const node = el(id);
       if (node) node.disabled = !enabled;
     });
   }
 
-  function blockActionWhenDisconnected(){
+  function blockActionWhenDisconnected() {
     const t = currentText();
     if (connectionState === 'online' || connectionState === 'unknown') return false;
     const showBlockedDialog = (message) => {
@@ -247,7 +279,7 @@
     return true;
   }
 
-  function markConnection(next, force){
+  function markConnection(next, force) {
     if (!force && connectionState === next) return;
     connectionState = next;
     const t = currentText();
@@ -270,7 +302,7 @@
     setStatus(t.disconnected_hint || 'Disconnected from server.', 'offline');
   }
 
-  function pickLang(){
+  function pickLang() {
     const sel = el('ui_language');
     const val = sel ? sel.value : '';
     if (val) return val;
@@ -279,14 +311,14 @@
     return 'en-US';
   }
 
-  function showUnauthorized(){
+  function showUnauthorized() {
     markConnection('unauthorized');
   }
 
-  async function probeConnection(){
-    try{
+  async function probeConnection() {
+    try {
       const r = await fetch('/api/state', {
-        headers: {'X-MFCMouseEffect-Token': token},
+        headers: { 'X-MFCMouseEffect-Token': token },
         cache: 'no-store'
       });
       if (r.status === 401) {
@@ -299,13 +331,13 @@
       }
       markConnection('online');
       return true;
-    }catch(_e){
+    } catch (_e) {
       markConnection('offline');
       return false;
     }
   }
 
-  function startHealthCheck(){
+  function startHealthCheck() {
     if (healthTimer) return;
     healthTimer = window.setInterval(() => { probeConnection(); }, healthCheckMs);
     document.addEventListener('visibilitychange', () => {
@@ -313,9 +345,9 @@
     });
   }
 
-  async function apiGet(path){
-    const r = await fetch(path, {headers: {'X-MFCMouseEffect-Token': token}});
-    if(!r.ok) {
+  async function apiGet(path) {
+    const r = await fetch(path, { headers: { 'X-MFCMouseEffect-Token': token } });
+    if (!r.ok) {
       if (r.status === 401) {
         showUnauthorized();
         const err = new Error('unauthorized');
@@ -326,13 +358,13 @@
     }
     return await r.json();
   }
-  async function apiPost(path, obj){
+  async function apiPost(path, obj) {
     const r = await fetch(path, {
-      method:'POST',
-      headers:{'Content-Type':'application/json','X-MFCMouseEffect-Token': token},
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-MFCMouseEffect-Token': token },
       body: JSON.stringify(obj || {})
     });
-    if(!r.ok) {
+    if (!r.ok) {
       if (r.status === 401) {
         showUnauthorized();
         const err = new Error('unauthorized');
@@ -344,30 +376,155 @@
     return await r.json();
   }
 
-  function fillSelect(sel, items, current){
+  function fillSelect(sel, items, current) {
     sel.innerHTML = '';
-    for(const it of items || []){
+    for (const it of items || []) {
       const o = document.createElement('option');
       o.value = it.value;
       o.textContent = it.label;
       sel.appendChild(o);
     }
-    if(current) sel.value = current;
+    if (current) sel.value = current;
   }
 
-  function num(id, v){ el(id).value = (v ?? '').toString(); }
-  function getNum(id){ return Number(el(id).value || 0); }
+  function num(id, v) { el(id).value = (v ?? '').toString(); }
+  function getNum(id) { return Number(el(id).value || 0); }
+  function setChecked(id, v) { const n = el(id); if (n) n.checked = !!v; }
+  function getChecked(id) { const n = el(id); return !!(n && n.checked); }
 
-  function scrollToHash(){
-    const h = (location.hash || '').replace('#','');
-    if(!h) return;
+  function syncIndicatorPositionUi() {
+    const mode = el('ii_position_mode')?.value || 'relative';
+    const relativeRow = el('ii_offset_x')?.closest('.pair');
+    const absoluteRow = el('ii_absolute_x')?.closest('.pair');
+    if (relativeRow) relativeRow.style.opacity = (mode === 'relative') ? '1' : '0.45';
+    if (absoluteRow) absoluteRow.style.opacity = (mode === 'absolute') ? '1' : '0.45';
+
+    // Per-monitor overrides: visible only when mode=absolute AND target=custom
+    const targetMon = el('ii_target_monitor')?.value || 'cursor';
+    const pmContainer = el('ii_per_monitor_overrides');
+    if (pmContainer) pmContainer.style.display = (mode === 'absolute' && targetMon === 'custom') ? 'block' : 'none';
+  }
+
+  function scrollToHash() {
+    const h = (location.hash || '').replace('#', '');
+    if (!h) return;
     const node = document.getElementById(h);
-    if(node) node.scrollIntoView({behavior:'smooth', block:'start'});
+    if (node) node.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  async function reload(){
+  let currentSchema = null; // Store schema for referencing monitor list in buildState
+
+  function buildPerMonitorUI(containerId, monitors, overrides, isKb) {
+    const container = el(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    const t = currentText();
+
+    if (!monitors || monitors.length === 0) {
+      const tip = document.createElement('div');
+      tip.textContent = t.pm_no_monitors || 'No monitors detected.';
+      tip.style.cssText = 'font-size:0.85em;opacity:0.6;padding:4px 0';
+      container.appendChild(tip);
+      return;
+    }
+
+    const prefix = isKb ? 'ii_kb_ov_' : 'ii_ov_';
+    const monLabel = t.pm_monitor || 'Monitor';
+    const primaryBadge = t.pm_primary_badge || 'Primary';
+
+    for (let idx = 0; idx < monitors.length; idx++) {
+      const m = monitors[idx];
+      const monId = m.id;
+      const w = (m.right || 0) - (m.left || 0);
+      const h = (m.bottom || 0) - (m.top || 0);
+      const res = (w > 0 && h > 0) ? ` (${w}\u00d7${h})` : '';
+      const badge = m.is_primary ? ` \u2605 ${primaryBadge}` : '';
+      const labelText = `${monLabel} ${idx + 1}${res}${badge}`;
+
+      const ov = overrides ? overrides[monId] : null;
+      const enabled = ov && ov.enabled;
+      const valX = (ov && ov.absolute_x !== undefined) ? ov.absolute_x : 40;
+      const valY = (ov && ov.absolute_y !== undefined) ? ov.absolute_y : 40;
+
+      // Single row per monitor: [checkbox] label  X:[__] Y:[__]
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 0;' +
+        (idx < monitors.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : '');
+      if (!enabled) row.style.opacity = '0.55';
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id = prefix + monId + '_en';
+      cb.checked = !!enabled;
+      cb.style.cssText = 'width:16px;height:16px;margin:0;cursor:pointer;accent-color:var(--accent);flex-shrink:0';
+
+      const lbl = document.createElement('label');
+      lbl.htmlFor = cb.id;
+      lbl.textContent = labelText;
+      lbl.style.cssText = 'font-size:12px;color:var(--muted);cursor:pointer;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      lbl.title = labelText;
+
+      const inX = document.createElement('input');
+      inX.type = 'number';
+      inX.id = prefix + monId + '_x';
+      inX.value = valX;
+      inX.disabled = !enabled;
+      inX.style.cssText = 'width:58px;padding:4px 6px;font-size:12px;border-radius:6px';
+      inX.title = 'X';
+      inX.placeholder = 'X';
+
+      const inY = document.createElement('input');
+      inY.type = 'number';
+      inY.id = prefix + monId + '_y';
+      inY.value = valY;
+      inY.disabled = !enabled;
+      inY.style.cssText = 'width:58px;padding:4px 6px;font-size:12px;border-radius:6px';
+      inY.title = 'Y';
+      inY.placeholder = 'Y';
+
+      row.appendChild(cb);
+      row.appendChild(lbl);
+      row.appendChild(inX);
+      row.appendChild(inY);
+      container.appendChild(row);
+
+      // Toggle enabled state
+      cb.addEventListener('change', () => {
+        inX.disabled = !cb.checked;
+        inY.disabled = !cb.checked;
+        row.style.opacity = cb.checked ? '1' : '0.55';
+      });
+    }
+  }
+
+  function readPerMonitorUI(monitors, isKb) {
+    const res = {};
+    const prefix = isKb ? 'ii_kb_ov_' : 'ii_ov_';
+    if (!monitors) return res;
+
+    for (const m of monitors) {
+      const monId = m.id;
+      const cb = el(prefix + monId + '_en');
+      const ix = el(prefix + monId + '_x');
+      const iy = el(prefix + monId + '_y');
+
+      // Save regardless of enabled state so user preferences are kept,
+      // but definitely save enabled state.
+      if (cb && ix && iy) {
+        res[monId] = {
+          enabled: cb.checked,
+          absolute_x: Number(ix.value),
+          absolute_y: Number(iy.value)
+        };
+      }
+    }
+    return res;
+  }
+
+  async function reload() {
     setStatus(statusText('status_loading', 'Loading...'));
     const schema = await apiGet('/api/schema');
+    currentSchema = schema; // Store for buildState
     const st = await apiGet('/api/state');
 
     applyI18n(st.ui_language || 'en-US');
@@ -375,6 +532,9 @@
     fillSelect(el('ui_language'), schema.ui_languages, st.ui_language);
     fillSelect(el('theme'), schema.themes, st.theme);
     fillSelect(el('hold_follow_mode'), schema.hold_follow_modes, st.hold_follow_mode || 'smooth');
+    fillSelect(el('ii_position_mode'), schema.input_indicator_position_modes, st.input_indicator?.position_mode || st.mouse_indicator?.position_mode || 'relative');
+    fillSelect(el('ii_target_monitor'), schema.target_monitor_options, st.input_indicator?.target_monitor || 'cursor');
+    fillSelect(el('ii_key_display_mode'), schema.key_display_modes, st.input_indicator?.key_display_mode || 'all');
     fillSelect(el('click'), schema.effects?.click, st.active?.click);
     fillSelect(el('trail'), schema.effects?.trail, st.active?.trail);
     fillSelect(el('scroll'), schema.effects?.scroll, st.active?.scroll);
@@ -382,14 +542,15 @@
     fillSelect(el('hover'), schema.effects?.hover, st.active?.hover);
 
     el('text_content').value = st.text_content || '';
+    num('text_font_size', st.text_font_size);
 
     el('trail_style').value = st.trail_style || 'default';
     const p = st.trail_profiles || {};
     num('p_streamer_duration', p.streamer?.duration_ms); num('p_streamer_max', p.streamer?.max_points);
     num('p_electric_duration', p.electric?.duration_ms); num('p_electric_max', p.electric?.max_points);
-    num('p_meteor_duration', p.meteor?.duration_ms);     num('p_meteor_max', p.meteor?.max_points);
-    num('p_tubes_duration', p.tubes?.duration_ms);       num('p_tubes_max', p.tubes?.max_points);
-    num('p_line_duration', p.line?.duration_ms);         num('p_line_max', p.line?.max_points);
+    num('p_meteor_duration', p.meteor?.duration_ms); num('p_meteor_max', p.meteor?.max_points);
+    num('p_tubes_duration', p.tubes?.duration_ms); num('p_tubes_max', p.tubes?.max_points);
+    num('p_line_duration', p.line?.duration_ms); num('p_line_max', p.line?.max_points);
 
     const k = st.trail_params || {};
     num('k_streamer_glow', k.streamer?.glow_width_scale);
@@ -401,11 +562,34 @@
     num('k_meteor_speed', k.meteor?.spark_speed_scale);
     num('k_idle_fade_start', k.idle_fade_start_ms);
     num('k_idle_fade_end', k.idle_fade_end_ms);
+    const ii = st.input_indicator || st.mouse_indicator || {};
+
+    // Build per-monitor override UIs using schema.monitors
+    if (schema.monitors) {
+      buildPerMonitorUI('ii_per_monitor_overrides', schema.monitors, ii.per_monitor_overrides, false);
+    }
+
+    // syncIndicatorPositionUi no longer needs event listeners for global toggle since it is removed.
+    // Individual toggles are handled in buildPerMonitorUI.
+
+    setChecked('ii_enabled', ii.enabled !== false);
+    setChecked('ii_keyboard_enabled', ii.keyboard_enabled !== false);
+    num('ii_offset_x', ii.offset_x);
+    num('ii_offset_y', ii.offset_y);
+    num('ii_absolute_x', ii.absolute_x);
+    num('ii_absolute_y', ii.absolute_y);
+    num('ii_size_px', ii.size_px);
+    num('ii_duration_ms', ii.duration_ms);
+    syncIndicatorPositionUi();
 
     markConnection('online');
+    const routeNotice = st.gpu_route_notice;
+    if (routeNotice && routeNotice.message) {
+      setStatus(routeNotice.message, routeNotice.level === 'warn' ? 'warn' : 'ok');
+    }
   }
 
-  function buildState(){
+  function buildState() {
     return {
       ui_language: el('ui_language').value,
       theme: el('theme').value,
@@ -418,13 +602,14 @@
         hover: el('hover').value,
       },
       text_content: el('text_content').value || '',
+      text_font_size: getNum('text_font_size'),
       trail_style: el('trail_style').value,
       trail_profiles: {
-        line:     {duration_ms: getNum('p_line_duration'),     max_points: getNum('p_line_max')},
-        streamer: {duration_ms: getNum('p_streamer_duration'), max_points: getNum('p_streamer_max')},
-        electric: {duration_ms: getNum('p_electric_duration'), max_points: getNum('p_electric_max')},
-        meteor:   {duration_ms: getNum('p_meteor_duration'),   max_points: getNum('p_meteor_max')},
-        tubes:    {duration_ms: getNum('p_tubes_duration'),    max_points: getNum('p_tubes_max')},
+        line: { duration_ms: getNum('p_line_duration'), max_points: getNum('p_line_max') },
+        streamer: { duration_ms: getNum('p_streamer_duration'), max_points: getNum('p_streamer_max') },
+        electric: { duration_ms: getNum('p_electric_duration'), max_points: getNum('p_electric_max') },
+        meteor: { duration_ms: getNum('p_meteor_duration'), max_points: getNum('p_meteor_max') },
+        tubes: { duration_ms: getNum('p_tubes_duration'), max_points: getNum('p_tubes_max') },
       },
       trail_params: {
         streamer: {
@@ -442,42 +627,62 @@
         },
         idle_fade_start_ms: getNum('k_idle_fade_start'),
         idle_fade_end_ms: getNum('k_idle_fade_end'),
+      },
+      input_indicator: {
+        enabled: getChecked('ii_enabled'),
+        keyboard_enabled: getChecked('ii_keyboard_enabled'),
+        position_mode: el('ii_position_mode').value || 'relative',
+        offset_x: getNum('ii_offset_x'),
+        offset_y: getNum('ii_offset_y'),
+        absolute_x: getNum('ii_absolute_x'),
+        absolute_y: getNum('ii_absolute_y'),
+        target_monitor: el('ii_target_monitor').value || 'cursor',
+        key_display_mode: el('ii_key_display_mode').value || 'all',
+        per_monitor_overrides: currentSchema ? readPerMonitorUI(currentSchema.monitors, false) : {},
+        size_px: getNum('ii_size_px'),
+        duration_ms: getNum('ii_duration_ms'),
       }
     };
   }
 
   el('btnReload').addEventListener('click', async () => {
-    try{
+    try {
       if (blockActionWhenDisconnected()) return;
       setStatus(statusText('status_reloading', 'Reloading config...'));
       await apiPost('/api/reload', {});
       await reload();
       scrollToHash();
-    }catch(e){
+    } catch (e) {
       if (e && e.code === 'unauthorized') return;
       setStatus(statusError('status_reload_failed', 'Reload failed: ', e), 'warn');
     }
   });
 
   el('btnSave').addEventListener('click', async () => {
-    try{
+    try {
       if (blockActionWhenDisconnected()) return;
       setStatus(statusText('status_applying', 'Applying...'));
       const st = buildState();
       const res = await apiPost('/api/state', st);
       if (res.ok) {
-        setStatus(statusText('status_applied', 'Applied.'), 'ok');
+        const latest = await apiGet('/api/state');
+        const routeNotice = latest.gpu_route_notice;
+        if (routeNotice && routeNotice.message) {
+          setStatus(routeNotice.message, routeNotice.level === 'warn' ? 'warn' : 'ok');
+        } else {
+          setStatus(statusText('status_applied', 'Applied.'), 'ok');
+        }
       } else {
         setStatus('Failed: ' + (res.error || ''), 'warn');
       }
-    }catch(e){
+    } catch (e) {
       if (e && e.code === 'unauthorized') return;
       setStatus(statusError('status_save_failed', 'Save failed: ', e), 'warn');
     }
   });
 
   el('btnReset').addEventListener('click', async () => {
-    try{
+    try {
       if (blockActionWhenDisconnected()) return;
       const t = currentText();
       let confirmed = false;
@@ -496,19 +701,19 @@
       const res = await apiPost('/api/reset', {});
       if (!res.ok) throw new Error(res.error || 'reset failed');
       await reload();
-    }catch(e){
+    } catch (e) {
       if (e && e.code === 'unauthorized') return;
       setStatus(statusError('status_reset_failed', 'Reset failed: ', e), 'warn');
     }
   });
 
   el('btnStop').addEventListener('click', async () => {
-    try{
+    try {
       if (blockActionWhenDisconnected()) return;
       const res = await apiPost('/api/stop', {});
       if (!res.ok) throw new Error(res.error || 'stop failed');
       markConnection('stopped');
-    }catch(e){
+    } catch (e) {
       if (e && e.code === 'unauthorized') return;
       setStatus(statusError('status_stop_failed', 'Stop failed: ', e), 'warn');
     }
@@ -518,6 +723,8 @@
     applyI18n(el('ui_language').value);
     if (connectionState !== 'unknown') markConnection(connectionState, true);
   });
+  el('ii_position_mode').addEventListener('change', syncIndicatorPositionUi);
+  el('ii_target_monitor').addEventListener('change', syncIndicatorPositionUi);
 
   startHealthCheck();
   reload().then(() => {

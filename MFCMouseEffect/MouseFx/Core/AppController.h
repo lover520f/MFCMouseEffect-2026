@@ -9,10 +9,15 @@
 
 #include "GdiPlusSession.h"
 #include "GlobalMouseHook.h"
+#include "MouseFx/Core/InputIndicatorOverlay.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "EffectConfig.h"
+#include "VmForegroundDetector.h"
 
 namespace mousefx {
+
+class CommandHandler;
+class DispatchRouter;
 
 // Owns the subsystem lifecycle: message-only dispatcher, GDI+ init, hook, and effects.
 class AppController final {
@@ -54,6 +59,9 @@ public:
     
     // Set custom text content for Text Effect
     void SetTextEffectContent(const std::vector<std::wstring>& texts);
+    // Set text click font size in point units.
+    void SetTextEffectFontSize(float sizePt);
+    void SetInputIndicatorConfig(const InputIndicatorConfig& cfg);
     // Set hold follow mode (precise|smooth|efficient).
     void SetHoldFollowMode(const std::string& mode);
 
@@ -75,18 +83,29 @@ public:
     // Reset settings to defaults
     void ResetConfig();
 
+    // --- Methods exposed for CommandHandler delegation ---
+    void PersistConfig();
+    void SetActiveEffectType(EffectCategory category, const std::string& type);
+    void ReloadConfigFromDisk();
+    std::string ResolveRuntimeEffectType(EffectCategory category, const std::string& requestedType, std::string* outReason) const;
+
+    friend class DispatchRouter;
+
 private:
     static LRESULT CALLBACK DispatchWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     bool CreateDispatchWindow();
     void DestroyDispatchWindow();
     
     // Factory method to create effect by category and type name.
     std::unique_ptr<IMouseEffect> CreateEffect(EffectCategory category, const std::string& type);
 
-    void PersistConfig();
-    void SetActiveEffectType(EffectCategory category, const std::string& type);
-    void ReloadConfigFromDisk();
+
+    void NotifyGpuFallbackIfNeeded(const std::string& reason);
+    void WriteGpuRouteStatusSnapshot(EffectCategory category, const std::string& requestedType, const std::string& effectiveType, const std::string& reason) const;
+    void UpdateVmSuppressionState();
+    void ApplyVmSuppression(bool suppressed);
+    void SuspendEffectsForVm();
+    void ResumeEffectsAfterVm();
 
     HWND dispatchHwnd_ = nullptr;
 
@@ -118,6 +137,12 @@ private:
 
     bool holdButtonDown_ = false;
     uint64_t holdDownTick_ = 0;
+    bool gpuFallbackNotifiedThisSession_ = false;
+    std::unique_ptr<CommandHandler> commandHandler_;
+    std::unique_ptr<DispatchRouter> dispatchRouter_;
+    InputIndicatorOverlay inputIndicatorOverlay_{};
+    VmForegroundDetector vmForegroundDetector_{};
+    bool vmEffectsSuppressed_ = false;
 
 #ifdef _DEBUG
     uint32_t debugClickCount_ = 0;

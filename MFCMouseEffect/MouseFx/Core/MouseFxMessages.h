@@ -30,4 +30,7 @@ constexpr unsigned int WM_MFX_EXEC_CMD = WM_APP + 0x215;
 // Fetch a config snapshot: lParam = EffectConfig* (filled by dispatch thread)
 constexpr unsigned int WM_MFX_GET_CONFIG = WM_APP + 0x216;
 
+// Keyboard key down: lParam points to a heap-allocated KeyEvent (freed by receiver).
+constexpr unsigned int WM_MFX_KEY = WM_APP + 0x217;
+
 } // namespace mousefx

@@ -32,7 +32,6 @@ private:
         bool active = false;
     };
 
-    static uint64_t NowMs();
     static float EaseOutCubic(float t);
     static bool IsEmojiOnlyText(const std::wstring& text);
     static std::wstring ResolveFontFamilyName(const TextConfig& config, const std::wstring& text);

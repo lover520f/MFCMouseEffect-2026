@@ -1,28 +1,92 @@
 #include "pch.h"
 #include "HoldEffect.h"
-#include "MouseFx/Core/OverlayHostService.h"
+
+#include "MouseFx/Core/ConfigPathResolver.h"
+#include "MouseFx/Effects/RippleBasedHoldRuntime.h"
+#include "MouseFx/Effects/HoldQuantumHaloGpuV2DirectRuntime.h"
+#include "MouseFx/Renderers/HoldRuntimeRegistry.h"
 #include "MouseFx/Styles/ThemeStyle.h"
-#include "MouseFx/Renderers/RendererRegistry.h"
-// Include all renderers so they are linked/registered? 
-// No, reliance on static registration means we need to link the object files or include headers somewhere.
-// In a single project, headers included in .cpps are enough if that cpp is compiled.
-// For now, let's include headers here to ensure they are compiled (as separate files).
-// Or we can include them in AppController or a "RegistryInit.cpp".
-// Safest is to include them here or in a central place.
-#include "MouseFx/Renderers/Hold/ChargeRenderer.h"
-#include "MouseFx/Renderers/Hold/LightningRenderer.h"
-#include "MouseFx/Renderers/Hold/HexRenderer.h"
-#include "MouseFx/Renderers/Hold/TechRingRenderer.h"
-#include "MouseFx/Renderers/Hold/HologramHudRenderer.h"
-#include "MouseFx/Renderers/Hold/HoldNeon3DRenderer.h"
+#include "MouseFx/Utils/TimeUtils.h"
+
 #include <cmath>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 namespace mousefx {
 
-HoldEffect::HoldEffect(const std::string& themeName, const std::string& type, const std::string& followMode)
-    : type_(type), followMode_(ParseFollowMode(followMode)) {
+// ---------------------------------------------------------------------------
+// Diagnostics helper (observability hook)
+// ---------------------------------------------------------------------------
+
+static void WriteHoldRuntimeSnapshot(
+    const char* eventName,
+    const std::string& type,
+    bool running,
+    const POINT& pt,
+    DWORD holdMs) {
+    const std::wstring diagDir = ResolveLocalDiagDirectory();
+    if (diagDir.empty()) return;
+    std::error_code ec;
+    std::filesystem::create_directories(diagDir, ec);
+    if (ec) return;
+    const std::filesystem::path outFile = std::filesystem::path(diagDir) / L"hold_runtime_auto.json";
+    std::ofstream out(outFile, std::ios::binary | std::ios::trunc);
+    if (!out.is_open()) return;
+    std::ostringstream ss;
+    ss << "{"
+       << "\"event\":\"" << (eventName ? eventName : "") << "\","
+       << "\"type\":\"" << type << "\","
+       << "\"running\":" << (running ? "true" : "false") << ","
+       << "\"x\":" << pt.x << ","
+       << "\"y\":" << pt.y << ","
+       << "\"hold_ms\":" << holdMs
+       << "}";
+    out << ss.str();
+}
+
+// ---------------------------------------------------------------------------
+// Runtime creation helper
+// ---------------------------------------------------------------------------
+
+static bool IsGpuV2RouteType(const std::string& type) {
+    return type.find("_gpu_v2") != std::string::npos;
+}
+
+static bool IsQuantumHaloGpuV2DirectType(const std::string& type) {
+    return type == "hold_quantum_halo_gpu_v2" || type == "hold_neon3d_gpu_v2";
+}
+
+static std::unique_ptr<IHoldRuntime> CreateRuntime(
+    const std::string& type,
+    const std::string& themeName) {
+    // 1. Try HoldRuntimeRegistry (for future extensibility)
+    auto runtime = HoldRuntimeRegistry::Instance().Create(type);
+    if (runtime) return runtime;
+
+    // 2. Direct GPU path
+    if (IsQuantumHaloGpuV2DirectType(type)) {
+        return std::make_unique<HoldQuantumHaloGpuV2DirectRuntime>();
+    }
+
+    // 3. Ripple-based path (default)
+    const bool gpuV2 = IsGpuV2RouteType(type);
+    const bool chromatic = (ToLowerAscii(themeName) == "chromatic");
+    return std::make_unique<RippleBasedHoldRuntime>(type, gpuV2, chromatic);
+}
+
+// ---------------------------------------------------------------------------
+// HoldEffect
+// ---------------------------------------------------------------------------
+
+HoldEffect::HoldEffect(
+    const std::string& themeName,
+    const std::string& type,
+    const std::string& followMode)
+    : type_(type),
+      followMode_(ParseFollowMode(followMode)) {
     style_ = GetThemePalette(themeName).hold;
-    isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
+    runtime_ = CreateRuntime(type_, themeName);
 }
 
 HoldEffect::~HoldEffect() {
@@ -38,54 +102,34 @@ void HoldEffect::Shutdown() {
 }
 
 void HoldEffect::OnHoldStart(const POINT& pt, int button) {
-    if (holdButton_ != 0) return; // Already holding?
+    if (holdButton_ != 0) return; // Already holding
 
     holdPoint_ = pt;
     holdButton_ = button;
     hasSmoothedPoint_ = false;
-    hasLastSentPoint_ = false;
-    lastHoldCommandMs_ = 0;
     lastEfficientPosMs_ = 0;
-    
-    ClickEvent ev{};
-    ev.pt = pt;
-    ev.button = MouseButton::Left;
 
-    RenderParams params;
-    params.loop = false;
-    params.intensity = 1.0f;
-
-    std::unique_ptr<IRippleRenderer> renderer = RendererRegistry::Instance().Create(type_);
-    if (!renderer) {
-        // Fallback to charge if not found
-        renderer = RendererRegistry::Instance().Create("charge");
+    if (runtime_) {
+        runtime_->Start(style_, pt);
+        runtime_->Update(0u, pt);
     }
 
-    RippleStyle finalStyle = style_;
-    if (isChromatic_) {
-        finalStyle = MakeRandomStyle(style_);
-    }
-
-    currentRippleId_ = OverlayHostService::Instance().ShowContinuousRipple(
-        ev, finalStyle, std::move(renderer), params);
-    if (currentRippleId_ != 0) {
-        char buf[32]{};
-        snprintf(buf, sizeof(buf), "%u", finalStyle.durationMs);
-        OverlayHostService::Instance().SendRippleCommand(currentRippleId_, "threshold_ms", buf);
-    }
+    WriteHoldRuntimeSnapshot(
+        "hold_start", type_,
+        runtime_ ? runtime_->IsRunning() : false,
+        pt, 0);
 }
 
 void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
     holdPoint_ = pt;
-    if (currentRippleId_ == 0) return;
 
-    const uint64_t nowMs = GetTickCount64();
+    const uint64_t nowMs = NowMs();
     POINT outPt = pt;
-    bool shouldUpdatePos = false;
+    bool shouldUpdate = false;
 
     switch (followMode_) {
         case FollowMode::Precise:
-            shouldUpdatePos = true;
+            shouldUpdate = true;
             break;
         case FollowMode::Smooth: {
             const float alpha = 0.35f;
@@ -99,50 +143,41 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
             }
             outPt.x = (LONG)std::lround(smoothedX_);
             outPt.y = (LONG)std::lround(smoothedY_);
-            shouldUpdatePos = true;
+            shouldUpdate = true;
             break;
         }
         case FollowMode::Efficient:
             if (nowMs - lastEfficientPosMs_ >= 20) {
                 lastEfficientPosMs_ = nowMs;
-                shouldUpdatePos = true;
+                shouldUpdate = true;
             }
             break;
     }
 
-    if (shouldUpdatePos) {
-        if (!hasLastSentPoint_ || !IsSamePoint(lastSentPoint_, outPt)) {
-            OverlayHostService::Instance().UpdateRipplePosition(currentRippleId_, outPt);
-            lastSentPoint_ = outPt;
-            hasLastSentPoint_ = true;
-        }
-    }
-
-    uint64_t cmdIntervalMs = 0;
-    if (followMode_ == FollowMode::Smooth) cmdIntervalMs = 8;
-    if (followMode_ == FollowMode::Efficient) cmdIntervalMs = 20;
-    if (cmdIntervalMs == 0 || nowMs - lastHoldCommandMs_ >= cmdIntervalMs) {
-        lastHoldCommandMs_ = nowMs;
-        char buf[32]{};
-        snprintf(buf, sizeof(buf), "%u", (uint32_t)durationMs);
-        OverlayHostService::Instance().SendRippleCommand(currentRippleId_, "hold_ms", buf);
+    if (shouldUpdate && runtime_) {
+        runtime_->Update(static_cast<uint32_t>(durationMs), outPt);
     }
 }
 
 void HoldEffect::OnHoldEnd() {
-    if (currentRippleId_ != 0) {
-        OverlayHostService::Instance().StopRipple(currentRippleId_);
-        currentRippleId_ = 0;
+    if (runtime_ && runtime_->IsRunning()) {
+        runtime_->Stop();
     }
+
+    WriteHoldRuntimeSnapshot(
+        "hold_end", type_,
+        false,
+        holdPoint_, 0);
+
     holdButton_ = 0;
     hasSmoothedPoint_ = false;
-    hasLastSentPoint_ = false;
-    lastHoldCommandMs_ = 0;
     lastEfficientPosMs_ = 0;
 }
 
 void HoldEffect::OnCommand(const std::string& cmd, const std::string& args) {
-    OverlayHostService::Instance().BroadcastRippleCommand(cmd, args);
+    // Commands are handled internally by the runtime.
+    (void)cmd;
+    (void)args;
 }
 
 HoldEffect::FollowMode HoldEffect::ParseFollowMode(const std::string& mode) {

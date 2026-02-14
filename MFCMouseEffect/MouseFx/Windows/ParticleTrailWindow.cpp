@@ -1,13 +1,11 @@
 #include "pch.h"
 #include "ParticleTrailWindow.h"
+#include "MouseFx/Utils/TimeUtils.h"
 #include <algorithm>
 #include <cmath>
 
 namespace mousefx {
 
-static uint64_t NowMs() {
-    return GetTickCount64();
-}
 
 static const uint64_t kTopmostReassertIntervalMs = 2500;
 static ParticleTrailWindow* g_particleForegroundHookOwner = nullptr;

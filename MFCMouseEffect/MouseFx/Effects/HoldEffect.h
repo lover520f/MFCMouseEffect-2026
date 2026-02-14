@@ -1,8 +1,11 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
+#include "MouseFx/Interfaces/IHoldRuntime.h"
 #include "MouseFx/Styles/RippleStyle.h"
+
 #include <cstdint>
+#include <memory>
 #include <string>
 
 namespace mousefx {
@@ -10,7 +13,10 @@ namespace mousefx {
 // Hold effect: shows growing ring while button is held down.
 class HoldEffect final : public IMouseEffect {
 public:
-    explicit HoldEffect(const std::string& themeName, const std::string& type, const std::string& followMode);
+    explicit HoldEffect(
+        const std::string& themeName,
+        const std::string& type,
+        const std::string& followMode);
     ~HoldEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Hold; }
@@ -35,18 +41,14 @@ private:
 
     POINT holdPoint_{};
     int holdButton_ = 0;
-    
-    uint64_t currentRippleId_ = 0;
+
+    std::string type_;
+    std::unique_ptr<IHoldRuntime> runtime_;
     RippleStyle style_{};
-    std::string type_; // Renderer type name
-    bool isChromatic_ = false;
     FollowMode followMode_ = FollowMode::Smooth;
     bool hasSmoothedPoint_ = false;
     float smoothedX_ = 0.0f;
     float smoothedY_ = 0.0f;
-    POINT lastSentPoint_{};
-    bool hasLastSentPoint_ = false;
-    uint64_t lastHoldCommandMs_ = 0;
     uint64_t lastEfficientPosMs_ = 0;
 };
 

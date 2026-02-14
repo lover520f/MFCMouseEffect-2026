@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "TrailWindow.h"
 #include "MouseFx/Utils/TrailColor.h"
+#include "MouseFx/Utils/TimeUtils.h"
 #include <algorithm>
 
 #pragma comment(lib, "gdiplus.lib")
@@ -8,9 +9,6 @@
 
 namespace mousefx {
 
-static uint64_t NowMs() {
-    return GetTickCount64();
-}
 
 static const uint64_t kTopmostReassertIntervalMs = 2500;
 static TrailWindow* g_foregroundHookOwner = nullptr;

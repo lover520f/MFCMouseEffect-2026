@@ -6,25 +6,73 @@
 #include "MouseFxMessages.h"
 
 #include <new>
+#include <string>
 
 namespace mousefx {
 
 GlobalMouseHook* GlobalMouseHook::instance_ = nullptr;
 
-static POINT NormalizeScreenPoint(const POINT& hookPt) {
-    // Some virtual display/secondary-screen setups can produce coordinates in a different
-    // coordinate space than what our layered windows expect. As a best-effort fallback,
-    // prefer GetCursorPos() if the values diverge significantly.
+static POINT ResolveCursorPreferredPoint(const POINT& hookPt) {
     POINT cursor{};
-    if (!GetCursorPos(&cursor)) return hookPt;
-
-    const int dx = cursor.x - hookPt.x;
-    const int dy = cursor.y - hookPt.y;
-    const int kMismatchPx = 64;
-    if ((dx > kMismatchPx) || (dx < -kMismatchPx) || (dy > kMismatchPx) || (dy < -kMismatchPx)) {
+    if (GetCursorPos(&cursor)) {
         return cursor;
     }
     return hookPt;
+}
+
+static POINT NormalizeScreenPoint(const POINT& hookPt) {
+    return ResolveCursorPreferredPoint(hookPt);
+}
+
+static std::wstring FallbackVkName(UINT vkCode) {
+    switch (vkCode) {
+    case VK_LCONTROL:
+    case VK_RCONTROL:
+    case VK_CONTROL: return L"Ctrl";
+    case VK_LSHIFT:
+    case VK_RSHIFT:
+    case VK_SHIFT: return L"Shift";
+    case VK_LMENU:
+    case VK_RMENU:
+    case VK_MENU: return L"Alt";
+    case VK_LWIN:
+    case VK_RWIN: return L"Win";
+    case VK_RETURN: return L"Enter";
+    case VK_ESCAPE: return L"Esc";
+    case VK_BACK: return L"Backspace";
+    case VK_TAB: return L"Tab";
+    case VK_SPACE: return L"Space";
+    case VK_DELETE: return L"Delete";
+    case VK_UP: return L"Up";
+    case VK_DOWN: return L"Down";
+    case VK_LEFT: return L"Left";
+    case VK_RIGHT: return L"Right";
+    default:
+        break;
+    }
+
+    if (vkCode >= 'A' && vkCode <= 'Z') {
+        return std::wstring(1, static_cast<wchar_t>(vkCode));
+    }
+    if (vkCode >= '0' && vkCode <= '9') {
+        return std::wstring(1, static_cast<wchar_t>(vkCode));
+    }
+
+    wchar_t buf[16]{};
+    wsprintfW(buf, L"VK_%02X", static_cast<unsigned>(vkCode));
+    return std::wstring(buf);
+}
+
+static std::wstring GetKeyDisplayText(const KBDLLHOOKSTRUCT* kbd) {
+    if (!kbd) return {};
+    LONG lParam = static_cast<LONG>(kbd->scanCode << 16);
+    if ((kbd->flags & LLKHF_EXTENDED) != 0) lParam |= (1 << 24);
+    wchar_t keyName[64]{};
+    const int len = GetKeyNameTextW(lParam, keyName, static_cast<int>(std::size(keyName)));
+    if (len > 0) {
+        return std::wstring(keyName, keyName + len);
+    }
+    return FallbackVkName(kbd->vkCode);
 }
 
 bool GlobalMouseHook::Start(HWND dispatchHwnd) {
@@ -44,10 +92,23 @@ bool GlobalMouseHook::Start(HWND dispatchHwnd) {
         dispatchHwnd_ = nullptr;
         return false;
     }
+
+    keyboardHook_ = SetWindowsHookExW(WH_KEYBOARD_LL, &GlobalMouseHook::KeyboardHookProc, GetModuleHandleW(nullptr), 0);
+#ifdef _DEBUG
+    if (!keyboardHook_) {
+        wchar_t buf[128]{};
+        wsprintfW(buf, L"MouseFx: keyboard hook start failed. GetLastError=%lu\n", GetLastError());
+        OutputDebugStringW(buf);
+    }
+#endif
     return true;
 }
 
 void GlobalMouseHook::Stop() {
+    if (keyboardHook_) {
+        UnhookWindowsHookEx(keyboardHook_);
+        keyboardHook_ = nullptr;
+    }
     if (hook_) {
         UnhookWindowsHookEx(hook_);
         hook_ = nullptr;
@@ -76,17 +137,22 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
         MouseButton button{};
         bool fireClick = false;
         bool fireButtonDown = false;
+        bool fireScroll = false;
+        short scrollDelta = 0;
 
         switch (wParam) {
         case WM_LBUTTONDOWN:
+        case WM_LBUTTONDBLCLK:
             button = MouseButton::Left;
             fireButtonDown = true;
             break;
         case WM_RBUTTONDOWN:
+        case WM_RBUTTONDBLCLK:
             button = MouseButton::Right;
             fireButtonDown = true;
             break;
         case WM_MBUTTONDOWN:
+        case WM_MBUTTONDBLCLK:
             button = MouseButton::Middle;
             fireButtonDown = true;
             break;
@@ -104,7 +170,7 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
             break;
         case WM_MOUSEMOVE:
             if (s) {
-                const POINT pt = NormalizeScreenPoint(s->pt);
+                const POINT pt = ResolveCursorPreferredPoint(s->pt);
                 instance_->latestMoveX_.store(pt.x, std::memory_order_release);
                 instance_->latestMoveY_.store(pt.y, std::memory_order_release);
                 if (!instance_->movePending_.exchange(true, std::memory_order_acq_rel)) {
@@ -116,15 +182,24 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
             break;
         case WM_MOUSEWHEEL:
             if (s) {
-                // HIWORD of mouseData contains wheel delta
-                short delta = static_cast<short>(HIWORD(s->mouseData));
-                const POINT pt = NormalizeScreenPoint(s->pt);
-                PostMessageW(instance_->dispatchHwnd_, WM_MFX_SCROLL,
-                    (WPARAM)delta, MAKELPARAM(pt.x, pt.y));
+                scrollDelta = static_cast<short>(HIWORD(s->mouseData));
+                fireScroll = (scrollDelta != 0);
+            }
+            break;
+        case WM_MOUSEHWHEEL:
+            if (s) {
+                scrollDelta = static_cast<short>(HIWORD(s->mouseData));
+                fireScroll = (scrollDelta != 0);
             }
             break;
         default:
             break;
+        }
+
+        if (fireScroll && s) {
+            const POINT pt = NormalizeScreenPoint(s->pt);
+            PostMessageW(instance_->dispatchHwnd_, WM_MFX_SCROLL,
+                static_cast<WPARAM>(scrollDelta), MAKELPARAM(pt.x, pt.y));
         }
 
         // Button down event (for Hold detection)
@@ -143,13 +218,42 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
             // Create click event
             auto* ev = new (std::nothrow) ClickEvent();
             if (ev) {
-                ev->pt = NormalizeScreenPoint(s->pt);
+                ev->pt = ResolveCursorPreferredPoint(s->pt);
                 ev->button = button;
                 PostMessageW(instance_->dispatchHwnd_, WM_MFX_CLICK, 0, reinterpret_cast<LPARAM>(ev));
             }
         }
     }
 
+    return CallNextHookEx(nullptr, nCode, wParam, lParam);
+}
+
+LRESULT CALLBACK GlobalMouseHook::KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (nCode == HC_ACTION && instance_ && instance_->dispatchHwnd_) {
+        if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
+            const auto* kbd = reinterpret_cast<const KBDLLHOOKSTRUCT*>(lParam);
+            if (kbd) {
+                auto* ev = new (std::nothrow) KeyEvent();
+                if (ev) {
+                    POINT cursor{};
+                    if (!GetCursorPos(&cursor)) {
+                        cursor.x = 0;
+                        cursor.y = 0;
+                    }
+                    ev->pt = NormalizeScreenPoint(cursor);
+                    ev->vkCode = kbd->vkCode;
+                    ev->systemKey = (wParam == WM_SYSKEYDOWN);
+                    ev->ctrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+                    ev->shift = (GetAsyncKeyState(VK_SHIFT)   & 0x8000) != 0;
+                    ev->alt   = (GetAsyncKeyState(VK_MENU)    & 0x8000) != 0;
+                    ev->win   = (GetAsyncKeyState(VK_LWIN)    & 0x8000) != 0
+                             || (GetAsyncKeyState(VK_RWIN)    & 0x8000) != 0;
+                    ev->text = GetKeyDisplayText(kbd);
+                    PostMessageW(instance_->dispatchHwnd_, WM_MFX_KEY, 0, reinterpret_cast<LPARAM>(ev));
+                }
+            }
+        }
+    }
     return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
 
