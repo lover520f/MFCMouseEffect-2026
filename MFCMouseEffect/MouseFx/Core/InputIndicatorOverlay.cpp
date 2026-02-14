@@ -9,6 +9,8 @@
 #include <memory>
 #include <string>
 
+#include "MouseFx/Utils/MonitorUtils.h"
+
 namespace mousefx {
 
 namespace {
@@ -110,6 +112,7 @@ bool InputIndicatorOverlay::Initialize() {
 }
 
 void InputIndicatorOverlay::Shutdown() {
+    DestroyClones();
     if (hwnd_) {
         KillTimer(hwnd_, kIndicatorTimerId);
         DestroyWindow(hwnd_);
@@ -125,6 +128,10 @@ void InputIndicatorOverlay::Hide() {
     if (hwnd_) {
         KillTimer(hwnd_, kIndicatorTimerId);
         ShowWindow(hwnd_, SW_HIDE);
+    }
+    // Hide all clone windows
+    for (auto& [id, clone] : cloneWindows_) {
+        if (clone && IsWindow(clone)) ShowWindow(clone, SW_HIDE);
     }
 }
 
@@ -218,8 +225,60 @@ void InputIndicatorOverlay::OnScroll(const ScrollEvent& ev) {
 
 void InputIndicatorOverlay::OnKey(const KeyEvent& ev) {
     if (!config_.enabled || !config_.keyboardEnabled) return;
+
+    // Filter based on Display Mode
+    if (config_.keyDisplayMode == "shortcut") {
+        // Only show if modifier is held (Ctrl/Alt/Win)
+        if (!ev.ctrl && !ev.alt && !ev.win) return;
+    } 
+    else if (config_.keyDisplayMode == "significant") {
+        // ... (existing filtering logic) ...
+        // Hide standard typing keys if no modifier is held
+        const bool hasModifier = (ev.ctrl || ev.alt || ev.win);
+        if (!hasModifier) {
+            bool isTyping = false;
+            // A-Z
+            if (ev.vkCode >= 0x41 && ev.vkCode <= 0x5A) isTyping = true;
+            // 0-9
+            else if (ev.vkCode >= 0x30 && ev.vkCode <= 0x39) isTyping = true;
+            // Numpad 0-9
+            else if (ev.vkCode >= 0x60 && ev.vkCode <= 0x69) isTyping = true;
+            // Space
+            else if (ev.vkCode == VK_SPACE) isTyping = true;
+            // OEM Punctuation
+            else if (ev.vkCode >= 0xBA && ev.vkCode <= 0xC0) isTyping = true;
+            else if (ev.vkCode >= 0xDB && ev.vkCode <= 0xDE) isTyping = true;
+            else if (ev.vkCode == 0xE2) isTyping = true;
+            
+            if (isTyping) return;
+        }
+    }
+
+    // Streak Logic
+    const uint64_t now = TickNow();
+    // Modifiers mask: 1=Ctrl, 2=Shift, 4=Alt, 8=Win
+    uint32_t mods = (ev.ctrl ? 1 : 0) | (ev.shift ? 2 : 0) | (ev.alt ? 4 : 0) | (ev.win ? 8 : 0);
+    
+    // Configurable timeout? Use DoubleClickTime + delta as heuristic
+    const uint64_t timeout = static_cast<uint64_t>(GetDoubleClickTime()) * 2; // e.g. 1000ms
+
+    if (ev.vkCode == lastKeyVkCode_ && mods == lastKeyModifiers_ && 
+        (now >= lastKeyTickMs_) && (now - lastKeyTickMs_ < timeout)) {
+        keyStreak_++;
+    } else {
+        keyStreak_ = 1;
+    }
+    
+    lastKeyVkCode_ = ev.vkCode;
+    lastKeyModifiers_ = mods;
+    lastKeyTickMs_ = now;
+
     std::wstring label = BuildComboLabel(ev);
-    Trigger(IndicatorEventKind::KeyInput, ev.pt, std::move(label));
+    if (keyStreak_ > 1) {
+        label += L" x" + std::to_wstring(keyStreak_);
+    }
+
+    Trigger(IndicatorEventKind::KeyInput, ev.pt, std::move(label), /*isKeyboard=*/true);
 }
 
 // ============================================================================
@@ -252,6 +311,10 @@ LRESULT InputIndicatorOverlay::OnWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
                 return 0;
             }
             Render();
+            // Render all active clone windows
+            for (auto& [id, clone] : cloneWindows_) {
+                if (clone && IsWindow(clone)) RenderToWindow(clone);
+            }
             return 0;
         }
         break;
@@ -295,9 +358,8 @@ bool InputIndicatorOverlay::EnsureWindow() {
 // Trigger + Render
 // ============================================================================
 
-void InputIndicatorOverlay::Trigger(IndicatorEventKind kind, POINT anchorPt, std::wstring label) {
+void InputIndicatorOverlay::Trigger(IndicatorEventKind kind, POINT anchorPt, std::wstring label, bool isKeyboard) {
     if (!initialized_ && !Initialize()) return;
-    if (!EnsureWindow()) return;
 
     eventKind_ = kind;
     eventStartMs_ = TickNow();
@@ -305,7 +367,17 @@ void InputIndicatorOverlay::Trigger(IndicatorEventKind kind, POINT anchorPt, std
     anchorPt_ = anchorPt;
     eventLabel_ = std::move(label);
 
-    UpdatePlacement(anchorPt);
+    // Custom multi-monitor mode: show on all enabled monitors
+    if (IsCustomMode(isKeyboard)) {
+        customModeActive_ = true;
+        TriggerOnEnabledMonitors(kind, anchorPt, eventLabel_, isKeyboard);
+        return;
+    }
+
+    // Single-monitor mode
+    customModeActive_ = false;
+    if (!EnsureWindow()) return;
+    UpdatePlacement(anchorPt, isKeyboard);
     ShowWindow(hwnd_, SW_SHOWNOACTIVATE);
     SetTimer(hwnd_, kIndicatorTimerId, 16, nullptr);
     Render();
@@ -313,6 +385,11 @@ void InputIndicatorOverlay::Trigger(IndicatorEventKind kind, POINT anchorPt, std
 
 void InputIndicatorOverlay::Render() {
     if (!hwnd_ || !active_) return;
+    RenderToWindow(hwnd_);
+}
+
+void InputIndicatorOverlay::RenderToWindow(HWND targetHwnd) {
+    if (!targetHwnd || !active_) return;
 
     const int size = config_.sizePx;
 
@@ -337,7 +414,6 @@ void InputIndicatorOverlay::Render() {
     if (eventKind_ == IndicatorEventKind::KeyInput) {
         renderer_.RenderKeyAction(g, size, eventLabel_, anim);
     } else {
-        // Pass eventLabel_ (which might contain "W+ 3") as override
         renderer_.RenderPointerAction(g, size, eventKind_, anim, eventLabel_);
     }
 
@@ -345,44 +421,194 @@ void InputIndicatorOverlay::Render() {
     SIZE sz{ size, size };
     POINT src{ 0, 0 };
     RECT rc{};
-    GetWindowRect(hwnd_, &rc);
+    GetWindowRect(targetHwnd, &rc);
     POINT dst{ rc.left, rc.top };
     BLENDFUNCTION bf{};
     bf.BlendOp = AC_SRC_OVER;
     bf.SourceConstantAlpha = 255;
     bf.AlphaFormat = AC_SRC_ALPHA;
-    const BOOL ok = UpdateLayeredWindow(hwnd_, ctx.screenDc, &dst, &sz,
-                                        ctx.memDc, &src, 0, &bf, ULW_ALPHA);
-#ifdef _DEBUG
-    if (!ok) {
-        wchar_t buf[128]{};
-        wsprintfW(buf, L"MouseFx: InputIndicatorOverlay UpdateLayeredWindow failed. err=%lu\n", GetLastError());
-        OutputDebugStringW(buf);
-    }
-#endif
+    UpdateLayeredWindow(targetHwnd, ctx.screenDc, &dst, &sz,
+                        ctx.memDc, &src, 0, &bf, ULW_ALPHA);
 }
 
-void InputIndicatorOverlay::UpdatePlacement(POINT anchorPt) {
-    if (!hwnd_) return;
-    POINT target{};
-    if (IsRelativeMode(config_.positionMode)) {
-        target.x = anchorPt.x + config_.offsetX;
-        target.y = anchorPt.y + config_.offsetY;
-    } else {
-        target.x = config_.absoluteX;
-        target.y = config_.absoluteY;
+// ============================================================================
+// Multi-monitor clone management
+// ============================================================================
+
+HWND InputIndicatorOverlay::CreateCloneWindow() {
+    if (!windowClassRegistered_) {
+        // Window class should already be registered by EnsureWindow,
+        // but just in case we create clones before the main window.
+        if (!EnsureWindow()) return nullptr;
     }
 
-    const int vx = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    const int vy = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    const int vw = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-    const int vh = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-    if (vw > 0 && vh > 0) {
-        const int margin = 1;
-        const int minX = vx + margin;
-        const int minY = vy + margin;
-        const int maxX = vx + ((vw > config_.sizePx + margin) ? (vw - config_.sizePx - margin) : 0);
-        const int maxY = vy + ((vh > config_.sizePx + margin) ? (vh - config_.sizePx - margin) : 0);
+    HWND clone = CreateWindowExW(
+        WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+        kWindowClassName,
+        L"",
+        WS_POPUP,
+        0, 0, config_.sizePx, config_.sizePx,
+        nullptr, nullptr, GetModuleHandleW(nullptr), this);
+
+    return clone;
+}
+
+bool InputIndicatorOverlay::IsCustomMode(bool /*isKeyboard*/) const {
+    return config_.targetMonitor == "custom";
+}
+
+void InputIndicatorOverlay::TriggerOnEnabledMonitors(
+    IndicatorEventKind kind, POINT anchorPt, std::wstring label, bool isKeyboard) {
+
+    // Sync clone windows with enabled monitors
+    SyncCloneWindows(isKeyboard);
+
+    // Ensure at least the main window exists for the timer
+    if (!EnsureWindow()) return;
+
+    // Show on main window? Only if we don't use clones exclusively.
+    // In custom mode we hide the main window and only use clones.
+    ShowWindow(hwnd_, SW_HIDE);
+
+    // Set timer on main window to drive animation
+    SetTimer(hwnd_, kIndicatorTimerId, 16, nullptr);
+
+    // Show and position each clone
+    for (auto& [monId, clone] : cloneWindows_) {
+        if (!clone || !IsWindow(clone)) continue;
+        UpdateClonePlacement(clone, monId, isKeyboard);
+        ShowWindow(clone, SW_SHOWNOACTIVATE);
+        RenderToWindow(clone);
+    }
+}
+
+void InputIndicatorOverlay::UpdateClonePlacement(HWND targetHwnd, const std::string& monitorId, bool /*isKeyboard*/) {
+    if (!targetHwnd) return;
+
+    // Find the monitor entry
+    auto monitors = mousefx::EnumMonitors();
+    RECT monRect{};
+    bool found = false;
+    for (const auto& m : monitors) {
+        if (m.id == monitorId) {
+            monRect = m.bounds;
+            found = true;
+            break;
+        }
+    }
+    if (!found) return;
+
+    // Get position from override or use defaults
+    int posX = config_.absoluteX;
+    int posY = config_.absoluteY;
+    auto it = config_.perMonitorOverrides.find(monitorId);
+    if (it != config_.perMonitorOverrides.end()) {
+        posX = it->second.absoluteX;
+        posY = it->second.absoluteY;
+    }
+
+    POINT target{};
+    target.x = monRect.left + posX;
+    target.y = monRect.top + posY;
+
+    // Clamp to monitor bounds
+    const int monW = monRect.right - monRect.left;
+    const int monH = monRect.bottom - monRect.top;
+    const int margin = 1;
+    if (monW > 0 && monH > 0) {
+        const int maxX = monRect.left + ((monW > config_.sizePx + margin) ? (monW - config_.sizePx - margin) : 0);
+        const int maxY = monRect.top + ((monH > config_.sizePx + margin) ? (monH - config_.sizePx - margin) : 0);
+        target.x = ClampInt(target.x, monRect.left + margin, maxX);
+        target.y = ClampInt(target.y, monRect.top + margin, maxY);
+    }
+
+    SetWindowPos(targetHwnd, HWND_TOPMOST, target.x, target.y,
+                 config_.sizePx, config_.sizePx, SWP_NOACTIVATE);
+}
+
+void InputIndicatorOverlay::SyncCloneWindows(bool /*isKeyboard*/) {
+    // Collect enabled monitor IDs
+    std::map<std::string, bool> enabledMonitors;
+    for (const auto& [id, ov] : config_.perMonitorOverrides) {
+        if (ov.enabled) enabledMonitors[id] = true;
+    }
+
+    // Remove clones for monitors that are no longer enabled
+    for (auto it = cloneWindows_.begin(); it != cloneWindows_.end(); ) {
+        if (enabledMonitors.find(it->first) == enabledMonitors.end()) {
+            if (it->second && IsWindow(it->second)) {
+                DestroyWindow(it->second);
+            }
+            it = cloneWindows_.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    // Create clones for newly enabled monitors
+    for (const auto& [id, _] : enabledMonitors) {
+        if (cloneWindows_.find(id) == cloneWindows_.end()) {
+            HWND clone = CreateCloneWindow();
+            if (clone) cloneWindows_[id] = clone;
+        }
+    }
+}
+
+void InputIndicatorOverlay::DestroyClones() {
+    for (auto& [id, clone] : cloneWindows_) {
+        if (clone && IsWindow(clone)) {
+            DestroyWindow(clone);
+        }
+    }
+    cloneWindows_.clear();
+    customModeActive_ = false;
+}
+
+void InputIndicatorOverlay::UpdatePlacement(POINT anchorPt, bool isKeyboard) {
+    if (!hwnd_) return;
+
+    // Decide which position parameters to use.
+    const std::string& posMode = config_.positionMode;
+    const int offX   = config_.offsetX;
+    const int offY   = config_.offsetY;
+    const int absX   = config_.absoluteX;
+    const int absY   = config_.absoluteY;
+    const std::string& monId = config_.targetMonitor;
+
+    POINT target{};
+    if (IsRelativeMode(posMode)) {
+        target.x = anchorPt.x + offX;
+        target.y = anchorPt.y + offY;
+    } else {
+        // Absolute mode: resolve target monitor and place relative to its origin.
+        const auto [resolvedMonId, monRect] = ResolveTargetMonitor(monId, anchorPt);
+        
+        int finalAbsX = absX;
+        int finalAbsY = absY;
+
+        // Check for per-monitor override
+        if (!resolvedMonId.empty()) {
+            auto it = config_.perMonitorOverrides.find(resolvedMonId);
+            if (it != config_.perMonitorOverrides.end() && it->second.enabled) {
+                finalAbsX = it->second.absoluteX;
+                finalAbsY = it->second.absoluteY;
+            }
+        }
+
+        target.x = monRect.left + finalAbsX;
+        target.y = monRect.top  + finalAbsY;
+    }
+
+    // Clamp to target monitor bounds.
+    const RECT bounds = ResolveTargetMonitorBounds(monId, anchorPt);
+    const int monW = bounds.right  - bounds.left;
+    const int monH = bounds.bottom - bounds.top;
+    const int margin = 1;
+    if (monW > 0 && monH > 0) {
+        const int minX = bounds.left + margin;
+        const int minY = bounds.top  + margin;
+        const int maxX = bounds.left + ((monW > config_.sizePx + margin) ? (monW - config_.sizePx - margin) : 0);
+        const int maxY = bounds.top  + ((monH > config_.sizePx + margin) ? (monH - config_.sizePx - margin) : 0);
         target.x = ClampInt(target.x, minX, maxX);
         target.y = ClampInt(target.y, minY, maxY);
     }

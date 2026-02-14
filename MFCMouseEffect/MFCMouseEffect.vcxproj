@@ -256,6 +256,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Effects\HoldEffect.h" />
     <ClInclude Include="MouseFx\Effects\HoverEffect.h" />
     <ClInclude Include="MouseFx\Core\EffectConfig.h" />
+    <ClInclude Include="MouseFx\Utils\MonitorUtils.h" />
     <ClInclude Include="MouseFx\ThirdParty\json.hpp" />
     <ClInclude Include="UI\Settings\SettingsWnd.h" />
     <ClInclude Include="UI\Settings\TrailTuningWnd.h" />
@@ -313,6 +314,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Effects\HoldEffect.cpp" />
     <ClCompile Include="MouseFx\Effects\HoverEffect.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfig.cpp" />
+    <ClCompile Include="MouseFx\Utils\MonitorUtils.cpp" />
     <ClCompile Include="MouseFx\Server\HttpServer.cpp" />
     <ClCompile Include="MouseFx\Server\WebUiAssets.cpp" />
     <ClCompile Include="MouseFx\Server\WebSettingsServer.cpp" />

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <map>
 
 namespace mousefx {
 
@@ -116,17 +117,34 @@ struct IconConfig {
     Argb strokeColor{ 0xFFFF8C00 }; // Dark Orange
 };
 
+struct PerMonitorPosOverride {
+    bool enabled = false;
+    int absoluteX = 40;
+    int absoluteY = 40;
+};
+
 // Configuration for input action indicator (mouse/keyboard overlay).
 struct InputIndicatorConfig {
     bool enabled = true;
     bool keyboardEnabled = true;
+
+    // --- Position settings (shared by mouse and keyboard) ---
     std::string positionMode = "relative"; // relative | absolute
     int offsetX = 24;
     int offsetY = 24;
     int absoluteX = 40;
     int absoluteY = 40;
+    std::string targetMonitor = "cursor"; // cursor | primary | monitor_N | custom
+
+    // --- Common visual ---
     int sizePx = 72;
     int durationMs = 420;
+
+    // Display mode: "all", "significant", "shortcut"
+    std::string keyDisplayMode = "all";
+
+    // Per-monitor overrides (monitorId -> {enabled, x, y})
+    std::map<std::string, PerMonitorPosOverride> perMonitorOverrides;
 };
 
 // Active effect selections per category (persisted).

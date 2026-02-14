@@ -69,3 +69,37 @@ graph TD
 ## Web设置页更新
 - 前端 `index.html` 和 `app.js` 已更新，所有 ID 和 变量名从 `mi_` (Mouse Indicator) 迁移至 `ii_` (Input Indicator)。
 - 国际化（I18N）文本已更新。
+
+## Per-Monitor 位置覆盖
+
+### 功能说明
+- 支持为每个显示器独立设置指示器的绝对坐标位置
+- 每个显示器有独立的 `enabled` 开关，只有启用的覆盖才会生效
+- 后端通过 `PerMonitorPosOverride` 结构体（含 `enabled`/`absoluteX`/`absoluteY`）管理
+
+### 前端 UI（Phase 9 重设计）
+- **紧凑单行布局**：每个显示器一行 `[☑] 显示器 1 (1920×1080) ★ 主屏  [X] [Y]`
+- **友好名称**：使用计算的分辨率替代原始设备路径（`\\.\DISPLAY10`）
+- **i18n 完整支持**：所有动态文本均通过 i18n 字典管理
+- **新增翻译键**：`label_per_monitor_cfg`、`label_key_display_mode`、`pm_monitor`、`pm_no_monitors`、`pm_primary_badge`
+
+### 多屏同时显示（Multi-Window Clone）
+- **目标屏幕**新增 `custom`（自定义多屏）选项
+- 选择后可勾选多个屏幕同时显示指示器，每屏独立设置位置
+- 后端使用 **Multi-Window Clone 架构**：为每个启用的屏幕创建独立 HWND
+- `InputIndicatorOverlay` 新增方法：`CreateCloneWindow`、`TriggerOnEnabledMonitors`、`RenderToWindow`、`UpdateClonePlacement`、`SyncCloneWindows`、`DestroyClones`
+- 前端 Per-Monitor UI 仅在 `mode=absolute && target=custom` 时显示
+
+### 简化：移除 Keyboard Follow Mouse（Phase 11）
+
+为降低配置复杂度，移除了 `keyboardFollowMouse` 开关及全部独立键盘定位参数：
+
+| 移除字段 | 说明 |
+|---------|------|
+| `keyboardFollowMouse` | 开关已无需存在 — 键盘始终跟随鼠标的位置参数 |
+| `kbPositionMode` / `kbOffsetX/Y` / `kbAbsoluteX/Y` / `kbTargetMonitor` | 独立键盘定位参数 |
+| `kbPerMonitorOverrides` | 独立键盘每屏覆盖 |
+
+**影响范围**：`EffectConfig.h/cpp`、`InputIndicatorOverlay.cpp`（`useKbParams` 分支全部移除）、`AppController.cpp`、`WebSettingsServer.cpp`、`index.html`、`app.js`
+
+**结果**：鼠标和键盘指示器共用同一组位置参数（`positionMode`、`offsetX/Y`、`absoluteX/Y`、`targetMonitor`、`perMonitorOverrides`），UI 更简洁。

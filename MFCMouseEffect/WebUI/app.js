@@ -78,11 +78,17 @@
       label_input_indicator_keyboard_enabled: "Enable keyboard indicator",
       label_input_indicator_position_mode: "Position mode",
       label_input_indicator_offset: "Relative offset X/Y",
-      label_input_indicator_absolute: "Absolute X/Y (virtual screen)",
+      label_input_indicator_absolute: "Absolute X/Y",
+      label_input_indicator_target_monitor: "Target monitor (mouse)",
       label_input_indicator_size: "Indicator size (px)",
       label_input_indicator_duration: "Animation duration (ms)",
-      hint_input_indicator: "Supports left/right single-double-triple click, middle click, wheel up/down and optional keyboard key display. Absolute mode uses virtual desktop coordinates for multi-monitor setups.",
+      hint_input_indicator: "Supports click, scroll, and keyboard display. Choose target monitor for multi-screen setups; select 'Custom Multi-Screen' for simultaneous display on multiple monitors.",
       hint_clamp: "Values are clamped to safe ranges when applied.",
+      label_per_monitor_cfg: "Per-Monitor Position",
+      label_key_display_mode: "Keyboard Display",
+      pm_monitor: "Monitor",
+      pm_no_monitors: "No monitors detected.",
+      pm_primary_badge: "Primary",
       style_default: "Default",
       style_snappy: "Snappy",
       style_long: "Long",
@@ -160,11 +166,17 @@
       label_input_indicator_keyboard_enabled: "\u542f\u7528\u952e\u76d8\u6307\u793a",
       label_input_indicator_position_mode: "\u5b9a\u4f4d\u6a21\u5f0f",
       label_input_indicator_offset: "\u76f8\u5bf9\u504f\u79fb X/Y",
-      label_input_indicator_absolute: "\u7edd\u5bf9\u5750\u6807 X/Y\uff08\u865a\u62df\u5c4f\u5e55\uff09",
+      label_input_indicator_absolute: "\u7edd\u5bf9\u5750\u6807 X/Y",
+      label_input_indicator_target_monitor: "\u76ee\u6807\u5c4f\u5e55\uff08\u9f20\u6807\uff09",
       label_input_indicator_size: "\u6307\u793a\u5668\u5927\u5c0f\uff08px\uff09",
       label_input_indicator_duration: "\u52a8\u753b\u65f6\u957f\uff08ms\uff09",
-      hint_input_indicator: "\u652f\u6301\u5de6/\u53f3/\u4e2d\u952e\u5355\u51fb\u3001\u53cc\u51fb\u3001\u4e09\u51fb\uff0c\u6eda\u8f6e\u4e0a/\u4e0b\uff0c\u53ef\u9009\u952e\u76d8\u6309\u952e\u663e\u793a\uff1b\u7edd\u5bf9\u6a21\u5f0f\u4f7f\u7528\u865a\u62df\u684c\u9762\u5750\u6807\uff0c\u9002\u914d\u591a\u5c4f\u3002",
+      hint_input_indicator: "\u652f\u6301\u70b9\u51fb\u3001\u6eda\u8f6e\u3001\u952e\u76d8\u663e\u793a\u3002\u53ef\u9009\u62e9\u76ee\u6807\u5c4f\u5e55\u9002\u914d\u591a\u5c4f\uff1b\u9009\u62e9\u201c\u81ea\u5b9a\u4e49\u591a\u5c4f\u201d\u53ef\u540c\u65f6\u5728\u591a\u4e2a\u5c4f\u5e55\u663e\u793a\u3002",
       hint_clamp: "\u6570\u503c\u4f1a\u88ab\u5b89\u5168\u533a\u95f4\u8fdb\u884c\u88c1\u526a\u3002",
+      label_per_monitor_cfg: "\u591a\u5c4f\u72ec\u7acb\u4f4d\u7f6e",
+      label_key_display_mode: "\u6309\u952e\u663e\u793a\u6a21\u5f0f",
+      pm_monitor: "\u663e\u793a\u5668",
+      pm_no_monitors: "\u672a\u68c0\u6d4b\u5230\u663e\u793a\u5668",
+      pm_primary_badge: "\u4e3b\u5c4f",
       style_default: "\u9ed8\u8ba4",
       style_snappy: "\u7d27\u81f4",
       style_long: "\u5ef6\u957f",
@@ -386,6 +398,11 @@
     const absoluteRow = el('ii_absolute_x')?.closest('.pair');
     if (relativeRow) relativeRow.style.opacity = (mode === 'relative') ? '1' : '0.45';
     if (absoluteRow) absoluteRow.style.opacity = (mode === 'absolute') ? '1' : '0.45';
+
+    // Per-monitor overrides: visible only when mode=absolute AND target=custom
+    const targetMon = el('ii_target_monitor')?.value || 'cursor';
+    const pmContainer = el('ii_per_monitor_overrides');
+    if (pmContainer) pmContainer.style.display = (mode === 'absolute' && targetMon === 'custom') ? 'block' : 'none';
   }
 
   function scrollToHash() {
@@ -395,9 +412,119 @@
     if (node) node.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  let currentSchema = null; // Store schema for referencing monitor list in buildState
+
+  function buildPerMonitorUI(containerId, monitors, overrides, isKb) {
+    const container = el(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    const t = currentText();
+
+    if (!monitors || monitors.length === 0) {
+      const tip = document.createElement('div');
+      tip.textContent = t.pm_no_monitors || 'No monitors detected.';
+      tip.style.cssText = 'font-size:0.85em;opacity:0.6;padding:4px 0';
+      container.appendChild(tip);
+      return;
+    }
+
+    const prefix = isKb ? 'ii_kb_ov_' : 'ii_ov_';
+    const monLabel = t.pm_monitor || 'Monitor';
+    const primaryBadge = t.pm_primary_badge || 'Primary';
+
+    for (let idx = 0; idx < monitors.length; idx++) {
+      const m = monitors[idx];
+      const monId = m.id;
+      const w = (m.right || 0) - (m.left || 0);
+      const h = (m.bottom || 0) - (m.top || 0);
+      const res = (w > 0 && h > 0) ? ` (${w}\u00d7${h})` : '';
+      const badge = m.is_primary ? ` \u2605 ${primaryBadge}` : '';
+      const labelText = `${monLabel} ${idx + 1}${res}${badge}`;
+
+      const ov = overrides ? overrides[monId] : null;
+      const enabled = ov && ov.enabled;
+      const valX = (ov && ov.absolute_x !== undefined) ? ov.absolute_x : 40;
+      const valY = (ov && ov.absolute_y !== undefined) ? ov.absolute_y : 40;
+
+      // Single row per monitor: [checkbox] label  X:[__] Y:[__]
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 0;' +
+        (idx < monitors.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : '');
+      if (!enabled) row.style.opacity = '0.55';
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id = prefix + monId + '_en';
+      cb.checked = !!enabled;
+      cb.style.cssText = 'width:16px;height:16px;margin:0;cursor:pointer;accent-color:var(--accent);flex-shrink:0';
+
+      const lbl = document.createElement('label');
+      lbl.htmlFor = cb.id;
+      lbl.textContent = labelText;
+      lbl.style.cssText = 'font-size:12px;color:var(--muted);cursor:pointer;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      lbl.title = labelText;
+
+      const inX = document.createElement('input');
+      inX.type = 'number';
+      inX.id = prefix + monId + '_x';
+      inX.value = valX;
+      inX.disabled = !enabled;
+      inX.style.cssText = 'width:58px;padding:4px 6px;font-size:12px;border-radius:6px';
+      inX.title = 'X';
+      inX.placeholder = 'X';
+
+      const inY = document.createElement('input');
+      inY.type = 'number';
+      inY.id = prefix + monId + '_y';
+      inY.value = valY;
+      inY.disabled = !enabled;
+      inY.style.cssText = 'width:58px;padding:4px 6px;font-size:12px;border-radius:6px';
+      inY.title = 'Y';
+      inY.placeholder = 'Y';
+
+      row.appendChild(cb);
+      row.appendChild(lbl);
+      row.appendChild(inX);
+      row.appendChild(inY);
+      container.appendChild(row);
+
+      // Toggle enabled state
+      cb.addEventListener('change', () => {
+        inX.disabled = !cb.checked;
+        inY.disabled = !cb.checked;
+        row.style.opacity = cb.checked ? '1' : '0.55';
+      });
+    }
+  }
+
+  function readPerMonitorUI(monitors, isKb) {
+    const res = {};
+    const prefix = isKb ? 'ii_kb_ov_' : 'ii_ov_';
+    if (!monitors) return res;
+
+    for (const m of monitors) {
+      const monId = m.id;
+      const cb = el(prefix + monId + '_en');
+      const ix = el(prefix + monId + '_x');
+      const iy = el(prefix + monId + '_y');
+
+      // Save regardless of enabled state so user preferences are kept,
+      // but definitely save enabled state.
+      if (cb && ix && iy) {
+        res[monId] = {
+          enabled: cb.checked,
+          absolute_x: Number(ix.value),
+          absolute_y: Number(iy.value)
+        };
+      }
+    }
+    return res;
+  }
+
   async function reload() {
     setStatus(statusText('status_loading', 'Loading...'));
     const schema = await apiGet('/api/schema');
+    currentSchema = schema; // Store for buildState
     const st = await apiGet('/api/state');
 
     applyI18n(st.ui_language || 'en-US');
@@ -406,6 +533,8 @@
     fillSelect(el('theme'), schema.themes, st.theme);
     fillSelect(el('hold_follow_mode'), schema.hold_follow_modes, st.hold_follow_mode || 'smooth');
     fillSelect(el('ii_position_mode'), schema.input_indicator_position_modes, st.input_indicator?.position_mode || st.mouse_indicator?.position_mode || 'relative');
+    fillSelect(el('ii_target_monitor'), schema.target_monitor_options, st.input_indicator?.target_monitor || 'cursor');
+    fillSelect(el('ii_key_display_mode'), schema.key_display_modes, st.input_indicator?.key_display_mode || 'all');
     fillSelect(el('click'), schema.effects?.click, st.active?.click);
     fillSelect(el('trail'), schema.effects?.trail, st.active?.trail);
     fillSelect(el('scroll'), schema.effects?.scroll, st.active?.scroll);
@@ -434,7 +563,16 @@
     num('k_idle_fade_start', k.idle_fade_start_ms);
     num('k_idle_fade_end', k.idle_fade_end_ms);
     const ii = st.input_indicator || st.mouse_indicator || {};
-    setChecked('ii_enabled', ii.enabled);
+
+    // Build per-monitor override UIs using schema.monitors
+    if (schema.monitors) {
+      buildPerMonitorUI('ii_per_monitor_overrides', schema.monitors, ii.per_monitor_overrides, false);
+    }
+
+    // syncIndicatorPositionUi no longer needs event listeners for global toggle since it is removed.
+    // Individual toggles are handled in buildPerMonitorUI.
+
+    setChecked('ii_enabled', ii.enabled !== false);
     setChecked('ii_keyboard_enabled', ii.keyboard_enabled !== false);
     num('ii_offset_x', ii.offset_x);
     num('ii_offset_y', ii.offset_y);
@@ -498,6 +636,9 @@
         offset_y: getNum('ii_offset_y'),
         absolute_x: getNum('ii_absolute_x'),
         absolute_y: getNum('ii_absolute_y'),
+        target_monitor: el('ii_target_monitor').value || 'cursor',
+        key_display_mode: el('ii_key_display_mode').value || 'all',
+        per_monitor_overrides: currentSchema ? readPerMonitorUI(currentSchema.monitors, false) : {},
         size_px: getNum('ii_size_px'),
         duration_ms: getNum('ii_duration_ms'),
       }
@@ -583,6 +724,7 @@
     if (connectionState !== 'unknown') markConnection(connectionState, true);
   });
   el('ii_position_mode').addEventListener('change', syncIndicatorPositionUi);
+  el('ii_target_monitor').addEventListener('change', syncIndicatorPositionUi);
 
   startHealthCheck();
   reload().then(() => {

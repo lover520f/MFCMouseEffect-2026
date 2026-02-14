@@ -120,14 +120,30 @@ static TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig p
     return p;
 }
 
+static int ClampInt(int v, int lo, int hi) {
+    return (v < lo) ? lo : (v > hi) ? hi : v;
+}
+
 static InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig c) {
     c.positionMode = (c.positionMode == "absolute") ? "absolute" : "relative";
-    c.offsetX = (c.offsetX < -2000) ? -2000 : (c.offsetX > 2000 ? 2000 : c.offsetX);
-    c.offsetY = (c.offsetY < -2000) ? -2000 : (c.offsetY > 2000 ? 2000 : c.offsetY);
-    c.absoluteX = (c.absoluteX < -20000) ? -20000 : (c.absoluteX > 20000 ? 20000 : c.absoluteX);
-    c.absoluteY = (c.absoluteY < -20000) ? -20000 : (c.absoluteY > 20000 ? 20000 : c.absoluteY);
-    c.sizePx = (c.sizePx < 40) ? 40 : (c.sizePx > 200 ? 200 : c.sizePx);
-    c.durationMs = (c.durationMs < 120) ? 120 : (c.durationMs > 2000 ? 2000 : c.durationMs);
+    c.offsetX = ClampInt(c.offsetX, -2000, 2000);
+    c.offsetY = ClampInt(c.offsetY, -2000, 2000);
+    c.absoluteX = ClampInt(c.absoluteX, -20000, 20000);
+    c.absoluteY = ClampInt(c.absoluteY, -20000, 20000);
+    // targetMonitor: allow any string (validated at runtime)
+    
+    if (c.keyDisplayMode != "all" && c.keyDisplayMode != "significant" && c.keyDisplayMode != "shortcut") {
+        c.keyDisplayMode = "all";
+    }
+
+    // Sanitize overrides
+    for (auto& [k, v] : c.perMonitorOverrides) {
+        v.absoluteX = ClampInt(v.absoluteX, -20000, 20000);
+        v.absoluteY = ClampInt(v.absoluteY, -20000, 20000);
+    }
+
+    c.sizePx = ClampInt(c.sizePx, 40, 200);
+    c.durationMs = ClampInt(c.durationMs, 120, 2000);
     return c;
 }
 
@@ -254,6 +270,22 @@ EffectConfig EffectConfig::Load(const std::wstring& exeDir) {
         cfg.inputIndicator.offsetY = GetOr<int>(mi, "offset_y", cfg.inputIndicator.offsetY);
         cfg.inputIndicator.absoluteX = GetOr<int>(mi, "absolute_x", cfg.inputIndicator.absoluteX);
         cfg.inputIndicator.absoluteY = GetOr<int>(mi, "absolute_y", cfg.inputIndicator.absoluteY);
+        cfg.inputIndicator.targetMonitor = GetOr<std::string>(mi, "target_monitor", cfg.inputIndicator.targetMonitor);
+        cfg.inputIndicator.keyDisplayMode = GetOr<std::string>(mi, "key_display_mode", cfg.inputIndicator.keyDisplayMode);
+        
+        // Parse per-monitor overrides
+        if (mi.contains("per_monitor_overrides") && mi["per_monitor_overrides"].is_object()) {
+            for (auto& [key, val] : mi["per_monitor_overrides"].items()) {
+                if (val.is_object()) {
+                    PerMonitorPosOverride ov;
+                    ov.enabled = GetOr<bool>(val, "enabled", false);
+                    ov.absoluteX = GetOr<int>(val, "absolute_x", 40);
+                    ov.absoluteY = GetOr<int>(val, "absolute_y", 40);
+                    cfg.inputIndicator.perMonitorOverrides[key] = ov;
+                }
+            }
+        }
+
         cfg.inputIndicator.sizePx = GetOr<int>(mi, "size_px", cfg.inputIndicator.sizePx);
         cfg.inputIndicator.durationMs = GetOr<int>(mi, "duration_ms", cfg.inputIndicator.durationMs);
 
@@ -439,8 +471,17 @@ bool EffectConfig::Save(const std::wstring& exeDir, const EffectConfig& cfg) {
             {"offset_y", mi.offsetY},
             {"absolute_x", mi.absoluteX},
             {"absolute_y", mi.absoluteY},
+            {"target_monitor", mi.targetMonitor},
+            {"key_display_mode", mi.keyDisplayMode},
             {"size_px", mi.sizePx},
-            {"duration_ms", mi.durationMs}
+            {"duration_ms", mi.durationMs},
+            {"per_monitor_overrides", [&](){
+                json j = json::object();
+                for (const auto& [k, v] : mi.perMonitorOverrides) {
+                    j[k] = {{"enabled", v.enabled}, {"absolute_x", v.absoluteX}, {"absolute_y", v.absoluteY}};
+                }
+                return j;
+            }()}
         };
     }
 

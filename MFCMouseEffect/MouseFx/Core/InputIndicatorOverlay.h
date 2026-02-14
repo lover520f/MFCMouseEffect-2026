@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <cstdint>
+#include <map>
 #include <string>
 
 #include "EffectConfig.h"
@@ -37,12 +38,19 @@ private:
     LRESULT OnWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
     bool EnsureWindow();
-    void Trigger(IndicatorEventKind kind, POINT anchorPt, std::wstring label = {});
+    HWND CreateCloneWindow();
+    void Trigger(IndicatorEventKind kind, POINT anchorPt, std::wstring label = {}, bool isKeyboard = false);
+    void TriggerOnEnabledMonitors(IndicatorEventKind kind, POINT anchorPt, std::wstring label, bool isKeyboard);
     void Render();
-    void UpdatePlacement(POINT anchorPt);
+    void RenderToWindow(HWND hwnd);
+    void UpdatePlacement(POINT anchorPt, bool isKeyboard = false);
+    void UpdateClonePlacement(HWND hwnd, const std::string& monitorId, bool isKeyboard);
+    void SyncCloneWindows(bool isKeyboard);
+    void DestroyClones();
 
     static int ClampInt(int v, int lo, int hi);
     static bool IsRelativeMode(const std::string& mode);
+    bool IsCustomMode(bool isKeyboard) const;
 
 private:
     InputIndicatorConfig config_{};
@@ -63,7 +71,17 @@ private:
     uint64_t lastScrollTickMs_ = 0;
     int lastScrollDelta_ = 0;
 
+    // Key Streak
+    uint32_t lastKeyVkCode_ = 0;
+    uint32_t lastKeyModifiers_ = 0; // Packed modifiers
+    int keyStreak_ = 0;
+    uint64_t lastKeyTickMs_ = 0;
+
     std::wstring eventLabel_{};
+
+    // Multi-monitor clone windows (monitorId -> HWND)
+    std::map<std::string, HWND> cloneWindows_;
+    bool customModeActive_ = false;
 };
 
 } // namespace mousefx

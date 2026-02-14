@@ -667,6 +667,22 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
             if (o.contains("offset_y") && o["offset_y"].is_number_integer()) mi.offsetY = o["offset_y"].get<int>();
             if (o.contains("absolute_x") && o["absolute_x"].is_number_integer()) mi.absoluteX = o["absolute_x"].get<int>();
             if (o.contains("absolute_y") && o["absolute_y"].is_number_integer()) mi.absoluteY = o["absolute_y"].get<int>();
+            if (o.contains("target_monitor") && o["target_monitor"].is_string()) mi.targetMonitor = o["target_monitor"].get<std::string>();
+            if (o.contains("key_display_mode") && o["key_display_mode"].is_string()) mi.keyDisplayMode = o["key_display_mode"].get<std::string>();
+
+            if (o.contains("per_monitor_overrides") && o["per_monitor_overrides"].is_object()) {
+                mi.perMonitorOverrides.clear();
+                for (auto& [key, val] : o["per_monitor_overrides"].items()) {
+                    if (val.is_object()) {
+                        mousefx::PerMonitorPosOverride ov;
+                        if (val.contains("absolute_x") && val["absolute_x"].is_number_integer()) ov.absoluteX = val["absolute_x"].get<int>();
+                        if (val.contains("absolute_y") && val["absolute_y"].is_number_integer()) ov.absoluteY = val["absolute_y"].get<int>();
+                        if (val.contains("enabled") && val["enabled"].is_boolean()) ov.enabled = val["enabled"].get<bool>();
+                        mi.perMonitorOverrides[key] = ov;
+                    }
+                }
+            }
+
             if (o.contains("size_px") && o["size_px"].is_number_integer()) mi.sizePx = o["size_px"].get<int>();
             if (o.contains("duration_ms") && o["duration_ms"].is_number_integer()) mi.durationMs = o["duration_ms"].get<int>();
             SetInputIndicatorConfig(mi);
