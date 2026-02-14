@@ -1,7 +1,7 @@
 ; Reference: http://www.jrsoftware.org/ishelp/
 
 #define MyAppName "MFCMouseEffect"
-#define MyAppVersion "1.2.1"
+#define MyAppVersion "1.3.0"
 #define MyAppPublisher "ksun22515@gmail.com"
 #define MyAppURL "https://github.com/sqmw/MFCMouseEffect"
 #define MyAppExeName "MFCMouseEffect.exe"
@@ -32,6 +32,15 @@ DisableProgramGroupPage=yes
 ; Require administrative privileges for installation
 PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
+
+; Version Info
+VersionInfoVersion={#MyAppVersion}
+VersionInfoCompany={#MyAppPublisher}
+VersionInfoDescription={#MyAppName} Setup
+VersionInfoProductVersion={#MyAppVersion}
+VersionInfoCopyright=Copyright (C) 2026 {#MyAppPublisher}
+VersionInfoProductName={#MyAppName}
+
 OutputDir=Output
 OutputBaseFilename=MFCMouseEffect_{#MyAppVersion}_Setup_x64
 Compression=lzma
@@ -41,8 +50,8 @@ SetupIconFile=..\MFCMouseEffect\res\MFCMouseEffect.ico
 UsePreviousLanguage=yes
 ShowLanguageDialog=auto
 ; --- 64-bit Architecture Configuration ---
-ArchitecturesAllowed=x64
-ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 
 ; --- Close running instances automatically ---
 ; Do NOT use AppMutex here, otherwise Inno will prompt the user to close the app.
@@ -67,6 +76,9 @@ Source: "..\x64\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\x64\Release\config.json"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist skipifsourcedoesntexist
 ; Web UI (local server assets)
 Source: "..\x64\Release\webui\*"; DestDir: "{app}\webui"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
+; Runtime DLLs
+Source: "..\x64\Release\webgpu_dawn.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "..\x64\Release\d3dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 ; Docs + license (optional)
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
@@ -81,7 +93,7 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 
 [Registry]
 ; Optional: Add startup entry if selected
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\{#MyAppExeName}"" -mode tray"; Tasks: startup; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\{#MyAppExeName}"" -mode tray"; Tasks: startup; Flags: uninsdeletevalue
 
 [Code]
 function KillAppIfRunning(): Boolean;
