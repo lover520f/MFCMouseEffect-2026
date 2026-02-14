@@ -511,17 +511,11 @@ void InputIndicatorOverlay::UpdateClonePlacement(HWND targetHwnd, const std::str
     target.x = monRect.left + posX;
     target.y = monRect.top + posY;
 
-    // Clamp to monitor bounds
-    const int monW = monRect.right - monRect.left;
-    const int monH = monRect.bottom - monRect.top;
-    const int margin = 1;
-    if (monW > 0 && monH > 0) {
-        const int maxX = monRect.left + ((monW > config_.sizePx + margin) ? (monW - config_.sizePx - margin) : 0);
-        const int maxY = monRect.top + ((monH > config_.sizePx + margin) ? (monH - config_.sizePx - margin) : 0);
-        target.x = ClampInt(target.x, monRect.left + margin, maxX);
-        target.y = ClampInt(target.y, monRect.top + margin, maxY);
-    }
-
+    // Clamp to monitor bounds?
+    // User requested "allow negative/absolute" support.
+    // Removed strict clamping here as well to allow off-screen positioning if desired.
+    // The +/- 20000 limit in UpdateConfig prevents extreme values.
+    
     SetWindowPos(targetHwnd, HWND_TOPMOST, target.x, target.y,
                  config_.sizePx, config_.sizePx, SWP_NOACTIVATE);
 }
@@ -599,20 +593,19 @@ void InputIndicatorOverlay::UpdatePlacement(POINT anchorPt, bool isKeyboard) {
         target.y = monRect.top  + finalAbsY;
     }
 
-    // Clamp to target monitor bounds.
-    const RECT bounds = ResolveTargetMonitorBounds(monId, anchorPt);
-    const int monW = bounds.right  - bounds.left;
-    const int monH = bounds.bottom - bounds.top;
-    const int margin = 1;
-    if (monW > 0 && monH > 0) {
-        const int minX = bounds.left + margin;
-        const int minY = bounds.top  + margin;
-        const int maxX = bounds.left + ((monW > config_.sizePx + margin) ? (monW - config_.sizePx - margin) : 0);
-        const int maxY = bounds.top  + ((monH > config_.sizePx + margin) ? (monH - config_.sizePx - margin) : 0);
-        target.x = ClampInt(target.x, minX, maxX);
-        target.y = ClampInt(target.y, minY, maxY);
-    }
-
+    // Clamp to target monitor bounds? 
+    // User requested "allow negative/absolute" support. 
+    // We only prevent it from effectively disappearing if the coordinates are wild,
+    // but we honor the user's manual offset even if it pushes it off that specific monitor.
+    // The UpdateConfig limits (-20000 to 20000) prevent extreme overflow.
+    // So we basically trust target.x/y, but maybe ensure it's not effectively invisible?
+    // Actually, giving full control is best for "absolute" mode. 
+    // We just ensure it respects the 'don't exceed too much' by relying on the +/- 20000 config limit.
+    
+    // However, to keep it "compatible" and not strictly lost, let's just ensure
+    // we don't clamp strictly TO the monitor, but we don't apply extra clamping 
+    // beyond the config limits here.
+    
     SetWindowPos(hwnd_, HWND_TOPMOST, target.x, target.y, config_.sizePx, config_.sizePx, SWP_NOACTIVATE);
 }
 
