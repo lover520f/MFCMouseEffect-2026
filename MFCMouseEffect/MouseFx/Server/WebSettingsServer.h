@@ -31,13 +31,7 @@ public:
     void RotateToken();
 
 private:
-    std::string BuildSchemaJson() const;
-    std::string BuildStateJson() const;
-    std::string ApplyStateJson(const std::string& body);
-
     static std::string MakeToken();
-    static std::wstring ExeDirW();
-    static uint64_t NowMs();
     std::string TokenCopy() const;
     bool IsTokenValid(const std::string& token) const;
     void Touch();

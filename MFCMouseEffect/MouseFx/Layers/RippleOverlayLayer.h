@@ -42,7 +42,6 @@ private:
         bool continuous = false;
     };
 
-    static uint64_t NowMs();
     RippleInstance* FindById(uint64_t id);
     const RippleInstance* FindById(uint64_t id) const;
 

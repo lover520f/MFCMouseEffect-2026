@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TextWindow.h"
+#include "MouseFx/Utils/TimeUtils.h"
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -11,9 +12,6 @@ namespace mousefx {
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "dwrite.lib")
 
-static uint64_t NowMs() {
-    return GetTickCount64();
-}
 
 static float GetWindowDpi(HWND hwnd) {
     HMODULE user32 = GetModuleHandleW(L"user32.dll");

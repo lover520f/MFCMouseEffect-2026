@@ -2,6 +2,7 @@
 
 #include <string>
 #include "RippleStyle.h"
+#include "MouseFx/Utils/StringUtils.h"
 
 namespace mousefx {
 
@@ -21,7 +22,5 @@ RippleStyle MakeRandomStyle(const RippleStyle& base);
 // Generates a random vibrant color (alpha is preserved from input arg if needed, else full).
 Argb MakeRandomColor(uint8_t alpha = 255);
 
-// Helper to convert string to lower case ascii
-std::string ToLowerAscii(const std::string& s);
-
 } // namespace mousefx
+

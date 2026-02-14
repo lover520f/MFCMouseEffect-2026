@@ -2,6 +2,7 @@
 #include "ScrollEffect.h"
 #include "MouseFx/Core/OverlayHostService.h"
 #include "MouseFx/Styles/ThemeStyle.h"
+#include "MouseFx/Utils/TimeUtils.h"
 #include <algorithm>
 #include "MouseFx/Renderers/RendererRegistry.h"
 
@@ -15,9 +16,6 @@ static float Clamp01(float v) {
     return std::max(0.0f, std::min(1.0f, v));
 }
 
-static uint64_t NowMs() {
-    return GetTickCount64();
-}
 
 ScrollEffect::ScrollEffect(const std::string& themeName, const std::string& rendererName) 
     : currentRendererName_(rendererName) {

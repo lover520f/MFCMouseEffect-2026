@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "EffectConfig.h"
 #include "MouseFx/ThirdParty/json.hpp"
+#include "MouseFx/Utils/MathUtils.h"
+#include "MouseFx/Utils/StringUtils.h"
 
 #include <fstream>
 #include <sstream>
@@ -73,15 +75,8 @@ static std::string WStringToUtf8(const std::wstring& ws) {
     return out;
 }
 
-static std::string ToLowerAsciiLocal(std::string s) {
-    for (char& c : s) {
-        if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
-    }
-    return s;
-}
-
 static std::string NormalizeHoldFollowMode(std::string s) {
-    s = ToLowerAsciiLocal(s);
+    s = ToLowerAscii(s);
     if (s == "precise") return "precise";
     if (s == "efficient") return "efficient";
     return "smooth";
@@ -93,12 +88,6 @@ static TrailHistoryProfile SanitizeTrailHistoryProfile(TrailHistoryProfile p) {
     if (p.maxPoints < 2) p.maxPoints = 2;
     if (p.maxPoints > 240) p.maxPoints = 240;
     return p;
-}
-
-static float ClampFloat(float x, float lo, float hi) {
-    if (x < lo) return lo;
-    if (x > hi) return hi;
-    return x;
 }
 
 static TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig p) {
@@ -120,9 +109,6 @@ static TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig p
     return p;
 }
 
-static int ClampInt(int v, int lo, int hi) {
-    return (v < lo) ? lo : (v > hi) ? hi : v;
-}
 
 static InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig c) {
     c.positionMode = (c.positionMode == "absolute") ? "absolute" : "relative";
@@ -199,7 +185,7 @@ EffectConfig EffectConfig::GetDefault() {
 }
 
 TrailHistoryProfile EffectConfig::GetTrailHistoryProfile(const std::string& type) const {
-    std::string t = ToLowerAsciiLocal(type);
+    std::string t = ToLowerAscii(type);
     if (t == "scifi" || t == "sci-fi" || t == "sci_fi") t = "tubes";
 
     if (t == "electric") return SanitizeTrailHistoryProfile(trailProfiles.electric);

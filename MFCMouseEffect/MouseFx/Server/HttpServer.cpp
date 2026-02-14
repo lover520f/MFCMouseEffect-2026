@@ -10,26 +10,10 @@
 #include <cctype>
 #include <sstream>
 
+#include "MouseFx/Utils/StringUtils.h"
+
 namespace mousefx {
 
-static std::string ToLowerAscii(std::string s) {
-    for (char& c : s) {
-        if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
-    }
-    return s;
-}
-
-static std::string TrimAscii(std::string s) {
-    auto is_space = [](unsigned char ch) {
-        return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
-    };
-    size_t b = 0;
-    while (b < s.size() && is_space((unsigned char)s[b])) b++;
-    size_t e = s.size();
-    while (e > b && is_space((unsigned char)s[e - 1])) e--;
-    if (b == 0 && e == s.size()) return s;
-    return s.substr(b, e - b);
-}
 
 static std::string StatusText(int code) {
     switch (code) {

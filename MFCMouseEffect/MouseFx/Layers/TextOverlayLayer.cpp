@@ -2,15 +2,13 @@
 
 #include "TextOverlayLayer.h"
 #include "MouseFx/Core/OverlayCoordSpace.h"
+#include "MouseFx/Utils/TimeUtils.h"
 
 #include <algorithm>
 #include <cmath>
 
 namespace mousefx {
 
-uint64_t TextOverlayLayer::NowMs() {
-    return GetTickCount64();
-}
 
 float TextOverlayLayer::EaseOutCubic(float t) {
     float u = 1.0f - t;

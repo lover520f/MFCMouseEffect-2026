@@ -16,6 +16,9 @@
 
 namespace mousefx {
 
+class CommandHandler;
+class DispatchRouter;
+
 // Owns the subsystem lifecycle: message-only dispatcher, GDI+ init, hook, and effects.
 class AppController final {
 public:
@@ -80,19 +83,23 @@ public:
     // Reset settings to defaults
     void ResetConfig();
 
+    // --- Methods exposed for CommandHandler delegation ---
+    void PersistConfig();
+    void SetActiveEffectType(EffectCategory category, const std::string& type);
+    void ReloadConfigFromDisk();
+    std::string ResolveRuntimeEffectType(EffectCategory category, const std::string& requestedType, std::string* outReason) const;
+
+    friend class DispatchRouter;
+
 private:
     static LRESULT CALLBACK DispatchWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    LRESULT OnDispatchMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     bool CreateDispatchWindow();
     void DestroyDispatchWindow();
     
     // Factory method to create effect by category and type name.
     std::unique_ptr<IMouseEffect> CreateEffect(EffectCategory category, const std::string& type);
 
-    void PersistConfig();
-    void SetActiveEffectType(EffectCategory category, const std::string& type);
-    void ReloadConfigFromDisk();
-    std::string ResolveRuntimeEffectType(EffectCategory category, const std::string& requestedType, std::string* outReason) const;
+
     void NotifyGpuFallbackIfNeeded(const std::string& reason);
     void WriteGpuRouteStatusSnapshot(EffectCategory category, const std::string& requestedType, const std::string& effectiveType, const std::string& reason) const;
     void UpdateVmSuppressionState();
@@ -131,6 +138,8 @@ private:
     bool holdButtonDown_ = false;
     uint64_t holdDownTick_ = 0;
     bool gpuFallbackNotifiedThisSession_ = false;
+    std::unique_ptr<CommandHandler> commandHandler_;
+    std::unique_ptr<DispatchRouter> dispatchRouter_;
     InputIndicatorOverlay inputIndicatorOverlay_{};
     VmForegroundDetector vmForegroundDetector_{};
     bool vmEffectsSuppressed_ = false;

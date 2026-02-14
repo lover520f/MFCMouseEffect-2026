@@ -2,6 +2,7 @@
 
 #include "OverlayHostWindow.h"
 #include "MouseFx/Core/OverlayCoordSpace.h"
+#include "MouseFx/Utils/TimeUtils.h"
 
 #include <algorithm>
 #include <vector>
@@ -20,9 +21,6 @@ struct MonitorEnumState {
     std::vector<ScreenRect> rects{};
 };
 
-static uint64_t NowMs() {
-    return GetTickCount64();
-}
 
 BOOL CALLBACK EnumMonitorsProc(HMONITOR monitor, HDC, LPRECT, LPARAM data) {
     auto* state = reinterpret_cast<MonitorEnumState*>(data);

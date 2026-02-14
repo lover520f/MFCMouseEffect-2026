@@ -2,14 +2,12 @@
 
 #include "RippleOverlayLayer.h"
 #include "MouseFx/Core/OverlayCoordSpace.h"
+#include "MouseFx/Utils/TimeUtils.h"
 
 #include <algorithm>
 
 namespace mousefx {
 
-uint64_t RippleOverlayLayer::NowMs() {
-    return GetTickCount64();
-}
 
 uint64_t RippleOverlayLayer::ShowRipple(const ClickEvent& ev, const RippleStyle& style, std::unique_ptr<IRippleRenderer> renderer, const RenderParams& params) {
     if (!renderer) return 0;
