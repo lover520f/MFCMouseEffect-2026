@@ -118,6 +118,17 @@ void CommandHandler::HandleApplySettings(const std::string& jsonCmd) {
     // Active effects first (theme application recreates themed effects).
     bool activeChanged = false;
     if (p.contains("active") && p["active"].is_object()) {
+        struct ActiveSettingRoute {
+            EffectCategory category;
+            const char* key;
+        };
+        static constexpr std::array<ActiveSettingRoute, 5> kActiveSettingRoutes{{
+            {EffectCategory::Click, "click"},
+            {EffectCategory::Trail, "trail"},
+            {EffectCategory::Scroll, "scroll"},
+            {EffectCategory::Hold, "hold"},
+            {EffectCategory::Hover, "hover"},
+        }};
         auto applyActive = [&](EffectCategory category, const char* key) {
             const json& a = p["active"];
             if (!a.contains(key) || !a[key].is_string()) return;
@@ -135,11 +146,9 @@ void CommandHandler::HandleApplySettings(const std::string& jsonCmd) {
             activeChanged = true;
         };
 
-        applyActive(EffectCategory::Click, "click");
-        applyActive(EffectCategory::Trail, "trail");
-        applyActive(EffectCategory::Scroll, "scroll");
-        applyActive(EffectCategory::Hold, "hold");
-        applyActive(EffectCategory::Hover, "hover");
+        for (const auto& route : kActiveSettingRoutes) {
+            applyActive(route.category, route.key);
+        }
     }
     if (activeChanged) {
         controller_->PersistConfig();

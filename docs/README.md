@@ -71,6 +71,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Refactoring: `docs/refactoring/phase11-commandhandler-encoding-cleanup.md` (remove non-ASCII source character causing `C4819` warning in default code-page builds)
 - Refactoring: `docs/refactoring/phase12-theme-reapply-metadata.md` (move theme-reapply category selection into active-category metadata to avoid hard-coded method branching)
 - Refactoring: `docs/refactoring/phase13-commandhandler-command-routing-table.md` (replace `CommandHandler::Handle` if/else chain with command routing table and dedicated per-command handlers)
+- Refactoring: `docs/refactoring/phase14-apply-settings-active-route-table.md` (replace hard-coded apply-settings active effect calls with category/key route table iteration)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.
