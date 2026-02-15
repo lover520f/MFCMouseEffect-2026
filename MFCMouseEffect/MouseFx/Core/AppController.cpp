@@ -47,6 +47,19 @@ static std::string NormalizeHoldEffectTypeAlias(const std::string& type) {
     return type;
 }
 
+struct ActiveCategoryDescriptor {
+    EffectCategory category;
+    std::string ActiveEffectConfig::*slot;
+};
+
+constexpr std::array<ActiveCategoryDescriptor, 5> kActiveCategoryDescriptors{{
+    {EffectCategory::Click, &ActiveEffectConfig::click},
+    {EffectCategory::Trail, &ActiveEffectConfig::trail},
+    {EffectCategory::Scroll, &ActiveEffectConfig::scroll},
+    {EffectCategory::Hold, &ActiveEffectConfig::hold},
+    {EffectCategory::Hover, &ActiveEffectConfig::hover},
+}};
+
 
 AppController::AppController()
     : commandHandler_(std::make_unique<CommandHandler>(this))
@@ -156,13 +169,8 @@ void AppController::WriteGpuRouteStatusSnapshot(
 }
 
 void AppController::SetActiveEffectType(EffectCategory category, const std::string& type) {
-    switch (category) {
-        case EffectCategory::Click: config_.active.click = type; break;
-        case EffectCategory::Trail: config_.active.trail = type; break;
-        case EffectCategory::Scroll: config_.active.scroll = type; break;
-        case EffectCategory::Hover: config_.active.hover = type; break;
-        case EffectCategory::Hold: config_.active.hold = type; break;
-        default: break;
+    if (auto* slot = MutableActiveTypeForCategory(category); slot != nullptr) {
+        *slot = type;
     }
 }
 
@@ -371,6 +379,16 @@ std::unique_ptr<IMouseEffect> AppController::CreateEffect(EffectCategory categor
     return EffectFactory::Create(category, type, config_);
 }
 
+std::string* AppController::MutableActiveTypeForCategory(EffectCategory category) {
+    for (const auto& descriptor : kActiveCategoryDescriptors) {
+        if (descriptor.category != category) {
+            continue;
+        }
+        return &(config_.active.*(descriptor.slot));
+    }
+    return nullptr;
+}
+
 std::string AppController::ResolveConfiguredClickType() const {
     if (!config_.active.click.empty()) {
         return config_.active.click;
@@ -382,32 +400,27 @@ std::string AppController::ResolveConfiguredClickType() const {
 }
 
 void AppController::ApplyConfiguredEffects() {
-    SetEffect(EffectCategory::Click, ResolveConfiguredClickType());
-    SetEffect(EffectCategory::Trail, config_.active.trail);
-    SetEffect(EffectCategory::Scroll, config_.active.scroll);
-    SetEffect(EffectCategory::Hold, config_.active.hold);
-    SetEffect(EffectCategory::Hover, config_.active.hover);
+    for (const auto& descriptor : kActiveCategoryDescriptors) {
+        const std::string requestedType =
+            (descriptor.category == EffectCategory::Click)
+                ? ResolveConfiguredClickType()
+                : (config_.active.*(descriptor.slot));
+        SetEffect(descriptor.category, requestedType);
+    }
 }
 
 bool AppController::NormalizeActiveEffectTypes() {
     bool normalizedChanged = false;
-    auto normalizeActive = [&](EffectCategory category, std::string* slot) {
-        if (!slot) {
-            return;
-        }
+    for (const auto& descriptor : kActiveCategoryDescriptors) {
+        std::string& slot = config_.active.*(descriptor.slot);
         std::string reason;
-        const std::string effective = ResolveRuntimeEffectType(category, *slot, &reason);
-        if (*slot == effective) {
-            return;
+        const std::string effective = ResolveRuntimeEffectType(descriptor.category, slot, &reason);
+        if (slot == effective) {
+            continue;
         }
-        *slot = effective;
+        slot = effective;
         normalizedChanged = true;
-    };
-    normalizeActive(EffectCategory::Click, &config_.active.click);
-    normalizeActive(EffectCategory::Trail, &config_.active.trail);
-    normalizeActive(EffectCategory::Scroll, &config_.active.scroll);
-    normalizeActive(EffectCategory::Hold, &config_.active.hold);
-    normalizeActive(EffectCategory::Hover, &config_.active.hover);
+    }
     return normalizedChanged;
 }
 
@@ -527,11 +540,7 @@ void AppController::ResetConfig() {
     PersistConfig();
 
     // 3. Re-apply everything
-    SetEffect(EffectCategory::Click, config_.active.click);
-    SetEffect(EffectCategory::Trail, config_.active.trail);
-    SetEffect(EffectCategory::Scroll, config_.active.scroll);
-    SetEffect(EffectCategory::Hold, config_.active.hold);
-    SetEffect(EffectCategory::Hover, config_.active.hover);
+    ApplyConfiguredEffects();
     inputIndicatorOverlay_.UpdateConfig(config_.inputIndicator);
     
     // Theme/Language rely on being pulled by UI or re-applied if needed?
