@@ -379,6 +379,16 @@ std::unique_ptr<IMouseEffect> AppController::CreateEffect(EffectCategory categor
     return EffectFactory::Create(category, type, config_);
 }
 
+const std::string* AppController::ActiveTypeForCategory(EffectCategory category) const {
+    for (const auto& descriptor : kActiveCategoryDescriptors) {
+        if (descriptor.category != category) {
+            continue;
+        }
+        return &(config_.active.*(descriptor.slot));
+    }
+    return nullptr;
+}
+
 std::string* AppController::MutableActiveTypeForCategory(EffectCategory category) {
     for (const auto& descriptor : kActiveCategoryDescriptors) {
         if (descriptor.category != category) {
@@ -387,6 +397,23 @@ std::string* AppController::MutableActiveTypeForCategory(EffectCategory category
         return &(config_.active.*(descriptor.slot));
     }
     return nullptr;
+}
+
+bool AppController::IsActiveEffectEnabled(EffectCategory category) const {
+    const std::string* activeType = ActiveTypeForCategory(category);
+    return (activeType != nullptr && !activeType->empty() && *activeType != "none");
+}
+
+void AppController::ReapplyActiveEffect(EffectCategory category) {
+    if (category == EffectCategory::Click) {
+        SetEffect(category, ResolveConfiguredClickType());
+        return;
+    }
+    const std::string* activeType = ActiveTypeForCategory(category);
+    if (activeType == nullptr) {
+        return;
+    }
+    SetEffect(category, *activeType);
 }
 
 std::string AppController::ResolveConfiguredClickType() const {
@@ -465,9 +492,9 @@ void AppController::SetTheme(const std::string& theme) {
     if (theme.empty()) return;
     config_.theme = theme;
     // Re-create themed effects to pick up new palette.
-    SetEffect(EffectCategory::Scroll, config_.active.scroll);
-    SetEffect(EffectCategory::Hold, config_.active.hold);
-    SetEffect(EffectCategory::Hover, config_.active.hover);
+    ReapplyActiveEffect(EffectCategory::Scroll);
+    ReapplyActiveEffect(EffectCategory::Hold);
+    ReapplyActiveEffect(EffectCategory::Hover);
     PersistConfig();
 }
 
@@ -484,11 +511,9 @@ void AppController::SetTextEffectContent(const std::vector<std::wstring>& texts)
     // unless we want to refresh its internal pool immediately.
     // TextEffect::Initialize() builds the pool.
     // We should probably re-initialize the text effect if it's active.
-    if (auto* effect = GetEffect(EffectCategory::Click)) {
-        // Simple way: re-set it to trigger re-init
-        if (config_.active.click == "text") {
-            SetEffect(EffectCategory::Click, "text");
-        }
+    // Simple way: re-set it to trigger re-init.
+    if (config_.active.click == "text") {
+        SetEffect(EffectCategory::Click, "text");
     }
 }
 
@@ -497,10 +522,8 @@ void AppController::SetTextEffectFontSize(float sizePt) {
     if (std::fabs(config_.textClick.fontSize - clamped) < 0.01f) return;
     config_.textClick.fontSize = clamped;
     PersistConfig();
-    if (auto* effect = GetEffect(EffectCategory::Click)) {
-        if (config_.active.click == "text") {
-            SetEffect(EffectCategory::Click, "text");
-        }
+    if (config_.active.click == "text") {
+        SetEffect(EffectCategory::Click, "text");
     }
 }
 
@@ -515,8 +538,8 @@ void AppController::SetHoldFollowMode(const std::string& mode) {
     if (config_.holdFollowMode == normalized) return;
     config_.holdFollowMode = normalized;
     PersistConfig();
-    if (!config_.active.hold.empty() && config_.active.hold != "none") {
-        SetEffect(EffectCategory::Hold, config_.active.hold);
+    if (IsActiveEffectEnabled(EffectCategory::Hold)) {
+        ReapplyActiveEffect(EffectCategory::Hold);
     }
 }
 
@@ -527,8 +550,8 @@ void AppController::SetTrailTuning(const std::string& style, const TrailProfiles
     PersistConfig();
 
     // Recreate current trail effect to apply immediately (if any).
-    if (!config_.active.trail.empty() && config_.active.trail != "none") {
-        SetEffect(EffectCategory::Trail, config_.active.trail);
+    if (IsActiveEffectEnabled(EffectCategory::Trail)) {
+        ReapplyActiveEffect(EffectCategory::Trail);
     }
 }
 

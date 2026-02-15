@@ -120,7 +120,10 @@ private:
     
     // Factory method to create effect by category and type name.
     std::unique_ptr<IMouseEffect> CreateEffect(EffectCategory category, const std::string& type);
+    const std::string* ActiveTypeForCategory(EffectCategory category) const;
     std::string* MutableActiveTypeForCategory(EffectCategory category);
+    bool IsActiveEffectEnabled(EffectCategory category) const;
+    void ReapplyActiveEffect(EffectCategory category);
     std::string ResolveConfiguredClickType() const;
     void ApplyConfiguredEffects();
     bool NormalizeActiveEffectTypes();
