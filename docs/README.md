@@ -68,6 +68,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Refactoring: `docs/refactoring/phase8-appcontroller-config-activation-dedup.md` (deduplicate active-effect apply/normalize flow between startup and reload paths)
 - Refactoring: `docs/refactoring/phase9-appcontroller-active-category-table.md` (use a single active-category descriptor table to remove repeated per-category branching in `AppController`)
 - Refactoring: `docs/refactoring/phase10-appcontroller-reapply-helpers.md` (centralize active-slot lookup/enabled-check/reapply helpers and reuse them across config-update paths)
+- Refactoring: `docs/refactoring/phase11-commandhandler-encoding-cleanup.md` (remove non-ASCII source character causing `C4819` warning in default code-page builds)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

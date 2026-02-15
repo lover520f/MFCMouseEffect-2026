@@ -1,4 +1,4 @@
-// CommandHandler.cpp — JSON command routing extracted from AppController
+// CommandHandler.cpp - JSON command routing extracted from AppController
 
 #include "pch.h"
 #include "CommandHandler.h"
