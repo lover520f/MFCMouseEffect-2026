@@ -305,6 +305,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Effects\HoldQuantumHaloGpuV2DirectRuntime.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Neon3D\Neon3DFx.cpp" />
     <ClCompile Include="MouseFx\Core\CommandHandler.cpp" />
+    <ClCompile Include="MouseFx\Core\CommandHandler.ApplySettings.cpp" />
     <ClCompile Include="MouseFx\Core\GpuProbeHelper.cpp" />
     <ClCompile Include="MouseFx\Core\DispatchRouter.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleBasedHoldRuntime.cpp" />
