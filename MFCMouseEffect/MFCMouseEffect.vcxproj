@@ -285,6 +285,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="UI\DocView\MFCMouseEffectDoc.cpp" />
     <ClCompile Include="UI\DocView\MFCMouseEffectView.cpp" />
     <ClCompile Include="MouseFx\Core\AppController.cpp" />
+    <ClCompile Include="MouseFx\Core\AppController.ConfigUpdates.cpp" />
     <ClCompile Include="MouseFx\Core\ConfigPathResolver.cpp" />
     <ClCompile Include="MouseFx\Core\EffectFactory.cpp" />
     <ClCompile Include="MouseFx\Core\OverlayCoordSpace.cpp" />
