@@ -257,6 +257,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Effects\HoverEffect.h" />
     <ClInclude Include="MouseFx\Core\EffectConfig.h" />
     <ClInclude Include="MouseFx\Core\EffectConfigInternal.h" />
+    <ClInclude Include="MouseFx\Core\EffectConfigJsonCodec.h" />
     <ClInclude Include="MouseFx\Utils\MonitorUtils.h" />
     <ClInclude Include="MouseFx\ThirdParty\json.hpp" />
     <ClInclude Include="UI\Settings\SettingsWnd.h" />
@@ -329,6 +330,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Effects\HoldEffect.cpp" />
     <ClCompile Include="MouseFx\Effects\HoverEffect.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfig.Internal.cpp" />
+    <ClCompile Include="MouseFx\Core\EffectConfigJsonCodec.Parse.cpp" />
+    <ClCompile Include="MouseFx\Core\EffectConfigJsonCodec.Serialize.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfig.Load.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfig.Save.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfig.cpp" />
