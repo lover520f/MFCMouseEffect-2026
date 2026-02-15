@@ -16,6 +16,13 @@ public:
     void Handle(const std::string& jsonCmd);
 
 private:
+    void HandleSetEffectCommand(const std::string& jsonCmd);
+    void HandleClearEffectCommand(const std::string& jsonCmd);
+    void HandleSetThemeCommand(const std::string& jsonCmd);
+    void HandleSetUiLanguageCommand(const std::string& jsonCmd);
+    void HandleEffectCommand(const std::string& jsonCmd);
+    void HandleReloadConfigCommand(const std::string& jsonCmd);
+    void HandleResetConfigCommand(const std::string& jsonCmd);
     void HandleApplySettings(const std::string& jsonCmd);
 
     AppController* controller_ = nullptr;

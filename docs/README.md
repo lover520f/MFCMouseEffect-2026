@@ -70,6 +70,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Refactoring: `docs/refactoring/phase10-appcontroller-reapply-helpers.md` (centralize active-slot lookup/enabled-check/reapply helpers and reuse them across config-update paths)
 - Refactoring: `docs/refactoring/phase11-commandhandler-encoding-cleanup.md` (remove non-ASCII source character causing `C4819` warning in default code-page builds)
 - Refactoring: `docs/refactoring/phase12-theme-reapply-metadata.md` (move theme-reapply category selection into active-category metadata to avoid hard-coded method branching)
+- Refactoring: `docs/refactoring/phase13-commandhandler-command-routing-table.md` (replace `CommandHandler::Handle` if/else chain with command routing table and dedicated per-command handlers)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.
