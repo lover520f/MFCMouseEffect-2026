@@ -75,6 +75,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Refactoring: `docs/refactoring/phase15-input-indicator-payload-dedup.md` (deduplicate input-indicator payload parsing across new/legacy schema branches while preserving legacy scope)
 - Refactoring: `docs/refactoring/phase16-trail-profile-route-table.md` (replace manual trail profile apply calls with route-table iteration in apply_settings parsing)
 - Refactoring: `docs/refactoring/phase17-commandhandler-applysettings-file-split.md` (split `CommandHandler` into routing file and dedicated `apply_settings` parsing file to reduce per-file complexity)
+- Refactoring: `docs/refactoring/phase18-applysettings-helper-extraction.md` (extract focused helper functions from `HandleApplySettings` while keeping payload processing order unchanged)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.
