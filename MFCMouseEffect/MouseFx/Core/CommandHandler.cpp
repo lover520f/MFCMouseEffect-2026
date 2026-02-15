@@ -255,11 +255,23 @@ void CommandHandler::HandleApplySettings(const std::string& jsonCmd) {
         }
     };
 
-    applyProfile("line", profiles.line);
-    applyProfile("streamer", profiles.streamer);
-    applyProfile("electric", profiles.electric);
-    applyProfile("meteor", profiles.meteor);
-    applyProfile("tubes", profiles.tubes);
+    struct TrailProfileRoute {
+        const char* key;
+        TrailHistoryProfile* profile;
+    };
+    const std::array<TrailProfileRoute, 5> trailProfileRoutes{{
+        {"line", &profiles.line},
+        {"streamer", &profiles.streamer},
+        {"electric", &profiles.electric},
+        {"meteor", &profiles.meteor},
+        {"tubes", &profiles.tubes},
+    }};
+    for (const auto& route : trailProfileRoutes) {
+        if (!route.profile) {
+            continue;
+        }
+        applyProfile(route.key, *route.profile);
+    }
 
     if (p.contains("trail_params") && p["trail_params"].is_object()) {
         const json& k = p["trail_params"];
