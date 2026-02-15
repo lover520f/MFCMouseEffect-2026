@@ -50,14 +50,15 @@ static std::string NormalizeHoldEffectTypeAlias(const std::string& type) {
 struct ActiveCategoryDescriptor {
     EffectCategory category;
     std::string ActiveEffectConfig::*slot;
+    bool themeSensitive = false;
 };
 
 constexpr std::array<ActiveCategoryDescriptor, 5> kActiveCategoryDescriptors{{
-    {EffectCategory::Click, &ActiveEffectConfig::click},
-    {EffectCategory::Trail, &ActiveEffectConfig::trail},
-    {EffectCategory::Scroll, &ActiveEffectConfig::scroll},
-    {EffectCategory::Hold, &ActiveEffectConfig::hold},
-    {EffectCategory::Hover, &ActiveEffectConfig::hover},
+    {EffectCategory::Click, &ActiveEffectConfig::click, false},
+    {EffectCategory::Trail, &ActiveEffectConfig::trail, false},
+    {EffectCategory::Scroll, &ActiveEffectConfig::scroll, true},
+    {EffectCategory::Hold, &ActiveEffectConfig::hold, true},
+    {EffectCategory::Hover, &ActiveEffectConfig::hover, true},
 }};
 
 
@@ -492,9 +493,12 @@ void AppController::SetTheme(const std::string& theme) {
     if (theme.empty()) return;
     config_.theme = theme;
     // Re-create themed effects to pick up new palette.
-    ReapplyActiveEffect(EffectCategory::Scroll);
-    ReapplyActiveEffect(EffectCategory::Hold);
-    ReapplyActiveEffect(EffectCategory::Hover);
+    for (const auto& descriptor : kActiveCategoryDescriptors) {
+        if (!descriptor.themeSensitive) {
+            continue;
+        }
+        ReapplyActiveEffect(descriptor.category);
+    }
     PersistConfig();
 }
 
