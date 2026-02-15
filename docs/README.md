@@ -72,6 +72,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Refactoring: `docs/refactoring/phase12-theme-reapply-metadata.md` (move theme-reapply category selection into active-category metadata to avoid hard-coded method branching)
 - Refactoring: `docs/refactoring/phase13-commandhandler-command-routing-table.md` (replace `CommandHandler::Handle` if/else chain with command routing table and dedicated per-command handlers)
 - Refactoring: `docs/refactoring/phase14-apply-settings-active-route-table.md` (replace hard-coded apply-settings active effect calls with category/key route table iteration)
+- Refactoring: `docs/refactoring/phase15-input-indicator-payload-dedup.md` (deduplicate input-indicator payload parsing across new/legacy schema branches while preserving legacy scope)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

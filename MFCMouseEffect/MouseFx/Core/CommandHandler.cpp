@@ -178,48 +178,50 @@ void CommandHandler::HandleApplySettings(const std::string& jsonCmd) {
         controller_->SetTextEffectFontSize(p["text_font_size"].get<float>());
     }
 
-    if (p.contains("input_indicator") && p["input_indicator"].is_object()) {
-        InputIndicatorConfig mi = controller_->Config().inputIndicator;
-        const json& o = p["input_indicator"];
-        if (o.contains("enabled") && o["enabled"].is_boolean()) mi.enabled = o["enabled"].get<bool>();
-        if (o.contains("keyboard_enabled") && o["keyboard_enabled"].is_boolean()) mi.keyboardEnabled = o["keyboard_enabled"].get<bool>();
-        if (o.contains("position_mode") && o["position_mode"].is_string()) mi.positionMode = o["position_mode"].get<std::string>();
-        if (o.contains("offset_x") && o["offset_x"].is_number_integer()) mi.offsetX = o["offset_x"].get<int>();
-        if (o.contains("offset_y") && o["offset_y"].is_number_integer()) mi.offsetY = o["offset_y"].get<int>();
-        if (o.contains("absolute_x") && o["absolute_x"].is_number_integer()) mi.absoluteX = o["absolute_x"].get<int>();
-        if (o.contains("absolute_y") && o["absolute_y"].is_number_integer()) mi.absoluteY = o["absolute_y"].get<int>();
-        if (o.contains("target_monitor") && o["target_monitor"].is_string()) mi.targetMonitor = o["target_monitor"].get<std::string>();
-        if (o.contains("key_display_mode") && o["key_display_mode"].is_string()) mi.keyDisplayMode = o["key_display_mode"].get<std::string>();
-
-        if (o.contains("per_monitor_overrides") && o["per_monitor_overrides"].is_object()) {
-            mi.perMonitorOverrides.clear();
-            for (auto& [key, val] : o["per_monitor_overrides"].items()) {
-                if (val.is_object()) {
-                    mousefx::PerMonitorPosOverride ov;
-                    if (val.contains("absolute_x") && val["absolute_x"].is_number_integer()) ov.absoluteX = val["absolute_x"].get<int>();
-                    if (val.contains("absolute_y") && val["absolute_y"].is_number_integer()) ov.absoluteY = val["absolute_y"].get<int>();
-                    if (val.contains("enabled") && val["enabled"].is_boolean()) ov.enabled = val["enabled"].get<bool>();
-                    mi.perMonitorOverrides[key] = ov;
-                }
-            }
+    auto applyInputIndicatorFields = [&](const json& o, InputIndicatorConfig* dst, bool includeAdvancedFields) {
+        if (!dst) {
+            return;
         }
 
-        if (o.contains("size_px") && o["size_px"].is_number_integer()) mi.sizePx = o["size_px"].get<int>();
-        if (o.contains("duration_ms") && o["duration_ms"].is_number_integer()) mi.durationMs = o["duration_ms"].get<int>();
+        if (o.contains("enabled") && o["enabled"].is_boolean()) dst->enabled = o["enabled"].get<bool>();
+        if (o.contains("keyboard_enabled") && o["keyboard_enabled"].is_boolean()) dst->keyboardEnabled = o["keyboard_enabled"].get<bool>();
+        if (o.contains("position_mode") && o["position_mode"].is_string()) dst->positionMode = o["position_mode"].get<std::string>();
+        if (o.contains("offset_x") && o["offset_x"].is_number_integer()) dst->offsetX = o["offset_x"].get<int>();
+        if (o.contains("offset_y") && o["offset_y"].is_number_integer()) dst->offsetY = o["offset_y"].get<int>();
+        if (o.contains("absolute_x") && o["absolute_x"].is_number_integer()) dst->absoluteX = o["absolute_x"].get<int>();
+        if (o.contains("absolute_y") && o["absolute_y"].is_number_integer()) dst->absoluteY = o["absolute_y"].get<int>();
+        if (o.contains("size_px") && o["size_px"].is_number_integer()) dst->sizePx = o["size_px"].get<int>();
+        if (o.contains("duration_ms") && o["duration_ms"].is_number_integer()) dst->durationMs = o["duration_ms"].get<int>();
+
+        if (!includeAdvancedFields) {
+            return;
+        }
+
+        if (o.contains("target_monitor") && o["target_monitor"].is_string()) dst->targetMonitor = o["target_monitor"].get<std::string>();
+        if (o.contains("key_display_mode") && o["key_display_mode"].is_string()) dst->keyDisplayMode = o["key_display_mode"].get<std::string>();
+        if (o.contains("per_monitor_overrides") && o["per_monitor_overrides"].is_object()) {
+            dst->perMonitorOverrides.clear();
+            for (auto& [key, val] : o["per_monitor_overrides"].items()) {
+                if (!val.is_object()) {
+                    continue;
+                }
+                mousefx::PerMonitorPosOverride ov;
+                if (val.contains("absolute_x") && val["absolute_x"].is_number_integer()) ov.absoluteX = val["absolute_x"].get<int>();
+                if (val.contains("absolute_y") && val["absolute_y"].is_number_integer()) ov.absoluteY = val["absolute_y"].get<int>();
+                if (val.contains("enabled") && val["enabled"].is_boolean()) ov.enabled = val["enabled"].get<bool>();
+                dst->perMonitorOverrides[key] = ov;
+            }
+        }
+    };
+
+    if (p.contains("input_indicator") && p["input_indicator"].is_object()) {
+        InputIndicatorConfig mi = controller_->Config().inputIndicator;
+        applyInputIndicatorFields(p["input_indicator"], &mi, true);
         controller_->SetInputIndicatorConfig(mi);
     } else if (p.contains("mouse_indicator") && p["mouse_indicator"].is_object()) {
         // Legacy fallback
         InputIndicatorConfig mi = controller_->Config().inputIndicator;
-        const json& o = p["mouse_indicator"];
-        if (o.contains("enabled") && o["enabled"].is_boolean()) mi.enabled = o["enabled"].get<bool>();
-        if (o.contains("keyboard_enabled") && o["keyboard_enabled"].is_boolean()) mi.keyboardEnabled = o["keyboard_enabled"].get<bool>();
-        if (o.contains("position_mode") && o["position_mode"].is_string()) mi.positionMode = o["position_mode"].get<std::string>();
-        if (o.contains("offset_x") && o["offset_x"].is_number_integer()) mi.offsetX = o["offset_x"].get<int>();
-        if (o.contains("offset_y") && o["offset_y"].is_number_integer()) mi.offsetY = o["offset_y"].get<int>();
-        if (o.contains("absolute_x") && o["absolute_x"].is_number_integer()) mi.absoluteX = o["absolute_x"].get<int>();
-        if (o.contains("absolute_y") && o["absolute_y"].is_number_integer()) mi.absoluteY = o["absolute_y"].get<int>();
-        if (o.contains("size_px") && o["size_px"].is_number_integer()) mi.sizePx = o["size_px"].get<int>();
-        if (o.contains("duration_ms") && o["duration_ms"].is_number_integer()) mi.durationMs = o["duration_ms"].get<int>();
+        applyInputIndicatorFields(p["mouse_indicator"], &mi, false);
         controller_->SetInputIndicatorConfig(mi);
     }
 
