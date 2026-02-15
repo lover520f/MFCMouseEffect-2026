@@ -18,6 +18,7 @@
 
 #include <new>
 #include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM
+#include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <filesystem>
@@ -165,6 +166,130 @@ void AppController::SetActiveEffectType(EffectCategory category, const std::stri
     }
 }
 
+void AppController::OnDispatchActivity(UINT msg, WPARAM wParam) {
+    const bool isMouseInputMsg =
+        (msg == WM_MFX_CLICK || msg == WM_MFX_MOVE || msg == WM_MFX_SCROLL ||
+         msg == WM_MFX_BUTTON_DOWN || msg == WM_MFX_BUTTON_UP || msg == WM_MFX_KEY);
+    const bool isStateTimerMsg =
+        (msg == WM_TIMER && (wParam == kHoverTimerId || wParam == kHoldTimerId));
+    if (isMouseInputMsg || isStateTimerMsg) {
+        UpdateVmSuppressionState();
+    }
+
+    if (!isMouseInputMsg) {
+        return;
+    }
+
+    lastInputTime_ = GetTickCount64();
+    if (!hovering_) {
+        return;
+    }
+
+    hovering_ = false;
+    if (auto* effect = GetEffect(EffectCategory::Hover)) {
+        effect->OnHoverEnd();
+    }
+}
+
+bool AppController::ConsumeIgnoreNextClick() {
+    if (!ignoreNextClick_) {
+        return false;
+    }
+    ignoreNextClick_ = false;
+    return true;
+}
+
+bool AppController::ConsumeLatestMove(POINT* outPt) {
+    if (!outPt) {
+        return false;
+    }
+    return hook_.ConsumeLatestMove(*outPt);
+}
+
+DWORD AppController::CurrentHoldDurationMs() const {
+    if (!holdButtonDown_ || holdDownTick_ == 0) {
+        return 0;
+    }
+
+    const uint64_t now = GetTickCount64();
+    const uint64_t delta = (now >= holdDownTick_) ? (now - holdDownTick_) : 0;
+    return static_cast<DWORD>(std::min<uint64_t>(delta, 0xFFFFFFFFu));
+}
+
+void AppController::BeginHoldTracking(const POINT& pt, int button) {
+    holdButtonDown_ = true;
+    holdDownTick_ = GetTickCount64();
+    pendingHold_.pt = pt;
+    pendingHold_.button = button;
+    pendingHold_.active = true;
+    ignoreNextClick_ = false;
+}
+
+void AppController::EndHoldTracking() {
+    holdButtonDown_ = false;
+    holdDownTick_ = 0;
+}
+
+void AppController::ClearPendingHold() {
+    pendingHold_.active = false;
+}
+
+void AppController::CancelPendingHold(HWND hwnd) {
+    if (!pendingHold_.active) {
+        return;
+    }
+    KillTimer(hwnd, kHoldTimerId);
+    pendingHold_.active = false;
+}
+
+bool AppController::ConsumePendingHold(POINT* outPt, int* outButton) {
+    if (!pendingHold_.active) {
+        return false;
+    }
+    if (outPt) {
+        *outPt = pendingHold_.pt;
+    }
+    if (outButton) {
+        *outButton = pendingHold_.button;
+    }
+    pendingHold_.active = false;
+    return true;
+}
+
+void AppController::MarkIgnoreNextClick() {
+    ignoreNextClick_ = true;
+}
+
+bool AppController::TryEnterHover(POINT* outPt) {
+    if (hovering_) {
+        return false;
+    }
+
+    const uint64_t elapsed = GetTickCount64() - lastInputTime_;
+    if (elapsed < kHoverThresholdMs) {
+        return false;
+    }
+
+    hovering_ = true;
+    if (outPt) {
+        GetCursorPos(outPt);
+    }
+    return true;
+}
+
+#ifdef _DEBUG
+void AppController::LogDebugClick(const ClickEvent& ev) {
+    if (debugClickCount_ >= 5) {
+        return;
+    }
+    debugClickCount_++;
+    wchar_t buf[256]{};
+    wsprintfW(buf, L"MouseFx: click received (%u) pt=(%ld,%ld) button=%u\n",
+        debugClickCount_, ev.pt.x, ev.pt.y, static_cast<unsigned>(ev.button));
+    OutputDebugStringW(buf);
+}
+#endif
+
 bool AppController::Start() {
     if (dispatchHwnd_) return true;
     diag_ = {};
@@ -194,32 +319,10 @@ bool AppController::Start() {
 
     // Initialize effects with defaults
     diag_.stage = StartStage::EffectInit;
-    const std::string clickType = config_.active.click.empty()
-        ? (config_.defaultEffect.empty() ? "ripple" : config_.defaultEffect)
-        : config_.active.click;
-    SetEffect(EffectCategory::Click, clickType);
-    SetEffect(EffectCategory::Trail, config_.active.trail);
-    SetEffect(EffectCategory::Scroll, config_.active.scroll);
-    SetEffect(EffectCategory::Hold, config_.active.hold);
-    SetEffect(EffectCategory::Hover, config_.active.hover);
+    ApplyConfiguredEffects();
     inputIndicatorOverlay_.UpdateConfig(config_.inputIndicator);
 
-    bool normalizedChanged = false;
-    auto normalizeActive = [&](EffectCategory category, std::string* slot) {
-        if (!slot) return;
-        std::string reason;
-        const std::string effective = ResolveRuntimeEffectType(category, *slot, &reason);
-        if (*slot != effective) {
-            *slot = effective;
-            normalizedChanged = true;
-        }
-    };
-    normalizeActive(EffectCategory::Click, &config_.active.click);
-    normalizeActive(EffectCategory::Trail, &config_.active.trail);
-    normalizeActive(EffectCategory::Scroll, &config_.active.scroll);
-    normalizeActive(EffectCategory::Hold, &config_.active.hold);
-    normalizeActive(EffectCategory::Hover, &config_.active.hover);
-    if (normalizedChanged) {
+    if (NormalizeActiveEffectTypes()) {
         PersistConfig();
     }
 
@@ -266,6 +369,46 @@ void AppController::Stop() {
 
 std::unique_ptr<IMouseEffect> AppController::CreateEffect(EffectCategory category, const std::string& type) {
     return EffectFactory::Create(category, type, config_);
+}
+
+std::string AppController::ResolveConfiguredClickType() const {
+    if (!config_.active.click.empty()) {
+        return config_.active.click;
+    }
+    if (!config_.defaultEffect.empty()) {
+        return config_.defaultEffect;
+    }
+    return "ripple";
+}
+
+void AppController::ApplyConfiguredEffects() {
+    SetEffect(EffectCategory::Click, ResolveConfiguredClickType());
+    SetEffect(EffectCategory::Trail, config_.active.trail);
+    SetEffect(EffectCategory::Scroll, config_.active.scroll);
+    SetEffect(EffectCategory::Hold, config_.active.hold);
+    SetEffect(EffectCategory::Hover, config_.active.hover);
+}
+
+bool AppController::NormalizeActiveEffectTypes() {
+    bool normalizedChanged = false;
+    auto normalizeActive = [&](EffectCategory category, std::string* slot) {
+        if (!slot) {
+            return;
+        }
+        std::string reason;
+        const std::string effective = ResolveRuntimeEffectType(category, *slot, &reason);
+        if (*slot == effective) {
+            return;
+        }
+        *slot = effective;
+        normalizedChanged = true;
+    };
+    normalizeActive(EffectCategory::Click, &config_.active.click);
+    normalizeActive(EffectCategory::Trail, &config_.active.trail);
+    normalizeActive(EffectCategory::Scroll, &config_.active.scroll);
+    normalizeActive(EffectCategory::Hold, &config_.active.hold);
+    normalizeActive(EffectCategory::Hover, &config_.active.hover);
+    return normalizedChanged;
 }
 
 void AppController::SetEffect(EffectCategory category, const std::string& type) {
@@ -403,32 +546,8 @@ void AppController::ReloadConfigFromDisk() {
     EffectConfig loaded = EffectConfig::Load(configDir_);
     config_ = loaded;
 
-    const std::string clickType = config_.active.click.empty()
-        ? (config_.defaultEffect.empty() ? "ripple" : config_.defaultEffect)
-        : config_.active.click;
-
-    SetEffect(EffectCategory::Click, clickType);
-    SetEffect(EffectCategory::Trail, config_.active.trail);
-    SetEffect(EffectCategory::Scroll, config_.active.scroll);
-    SetEffect(EffectCategory::Hold, config_.active.hold);
-    SetEffect(EffectCategory::Hover, config_.active.hover);
-
-    bool normalizedChanged = false;
-    auto normalizeActive = [&](EffectCategory category, std::string* slot) {
-        if (!slot) return;
-        std::string reason;
-        const std::string effective = ResolveRuntimeEffectType(category, *slot, &reason);
-        if (*slot != effective) {
-            *slot = effective;
-            normalizedChanged = true;
-        }
-    };
-    normalizeActive(EffectCategory::Click, &config_.active.click);
-    normalizeActive(EffectCategory::Trail, &config_.active.trail);
-    normalizeActive(EffectCategory::Scroll, &config_.active.scroll);
-    normalizeActive(EffectCategory::Hold, &config_.active.hold);
-    normalizeActive(EffectCategory::Hover, &config_.active.hover);
-    if (normalizedChanged) {
+    ApplyConfiguredEffects();
+    if (NormalizeActiveEffectTypes()) {
         PersistConfig();
     }
 

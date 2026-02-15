@@ -63,6 +63,9 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Architecture: `docs/architecture/trail-tuning-settings-ui.md` (settings UI: presets + trail tuning)
 - Architecture: `docs/architecture/web-settings-ui.md` (browser settings via loopback HTTP server)
 - Architecture: `docs/architecture/dawn-native-effects-route.md` (postmortem + new Dawn-native effect route from clean main)
+- Refactoring: `docs/refactoring/phase6-dispatchrouter-boundary.md` (remove `DispatchRouter` friend/private-field coupling by introducing explicit dispatch-facing APIs)
+- Refactoring: `docs/refactoring/phase7-effectfactory-registry.md` (pivot `EffectFactory` from branch-based creation to category registry with typed and fallback creators)
+- Refactoring: `docs/refactoring/phase8-appcontroller-config-activation-dedup.md` (deduplicate active-effect apply/normalize flow between startup and reload paths)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

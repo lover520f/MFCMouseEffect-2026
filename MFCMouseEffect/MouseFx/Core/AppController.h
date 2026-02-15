@@ -88,8 +88,30 @@ public:
     void SetActiveEffectType(EffectCategory category, const std::string& type);
     void ReloadConfigFromDisk();
     std::string ResolveRuntimeEffectType(EffectCategory category, const std::string& requestedType, std::string* outReason) const;
-
-    friend class DispatchRouter;
+    
+    // --- Methods exposed for DispatchRouter delegation ---
+    void OnDispatchActivity(UINT msg, WPARAM wParam);
+    bool IsVmEffectsSuppressed() const { return vmEffectsSuppressed_; }
+    bool ConsumeIgnoreNextClick();
+    InputIndicatorOverlay& IndicatorOverlay() { return inputIndicatorOverlay_; }
+    bool ConsumeLatestMove(POINT* outPt);
+    DWORD CurrentHoldDurationMs() const;
+    void BeginHoldTracking(const POINT& pt, int button);
+    void EndHoldTracking();
+    void ClearPendingHold();
+    void CancelPendingHold(HWND hwnd);
+    bool ConsumePendingHold(POINT* outPt, int* outButton);
+    void MarkIgnoreNextClick();
+    bool TryEnterHover(POINT* outPt);
+    HWND DispatchWindowHandle() const { return dispatchHwnd_; }
+    static constexpr UINT_PTR HoverTimerId() { return kHoverTimerId; }
+    static constexpr UINT_PTR HoldTimerId() { return kHoldTimerId; }
+    static constexpr DWORD HoldDelayMs() { return kHoldDelayMs; }
+#ifdef _DEBUG
+    void LogDebugClick(const ClickEvent& ev);
+#else
+    void LogDebugClick(const ClickEvent&) {}
+#endif
 
 private:
     static LRESULT CALLBACK DispatchWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -98,6 +120,9 @@ private:
     
     // Factory method to create effect by category and type name.
     std::unique_ptr<IMouseEffect> CreateEffect(EffectCategory category, const std::string& type);
+    std::string ResolveConfiguredClickType() const;
+    void ApplyConfiguredEffects();
+    bool NormalizeActiveEffectTypes();
 
 
     void NotifyGpuFallbackIfNeeded(const std::string& reason);
