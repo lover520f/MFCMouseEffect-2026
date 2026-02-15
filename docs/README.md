@@ -77,6 +77,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Refactoring: `docs/refactoring/phase17-commandhandler-applysettings-file-split.md` (split `CommandHandler` into routing file and dedicated `apply_settings` parsing file to reduce per-file complexity)
 - Refactoring: `docs/refactoring/phase18-applysettings-helper-extraction.md` (extract focused helper functions from `HandleApplySettings` while keeping payload processing order unchanged)
 - Refactoring: `docs/refactoring/phase19-appcontroller-configupdates-file-split.md` (split config update/apply methods from `AppController.cpp` into dedicated implementation unit)
+- Refactoring: `docs/refactoring/phase20-effectconfig-file-split.md` (split `EffectConfig` by responsibility into shared helpers + load + save units and keep public entry points minimal)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.
