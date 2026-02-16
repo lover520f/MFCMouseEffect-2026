@@ -219,6 +219,9 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="UI\DocView\MFCMouseEffectDoc.h" />
     <ClInclude Include="UI\DocView\MFCMouseEffectView.h" />
     <ClInclude Include="MouseFx\Core\Control\AppController.h" />
+    <ClInclude Include="MouseFx\Core\Automation\InputAutomationEngine.h" />
+    <ClInclude Include="MouseFx\Core\Automation\KeyboardInjector.h" />
+    <ClInclude Include="MouseFx\Core\Automation\KeyChord.h" />
     <ClInclude Include="MouseFx\Compute\EffectComputeExecutor.h" />
     <ClInclude Include="MouseFx\Core\Config\ConfigPathResolver.h" />
     <ClInclude Include="MouseFx\Core\Control\EffectFactory.h" />
@@ -268,12 +271,14 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonKeys.Root.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonKeys.Active.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonKeys.Input.h" />
+    <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonKeys.Automation.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonKeys.Trail.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonKeys.Effects.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonCodecEffectsColorHelpers.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonCodecParseInternal.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonCodecSerializeInternal.h" />
     <ClInclude Include="MouseFx\Utils\MonitorUtils.h" />
+    <ClInclude Include="MouseFx\Core\Input\GestureRecognizer.h" />
     <ClInclude Include="MouseFx\ThirdParty\json.hpp" />
     <ClInclude Include="UI\Settings\SettingsWnd.h" />
     <ClInclude Include="UI\Settings\TrailTuningWnd.h" />
@@ -303,6 +308,9 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="UI\DocView\MFCMouseEffectView.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.ConfigUpdates.cpp" />
+    <ClCompile Include="MouseFx\Core\Automation\InputAutomationEngine.cpp" />
+    <ClCompile Include="MouseFx\Core\Automation\KeyboardInjector.cpp" />
+    <ClCompile Include="MouseFx\Core\Automation\KeyChord.cpp" />
     <ClCompile Include="MouseFx\Core\Config\ConfigPathResolver.cpp" />
     <ClCompile Include="MouseFx\Core\Control\EffectFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp" />
@@ -353,10 +361,12 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodecEffectsColorHelpers.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.Common.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.Input.cpp" />
+    <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.Automation.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.Trail.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.Effects.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Serialize.Input.cpp" />
+    <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Serialize.Automation.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Serialize.Trail.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Serialize.Effects.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Serialize.cpp" />
@@ -364,6 +374,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfig.Save.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfig.cpp" />
     <ClCompile Include="MouseFx\Utils\MonitorUtils.cpp" />
+    <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.cpp" />
     <ClCompile Include="MouseFx\Utils\StringUtils.cpp" />
     <ClCompile Include="MouseFx\Server\HttpServer.cpp" />
     <ClCompile Include="MouseFx\Server\HttpServer.Protocol.cpp" />

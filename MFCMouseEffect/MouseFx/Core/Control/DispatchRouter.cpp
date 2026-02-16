@@ -55,6 +55,7 @@ LRESULT DispatchRouter::OnClick(HWND /*hwnd*/, LPARAM lParam) {
     }
 
     if (ev) {
+        ctrl_->InputAutomation().OnClick(*ev);
         ctrl_->IndicatorOverlay().OnClick(*ev);
         ctrl_->LogDebugClick(*ev);
         if (auto* effect = ctrl_->GetEffect(EffectCategory::Click)) {
@@ -74,6 +75,7 @@ LRESULT DispatchRouter::OnMove(HWND /*hwnd*/, WPARAM wParam, LPARAM lParam) {
         pt.x = static_cast<LONG>(wParam);
         pt.y = static_cast<LONG>(lParam);
     }
+    ctrl_->InputAutomation().OnMouseMove(pt);
     if (auto* effect = ctrl_->GetEffect(EffectCategory::Trail)) {
         effect->OnMouseMove(pt);
     }
@@ -97,6 +99,7 @@ LRESULT DispatchRouter::OnScroll(HWND /*hwnd*/, WPARAM wParam, LPARAM lParam) {
     ev.pt = pt;
     ev.delta = delta;
     ev.horizontal = false;
+    ctrl_->InputAutomation().OnScroll(delta);
     ctrl_->IndicatorOverlay().OnScroll(ev);
     if (auto* effect = ctrl_->GetEffect(EffectCategory::Scroll)) {
         effect->OnScroll(ev);
@@ -130,18 +133,27 @@ LRESULT DispatchRouter::OnButtonDown(HWND hwnd, WPARAM wParam, LPARAM lParam) {
     }
 
     ctrl_->BeginHoldTracking(pt, button);
+    ctrl_->InputAutomation().OnButtonDown(pt, button);
     SetTimer(hwnd, AppController::HoldTimerId(), AppController::HoldDelayMs(), nullptr);
 
     return 0;
 }
 
-LRESULT DispatchRouter::OnButtonUp(HWND hwnd, WPARAM /*wParam*/, LPARAM /*lParam*/) {
+LRESULT DispatchRouter::OnButtonUp(HWND hwnd, WPARAM wParam, LPARAM /*lParam*/) {
     ctrl_->EndHoldTracking();
     ctrl_->CancelPendingHold(hwnd);
 
     if (ctrl_->IsVmEffectsSuppressed()) {
+        ctrl_->InputAutomation().Reset();
         return 0;
     }
+
+    POINT pt{};
+    if (!GetCursorPos(&pt)) {
+        pt.x = 0;
+        pt.y = 0;
+    }
+    ctrl_->InputAutomation().OnButtonUp(pt, static_cast<int>(wParam));
 
     if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
         effect->OnHoldEnd();

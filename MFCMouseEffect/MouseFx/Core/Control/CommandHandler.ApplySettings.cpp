@@ -4,6 +4,7 @@
 #include "CommandHandler.h"
 
 #include "AppController.h"
+#include "MouseFx/Core/Config/EffectConfigInternal.h"
 #include "MouseFx/ThirdParty/json.hpp"
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
@@ -174,6 +175,72 @@ void ApplyInputIndicatorSettings(const json& payload, AppController* controller)
     }
 }
 
+void ApplyAutomationBindings(const json& source, std::vector<AutomationKeyBinding>* outBindings) {
+    if (!outBindings || !source.is_array()) {
+        return;
+    }
+
+    outBindings->clear();
+    for (const auto& item : source) {
+        if (!item.is_object()) {
+            continue;
+        }
+        AutomationKeyBinding binding;
+        if (item.contains("enabled") && item["enabled"].is_boolean()) {
+            binding.enabled = item["enabled"].get<bool>();
+        }
+        if (item.contains("trigger") && item["trigger"].is_string()) {
+            binding.trigger = item["trigger"].get<std::string>();
+        }
+        if (item.contains("keys") && item["keys"].is_string()) {
+            binding.keys = item["keys"].get<std::string>();
+        }
+        outBindings->push_back(binding);
+    }
+}
+
+void ApplyAutomationSettings(const json& payload, AppController* controller) {
+    if (!controller) {
+        return;
+    }
+    if (!payload.contains("automation") || !payload["automation"].is_object()) {
+        return;
+    }
+
+    InputAutomationConfig automation = controller->Config().automation;
+    const json& source = payload["automation"];
+    if (source.contains("enabled") && source["enabled"].is_boolean()) {
+        automation.enabled = source["enabled"].get<bool>();
+    }
+    if (source.contains("mouse_mappings")) {
+        ApplyAutomationBindings(source["mouse_mappings"], &automation.mouseMappings);
+    }
+
+    if (source.contains("gesture") && source["gesture"].is_object()) {
+        const json& gesture = source["gesture"];
+        if (gesture.contains("enabled") && gesture["enabled"].is_boolean()) {
+            automation.gesture.enabled = gesture["enabled"].get<bool>();
+        }
+        if (gesture.contains("trigger_button") && gesture["trigger_button"].is_string()) {
+            automation.gesture.triggerButton = gesture["trigger_button"].get<std::string>();
+        }
+        if (gesture.contains("min_stroke_distance_px") && gesture["min_stroke_distance_px"].is_number_integer()) {
+            automation.gesture.minStrokeDistancePx = gesture["min_stroke_distance_px"].get<int>();
+        }
+        if (gesture.contains("sample_step_px") && gesture["sample_step_px"].is_number_integer()) {
+            automation.gesture.sampleStepPx = gesture["sample_step_px"].get<int>();
+        }
+        if (gesture.contains("max_directions") && gesture["max_directions"].is_number_integer()) {
+            automation.gesture.maxDirections = gesture["max_directions"].get<int>();
+        }
+        if (gesture.contains("mappings")) {
+            ApplyAutomationBindings(gesture["mappings"], &automation.gesture.mappings);
+        }
+    }
+
+    controller->SetInputAutomationConfig(config_internal::SanitizeInputAutomationConfig(automation));
+}
+
 void ApplyTrailTuningSettings(const json& payload, AppController* controller) {
     if (!controller) {
         return;
@@ -298,6 +365,7 @@ void CommandHandler::HandleApplySettings(const std::string& jsonCmd) {
 
     ApplyTextSettings(payload, controller_);
     ApplyInputIndicatorSettings(payload, controller_);
+    ApplyAutomationSettings(payload, controller_);
 
     if (payload.contains("hold_follow_mode") && payload["hold_follow_mode"].is_string()) {
         controller_->SetHoldFollowMode(payload["hold_follow_mode"].get<std::string>());

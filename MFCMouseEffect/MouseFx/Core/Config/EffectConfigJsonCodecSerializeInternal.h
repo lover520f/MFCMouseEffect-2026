@@ -5,6 +5,7 @@
 namespace mousefx::config_json::serialize_internal {
 
 nlohmann::json BuildInputIndicatorJson(const InputIndicatorConfig& source);
+nlohmann::json BuildAutomationJson(const InputAutomationConfig& source);
 nlohmann::json BuildTrailProfilesJson(const TrailProfilesConfig& profiles);
 nlohmann::json BuildTrailParamsJson(const TrailRendererParamsConfig& source);
 nlohmann::json BuildActiveEffectsJson(const ActiveEffectConfig& active);

@@ -1,0 +1,16 @@
+#pragma once
+
+namespace mousefx::config_json::keys::automation {
+
+inline constexpr const char kEnabled[] = "enabled";
+inline constexpr const char kMouseMappings[] = "mouse_mappings";
+inline constexpr const char kGesture[] = "gesture";
+inline constexpr const char kMappings[] = "mappings";
+inline constexpr const char kTrigger[] = "trigger";
+inline constexpr const char kKeys[] = "keys";
+inline constexpr const char kTriggerButton[] = "trigger_button";
+inline constexpr const char kMinStrokeDistancePx[] = "min_stroke_distance_px";
+inline constexpr const char kSampleStepPx[] = "sample_step_px";
+inline constexpr const char kMaxDirections[] = "max_directions";
+
+} // namespace mousefx::config_json::keys::automation

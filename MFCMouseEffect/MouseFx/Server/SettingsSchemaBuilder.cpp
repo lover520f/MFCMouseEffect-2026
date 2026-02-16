@@ -73,6 +73,28 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
         {{"value","significant"},{"label", LabelByLang(L"\u4ec5\u91cd\u8981\u6309\u952e (\u63a8\u8350)", L"Significant Keys Only (Recommended)", lang)}},
         {{"value","shortcut"},{"label", LabelByLang(L"\u4ec5\u5feb\u6377\u952e", L"Shortcuts Only", lang)}}
     });
+    out["automation_mouse_actions"] = json::array({
+        {{"value","left_click"},{"label", LabelByLang(L"\u5de6\u952e\u5355\u51fb", L"Left Click", lang)}},
+        {{"value","right_click"},{"label", LabelByLang(L"\u53f3\u952e\u5355\u51fb", L"Right Click", lang)}},
+        {{"value","middle_click"},{"label", LabelByLang(L"\u4e2d\u952e\u5355\u51fb", L"Middle Click", lang)}},
+        {{"value","scroll_up"},{"label", LabelByLang(L"\u6eda\u8f6e\u5411\u4e0a", L"Wheel Up", lang)}},
+        {{"value","scroll_down"},{"label", LabelByLang(L"\u6eda\u8f6e\u5411\u4e0b", L"Wheel Down", lang)}},
+    });
+    out["automation_gesture_buttons"] = json::array({
+        {{"value","right"},{"label", LabelByLang(L"\u53f3\u952e\u62d6\u62fd (\u63a8\u8350)", L"Right Drag (Recommended)", lang)}},
+        {{"value","middle"},{"label", LabelByLang(L"\u4e2d\u952e\u62d6\u62fd", L"Middle Drag", lang)}},
+        {{"value","left"},{"label", LabelByLang(L"\u5de6\u952e\u62d6\u62fd", L"Left Drag", lang)}},
+    });
+    out["automation_gesture_patterns"] = json::array({
+        {{"value","up"},{"label", LabelByLang(L"\u5411\u4e0a", L"Up", lang)}},
+        {{"value","down"},{"label", LabelByLang(L"\u5411\u4e0b", L"Down", lang)}},
+        {{"value","left"},{"label", LabelByLang(L"\u5411\u5de6", L"Left", lang)}},
+        {{"value","right"},{"label", LabelByLang(L"\u5411\u53f3", L"Right", lang)}},
+        {{"value","up_right"},{"label", LabelByLang(L"\u5411\u4e0a\u540e\u5411\u53f3", L"Up Then Right", lang)}},
+        {{"value","up_left"},{"label", LabelByLang(L"\u5411\u4e0a\u540e\u5411\u5de6", L"Up Then Left", lang)}},
+        {{"value","down_right"},{"label", LabelByLang(L"\u5411\u4e0b\u540e\u5411\u53f3", L"Down Then Right", lang)}},
+        {{"value","down_left"},{"label", LabelByLang(L"\u5411\u4e0b\u540e\u5411\u5de6", L"Down Then Left", lang)}},
+    });
 
     // Enumerate connected monitors for target-monitor dropdown.
     {

@@ -40,6 +40,7 @@
 - 问题记录：`docs/issues/mixed_dpi_virtual_display_normalization_gate.zh-CN.md`（修复混合 DPI 物理多屏下 Click/Trail 边界错位；输入取点统一为 cursor-first）
 - 问题记录：`docs/issues/vm_foreground_effect_suppression.md`（当前台焦点进入虚拟机窗口时自动停用宿主机鼠标特效，离开后自动恢复）
 - 问题记录：`docs/issues/scroll_twinkle_starfield_effect.md`（新增滚轮 `twinkle` 星屑粒子特效，并完成工厂/设置/托盘全链路接入）
+- 问题记录：`docs/issues/input-automation-mouse-gesture-keyboard-mapping.zh-CN.md`（新增鼠标 action/手势 映射键盘的核心架构与配置链路，默认关闭）
 - 问题记录：`docs/input_indicator_refactor.md`（重构：通用输入指示器，支持键盘按键显示与鼠标动作增强）
 - 问题记录：`docs/issues/mouse-action-indicator-overlay.zh-CN.md`（旧：新增光标附近鼠标动作指示器）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）

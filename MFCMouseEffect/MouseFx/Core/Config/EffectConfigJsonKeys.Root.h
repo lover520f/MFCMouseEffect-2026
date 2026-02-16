@@ -11,6 +11,7 @@ inline constexpr const char kTrailStyle[] = "trail_style";
 inline constexpr const char kActiveEffects[] = "active_effects";
 inline constexpr const char kInputIndicator[] = "input_indicator";
 inline constexpr const char kMouseIndicator[] = "mouse_indicator";
+inline constexpr const char kAutomation[] = "automation";
 inline constexpr const char kTrailParams[] = "trail_params";
 inline constexpr const char kTrailProfiles[] = "trail_profiles";
 inline constexpr const char kEffects[] = "effects";

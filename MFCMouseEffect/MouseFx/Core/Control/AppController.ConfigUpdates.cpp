@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "AppController.h"
 
+#include "MouseFx/Core/Config/EffectConfigInternal.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
 #include "MouseFx/Utils/MathUtils.h"
 
@@ -45,6 +46,12 @@ void AppController::SetInputIndicatorConfig(const InputIndicatorConfig& cfg) {
     PersistConfig();
 }
 
+void AppController::SetInputAutomationConfig(const InputAutomationConfig& cfg) {
+    config_.automation = config_internal::SanitizeInputAutomationConfig(cfg);
+    inputAutomationEngine_.UpdateConfig(config_.automation);
+    PersistConfig();
+}
+
 void AppController::SetTrailTuning(const std::string& style, const TrailProfilesConfig& profiles, const TrailRendererParamsConfig& params) {
     config_.trailStyle = style.empty() ? "custom" : style;
     config_.trailProfiles = profiles;
@@ -68,6 +75,7 @@ void AppController::ResetConfig() {
     // 3. Re-apply everything
     ApplyConfiguredEffects();
     inputIndicatorOverlay_.UpdateConfig(config_.inputIndicator);
+    inputAutomationEngine_.UpdateConfig(config_.automation);
 
     // Theme/Language rely on being pulled by UI or re-applied if needed?
     // SettingsWnd calls sync, so it will pull new values.
@@ -81,6 +89,7 @@ void AppController::ReloadConfigFromDisk() {
     EffectConfig loaded = EffectConfig::Load(configDir_);
     config_ = loaded;
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
+    inputAutomationEngine_.UpdateConfig(config_.automation);
 
     ApplyConfiguredEffects();
     if (NormalizeActiveEffectTypes()) {

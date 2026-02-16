@@ -10,6 +10,7 @@
 #include "MouseFx/Core/System/GdiPlusSession.h"
 #include "MouseFx/Core/System/GlobalMouseHook.h"
 #include "MouseFx/Core/Overlay/InputIndicatorOverlay.h"
+#include "MouseFx/Core/Automation/InputAutomationEngine.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Core/Config/EffectConfig.h"
 #include "MouseFx/Core/System/VmForegroundDetector.h"
@@ -62,6 +63,7 @@ public:
     // Set text click font size in point units.
     void SetTextEffectFontSize(float sizePt);
     void SetInputIndicatorConfig(const InputIndicatorConfig& cfg);
+    void SetInputAutomationConfig(const InputAutomationConfig& cfg);
     // Set hold follow mode (precise|smooth|efficient).
     void SetHoldFollowMode(const std::string& mode);
     // Set hold presenter backend preference (auto or backend id).
@@ -96,6 +98,7 @@ public:
     bool IsVmEffectsSuppressed() const { return vmEffectsSuppressed_; }
     bool ConsumeIgnoreNextClick();
     InputIndicatorOverlay& IndicatorOverlay() { return inputIndicatorOverlay_; }
+    InputAutomationEngine& InputAutomation() { return inputAutomationEngine_; }
     bool ConsumeLatestMove(POINT* outPt);
     DWORD CurrentHoldDurationMs() const;
     void BeginHoldTracking(const POINT& pt, int button);
@@ -172,6 +175,7 @@ private:
     std::unique_ptr<CommandHandler> commandHandler_;
     std::unique_ptr<DispatchRouter> dispatchRouter_;
     InputIndicatorOverlay inputIndicatorOverlay_{};
+    InputAutomationEngine inputAutomationEngine_{};
     VmForegroundDetector vmForegroundDetector_{};
     bool vmEffectsSuppressed_ = false;
 

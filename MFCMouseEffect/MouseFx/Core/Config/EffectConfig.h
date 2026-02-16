@@ -147,6 +147,27 @@ struct InputIndicatorConfig {
     std::map<std::string, PerMonitorPosOverride> perMonitorOverrides;
 };
 
+struct AutomationKeyBinding {
+    bool enabled = true;
+    std::string trigger;
+    std::string keys;
+};
+
+struct GestureAutomationConfig {
+    bool enabled = false;
+    std::string triggerButton = "right";
+    int minStrokeDistancePx = 80;
+    int sampleStepPx = 10;
+    int maxDirections = 4;
+    std::vector<AutomationKeyBinding> mappings;
+};
+
+struct InputAutomationConfig {
+    bool enabled = false;
+    std::vector<AutomationKeyBinding> mouseMappings;
+    GestureAutomationConfig gesture;
+};
+
 // Active effect selections per category (persisted).
 struct ActiveEffectConfig {
     std::string click = "text";
@@ -179,6 +200,7 @@ struct EffectConfig {
     IconConfig icon;
     TextConfig textClick;
     InputIndicatorConfig inputIndicator;
+    InputAutomationConfig automation;
     
     TrailHistoryProfile GetTrailHistoryProfile(const std::string& type) const;
     

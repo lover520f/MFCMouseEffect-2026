@@ -141,6 +141,38 @@ std::string BuildSettingsStateJson(const EffectConfig& cfg) {
         {"size_px", cfg.inputIndicator.sizePx},
         {"duration_ms", cfg.inputIndicator.durationMs}
     };
+    out["automation"] = {
+        {"enabled", cfg.automation.enabled},
+        {"mouse_mappings", [&](){
+            json arr = json::array();
+            for (const auto& binding : cfg.automation.mouseMappings) {
+                arr.push_back({
+                    {"enabled", binding.enabled},
+                    {"trigger", EnsureUtf8(binding.trigger)},
+                    {"keys", EnsureUtf8(binding.keys)},
+                });
+            }
+            return arr;
+        }()},
+        {"gesture", {
+            {"enabled", cfg.automation.gesture.enabled},
+            {"trigger_button", EnsureUtf8(cfg.automation.gesture.triggerButton)},
+            {"min_stroke_distance_px", cfg.automation.gesture.minStrokeDistancePx},
+            {"sample_step_px", cfg.automation.gesture.sampleStepPx},
+            {"max_directions", cfg.automation.gesture.maxDirections},
+            {"mappings", [&](){
+                json arr = json::array();
+                for (const auto& binding : cfg.automation.gesture.mappings) {
+                    arr.push_back({
+                        {"enabled", binding.enabled},
+                        {"trigger", EnsureUtf8(binding.trigger)},
+                        {"keys", EnsureUtf8(binding.keys)},
+                    });
+                }
+                return arr;
+            }()},
+        }},
+    };
 
     const json routeStatus = ReadGpuRouteStatusSnapshot();
     if (routeStatus.is_object()) {

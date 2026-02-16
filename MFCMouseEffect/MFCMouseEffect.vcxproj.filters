@@ -96,6 +96,15 @@
     <ClInclude Include="MouseFx\Core\Control\AppController.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Automation\InputAutomationEngine.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Automation\KeyboardInjector.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Automation\KeyChord.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Compute\EffectComputeExecutor.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -204,6 +213,12 @@
     <ClInclude Include="MouseFx\Effects\HoldRouteCatalog.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Config\EffectConfigJsonKeys.Automation.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Input\GestureRecognizer.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMouseEffect.cpp">
@@ -240,6 +255,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Control\AppController.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Automation\InputAutomationEngine.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Automation\KeyboardInjector.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Automation\KeyChord.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Overlay\OverlayHostService.cpp">
@@ -336,6 +360,15 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Effects\HoldRouteCatalog.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Config\EffectConfigJsonCodec.Parse.Automation.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Config\EffectConfigJsonCodec.Serialize.Automation.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
   </ItemGroup>

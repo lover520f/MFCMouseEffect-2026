@@ -27,6 +27,7 @@ void ApplyRootToConfig(const nlohmann::json& root, EffectConfig& config) {
     }
 
     parse_internal::ParseInputIndicator(root, config);
+    parse_internal::ParseAutomation(root, config);
     parse_internal::ParseTrailParams(root, config);
     parse_internal::ParseTrailProfiles(root, config);
     parse_internal::ParseEffects(root, config);

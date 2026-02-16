@@ -283,6 +283,7 @@ bool AppController::Start() {
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
     inputIndicatorOverlay_.Initialize();
     inputIndicatorOverlay_.UpdateConfig(config_.inputIndicator);
+    inputAutomationEngine_.UpdateConfig(config_.automation);
 
     diag_.stage = StartStage::GdiPlusStartup;
     if (!gdiplus_.Startup()) {
@@ -334,6 +335,7 @@ bool AppController::Start() {
 void AppController::Stop() {
     hook_.Stop();
     inputIndicatorOverlay_.Shutdown();
+    inputAutomationEngine_.Reset();
     for (auto& effect : effects_) {
         if (effect) {
             effect->Shutdown();
@@ -576,6 +578,7 @@ void AppController::SuspendEffectsForVm() {
     holdDownTick_ = 0;
     hovering_ = false;
     inputIndicatorOverlay_.Hide();
+    inputAutomationEngine_.Reset();
 
     for (auto& effect : effects_) {
         if (effect) effect->Shutdown();

@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <algorithm>
 
 namespace mousefx::config_internal {
 
@@ -117,6 +118,64 @@ InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig config) {
 
     config.sizePx = ClampInt(config.sizePx, 40, 200);
     config.durationMs = ClampInt(config.durationMs, 120, 2000);
+    return config;
+}
+
+namespace {
+
+std::string NormalizeId(std::string value) {
+    value = ToLowerAscii(TrimAscii(value));
+    std::replace(value.begin(), value.end(), '-', '_');
+    std::replace(value.begin(), value.end(), ' ', '_');
+    return value;
+}
+
+std::string NormalizeMouseActionId(std::string value) {
+    value = NormalizeId(std::move(value));
+    if (value == "left" || value == "leftclick" || value == "lclick") return "left_click";
+    if (value == "right" || value == "rightclick" || value == "rclick") return "right_click";
+    if (value == "middle" || value == "middleclick" || value == "mclick") return "middle_click";
+    if (value == "wheel_up" || value == "scrollup") return "scroll_up";
+    if (value == "wheel_down" || value == "scrolldown") return "scroll_down";
+    return value;
+}
+
+std::string NormalizeGestureId(std::string value) {
+    return NormalizeId(std::move(value));
+}
+
+std::string NormalizeGestureButton(std::string value) {
+    value = NormalizeId(std::move(value));
+    if (value == "l" || value == "left_button") return "left";
+    if (value == "m" || value == "middle_button") return "middle";
+    if (value == "r" || value == "right_button") return "right";
+    if (value != "left" && value != "middle" && value != "right") {
+        return "right";
+    }
+    return value;
+}
+
+} // namespace
+
+InputAutomationConfig SanitizeInputAutomationConfig(InputAutomationConfig config) {
+    auto sanitizeBindingList = [](std::vector<AutomationKeyBinding>* bindings, bool gestureBinding) {
+        if (!bindings) {
+            return;
+        }
+        for (AutomationKeyBinding& binding : *bindings) {
+            binding.trigger = gestureBinding
+                ? NormalizeGestureId(std::move(binding.trigger))
+                : NormalizeMouseActionId(std::move(binding.trigger));
+            binding.keys = TrimAscii(binding.keys);
+        }
+    };
+
+    sanitizeBindingList(&config.mouseMappings, false);
+    config.gesture.triggerButton = NormalizeGestureButton(std::move(config.gesture.triggerButton));
+    config.gesture.minStrokeDistancePx = ClampInt(config.gesture.minStrokeDistancePx, 10, 4000);
+    config.gesture.sampleStepPx = ClampInt(config.gesture.sampleStepPx, 2, 256);
+    config.gesture.maxDirections = ClampInt(config.gesture.maxDirections, 1, 8);
+    sanitizeBindingList(&config.gesture.mappings, true);
     return config;
 }
 
