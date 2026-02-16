@@ -341,7 +341,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\EffectConfig.Internal.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfigJsonCodecEffectsColorHelpers.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfigJsonCodec.Parse.Common.cpp" />
-    <ClCompile Include="MouseFx\Core\EffectConfigJsonCodec.Parse.InputTrail.cpp" />
+    <ClCompile Include="MouseFx\Core\EffectConfigJsonCodec.Parse.Input.cpp" />
+    <ClCompile Include="MouseFx\Core\EffectConfigJsonCodec.Parse.Trail.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfigJsonCodec.Parse.Effects.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfigJsonCodec.Parse.cpp" />
     <ClCompile Include="MouseFx\Core\EffectConfigJsonCodec.Serialize.InputTrail.cpp" />
