@@ -302,6 +302,9 @@ void CommandHandler::HandleApplySettings(const std::string& jsonCmd) {
     if (payload.contains("hold_follow_mode") && payload["hold_follow_mode"].is_string()) {
         controller_->SetHoldFollowMode(payload["hold_follow_mode"].get<std::string>());
     }
+    if (payload.contains("hold_presenter_backend") && payload["hold_presenter_backend"].is_string()) {
+        controller_->SetHoldPresenterBackend(payload["hold_presenter_backend"].get<std::string>());
+    }
 
     ApplyTrailTuningSettings(payload, controller_);
 

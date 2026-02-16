@@ -166,6 +166,9 @@ struct EffectConfig {
     // Hold follow strategy:
     // precise | smooth | efficient
     std::string holdFollowMode = "smooth";
+    // Hold presenter backend strategy:
+    // auto | <backend_id>
+    std::string holdPresenterBackend = "auto";
     ActiveEffectConfig active;
     
     RippleConfig ripple;

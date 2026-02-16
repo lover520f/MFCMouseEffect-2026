@@ -53,6 +53,8 @@
       label_theme: "Theme",
       label_hold_follow_mode: "Hold Tracking",
       tip_hold_follow_mode: "Choose by feel and CPU budget: Precise (lowest latency, best for aiming/drawing), Cursor Priority (recommended default, follows cursor movement more tightly), Performance First (reduced update rate to save CPU).",
+      label_hold_presenter_backend: "Hold GPU Presenter",
+      tip_hold_presenter_backend: "Select presenter backend strategy. Auto is recommended unless you are debugging backend behavior.",
       label_click: "Click",
       label_trail: "Trail",
       label_scroll: "Scroll",
@@ -141,6 +143,8 @@
       label_theme: "\u4e3b\u9898",
       label_hold_follow_mode: "\u957f\u6309\u8ddf\u968f\u6a21\u5f0f",
       tip_hold_follow_mode: "\u6309\u4f53\u611f\u548c CPU \u9884\u7b97\u9009\u62e9\uff1a\u7cbe\u51c6\u8ddf\u968f\uff08\u5ef6\u8fdf\u6700\u4f4e\uff0c\u9002\u5408\u6e38\u620f/\u7ed8\u56fe\uff09\uff1b\u5149\u6807\u4f18\u5148\uff08\u9ed8\u8ba4\u63a8\u8350\uff0c\u66f4\u7d27\u8ddf\u5149\u6807\u79fb\u52a8\uff09\uff1b\u6027\u80fd\u4f18\u5148\uff08\u964d\u4f4e\u66f4\u65b0\u9891\u7387\uff0c\u66f4\u7701 CPU\uff09\u3002",
+      label_hold_presenter_backend: "\u957f\u6309 GPU \u5c55\u793a\u540e\u7aef",
+      tip_hold_presenter_backend: "\u9009\u62e9 GPU \u5c55\u793a\u540e\u7aef\u7b56\u7565\u3002\u9664\u975e\u5728\u8c03\u8bd5\u540e\u7aef\uff0c\u5426\u5219\u5efa\u8bae\u4f7f\u7528 Auto\u3002",
       label_click: "\u70b9\u51fb",
       label_trail: "\u62d6\u5c3e",
       label_scroll: "\u6eda\u8f6e",
@@ -532,6 +536,10 @@
     fillSelect(el('ui_language'), schema.ui_languages, st.ui_language);
     fillSelect(el('theme'), schema.themes, st.theme);
     fillSelect(el('hold_follow_mode'), schema.hold_follow_modes, st.hold_follow_mode || 'smooth');
+    fillSelect(
+      el('hold_presenter_backend'),
+      schema.hold_presenter_backends,
+      st.hold_presenter_backend || 'auto');
     fillSelect(el('ii_position_mode'), schema.input_indicator_position_modes, st.input_indicator?.position_mode || st.mouse_indicator?.position_mode || 'relative');
     fillSelect(el('ii_target_monitor'), schema.target_monitor_options, st.input_indicator?.target_monitor || 'cursor');
     fillSelect(el('ii_key_display_mode'), schema.key_display_modes, st.input_indicator?.key_display_mode || 'all');
@@ -594,6 +602,7 @@
       ui_language: el('ui_language').value,
       theme: el('theme').value,
       hold_follow_mode: el('hold_follow_mode').value,
+      hold_presenter_backend: el('hold_presenter_backend').value || 'auto',
       active: {
         click: el('click').value,
         trail: el('trail').value,

@@ -45,6 +45,14 @@ std::string NormalizeHoldFollowMode(std::string mode) {
     return "smooth";
 }
 
+std::string NormalizeHoldPresenterBackend(std::string backend) {
+    backend = ToLowerAscii(TrimAscii(backend));
+    if (backend.empty()) {
+        return "auto";
+    }
+    return backend;
+}
+
 TrailHistoryProfile SanitizeTrailHistoryProfile(TrailHistoryProfile profile) {
     if (profile.durationMs < 80) {
         profile.durationMs = 80;

@@ -198,6 +198,12 @@
     <ClInclude Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterSelection.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Effects\HoldRouteCatalog.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMouseEffect.cpp">
@@ -324,6 +330,12 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterSelection.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Effects\HoldRouteCatalog.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
   </ItemGroup>

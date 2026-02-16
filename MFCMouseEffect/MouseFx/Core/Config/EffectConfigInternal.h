@@ -11,6 +11,7 @@ std::string WStringToUtf8(const std::wstring& ws);
 std::string ArgbToHex(Argb color);
 
 std::string NormalizeHoldFollowMode(std::string mode);
+std::string NormalizeHoldPresenterBackend(std::string backend);
 TrailHistoryProfile SanitizeTrailHistoryProfile(TrailHistoryProfile profile);
 TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig params);
 InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig config);

@@ -4,6 +4,7 @@
 #include "SettingsSchemaBuilder.h"
 
 #include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterBackendRegistry.h"
 #include "MouseFx/ThirdParty/json.hpp"
 #include "MouseFx/Utils/MonitorUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
@@ -49,6 +50,20 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
         {{"value","smooth"},{"label", LabelByLang(L"\u5149\u6807\u4f18\u5148\uff08\u63a8\u8350\uff09", L"Cursor Priority (Recommended)", lang)}},
         {{"value","efficient"},{"label", LabelByLang(L"\u6027\u80fd\u4f18\u5148\uff08CPU\u53cb\u597d\uff09", L"Performance First (CPU Saver)", lang)}}
     });
+    {
+        json presenterBackends = json::array();
+        presenterBackends.push_back({
+            {"value", "auto"},
+            {"label", LabelByLang(L"\u81ea\u52a8\u9009\u62e9\uff08\u63a8\u8350\uff09", L"Auto (Recommended)", lang)}
+        });
+        for (const auto& backend : QuantumHaloPresenterBackendRegistry::Instance().ListByPriority()) {
+            presenterBackends.push_back({
+                {"value", backend.name},
+                {"label", backend.name}
+            });
+        }
+        out["hold_presenter_backends"] = std::move(presenterBackends);
+    }
     out["input_indicator_position_modes"] = json::array({
         {{"value","relative"},{"label", LabelByLang(L"\u76f8\u5bf9\u5149\u6807", L"Relative To Cursor", lang)}},
         {{"value","absolute"},{"label", LabelByLang(L"\u5c4f\u5e55\u7edd\u5bf9\u5750\u6807", L"Absolute Screen Position", lang)}}

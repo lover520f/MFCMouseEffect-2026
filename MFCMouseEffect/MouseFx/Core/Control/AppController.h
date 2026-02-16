@@ -64,6 +64,8 @@ public:
     void SetInputIndicatorConfig(const InputIndicatorConfig& cfg);
     // Set hold follow mode (precise|smooth|efficient).
     void SetHoldFollowMode(const std::string& mode);
+    // Set hold presenter backend preference (auto or backend id).
+    void SetHoldPresenterBackend(const std::string& backend);
 
     // Advanced tuning: trail history + renderer params (persisted).
     void SetTrailTuning(const std::string& style, const TrailProfilesConfig& profiles, const TrailRendererParamsConfig& params);

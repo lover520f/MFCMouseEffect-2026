@@ -3,6 +3,7 @@
 #include "IQuantumHaloPresenterBackend.h"
 #include "QuantumHaloPresenterBackendRegistry.h"
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -16,6 +17,9 @@ public:
     bool IsReady() const;
     const std::string& LastErrorReason() const;
     const std::string& ActiveBackendName() const;
+    const std::string& PreferredBackendName() const;
+    const std::string& LastBackendFailureReason() const;
+    uint32_t BackendSwitchCount() const;
 
     bool RenderFrame(
         int cursorScreenX,
@@ -39,7 +43,10 @@ private:
     size_t nextBackendIndex_ = 0;
     std::unique_ptr<IQuantumHaloPresenterBackend> backend_{};
     std::string activeBackendName_{};
+    std::string preferredBackendName_{};
     std::string lastErrorReason_{};
+    std::string lastBackendFailureReason_{};
+    uint32_t backendSwitchCount_ = 0;
 };
 
 } // namespace mousefx

@@ -4,7 +4,9 @@
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Effects/RippleBasedHoldRuntime.h"
 #include "MouseFx/Effects/HoldQuantumHaloGpuV2DirectRuntime.h"
+#include "MouseFx/Effects/HoldRouteCatalog.h"
 #include "MouseFx/Renderers/HoldRuntimeRegistry.h"
+#include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/TimeUtils.h"
 
@@ -49,14 +51,6 @@ static void WriteHoldRuntimeSnapshot(
 // Runtime creation helper
 // ---------------------------------------------------------------------------
 
-static bool IsGpuV2RouteType(const std::string& type) {
-    return type.find("_gpu_v2") != std::string::npos;
-}
-
-static bool IsQuantumHaloGpuV2DirectType(const std::string& type) {
-    return type == "hold_quantum_halo_gpu_v2" || type == "hold_neon3d_gpu_v2";
-}
-
 static std::unique_ptr<IHoldRuntime> CreateRuntime(
     const std::string& type,
     const std::string& themeName) {
@@ -65,12 +59,12 @@ static std::unique_ptr<IHoldRuntime> CreateRuntime(
     if (runtime) return runtime;
 
     // 2. Direct GPU path
-    if (IsQuantumHaloGpuV2DirectType(type)) {
+    if (hold_route::IsQuantumHaloGpuV2DirectType(type)) {
         return std::make_unique<HoldQuantumHaloGpuV2DirectRuntime>();
     }
 
     // 3. Ripple-based path (default)
-    const bool gpuV2 = IsGpuV2RouteType(type);
+    const bool gpuV2 = hold_route::IsGpuV2RouteType(type);
     const bool chromatic = (ToLowerAscii(themeName) == "chromatic");
     return std::make_unique<RippleBasedHoldRuntime>(type, gpuV2, chromatic);
 }
@@ -82,10 +76,13 @@ static std::unique_ptr<IHoldRuntime> CreateRuntime(
 HoldEffect::HoldEffect(
     const std::string& themeName,
     const std::string& type,
-    const std::string& followMode)
+    const std::string& followMode,
+    const std::string& presenterBackend)
     : type_(type),
       followMode_(ParseFollowMode(followMode)) {
     style_ = GetThemePalette(themeName).hold;
+    QuantumHaloPresenterSelection::SetConfiguredBackendPreference(
+        QuantumHaloPresenterSelection::NormalizeBackendPreference(presenterBackend));
     runtime_ = CreateRuntime(type_, themeName);
 }
 

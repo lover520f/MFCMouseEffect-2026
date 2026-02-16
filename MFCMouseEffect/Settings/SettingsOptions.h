@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include "MouseFx/Effects/HoldRouteCatalog.h"
 #include "MouseFx/Interfaces/EffectCommands.h"
 #include "MouseFx/Interfaces/EffectMetadata.h"
 
@@ -136,8 +137,8 @@ inline const EffectOption* HoldMetadata(size_t& n) {
         {"tech_ring", kCmdHoldTechRing, L"\u79D1\u6280\u5708 (3D)",        L"Tech Ring (3D)"},
         {"hologram",  kCmdHoldHologram, L"\u516E\u606F\u6295\u5F71 (3D)", L"Hologram (3D)", "scifi3d"},
         {"hold_neon3d", kCmdHoldNeon3D, L"\u9713\u8679 HUD (3D)",        L"Neon HUD (3D)", "neon3d"},
-        {"hold_quantum_halo_gpu_v2", kCmdHoldQuantumHaloGpuV2, L"\u91CF\u5B50\u5149\u73AF GPU", L"Quantum Halo GPU"},
-        {"hold_fluxfield_gpu_v2", kCmdHoldFluxFieldGpuV2, L"\u78C1\u901A\u573A HUD GPU\uFF08CPU\u515C\u5E95\uFF09", L"FluxField HUD GPU (CPU Fallback)"},
+        {mousefx::hold_route::kTypeQuantumHaloGpuV2, kCmdHoldQuantumHaloGpuV2, L"\u91CF\u5B50\u5149\u73AF GPU", L"Quantum Halo GPU"},
+        {mousefx::hold_route::kTypeFluxFieldGpuV2, kCmdHoldFluxFieldGpuV2, L"\u78C1\u901A\u573A HUD GPU\uFF08CPU\u515C\u5E95\uFF09", L"FluxField HUD GPU (CPU Fallback)"},
         {"none",      kCmdHoldNone,     L"\u65E0",                    L"None"},
     };
     n = _countof(opts);

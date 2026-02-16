@@ -60,7 +60,7 @@ std::unique_ptr<IMouseEffect> CreateScroll(const std::string& type, const Effect
 }
 
 std::unique_ptr<IMouseEffect> CreateHold(const std::string& type, const EffectConfig& config) {
-    return std::make_unique<HoldEffect>(config.theme, type, config.holdFollowMode);
+    return std::make_unique<HoldEffect>(config.theme, type, config.holdFollowMode, config.holdPresenterBackend);
 }
 
 std::unique_ptr<IMouseEffect> CreateHover(const std::string& type, const EffectConfig& config) {

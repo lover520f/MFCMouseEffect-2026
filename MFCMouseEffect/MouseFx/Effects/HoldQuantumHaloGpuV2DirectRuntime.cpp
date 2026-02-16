@@ -36,7 +36,12 @@ static void WriteSnapshot(
     bool renderedLastFrame,
     uint64_t submitCount,
     uint64_t missCount,
-    const std::string& runtimeReason) {
+    const std::string& runtimeReason,
+    const std::string& presenterPreference,
+    const std::string& presenterBackend,
+    const std::string& presenterLastError,
+    const std::string& presenterLastBackendFailure,
+    uint32_t presenterBackendSwitchCount) {
     const std::wstring diagDir = ResolveLocalDiagDirectory();
     if (diagDir.empty()) return;
 
@@ -58,6 +63,11 @@ static void WriteSnapshot(
        << "\"gpu_last_passes\":" << snap.lastPasses << ","
        << "\"visual_gpu_rendered_last_frame\":" << (renderedLastFrame ? "true" : "false") << ","
        << "\"visual_gpu_available\":" << (presenterReady ? "true" : "false") << ","
+       << "\"presenter_backend_preference\":\"" << presenterPreference << "\","
+       << "\"presenter_active_backend\":\"" << presenterBackend << "\","
+       << "\"presenter_last_error\":\"" << presenterLastError << "\","
+       << "\"presenter_last_backend_failure\":\"" << presenterLastBackendFailure << "\","
+       << "\"presenter_backend_switch_count\":" << presenterBackendSwitchCount << ","
        << "\"visual_submit_count\":" << submitCount << ","
        << "\"visual_miss_count\":" << missCount << ","
        << "\"runtime_reason\":\"" << runtimeReason << "\""
@@ -223,7 +233,12 @@ void HoldQuantumHaloGpuV2DirectRuntime::WorkerMain() {
         renderedLastFrame,
         submitCount_.load(std::memory_order_relaxed),
         missCount_.load(std::memory_order_relaxed),
-        runtimeReason);
+        runtimeReason,
+        presenter.PreferredBackendName(),
+        presenter.ActiveBackendName(),
+        presenter.LastErrorReason(),
+        presenter.LastBackendFailureReason(),
+        presenter.BackendSwitchCount());
 
     presenter.Shutdown();
     compute.Shutdown();

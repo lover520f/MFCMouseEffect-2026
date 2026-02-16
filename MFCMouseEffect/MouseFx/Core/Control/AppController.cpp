@@ -7,13 +7,15 @@
 #include "DispatchRouter.h"
 #include "MouseFx/Core/Protocol/MouseFxMessages.h"
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
+#include "MouseFx/Core/Config/EffectConfigInternal.h"
 #include "MouseFx/Core/Control/EffectFactory.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
+#include "MouseFx/Effects/HoldRouteCatalog.h"
+#include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
 #include "MouseFx/ThirdParty/json.hpp"
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
-#include "MouseFx/Core/System/GpuProbeHelper.h"
 #include "MouseFx/Core/System/VmForegroundDetector.h"
 
 #include <new>
@@ -37,14 +39,6 @@ static std::string NormalizeHoldFollowMode(std::string mode) {
     if (mode == "precise") return "precise";
     if (mode == "efficient") return "efficient";
     return "smooth";
-}
-
-static std::string NormalizeHoldEffectTypeAlias(const std::string& type) {
-    // Backward compatibility for renamed GPU hold effect id.
-    if (type == "hold_neon3d_gpu_v2") {
-        return "hold_quantum_halo_gpu_v2";
-    }
-    return type;
 }
 
 struct ActiveCategoryDescriptor {
@@ -97,31 +91,11 @@ std::string AppController::ResolveRuntimeEffectType(
     if (category != EffectCategory::Hold) {
         return requestedType;
     }
-    const std::string normalizedType = NormalizeHoldEffectTypeAlias(requestedType);
-    const bool isHoldQuantumHaloGpuV2 = (normalizedType == "hold_quantum_halo_gpu_v2");
-    const bool isHoldFluxGpuV2 = (normalizedType == "hold_fluxfield_gpu_v2");
-    if (!isHoldQuantumHaloGpuV2 && !isHoldFluxGpuV2) {
-        return normalizedType;
+    const std::string normalizedType = hold_route::NormalizeHoldEffectTypeAlias(requestedType);
+    const char* reason = hold_route::RouteReasonForType(normalizedType);
+    if (outReason && reason && reason[0] != '\0') {
+        *outReason = reason;
     }
-
-    if (isHoldFluxGpuV2) {
-        if (outReason) *outReason = "flux_gpu_v2_d3d11_compute_route";
-        return normalizedType;
-    }
-    if (isHoldQuantumHaloGpuV2) {
-        if (outReason) *outReason = "quantum_halo_gpu_v2_d3d11_dcomp_direct_runtime_route";
-        return normalizedType;
-    }
-
-    const DawnRuntimeProbeResult probe = ProbeDawnRuntimeOnce();
-    if (!probe.available) {
-        if (outReason) *outReason = probe.reason;
-        return normalizedType;
-    }
-
-    // Runtime binary is loadable; keep gpu-v2 route selected.
-    // Current renderer is placeholder and will be replaced by Dawn backend in later stages.
-    if (outReason) *outReason = "dawn_runtime_ready_placeholder_renderer";
     return normalizedType;
 }
 
@@ -156,7 +130,7 @@ void AppController::WriteGpuRouteStatusSnapshot(
     const std::filesystem::path file = std::filesystem::path(diagDir) / L"gpu_route_status_auto.json";
     std::ofstream out(file, std::ios::binary | std::ios::trunc);
     if (!out.is_open()) return;
-    const std::string requestedNormalized = NormalizeHoldEffectTypeAlias(requestedType);
+    const std::string requestedNormalized = hold_route::NormalizeHoldEffectTypeAlias(requestedType);
     std::ostringstream ss;
     ss << "{"
        << "\"category\":\"hold\","
@@ -306,6 +280,7 @@ bool AppController::Start() {
     // Load config from the best available directory (AppData preferred)
     configDir_ = ResolveConfigDirectory();
     config_ = EffectConfig::Load(configDir_);
+    QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
     inputIndicatorOverlay_.Initialize();
     inputIndicatorOverlay_.UpdateConfig(config_.inputIndicator);
 
@@ -458,7 +433,7 @@ void AppController::SetEffect(EffectCategory category, const std::string& type) 
 
     std::string fallbackReason;
     const std::string requestedNormalized =
-        (category == EffectCategory::Hold) ? NormalizeHoldEffectTypeAlias(type) : type;
+        (category == EffectCategory::Hold) ? hold_route::NormalizeHoldEffectTypeAlias(type) : type;
     const std::string effectiveType = ResolveRuntimeEffectType(category, type, &fallbackReason);
     if (!fallbackReason.empty() && effectiveType != requestedNormalized) {
         NotifyGpuFallbackIfNeeded(fallbackReason);
@@ -506,6 +481,19 @@ void AppController::SetHoldFollowMode(const std::string& mode) {
     const std::string normalized = NormalizeHoldFollowMode(mode);
     if (config_.holdFollowMode == normalized) return;
     config_.holdFollowMode = normalized;
+    PersistConfig();
+    if (IsActiveEffectEnabled(EffectCategory::Hold)) {
+        ReapplyActiveEffect(EffectCategory::Hold);
+    }
+}
+
+void AppController::SetHoldPresenterBackend(const std::string& backend) {
+    const std::string normalized = config_internal::NormalizeHoldPresenterBackend(backend);
+    if (config_.holdPresenterBackend == normalized) {
+        return;
+    }
+    config_.holdPresenterBackend = normalized;
+    QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
     PersistConfig();
     if (IsActiveEffectEnabled(EffectCategory::Hold)) {
         ReapplyActiveEffect(EffectCategory::Hold);

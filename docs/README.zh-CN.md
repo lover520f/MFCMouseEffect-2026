@@ -50,6 +50,7 @@
 - 架构整理：`docs/architecture/trail-tuning-settings-ui.zh-CN.md`（设置窗口：拖尾预设 + 高级调参）
 - 架构整理：`docs/architecture/web-settings-ui.zh-CN.md`（浏览器设置页：内置 loopback HTTP server）
 - 架构整理：`docs/refactoring/phase38-quantum-halo-presenter-backend-pluggable.md`（Quantum Halo GPU 展示层改为可插拔后端：接口 + 注册器 + Host 编排）
+- 架构整理：`docs/refactoring/phase39-hold-gpu-route-catalog-and-presenter-policy.md`（集中 Hold GPU 路由元数据，新增展示后端策略配置入口，并增强 presenter 诊断可观测性）
 - 安装包：`docs/install/installer-packaging-20260204.md`（Inno Setup 更新，2026-02-04）
 
 ## 功能简介

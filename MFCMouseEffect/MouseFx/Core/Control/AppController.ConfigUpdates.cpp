@@ -3,6 +3,7 @@
 #include "pch.h"
 #include "AppController.h"
 
+#include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
 #include "MouseFx/Utils/MathUtils.h"
 
 #include <cmath>
@@ -59,6 +60,7 @@ void AppController::SetTrailTuning(const std::string& style, const TrailProfiles
 void AppController::ResetConfig() {
     // 1. Get default config
     config_ = EffectConfig::GetDefault();
+    QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
 
     // 2. Save it to disk
     PersistConfig();
@@ -78,6 +80,7 @@ void AppController::ReloadConfigFromDisk() {
 
     EffectConfig loaded = EffectConfig::Load(configDir_);
     config_ = loaded;
+    QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
 
     ApplyConfiguredEffects();
     if (NormalizeActiveEffectTypes()) {

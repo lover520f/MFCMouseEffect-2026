@@ -6,6 +6,7 @@ inline constexpr const char kDefaultEffect[] = "default_effect";
 inline constexpr const char kTheme[] = "theme";
 inline constexpr const char kUiLanguage[] = "ui_language";
 inline constexpr const char kHoldFollowMode[] = "hold_follow_mode";
+inline constexpr const char kHoldPresenterBackend[] = "hold_presenter_backend";
 inline constexpr const char kTrailStyle[] = "trail_style";
 inline constexpr const char kActiveEffects[] = "active_effects";
 inline constexpr const char kInputIndicator[] = "input_indicator";

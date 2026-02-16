@@ -16,7 +16,8 @@ public:
     explicit HoldEffect(
         const std::string& themeName,
         const std::string& type,
-        const std::string& followMode);
+        const std::string& followMode,
+        const std::string& presenterBackend);
     ~HoldEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Hold; }

@@ -2,6 +2,7 @@
 
 #include "FluxFieldGpuV2ComputeEngine.h"
 #include "FluxFieldHudGpuV2D2DBackend.h"
+#include "MouseFx/Effects/HoldRouteCatalog.h"
 #include "FluxFieldHudCpuRenderer.h"
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 
@@ -126,6 +127,6 @@ private:
     std::string routeReason_ = "uninitialized";
 };
 
-REGISTER_RENDERER("hold_fluxfield_gpu_v2", FluxFieldHudGpuV2Renderer)
+REGISTER_RENDERER(mousefx::hold_route::kTypeFluxFieldGpuV2, FluxFieldHudGpuV2Renderer)
 
 } // namespace mousefx

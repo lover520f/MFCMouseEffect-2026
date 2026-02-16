@@ -255,9 +255,11 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Effects\ScrollEffect.h" />
     <ClInclude Include="MouseFx\Effects\HoldEffect.h" />
     <ClInclude Include="MouseFx\Effects\HoverEffect.h" />
+    <ClInclude Include="MouseFx\Effects\HoldRouteCatalog.h" />
     <ClInclude Include="MouseFx\Renderers\Hold\Presentation\IQuantumHaloPresenterBackend.h" />
     <ClInclude Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterBackendRegistry.h" />
     <ClInclude Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterHost.h" />
+    <ClInclude Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterSelection.h" />
     <ClInclude Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfig.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigInternal.h" />
@@ -316,11 +318,13 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Renderers\Hold\QuantumHaloGpuV2Presenter.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterBackendRegistry.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterHost.cpp" />
+    <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterSelection.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\QuantumHaloGpuV2ComputeEngine.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\HoldQuantumHaloGpuV2D2DBackend.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\FluxFieldGpuV2ComputeEngine.cpp" />
+    <ClCompile Include="MouseFx\Effects\HoldRouteCatalog.cpp" />
     <ClCompile Include="MouseFx\Effects\HoldQuantumHaloGpuV2DirectRuntime.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Neon3D\Neon3DFx.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.cpp" />

@@ -1,7 +1,32 @@
 #include "pch.h"
 #include "QuantumHaloPresenterHost.h"
 
+#include "QuantumHaloPresenterSelection.h"
+
+#include <algorithm>
+
 namespace mousefx {
+namespace {
+
+void PrioritizePreferredBackend(
+    std::vector<QuantumHaloPresenterBackendRegistry::Descriptor>* backends,
+    const std::string& preferredName) {
+    if (!backends || preferredName.empty() || preferredName == QuantumHaloPresenterSelection::kAuto) {
+        return;
+    }
+    auto& list = *backends;
+    auto it = std::find_if(list.begin(), list.end(), [&](const auto& item) {
+        return item.name == preferredName;
+    });
+    if (it == list.end() || it == list.begin()) {
+        return;
+    }
+    const auto picked = *it;
+    list.erase(it);
+    list.insert(list.begin(), picked);
+}
+
+} // namespace
 
 bool QuantumHaloPresenterHost::Start() {
     if (started_) {
@@ -10,8 +35,12 @@ bool QuantumHaloPresenterHost::Start() {
 
     started_ = true;
     lastErrorReason_.clear();
+    lastBackendFailureReason_.clear();
+    backendSwitchCount_ = 0;
     activeBackendName_.clear();
+    preferredBackendName_ = QuantumHaloPresenterSelection::GetEffectiveBackendPreference();
     backends_ = QuantumHaloPresenterBackendRegistry::Instance().ListByPriority();
+    PrioritizePreferredBackend(&backends_, preferredBackendName_);
     nextBackendIndex_ = 0;
     return EnsureBackendStarted();
 }
@@ -21,6 +50,9 @@ void QuantumHaloPresenterHost::Shutdown() {
     backends_.clear();
     nextBackendIndex_ = 0;
     activeBackendName_.clear();
+    preferredBackendName_.clear();
+    lastBackendFailureReason_.clear();
+    backendSwitchCount_ = 0;
     started_ = false;
 }
 
@@ -34,6 +66,18 @@ const std::string& QuantumHaloPresenterHost::LastErrorReason() const {
 
 const std::string& QuantumHaloPresenterHost::ActiveBackendName() const {
     return activeBackendName_;
+}
+
+const std::string& QuantumHaloPresenterHost::PreferredBackendName() const {
+    return preferredBackendName_;
+}
+
+const std::string& QuantumHaloPresenterHost::LastBackendFailureReason() const {
+    return lastBackendFailureReason_;
+}
+
+uint32_t QuantumHaloPresenterHost::BackendSwitchCount() const {
+    return backendSwitchCount_;
 }
 
 bool QuantumHaloPresenterHost::RenderFrame(
@@ -63,10 +107,12 @@ bool QuantumHaloPresenterHost::RenderFrame(
         if (backend_->RenderFrame(frame)) {
             return true;
         }
-        lastErrorReason_ = ComposeError(
+        lastBackendFailureReason_ = ComposeError(
             "backend_render_failed",
             activeBackendName_,
             backend_->LastErrorReason());
+        lastErrorReason_ = lastBackendFailureReason_;
+        ++backendSwitchCount_;
         DropBackend();
     }
 
@@ -85,14 +131,16 @@ bool QuantumHaloPresenterHost::EnsureBackendStarted() {
 
         std::unique_ptr<IQuantumHaloPresenterBackend> candidate = registry.Create(desc.name);
         if (!candidate) {
-            lastErrorReason_ = ComposeError("backend_create_failed", desc.name, "factory_missing");
+            lastBackendFailureReason_ = ComposeError("backend_create_failed", desc.name, "factory_missing");
+            lastErrorReason_ = lastBackendFailureReason_;
             continue;
         }
 
         if (!candidate->Start() || !candidate->IsReady()) {
             const std::string reason = candidate->LastErrorReason();
             candidate->Shutdown();
-            lastErrorReason_ = ComposeError("backend_start_failed", desc.name, reason);
+            lastBackendFailureReason_ = ComposeError("backend_start_failed", desc.name, reason);
+            lastErrorReason_ = lastBackendFailureReason_;
             continue;
         }
 

@@ -3,6 +3,7 @@
 #include "QuantumHaloGpuV2ComputeEngine.h"
 #include "Presentation/QuantumHaloPresenterHost.h"
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
+#include "MouseFx/Effects/HoldRouteCatalog.h"
 
 #include <windows.h>
 #include <cstdio>
@@ -117,6 +118,11 @@ private:
            << "\"gpu_last_passes\":" << snap.lastPasses << ","
            << "\"visual_gpu_rendered_last_frame\":" << (gpuVisualRenderedLastFrame_ ? "true" : "false") << ","
            << "\"visual_gpu_available\":" << (gpuPresenter_.IsReady() ? "true" : "false") << ","
+           << "\"presenter_backend_preference\":\"" << gpuPresenter_.PreferredBackendName() << "\","
+           << "\"presenter_active_backend\":\"" << gpuPresenter_.ActiveBackendName() << "\","
+           << "\"presenter_last_error\":\"" << gpuPresenter_.LastErrorReason() << "\","
+           << "\"presenter_last_backend_failure\":\"" << gpuPresenter_.LastBackendFailureReason() << "\","
+           << "\"presenter_backend_switch_count\":" << gpuPresenter_.BackendSwitchCount() << ","
            << "\"visual_submit_count\":" << gpuVisualSubmitCount_ << ","
            << "\"visual_miss_count\":" << gpuVisualMissCount_
            << "}";
@@ -142,7 +148,7 @@ private:
     uint64_t gpuVisualMissCount_ = 0;
 };
 
-REGISTER_RENDERER("hold_quantum_halo_gpu_v2", HoldQuantumHaloGpuV2Renderer)
-static mousefx::RendererRegistrar<HoldQuantumHaloGpuV2Renderer> reg_HoldQuantumHaloGpuV2RendererCompat("hold_neon3d_gpu_v2");
+REGISTER_RENDERER(mousefx::hold_route::kTypeQuantumHaloGpuV2, HoldQuantumHaloGpuV2Renderer)
+static mousefx::RendererRegistrar<HoldQuantumHaloGpuV2Renderer> reg_HoldQuantumHaloGpuV2RendererCompat(mousefx::hold_route::kTypeQuantumHaloGpuV2Legacy);
 
 } // namespace mousefx

@@ -86,6 +86,7 @@ std::string BuildSettingsStateJson(const EffectConfig& cfg) {
     out["ui_language"] = lang;
     out["theme"] = EnsureUtf8(cfg.theme);
     out["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
+    out["hold_presenter_backend"] = EnsureUtf8(cfg.holdPresenterBackend);
     const std::string activeHoldType = EnsureUtf8(cfg.active.hold);
     out["active"] = {
         {"click", EnsureUtf8(cfg.active.click)},

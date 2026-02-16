@@ -13,6 +13,7 @@ nlohmann::json BuildRootFromConfig(const EffectConfig& config) {
     root[keys::kTheme] = config.theme;
     root[keys::kUiLanguage] = config.uiLanguage;
     root[keys::kHoldFollowMode] = config_internal::NormalizeHoldFollowMode(config.holdFollowMode);
+    root[keys::kHoldPresenterBackend] = config_internal::NormalizeHoldPresenterBackend(config.holdPresenterBackend);
     root[keys::kTrailStyle] = config.trailStyle;
     root[keys::kInputIndicator] = serialize_internal::BuildInputIndicatorJson(config.inputIndicator);
     root[keys::kTrailProfiles] = serialize_internal::BuildTrailProfilesJson(config.trailProfiles);

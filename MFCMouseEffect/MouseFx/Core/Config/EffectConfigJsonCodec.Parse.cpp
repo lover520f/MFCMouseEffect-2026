@@ -13,6 +13,8 @@ void ApplyRootToConfig(const nlohmann::json& root, EffectConfig& config) {
     config.uiLanguage = parse_internal::GetOr<std::string>(root, keys::kUiLanguage, config.uiLanguage);
     config.holdFollowMode = config_internal::NormalizeHoldFollowMode(
         parse_internal::GetOr<std::string>(root, keys::kHoldFollowMode, config.holdFollowMode));
+    config.holdPresenterBackend = config_internal::NormalizeHoldPresenterBackend(
+        parse_internal::GetOr<std::string>(root, keys::kHoldPresenterBackend, config.holdPresenterBackend));
     config.trailStyle = parse_internal::GetOr<std::string>(root, keys::kTrailStyle, config.trailStyle);
 
     if (root.contains(keys::kActiveEffects) && root[keys::kActiveEffects].is_object()) {
