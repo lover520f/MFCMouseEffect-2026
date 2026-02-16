@@ -83,6 +83,7 @@ const std::array<CategoryRegistryEntry, CategoryIndex(EffectCategory::Count)>& R
         auto& scroll = result[CategoryIndex(EffectCategory::Scroll)];
         scroll.typedCreators.emplace("arrow", &CreateScroll);
         scroll.typedCreators.emplace("helix", &CreateScroll);
+        scroll.typedCreators.emplace("twinkle", &CreateScroll);
 
         auto& hold = result[CategoryIndex(EffectCategory::Hold)];
         hold.fallbackCreator = &CreateHold;

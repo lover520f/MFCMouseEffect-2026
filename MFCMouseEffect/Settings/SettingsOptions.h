@@ -123,6 +123,7 @@ inline const EffectOption* ScrollMetadata(size_t& n) {
     static const EffectOption opts[] = {
         {"arrow", kCmdScrollArrow, L"\u65B9\u5411\u6307\u793A", L"Arrow"},
         {"helix", kCmdScrollHelix, L"\u0033\u0044\u53CC\u87BA\u65CB", L"3D Helix"},
+        {"twinkle", kCmdScrollTwinkle, L"\u661F\u5C18\u55B7\u6D41", L"Stardust Stream"},
         {"none",  kCmdScrollNone,  L"\u65E0",            L"None"},
     };
     n = _countof(opts);

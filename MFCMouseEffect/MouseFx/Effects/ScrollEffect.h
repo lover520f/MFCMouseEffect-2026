@@ -9,7 +9,7 @@
 
 namespace mousefx {
 
-// Scroll effect: shows directional arrow on mouse wheel.
+// Scroll effect: emits renderer-driven directional one-shot visuals on mouse wheel.
 class ScrollEffect final : public IMouseEffect {
 public:
     explicit ScrollEffect(const std::string& themeName, const std::string& rendererName = "arrow");
@@ -33,8 +33,12 @@ private:
     static constexpr uint64_t kHelixEmitIntervalMs = 14;
     static constexpr size_t kHelixMaxActiveRipples = 8;
     static constexpr uint32_t kHelixMaxDurationMs = 240;
+    static constexpr uint64_t kTwinkleEmitIntervalMs = 30;
+    static constexpr size_t kTwinkleMaxActiveRipples = 3;
+    static constexpr uint32_t kTwinkleMaxDurationMs = 220;
 
     bool IsHelixRenderer() const;
+    bool IsTwinkleRenderer() const;
     InputShaperProfile GetInputShaperProfile() const;
     void PruneInactiveRipples(size_t maxActive);
 

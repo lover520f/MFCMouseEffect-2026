@@ -9,6 +9,7 @@
 // Ensure standard renderers are linked
 #include "MouseFx/Renderers/Scroll/ChevronRenderer.h"
 #include "MouseFx/Renderers/Scroll/HelixRenderer.h"
+#include "MouseFx/Renderers/Scroll/TwinkleRenderer.h"
 
 namespace mousefx {
 
@@ -47,12 +48,20 @@ bool ScrollEffect::IsHelixRenderer() const {
     return ToLowerAscii(currentRendererName_) == "helix";
 }
 
+bool ScrollEffect::IsTwinkleRenderer() const {
+    return ToLowerAscii(currentRendererName_) == "twinkle";
+}
+
 ScrollEffect::InputShaperProfile ScrollEffect::GetInputShaperProfile() const {
     InputShaperProfile profile{};
     if (IsHelixRenderer()) {
         profile.emitIntervalMs = kHelixEmitIntervalMs;
         profile.maxActiveRipples = kHelixMaxActiveRipples;
         profile.maxDurationMs = kHelixMaxDurationMs;
+    } else if (IsTwinkleRenderer()) {
+        profile.emitIntervalMs = kTwinkleEmitIntervalMs;
+        profile.maxActiveRipples = kTwinkleMaxActiveRipples;
+        profile.maxDurationMs = kTwinkleMaxDurationMs;
     }
     return profile;
 }
@@ -102,7 +111,7 @@ void ScrollEffect::OnScroll(const ScrollEvent& event) {
     ev.button = MouseButton::Left;
 
     RenderParams params;
-    const float base = (effectiveDelta >= 0) ? -3.1415926f / 2.0f : 3.1415926f / 2.0f;
+    const float base = (effectiveDelta >= 0) ? 3.1415926f / 2.0f : -3.1415926f / 2.0f;
     if (event.horizontal) {
         params.directionRad = (effectiveDelta >= 0) ? 0.0f : 3.1415926f;
     } else {
