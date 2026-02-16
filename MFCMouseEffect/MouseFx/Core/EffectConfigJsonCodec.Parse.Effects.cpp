@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "EffectConfigJsonCodecParseInternal.h"
+#include "EffectConfigJsonCodecEffectsColorHelpers.h"
 #include "EffectConfigJsonKeys.h"
 
 namespace mousefx::config_json::parse_internal {
@@ -17,24 +18,15 @@ void ParseRippleEffect(const nlohmann::json& effects, EffectConfig& config) {
     config.ripple.strokeWidth = GetOr<float>(ripple, keys::effect::kStrokeWidth, config.ripple.strokeWidth);
     config.ripple.windowSize = GetOr<int>(ripple, keys::effect::kWindowSize, config.ripple.windowSize);
 
-    if (ripple.contains(keys::effect::click::kLeft) && ripple[keys::effect::click::kLeft].is_object()) {
-        const auto& left = ripple[keys::effect::click::kLeft];
-        config.ripple.leftClick.fill = GetColorOr(left, keys::effect::click::kFill, config.ripple.leftClick.fill);
-        config.ripple.leftClick.stroke = GetColorOr(left, keys::effect::click::kStroke, config.ripple.leftClick.stroke);
-        config.ripple.leftClick.glow = GetColorOr(left, keys::effect::click::kGlow, config.ripple.leftClick.glow);
-    }
-    if (ripple.contains(keys::effect::click::kRight) && ripple[keys::effect::click::kRight].is_object()) {
-        const auto& right = ripple[keys::effect::click::kRight];
-        config.ripple.rightClick.fill = GetColorOr(right, keys::effect::click::kFill, config.ripple.rightClick.fill);
-        config.ripple.rightClick.stroke = GetColorOr(right, keys::effect::click::kStroke, config.ripple.rightClick.stroke);
-        config.ripple.rightClick.glow = GetColorOr(right, keys::effect::click::kGlow, config.ripple.rightClick.glow);
-    }
-    if (ripple.contains(keys::effect::click::kMiddle) && ripple[keys::effect::click::kMiddle].is_object()) {
-        const auto& middle = ripple[keys::effect::click::kMiddle];
-        config.ripple.middleClick.fill = GetColorOr(middle, keys::effect::click::kFill, config.ripple.middleClick.fill);
-        config.ripple.middleClick.stroke = GetColorOr(middle, keys::effect::click::kStroke, config.ripple.middleClick.stroke);
-        config.ripple.middleClick.glow = GetColorOr(middle, keys::effect::click::kGlow, config.ripple.middleClick.glow);
-    }
+    auto parseOneButton = [&](const char* key, RippleConfig::ButtonColors& colors) {
+        if (ripple.contains(key) && ripple[key].is_object()) {
+            effects_color_helpers::ParseRippleButtonColors(ripple[key], colors);
+        }
+    };
+
+    parseOneButton(keys::effect::click::kLeft, config.ripple.leftClick);
+    parseOneButton(keys::effect::click::kRight, config.ripple.rightClick);
+    parseOneButton(keys::effect::click::kMiddle, config.ripple.middleClick);
 }
 
 void ParseTrailEffect(const nlohmann::json& effects, EffectConfig& config) {
@@ -59,8 +51,7 @@ void ParseIconEffect(const nlohmann::json& effects, EffectConfig& config) {
     config.icon.startRadius = GetOr<float>(icon, keys::effect::kStartRadius, config.icon.startRadius);
     config.icon.endRadius = GetOr<float>(icon, keys::effect::kEndRadius, config.icon.endRadius);
     config.icon.strokeWidth = GetOr<float>(icon, keys::effect::kStrokeWidth, config.icon.strokeWidth);
-    config.icon.fillColor = GetColorOr(icon, keys::effect::click::kFill, config.icon.fillColor);
-    config.icon.strokeColor = GetColorOr(icon, keys::effect::click::kStroke, config.icon.strokeColor);
+    effects_color_helpers::ParseFillStrokeColors(icon, config.icon.fillColor, config.icon.strokeColor);
 }
 
 void ParseTextEffect(const nlohmann::json& effects, EffectConfig& config) {

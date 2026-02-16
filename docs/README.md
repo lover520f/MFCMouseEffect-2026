@@ -83,6 +83,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Refactoring: `docs/refactoring/phase23-effectconfig-serialize-multiunit-split.md` (split config JSON serialize path into root/input-trail/effects units with a serialize-internal boundary)
 - Refactoring: `docs/refactoring/phase24-effectconfig-json-keys-centralization.md` (centralize EffectConfig JSON schema keys and replace codec string literals with constants)
 - Refactoring: `docs/refactoring/phase25-effectconfig-json-keys-subheaders.md` (split centralized EffectConfig JSON key definitions into root/active/input/trail/effects subheaders)
+- Refactoring: `docs/refactoring/phase26-effect-color-mapping-helper-extraction.md` (extract shared helpers for ripple/icon color field parse/serialize mapping to remove duplicate branches)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

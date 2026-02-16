@@ -2,6 +2,7 @@
 #include "EffectConfigJsonCodecSerializeInternal.h"
 
 #include "EffectConfigInternal.h"
+#include "EffectConfigJsonCodecEffectsColorHelpers.h"
 #include "EffectConfigJsonKeys.h"
 
 namespace mousefx::config_json::serialize_internal {
@@ -25,21 +26,9 @@ nlohmann::json BuildEffectsJson(const EffectConfig& config) {
         {keys::effect::kEndRadius, config.ripple.endRadius},
         {keys::effect::kStrokeWidth, config.ripple.strokeWidth},
         {keys::effect::kWindowSize, config.ripple.windowSize},
-        {keys::effect::click::kLeft, {
-            {keys::effect::click::kFill, config_internal::ArgbToHex(config.ripple.leftClick.fill)},
-            {keys::effect::click::kStroke, config_internal::ArgbToHex(config.ripple.leftClick.stroke)},
-            {keys::effect::click::kGlow, config_internal::ArgbToHex(config.ripple.leftClick.glow)}
-        }},
-        {keys::effect::click::kRight, {
-            {keys::effect::click::kFill, config_internal::ArgbToHex(config.ripple.rightClick.fill)},
-            {keys::effect::click::kStroke, config_internal::ArgbToHex(config.ripple.rightClick.stroke)},
-            {keys::effect::click::kGlow, config_internal::ArgbToHex(config.ripple.rightClick.glow)}
-        }},
-        {keys::effect::click::kMiddle, {
-            {keys::effect::click::kFill, config_internal::ArgbToHex(config.ripple.middleClick.fill)},
-            {keys::effect::click::kStroke, config_internal::ArgbToHex(config.ripple.middleClick.stroke)},
-            {keys::effect::click::kGlow, config_internal::ArgbToHex(config.ripple.middleClick.glow)}
-        }}
+        {keys::effect::click::kLeft, effects_color_helpers::BuildRippleButtonColors(config.ripple.leftClick)},
+        {keys::effect::click::kRight, effects_color_helpers::BuildRippleButtonColors(config.ripple.rightClick)},
+        {keys::effect::click::kMiddle, effects_color_helpers::BuildRippleButtonColors(config.ripple.middleClick)}
     };
 
     effects[keys::effect::kTrail] = {
@@ -49,14 +38,14 @@ nlohmann::json BuildEffectsJson(const EffectConfig& config) {
         {keys::effect::kColor, config_internal::ArgbToHex(config.trail.color)}
     };
 
-    effects[keys::effect::kIconStar] = {
+    auto iconJson = nlohmann::json{
         {keys::effect::kDurationMs, config.icon.durationMs},
         {keys::effect::kStartRadius, config.icon.startRadius},
         {keys::effect::kEndRadius, config.icon.endRadius},
-        {keys::effect::kStrokeWidth, config.icon.strokeWidth},
-        {keys::effect::click::kFill, config_internal::ArgbToHex(config.icon.fillColor)},
-        {keys::effect::click::kStroke, config_internal::ArgbToHex(config.icon.strokeColor)}
+        {keys::effect::kStrokeWidth, config.icon.strokeWidth}
     };
+    iconJson.update(effects_color_helpers::BuildFillStrokeColors(config.icon.fillColor, config.icon.strokeColor));
+    effects[keys::effect::kIconStar] = std::move(iconJson);
 
     nlohmann::json textClick;
     textClick[keys::effect::kDurationMs] = config.textClick.durationMs;
