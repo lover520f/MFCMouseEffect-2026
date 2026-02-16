@@ -91,6 +91,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Refactoring: `docs/refactoring/phase31-core-overlay-folderization.md` (move overlay domain units into `MouseFx/Core/Overlay` and harden moved-header include dependencies)
 - Refactoring: `docs/refactoring/phase32-core-system-folderization.md` (move OS/runtime-facing units into `MouseFx/Core/System` and retarget dependent include/project mappings)
 - Refactoring: `docs/refactoring/phase33-configpathresolver-to-core-config.md` (move config path resolver into `MouseFx/Core/Config` and retarget dependent include/project mappings)
+- Refactoring: `docs/refactoring/phase34-core-protocol-folderization.md` (move JsonLite and MouseFxMessages into `MouseFx/Core/Protocol` and retarget protocol include/project mappings)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

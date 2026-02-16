@@ -111,7 +111,7 @@
     <ClInclude Include="MouseFx\Core\System\GlobalMouseHook.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\MouseFxMessages.h">
+    <ClInclude Include="MouseFx\Core\Protocol\MouseFxMessages.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Server\HttpServer.h">

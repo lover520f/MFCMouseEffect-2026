@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "CommandHandler.h"
 #include "AppController.h"
-#include "MouseFx/Core/JsonLite.h"
+#include "MouseFx/Core/Protocol/JsonLite.h"
 
 #include <array>
 

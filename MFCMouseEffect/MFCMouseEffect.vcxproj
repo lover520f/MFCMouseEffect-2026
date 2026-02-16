@@ -236,8 +236,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Layers\TextOverlayLayer.h" />
     <ClInclude Include="MouseFx\Layers\TrailOverlayLayer.h" />
     <ClInclude Include="MouseFx\Core\Control\IpcController.h" />
-    <ClInclude Include="MouseFx\Core\JsonLite.h" />
-    <ClInclude Include="MouseFx\Core\MouseFxMessages.h" />
+    <ClInclude Include="MouseFx\Core\Protocol\JsonLite.h" />
+    <ClInclude Include="MouseFx\Core\Protocol\MouseFxMessages.h" />
     <ClInclude Include="MouseFx\Server\HttpServer.h" />
     <ClInclude Include="MouseFx\Server\WebUiAssets.h" />
     <ClInclude Include="MouseFx\Server\WebSettingsServer.h" />
@@ -305,7 +305,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\System\GlobalMouseHook.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
     <ClCompile Include="MouseFx\Core\Control\IpcController.cpp" />
-    <ClCompile Include="MouseFx\Core\JsonLite.cpp" />
+    <ClCompile Include="MouseFx\Core\Protocol\JsonLite.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleEffect.cpp" />
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\QuantumHaloGpuV2ShaderPipeline.cpp" />
