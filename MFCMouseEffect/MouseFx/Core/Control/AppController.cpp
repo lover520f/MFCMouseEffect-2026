@@ -7,7 +7,7 @@
 #include "DispatchRouter.h"
 #include "MouseFx/Core/Protocol/MouseFxMessages.h"
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
-#include "MouseFx/Core/EffectFactory.h"
+#include "MouseFx/Core/Control/EffectFactory.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
 #include "MouseFx/ThirdParty/json.hpp"
