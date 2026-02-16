@@ -1,0 +1,25 @@
+{
+  "name": "mfcmouseeffect-webui-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.2",
+  "scripts": {
+    "build": "pnpm run build:dialog && pnpm run build:shell && pnpm run build:workspace && pnpm run build:general && pnpm run build:effects && pnpm run build:text && pnpm run build:trail && pnpm run build:indicator && pnpm run build:automation && node scripts/copy-output.mjs",
+    "build:dialog": "vite build --mode dialog",
+    "build:shell": "vite build --mode shell",
+    "build:workspace": "vite build --mode workspace",
+    "build:general": "vite build --mode general",
+    "build:effects": "vite build --mode effects",
+    "build:text": "vite build --mode text",
+    "build:trail": "vite build --mode trail",
+    "build:indicator": "vite build --mode indicator",
+    "build:automation": "vite build --mode automation",
+    "dev": "vite"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "svelte": "^5.0.0",
+    "vite": "^5.4.0"
+  }
+}

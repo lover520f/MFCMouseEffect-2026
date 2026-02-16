@@ -42,3 +42,15 @@ Desktop.ini
 
 # Installer outputs (Inno Setup)
 Install/Output/
+
+# Common frontend artifacts
+node_modules/
+dist/
+
+# WebUI Svelte workspace
+MFCMouseEffect/WebUIWorkspace/node_modules/
+MFCMouseEffect/WebUIWorkspace/dist/
+MFCMouseEffect/WebUIWorkspace/_bootstrap_cache/
+
+# WebUI generated bundles (copied from WebUIWorkspace/dist)
+MFCMouseEffect/WebUI/*.svelte.js

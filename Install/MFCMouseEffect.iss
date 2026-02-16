@@ -5,6 +5,8 @@
 #define MyAppPublisher "ksun22515@gmail.com"
 #define MyAppURL "https://github.com/sqmw/MFCMouseEffect"
 #define MyAppExeName "MFCMouseEffect.exe"
+#define ReleaseDir "..\\x64\\Release\\"
+#define ReleaseWebUiDir ReleaseDir + "webui\\"
 
 ; Optional Chinese language file detection (avoid build failure if not installed)
 #define LangZh1 AddBackslash(GetEnv("ProgramFiles")) + "Inno Setup 6\\Languages\\ChineseSimplified.isl"
@@ -15,6 +17,41 @@
   #define LangZh LangZh2
 #else
   #define LangZh ""
+#endif
+
+; Release packaging preflight (fail-fast on missing WebUI generated bundles)
+#if !FileExists(ReleaseDir + MyAppExeName)
+  #error "Missing release binary. Build x64 Release first."
+#endif
+#if !FileExists(ReleaseWebUiDir + "index.html")
+  #error "Missing webui/index.html in x64 Release output."
+#endif
+#if !FileExists(ReleaseWebUiDir + "dialog.svelte.js")
+  #error "Missing webui/dialog.svelte.js. Run WebUIWorkspace build before packaging."
+#endif
+#if !FileExists(ReleaseWebUiDir + "settings-shell.svelte.js")
+  #error "Missing webui/settings-shell.svelte.js. Run WebUIWorkspace build before packaging."
+#endif
+#if !FileExists(ReleaseWebUiDir + "section-workspace.svelte.js")
+  #error "Missing webui/section-workspace.svelte.js. Run WebUIWorkspace build before packaging."
+#endif
+#if !FileExists(ReleaseWebUiDir + "general-settings.svelte.js")
+  #error "Missing webui/general-settings.svelte.js. Run WebUIWorkspace build before packaging."
+#endif
+#if !FileExists(ReleaseWebUiDir + "effects-settings.svelte.js")
+  #error "Missing webui/effects-settings.svelte.js. Run WebUIWorkspace build before packaging."
+#endif
+#if !FileExists(ReleaseWebUiDir + "text-settings.svelte.js")
+  #error "Missing webui/text-settings.svelte.js. Run WebUIWorkspace build before packaging."
+#endif
+#if !FileExists(ReleaseWebUiDir + "trail-settings.svelte.js")
+  #error "Missing webui/trail-settings.svelte.js. Run WebUIWorkspace build before packaging."
+#endif
+#if !FileExists(ReleaseWebUiDir + "input-indicator-settings.svelte.js")
+  #error "Missing webui/input-indicator-settings.svelte.js. Run WebUIWorkspace build before packaging."
+#endif
+#if !FileExists(ReleaseWebUiDir + "automation-ui.svelte.js")
+  #error "Missing webui/automation-ui.svelte.js. Run WebUIWorkspace build before packaging."
 #endif
 
 [Setup]
@@ -75,7 +112,7 @@ Name: "startup"; Description: "Run at Windows startup"; GroupDescription: "Addit
 Source: "..\x64\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\x64\Release\config.json"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist skipifsourcedoesntexist
 ; Web UI (local server assets)
-Source: "..\x64\Release\webui\*"; DestDir: "{app}\webui"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
+Source: "..\x64\Release\webui\*"; DestDir: "{app}\webui"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Runtime DLLs
 Source: "..\x64\Release\webgpu_dawn.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "..\x64\Release\d3dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist

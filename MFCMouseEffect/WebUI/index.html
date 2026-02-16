@@ -9,192 +9,22 @@
 </head>
 
 <body>
-  <div class="status" id="status" aria-live="polite"></div>
-  <div class="wrap">
-    <div class="top">
-      <div class="brand">
-        <div class="t" data-i18n="title">MFCMouseEffect Settings</div>
-        <div class="s" data-i18n="subtitle">Local UI · instant apply · saved to config.json</div>
-        <div class="hint" data-i18n="hint_apply">Change values then click Apply.</div>
-      </div>
-      <div class="btns">
-        <a id="btnStar" class="btn-link btn-star" href="https://github.com/sqmw/MFCMouseEffect" target="_blank"
-          rel="noopener" data-i18n-title="tip_star" title="Open project page">
-          &#9733; <span data-i18n="btn_star">Star</span>
-        </a>
-        <button id="btnReload" data-i18n="btn_reload" data-i18n-title="tip_reload"
-          title="Reload config.json from disk">Reload</button>
-        <button id="btnReset" data-i18n="btn_reset" data-i18n-title="tip_reset" title="Reset to defaults">Reset</button>
-        <button id="btnStop" data-i18n="btn_stop" data-i18n-title="tip_stop"
-          title="Stop server (reopen from tray)">Stop</button>
-        <button id="btnSave" class="primary" data-i18n="btn_apply" data-i18n-title="tip_apply"
-          title="Apply current form values">Apply</button>
-      </div>
-    </div>
+  <div id="web_settings_shell_mount"></div>
 
-    <div class="row">
-      <div class="card" id="general">
-        <h3 data-i18n="section_general">General</h3>
-        <div class="grid">
-          <label data-i18n="label_language">Language</label>
-          <select id="ui_language"></select>
-          <label data-i18n="label_theme">Theme</label>
-          <select id="theme"></select>
-          <label class="label-with-tip">
-            <span data-i18n="label_hold_follow_mode">Hold Tracking</span>
-            <span class="info-badge" data-i18n-title="tip_hold_follow_mode"
-              title="Choose by feel and CPU budget.">!</span>
-          </label>
-          <select id="hold_follow_mode"></select>
-          <label class="label-with-tip">
-            <span data-i18n="label_hold_presenter_backend">Hold GPU Presenter</span>
-            <span class="info-badge" data-i18n-title="tip_hold_presenter_backend"
-              title="Select hold GPU presenter backend strategy.">!</span>
-          </label>
-          <select id="hold_presenter_backend"></select>
-        </div>
-      </div>
-
-      <div class="card" id="active">
-        <h3 data-i18n="section_effects">Active Effects</h3>
-        <div class="grid">
-          <label data-i18n="label_click">Click</label><select id="click"></select>
-          <label data-i18n="label_trail">Trail</label><select id="trail"></select>
-          <label data-i18n="label_scroll">Scroll</label><select id="scroll"></select>
-          <label data-i18n="label_hold">Hold</label><select id="hold"></select>
-          <label data-i18n="label_hover">Hover</label><select id="hover"></select>
-        </div>
-      </div>
-    </div>
-
-    <div class="row" style="margin-top:12px">
-      <div class="card" id="input-indicator">
-        <h3 data-i18n="section_input_indicator">Input Indicator</h3>
-        <div class="grid">
-          <label data-i18n="label_input_indicator_enabled">Enable indicator</label>
-          <input id="ii_enabled" type="checkbox" />
-          <label data-i18n="label_input_indicator_keyboard_enabled">Enable keyboard indicator</label>
-          <input id="ii_keyboard_enabled" type="checkbox" />
-
-          <label data-i18n="label_input_indicator_position_mode">Position mode</label>
-          <select id="ii_position_mode"></select>
-          <label data-i18n="label_input_indicator_offset">Relative offset X/Y</label>
-          <div class="pair">
-            <input id="ii_offset_x" type="number" min="-2000" max="2000" />
-            <input id="ii_offset_y" type="number" min="-2000" max="2000" />
-          </div>
-          <label data-i18n="label_key_display_mode">Keyboard Display</label>
-          <select id="ii_key_display_mode"></select>
-          <label data-i18n="label_input_indicator_absolute">Absolute X/Y</label>
-          <div class="pair">
-            <input id="ii_absolute_x" type="number" min="-20000" max="20000" />
-            <input id="ii_absolute_y" type="number" min="-20000" max="20000" />
-          </div>
-          <label style="margin-top: 8px; font-weight:bold; opacity:0.9;" data-i18n="label_per_monitor_cfg">Per-Monitor
-            Overrides (Absolute)</label>
-          <div id="ii_per_monitor_overrides"
-            style="margin-left: 0px; border-left: 2px solid #555; padding-left: 8px; display: none; margin-top: 4px;">
-          </div>
-          <label data-i18n="label_input_indicator_target_monitor">Target monitor (mouse)</label>
-          <select id="ii_target_monitor"></select>
-
-          <label data-i18n="label_input_indicator_size">Indicator size (px)</label>
-          <input id="ii_size_px" type="number" min="40" max="200" />
-          <label data-i18n="label_input_indicator_duration">Animation duration (ms)</label>
-          <input id="ii_duration_ms" type="number" min="120" max="2000" />
-
-
-          <div class="hint span2" data-i18n="hint_input_indicator">Supports click, scroll, and keyboard display. Choose
-            target monitor for multi-screen setups; select "Custom Multi-Screen" for simultaneous display on multiple
-            monitors.</div>
-        </div>
-      </div>
-
-      <div class="card" id="text">
-        <h3 data-i18n="section_text">Text Content (Click/Text)</h3>
-        <div class="grid">
-          <label data-i18n="label_text_font_size">Text font size (pt)</label>
-          <input id="text_font_size" type="number" min="6" max="96" step="0.5" />
-          <label data-i18n="label_texts">Comma separated</label>
-          <textarea id="text_content" data-i18n-placeholder="placeholder_texts" placeholder="happy,healthy"></textarea>
-          <div class="hint span2" data-i18n="hint_texts">Use English comma "," to separate words.</div>
-        </div>
-      </div>
-
-      <div class="card" id="trail">
-        <h3 data-i18n="section_trail_tuning">Trail Tuning</h3>
-        <div class="grid">
-          <label data-i18n="label_style_preset">Style preset</label>
-          <select id="trail_style">
-            <option value="default">default</option>
-            <option value="snappy">snappy</option>
-            <option value="long">long</option>
-            <option value="cinematic">cinematic</option>
-            <option value="custom">custom</option>
-          </select>
-          <div class="hint span2" data-i18n="hint_trail_preset">Preset name only; values below are what actually apply.
-          </div>
-          <label data-i18n="label_idle_fade">Idle fade start/end (ms)</label>
-          <div class="pair">
-            <input id="k_idle_fade_start" type="number" min="0" max="3000" />
-            <input id="k_idle_fade_end" type="number" min="0" max="6000" />
-          </div>
-          <div class="hint span2" data-i18n="hint_idle_fade">Controls how fast the trail converges after the mouse
-            stops.</div>
-        </div>
-        <div class="grid" style="margin-top:10px">
-          <label class="mono" data-i18n="label_streamer_profile">streamer duration/max</label>
-          <div class="pair">
-            <input id="p_streamer_duration" type="number" min="80" max="2000" />
-            <input id="p_streamer_max" type="number" min="2" max="240" />
-          </div>
-          <label class="mono" data-i18n="label_electric_profile">electric duration/max</label>
-          <div class="pair">
-            <input id="p_electric_duration" type="number" min="80" max="2000" />
-            <input id="p_electric_max" type="number" min="2" max="240" />
-          </div>
-          <label class="mono" data-i18n="label_meteor_profile">meteor duration/max</label>
-          <div class="pair">
-            <input id="p_meteor_duration" type="number" min="80" max="2000" />
-            <input id="p_meteor_max" type="number" min="2" max="240" />
-          </div>
-          <label class="mono" data-i18n="label_tubes_profile">tubes duration/max</label>
-          <div class="pair">
-            <input id="p_tubes_duration" type="number" min="80" max="2000" />
-            <input id="p_tubes_max" type="number" min="2" max="240" />
-          </div>
-          <label class="mono" data-i18n="label_line_profile">line duration/max</label>
-          <div class="pair">
-            <input id="p_line_duration" type="number" min="80" max="2000" />
-            <input id="p_line_max" type="number" min="2" max="240" />
-          </div>
-
-          <div class="sep"></div>
-
-          <label class="mono" data-i18n="label_streamer_params">streamer glow/core/head</label>
-          <div class="triple">
-            <input id="k_streamer_glow" type="number" step="0.05" min="0.5" max="4" />
-            <input id="k_streamer_core" type="number" step="0.05" min="0.2" max="2" />
-            <input id="k_streamer_head" type="number" step="0.05" min="0.8" max="3" />
-          </div>
-          <label class="mono" data-i18n="label_electric_params">electric amp/fork</label>
-          <div class="pair">
-            <input id="k_electric_amp" type="number" step="0.05" min="0.2" max="3" />
-            <input id="k_electric_fork" type="number" step="0.01" min="0" max="0.5" />
-          </div>
-          <label class="mono" data-i18n="label_meteor_params">meteor rate/speed</label>
-          <div class="pair">
-            <input id="k_meteor_rate" type="number" step="0.01" min="0.2" max="4" />
-            <input id="k_meteor_speed" type="number" step="0.01" min="0.2" max="4" />
-          </div>
-          <div class="hint span2" data-i18n="hint_clamp">Values are clamped to safe ranges when applied.</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <script src="/dialog.js"></script>
+  <script src="/dialog.svelte.js"></script>
+  <script src="/automation-templates.js"></script>
+  <script src="/settings-shell.svelte.js"></script>
+  <script src="/general-settings.svelte.js"></script>
+  <script src="/effects-settings.svelte.js"></script>
+  <script src="/text-settings.svelte.js"></script>
+  <script src="/trail-settings.svelte.js"></script>
+  <script src="/input-indicator-settings.svelte.js"></script>
+  <script src="/automation-ui.svelte.js"></script>
+  <script src="/section-workspace.svelte.js"></script>
+  <script src="/i18n.js"></script>
+  <script src="/i18n-runtime.js"></script>
+  <script src="/web-api.js"></script>
+  <script src="/settings-form.js"></script>
   <script src="/app.js"></script>
 </body>
 

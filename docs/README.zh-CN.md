@@ -42,6 +42,22 @@
 - 问题记录：`docs/issues/scroll_twinkle_starfield_effect.md`（新增滚轮 `twinkle` 星屑粒子特效，并完成工厂/设置/托盘全链路接入）
 - 问题记录：`docs/issues/input-automation-mouse-gesture-keyboard-mapping.zh-CN.md`（新增鼠标 action/手势 映射键盘的核心架构与配置链路，默认关闭）
 - 问题记录：`docs/input_indicator_refactor.md`（重构：通用输入指示器，支持键盘按键显示与鼠标动作增强）
+- 问题记录：`docs/issues/web-settings-hci-refresh.zh-CN.md`（Web 设置页按 HCI 原则重构：信息分区、导航、反馈与响应式可用性）
+- 问题记录：`docs/issues/web-settings-svelte-migration.zh-CN.md`（Web 设置页 Svelte 渐进迁移清单：按功能分阶段迁移与核对）
+- 问题记录：`docs/issues/web-settings-stage4-form-coordinator.zh-CN.md`（阶段 4.1：将 Web 设置表单编排从 app.js 抽离到独立模块）
+- 问题记录：`docs/issues/web-settings-stage4-i18n-extraction.zh-CN.md`（阶段 4.2：将 Web 设置 i18n 字典从 app.js 抽离到独立 WebUI 资源）
+- 问题记录：`docs/issues/web-settings-stage4-web-api-extraction.zh-CN.md`（阶段 4.3：将 Web 设置 API 访问与健康检查链路从 app.js 抽离到独立模块）
+- 问题记录：`docs/issues/web-settings-stage4-i18n-runtime-extraction.zh-CN.md`（阶段 4.4：将 Web 设置 i18n 运行时行为从 app.js 抽离到独立模块）
+- 问题记录：`docs/issues/web-settings-stage5-shell-svelteization.zh-CN.md`（阶段 5.1：将 Web 设置壳层布局从静态 HTML 迁移到 Svelte 组件，且保持 JS-only）
+- 问题记录：`docs/issues/web-settings-stage5-dialog-svelteization.zh-CN.md`（阶段 5.2：将 Web 设置主题弹窗从 legacy DOM 脚本迁移到 Svelte，且保持 JS-only）
+- 问题记录：`docs/issues/web-settings-stage5-shell-action-bridge.zh-CN.md`（阶段 5.3：将顶部动作与状态横幅交互桥接到 Svelte 壳层运行时 API）
+- 问题记录：`docs/issues/web-settings-stage6-input-indicator-stateful-svelte.zh-CN.md`（阶段 6.1：将 Input Indicator 的动态表单与运行时读写迁移到 Svelte 状态层，并保留 fallback）
+- 问题记录：`docs/issues/web-settings-stage6-core-sections-stateful-svelte.zh-CN.md`（阶段 6.2：将 General/Effects/Text/Trail 分区表单读写迁移到 Svelte 状态 API，并保留 fallback）
+- 问题记录：`docs/issues/webui-generated-bundles-untracked.zh-CN.md`（WebUI 的 Svelte 编译产物改为不入库，仅保留源码并在本地构建复制）
+- 问题记录：`docs/issues/web-settings-entry-layout-and-iss-preflight.zh-CN.md`（收拢 WebUI 多入口脚本到 `src/entries`，并为安装包增加 WebUI 关键产物预检）
+- 问题记录：`docs/issues/web-settings-automation-zh-i18n-fix.zh-CN.md`（修复中文语言下自动化映射区域仍显示英文的问题）
+- 问题记录：`docs/issues/webui-pnpm-migration.zh-CN.md`（将 WebUIWorkspace 包管理器从 npm 切换为 pnpm，并完成锁文件迁移）
+- 问题记录：`docs/issues/web-settings-automation-editor.zh-CN.md`（Web 设置页新增自动化映射编辑器：鼠标 action/手势 映射到键盘）
 - 问题记录：`docs/issues/mouse-action-indicator-overlay.zh-CN.md`（旧：新增光标附近鼠标动作指示器）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
 - 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）

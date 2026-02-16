@@ -45,7 +45,7 @@
   - `Reload/Apply/Reset/Stop` now check connection state before sending requests.
   - If state is `offline/stopped/unauthorized`, show a blocking warning dialog and abort the action.
   - Top-left banner is still kept, so users get both persistent status and immediate click feedback.
-  - Replaced native browser `alert` with a themed dialog (`dialog.js`) to match WebUI style.
+  - Replaced native browser `alert` with a themed dialog (`dialog.svelte.js`) to match WebUI style.
 
 ## 2026-02-08 Update 3: Dialog Consistency + Localized Runtime Status
 - Interaction consistency:
