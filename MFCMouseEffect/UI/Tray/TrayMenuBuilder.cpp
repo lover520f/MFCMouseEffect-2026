@@ -55,6 +55,7 @@ static CString FallbackOptionLabel(UINT cmd, bool zh) {
 
         case kCmdScrollArrow: return PickLabel(L"\u65B9\u5411\u6307\u793A", L"Arrow", zh);
         case kCmdScrollHelix: return PickLabel(L"3D \u53CC\u87BA\u65CB", L"3D Helix", zh);
+        case kCmdScrollTwinkle: return PickLabel(L"\u661F\u5C18\u55B7\u6D41", L"Stardust Stream", zh);
         case kCmdScrollNone: return PickLabel(L"\u65E0", L"None", zh);
 
         case kCmdHoldCharge: return PickLabel(L"\u84C4\u529B (\u80FD\u91CF\u73AF)", L"Energy Charge", zh);
@@ -102,6 +103,7 @@ static bool IsCurrentTypeMatchByCommand(const std::string& currentType, UINT cmd
 
         case kCmdScrollArrow: return currentType == "arrow";
         case kCmdScrollHelix: return currentType == "helix";
+        case kCmdScrollTwinkle: return currentType == "twinkle";
         case kCmdScrollNone: return currentType == "none";
 
         case kCmdHoldCharge: return currentType == "charge";
@@ -231,6 +233,7 @@ static bool TryBuildEffectJsonByCommand(UINT cmd, std::string* outJson) {
 
         case kCmdScrollArrow: setEffect("scroll", "arrow"); return true;
         case kCmdScrollHelix: setEffect("scroll", "helix"); return true;
+        case kCmdScrollTwinkle: setEffect("scroll", "twinkle"); return true;
         case kCmdScrollNone: clearEffect("scroll"); return true;
 
         case kCmdHoldCharge: setEffect("hold", "charge"); return true;
