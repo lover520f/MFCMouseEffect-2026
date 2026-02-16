@@ -2,7 +2,7 @@
 
 #include "QuantumHaloGpuV2ComputeEngine.h"
 #include "QuantumHaloGpuV2Presenter.h"
-#include "MouseFx/Core/ConfigPathResolver.h"
+#include "MouseFx/Core/Config/ConfigPathResolver.h"
 
 #include <windows.h>
 #include <cstdio>

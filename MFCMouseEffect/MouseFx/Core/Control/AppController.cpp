@@ -6,7 +6,7 @@
 #include "CommandHandler.h"
 #include "DispatchRouter.h"
 #include "MouseFx/Core/MouseFxMessages.h"
-#include "MouseFx/Core/ConfigPathResolver.h"
+#include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Core/EffectFactory.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Core/JsonLite.h"

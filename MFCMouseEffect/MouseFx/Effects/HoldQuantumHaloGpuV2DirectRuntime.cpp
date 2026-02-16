@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "HoldQuantumHaloGpuV2DirectRuntime.h"
 
-#include "MouseFx/Core/ConfigPathResolver.h"
+#include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Renderers/Hold/QuantumHaloGpuV2ComputeEngine.h"
 #include "MouseFx/Renderers/Hold/QuantumHaloGpuV2Presenter.h"
 #include "MouseFx/Utils/MathUtils.h"

@@ -8,7 +8,7 @@
 #include <sstream>
 
 #include "MouseFx/Core/Control/AppController.h"
-#include "MouseFx/Core/ConfigPathResolver.h"
+#include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/ThirdParty/json.hpp"
 #include "MouseFx/Utils/StringUtils.h"
 

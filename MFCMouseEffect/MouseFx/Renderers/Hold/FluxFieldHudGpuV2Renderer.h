@@ -3,7 +3,7 @@
 #include "FluxFieldGpuV2ComputeEngine.h"
 #include "FluxFieldHudGpuV2D2DBackend.h"
 #include "FluxFieldHudCpuRenderer.h"
-#include "MouseFx/Core/ConfigPathResolver.h"
+#include "MouseFx/Core/Config/ConfigPathResolver.h"
 
 #include <cstdio>
 #include <filesystem>

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "HoldEffect.h"
 
-#include "MouseFx/Core/ConfigPathResolver.h"
+#include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Effects/RippleBasedHoldRuntime.h"
 #include "MouseFx/Effects/HoldQuantumHaloGpuV2DirectRuntime.h"
 #include "MouseFx/Renderers/HoldRuntimeRegistry.h"
