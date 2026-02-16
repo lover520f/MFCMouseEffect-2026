@@ -1,7 +1,7 @@
 #pragma once
 #include "../../Interfaces/ITrailRenderer.h"
 #include "MouseFx/Compute/EffectComputeExecutor.h"
-#include "MouseFx/Core/OverlayCoordSpace.h"
+#include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include <vector>
 #include <cmath>

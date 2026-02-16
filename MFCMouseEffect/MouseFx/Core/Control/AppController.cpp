@@ -8,7 +8,7 @@
 #include "MouseFx/Core/MouseFxMessages.h"
 #include "MouseFx/Core/ConfigPathResolver.h"
 #include "MouseFx/Core/EffectFactory.h"
-#include "MouseFx/Core/OverlayHostService.h"
+#include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Core/JsonLite.h"
 #include "MouseFx/ThirdParty/json.hpp"
 #include "MouseFx/Utils/MathUtils.h"

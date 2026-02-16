@@ -102,10 +102,10 @@
     <ClInclude Include="MouseFx\Core\GdiPlusSession.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\OverlayHostService.h">
+    <ClInclude Include="MouseFx\Core\Overlay\OverlayHostService.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\OverlayCoordSpace.h">
+    <ClInclude Include="MouseFx\Core\Overlay\OverlayCoordSpace.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\GlobalMouseHook.h">
@@ -177,7 +177,7 @@
     <ClInclude Include="Settings\SettingsOptions.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\InputIndicatorOverlay.h">
+    <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorOverlay.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h">
@@ -224,10 +224,10 @@
     <ClCompile Include="MouseFx\Core\Control\AppController.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Core\OverlayHostService.cpp">
+    <ClCompile Include="MouseFx\Core\Overlay\OverlayHostService.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Core\OverlayCoordSpace.cpp">
+    <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Server\HttpServer.cpp">
@@ -287,7 +287,7 @@
     <ClCompile Include="Settings\SettingsBackend.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Core\InputIndicatorOverlay.cpp">
+    <ClCompile Include="MouseFx\Core\Overlay\InputIndicatorOverlay.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Renderers\Indicator\IndicatorRenderer.cpp">

@@ -9,7 +9,7 @@
 
 #include "MouseFx/Core/GdiPlusSession.h"
 #include "MouseFx/Core/GlobalMouseHook.h"
-#include "MouseFx/Core/InputIndicatorOverlay.h"
+#include "MouseFx/Core/Overlay/InputIndicatorOverlay.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Core/Config/EffectConfig.h"
 #include "MouseFx/Core/VmForegroundDetector.h"

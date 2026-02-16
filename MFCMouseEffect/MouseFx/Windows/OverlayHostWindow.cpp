@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "OverlayHostWindow.h"
-#include "MouseFx/Core/OverlayCoordSpace.h"
+#include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TimeUtils.h"
 
 #include <algorithm>

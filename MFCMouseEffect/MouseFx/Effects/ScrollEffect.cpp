@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ScrollEffect.h"
-#include "MouseFx/Core/OverlayHostService.h"
+#include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/TimeUtils.h"
 #include <algorithm>

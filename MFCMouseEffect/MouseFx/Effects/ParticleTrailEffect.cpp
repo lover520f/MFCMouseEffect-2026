@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ParticleTrailEffect.h"
-#include "MouseFx/Core/OverlayHostService.h"
+#include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Layers/ParticleTrailOverlayLayer.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 

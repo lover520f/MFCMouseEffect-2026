@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "TrailEffect.h"
-#include "MouseFx/Core/OverlayHostService.h"
+#include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Layers/TrailOverlayLayer.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Interfaces/TrailRenderStrategies.h"

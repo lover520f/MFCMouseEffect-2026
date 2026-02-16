@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "RippleBasedHoldRuntime.h"
 
-#include "MouseFx/Core/OverlayHostService.h"
+#include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Renderers/RendererRegistry.h"
 #include "MouseFx/Renderers/HoldRuntimeRegistry.h"
 #include "MouseFx/Styles/ThemeStyle.h"

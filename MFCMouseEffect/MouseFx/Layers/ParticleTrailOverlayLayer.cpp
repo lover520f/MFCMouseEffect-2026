@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "ParticleTrailOverlayLayer.h"
-#include "MouseFx/Core/OverlayCoordSpace.h"
+#include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 
 #include <algorithm>
 #include <cmath>

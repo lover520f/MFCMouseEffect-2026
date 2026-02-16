@@ -1,6 +1,6 @@
 #pragma once
 #include "../../Interfaces/ITrailRenderer.h"
-#include "MouseFx/Core/OverlayCoordSpace.h"
+#include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include "MouseFx/Utils/TrailMath.h"
 #include "MouseFx/Utils/XorShift.h"

@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "FluxFieldHudGpuV2D2DBackend.h"
-#include "MouseFx/Core/OverlayCoordSpace.h"
+#include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/MathUtils.h"
 
 #include <algorithm>

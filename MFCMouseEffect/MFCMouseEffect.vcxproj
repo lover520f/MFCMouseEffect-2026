@@ -222,9 +222,9 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Compute\EffectComputeExecutor.h" />
     <ClInclude Include="MouseFx\Core\ConfigPathResolver.h" />
     <ClInclude Include="MouseFx\Core\EffectFactory.h" />
-    <ClInclude Include="MouseFx\Core\OverlayCoordSpace.h" />
-    <ClInclude Include="MouseFx\Core\OverlayHostService.h" />
-    <ClInclude Include="MouseFx\Core\InputIndicatorOverlay.h" />
+    <ClInclude Include="MouseFx\Core\Overlay\OverlayCoordSpace.h" />
+    <ClInclude Include="MouseFx\Core\Overlay\OverlayHostService.h" />
+    <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorOverlay.h" />
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
     <ClInclude Include="MouseFx\Core\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\GlobalMouseHook.h" />
@@ -299,9 +299,9 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Control\AppController.ConfigUpdates.cpp" />
     <ClCompile Include="MouseFx\Core\ConfigPathResolver.cpp" />
     <ClCompile Include="MouseFx\Core\EffectFactory.cpp" />
-    <ClCompile Include="MouseFx\Core\OverlayCoordSpace.cpp" />
-    <ClCompile Include="MouseFx\Core\OverlayHostService.cpp" />
-    <ClCompile Include="MouseFx\Core\InputIndicatorOverlay.cpp" />
+    <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp" />
+    <ClCompile Include="MouseFx\Core\Overlay\OverlayHostService.cpp" />
+    <ClCompile Include="MouseFx\Core\Overlay\InputIndicatorOverlay.cpp" />
     <ClCompile Include="MouseFx\Core\GlobalMouseHook.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
     <ClCompile Include="MouseFx\Core\Control\IpcController.cpp" />
