@@ -2,6 +2,7 @@
 #include "EffectConfigJsonCodecSerializeInternal.h"
 
 #include "EffectConfigInternal.h"
+#include "EffectConfigJsonKeys.h"
 
 namespace mousefx::config_json::serialize_internal {
 
@@ -11,25 +12,25 @@ nlohmann::json BuildInputIndicatorJson(const InputIndicatorConfig& source) {
     nlohmann::json perMonitorOverrides = nlohmann::json::object();
     for (const auto& [key, value] : input.perMonitorOverrides) {
         perMonitorOverrides[key] = {
-            {"enabled", value.enabled},
-            {"absolute_x", value.absoluteX},
-            {"absolute_y", value.absoluteY}
+            {keys::input::kEnabled, value.enabled},
+            {keys::input::kAbsoluteX, value.absoluteX},
+            {keys::input::kAbsoluteY, value.absoluteY}
         };
     }
 
     return {
-        {"enabled", input.enabled},
-        {"keyboard_enabled", input.keyboardEnabled},
-        {"position_mode", input.positionMode},
-        {"offset_x", input.offsetX},
-        {"offset_y", input.offsetY},
-        {"absolute_x", input.absoluteX},
-        {"absolute_y", input.absoluteY},
-        {"target_monitor", input.targetMonitor},
-        {"key_display_mode", input.keyDisplayMode},
-        {"size_px", input.sizePx},
-        {"duration_ms", input.durationMs},
-        {"per_monitor_overrides", perMonitorOverrides}
+        {keys::input::kEnabled, input.enabled},
+        {keys::input::kKeyboardEnabled, input.keyboardEnabled},
+        {keys::input::kPositionMode, input.positionMode},
+        {keys::input::kOffsetX, input.offsetX},
+        {keys::input::kOffsetY, input.offsetY},
+        {keys::input::kAbsoluteX, input.absoluteX},
+        {keys::input::kAbsoluteY, input.absoluteY},
+        {keys::input::kTargetMonitor, input.targetMonitor},
+        {keys::input::kKeyDisplayMode, input.keyDisplayMode},
+        {keys::input::kSizePx, input.sizePx},
+        {keys::input::kDurationMs, input.durationMs},
+        {keys::input::kPerMonitorOverrides, perMonitorOverrides}
     };
 }
 
@@ -38,16 +39,16 @@ nlohmann::json BuildTrailProfilesJson(const TrailProfilesConfig& profiles) {
     auto addProfile = [&](const char* key, TrailHistoryProfile profile) {
         profile = config_internal::SanitizeTrailHistoryProfile(profile);
         trailProfiles[key] = {
-            {"duration_ms", profile.durationMs},
-            {"max_points", profile.maxPoints}
+            {keys::profile::kDurationMs, profile.durationMs},
+            {keys::profile::kMaxPoints, profile.maxPoints}
         };
     };
 
-    addProfile("line", profiles.line);
-    addProfile("streamer", profiles.streamer);
-    addProfile("electric", profiles.electric);
-    addProfile("meteor", profiles.meteor);
-    addProfile("tubes", profiles.tubes);
+    addProfile(keys::profile::kLine, profiles.line);
+    addProfile(keys::profile::kStreamer, profiles.streamer);
+    addProfile(keys::profile::kElectric, profiles.electric);
+    addProfile(keys::profile::kMeteor, profiles.meteor);
+    addProfile(keys::profile::kTubes, profiles.tubes);
     return trailProfiles;
 }
 
@@ -55,25 +56,25 @@ nlohmann::json BuildTrailParamsJson(const TrailRendererParamsConfig& source) {
     const auto params = config_internal::SanitizeTrailParams(source);
 
     nlohmann::json trailParams;
-    trailParams["streamer"] = {
-        {"glow_width_scale", params.streamer.glowWidthScale},
-        {"core_width_scale", params.streamer.coreWidthScale},
-        {"head_power", params.streamer.headPower}
+    trailParams[keys::trail_params::kStreamer] = {
+        {keys::trail_params::streamer::kGlowWidthScale, params.streamer.glowWidthScale},
+        {keys::trail_params::streamer::kCoreWidthScale, params.streamer.coreWidthScale},
+        {keys::trail_params::streamer::kHeadPower, params.streamer.headPower}
     };
-    trailParams["electric"] = {
-        {"amplitude_scale", params.electric.amplitudeScale},
-        {"fork_chance", params.electric.forkChance}
+    trailParams[keys::trail_params::kElectric] = {
+        {keys::trail_params::electric::kAmplitudeScale, params.electric.amplitudeScale},
+        {keys::trail_params::electric::kForkChance, params.electric.forkChance}
     };
-    trailParams["meteor"] = {
-        {"spark_rate_scale", params.meteor.sparkRateScale},
-        {"spark_speed_scale", params.meteor.sparkSpeedScale}
+    trailParams[keys::trail_params::kMeteor] = {
+        {keys::trail_params::meteor::kSparkRateScale, params.meteor.sparkRateScale},
+        {keys::trail_params::meteor::kSparkSpeedScale, params.meteor.sparkSpeedScale}
     };
 
     if (params.idleFade.startMs > 0) {
-        trailParams["idle_fade_start_ms"] = params.idleFade.startMs;
+        trailParams[keys::trail_params::kIdleFadeStartMs] = params.idleFade.startMs;
     }
     if (params.idleFade.endMs > 0) {
-        trailParams["idle_fade_end_ms"] = params.idleFade.endMs;
+        trailParams[keys::trail_params::kIdleFadeEndMs] = params.idleFade.endMs;
     }
     return trailParams;
 }

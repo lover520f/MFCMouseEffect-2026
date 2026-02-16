@@ -81,6 +81,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Refactoring: `docs/refactoring/phase21-effectconfig-json-codec-boundary.md` (introduce dedicated JSON codec boundary so `Load/Save` focus on file lifecycle while schema mapping stays isolated)
 - Refactoring: `docs/refactoring/phase22-effectconfig-parse-multiunit-split.md` (split config JSON parse path into root/input-trail/effects units with a parser-internal boundary)
 - Refactoring: `docs/refactoring/phase23-effectconfig-serialize-multiunit-split.md` (split config JSON serialize path into root/input-trail/effects units with a serialize-internal boundary)
+- Refactoring: `docs/refactoring/phase24-effectconfig-json-keys-centralization.md` (centralize EffectConfig JSON schema keys and replace codec string literals with constants)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

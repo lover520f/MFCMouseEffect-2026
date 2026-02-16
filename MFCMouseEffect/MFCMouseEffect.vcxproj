@@ -258,6 +258,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\EffectConfig.h" />
     <ClInclude Include="MouseFx\Core\EffectConfigInternal.h" />
     <ClInclude Include="MouseFx\Core\EffectConfigJsonCodec.h" />
+    <ClInclude Include="MouseFx\Core\EffectConfigJsonKeys.h" />
     <ClInclude Include="MouseFx\Core\EffectConfigJsonCodecParseInternal.h" />
     <ClInclude Include="MouseFx\Core\EffectConfigJsonCodecSerializeInternal.h" />
     <ClInclude Include="MouseFx\Utils\MonitorUtils.h" />
