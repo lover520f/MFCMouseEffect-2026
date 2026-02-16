@@ -5,37 +5,9 @@
 #include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
 
-#include <algorithm>
 #include <chrono>
-#include <cctype>
-#include <sstream>
-
-#include "MouseFx/Utils/StringUtils.h"
 
 namespace mousefx {
-
-
-static std::string StatusText(int code) {
-    switch (code) {
-        case 200: return "OK";
-        case 400: return "Bad Request";
-        case 401: return "Unauthorized";
-        case 404: return "Not Found";
-        case 405: return "Method Not Allowed";
-        case 500: return "Internal Server Error";
-        default: return "OK";
-    }
-}
-
-static bool SockSendAll(int s, const char* data, int len) {
-    int off = 0;
-    while (off < len) {
-        int n = send(s, data + off, len - off, 0);
-        if (n <= 0) return false;
-        off += n;
-    }
-    return true;
-}
 
 HttpServer::HttpServer() = default;
 
@@ -155,73 +127,6 @@ bool HttpServer::HandleClient(int clientSock) {
         resp.body = "internal error";
     }
     return SendResponse(clientSock, resp);
-}
-
-bool HttpServer::ParseRequest(int clientSock, HttpRequest& out) {
-    std::string data;
-    data.reserve(4096);
-
-    char buf[2048];
-    while (data.find("\r\n\r\n") == std::string::npos) {
-        int n = recv(clientSock, buf, (int)sizeof(buf), 0);
-        if (n <= 0) return false;
-        data.append(buf, buf + n);
-        if (data.size() > 65536) return false;
-    }
-
-    size_t headerEnd = data.find("\r\n\r\n");
-    std::string header = data.substr(0, headerEnd);
-    std::string rest = data.substr(headerEnd + 4);
-
-    std::istringstream ss(header);
-    std::string line;
-    if (!std::getline(ss, line)) return false;
-    if (!line.empty() && line.back() == '\r') line.pop_back();
-
-    {
-        std::istringstream ls(line);
-        if (!(ls >> out.method >> out.path)) return false;
-    }
-
-    int contentLen = 0;
-    while (std::getline(ss, line)) {
-        if (!line.empty() && line.back() == '\r') line.pop_back();
-        if (line.empty()) break;
-        auto pos = line.find(':');
-        if (pos == std::string::npos) continue;
-        std::string key = ToLowerAscii(TrimAscii(line.substr(0, pos)));
-        std::string val = TrimAscii(line.substr(pos + 1));
-        out.headers[key] = val;
-        if (key == "content-length") {
-            contentLen = atoi(val.c_str());
-        }
-    }
-
-    if (contentLen < 0 || contentLen > 1024 * 1024) return false;
-    out.body = rest;
-    while ((int)out.body.size() < contentLen) {
-        int n = recv(clientSock, buf, (int)sizeof(buf), 0);
-        if (n <= 0) break;
-        out.body.append(buf, buf + n);
-    }
-    if ((int)out.body.size() > contentLen) out.body.resize(contentLen);
-    return true;
-}
-
-bool HttpServer::SendResponse(int clientSock, const HttpResponse& resp) {
-    std::ostringstream ss;
-    ss << "HTTP/1.1 " << resp.statusCode << " " << StatusText(resp.statusCode) << "\r\n";
-    ss << "Content-Type: " << (resp.contentType.empty() ? "text/plain; charset=utf-8" : resp.contentType) << "\r\n";
-    ss << "Content-Length: " << resp.body.size() << "\r\n";
-    ss << "Connection: close\r\n";
-    ss << "Cache-Control: no-store\r\n";
-    for (const auto& kv : resp.extraHeaders) {
-        ss << kv.first << ": " << kv.second << "\r\n";
-    }
-    ss << "\r\n";
-    const std::string head = ss.str();
-    if (!SockSendAll(clientSock, head.data(), (int)head.size())) return false;
-    return SockSendAll(clientSock, resp.body.data(), (int)resp.body.size());
 }
 
 } // namespace mousefx

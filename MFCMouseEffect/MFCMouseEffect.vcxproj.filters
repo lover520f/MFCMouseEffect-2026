@@ -233,6 +233,9 @@
     <ClCompile Include="MouseFx\Server\HttpServer.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Server\HttpServer.Protocol.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Server\WebUiAssets.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
