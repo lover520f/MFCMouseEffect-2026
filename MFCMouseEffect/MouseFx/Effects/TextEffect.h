@@ -2,7 +2,7 @@
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Windows/TextWindowPool.h"
-#include "MouseFx/Core/EffectConfig.h"
+#include "MouseFx/Core/Config/EffectConfig.h"
 
 namespace mousefx {
 

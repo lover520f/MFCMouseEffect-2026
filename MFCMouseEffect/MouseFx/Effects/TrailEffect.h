@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
-#include "MouseFx/Core/EffectConfig.h"
+#include "MouseFx/Core/Config/EffectConfig.h"
 #include "MouseFx/Windows/TrailWindow.h"
 #include <memory>
 

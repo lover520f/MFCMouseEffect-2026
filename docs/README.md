@@ -86,6 +86,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Refactoring: `docs/refactoring/phase26-effect-color-mapping-helper-extraction.md` (extract shared helpers for ripple/icon color field parse/serialize mapping to remove duplicate branches)
 - Refactoring: `docs/refactoring/phase27-parse-input-trail-unit-split.md` (split parse input/trail codec into dedicated units and remove mixed InputTrail implementation file)
 - Refactoring: `docs/refactoring/phase28-serialize-input-trail-unit-split.md` (split serialize input/trail codec into dedicated units and remove mixed InputTrail implementation file)
+- Refactoring: `docs/refactoring/phase29-core-config-folderization.md` (move `EffectConfig*` domain into `MouseFx/Core/Config` to reduce `Core` flatness and clarify ownership boundaries)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IOverlayLayer.h"
-#include "MouseFx/Core/EffectConfig.h"
+#include "MouseFx/Core/Config/EffectConfig.h"
 
 #include <string>
 #include <vector>

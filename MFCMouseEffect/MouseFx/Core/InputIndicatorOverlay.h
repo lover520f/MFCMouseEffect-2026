@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 
-#include "EffectConfig.h"
+#include "Config/EffectConfig.h"
 #include "GlobalMouseHook.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Renderers/Indicator/IndicatorRenderer.h"

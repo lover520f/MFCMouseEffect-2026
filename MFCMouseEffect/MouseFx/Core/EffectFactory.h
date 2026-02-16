@@ -4,7 +4,7 @@
 #include <string>
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
-#include "EffectConfig.h"
+#include "Config/EffectConfig.h"
 
 namespace mousefx {
 

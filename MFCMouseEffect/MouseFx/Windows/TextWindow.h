@@ -8,7 +8,7 @@
 #include <d2d1.h>
 #include <dwrite.h>
 
-#include "MouseFx/Core/EffectConfig.h"
+#include "MouseFx/Core/Config/EffectConfig.h"
 
 namespace mousefx {
 

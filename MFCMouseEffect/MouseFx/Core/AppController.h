@@ -11,7 +11,7 @@
 #include "GlobalMouseHook.h"
 #include "MouseFx/Core/InputIndicatorOverlay.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
-#include "EffectConfig.h"
+#include "Config/EffectConfig.h"
 #include "VmForegroundDetector.h"
 
 namespace mousefx {

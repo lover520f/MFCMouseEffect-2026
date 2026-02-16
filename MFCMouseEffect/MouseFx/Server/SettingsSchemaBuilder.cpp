@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "SettingsSchemaBuilder.h"
 
-#include "MouseFx/Core/EffectConfig.h"
+#include "MouseFx/Core/Config/EffectConfig.h"
 #include "MouseFx/ThirdParty/json.hpp"
 #include "MouseFx/Utils/MonitorUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
