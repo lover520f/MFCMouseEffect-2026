@@ -357,6 +357,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Server\HttpServer.cpp" />
     <ClCompile Include="MouseFx\Server\WebUiAssets.cpp" />
     <ClCompile Include="MouseFx\Server\WebSettingsServer.cpp" />
+    <ClCompile Include="MouseFx\Server\WebSettingsServer.Routing.cpp" />
+    <ClCompile Include="MouseFx\Server\WebSettingsServer.TokenMonitor.cpp" />
     <ClCompile Include="MouseFx\Server\SettingsSchemaBuilder.cpp" />
     <ClCompile Include="MouseFx\Server\SettingsStateMapper.cpp" />
     <ClCompile Include="UI\Settings\SettingsWnd.cpp" />

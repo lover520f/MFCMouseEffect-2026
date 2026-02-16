@@ -12,6 +12,8 @@ namespace mousefx {
 class AppController;
 class HttpServer;
 class WebUiAssets;
+struct HttpRequest;
+struct HttpResponse;
 
 class WebSettingsServer final {
 public:
@@ -31,6 +33,10 @@ public:
     void RotateToken();
 
 private:
+    void HandleRequest(const HttpRequest& req, HttpResponse& resp);
+    bool HandleApiRoute(const HttpRequest& req, const std::string& path, HttpResponse& resp);
+    bool HandleStaticAssetRoute(const HttpRequest& req, HttpResponse& resp);
+
     static std::string MakeToken();
     std::string TokenCopy() const;
     bool IsTokenValid(const std::string& token) const;

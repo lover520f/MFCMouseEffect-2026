@@ -239,6 +239,12 @@
     <ClCompile Include="MouseFx\Server\WebSettingsServer.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Server\WebSettingsServer.Routing.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\WebSettingsServer.TokenMonitor.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Core\System\GlobalMouseHook.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
