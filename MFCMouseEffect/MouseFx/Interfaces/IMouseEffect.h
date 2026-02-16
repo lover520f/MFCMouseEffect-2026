@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <cstdint>
 #include <string>
-#include "MouseFx/Core/GlobalMouseHook.h"
+#include "MouseFx/Core/System/GlobalMouseHook.h"
 
 namespace mousefx {
 

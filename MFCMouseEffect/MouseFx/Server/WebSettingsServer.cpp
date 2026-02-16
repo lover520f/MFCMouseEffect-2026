@@ -5,7 +5,7 @@
 #include <sstream>
 
 #include "MouseFx/Core/Control/AppController.h"
-#include "MouseFx/Core/GpuProbeHelper.h"
+#include "MouseFx/Core/System/GpuProbeHelper.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/SettingsSchemaBuilder.h"
 #include "MouseFx/Server/SettingsStateMapper.h"

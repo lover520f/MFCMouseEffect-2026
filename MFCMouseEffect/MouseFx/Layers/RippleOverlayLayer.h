@@ -2,7 +2,7 @@
 
 #include "MouseFx/Interfaces/IOverlayLayer.h"
 #include "MouseFx/Interfaces/IRippleRenderer.h"
-#include "MouseFx/Core/GlobalMouseHook.h"
+#include "MouseFx/Core/System/GlobalMouseHook.h"
 #include "MouseFx/Styles/RippleStyle.h"
 
 #include <memory>

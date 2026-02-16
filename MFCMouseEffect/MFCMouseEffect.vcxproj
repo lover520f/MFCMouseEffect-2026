@@ -226,8 +226,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Overlay\OverlayHostService.h" />
     <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorOverlay.h" />
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
-    <ClInclude Include="MouseFx\Core\GdiPlusSession.h" />
-    <ClInclude Include="MouseFx\Core\GlobalMouseHook.h" />
+    <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
+    <ClInclude Include="MouseFx\Core\System\GlobalMouseHook.h" />
     <ClInclude Include="MouseFx\Effects\IconEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IMouseEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IOverlayLayer.h" />
@@ -302,7 +302,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayHostService.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\InputIndicatorOverlay.cpp" />
-    <ClCompile Include="MouseFx\Core\GlobalMouseHook.cpp" />
+    <ClCompile Include="MouseFx\Core\System\GlobalMouseHook.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
     <ClCompile Include="MouseFx\Core\Control\IpcController.cpp" />
     <ClCompile Include="MouseFx\Core\JsonLite.cpp" />
@@ -318,7 +318,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Renderers\Hold\Neon3D\Neon3DFx.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.ApplySettings.cpp" />
-    <ClCompile Include="MouseFx\Core\GpuProbeHelper.cpp" />
+    <ClCompile Include="MouseFx\Core\System\GpuProbeHelper.cpp" />
     <ClCompile Include="MouseFx\Core\Control\DispatchRouter.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleBasedHoldRuntime.cpp" />
     <ClCompile Include="MouseFx\Renderers\Indicator\IndicatorRenderer.cpp" />

@@ -89,6 +89,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Refactoring: `docs/refactoring/phase29-core-config-folderization.md` (move `EffectConfig*` domain into `MouseFx/Core/Config` to reduce `Core` flatness and clarify ownership boundaries)
 - Refactoring: `docs/refactoring/phase30-core-control-folderization.md` (move AppController/command/dispatch/ipc control domain into `MouseFx/Core/Control` and retarget project/include boundaries)
 - Refactoring: `docs/refactoring/phase31-core-overlay-folderization.md` (move overlay domain units into `MouseFx/Core/Overlay` and harden moved-header include dependencies)
+- Refactoring: `docs/refactoring/phase32-core-system-folderization.md` (move OS/runtime-facing units into `MouseFx/Core/System` and retarget dependent include/project mappings)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

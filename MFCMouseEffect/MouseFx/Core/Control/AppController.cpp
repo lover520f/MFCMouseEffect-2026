@@ -13,8 +13,8 @@
 #include "MouseFx/ThirdParty/json.hpp"
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
-#include "MouseFx/Core/GpuProbeHelper.h"
-#include "MouseFx/Core/VmForegroundDetector.h"
+#include "MouseFx/Core/System/GpuProbeHelper.h"
+#include "MouseFx/Core/System/VmForegroundDetector.h"
 
 #include <new>
 #include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM

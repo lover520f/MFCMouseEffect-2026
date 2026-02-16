@@ -99,7 +99,7 @@
     <ClInclude Include="MouseFx\Compute\EffectComputeExecutor.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\GdiPlusSession.h">
+    <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\Overlay\OverlayHostService.h">
@@ -108,7 +108,7 @@
     <ClInclude Include="MouseFx\Core\Overlay\OverlayCoordSpace.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\GlobalMouseHook.h">
+    <ClInclude Include="MouseFx\Core\System\GlobalMouseHook.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\MouseFxMessages.h">
@@ -239,7 +239,7 @@
     <ClCompile Include="MouseFx\Server\WebSettingsServer.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Core\GlobalMouseHook.cpp">
+    <ClCompile Include="MouseFx\Core\System\GlobalMouseHook.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Styles\ThemeStyle.cpp">

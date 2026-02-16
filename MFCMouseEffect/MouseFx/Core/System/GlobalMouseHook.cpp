@@ -3,7 +3,7 @@
 #include "pch.h"
 
 #include "GlobalMouseHook.h"
-#include "MouseFxMessages.h"
+#include "MouseFx/Core/MouseFxMessages.h"
 
 #include <new>
 #include <string>
