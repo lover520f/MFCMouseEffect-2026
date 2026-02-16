@@ -12,10 +12,6 @@
 
 namespace mousefx {
 
-// Forward declarations — implementation details stay in .cpp
-class QuantumHaloGpuV2ComputeEngine;
-class QuantumHaloGpuV2Presenter;
-
 class HoldQuantumHaloGpuV2DirectRuntime final : public IHoldRuntime {
 public:
     HoldQuantumHaloGpuV2DirectRuntime() = default;

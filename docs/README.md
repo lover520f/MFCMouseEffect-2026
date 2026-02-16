@@ -95,6 +95,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Refactoring: `docs/refactoring/phase35-effectfactory-to-core-control.md` (move EffectFactory into `MouseFx/Core/Control` and align header dependencies with config/control boundaries)
 - Refactoring: `docs/refactoring/phase36-websettingsserver-multiunit-split.md` (split WebSettingsServer by lifecycle/routing/token-monitor responsibilities into separate implementation units)
 - Refactoring: `docs/refactoring/phase37-httpserver-protocol-split.md` (split HttpServer transport loop and HTTP protocol parse/response logic into dedicated implementation units)
+- Refactoring: `docs/refactoring/phase38-quantum-halo-presenter-backend-pluggable.md` (extract Quantum Halo GPU presentation into pluggable backend architecture with registry + host orchestration)
 - Install: `docs/install/installer-packaging-20260204.md` (Inno Setup packaging updates, 2026-02-04)
 ## What It Is
 - Global mouse click visualization for Windows: low-level hook (`WH_MOUSE_LL`) + GDI+ layered ripple windows.

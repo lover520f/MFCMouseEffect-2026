@@ -3,7 +3,7 @@
 
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Renderers/Hold/QuantumHaloGpuV2ComputeEngine.h"
-#include "MouseFx/Renderers/Hold/QuantumHaloGpuV2Presenter.h"
+#include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterHost.h"
 #include "MouseFx/Utils/MathUtils.h"
 
 #include <filesystem>
@@ -137,7 +137,7 @@ void HoldQuantumHaloGpuV2DirectRuntime::WorkerMain() {
     }
 
     QuantumHaloGpuV2ComputeEngine compute{};
-    QuantumHaloGpuV2Presenter presenter{};
+    QuantumHaloPresenterHost presenter{};
 
     const bool computeStarted = (runtimeReason == "ok") ? compute.Start() : false;
     if (!computeStarted && runtimeReason == "ok") {

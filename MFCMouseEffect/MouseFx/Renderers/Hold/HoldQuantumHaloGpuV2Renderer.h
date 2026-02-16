@@ -1,7 +1,7 @@
 #pragma once
 
 #include "QuantumHaloGpuV2ComputeEngine.h"
-#include "QuantumHaloGpuV2Presenter.h"
+#include "Presentation/QuantumHaloPresenterHost.h"
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 
 #include <windows.h>
@@ -132,7 +132,7 @@ private:
     };
 
     QuantumHaloGpuV2ComputeEngine gpuCompute_{};
-    QuantumHaloGpuV2Presenter gpuPresenter_{};
+    QuantumHaloPresenterHost gpuPresenter_{};
     HoldState state_{};
     bool gpuStarted_ = false;
     bool presenterStarted_ = false;
