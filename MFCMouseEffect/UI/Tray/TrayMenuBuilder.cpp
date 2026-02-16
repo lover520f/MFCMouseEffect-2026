@@ -3,7 +3,7 @@
 #include "TrayMenuBuilder.h"
 #include "TrayMenuCommands.h"
 
-#include "MouseFx/Core/AppController.h"
+#include "MouseFx/Core/Control/AppController.h"
 #include "Settings/SettingsOptions.h"
 
 #include <vector>

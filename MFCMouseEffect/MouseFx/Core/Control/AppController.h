@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
-#include "GdiPlusSession.h"
-#include "GlobalMouseHook.h"
+#include "MouseFx/Core/GdiPlusSession.h"
+#include "MouseFx/Core/GlobalMouseHook.h"
 #include "MouseFx/Core/InputIndicatorOverlay.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
-#include "Config/EffectConfig.h"
-#include "VmForegroundDetector.h"
+#include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Core/VmForegroundDetector.h"
 
 namespace mousefx {
 

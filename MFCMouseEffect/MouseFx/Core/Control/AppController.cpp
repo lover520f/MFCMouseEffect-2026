@@ -5,16 +5,16 @@
 #include "AppController.h"
 #include "CommandHandler.h"
 #include "DispatchRouter.h"
-#include "MouseFxMessages.h"
-#include "ConfigPathResolver.h"
-#include "EffectFactory.h"
-#include "OverlayHostService.h"
-#include "JsonLite.h"
+#include "MouseFx/Core/MouseFxMessages.h"
+#include "MouseFx/Core/ConfigPathResolver.h"
+#include "MouseFx/Core/EffectFactory.h"
+#include "MouseFx/Core/OverlayHostService.h"
+#include "MouseFx/Core/JsonLite.h"
 #include "MouseFx/ThirdParty/json.hpp"
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
-#include "GpuProbeHelper.h"
-#include "VmForegroundDetector.h"
+#include "MouseFx/Core/GpuProbeHelper.h"
+#include "MouseFx/Core/VmForegroundDetector.h"
 
 #include <new>
 #include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM

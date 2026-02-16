@@ -15,8 +15,8 @@
 #include "UI/DocView/MFCMouseEffectDoc.h"
 #include "UI/DocView/MFCMouseEffectView.h"
 
-#include "MouseFx/Core/AppController.h"
-#include "MouseFx/Core/IpcController.h"
+#include "MouseFx/Core/Control/AppController.h"
+#include "MouseFx/Core/Control/IpcController.h"
 #include "MouseFx/Server/WebSettingsServer.h"
 
 #include <string>

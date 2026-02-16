@@ -4,7 +4,7 @@
 #include <random>
 #include <sstream>
 
-#include "MouseFx/Core/AppController.h"
+#include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Core/GpuProbeHelper.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/SettingsSchemaBuilder.h"

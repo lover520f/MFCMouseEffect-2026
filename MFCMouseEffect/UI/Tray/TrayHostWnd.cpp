@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "framework.h"
 
 #include "TrayHostWnd.h"
@@ -6,7 +6,7 @@
 #include "MFCMouseEffect.h"
 #include "TrayMenuBuilder.h"
 #include "TrayMenuCommands.h"
-#include "MouseFx/Core/AppController.h"
+#include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 
 using namespace mousefx;

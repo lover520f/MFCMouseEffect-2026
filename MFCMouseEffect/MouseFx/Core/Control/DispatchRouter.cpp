@@ -3,7 +3,7 @@
 #include "pch.h"
 #include "DispatchRouter.h"
 #include "AppController.h"
-#include "MouseFxMessages.h"
+#include "MouseFx/Core/MouseFxMessages.h"
 
 #include <windowsx.h>  // GET_X_LPARAM, GET_Y_LPARAM
 
