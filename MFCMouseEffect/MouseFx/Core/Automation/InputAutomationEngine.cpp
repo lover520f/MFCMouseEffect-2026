@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "InputAutomationEngine.h"
 
+#include "MouseFx/Core/Automation/TriggerChainUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
 
 #include <algorithm>
@@ -32,14 +33,37 @@ std::string NormalizeShortcutText(std::string value) {
 } // namespace
 
 void InputAutomationEngine::UpdateConfig(const InputAutomationConfig& config) {
+    auto maxChainLengthForMappings = [](const std::vector<AutomationKeyBinding>& mappings, bool gestureBinding) {
+        size_t maxLength = 1;
+        for (const AutomationKeyBinding& binding : mappings) {
+            if (!binding.enabled) {
+                continue;
+            }
+
+            const size_t chainLength = gestureBinding
+                ? automation_chain::NormalizedChainLength(binding.trigger, NormalizeGestureId)
+                : automation_chain::NormalizedChainLength(binding.trigger, NormalizeMouseActionId);
+            if (chainLength > maxLength) {
+                maxLength = chainLength;
+            }
+        }
+        return std::max<size_t>(1, maxLength);
+    };
+
     config_ = config;
     gestureRecognizer_.UpdateConfig(BuildGestureConfig(config_));
     suppressNextClickActionId_.clear();
+    mouseActionHistory_.clear();
+    gestureHistory_.clear();
+    mouseChainCap_ = maxChainLengthForMappings(config_.mouseMappings, false);
+    gestureChainCap_ = maxChainLengthForMappings(config_.gesture.mappings, true);
 }
 
 void InputAutomationEngine::Reset() {
     gestureRecognizer_.Reset();
     suppressNextClickActionId_.clear();
+    mouseActionHistory_.clear();
+    gestureHistory_.clear();
 }
 
 void InputAutomationEngine::OnMouseMove(const POINT& pt) {
@@ -120,8 +144,14 @@ bool InputAutomationEngine::TriggerMouseAction(const std::string& actionId) {
     if (!config_.enabled || actionId.empty()) {
         return false;
     }
+    const std::string normalizedActionId = NormalizeMouseActionId(actionId);
+    if (normalizedActionId.empty()) {
+        return false;
+    }
+
+    AppendActionHistory(&mouseActionHistory_, normalizedActionId, mouseChainCap_);
     const AutomationKeyBinding* binding =
-        FindEnabledBinding(config_.mouseMappings, actionId, false);
+        FindEnabledBinding(config_.mouseMappings, mouseActionHistory_, false);
     if (!binding) {
         return false;
     }
@@ -132,36 +162,89 @@ bool InputAutomationEngine::TriggerGesture(const std::string& gestureId) {
     if (!config_.enabled || !config_.gesture.enabled || gestureId.empty()) {
         return false;
     }
+    const std::string normalizedGestureId = NormalizeGestureId(gestureId);
+    if (normalizedGestureId.empty()) {
+        return false;
+    }
+
+    AppendActionHistory(&gestureHistory_, normalizedGestureId, gestureChainCap_);
     const AutomationKeyBinding* binding =
-        FindEnabledBinding(config_.gesture.mappings, gestureId, true);
+        FindEnabledBinding(config_.gesture.mappings, gestureHistory_, true);
     if (!binding) {
         return false;
     }
     return keyboardInjector_.SendChord(NormalizeShortcutText(binding->keys));
 }
 
+void InputAutomationEngine::AppendActionHistory(
+    std::vector<std::string>* history,
+    const std::string& actionId,
+    size_t cap) {
+    if (!history || actionId.empty()) {
+        return;
+    }
+
+    const size_t targetCap = std::max<size_t>(1, cap);
+    history->push_back(actionId);
+    while (history->size() > targetCap) {
+        history->erase(history->begin());
+    }
+}
+
 const AutomationKeyBinding* InputAutomationEngine::FindEnabledBinding(
     const std::vector<AutomationKeyBinding>& mappings,
-    const std::string& triggerId,
+    const std::vector<std::string>& actionHistory,
     bool gestureBinding) const {
-    const std::string normalizedTrigger =
-        gestureBinding ? NormalizeGestureId(triggerId) : NormalizeMouseActionId(triggerId);
+    if (actionHistory.empty()) {
+        return nullptr;
+    }
+
+    const std::string currentAction = actionHistory.back();
+    const AutomationKeyBinding* best = nullptr;
+    size_t bestLength = 0;
 
     for (const AutomationKeyBinding& binding : mappings) {
         if (!binding.enabled) {
             continue;
         }
-        const std::string candidate =
-            gestureBinding ? NormalizeGestureId(binding.trigger) : NormalizeMouseActionId(binding.trigger);
-        if (candidate != normalizedTrigger) {
+
+        const std::vector<std::string> chain = gestureBinding
+            ? automation_chain::NormalizeChainTokens(binding.trigger, NormalizeGestureId)
+            : automation_chain::NormalizeChainTokens(binding.trigger, NormalizeMouseActionId);
+
+        if (chain.empty()) {
             continue;
         }
+        if (chain.back() != currentAction) {
+            continue;
+        }
+        if (chain.size() > actionHistory.size()) {
+            continue;
+        }
+
+        bool chainMatched = true;
+        const size_t offset = actionHistory.size() - chain.size();
+        for (size_t i = 0; i < chain.size(); ++i) {
+            if (actionHistory[offset + i] != chain[i]) {
+                chainMatched = false;
+                break;
+            }
+        }
+        if (!chainMatched) {
+            continue;
+        }
+
         if (NormalizeShortcutText(binding.keys).empty()) {
             continue;
         }
-        return &binding;
+
+        if (chain.size() > bestLength) {
+            best = &binding;
+            bestLength = chain.size();
+        }
     }
-    return nullptr;
+
+    return best;
 }
 
 } // namespace mousefx

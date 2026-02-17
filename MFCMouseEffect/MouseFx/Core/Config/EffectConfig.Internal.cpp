@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "EffectConfigInternal.h"
 
+#include "MouseFx/Core/Automation/TriggerChainUtils.h"
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
 
@@ -164,8 +165,8 @@ InputAutomationConfig SanitizeInputAutomationConfig(InputAutomationConfig config
         }
         for (AutomationKeyBinding& binding : *bindings) {
             binding.trigger = gestureBinding
-                ? NormalizeGestureId(std::move(binding.trigger))
-                : NormalizeMouseActionId(std::move(binding.trigger));
+                ? automation_chain::NormalizeChainText(binding.trigger, NormalizeGestureId)
+                : automation_chain::NormalizeChainText(binding.trigger, NormalizeMouseActionId);
             binding.keys = TrimAscii(binding.keys);
         }
     };

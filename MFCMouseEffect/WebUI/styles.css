@@ -619,7 +619,7 @@ textarea {
 
 .automation-row {
   display: grid;
-  grid-template-columns: auto minmax(140px, 1fr) minmax(180px, 1.2fr) auto auto;
+  grid-template-columns: auto minmax(200px, 1.6fr) minmax(180px, 1.1fr) auto auto;
   gap: 8px;
   align-items: center;
   padding: 8px;
@@ -644,9 +644,42 @@ textarea {
   accent-color: var(--accent);
 }
 
-.automation-trigger,
+.automation-chain-editor,
 .automation-keys {
   min-width: 0;
+}
+
+.automation-chain-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.automation-chain-editor.is-disabled {
+  opacity: 0.7;
+}
+
+.automation-chain-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.automation-chain-select {
+  min-width: 120px;
+}
+
+.automation-chain-joiner {
+  font-size: 11px;
+  color: #607794;
+  white-space: nowrap;
+}
+
+.automation-chain-add,
+.automation-chain-remove {
+  font-size: 11px;
+  padding: 6px 8px;
 }
 
 .automation-record,
@@ -672,6 +705,22 @@ textarea {
 
 .automation-note.is-visible {
   display: block;
+}
+
+.automation-capture-hint {
+  font-size: 12px;
+  line-height: 1.35;
+  color: #5f7693;
+  border: 1px solid #cfdeee;
+  border-radius: var(--radius-sm);
+  background: #f7fbff;
+  padding: 8px 10px;
+}
+
+.automation-capture-hint.is-active {
+  border-color: #a7cae9;
+  background: #edf6ff;
+  color: #0f4f82;
 }
 
 .status {
@@ -875,7 +924,7 @@ textarea {
     min-width: 0;
   }
 
-  .automation-trigger,
+  .automation-chain-editor,
   .automation-keys,
   .automation-note {
     grid-column: 2 / -1;

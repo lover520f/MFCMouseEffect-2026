@@ -1,5 +1,4 @@
 <script>
-  import { onDestroy } from 'svelte';
   import MappingPanel from './MappingPanel.svelte';
   import {
     DEFAULT_GESTURE_MAX_DIRECTIONS,
@@ -17,7 +16,7 @@
     textOf,
     upsertRowsByTrigger,
   } from './model.js';
-  import { shortcutFromKeyboardEvent } from './shortcuts.js';
+  import { normalizeTriggerChain, serializeTriggerChain } from './trigger-chain.js';
 
   export let schema = {};
   export let payloadState = {};
@@ -50,7 +49,6 @@
   let mouseTemplateOptions = [];
   let gestureTemplateOptions = [];
 
-  let recording = null;
   let lastSchemaRef = null;
   let lastPayloadRef = null;
   let lastI18nRef = null;
@@ -92,10 +90,12 @@
   }
 
   function createRow(binding, fallbackTrigger, options) {
+    const triggerChain = normalizeTriggerChain(binding?.triggerChain || binding?.trigger, options, fallbackTrigger);
     return {
       id: nextRowId(),
       enabled: binding?.enabled !== false,
-      trigger: sanitizeOptionValue(binding?.trigger, options, fallbackTrigger),
+      triggerChain,
+      trigger: triggerChain.join('>'),
       keys: `${binding?.keys || ''}`.trim(),
       note: '',
       hasConflict: false,
@@ -157,7 +157,7 @@
   function validationMessages() {
     return {
       missing: t('auto_missing_shortcut', 'Shortcut is required for enabled mapping.'),
-      duplicate: t('auto_conflict_trigger', 'Duplicate trigger. Keep only one enabled mapping per trigger.'),
+      duplicate: t('auto_conflict_trigger', 'Duplicate trigger chain. Keep only one enabled mapping per trigger chain.'),
     };
   }
 
@@ -176,12 +176,35 @@
     mouseValidation = result;
   }
 
+  function normalizeRowPatch(row, key, value, options, fallback) {
+    if (key === 'triggerChain' || key === 'trigger') {
+      const triggerChain = normalizeTriggerChain(value, options, fallback);
+      return {
+        ...row,
+        triggerChain,
+        trigger: serializeTriggerChain(triggerChain, options, fallback),
+      };
+    }
+    if (key === 'keys') {
+      return {
+        ...row,
+        keys: `${value || ''}`,
+      };
+    }
+    return {
+      ...row,
+      [key]: value,
+    };
+  }
+
   function updateRow(kind, rowId, key, value) {
+    const options = optionsForKind(kind);
+    const fallback = defaultTriggerForKind(kind);
     const nextRows = rowCollection(kind).map((row) => {
       if (row.id !== rowId) {
         return row;
       }
-      return { ...row, [key]: value };
+      return normalizeRowPatch(row, key, value, options, fallback);
     });
     setRowCollection(kind, nextRows);
     runValidation(kind);
@@ -196,9 +219,6 @@
   }
 
   function removeMapping(kind, rowId) {
-    if (recording && recording.kind === kind && recording.rowId === rowId) {
-      stopRecording();
-    }
     const nextRows = rowCollection(kind).filter((row) => row.id !== rowId);
     setRowCollection(kind, nextRows);
     runValidation(kind);
@@ -236,6 +256,8 @@
     const nextRows = upsertRowsByTrigger(
       rowCollection(kind),
       bindings,
+      options,
+      fallback,
       (binding) => createRow(binding, fallback, options));
 
     setRowCollection(kind, nextRows);
@@ -243,7 +265,6 @@
   }
 
   function hydrateFromPayload() {
-    stopRecording();
     rowSeq = 1;
     mouseTemplate = '';
     gestureTemplate = '';
@@ -275,61 +296,6 @@
     syncTemplateOptions();
   }
 
-  function isRecording(kind, rowId) {
-    return !!recording && recording.kind === kind && recording.rowId === rowId;
-  }
-
-  function onRecordingPointerDown(event) {
-    const target = event.target;
-    if (target && typeof target.closest === 'function' && target.closest('.automation-record')) {
-      return;
-    }
-    stopRecording();
-  }
-
-  function onRecordingKeydown(event) {
-    if (!recording) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-
-    const shortcut = shortcutFromKeyboardEvent(event);
-    if (!shortcut) {
-      return;
-    }
-    updateRow(recording.kind, recording.rowId, 'keys', shortcut);
-    stopRecording();
-  }
-
-  function stopRecording() {
-    if (!recording) {
-      return;
-    }
-    recording = null;
-    window.removeEventListener('keydown', onRecordingKeydown, true);
-    window.removeEventListener('mousedown', onRecordingPointerDown, true);
-  }
-
-  function toggleRecording(kind, rowId) {
-    if (isRecording(kind, rowId)) {
-      stopRecording();
-      return;
-    }
-
-    stopRecording();
-    recording = { kind, rowId };
-    window.addEventListener('keydown', onRecordingKeydown, true);
-    window.addEventListener('mousedown', onRecordingPointerDown, true);
-  }
-
-  function currentRecordingKey() {
-    if (!recording) {
-      return '';
-    }
-    return `${recording.kind}:${recording.rowId}`;
-  }
-
   function panelTextsForKind(kind) {
     return {
       empty: kind === 'gesture'
@@ -338,9 +304,19 @@
       enabledTitle: t('label_auto_mapping_enabled', 'Enabled'),
       shortcutPlaceholder: t('placeholder_shortcut', 'Ctrl+Shift+S'),
       record: t('btn_record_shortcut', 'Record'),
+      recordStop: t('btn_record_stop_save', 'Stop / Save'),
       recording: t('btn_recording', 'Press keys...'),
+      captureHint: t(
+        'hint_shortcut_capture',
+        'Focus shortcut input and press key combo directly. Esc to cancel, Backspace to clear.'),
+      captureHintActive: t(
+        'hint_shortcut_capture_active',
+        'Recording shortcut. Press key combo directly, Esc to cancel, Backspace to clear.'),
       remove: t('btn_remove_mapping', 'Remove'),
       add: t('btn_add_mapping', 'Add mapping'),
+      addChainNode: t('btn_add_chain_node', 'Add chain node'),
+      removeChainNode: t('btn_remove_chain_node', 'Remove node'),
+      chainJoiner: t('label_chain_joiner', 'Then'),
       templateNone: t('auto_template_none', 'Select quick template'),
       templateTitle: kind === 'gesture'
         ? t('label_auto_gesture_template', 'Gesture quick template')
@@ -361,7 +337,7 @@
       gestureMappings: t('label_auto_gesture_mappings', 'Gesture mappings'),
       hint: t(
         'hint_automation',
-        'Shortcut format example: Ctrl+Shift+S. Gesture trigger text uses direction chains such as up_right.'),
+        'Action chain trigger format: action1>action2 (for example left_click>scroll_down).'),
     };
     mousePanelTexts = panelTextsForKind('mouse');
     gesturePanelTexts = panelTextsForKind('gesture');
@@ -375,11 +351,6 @@
   function onPanelRemove(event) {
     const detail = event?.detail || {};
     removeMapping(detail.kind, detail.rowId);
-  }
-
-  function onPanelRecord(event) {
-    const detail = event?.detail || {};
-    toggleRecording(detail.kind, detail.rowId);
   }
 
   function onPanelAdd(event) {
@@ -435,7 +406,7 @@
     if (mouseValidation.hasDuplicateTrigger) {
       return {
         ok: false,
-        message: t('auto_validation_mouse_duplicate', 'Mouse mappings contain duplicate triggers.'),
+        message: t('auto_validation_mouse_duplicate', 'Mouse mappings contain duplicate trigger chains.'),
       };
     }
     if (!gestureEnabled) {
@@ -450,7 +421,7 @@
     if (gestureValidation.hasDuplicateTrigger) {
       return {
         ok: false,
-        message: t('auto_validation_gesture_duplicate', 'Gesture mappings contain duplicate triggers.'),
+        message: t('auto_validation_gesture_duplicate', 'Gesture mappings contain duplicate trigger chains.'),
       };
     }
     return { ok: true };
@@ -472,10 +443,6 @@
     runValidation('gesture');
     syncTemplateOptions();
   }
-
-  onDestroy(() => {
-    stopRecording();
-  });
 </script>
 
 <div class="grid automation-grid">
@@ -489,11 +456,9 @@
     options={mouseOptions}
     templateValue={mouseTemplate}
     templateOptions={mouseTemplateOptions}
-    recordingKey={currentRecordingKey()}
     texts={mousePanelTexts}
     on:rowchange={onPanelRowChange}
     on:remove={onPanelRemove}
-    on:record={onPanelRecord}
     on:add={onPanelAdd}
     on:templatechange={onPanelTemplateChange}
     on:applytemplate={onPanelApplyTemplate}
@@ -525,11 +490,9 @@
     options={gestureOptions}
     templateValue={gestureTemplate}
     templateOptions={gestureTemplateOptions}
-    recordingKey={currentRecordingKey()}
     texts={gesturePanelTexts}
     on:rowchange={onPanelRowChange}
     on:remove={onPanelRemove}
-    on:record={onPanelRecord}
     on:add={onPanelAdd}
     on:templatechange={onPanelTemplateChange}
     on:applytemplate={onPanelApplyTemplate}

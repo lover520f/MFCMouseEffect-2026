@@ -174,4 +174,12 @@
 3. Apply 前置校验仍生效（空快捷键/重复 trigger 时阻断）。
 4. 切换中英文后，自动化分区动态文案即时更新。
 
+---
+
+## 后续增强（阶段 5）
+- 快捷键输入框支持聚焦后直接按键录入（减少手工输入）。
+- 触发项支持链式动作节点（`action1>action2`）。
+- 后端运行时支持链触发匹配（最长链优先，兼容旧单动作映射）。
+- 详见：`docs/issues/web-settings-automation-chain-shortcut-capture.zh-CN.md`
+
 

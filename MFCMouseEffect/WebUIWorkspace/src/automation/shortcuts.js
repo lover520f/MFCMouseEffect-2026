@@ -16,6 +16,20 @@ const SPECIAL_KEYS = {
   ' ': 'Space',
 };
 
+const SYMBOL_KEYS = {
+  '`': 'Backquote',
+  '-': 'Minus',
+  '=': 'Equals',
+  '[': 'BracketLeft',
+  ']': 'BracketRight',
+  '\\': 'Backslash',
+  ';': 'Semicolon',
+  "'": 'Quote',
+  ',': 'Comma',
+  '.': 'Period',
+  '/': 'Slash',
+};
+
 const ALNUM_RE = /^[a-z0-9]$/i;
 const FUNCTION_KEY_RE = /^f([1-9]|1\d|2[0-4])$/i;
 
@@ -35,15 +49,30 @@ export function shortcutFromKeyboardEvent(event) {
   }
 
   const key = `${event.key || ''}`;
+  const code = `${event.code || ''}`;
   const lowered = key.toLowerCase();
   let main = '';
 
   if (key.length === 1 && ALNUM_RE.test(key)) {
     main = key.toUpperCase();
+  } else if (key.length === 1 && SYMBOL_KEYS[key]) {
+    main = SYMBOL_KEYS[key];
   } else if (FUNCTION_KEY_RE.test(key)) {
     main = key.toUpperCase();
   } else if (SPECIAL_KEYS[lowered]) {
     main = SPECIAL_KEYS[lowered];
+  } else if (/^numpad[0-9]$/i.test(code)) {
+    main = code.replace(/^numpad/i, 'Num');
+  } else if (code === 'NumpadAdd') {
+    main = 'NumPlus';
+  } else if (code === 'NumpadSubtract') {
+    main = 'NumMinus';
+  } else if (code === 'NumpadMultiply') {
+    main = 'NumMultiply';
+  } else if (code === 'NumpadDivide') {
+    main = 'NumDivide';
+  } else if (code === 'NumpadDecimal') {
+    main = 'NumDecimal';
   }
 
   if (!main) {

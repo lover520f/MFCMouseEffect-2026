@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include <string>
+#include <vector>
 
 namespace mousefx {
 
@@ -40,15 +41,21 @@ private:
     bool TriggerMouseAction(const std::string& actionId);
     bool TriggerGesture(const std::string& gestureId);
 
+    void AppendActionHistory(std::vector<std::string>* history, const std::string& actionId, size_t cap);
+
     const AutomationKeyBinding* FindEnabledBinding(
         const std::vector<AutomationKeyBinding>& mappings,
-        const std::string& triggerId,
+        const std::vector<std::string>& actionHistory,
         bool gestureBinding) const;
 
     InputAutomationConfig config_{};
     GestureRecognizer gestureRecognizer_{};
     KeyboardInjector keyboardInjector_{};
     std::string suppressNextClickActionId_{};
+    std::vector<std::string> mouseActionHistory_{};
+    std::vector<std::string> gestureHistory_{};
+    size_t mouseChainCap_ = 1;
+    size_t gestureChainCap_ = 1;
 };
 
 } // namespace mousefx

@@ -4,6 +4,7 @@ import {
   DEFAULT_GESTURE_SAMPLE_STEP,
   DEFAULT_GESTURE_TRIGGER_BUTTON,
 } from './defaults.js';
+import { normalizeTriggerChain, serializeTriggerChain } from './trigger-chain.js';
 
 function asObject(value) {
   return value && typeof value === 'object' ? value : {};
@@ -63,9 +64,11 @@ export function sanitizeOptionValue(value, options, fallback) {
 
 function normalizeBinding(item, options, fallbackTrigger) {
   const source = asObject(item);
+  const triggerChain = normalizeTriggerChain(source.triggerChain || source.trigger, options, fallbackTrigger);
   return {
     enabled: source.enabled !== false,
-    trigger: sanitizeOptionValue(source.trigger, options, fallbackTrigger),
+    triggerChain,
+    trigger: serializeTriggerChain(triggerChain, options, fallbackTrigger),
     keys: asText(source.keys),
   };
 }
@@ -121,9 +124,13 @@ export function readMappings(rows, options, fallbackTrigger) {
     if (!keys) {
       continue;
     }
+    const triggerChain = normalizeTriggerChain(
+      source.triggerChain || source.trigger,
+      options,
+      normalizedFallback);
     out.push({
       enabled: source.enabled !== false,
-      trigger: sanitizeOptionValue(source.trigger, options, normalizedFallback),
+      trigger: serializeTriggerChain(triggerChain, options, normalizedFallback),
       keys,
     });
   }
@@ -142,10 +149,16 @@ export function evaluateRows(rows, options, fallbackTrigger, messages) {
 
   for (const row of asArray(rows)) {
     const source = asObject(row);
+    const triggerChain = normalizeTriggerChain(
+      source.triggerChain || source.trigger,
+      options,
+      normalizedFallback);
+    const trigger = serializeTriggerChain(triggerChain, options, normalizedFallback);
     const next = {
       ...source,
       enabled: source.enabled !== false,
-      trigger: sanitizeOptionValue(source.trigger, options, normalizedFallback),
+      triggerChain,
+      trigger,
       keys: asText(source.keys),
       note: '',
       hasConflict: false,
@@ -215,20 +228,34 @@ export function readTemplateBindings(provider, kind, templateId, options, fallba
   return normalizeBindings(raw, options, fallbackTrigger);
 }
 
-export function upsertRowsByTrigger(rows, templateBindings, createRow) {
+export function upsertRowsByTrigger(rows, templateBindings, options, fallbackTrigger, createRow) {
   let nextRows = asArray(rows).map((row) => ({ ...row }));
+  const normalizedFallback = defaultOptionValue(options, fallbackTrigger || '');
+
   for (const binding of asArray(templateBindings)) {
-    const trigger = asText(binding.trigger);
+    const triggerChain = normalizeTriggerChain(
+      binding.triggerChain || binding.trigger,
+      options,
+      normalizedFallback);
+    const trigger = serializeTriggerChain(triggerChain, options, normalizedFallback);
     const keys = asText(binding.keys);
     if (!trigger || !keys) {
       continue;
     }
 
-    const index = nextRows.findIndex((row) => asText(row.trigger) === trigger);
+    const index = nextRows.findIndex((row) => {
+      const source = asObject(row);
+      const text = serializeTriggerChain(
+        source.triggerChain || source.trigger,
+        options,
+        normalizedFallback);
+      return text === trigger;
+    });
     if (index >= 0) {
       nextRows[index] = {
         ...nextRows[index],
         enabled: binding.enabled !== false,
+        triggerChain,
         trigger,
         keys,
       };
