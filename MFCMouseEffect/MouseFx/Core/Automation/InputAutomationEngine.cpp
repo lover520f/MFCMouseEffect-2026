@@ -9,6 +9,11 @@
 namespace mousefx {
 namespace {
 
+constexpr std::chrono::milliseconds kMouseChainMaxStepIntervalMs(900);
+constexpr std::chrono::milliseconds kMouseChainMaxTotalIntervalMs(1800);
+constexpr std::chrono::milliseconds kGestureChainMaxStepIntervalMs(2200);
+constexpr std::chrono::milliseconds kGestureChainMaxTotalIntervalMs(5000);
+
 std::string NormalizeTextId(std::string value) {
     value = ToLowerAscii(TrimAscii(value));
     std::replace(value.begin(), value.end(), '-', '_');
@@ -57,6 +62,8 @@ void InputAutomationEngine::UpdateConfig(const InputAutomationConfig& config) {
     gestureHistory_.clear();
     mouseChainCap_ = maxChainLengthForMappings(config_.mouseMappings, false);
     gestureChainCap_ = maxChainLengthForMappings(config_.gesture.mappings, true);
+    mouseChainTimingLimit_ = BuildMouseChainTimingLimit();
+    gestureChainTimingLimit_ = BuildGestureChainTimingLimit();
 }
 
 void InputAutomationEngine::Reset() {
@@ -140,6 +147,51 @@ std::string InputAutomationEngine::ScrollActionId(short delta) {
     return {};
 }
 
+InputAutomationEngine::ChainTimingLimit InputAutomationEngine::BuildMouseChainTimingLimit() {
+    ChainTimingLimit limit;
+    limit.maxStepInterval = kMouseChainMaxStepIntervalMs;
+    limit.maxTotalInterval = kMouseChainMaxTotalIntervalMs;
+    return limit;
+}
+
+InputAutomationEngine::ChainTimingLimit InputAutomationEngine::BuildGestureChainTimingLimit() {
+    ChainTimingLimit limit;
+    limit.maxStepInterval = kGestureChainMaxStepIntervalMs;
+    limit.maxTotalInterval = kGestureChainMaxTotalIntervalMs;
+    return limit;
+}
+
+bool InputAutomationEngine::IsChainTimingMatched(
+    const std::vector<ActionHistoryItem>& history,
+    size_t offset,
+    size_t chainLength,
+    const ChainTimingLimit& timingLimit) {
+    if (chainLength <= 1) {
+        return true;
+    }
+    if (offset + chainLength > history.size()) {
+        return false;
+    }
+    if (timingLimit.maxStepInterval.count() <= 0 || timingLimit.maxTotalInterval.count() <= 0) {
+        return true;
+    }
+
+    const auto& first = history[offset];
+    const auto& last = history[offset + chainLength - 1];
+    if (last.timestamp - first.timestamp > timingLimit.maxTotalInterval) {
+        return false;
+    }
+
+    for (size_t i = offset + 1; i < offset + chainLength; ++i) {
+        const auto& prev = history[i - 1];
+        const auto& curr = history[i];
+        if (curr.timestamp - prev.timestamp > timingLimit.maxStepInterval) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool InputAutomationEngine::TriggerMouseAction(const std::string& actionId) {
     if (!config_.enabled || actionId.empty()) {
         return false;
@@ -149,9 +201,9 @@ bool InputAutomationEngine::TriggerMouseAction(const std::string& actionId) {
         return false;
     }
 
-    AppendActionHistory(&mouseActionHistory_, normalizedActionId, mouseChainCap_);
+    AppendActionHistory(&mouseActionHistory_, normalizedActionId, mouseChainCap_, mouseChainTimingLimit_);
     const AutomationKeyBinding* binding =
-        FindEnabledBinding(config_.mouseMappings, mouseActionHistory_, false);
+        FindEnabledBinding(config_.mouseMappings, mouseActionHistory_, false, mouseChainTimingLimit_);
     if (!binding) {
         return false;
     }
@@ -167,9 +219,9 @@ bool InputAutomationEngine::TriggerGesture(const std::string& gestureId) {
         return false;
     }
 
-    AppendActionHistory(&gestureHistory_, normalizedGestureId, gestureChainCap_);
+    AppendActionHistory(&gestureHistory_, normalizedGestureId, gestureChainCap_, gestureChainTimingLimit_);
     const AutomationKeyBinding* binding =
-        FindEnabledBinding(config_.gesture.mappings, gestureHistory_, true);
+        FindEnabledBinding(config_.gesture.mappings, gestureHistory_, true, gestureChainTimingLimit_);
     if (!binding) {
         return false;
     }
@@ -177,29 +229,38 @@ bool InputAutomationEngine::TriggerGesture(const std::string& gestureId) {
 }
 
 void InputAutomationEngine::AppendActionHistory(
-    std::vector<std::string>* history,
+    std::vector<ActionHistoryItem>* history,
     const std::string& actionId,
-    size_t cap) {
+    size_t cap,
+    const ChainTimingLimit& timingLimit) {
     if (!history || actionId.empty()) {
         return;
     }
 
+    const auto now = std::chrono::steady_clock::now();
     const size_t targetCap = std::max<size_t>(1, cap);
-    history->push_back(actionId);
+    history->push_back(ActionHistoryItem{ actionId, now });
     while (history->size() > targetCap) {
         history->erase(history->begin());
+    }
+    if (timingLimit.maxTotalInterval.count() > 0) {
+        const auto oldestAllowed = now - timingLimit.maxTotalInterval;
+        while (history->size() > 1 && history->front().timestamp < oldestAllowed) {
+            history->erase(history->begin());
+        }
     }
 }
 
 const AutomationKeyBinding* InputAutomationEngine::FindEnabledBinding(
     const std::vector<AutomationKeyBinding>& mappings,
-    const std::vector<std::string>& actionHistory,
-    bool gestureBinding) const {
+    const std::vector<ActionHistoryItem>& actionHistory,
+    bool gestureBinding,
+    const ChainTimingLimit& timingLimit) const {
     if (actionHistory.empty()) {
         return nullptr;
     }
 
-    const std::string currentAction = actionHistory.back();
+    const std::string currentAction = actionHistory.back().actionId;
     const AutomationKeyBinding* best = nullptr;
     size_t bestLength = 0;
 
@@ -225,12 +286,15 @@ const AutomationKeyBinding* InputAutomationEngine::FindEnabledBinding(
         bool chainMatched = true;
         const size_t offset = actionHistory.size() - chain.size();
         for (size_t i = 0; i < chain.size(); ++i) {
-            if (actionHistory[offset + i] != chain[i]) {
+            if (actionHistory[offset + i].actionId != chain[i]) {
                 chainMatched = false;
                 break;
             }
         }
         if (!chainMatched) {
+            continue;
+        }
+        if (!IsChainTimingMatched(actionHistory, offset, chain.size(), timingLimit)) {
             continue;
         }
 

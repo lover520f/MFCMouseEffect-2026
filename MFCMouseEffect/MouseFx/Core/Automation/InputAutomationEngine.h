@@ -7,6 +7,7 @@
 
 #include <windows.h>
 
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -31,31 +32,55 @@ public:
     void OnScroll(short delta);
 
 private:
+    struct ActionHistoryItem {
+        std::string actionId;
+        std::chrono::steady_clock::time_point timestamp{};
+    };
+
+    struct ChainTimingLimit {
+        std::chrono::milliseconds maxStepInterval{0};
+        std::chrono::milliseconds maxTotalInterval{0};
+    };
+
     static std::string NormalizeId(std::string value);
     static std::string NormalizeMouseActionId(std::string value);
     static std::string NormalizeGestureId(std::string value);
     static std::string ClickActionId(MouseButton button);
     static std::string ClickActionIdFromButtonCode(int button);
     static std::string ScrollActionId(short delta);
+    static ChainTimingLimit BuildMouseChainTimingLimit();
+    static ChainTimingLimit BuildGestureChainTimingLimit();
+    static bool IsChainTimingMatched(
+        const std::vector<ActionHistoryItem>& history,
+        size_t offset,
+        size_t chainLength,
+        const ChainTimingLimit& timingLimit);
 
     bool TriggerMouseAction(const std::string& actionId);
     bool TriggerGesture(const std::string& gestureId);
 
-    void AppendActionHistory(std::vector<std::string>* history, const std::string& actionId, size_t cap);
+    void AppendActionHistory(
+        std::vector<ActionHistoryItem>* history,
+        const std::string& actionId,
+        size_t cap,
+        const ChainTimingLimit& timingLimit);
 
     const AutomationKeyBinding* FindEnabledBinding(
         const std::vector<AutomationKeyBinding>& mappings,
-        const std::vector<std::string>& actionHistory,
-        bool gestureBinding) const;
+        const std::vector<ActionHistoryItem>& actionHistory,
+        bool gestureBinding,
+        const ChainTimingLimit& timingLimit) const;
 
     InputAutomationConfig config_{};
     GestureRecognizer gestureRecognizer_{};
     KeyboardInjector keyboardInjector_{};
     std::string suppressNextClickActionId_{};
-    std::vector<std::string> mouseActionHistory_{};
-    std::vector<std::string> gestureHistory_{};
+    std::vector<ActionHistoryItem> mouseActionHistory_{};
+    std::vector<ActionHistoryItem> gestureHistory_{};
     size_t mouseChainCap_ = 1;
     size_t gestureChainCap_ = 1;
+    ChainTimingLimit mouseChainTimingLimit_{};
+    ChainTimingLimit gestureChainTimingLimit_{};
 };
 
 } // namespace mousefx

@@ -358,3 +358,26 @@
 验证要点：
 1. 中文配置下，首次打开页面后状态文案应直接显示 `就绪。`，不再出现英文 `Ready.`。
 2. 手动“重载”前后状态语言保持一致。
+
+## 十五次回归修正（链式鼠标动作缺少时间窗口，隔很久仍会触发）
+问题反馈：
+1. 鼠标动作映射链（如 `left_click>left_click`）在两次点击间隔很久后仍会触发。
+
+根因：
+1. 旧实现仅匹配“动作序列”，历史记录只保存动作 ID，不保存动作发生时间。
+2. 只要顺序匹配，哪怕第一步与最后一步跨越很久，也会被判定为有效链。
+
+修正：
+1. 文件：`MFCMouseEffect/MouseFx/Core/Automation/InputAutomationEngine.h`
+   - 将历史项从 `std::string` 升级为 `ActionHistoryItem{actionId, timestamp}`。
+   - 新增 `ChainTimingLimit`，支持“相邻步最大间隔”和“整链最大总时长”。
+2. 文件：`MFCMouseEffect/MouseFx/Core/Automation/InputAutomationEngine.cpp`
+   - 鼠标链默认时间窗：单步最大间隔 `900ms`，整链最大总时长 `1800ms`。
+   - 手势链默认时间窗：单步最大间隔 `2200ms`，整链最大总时长 `5000ms`。
+   - `AppendActionHistory` 按总时长窗口清理过旧历史。
+   - `FindEnabledBinding` 在序列匹配后新增时间窗口校验，不满足窗口则不触发。
+
+验证要点：
+1. `left_click>left_click`：两次点击间隔明显超过 1 秒，不应触发映射。
+2. `left_click>left_click`：两次快速点击（< 900ms）应正常触发映射。
+3. 单动作映射（如仅 `left_click`）不受该改动影响。
