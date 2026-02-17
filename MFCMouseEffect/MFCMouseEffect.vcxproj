@@ -234,6 +234,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\System\GlobalMouseHook.h" />
+    <ClInclude Include="MouseFx\Core\System\ApplicationCatalogScanner.h" />
     <ClInclude Include="MouseFx\Effects\IconEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IMouseEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IOverlayLayer.h" />
@@ -321,6 +322,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Overlay\OverlayHostService.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\InputIndicatorOverlay.cpp" />
     <ClCompile Include="MouseFx\Core\System\GlobalMouseHook.cpp" />
+    <ClCompile Include="MouseFx\Core\System\ApplicationCatalogScanner.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
     <ClCompile Include="MouseFx\Core\Control\IpcController.cpp" />
     <ClCompile Include="MouseFx\Core\Protocol\JsonLite.cpp" />

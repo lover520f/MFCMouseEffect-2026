@@ -78,7 +78,13 @@
         {/if}
       </div>
       {#if index < chain.length - 1}
-        <span class="automation-chain-joiner">{texts.chainJoiner}</span>
+        <span
+          class="automation-chain-joiner"
+          title={texts.chainJoiner}
+          aria-label={texts.chainJoiner}
+        >
+          &#8595;
+        </span>
       {/if}
     {/each}
 

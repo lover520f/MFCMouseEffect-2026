@@ -1,9 +1,10 @@
 <script>
   import { createEventDispatcher, onDestroy } from 'svelte';
   import TriggerChainEditor from './TriggerChainEditor.svelte';
+  import { filterCatalogEntries, normalizeCatalogEntries } from './app-catalog.js';
   import {
     pollShortcutCapture,
-    readActiveProcessName,
+    readAutomationAppCatalog,
     startShortcutCapture,
     stopShortcutCapture,
   } from './shortcut-capture-remote.js';
@@ -22,7 +23,12 @@
   let recordingRowId = '';
   let remoteCaptureSessionId = '';
   let remoteCapturePollTimer = 0;
-  let activeProcessRowId = '';
+  let appCatalogEntries = [];
+  let appCatalogLoaded = false;
+  let appCatalogLoading = false;
+  let appCatalogError = '';
+  let scopeFilePicker = null;
+  let scopeFileRowId = '';
 
   function isCapturing(rowId) {
     return recordingRowId === rowId;
@@ -242,10 +248,6 @@
     return `${row?.appScopeDraft || ''}`;
   }
 
-  function isReadingScope(rowId) {
-    return activeProcessRowId === rowId;
-  }
-
   function onScopeModeChange(row, event) {
     emitRowChange(row.id, 'appScopeMode', event.currentTarget.value);
   }
@@ -254,44 +256,102 @@
     emitRowChange(row.id, 'appScopeDraft', event.currentTarget.value);
   }
 
-  function addScopeApp(row, value) {
-    emitRowChange(row.id, 'appScopeAdd', value);
-  }
-
   function onScopeDraftKeydown(row, event) {
     if (event.key !== 'Enter') {
       return;
     }
     event.preventDefault();
-    addScopeApp(row, event.currentTarget.value);
+    const entries = catalogEntriesForRow(row);
+    if (entries.length === 0) {
+      return;
+    }
+    addCatalogScopeApp(row, entries[0].exe);
+    emitRowChange(row.id, 'appScopeDraft', '');
   }
 
   function removeScopeApp(row, app) {
     emitRowChange(row.id, 'appScopeRemove', app);
   }
 
-  async function addFocusedApp(row) {
+  function catalogEntriesForRow(row) {
+    return filterCatalogEntries(
+      appCatalogEntries,
+      scopeDraftForRow(row),
+      scopeAppsForRow(row),
+      120);
+  }
+
+  function catalogMetaText(entry) {
+    const exe = `${entry?.exe || ''}`.trim();
+    const source = `${entry?.source || ''}`.trim().toLowerCase();
+    if (!source) {
+      return exe;
+    }
+    return `${exe} (${source})`;
+  }
+
+  function addCatalogScopeApp(row, processName) {
     if (!row || !row.id || !row.enabled) {
       return;
     }
-    if (activeProcessRowId && activeProcessRowId !== row.id) {
+    emitRowChange(row.id, 'appScopeAdd', processName);
+  }
+
+  function onScopeFilePick(row) {
+    if (!row || !row.id || !row.enabled || !scopeFilePicker) {
+      return;
+    }
+    scopeFileRowId = row.id;
+    scopeFilePicker.value = '';
+    scopeFilePicker.click();
+  }
+
+  function onScopeFileChange(event) {
+    const input = event.currentTarget;
+    const rowId = scopeFileRowId;
+    scopeFileRowId = '';
+    const files = Array.from(input?.files || []);
+    if (!rowId || files.length === 0) {
+      if (input) {
+        input.value = '';
+      }
       return;
     }
 
-    activeProcessRowId = row.id;
-    try {
-      const process = await readActiveProcessName();
-      if (!process) {
-        return;
+    for (const file of files) {
+      const name = `${file?.name || ''}`.trim();
+      if (!name) {
+        continue;
       }
-      emitRowChange(row.id, 'appScopeAdd', process);
-    } catch (_error) {
-      // Keep editing flow available if process probing fails.
-    } finally {
-      if (activeProcessRowId === row.id) {
-        activeProcessRowId = '';
-      }
+      emitRowChange(rowId, 'appScopeAdd', name);
     }
+    if (input) {
+      input.value = '';
+    }
+  }
+
+  async function loadAppCatalog(force = false) {
+    if (appCatalogLoading) {
+      return;
+    }
+    appCatalogLoading = true;
+    appCatalogError = '';
+    try {
+      const apps = await readAutomationAppCatalog(force);
+      appCatalogEntries = normalizeCatalogEntries(apps);
+      appCatalogLoaded = true;
+    } catch (_error) {
+      appCatalogError = texts.scopeCatalogLoadFailed || 'Failed to load app list.';
+      if (!appCatalogLoaded) {
+        appCatalogEntries = [];
+      }
+    } finally {
+      appCatalogLoading = false;
+    }
+  }
+
+  function onRefreshAppCatalog() {
+    void loadAppCatalog(true);
   }
 
   function toggleRecord(rowId) {
@@ -321,6 +381,62 @@
     return `auto_keys_${kind}_${rowId}`;
   }
 
+  function onRowToggle(rowId, event) {
+    const details = event?.currentTarget;
+    if (!details || details.open) {
+      return;
+    }
+    if (recordingRowId === rowId) {
+      stopRecording(rowId, true);
+      void endRemoteCapture();
+    }
+  }
+
+  function triggerLabel(value) {
+    const normalized = `${value || ''}`.trim();
+    if (!normalized) {
+      return '';
+    }
+    for (const option of options || []) {
+      if (`${option?.value || ''}`.trim() === normalized) {
+        return `${option?.label || normalized}`.trim() || normalized;
+      }
+    }
+    return normalized;
+  }
+
+  function triggerSummaryForRow(row) {
+    const labels = chainForRow(row)
+      .map((value) => triggerLabel(value))
+      .filter((value) => !!value);
+    if (labels.length === 0) {
+      return '-';
+    }
+    return labels.join(' -> ');
+  }
+
+  function scopeSummaryForRow(row) {
+    if (scopeModeForRow(row) === 'all') {
+      return texts.scopeAllLabel || 'All Apps';
+    }
+    const apps = scopeAppsForRow(row);
+    if (apps.length === 0) {
+      return texts.scopeSelectedEmpty || 'No app selected';
+    }
+    if (apps.length === 1) {
+      return apps[0];
+    }
+    return `${apps[0]} +${apps.length - 1}`;
+  }
+
+  function shortcutSummaryForRow(row) {
+    const keys = `${row?.keys || ''}`.trim();
+    if (keys) {
+      return keys;
+    }
+    return texts.shortcutEmpty || 'No shortcut';
+  }
+
   $: {
     if (recordingRowId) {
       const activeRow = rows.find((item) => item.id === recordingRowId);
@@ -338,6 +454,13 @@
     }
   }
 
+  $: {
+    const hasSelectedScopeRow = rows.some((row) => scopeModeForRow(row) === 'selected');
+    if (hasSelectedScopeRow && !appCatalogLoaded && !appCatalogLoading) {
+      void loadAppCatalog(false);
+    }
+  }
+
   onDestroy(() => {
     clearRemotePollTimer();
     if (remoteCaptureSessionId) {
@@ -352,7 +475,20 @@
       <div class="automation-empty">{texts.empty}</div>
     {/if}
     {#each rows as row (row.id)}
-      <div class="automation-row" class:is-disabled={!row.enabled} class:is-conflict={row.hasConflict}>
+      <div
+        class="automation-row"
+        class:is-disabled={!row.enabled}
+        class:is-conflict={row.hasConflict}
+      >
+        <button
+          class="btn-soft automation-remove-corner"
+          type="button"
+          on:click={() => emitRemove(row.id)}
+          title={texts.remove}
+          aria-label={texts.remove}
+        >
+          x
+        </button>
         <input
           class="automation-toggle"
           type="checkbox"
@@ -360,98 +496,146 @@
           title={texts.enabledTitle}
           on:change={(event) => emitRowChange(row.id, 'enabled', event.currentTarget.checked)}
         />
-        <TriggerChainEditor
-          value={chainForRow(row)}
-          options={options}
-          disabled={!row.enabled}
-          texts={{
-            addNode: texts.addChainNode,
-            removeNode: texts.removeChainNode,
-            chainJoiner: texts.chainJoiner,
-          }}
-          on:chainchange={(event) => onChainChange(row, event)}
-        />
-        <div class="automation-scope-group">
-          <select
-            class="automation-scope-select"
-            disabled={!row.enabled}
-            value={scopeModeForRow(row)}
-            on:change={(event) => onScopeModeChange(row, event)}
+        <details class="automation-collapse" on:toggle={(event) => onRowToggle(row.id, event)}>
+          <summary
+            class="automation-row-head"
+            title={texts.expand || 'Expand'}
+            aria-label={texts.expand || 'Expand'}
           >
-            {#each scopeOptions as option (option.value)}
-              <option value={option.value}>{option.label}</option>
-            {/each}
-          </select>
-          {#if scopeModeForRow(row) === 'selected'}
-            <div class="automation-scope-chip-list">
-              {#each scopeAppsForRow(row) as app (app)}
-                <span class="automation-scope-chip">
-                  <span>{app}</span>
-                  <button
-                    type="button"
-                    class="automation-scope-chip-remove"
-                    disabled={!row.enabled}
-                    on:click={() => removeScopeApp(row, app)}
-                  >
-                    x
-                  </button>
-                </span>
-              {/each}
-            </div>
-            <div class="automation-scope-tools">
-              <input
-                class="automation-scope-app"
-                type="text"
+            <span class="automation-row-head-icon" aria-hidden="true"></span>
+            <span class="automation-row-head-main">{triggerSummaryForRow(row)}</span>
+            <span class="automation-row-head-meta">{scopeSummaryForRow(row)}</span>
+            <span class="automation-row-head-meta">{shortcutSummaryForRow(row)}</span>
+          </summary>
+          <div class="automation-row-body" class:is-scope-all={scopeModeForRow(row) !== 'selected'}>
+            <div class="automation-chain-group automation-col">
+              <div class="automation-shortcut-head">
+                <input
+                  id={shortcutInputId(row.id)}
+                  class="automation-keys"
+                  type="text"
+                  disabled={!row.enabled}
+                  readonly={isCapturing(row.id)}
+                  value={row.keys}
+                  placeholder={texts.shortcutPlaceholder}
+                  on:keydown={(event) => onShortcutKeydown(row, event)}
+                  on:input={(event) => onShortcutInput(row, event)}
+                />
+                <button
+                  class="btn-soft automation-record"
+                  class:is-recording={isCapturing(row.id)}
+                  type="button"
+                  disabled={!row.enabled}
+                  on:click={() => toggleRecord(row.id)}
+                >
+                  {isCapturing(row.id) ? (texts.recordStop || texts.recording) : texts.record}
+                </button>
+              </div>
+              <TriggerChainEditor
+                value={chainForRow(row)}
+                options={options}
                 disabled={!row.enabled}
-                value={scopeDraftForRow(row)}
-                placeholder={texts.scopeAppPlaceholder}
-                on:keydown={(event) => onScopeDraftKeydown(row, event)}
-                on:input={(event) => onScopeDraftInput(row, event)}
+                texts={{
+                  addNode: texts.addChainNode,
+                  removeNode: texts.removeChainNode,
+                  chainJoiner: texts.chainJoiner,
+                }}
+                on:chainchange={(event) => onChainChange(row, event)}
               />
-              <button
-                class="btn-soft automation-scope-add"
-                type="button"
-                disabled={!row.enabled || !scopeDraftForRow(row).trim()}
-                on:click={() => addScopeApp(row, scopeDraftForRow(row))}
-              >
-                {texts.scopeAddApp}
-              </button>
-              <button
-                class="btn-soft automation-scope-read"
-                type="button"
-                disabled={!row.enabled || isReadingScope(row.id)}
-                on:click={() => addFocusedApp(row)}
-              >
-                {isReadingScope(row.id) ? texts.scopeReadingActiveApp : texts.scopeReadActiveApp}
-              </button>
             </div>
-          {/if}
-        </div>
-        <input
-          id={shortcutInputId(row.id)}
-          class="automation-keys"
-          type="text"
-          disabled={!row.enabled}
-          readonly={isCapturing(row.id)}
-          value={row.keys}
-          placeholder={texts.shortcutPlaceholder}
-          on:keydown={(event) => onShortcutKeydown(row, event)}
-          on:input={(event) => onShortcutInput(row, event)}
-        />
-        <div class="automation-row-actions">
-          <button
-            class="btn-soft automation-record"
-            class:is-recording={isCapturing(row.id)}
-            type="button"
-            disabled={!row.enabled}
-            on:click={() => toggleRecord(row.id)}
-          >
-            {isCapturing(row.id) ? (texts.recordStop || texts.recording) : texts.record}
-          </button>
-          <button class="btn-soft automation-remove" type="button" on:click={() => emitRemove(row.id)}>
-            {texts.remove}
-          </button>
-        </div>
+            <div class="automation-scope-group automation-col">
+              <select
+                class="automation-scope-select"
+                disabled={!row.enabled}
+                value={scopeModeForRow(row)}
+                on:change={(event) => onScopeModeChange(row, event)}
+              >
+                {#each scopeOptions as option (option.value)}
+                  <option value={option.value}>{option.label}</option>
+                {/each}
+              </select>
+              {#if scopeModeForRow(row) === 'selected'}
+                <div class="automation-scope-chip-list">
+                  {#each scopeAppsForRow(row) as app (app)}
+                    <span class="automation-scope-chip">
+                      <span>{app}</span>
+                      <button
+                        type="button"
+                        class="automation-scope-chip-remove"
+                        disabled={!row.enabled}
+                        on:click={() => removeScopeApp(row, app)}
+                      >
+                        x
+                      </button>
+                    </span>
+                  {/each}
+                </div>
+              {/if}
+            </div>
+            {#if scopeModeForRow(row) === 'selected'}
+              <div class="automation-shortcut-pane automation-col">
+                <input
+                  class="automation-scope-app"
+                  type="text"
+                  disabled={!row.enabled}
+                  value={scopeDraftForRow(row)}
+                  placeholder={texts.scopeSearchPlaceholder || texts.scopeAppPlaceholder}
+                  on:keydown={(event) => onScopeDraftKeydown(row, event)}
+                  on:input={(event) => onScopeDraftInput(row, event)}
+                />
+                <div class="automation-shortcut-scope">
+                  <div class="automation-scope-tools">
+                    <button
+                      class="btn-soft automation-scope-refresh"
+                      type="button"
+                      disabled={!row.enabled || appCatalogLoading}
+                      on:click={onRefreshAppCatalog}
+                    >
+                      {appCatalogLoading ? texts.scopeRefreshingCatalog : texts.scopeRefreshCatalog}
+                    </button>
+                    <button
+                      class="btn-soft automation-scope-file"
+                      type="button"
+                      disabled={!row.enabled}
+                      on:click={() => onScopeFilePick(row)}
+                    >
+                      {texts.scopePickFromFile}
+                    </button>
+                  </div>
+                  <div class="automation-scope-catalog">
+                    {#if appCatalogLoading}
+                      <div class="automation-scope-catalog-state">{texts.scopeCatalogLoading}</div>
+                    {:else if appCatalogError}
+                      <div class="automation-scope-catalog-state is-error">{appCatalogError}</div>
+                    {:else}
+                      {#if catalogEntriesForRow(row).length === 0}
+                        <div class="automation-scope-catalog-state">{texts.scopeCatalogEmpty}</div>
+                      {:else}
+                        {#each catalogEntriesForRow(row) as app (app.exe)}
+                          <button
+                            type="button"
+                            class="automation-scope-catalog-item"
+                            disabled={!row.enabled}
+                            on:click={() => addCatalogScopeApp(row, app.exe)}
+                          >
+                            <span class="automation-scope-catalog-label">{app.label}</span>
+                            <span
+                              class="automation-scope-catalog-meta"
+                              title={catalogMetaText(app)}
+                              aria-label={catalogMetaText(app)}
+                            >
+                              i
+                            </span>
+                          </button>
+                        {/each}
+                      {/if}
+                    {/if}
+                  </div>
+                </div>
+              </div>
+            {/if}
+          </div>
+        </details>
         <div class="automation-note" class:is-visible={!!row.note}>{row.note}</div>
       </div>
     {/each}
@@ -480,4 +664,13 @@
       {texts.applyTemplate}
     </button>
   </div>
+
+  <input
+    class="automation-scope-file-input"
+    type="file"
+    accept=".exe"
+    multiple
+    bind:this={scopeFilePicker}
+    on:change={onScopeFileChange}
+  />
 </div>

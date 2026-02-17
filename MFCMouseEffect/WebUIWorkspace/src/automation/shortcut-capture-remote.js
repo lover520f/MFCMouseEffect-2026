@@ -59,3 +59,8 @@ export async function readActiveProcessName() {
   const result = await postJson('/api/automation/active-process', {});
   return `${result.process || ''}`.trim().toLowerCase();
 }
+
+export async function readAutomationAppCatalog(force = false) {
+  const result = await postJson('/api/automation/app-catalog', { force: !!force });
+  return Array.isArray(result?.apps) ? result.apps : [];
+}

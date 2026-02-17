@@ -4,9 +4,12 @@
 #include <algorithm>
 #include <cstdint>
 #include <exception>
+#include <mutex>
 #include <string>
+#include <vector>
 
 #include "MouseFx/Core/Control/AppController.h"
+#include "MouseFx/Core/System/ApplicationCatalogScanner.h"
 #include "MouseFx/Core/System/ForegroundProcessResolver.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/SettingsSchemaBuilder.h"
@@ -73,6 +76,40 @@ std::string PollStateToText(ShortcutCaptureSession::PollState state) {
     default:
         return "invalid";
     }
+}
+
+bool ParseForceRefresh(const json& payload) {
+    if (!payload.contains("force")) {
+        return false;
+    }
+    if (payload["force"].is_boolean()) {
+        return payload["force"].get<bool>();
+    }
+    if (payload["force"].is_number_integer()) {
+        return payload["force"].get<int>() != 0;
+    }
+    return false;
+}
+
+std::vector<ApplicationCatalogEntry> LoadAutomationAppCatalog(bool forceRefresh) {
+    static std::mutex cacheMutex;
+    static uint64_t cacheTickMs = 0;
+    static std::vector<ApplicationCatalogEntry> cacheEntries;
+
+    constexpr uint64_t kCacheTtlMs = 30 * 1000;
+    const uint64_t nowTickMs = ::GetTickCount64();
+
+    std::lock_guard<std::mutex> lock(cacheMutex);
+    if (!forceRefresh &&
+        !cacheEntries.empty() &&
+        (nowTickMs - cacheTickMs) < kCacheTtlMs) {
+        return cacheEntries;
+    }
+
+    ApplicationCatalogScanner scanner;
+    cacheEntries = scanner.Scan();
+    cacheTickMs = nowTickMs;
+    return cacheEntries;
 }
 
 } // namespace
@@ -179,6 +216,28 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
         SetJsonResponse(resp, json({
             {"ok", true},
             {"process", processBaseName}
+        }).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/automation/app-catalog") {
+        const json payload = ParseObjectOrEmpty(req.body);
+        const bool forceRefresh = ParseForceRefresh(payload);
+        const std::vector<ApplicationCatalogEntry> entries = LoadAutomationAppCatalog(forceRefresh);
+
+        json apps = json::array();
+        for (const auto& entry : entries) {
+            apps.push_back({
+                {"exe", entry.processName},
+                {"label", entry.displayName},
+                {"source", entry.source},
+            });
+        }
+
+        SetJsonResponse(resp, json({
+            {"ok", true},
+            {"apps", apps},
+            {"count", apps.size()},
         }).dump());
         return true;
     }

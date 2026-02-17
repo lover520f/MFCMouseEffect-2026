@@ -398,10 +398,25 @@
       captureHintActive: t(
         'hint_shortcut_capture_active',
         'Recording mode: native capture is active (page shortcuts are blocked). Press combo, Esc to cancel, Backspace to clear.'),
-      scopeAddApp: t('btn_scope_add_app', 'Add app'),
-      scopeReadActiveApp: t('btn_scope_use_active_app', 'Use focused app'),
-      scopeReadingActiveApp: t('btn_scope_reading_active_app', 'Reading...'),
+      scopeRefreshCatalog: t('btn_scope_refresh_catalog', 'Refresh app list'),
+      scopeRefreshingCatalog: t('btn_scope_refreshing_catalog', 'Refreshing...'),
+      scopePickFromFile: t('btn_scope_pick_from_file', 'Pick exe file'),
+      scopeSearchPlaceholder: t(
+        'placeholder_scope_search',
+        'Search app name/exe, or type manually (for example code.exe)'),
+      scopeCatalogLoading: t('text_scope_catalog_loading', 'Scanning app list...'),
+      scopeCatalogEmpty: t(
+        'text_scope_catalog_empty',
+        'No matching app. Keep typing to search, or add exe manually.'),
+      scopeCatalogLoadFailed: t(
+        'text_scope_catalog_error',
+        'Failed to scan app list. You can still add exe manually or pick a file.'),
       scopeAppPlaceholder: t('placeholder_scope_process', 'for example code.exe'),
+      scopeAllLabel: t('auto_app_scope_all', 'All Apps'),
+      scopeSelectedEmpty: t('text_scope_selected_empty', 'No app selected'),
+      shortcutEmpty: t('text_shortcut_empty', 'No shortcut'),
+      expand: t('btn_expand_mapping', 'Expand'),
+      collapse: t('btn_collapse_mapping', 'Collapse'),
       remove: t('btn_remove_mapping', 'Remove'),
       add: t('btn_add_mapping', 'Add mapping'),
       addChainNode: t('btn_add_chain_node', 'Add chain node'),

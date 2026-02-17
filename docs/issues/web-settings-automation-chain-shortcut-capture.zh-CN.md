@@ -554,3 +554,328 @@
 1. 多链节点映射（3~5 节点）下，录制/删除按钮不再越界。
 2. Focused View / All Sections 两种视图下，自动化映射行均保持在卡片内。
 3. 窗口宽度收缩时，按钮组可自动换行，但不影响“应用/录制/删除”可点击性。
+
+## 十八次架构升级（应用作用域改为“应用目录检索 + 文件兜底”）
+问题反馈：
+1. “读取当前应用”在浏览器打开设置页时只能读到浏览器自身（如 `msedge.exe`），不符合真实需求。
+2. 用户需要可检索的全量应用候选列表，而不是仅靠手动输入 exe。
+
+架构调整：
+1. 后端新增“应用目录扫描器”，参考 `desk_tidy` 扫描策略：
+   - 扫描开始菜单（用户/公共）与桌面（用户/公共）入口。
+   - 支持 `.lnk` 解析到目标进程名，统一归一化为 `xxx.exe`。
+   - 过滤卸载器/安装器等噪声项并去重。
+2. Web API 新增：
+   - `POST /api/automation/app-catalog`
+   - 返回字段：`apps[{ exe, label, source }]`，并带 30 秒缓存避免频繁全量扫描。
+3. 前端交互从“读取当前应用”切换为：
+   - 检索输入框（支持按应用名/exe 过滤）
+   - 候选应用胶囊列表（点击即添加）
+   - “刷新应用列表”按钮
+   - “从文件选择 exe”兜底按钮（手动文件添加）
+
+代码改动：
+1. 后端：
+   - 新增：`MFCMouseEffect/MouseFx/Core/System/ApplicationCatalogScanner.h`
+   - 新增：`MFCMouseEffect/MouseFx/Core/System/ApplicationCatalogScanner.cpp`
+   - 修改：`MFCMouseEffect/MouseFx/Server/WebSettingsServer.Routing.cpp`
+   - 修改：`MFCMouseEffect/MFCMouseEffect.vcxproj`
+   - 修改：`MFCMouseEffect/MFCMouseEffect.vcxproj.filters`
+2. 前端：
+   - 新增：`MFCMouseEffect/WebUIWorkspace/src/automation/app-catalog.js`
+   - 修改：`MFCMouseEffect/WebUIWorkspace/src/automation/shortcut-capture-remote.js`
+   - 修改：`MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+   - 修改：`MFCMouseEffect/WebUIWorkspace/src/automation/AutomationEditor.svelte`
+   - 修改：`MFCMouseEffect/WebUI/i18n.js`
+   - 修改：`MFCMouseEffect/WebUI/styles.css`
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. C++ Debug x64 构建通过：
+   - `C:\Program Files\Microsoft Visual Studio\18\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe MFCMouseEffect.slnx /t:Build /p:Configuration=Debug /p:Platform=x64`
+3. 交互验证点：
+   - 选择“指定应用（多选）”后可直接检索应用列表并点击添加。
+   - 列表扫描失败时，仍可手动输入 exe 或“从文件选择 exe”完成配置。
+
+## 十九次回归修正（应用候选显示与滚动体验）
+问题反馈：
+1. 旧“手动输入 + 添加应用”入口仍在，交互重复。
+2. 候选应用名存在异常（出现 `.url`、`install.exe` 等噪声项）。
+3. 候选/已选应用数量多时无法完整查看，缺少可滚动容器。
+
+修正：
+1. 前端交互收敛（移除旧入口）
+   - 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+   - 删除“添加应用”按钮，搜索框改为纯检索用途。
+   - `Enter` 键行为改为“添加当前首个候选项”，不再直接按输入文本强行入库。
+2. 扫描规则精度提升（根治噪声）
+   - 文件：`MFCMouseEffect/MouseFx/Core/System/ApplicationCatalogScanner.cpp`
+   - 仅保留可映射进程：`*.exe` 与解析后目标为 `*.exe` 的 `*.lnk`。
+   - 移除 `.lnk` 解析失败时“用快捷方式名兜底拼 exe”的逻辑，避免虚假候选。
+   - 不再收录 `.appref-ms` 伪候选，避免作用域与前台进程名不一致。
+   - 新增噪声关键字 `install`，并补充快捷方式显示名清洗（去掉 `.url`、`- 快捷方式`、`- Shortcut` 后缀）。
+3. 列表可滚动与可读性优化
+   - 文件：`MFCMouseEffect/WebUI/styles.css`
+   - 已选应用区（chip list）增加 `max-height + overflow-y:auto`。
+   - 候选应用区改为纵向列表并增加 `max-height + overflow-y:auto`。
+   - 候选数量上限提升到 120 条（前端过滤后展示），支持完整浏览。
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. C++ Debug x64 构建通过：
+   - `C:\Program Files\Microsoft Visual Studio\18\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe MFCMouseEffect.slnx /t:Build /p:Configuration=Debug /p:Platform=x64`
+3. 关键行为：
+   - UI 中不再出现旧“添加应用”按钮。
+   - 候选列表不再出现 `.url` / 非 exe 噪声项。
+   - 候选和已选列表均可滚动查看，不会被容器裁剪。
+
+## 二十次回归修正（刷新按钮前空白控件 + 候选项信息展示）
+问题反馈：
+1. “刷新应用列表”左侧出现一个空白圆角控件，视觉上像无效按钮。
+2. 候选项右侧直接显示 `xxx.exe`，信息噪声大。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+   - 将检索输入框从按钮行中拆出，独立为一整行，避免窄宽度下被压缩成“空白按钮”。
+   - 按钮行仅保留 `刷新应用列表` 与 `从文件选择 exe`。
+2. 文件：`MFCMouseEffect/WebUI/styles.css`
+   - `automation-scope-tools` 改为弹性布局，移除输入框占位列。
+   - 候选项右侧从文本 exe 改为圆形 `i` 信息标识。
+3. 候选项悬浮信息：
+   - 候选项右侧 `i` 标识使用 `title` 悬浮展示详细信息（exe 与来源 source），减少行内噪声同时保留可见详情入口。
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. 交互行为：
+   - “刷新应用列表”左侧不再出现空白控件。
+   - 候选列表右侧改为信息图标，悬浮可见详细信息。
+
+## 二十一次回归修正（自动化映射右侧布局优化）
+问题反馈：
+1. 映射行右侧（快捷键输入 + 录制/删除）视觉割裂，按钮漂在顶部、输入框位置偏中，阅读和操作流不连贯。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+   - 将快捷键输入框与录制/删除按钮重组为同一右侧容器：`automation-shortcut-pane`。
+   - 行内交互顺序变为“输入框在上，操作按钮在下”，与左侧作用域编辑区形成清晰的两列分工。
+2. 文件：`MFCMouseEffect/WebUI/styles.css`
+   - 自动化行网格改为 4 列（去掉分离的按钮列），右侧固定为快捷键操作区。
+   - 新增 `automation-shortcut-pane` 样式，统一右侧对齐与间距。
+   - 移动端下将该容器整体下沉到第二列，保持竖向流畅。
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. 交互行为：
+   - 右侧按钮不再漂浮到行顶角，输入与操作形成一个完整块。
+   - 窄宽度下右侧操作区仍可读、可点，不与中间候选列表互相挤压。
+
+## 二十二次回归修正（右侧空白区利用：候选迁移到右栏）
+问题反馈：
+1. 右侧快捷键区仍有明显空白，空间利用不足。
+2. 用户希望把候选列表和部分按钮放到右边，形成更完整的操作面板。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+   - 左侧作用域区仅保留：
+     - 作用域下拉
+     - 已选应用标签
+     - 搜索输入框
+   - 右侧快捷键区新增“作用域候选子面板”，承载：
+     - 刷新应用列表
+     - 从文件选择 exe
+     - 候选应用滚动列表
+2. 文件：`MFCMouseEffect/WebUI/styles.css`
+   - 自动化行列宽重新分配，右侧列加宽。
+   - 行内对齐改为顶部对齐，避免中线错位。
+   - 右侧候选子面板增加分隔线与滚动容器，视觉上形成“快捷键+候选”完整右栏。
+   - 右侧按钮组改为左对齐，减少空洞。
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. 交互行为：
+   - 右栏不再是“快捷键输入 + 大块空白”。
+   - 候选列表与常用按钮集中在右侧，左侧编辑链路更简洁。
+
+## 二十三次回归修正（删除按钮角标化 + 快捷键录制同排）
+问题反馈：
+1. 删除按钮希望放到映射大边框右上角，视觉上作为“卡片关闭/移除”操作。
+2. 录制按钮希望与快捷键输入框在同一行，减少纵向跳动。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+   - 删除按钮改为行级角标按钮：`automation-remove-corner`，文案形态为 `x`。
+   - 快捷键区改为 `automation-shortcut-head`：输入框与录制按钮并排。
+2. 文件：`MFCMouseEffect/WebUI/styles.css`
+   - `automation-row` 增加 `position: relative`，用于角标删除按钮定位。
+   - 新增 `automation-remove-corner` 样式（右上角圆形 x）。
+   - 新增 `automation-shortcut-head` 布局；移动端自动换行兜底。
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. 交互行为：
+   - 删除按钮固定在每条映射卡片右上角。
+   - 快捷键输入与录制按钮保持同一行展示。
+
+## 二十四次回归修正（链节点连接符从“然后”改为向下箭头）
+问题反馈：
+1. 动作链节点之间显示“然后”文案，视觉上不够直观。
+2. 希望改为居中向下箭头，明确指向下一节点。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/TriggerChainEditor.svelte`
+   - 连接符渲染从文本改为 `↓`（HTML 实体 `&#8595;`）。
+   - 保留原文案作为 `title/aria-label`，兼容可访问性与悬浮提示。
+2. 文件：`MFCMouseEffect/WebUI/styles.css`
+   - `automation-chain-joiner` 改为整行居中布局。
+   - 增强箭头字号和权重，保证链路方向可读性。
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. 交互行为：
+   - 节点间不再出现“然后”字样，替换为居中向下箭头。
+
+## 二十五次回归修正（连接符箭头样式兜底）
+问题反馈：
+1. 个别运行产物/缓存场景下，连接符位置仍可能看到“然后”文本。
+
+根因：
+1. 连接符文本历史上存在多种渲染形态（文案/箭头），在旧产物未完全替换时会出现显示不一致。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUI/styles.css`
+   - `automation-chain-joiner` 改为“文本隐藏 + 伪元素统一绘制箭头”。
+   - 即使 DOM 内部仍有旧文案，也只显示居中的向下箭头（`↓`）。
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. 交互行为：
+   - 链节点连接符稳定显示为居中向下箭头，不再出现“然后”字样。
+
+## 二十六次回归修正（三栏重排 + 对齐细节）
+问题反馈：
+1. 链节点箭头视觉上未在中轴位置。
+2. “快捷键 + 录制”应回到左侧主编辑栏。
+3. 三栏边界不清晰，用户容易误解右上角 `x` 的作用。
+4. 搜索框希望放到原“快捷键 + 录制”所在位置。
+5. 已选应用 chip 里的 `x` 在圆形按钮中未垂直居中。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+   - 结构重排为三栏：
+     - 左栏：动作链 + 快捷键输入 + 录制按钮。
+     - 中栏：作用域下拉 + 已选应用 chip。
+     - 右栏（指定应用时）：搜索框 + 刷新/文件按钮 + 候选列表。
+   - 搜索框从中栏移动到右栏顶部，替换原快捷键头部位置。
+2. 文件：`MFCMouseEffect/WebUI/styles.css`
+   - 新增 `automation-col` 分栏框样式（轻量边框 + 圆角），强化三栏边界。
+   - `automation-chain-editor` 设为 `width: 100%`，`automation-chain-joiner` 继续居中显示箭头。
+   - `automation-scope-chip-remove` 改为 `inline-flex` 居中，修正 `x` 对齐。
+   - 自动化行列宽重分配，避免右上角 `x` 与内容语义混淆。
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. 交互行为：
+   - 快捷键输入与录制在左栏显示。
+   - 搜索框出现在右栏顶部。
+   - 三栏边界清晰（分栏框）。
+   - 已选应用 chip 的 `x` 居中显示。
+
+## 二十七次回归修正（三栏按页面高度百分比固定）
+问题反馈：
+1. 第三栏底部空白偏多，空间利用不稳定。
+2. 希望三栏高度按页面高度百分比固定。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUI/styles.css`
+   - 在 `automation-row` 中新增统一列高变量：
+     - `--automation-col-height: clamp(280px, 52vh, 520px)`
+   - `automation-col` 改为固定列高容器：
+     - `height/max-height` 使用统一变量
+     - `display:flex; flex-direction:column; overflow:hidden`
+   - 三个列内主滚动区改为“填充剩余空间后内部滚动”：
+     - `automation-chain-editor`
+     - `automation-scope-chip-list`
+     - `automation-scope-catalog`
+   - 第三栏 `automation-shortcut-scope` 改为 `flex: 1 1 auto`，候选列表会吃满剩余高度，减少底部空白。
+   - 小屏兜底（`max-width: 760px`）恢复自动高度，避免移动端布局过高。
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. 交互行为：
+   - 三栏高度随页面高度按比例稳定。
+   - 第三栏底部空白减少，超出内容在列内滚动。
+
+## 二十八次回归修正（第一栏头部布局 + 链路箭头对齐）
+问题反馈：
+1. 第一栏“快捷键 + 录制”放在尾部，视觉不合理。
+2. 链路向下箭头看起来没有稳定居中。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+   - 将 `automation-shortcut-head` 从第一栏底部移动到顶部，保证进入映射时先看到快捷键录制区。
+2. 文件：`MFCMouseEffect/WebUI/styles.css`
+   - 链路编辑区改为纵向布局（`automation-chain-editor` 使用 `flex-direction: column`）。
+   - 每个链节点改为整行网格布局（`automation-chain-node` 使用 `grid-template-columns: minmax(0, 1fr) auto`），消除“内容宽度不一”导致的视觉偏移。
+   - 连接箭头 `automation-chain-joiner` 改为整行拉伸后居中渲染，`automation-chain-add` 固定左对齐。
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. 交互行为：
+   - 第一栏顶部显示快捷键输入与录制按钮。
+   - 链节点间箭头在每行中心稳定显示，不随节点宽度抖动。
+
+## 二十九次回归修正（映射折叠 + 关闭按钮外置）
+问题反馈：
+1. 映射条目较多时页面过长，缺少折叠/展开能力。
+2. 右上角关闭按钮视觉上落在第三栏内部，语义不清晰。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+   - 增加每条映射的本地折叠状态管理，默认折叠，新条目也默认折叠。
+   - 新增映射头部摘要行（触发链 / 作用域 / 快捷键），点击可展开/收起。
+   - 展开状态下才渲染三栏详细编辑区（动作链、作用域、候选应用）。
+2. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/AutomationEditor.svelte`
+   - 补充折叠交互文案透传（展开/收起、空快捷键、空作用域摘要）。
+3. 文件：`MFCMouseEffect/WebUI/styles.css`
+   - 新增 `automation-row-head` 摘要条样式与响应式规则。
+   - 为三栏指定固定网格列位，保证展开后结构稳定。
+   - `automation-remove-corner` 改为外框右上角外置定位（`top/right: 0 + transform`），不再压到第三栏内容上。
+4. 文件：`MFCMouseEffect/WebUI/i18n.js`
+   - 新增折叠/摘要相关中英文文案键，避免中文模式出现英文。
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. 交互行为：
+   - 映射默认折叠，点击摘要可展开编辑。
+   - 映射数量多时页面长度明显收敛。
+   - 删除按钮位于整条映射外框右上角外侧。
+
+## 三十次回归修正（展开按钮点击失效）
+问题反馈：
+1. 折叠态中的“展开”箭头点击无效，无法展开映射详情。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+   - 将折叠机制改为原生 `details/summary`，默认收起，点击摘要头由浏览器原生展开/收起。
+   - 收起时若该条映射正在录制快捷键，会自动结束录制，避免隐藏状态继续捕获。
+2. 文件：`MFCMouseEffect/WebUI/styles.css`
+   - 为 `automation-collapse` / `summary` 增加专用样式，移除默认 marker，改为自绘三角箭头（收起 `▸`，展开 `▾`）。
+   - 将三栏编辑区改为 `automation-row-body` 内部网格，展开时展示，收起时由原生 `details` 隐藏。
+
+验证：
+1. 前端构建：
+   - 本轮在当前终端环境执行 `pnpm -C MFCMouseEffect/WebUIWorkspace run build` 仍遇到 `spawn EPERM`（`esbuild` 子进程拉起被拒绝），未能完成自动化构建验证。
+2. 交互行为：
+   - 点击摘要头可稳定展开/收起映射项。
