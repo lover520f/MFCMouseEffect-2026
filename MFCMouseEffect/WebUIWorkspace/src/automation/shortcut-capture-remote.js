@@ -2,7 +2,7 @@ function authToken() {
   return new URL(window.location.href).searchParams.get('token') || '';
 }
 
-async function postJson(path, payload) {
+async function requestJson(path, payload) {
   const headers = { 'Content-Type': 'application/json' };
   const token = authToken();
   if (token) {
@@ -27,6 +27,10 @@ async function postJson(path, payload) {
   return body;
 }
 
+async function postJson(path, payload) {
+  return requestJson(path, payload);
+}
+
 export async function startShortcutCapture(timeoutMs = 10000) {
   const result = await postJson('/api/automation/shortcut-capture/start', { timeout_ms: timeoutMs });
   return `${result.session || ''}`;
@@ -49,4 +53,9 @@ export async function stopShortcutCapture(sessionId) {
     return;
   }
   await postJson('/api/automation/shortcut-capture/stop', { session: sessionId });
+}
+
+export async function readActiveProcessName() {
+  const result = await postJson('/api/automation/active-process', {});
+  return `${result.process || ''}`.trim().toLowerCase();
 }

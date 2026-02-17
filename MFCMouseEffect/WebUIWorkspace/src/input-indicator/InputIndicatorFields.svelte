@@ -4,6 +4,7 @@
   export let positionModes = [];
   export let targetMonitorOptions = [];
   export let keyDisplayModes = [];
+  export let keyLabelLayoutModes = [];
   export let monitors = [];
   export let monitorOverrides = {};
   export let indicator = {};
@@ -29,6 +30,7 @@
       absolute_y: num(value.absolute_y, 40),
       target_monitor: value.target_monitor || 'cursor',
       key_display_mode: value.key_display_mode || 'all',
+      key_label_layout_mode: value.key_label_layout_mode || 'fixed_font',
       size_px: num(value.size_px, 110),
       duration_ms: num(value.duration_ms, 320),
     };
@@ -85,6 +87,7 @@
       absolute_y: num(current.absolute_y, 40),
       target_monitor: current.target_monitor || 'cursor',
       key_display_mode: current.key_display_mode || 'all',
+      key_label_layout_mode: current.key_label_layout_mode || 'fixed_font',
       size_px: num(current.size_px, 110),
       duration_ms: num(current.duration_ms, 320),
       per_monitor_overrides: toMonitorOverrideMap(rows),
@@ -137,6 +140,13 @@
   <label for="ii_key_display_mode" data-i18n="label_key_display_mode">Keyboard Display</label>
   <select id="ii_key_display_mode" bind:value={form.key_display_mode}>
     {#each keyDisplayModes as option}
+      <option value={option.value}>{option.label}</option>
+    {/each}
+  </select>
+
+  <label for="ii_key_label_layout_mode" data-i18n="label_key_label_layout_mode">Key label layout</label>
+  <select id="ii_key_label_layout_mode" bind:value={form.key_label_layout_mode}>
+    {#each keyLabelLayoutModes as option}
       <option value={option.value}>{option.label}</option>
     {/each}
   </select>

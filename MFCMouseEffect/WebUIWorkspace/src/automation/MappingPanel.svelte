@@ -3,6 +3,7 @@
   import TriggerChainEditor from './TriggerChainEditor.svelte';
   import {
     pollShortcutCapture,
+    readActiveProcessName,
     startShortcutCapture,
     stopShortcutCapture,
   } from './shortcut-capture-remote.js';
@@ -12,6 +13,7 @@
   export let kind = 'mouse';
   export let rows = [];
   export let options = [];
+  export let scopeOptions = [];
   export let templateValue = '';
   export let templateOptions = [];
   export let texts = {};
@@ -20,6 +22,7 @@
   let recordingRowId = '';
   let remoteCaptureSessionId = '';
   let remoteCapturePollTimer = 0;
+  let activeProcessRowId = '';
 
   function isCapturing(rowId) {
     return recordingRowId === rowId;
@@ -226,6 +229,71 @@
     emitRowChange(row.id, 'triggerChain', nextTrigger);
   }
 
+  function scopeModeForRow(row) {
+    const mode = `${row?.appScopeMode || row?.appScopeType || 'all'}`.trim().toLowerCase();
+    return mode === 'selected' || mode === 'process' ? 'selected' : 'all';
+  }
+
+  function scopeAppsForRow(row) {
+    return Array.isArray(row?.appScopeApps) ? row.appScopeApps : [];
+  }
+
+  function scopeDraftForRow(row) {
+    return `${row?.appScopeDraft || ''}`;
+  }
+
+  function isReadingScope(rowId) {
+    return activeProcessRowId === rowId;
+  }
+
+  function onScopeModeChange(row, event) {
+    emitRowChange(row.id, 'appScopeMode', event.currentTarget.value);
+  }
+
+  function onScopeDraftInput(row, event) {
+    emitRowChange(row.id, 'appScopeDraft', event.currentTarget.value);
+  }
+
+  function addScopeApp(row, value) {
+    emitRowChange(row.id, 'appScopeAdd', value);
+  }
+
+  function onScopeDraftKeydown(row, event) {
+    if (event.key !== 'Enter') {
+      return;
+    }
+    event.preventDefault();
+    addScopeApp(row, event.currentTarget.value);
+  }
+
+  function removeScopeApp(row, app) {
+    emitRowChange(row.id, 'appScopeRemove', app);
+  }
+
+  async function addFocusedApp(row) {
+    if (!row || !row.id || !row.enabled) {
+      return;
+    }
+    if (activeProcessRowId && activeProcessRowId !== row.id) {
+      return;
+    }
+
+    activeProcessRowId = row.id;
+    try {
+      const process = await readActiveProcessName();
+      if (!process) {
+        return;
+      }
+      emitRowChange(row.id, 'appScopeAdd', process);
+    } catch (_error) {
+      // Keep editing flow available if process probing fails.
+    } finally {
+      if (activeProcessRowId === row.id) {
+        activeProcessRowId = '';
+      }
+    }
+  }
+
   function toggleRecord(rowId) {
     if (recordingRowId === rowId) {
       recordingRowId = '';
@@ -303,6 +371,62 @@
           }}
           on:chainchange={(event) => onChainChange(row, event)}
         />
+        <div class="automation-scope-group">
+          <select
+            class="automation-scope-select"
+            disabled={!row.enabled}
+            value={scopeModeForRow(row)}
+            on:change={(event) => onScopeModeChange(row, event)}
+          >
+            {#each scopeOptions as option (option.value)}
+              <option value={option.value}>{option.label}</option>
+            {/each}
+          </select>
+          {#if scopeModeForRow(row) === 'selected'}
+            <div class="automation-scope-chip-list">
+              {#each scopeAppsForRow(row) as app (app)}
+                <span class="automation-scope-chip">
+                  <span>{app}</span>
+                  <button
+                    type="button"
+                    class="automation-scope-chip-remove"
+                    disabled={!row.enabled}
+                    on:click={() => removeScopeApp(row, app)}
+                  >
+                    x
+                  </button>
+                </span>
+              {/each}
+            </div>
+            <div class="automation-scope-tools">
+              <input
+                class="automation-scope-app"
+                type="text"
+                disabled={!row.enabled}
+                value={scopeDraftForRow(row)}
+                placeholder={texts.scopeAppPlaceholder}
+                on:keydown={(event) => onScopeDraftKeydown(row, event)}
+                on:input={(event) => onScopeDraftInput(row, event)}
+              />
+              <button
+                class="btn-soft automation-scope-add"
+                type="button"
+                disabled={!row.enabled || !scopeDraftForRow(row).trim()}
+                on:click={() => addScopeApp(row, scopeDraftForRow(row))}
+              >
+                {texts.scopeAddApp}
+              </button>
+              <button
+                class="btn-soft automation-scope-read"
+                type="button"
+                disabled={!row.enabled || isReadingScope(row.id)}
+                on:click={() => addFocusedApp(row)}
+              >
+                {isReadingScope(row.id) ? texts.scopeReadingActiveApp : texts.scopeReadActiveApp}
+              </button>
+            </div>
+          {/if}
+        </div>
         <input
           id={shortcutInputId(row.id)}
           class="automation-keys"
@@ -314,18 +438,20 @@
           on:keydown={(event) => onShortcutKeydown(row, event)}
           on:input={(event) => onShortcutInput(row, event)}
         />
-        <button
-          class="btn-soft automation-record"
-          class:is-recording={isCapturing(row.id)}
-          type="button"
-          disabled={!row.enabled}
-          on:click={() => toggleRecord(row.id)}
-        >
-          {isCapturing(row.id) ? (texts.recordStop || texts.recording) : texts.record}
-        </button>
-        <button class="btn-soft automation-remove" type="button" on:click={() => emitRemove(row.id)}>
-          {texts.remove}
-        </button>
+        <div class="automation-row-actions">
+          <button
+            class="btn-soft automation-record"
+            class:is-recording={isCapturing(row.id)}
+            type="button"
+            disabled={!row.enabled}
+            on:click={() => toggleRecord(row.id)}
+          >
+            {isCapturing(row.id) ? (texts.recordStop || texts.recording) : texts.record}
+          </button>
+          <button class="btn-soft automation-remove" type="button" on:click={() => emitRemove(row.id)}>
+            {texts.remove}
+          </button>
+        </div>
         <div class="automation-note" class:is-visible={!!row.note}>{row.note}</div>
       </div>
     {/each}

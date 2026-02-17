@@ -339,6 +339,96 @@
 1. 点击“重载”后请求成功时，状态应从“正在加载...”切到“就绪/Ready”。
 2. 若存在 `gpu_route_notice`，仍会按原逻辑显示该提示文案。
 
+## 十四次架构升级（映射作用域支持多应用 + 读取当前应用）
+问题反馈：
+1. 自动化映射的应用作用域目前是单值，无法表达“同一触发链在多个应用中共用同一快捷键”。
+2. 作用域录入只支持手填 exe，缺少“直接读取当前应用”的能力。
+
+架构设计：
+1. 将映射作用域从单值 `app_scope` 升级为数组 `app_scopes`（OR 匹配）。
+2. 保留旧字段兼容：
+   - 读取：同时支持 `app_scope` 与 `app_scopes`。
+   - 输出：统一输出 `app_scopes`，并保留 `app_scope`（首项）给旧链路。
+3. 匹配优先级保持不变：
+   - `指定应用` 比 `全部应用` 更高优先级。
+
+后端改动：
+1. 配置模型
+   - 文件：`MFCMouseEffect/MouseFx/Core/Config/EffectConfig.h`
+   - `AutomationKeyBinding` 从 `std::string appScope` 升级为 `std::vector<std::string> appScopes`。
+2. 配置解析/序列化/应用
+   - 文件：
+     - `MFCMouseEffect/MouseFx/Core/Config/EffectConfigJsonKeys.Automation.h`
+     - `MFCMouseEffect/MouseFx/Core/Config/EffectConfigJsonCodec.Parse.Automation.cpp`
+     - `MFCMouseEffect/MouseFx/Core/Config/EffectConfigJsonCodec.Serialize.Automation.cpp`
+     - `MFCMouseEffect/MouseFx/Core/Control/CommandHandler.ApplySettings.cpp`
+     - `MFCMouseEffect/MouseFx/Core/Config/EffectConfig.Internal.cpp`
+   - 新增键：`app_scopes`。
+   - sanitize 统一做 scope 规范化、去重、`all` 优先折叠。
+3. 运行时匹配
+   - 文件：`MFCMouseEffect/MouseFx/Core/Automation/InputAutomationEngine.cpp/.h`
+   - `AppScopeMatches` 改为多作用域匹配（命中任一 process 即通过）。
+4. 设置页 API 与状态
+   - 文件：
+     - `MFCMouseEffect/MouseFx/Server/SettingsStateMapper.cpp`
+     - `MFCMouseEffect/MouseFx/Server/SettingsSchemaBuilder.cpp`
+     - `MFCMouseEffect/MouseFx/Server/WebSettingsServer.Routing.cpp`
+   - schema 中作用域选项升级为“指定应用（多选）”。
+   - 新增 API：`POST /api/automation/active-process`（返回前台进程 exe）。
+
+前端改动：
+1. 自动化模型层
+   - 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/model.js`
+   - 统一作用域模型：`all | selected-apps[]`。
+   - 重复校验升级为“按触发链 + 具体应用去重”，避免多选交叉歧义。
+2. 自动化编辑器
+   - 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/AutomationEditor.svelte`
+   - 行内作用域字段改为：
+     - `appScopeMode`（all/selected）
+     - `appScopeApps`（多应用）
+     - `appScopeDraft`（输入草稿）
+3. 映射面板交互
+   - 文件：
+     - `MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+     - `MFCMouseEffect/WebUIWorkspace/src/automation/shortcut-capture-remote.js`
+   - 指定应用模式支持：
+     - 添加/删除应用标签
+     - 读取当前应用并自动加入
+4. 文案与样式
+   - 文件：
+     - `MFCMouseEffect/WebUI/i18n.js`
+     - `MFCMouseEffect/WebUI/styles.css`
+   - 新增“添加应用 / 读取当前应用 / 读取中”文案与多选标签布局样式。
+
+验证：
+1. 前端构建通过：
+   - `pnpm -C MFCMouseEffect/WebUIWorkspace run build`
+2. C++ Debug x64 构建通过：
+   - `C:\Program Files\Microsoft Visual Studio\18\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe MFCMouseEffect.slnx /t:Build /p:Configuration=Debug /p:Platform=x64`
+
+## 十五次回归修正（已选“指定应用”但不显示添加组件）
+问题反馈：
+1. 作用域下拉可选“指定应用（多选）”，但下方“添加应用/读取当前应用”区域不出现。
+
+根因：
+1. `model.js` 的 `parseBindingScope` 优先读取 `appScopes/app_scopes`。
+2. 当编辑态行处于“指定应用”但尚未添加任何 app 时，`appScopes` 是空数组。
+3. 空数组被错误解释为 `all`，导致行状态在校验阶段被回写成“全部应用”，从而隐藏指定应用编辑组件。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/model.js`
+2. `parseBindingScope` 调整优先级：
+   - 先判断编辑态显式字段 `appScopeMode/appScopeType`；
+   - 即使当前 app 列表为空，也保持 `selected` 模式，交给校验提示“至少添加一个 app”；
+   - 配置态（仅有 `app_scopes/app_scope`）仍按原兼容逻辑解析。
+
+验证：
+1. 选择“指定应用（多选）”后，立即显示：
+   - 应用输入框
+   - “添加应用”
+   - “读取当前应用”
+2. 未添加 app 时显示作用域缺失校验提示，不再静默回退为“全部应用”。
+
 ## 十四次回归修正（中文模式首屏状态仍显示 Ready）
 问题反馈：
 1. 中文配置下，页面刚启动左上角仍显示英文 `Ready.`，手动点击“重载”后才变成 `就绪。`。
@@ -381,3 +471,86 @@
 1. `left_click>left_click`：两次点击间隔明显超过 1 秒，不应触发映射。
 2. `left_click>left_click`：两次快速点击（< 900ms）应正常触发映射。
 3. 单动作映射（如仅 `left_click`）不受该改动影响。
+
+## 十六次架构扩展（映射唯一键升级为 触发链 + 应用作用域）
+问题背景：
+1. 旧模型默认“同一触发链全局唯一”，无法表达“同一快捷键/同一触发链在不同应用里行为不同”。
+2. 典型需求是：在某个应用内命中特定映射，其他应用命中全局兜底映射。
+
+架构决策：
+1. 将映射唯一键从 `trigger` 升级为 `trigger + app_scope`。
+2. `app_scope` 语义：
+   - `all`：全应用生效（全局兜底）。
+   - `process:<exe>`：仅指定前台进程生效（例如 `process:code.exe`）。
+3. 运行时匹配优先级：
+   - 先看触发链长度（最长链优先）。
+   - 同链长度下，`process:<exe>` 优先于 `all`。
+
+后端改动：
+1. 配置模型：
+   - 文件：`MFCMouseEffect/MouseFx/Core/Config/EffectConfig.h`
+   - `AutomationKeyBinding` 新增 `appScope` 字段，默认值 `all`。
+2. 配置编解码：
+   - 文件：`MFCMouseEffect/MouseFx/Core/Config/EffectConfigJsonKeys.Automation.h`
+   - 文件：`MFCMouseEffect/MouseFx/Core/Config/EffectConfigJsonCodec.Parse.Automation.cpp`
+   - 文件：`MFCMouseEffect/MouseFx/Core/Config/EffectConfigJsonCodec.Serialize.Automation.cpp`
+   - 新增 JSON 字段 `app_scope` 读写。
+3. 配置 sanitize：
+   - 文件：`MFCMouseEffect/MouseFx/Core/Config/EffectConfig.Internal.cpp`
+   - 新增 `app_scope` 归一化：
+     - 空/`global`/`*` -> `all`
+     - `process:xxx` 或裸 `xxx` -> `process:<normalized_exe>`
+4. 应用设置与状态链路：
+   - 文件：`MFCMouseEffect/MouseFx/Core/Control/CommandHandler.ApplySettings.cpp`
+   - 文件：`MFCMouseEffect/MouseFx/Server/SettingsStateMapper.cpp`
+   - 文件：`MFCMouseEffect/MouseFx/Server/SettingsSchemaBuilder.cpp`
+   - `apply_settings`、`state`、`schema` 全面支持 `app_scope` 与 `automation_app_scopes`。
+5. 运行时匹配：
+   - 新增：`MFCMouseEffect/MouseFx/Core/System/ForegroundProcessResolver.h`
+   - 文件：`MFCMouseEffect/MouseFx/Core/Automation/InputAutomationEngine.h`
+   - 文件：`MFCMouseEffect/MouseFx/Core/Automation/InputAutomationEngine.cpp`
+   - 基于前台窗口进程名匹配 `app_scope`，并实现同链长度下作用域具体性优先。
+
+前端改动：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/model.js`
+   - 增加 `app_scope` 解析/序列化与校验。
+   - 冲突判定从“同触发链”升级为“同触发链 + 同作用域”。
+2. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+   - 每条映射新增“作用域选择（全部应用/指定应用）+ exe 输入框”。
+3. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/AutomationEditor.svelte`
+   - 读写、模板应用、校验流程接入 `app_scope`。
+4. 文件：`MFCMouseEffect/WebUI/i18n.js`、`MFCMouseEffect/WebUI/styles.css`
+   - 补齐中英文文案与布局样式。
+
+兼容性与迁移：
+1. 旧配置未包含 `app_scope` 时，默认按 `all` 处理，行为与历史一致。
+2. 新配置可逐步引入 `process:<exe>`，无需一次性迁移全部映射。
+
+验证要点：
+1. 同触发链可同时存在：
+   - `left_click` + `all`
+   - `left_click` + `process:code.exe`
+2. 前台为 VS Code 时优先命中 `process:code.exe`；切到其他应用后回退命中 `all`。
+3. 选择“指定应用”但 exe 为空时，前端应给出校验错误并阻止应用。
+
+## 十七次回归修正（自动化映射行内容溢出）
+问题反馈：
+1. 自动化映射单行内容在中等宽度下会挤出卡片边界，尤其是多节点触发链 + 按钮并存时。
+
+根因：
+1. 行布局使用固定最小列宽（`minmax(200/170/180, ...)`）叠加独立按钮列，容器变窄时整体最小宽度过大。
+2. 录制/删除按钮各占独立网格列，导致可用主内容宽度进一步被压缩。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/src/automation/MappingPanel.svelte`
+   - 将 `录制` 和 `删除` 按钮合并为一个 `automation-row-actions` 动作组容器。
+2. 文件：`MFCMouseEffect/WebUI/styles.css`
+   - 自动化行网格列改为可收缩列：`minmax(0, ...)`，降低最小宽度约束。
+   - 新增 `.automation-row-actions`，支持内部按钮换行，避免行级溢出。
+   - 链节点选择器改为 `width: 100%`，减少固定宽度对主列的挤压。
+   - 移动端把动作组与其他控件统一纳入第二列，保持纵向可读布局。
+
+验证要点：
+1. 多链节点映射（3~5 节点）下，录制/删除按钮不再越界。
+2. Focused View / All Sections 两种视图下，自动化映射行均保持在卡片内。
+3. 窗口宽度收缩时，按钮组可自动换行，但不影响“应用/录制/删除”可点击性。

@@ -324,6 +324,10 @@
       indicator.position_mode || 'relative');
     fillSelect('ii_target_monitor', schema.target_monitor_options, indicator.target_monitor || 'cursor');
     fillSelect('ii_key_display_mode', schema.key_display_modes, indicator.key_display_mode || 'all');
+    fillSelect(
+      'ii_key_label_layout_mode',
+      schema.key_label_layout_modes,
+      indicator.key_label_layout_mode || 'fixed_font');
 
     buildPerMonitorUI(schema.monitors, indicator.per_monitor_overrides, texts);
 
@@ -429,6 +433,7 @@
         absolute_y: getNum('ii_absolute_y'),
         target_monitor: getText('ii_target_monitor') || 'cursor',
         key_display_mode: getText('ii_key_display_mode') || 'all',
+        key_label_layout_mode: getText('ii_key_label_layout_mode') || 'fixed_font',
         per_monitor_overrides: readPerMonitorUI(schema.monitors),
         size_px: getNum('ii_size_px'),
         duration_ms: getNum('ii_duration_ms'),

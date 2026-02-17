@@ -10,9 +10,14 @@ namespace {
 nlohmann::json BuildBindingsArray(const std::vector<AutomationKeyBinding>& bindings) {
     nlohmann::json out = nlohmann::json::array();
     for (const AutomationKeyBinding& binding : bindings) {
+        const std::vector<std::string> appScopes =
+            binding.appScopes.empty() ? std::vector<std::string>{"all"} : binding.appScopes;
+        const std::string legacyAppScope = appScopes.front();
         out.push_back({
             {keys::automation::kEnabled, binding.enabled},
             {keys::automation::kTrigger, binding.trigger},
+            {keys::automation::kAppScope, legacyAppScope},
+            {keys::automation::kAppScopes, appScopes},
             {keys::automation::kKeys, binding.keys},
         });
     }

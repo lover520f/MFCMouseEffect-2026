@@ -39,9 +39,13 @@ public:
                            const std::wstring& labelOverride = {}) const;
 
     // Draw the keyboard key indicator (rounded panel + text label).
-    void RenderKeyAction(Gdiplus::Graphics& g, int sizePx,
+    void RenderKeyAction(Gdiplus::Graphics& g, int widthPx, int heightPx,
                          const std::wstring& label,
-                         const IndicatorAnimParams& anim) const;
+                         const IndicatorAnimParams& anim,
+                         const std::string& layoutMode) const;
+
+    // Returns the preferred window width for key labels under current layout strategy.
+    int ResolveKeyWindowWidthPx(int baseSizePx, const std::wstring& label, const std::string& layoutMode) const;
 
     // Compute animation parameters for the given progress.
     static IndicatorAnimParams ComputeAnimParams(float t);
@@ -52,8 +56,6 @@ private:
                                    const Gdiplus::RectF& rect, float radius);
     static Gdiplus::Color C(uint8_t a, uint8_t r, uint8_t g, uint8_t b);
     static float EaseOutCubic(float t);
-    static std::wstring TruncateLabel(const std::wstring& src, size_t maxChars);
-
     // ---- sub-element painters ----
     void DrawMouseBody(Gdiplus::Graphics& g, int sizePx,
                        const IndicatorAnimParams& anim) const;

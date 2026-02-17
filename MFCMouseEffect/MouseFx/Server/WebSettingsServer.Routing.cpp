@@ -7,6 +7,7 @@
 #include <string>
 
 #include "MouseFx/Core/Control/AppController.h"
+#include "MouseFx/Core/System/ForegroundProcessResolver.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/SettingsSchemaBuilder.h"
 #include "MouseFx/Server/SettingsStateMapper.h"
@@ -169,6 +170,16 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
         const std::string sessionId = ParseSessionId(payload);
         controller_->StopShortcutCaptureSession(sessionId);
         SetJsonResponse(resp, json({{"ok", true}}).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/automation/active-process") {
+        ForegroundProcessResolver resolver;
+        const std::string processBaseName = resolver.CurrentProcessBaseName();
+        SetJsonResponse(resp, json({
+            {"ok", true},
+            {"process", processBaseName}
+        }).dump());
         return true;
     }
 

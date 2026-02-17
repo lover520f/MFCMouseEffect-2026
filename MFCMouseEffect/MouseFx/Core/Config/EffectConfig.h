@@ -142,6 +142,10 @@ struct InputIndicatorConfig {
 
     // Display mode: "all", "significant", "shortcut"
     std::string keyDisplayMode = "all";
+    // Key label layout mode:
+    // - "fixed_font"  (keep font size and expand indicator width if needed)
+    // - "fixed_area"  (keep indicator area and shrink font if needed)
+    std::string keyLabelLayoutMode = "fixed_font";
 
     // Per-monitor overrides (monitorId -> {enabled, x, y})
     std::map<std::string, PerMonitorPosOverride> perMonitorOverrides;
@@ -150,6 +154,15 @@ struct InputIndicatorConfig {
 struct AutomationKeyBinding {
     bool enabled = true;
     std::string trigger;
+    // Scope list format:
+    // - "all"
+    // - "process:<exe_name>" (for example "process:code.exe")
+    //
+    // Notes:
+    // - "all" means globally active.
+    // - process scopes are OR-matched (any listed app can trigger this binding).
+    // - if "all" exists, process scopes are ignored.
+    std::vector<std::string> appScopes = {"all"};
     std::string keys;
 };
 

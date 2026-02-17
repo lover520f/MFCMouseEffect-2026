@@ -10,9 +10,12 @@
     evaluateRows,
     listTemplateOptions,
     normalizeAutomationPayload,
+    parseAppScopes,
     readMappings,
     readTemplateBindings,
     sanitizeOptionValue,
+    serializeAppScopes,
+    serializeLegacyAppScope,
     textOf,
     upsertRowsByTrigger,
   } from './model.js';
@@ -23,6 +26,7 @@
   export let i18n = {};
 
   let mouseOptions = [];
+  let appScopeOptions = [];
   let gestureOptions = [];
   let gestureButtonOptions = [];
 
@@ -41,8 +45,8 @@
   let gestureRows = [];
   let rowSeq = 1;
 
-  let mouseValidation = { hasMissingShortcut: false, hasDuplicateTrigger: false };
-  let gestureValidation = { hasMissingShortcut: false, hasDuplicateTrigger: false };
+  let mouseValidation = { hasMissingShortcut: false, hasDuplicateTrigger: false, hasInvalidScope: false };
+  let gestureValidation = { hasMissingShortcut: false, hasDuplicateTrigger: false, hasInvalidScope: false };
 
   let mouseTemplate = '';
   let gestureTemplate = '';
@@ -89,13 +93,59 @@
     return id;
   }
 
+  function scopeMode(value) {
+    const text = `${value || ''}`.trim().toLowerCase();
+    return text === 'selected' || text === 'process' ? 'selected' : 'all';
+  }
+
+  function scopeAppsFromScopes(appScopes) {
+    const out = [];
+    const items = Array.isArray(appScopes) ? appScopes : [];
+    for (const item of items) {
+      const text = `${item || ''}`.trim().toLowerCase();
+      if (!text.startsWith('process:')) {
+        continue;
+      }
+      const app = text.slice('process:'.length).trim();
+      if (!app || out.includes(app)) {
+        continue;
+      }
+      out.push(app);
+    }
+    return out;
+  }
+
+  function buildScopeState(mode, apps, draft) {
+    const appScopeMode = scopeMode(mode);
+    if (appScopeMode === 'all') {
+      return {
+        appScopeMode: 'all',
+        appScopeApps: [],
+        appScopes: ['all'],
+        appScope: 'all',
+        appScopeDraft: '',
+      };
+    }
+    const appScopes = serializeAppScopes('selected', apps);
+    return {
+      appScopeMode: 'selected',
+      appScopeApps: scopeAppsFromScopes(appScopes),
+      appScopes,
+      appScope: serializeLegacyAppScope('selected', apps),
+      appScopeDraft: `${draft || ''}`.trim(),
+    };
+  }
+
   function createRow(binding, fallbackTrigger, options) {
     const triggerChain = normalizeTriggerChain(binding?.triggerChain || binding?.trigger, options, fallbackTrigger);
+    const scope = parseAppScopes(binding?.app_scopes || binding?.appScopes || binding?.app_scope || binding?.appScope);
+    const scopeState = buildScopeState(scope.mode, scope.apps, binding?.appScopeDraft || '');
     return {
       id: nextRowId(),
       enabled: binding?.enabled !== false,
       triggerChain,
       trigger: triggerChain.join('>'),
+      ...scopeState,
       keys: `${binding?.keys || ''}`.trim(),
       note: '',
       hasConflict: false,
@@ -127,6 +177,10 @@
     if (!text) return '';
 
     if (group === 'mouse_action') return `auto_mouse_action_${text}`;
+    if (group === 'app_scope') {
+      if (text === 'process') return 'auto_app_scope_selected';
+      return `auto_app_scope_${text}`;
+    }
     if (group === 'gesture_pattern') return `auto_gesture_pattern_${text}`;
     if (group === 'gesture_button') return `auto_gesture_button_${text}`;
     return '';
@@ -150,6 +204,7 @@
 
   function relocalizeOptionLabels() {
     mouseOptions = localizeOptions(mouseOptions, 'mouse_action');
+    appScopeOptions = localizeOptions(appScopeOptions, 'app_scope');
     gestureOptions = localizeOptions(gestureOptions, 'gesture_pattern');
     gestureButtonOptions = localizeOptions(gestureButtonOptions, 'gesture_button');
   }
@@ -157,7 +212,8 @@
   function validationMessages() {
     return {
       missing: t('auto_missing_shortcut', 'Shortcut is required for enabled mapping.'),
-      duplicate: t('auto_conflict_trigger', 'Duplicate trigger chain. Keep only one enabled mapping per trigger chain.'),
+      duplicate: t('auto_conflict_trigger', 'Duplicate trigger chain + app scope. Keep only one enabled mapping per key.'),
+      invalidScope: t('auto_missing_scope_app', 'Please add at least one target app exe when selected-app scope is enabled.'),
     };
   }
 
@@ -189,6 +245,35 @@
       return {
         ...row,
         keys: `${value || ''}`,
+      };
+    }
+    if (key === 'appScopeMode') {
+      const appScopeMode = scopeMode(value);
+      const nextApps = appScopeMode === 'selected' ? [...(row.appScopeApps || [])] : [];
+      return {
+        ...row,
+        ...buildScopeState(appScopeMode, nextApps, row.appScopeDraft),
+      };
+    }
+    if (key === 'appScopeDraft') {
+      return {
+        ...row,
+        appScopeDraft: `${value || ''}`,
+      };
+    }
+    if (key === 'appScopeAdd') {
+      const nextApps = [...(row.appScopeApps || []), `${value || ''}`];
+      return {
+        ...row,
+        ...buildScopeState('selected', nextApps, ''),
+      };
+    }
+    if (key === 'appScopeRemove') {
+      const target = `${value || ''}`.trim().toLowerCase();
+      const nextApps = (row.appScopeApps || []).filter((item) => `${item || ''}`.trim().toLowerCase() !== target);
+      return {
+        ...row,
+        ...buildScopeState('selected', nextApps, row.appScopeDraft),
       };
     }
     return {
@@ -271,6 +356,7 @@
 
     const normalized = normalizeAutomationPayload(schema, payloadState);
     mouseOptions = normalized.mouseOptions;
+    appScopeOptions = normalized.appScopeOptions;
     gestureOptions = normalized.gestureOptions;
     gestureButtonOptions = normalized.gestureButtonOptions;
     defaultMouseTrigger = normalized.defaultMouseTrigger;
@@ -312,6 +398,10 @@
       captureHintActive: t(
         'hint_shortcut_capture_active',
         'Recording mode: native capture is active (page shortcuts are blocked). Press combo, Esc to cancel, Backspace to clear.'),
+      scopeAddApp: t('btn_scope_add_app', 'Add app'),
+      scopeReadActiveApp: t('btn_scope_use_active_app', 'Use focused app'),
+      scopeReadingActiveApp: t('btn_scope_reading_active_app', 'Reading...'),
+      scopeAppPlaceholder: t('placeholder_scope_process', 'for example code.exe'),
       remove: t('btn_remove_mapping', 'Remove'),
       add: t('btn_add_mapping', 'Add mapping'),
       addChainNode: t('btn_add_chain_node', 'Add chain node'),
@@ -403,10 +493,16 @@
         message: t('auto_validation_missing_shortcut', 'At least one enabled mapping has empty shortcut text.'),
       };
     }
+    if (mouseValidation.hasInvalidScope) {
+      return {
+        ok: false,
+        message: t('auto_validation_missing_scope_app', 'At least one enabled mapping uses selected-app scope but has no app exe name.'),
+      };
+    }
     if (mouseValidation.hasDuplicateTrigger) {
       return {
         ok: false,
-        message: t('auto_validation_mouse_duplicate', 'Mouse mappings contain duplicate trigger chains.'),
+        message: t('auto_validation_mouse_duplicate', 'Mouse mappings contain duplicate trigger chain + app scope keys.'),
       };
     }
     if (!gestureEnabled) {
@@ -418,10 +514,16 @@
         message: t('auto_validation_missing_shortcut', 'At least one enabled mapping has empty shortcut text.'),
       };
     }
+    if (gestureValidation.hasInvalidScope) {
+      return {
+        ok: false,
+        message: t('auto_validation_missing_scope_app', 'At least one enabled mapping uses selected-app scope but has no app exe name.'),
+      };
+    }
     if (gestureValidation.hasDuplicateTrigger) {
       return {
         ok: false,
-        message: t('auto_validation_gesture_duplicate', 'Gesture mappings contain duplicate trigger chains.'),
+        message: t('auto_validation_gesture_duplicate', 'Gesture mappings contain duplicate trigger chain + app scope keys.'),
       };
     }
     return { ok: true };
@@ -454,6 +556,7 @@
     kind="mouse"
     rows={mouseRows}
     options={mouseOptions}
+    scopeOptions={appScopeOptions}
     templateValue={mouseTemplate}
     templateOptions={mouseTemplateOptions}
     texts={mousePanelTexts}
@@ -488,6 +591,7 @@
     kind="gesture"
     rows={gestureRows}
     options={gestureOptions}
+    scopeOptions={appScopeOptions}
     templateValue={gestureTemplate}
     templateOptions={gestureTemplateOptions}
     texts={gesturePanelTexts}

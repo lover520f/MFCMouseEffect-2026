@@ -28,6 +28,7 @@ nlohmann::json BuildInputIndicatorJson(const InputIndicatorConfig& source) {
         {keys::input::kAbsoluteY, input.absoluteY},
         {keys::input::kTargetMonitor, input.targetMonitor},
         {keys::input::kKeyDisplayMode, input.keyDisplayMode},
+        {keys::input::kKeyLabelLayoutMode, input.keyLabelLayoutMode},
         {keys::input::kSizePx, input.sizePx},
         {keys::input::kDurationMs, input.durationMs},
         {keys::input::kPerMonitorOverrides, perMonitorOverrides}

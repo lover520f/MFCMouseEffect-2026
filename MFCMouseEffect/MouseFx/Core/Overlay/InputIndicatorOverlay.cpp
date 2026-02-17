@@ -34,7 +34,9 @@ struct GdiRenderContext {
 
     ~GdiRenderContext() { Release(); }
 
-    bool Init(int size) {
+    bool Init(int width, int height) {
+        const int safeWidth = std::max(1, width);
+        const int safeHeight = std::max(1, height);
         screenDc = GetDC(nullptr);
         if (!screenDc) return false;
         memDc = CreateCompatibleDC(screenDc);
@@ -42,8 +44,8 @@ struct GdiRenderContext {
 
         BITMAPINFO bmi{};
         bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-        bmi.bmiHeader.biWidth = size;
-        bmi.bmiHeader.biHeight = -size; // top-down
+        bmi.bmiHeader.biWidth = safeWidth;
+        bmi.bmiHeader.biHeight = -safeHeight; // top-down
         bmi.bmiHeader.biPlanes = 1;
         bmi.bmiHeader.biBitCount = 32;
         bmi.bmiHeader.biCompression = BI_RGB;
@@ -52,7 +54,7 @@ struct GdiRenderContext {
         if (!hbmp || !bits) { Release(); return false; }
 
         oldBmp = SelectObject(memDc, hbmp);
-        std::memset(bits, 0, static_cast<size_t>(size) * static_cast<size_t>(size) * 4u);
+        std::memset(bits, 0, static_cast<size_t>(safeWidth) * static_cast<size_t>(safeHeight) * 4u);
         return true;
     }
 
@@ -144,6 +146,7 @@ void InputIndicatorOverlay::UpdateConfig(const InputIndicatorConfig& cfg) {
     config_.offsetY = ClampInt(config_.offsetY, -2000, 2000);
     config_.absoluteX = ClampInt(config_.absoluteX, -20000, 20000);
     config_.absoluteY = ClampInt(config_.absoluteY, -20000, 20000);
+    UpdateRenderSize(eventKind_, eventLabel_);
 
     if (!config_.enabled) {
         Hide();
@@ -151,7 +154,15 @@ void InputIndicatorOverlay::UpdateConfig(const InputIndicatorConfig& cfg) {
     }
 
     if (hwnd_) {
-        SetWindowPos(hwnd_, nullptr, 0, 0, config_.sizePx, config_.sizePx,
+        SetWindowPos(hwnd_, nullptr, 0, 0, renderWidthPx_, renderHeightPx_,
+            SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
+    }
+    for (auto& [id, clone] : cloneWindows_) {
+        (void)id;
+        if (!clone || !IsWindow(clone)) {
+            continue;
+        }
+        SetWindowPos(clone, nullptr, 0, 0, renderWidthPx_, renderHeightPx_,
             SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
     }
 }
@@ -347,7 +358,7 @@ bool InputIndicatorOverlay::EnsureWindow() {
         kWindowClassName,
         L"",
         WS_POPUP,
-        0, 0, config_.sizePx, config_.sizePx,
+        0, 0, renderWidthPx_, renderHeightPx_,
         nullptr, nullptr, GetModuleHandleW(nullptr), this);
 
     if (!hwnd_) return false;
@@ -358,6 +369,18 @@ bool InputIndicatorOverlay::EnsureWindow() {
 // Trigger + Render
 // ============================================================================
 
+void InputIndicatorOverlay::UpdateRenderSize(IndicatorEventKind kind, const std::wstring& label) {
+    renderHeightPx_ = config_.sizePx;
+    renderWidthPx_ = config_.sizePx;
+    if (kind != IndicatorEventKind::KeyInput) {
+        return;
+    }
+    renderWidthPx_ = renderer_.ResolveKeyWindowWidthPx(
+        config_.sizePx,
+        label,
+        config_.keyLabelLayoutMode);
+}
+
 void InputIndicatorOverlay::Trigger(IndicatorEventKind kind, POINT anchorPt, std::wstring label, bool isKeyboard) {
     if (!initialized_ && !Initialize()) return;
 
@@ -366,6 +389,7 @@ void InputIndicatorOverlay::Trigger(IndicatorEventKind kind, POINT anchorPt, std
     active_ = true;
     anchorPt_ = anchorPt;
     eventLabel_ = std::move(label);
+    UpdateRenderSize(eventKind_, eventLabel_);
 
     // Custom multi-monitor mode: show on all enabled monitors
     if (IsCustomMode(isKeyboard)) {
@@ -391,14 +415,16 @@ void InputIndicatorOverlay::Render() {
 void InputIndicatorOverlay::RenderToWindow(HWND targetHwnd) {
     if (!targetHwnd || !active_) return;
 
-    const int size = config_.sizePx;
+    const int width = std::max(1, renderWidthPx_);
+    const int height = std::max(1, renderHeightPx_);
+    const int stride = width * 4;
 
     // RAII GDI context: screenDC + memDC + DIBSection
     GdiRenderContext ctx;
-    if (!ctx.Init(size)) return;
+    if (!ctx.Init(width, height)) return;
 
     // Wrap the DIBSection for GDI+ drawing
-    Gdiplus::Bitmap bmp(size, size, size * 4, PixelFormat32bppPARGB,
+    Gdiplus::Bitmap bmp(width, height, stride, PixelFormat32bppPARGB,
                         reinterpret_cast<BYTE*>(ctx.bits));
     Gdiplus::Graphics g(&bmp);
     g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
@@ -412,13 +438,13 @@ void InputIndicatorOverlay::RenderToWindow(HWND targetHwnd) {
 
     // Delegate drawing to the renderer
     if (eventKind_ == IndicatorEventKind::KeyInput) {
-        renderer_.RenderKeyAction(g, size, eventLabel_, anim);
+        renderer_.RenderKeyAction(g, width, height, eventLabel_, anim, config_.keyLabelLayoutMode);
     } else {
-        renderer_.RenderPointerAction(g, size, eventKind_, anim, eventLabel_);
+        renderer_.RenderPointerAction(g, config_.sizePx, eventKind_, anim, eventLabel_);
     }
 
     // Commit to layered window
-    SIZE sz{ size, size };
+    SIZE sz{ width, height };
     POINT src{ 0, 0 };
     RECT rc{};
     GetWindowRect(targetHwnd, &rc);
@@ -447,7 +473,7 @@ HWND InputIndicatorOverlay::CreateCloneWindow() {
         kWindowClassName,
         L"",
         WS_POPUP,
-        0, 0, config_.sizePx, config_.sizePx,
+        0, 0, renderWidthPx_, renderHeightPx_,
         nullptr, nullptr, GetModuleHandleW(nullptr), this);
 
     return clone;
@@ -517,7 +543,7 @@ void InputIndicatorOverlay::UpdateClonePlacement(HWND targetHwnd, const std::str
     // The +/- 20000 limit in UpdateConfig prevents extreme values.
     
     SetWindowPos(targetHwnd, HWND_TOPMOST, target.x, target.y,
-                 config_.sizePx, config_.sizePx, SWP_NOACTIVATE);
+                 renderWidthPx_, renderHeightPx_, SWP_NOACTIVATE);
 }
 
 void InputIndicatorOverlay::SyncCloneWindows(bool /*isKeyboard*/) {
@@ -606,7 +632,7 @@ void InputIndicatorOverlay::UpdatePlacement(POINT anchorPt, bool isKeyboard) {
     // we don't clamp strictly TO the monitor, but we don't apply extra clamping 
     // beyond the config limits here.
     
-    SetWindowPos(hwnd_, HWND_TOPMOST, target.x, target.y, config_.sizePx, config_.sizePx, SWP_NOACTIVATE);
+    SetWindowPos(hwnd_, HWND_TOPMOST, target.x, target.y, renderWidthPx_, renderHeightPx_, SWP_NOACTIVATE);
 }
 
 // ============================================================================

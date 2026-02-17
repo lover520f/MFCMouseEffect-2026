@@ -192,6 +192,64 @@ bool InputAutomationEngine::IsChainTimingMatched(
     return true;
 }
 
+bool InputAutomationEngine::AppScopeMatches(
+    const std::vector<std::string>& appScopes,
+    const std::string& processBaseName) {
+    if (appScopes.empty()) {
+        return true;
+    }
+
+    const std::string current = ToLowerAscii(TrimAscii(processBaseName));
+    bool hasProcessScope = false;
+
+    for (const std::string& rawScope : appScopes) {
+        const std::string scope = ToLowerAscii(TrimAscii(rawScope));
+        if (scope.empty() || scope == "all" || scope == "*" || scope == "global") {
+            return true;
+        }
+
+        constexpr const char kProcessPrefix[] = "process:";
+        if (scope.rfind(kProcessPrefix, 0) != 0) {
+            return true;
+        }
+
+        const std::string expected = ToLowerAscii(TrimAscii(scope.substr(sizeof(kProcessPrefix) - 1)));
+        if (expected.empty()) {
+            continue;
+        }
+
+        hasProcessScope = true;
+        if (!current.empty() && current == expected) {
+            return true;
+        }
+    }
+
+    return !hasProcessScope;
+}
+
+int InputAutomationEngine::AppScopeSpecificity(const std::vector<std::string>& appScopes) {
+    if (appScopes.empty()) {
+        return 0;
+    }
+
+    bool hasProcessScope = false;
+    for (const std::string& rawScope : appScopes) {
+        const std::string scope = ToLowerAscii(TrimAscii(rawScope));
+        if (scope.empty() || scope == "all" || scope == "*" || scope == "global") {
+            return 0;
+        }
+        if (scope.rfind("process:", 0) != 0) {
+            return 0;
+        }
+
+        const std::string expected = ToLowerAscii(TrimAscii(scope.substr(sizeof("process:") - 1)));
+        if (!expected.empty()) {
+            hasProcessScope = true;
+        }
+    }
+    return hasProcessScope ? 1 : 0;
+}
+
 bool InputAutomationEngine::TriggerMouseAction(const std::string& actionId) {
     if (!config_.enabled || actionId.empty()) {
         return false;
@@ -202,8 +260,14 @@ bool InputAutomationEngine::TriggerMouseAction(const std::string& actionId) {
     }
 
     AppendActionHistory(&mouseActionHistory_, normalizedActionId, mouseChainCap_, mouseChainTimingLimit_);
+    const std::string processBaseName = foregroundProcessResolver_.CurrentProcessBaseName();
     const AutomationKeyBinding* binding =
-        FindEnabledBinding(config_.mouseMappings, mouseActionHistory_, false, mouseChainTimingLimit_);
+        FindEnabledBinding(
+            config_.mouseMappings,
+            mouseActionHistory_,
+            false,
+            mouseChainTimingLimit_,
+            processBaseName);
     if (!binding) {
         return false;
     }
@@ -220,8 +284,14 @@ bool InputAutomationEngine::TriggerGesture(const std::string& gestureId) {
     }
 
     AppendActionHistory(&gestureHistory_, normalizedGestureId, gestureChainCap_, gestureChainTimingLimit_);
+    const std::string processBaseName = foregroundProcessResolver_.CurrentProcessBaseName();
     const AutomationKeyBinding* binding =
-        FindEnabledBinding(config_.gesture.mappings, gestureHistory_, true, gestureChainTimingLimit_);
+        FindEnabledBinding(
+            config_.gesture.mappings,
+            gestureHistory_,
+            true,
+            gestureChainTimingLimit_,
+            processBaseName);
     if (!binding) {
         return false;
     }
@@ -255,7 +325,8 @@ const AutomationKeyBinding* InputAutomationEngine::FindEnabledBinding(
     const std::vector<AutomationKeyBinding>& mappings,
     const std::vector<ActionHistoryItem>& actionHistory,
     bool gestureBinding,
-    const ChainTimingLimit& timingLimit) const {
+    const ChainTimingLimit& timingLimit,
+    const std::string& processBaseName) const {
     if (actionHistory.empty()) {
         return nullptr;
     }
@@ -263,9 +334,13 @@ const AutomationKeyBinding* InputAutomationEngine::FindEnabledBinding(
     const std::string currentAction = actionHistory.back().actionId;
     const AutomationKeyBinding* best = nullptr;
     size_t bestLength = 0;
+    int bestScopeSpecificity = -1;
 
     for (const AutomationKeyBinding& binding : mappings) {
         if (!binding.enabled) {
+            continue;
+        }
+        if (!AppScopeMatches(binding.appScopes, processBaseName)) {
             continue;
         }
 
@@ -302,9 +377,12 @@ const AutomationKeyBinding* InputAutomationEngine::FindEnabledBinding(
             continue;
         }
 
-        if (chain.size() > bestLength) {
+        const int scopeSpecificity = AppScopeSpecificity(binding.appScopes);
+        if (chain.size() > bestLength ||
+            (chain.size() == bestLength && scopeSpecificity > bestScopeSpecificity)) {
             best = &binding;
             bestLength = chain.size();
+            bestScopeSpecificity = scopeSpecificity;
         }
     }
 

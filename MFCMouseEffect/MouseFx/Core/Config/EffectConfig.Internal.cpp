@@ -110,6 +110,11 @@ InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig config) {
         config.keyDisplayMode != "shortcut") {
         config.keyDisplayMode = "all";
     }
+    config.keyLabelLayoutMode = ToLowerAscii(TrimAscii(config.keyLabelLayoutMode));
+    if (config.keyLabelLayoutMode != "fixed_font" &&
+        config.keyLabelLayoutMode != "fixed_area") {
+        config.keyLabelLayoutMode = "fixed_font";
+    }
 
     for (auto& [key, value] : config.perMonitorOverrides) {
         (void)key;
@@ -145,6 +150,77 @@ std::string NormalizeGestureId(std::string value) {
     return NormalizeId(std::move(value));
 }
 
+std::string NormalizeProcessExecutable(std::string value) {
+    value = ToLowerAscii(TrimAscii(std::move(value)));
+    if (value.empty()) {
+        return {};
+    }
+
+    if (value.size() >= 2 && value.front() == '"' && value.back() == '"') {
+        value = value.substr(1, value.size() - 2);
+    }
+    if (value.empty()) {
+        return {};
+    }
+
+    std::replace(value.begin(), value.end(), '/', '\\');
+    const size_t slashPos = value.find_last_of('\\');
+    if (slashPos != std::string::npos) {
+        value = value.substr(slashPos + 1);
+    }
+    value = TrimAscii(std::move(value));
+    if (value.empty()) {
+        return {};
+    }
+
+    if (value.find('.') == std::string::npos) {
+        value += ".exe";
+    }
+    return value;
+}
+
+std::string NormalizeAutomationAppScopeToken(std::string value) {
+    value = ToLowerAscii(TrimAscii(std::move(value)));
+    if (value.empty() || value == "all" || value == "global" || value == "*") {
+        return "all";
+    }
+
+    constexpr const char kProcessPrefix[] = "process:";
+    if (value.rfind(kProcessPrefix, 0) == 0) {
+        std::string exe = NormalizeProcessExecutable(value.substr(sizeof(kProcessPrefix) - 1));
+        if (exe.empty()) {
+            return "all";
+        }
+        return std::string(kProcessPrefix) + exe;
+    }
+
+    std::string exe = NormalizeProcessExecutable(std::move(value));
+    if (exe.empty()) {
+        return "all";
+    }
+    return std::string(kProcessPrefix) + exe;
+}
+
+std::vector<std::string> NormalizeAutomationAppScopes(std::vector<std::string> values) {
+    std::vector<std::string> out;
+    out.reserve(values.size());
+
+    for (std::string& value : values) {
+        const std::string normalized = NormalizeAutomationAppScopeToken(std::move(value));
+        if (normalized == "all") {
+            return {"all"};
+        }
+        if (std::find(out.begin(), out.end(), normalized) == out.end()) {
+            out.push_back(normalized);
+        }
+    }
+
+    if (out.empty()) {
+        out.push_back("all");
+    }
+    return out;
+}
+
 std::string NormalizeGestureButton(std::string value) {
     value = NormalizeId(std::move(value));
     if (value == "l" || value == "left_button") return "left";
@@ -167,6 +243,7 @@ InputAutomationConfig SanitizeInputAutomationConfig(InputAutomationConfig config
             binding.trigger = gestureBinding
                 ? automation_chain::NormalizeChainText(binding.trigger, NormalizeGestureId)
                 : automation_chain::NormalizeChainText(binding.trigger, NormalizeMouseActionId);
+            binding.appScopes = NormalizeAutomationAppScopes(std::move(binding.appScopes));
             binding.keys = TrimAscii(binding.keys);
         }
     };

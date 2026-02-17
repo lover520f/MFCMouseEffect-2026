@@ -139,6 +139,7 @@ void ApplyInputIndicatorFields(const json& source, InputIndicatorConfig* dst, bo
 
     if (source.contains("target_monitor") && source["target_monitor"].is_string()) dst->targetMonitor = source["target_monitor"].get<std::string>();
     if (source.contains("key_display_mode") && source["key_display_mode"].is_string()) dst->keyDisplayMode = source["key_display_mode"].get<std::string>();
+    if (source.contains("key_label_layout_mode") && source["key_label_layout_mode"].is_string()) dst->keyLabelLayoutMode = source["key_label_layout_mode"].get<std::string>();
     if (source.contains("per_monitor_overrides") && source["per_monitor_overrides"].is_object()) {
         dst->perMonitorOverrides.clear();
         for (auto& [key, value] : source["per_monitor_overrides"].items()) {
@@ -191,6 +192,19 @@ void ApplyAutomationBindings(const json& source, std::vector<AutomationKeyBindin
         }
         if (item.contains("trigger") && item["trigger"].is_string()) {
             binding.trigger = item["trigger"].get<std::string>();
+        }
+        binding.appScopes.clear();
+        if (item.contains("app_scopes") && item["app_scopes"].is_array()) {
+            for (const auto& scope : item["app_scopes"]) {
+                if (scope.is_string()) {
+                    binding.appScopes.push_back(scope.get<std::string>());
+                }
+            }
+        }
+        if (binding.appScopes.empty() &&
+            item.contains("app_scope") &&
+            item["app_scope"].is_string()) {
+            binding.appScopes.push_back(item["app_scope"].get<std::string>());
         }
         if (item.contains("keys") && item["keys"].is_string()) {
             binding.keys = item["keys"].get<std::string>();

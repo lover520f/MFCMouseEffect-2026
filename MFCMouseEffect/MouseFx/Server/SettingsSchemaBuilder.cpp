@@ -73,12 +73,20 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
         {{"value","significant"},{"label", LabelByLang(L"\u4ec5\u91cd\u8981\u6309\u952e (\u63a8\u8350)", L"Significant Keys Only (Recommended)", lang)}},
         {{"value","shortcut"},{"label", LabelByLang(L"\u4ec5\u5feb\u6377\u952e", L"Shortcuts Only", lang)}}
     });
+    out["key_label_layout_modes"] = json::array({
+        {{"value","fixed_font"},{"label", LabelByLang(L"\u56fa\u5b9a\u5b57\u4f53\u5927\u5c0f\uff08\u81ea\u52a8\u6269\u5c55\u663e\u793a\u533a\u57df\uff09", L"Fixed Font Size (Expand Area)", lang)}},
+        {{"value","fixed_area"},{"label", LabelByLang(L"\u56fa\u5b9a\u663e\u793a\u533a\u57df\uff08\u81ea\u52a8\u7f29\u5c0f\u5b57\u4f53\uff09", L"Fixed Area (Shrink Font)", lang)}}
+    });
     out["automation_mouse_actions"] = json::array({
         {{"value","left_click"},{"label", LabelByLang(L"\u5de6\u952e\u5355\u51fb", L"Left Click", lang)}},
         {{"value","right_click"},{"label", LabelByLang(L"\u53f3\u952e\u5355\u51fb", L"Right Click", lang)}},
         {{"value","middle_click"},{"label", LabelByLang(L"\u4e2d\u952e\u5355\u51fb", L"Middle Click", lang)}},
         {{"value","scroll_up"},{"label", LabelByLang(L"\u6eda\u8f6e\u5411\u4e0a", L"Wheel Up", lang)}},
         {{"value","scroll_down"},{"label", LabelByLang(L"\u6eda\u8f6e\u5411\u4e0b", L"Wheel Down", lang)}},
+    });
+    out["automation_app_scopes"] = json::array({
+        {{"value","all"},{"label", LabelByLang(L"\u5168\u90e8\u5e94\u7528", L"All Apps", lang)}},
+        {{"value","selected"},{"label", LabelByLang(L"\u6307\u5b9a\u5e94\u7528\uff08\u591a\u9009\uff09", L"Selected Apps (Multi)", lang)}},
     });
     out["automation_gesture_buttons"] = json::array({
         {{"value","right"},{"label", LabelByLang(L"\u53f3\u952e\u62d6\u62fd (\u63a8\u8350)", L"Right Drag (Recommended)", lang)}},

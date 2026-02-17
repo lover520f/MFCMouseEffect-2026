@@ -15,6 +15,8 @@ void ApplyCommonInputIndicatorFields(const nlohmann::json& input, InputIndicator
     config.offsetY = GetOr<int>(input, keys::input::kOffsetY, config.offsetY);
     config.absoluteX = GetOr<int>(input, keys::input::kAbsoluteX, config.absoluteX);
     config.absoluteY = GetOr<int>(input, keys::input::kAbsoluteY, config.absoluteY);
+    config.keyLabelLayoutMode =
+        GetOr<std::string>(input, keys::input::kKeyLabelLayoutMode, config.keyLabelLayoutMode);
     config.sizePx = GetOr<int>(input, keys::input::kSizePx, config.sizePx);
     config.durationMs = GetOr<int>(input, keys::input::kDurationMs, config.durationMs);
 }

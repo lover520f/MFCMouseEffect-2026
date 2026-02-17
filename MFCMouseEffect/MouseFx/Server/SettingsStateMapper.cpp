@@ -132,6 +132,7 @@ std::string BuildSettingsStateJson(const EffectConfig& cfg) {
         {"absolute_y", cfg.inputIndicator.absoluteY},
         {"target_monitor", EnsureUtf8(cfg.inputIndicator.targetMonitor)},
         {"key_display_mode", cfg.inputIndicator.keyDisplayMode},
+        {"key_label_layout_mode", cfg.inputIndicator.keyLabelLayoutMode},
         // Per-monitor overrides
         {"per_monitor_overrides", [&](){
             json j = json::object();
@@ -146,9 +147,18 @@ std::string BuildSettingsStateJson(const EffectConfig& cfg) {
         {"mouse_mappings", [&](){
             json arr = json::array();
             for (const auto& binding : cfg.automation.mouseMappings) {
+                json scopes = json::array();
+                for (const auto& scope : binding.appScopes) {
+                    scopes.push_back(EnsureUtf8(scope));
+                }
+                const std::string legacyScope = scopes.empty()
+                    ? std::string("all")
+                    : scopes.front().get<std::string>();
                 arr.push_back({
                     {"enabled", binding.enabled},
                     {"trigger", EnsureUtf8(binding.trigger)},
+                    {"app_scope", legacyScope},
+                    {"app_scopes", scopes},
                     {"keys", EnsureUtf8(binding.keys)},
                 });
             }
@@ -163,9 +173,18 @@ std::string BuildSettingsStateJson(const EffectConfig& cfg) {
             {"mappings", [&](){
                 json arr = json::array();
                 for (const auto& binding : cfg.automation.gesture.mappings) {
+                    json scopes = json::array();
+                    for (const auto& scope : binding.appScopes) {
+                        scopes.push_back(EnsureUtf8(scope));
+                    }
+                    const std::string legacyScope = scopes.empty()
+                        ? std::string("all")
+                        : scopes.front().get<std::string>();
                     arr.push_back({
                         {"enabled", binding.enabled},
                         {"trigger", EnsureUtf8(binding.trigger)},
+                        {"app_scope", legacyScope},
+                        {"app_scopes", scopes},
                         {"keys", EnsureUtf8(binding.keys)},
                     });
                 }

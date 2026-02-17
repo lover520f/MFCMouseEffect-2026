@@ -22,6 +22,20 @@ void ParseBindingsArray(
         AutomationKeyBinding binding;
         binding.enabled = GetOr<bool>(item, keys::automation::kEnabled, binding.enabled);
         binding.trigger = GetOr<std::string>(item, keys::automation::kTrigger, binding.trigger);
+        binding.appScopes.clear();
+        if (item.contains(keys::automation::kAppScopes) &&
+            item[keys::automation::kAppScopes].is_array()) {
+            for (const auto& scope : item[keys::automation::kAppScopes]) {
+                if (scope.is_string()) {
+                    binding.appScopes.push_back(scope.get<std::string>());
+                }
+            }
+        }
+        if (binding.appScopes.empty() &&
+            item.contains(keys::automation::kAppScope) &&
+            item[keys::automation::kAppScope].is_string()) {
+            binding.appScopes.push_back(item[keys::automation::kAppScope].get<std::string>());
+        }
         binding.keys = GetOr<std::string>(item, keys::automation::kKeys, binding.keys);
         outBindings->push_back(binding);
     }

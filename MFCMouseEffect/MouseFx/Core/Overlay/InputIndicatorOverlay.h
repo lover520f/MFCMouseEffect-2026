@@ -43,6 +43,7 @@ private:
     void TriggerOnEnabledMonitors(IndicatorEventKind kind, POINT anchorPt, std::wstring label, bool isKeyboard);
     void Render();
     void RenderToWindow(HWND hwnd);
+    void UpdateRenderSize(IndicatorEventKind kind, const std::wstring& label);
     void UpdatePlacement(POINT anchorPt, bool isKeyboard = false);
     void UpdateClonePlacement(HWND hwnd, const std::string& monitorId, bool isKeyboard);
     void SyncCloneWindows(bool isKeyboard);
@@ -78,6 +79,8 @@ private:
     uint64_t lastKeyTickMs_ = 0;
 
     std::wstring eventLabel_{};
+    int renderWidthPx_ = 72;
+    int renderHeightPx_ = 72;
 
     // Multi-monitor clone windows (monitorId -> HWND)
     std::map<std::string, HWND> cloneWindows_;

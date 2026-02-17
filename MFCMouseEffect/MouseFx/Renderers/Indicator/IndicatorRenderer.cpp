@@ -3,9 +3,77 @@
 #include "IndicatorRenderer.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 
 namespace mousefx {
+namespace {
+
+std::string NormalizeKeyLayoutMode(std::string mode) {
+    std::transform(mode.begin(), mode.end(), mode.begin(), [](unsigned char ch) {
+        return static_cast<char>(std::tolower(ch));
+    });
+    if (mode == "fixed_area") {
+        return "fixed_area";
+    }
+    return "fixed_font";
+}
+
+Gdiplus::RectF BuildKeyPanelRect(float widthPx, float heightPx) {
+    return Gdiplus::RectF(widthPx * 0.08f, heightPx * 0.31f, widthPx * 0.84f, heightPx * 0.38f);
+}
+
+float MeasureKeyLabelWidth(const std::wstring& text, float fontSizePx) {
+    Gdiplus::Bitmap surface(1, 1, PixelFormat32bppPARGB);
+    Gdiplus::Graphics graphics(&surface);
+    Gdiplus::FontFamily family(L"Segoe UI");
+    Gdiplus::Font font(&family, fontSizePx, Gdiplus::FontStyleBold, Gdiplus::UnitPixel);
+    Gdiplus::StringFormat format;
+    format.SetFormatFlags(format.GetFormatFlags() | Gdiplus::StringFormatFlagsNoWrap);
+    format.SetTrimming(Gdiplus::StringTrimmingNone);
+    Gdiplus::RectF measured;
+    graphics.MeasureString(
+        text.c_str(),
+        static_cast<INT>(text.size()),
+        &font,
+        Gdiplus::PointF(0.0f, 0.0f),
+        &format,
+        &measured);
+    return measured.Width;
+}
+
+float ResolveFittedKeyFontSize(
+    Gdiplus::Graphics& g,
+    const std::wstring& text,
+    const Gdiplus::RectF& panel,
+    const Gdiplus::FontFamily& family,
+    Gdiplus::StringFormat* format,
+    float initialSize) {
+    const float minSize = std::max(6.0f, initialSize * 0.62f);
+    const float widthBudget = std::max(10.0f, panel.Width - 10.0f);
+    const float heightBudget = std::max(8.0f, panel.Height - 6.0f);
+    float size = std::max(minSize, initialSize);
+
+    for (int i = 0; i < 12; ++i) {
+        Gdiplus::Font font(&family, size, Gdiplus::FontStyleBold, Gdiplus::UnitPixel);
+        Gdiplus::RectF measured;
+        g.MeasureString(
+            text.c_str(),
+            static_cast<INT>(text.size()),
+            &font,
+            Gdiplus::PointF(0.0f, 0.0f),
+            format,
+            &measured);
+
+        if ((measured.Width <= widthBudget && measured.Height <= heightBudget) || size <= minSize) {
+            return size;
+        }
+        size = std::max(minSize, size - 0.8f);
+    }
+    return size;
+}
+
+} // namespace
 
 // ============================================================================
 // Static helpers
@@ -32,12 +100,6 @@ void IndicatorRenderer::AddRoundedRectPath(Gdiplus::GraphicsPath& path,
     path.AddArc(rect.GetRight() - d, rect.GetBottom() - d, d, d, 0.0f, 90.0f);
     path.AddArc(rect.X, rect.GetBottom() - d, d, d, 90.0f, 90.0f);
     path.CloseFigure();
-}
-
-std::wstring IndicatorRenderer::TruncateLabel(const std::wstring& src, size_t maxChars) {
-    if (src.size() <= maxChars) return src;
-    if (maxChars <= 3) return src.substr(0, maxChars);
-    return src.substr(0, maxChars - 3) + L"...";
 }
 
 IndicatorAnimParams IndicatorRenderer::ComputeAnimParams(float t) {
@@ -271,23 +333,52 @@ void IndicatorRenderer::RenderPointerAction(Gdiplus::Graphics& g, int sizePx,
     }
 }
 
-void IndicatorRenderer::RenderKeyAction(Gdiplus::Graphics& g, int sizePx,
+int IndicatorRenderer::ResolveKeyWindowWidthPx(
+    int baseSizePx,
+    const std::wstring& label,
+    const std::string& layoutMode) const {
+    const int base = std::max(40, baseSizePx);
+    if (NormalizeKeyLayoutMode(layoutMode) != "fixed_font") {
+        return base;
+    }
+
+    const std::wstring displayText = label.empty() ? L"Key" : label;
+    const float baseHeight = static_cast<float>(base);
+    const Gdiplus::RectF panel = BuildKeyPanelRect(baseHeight, baseHeight);
+    const float defaultFontSize = baseHeight * 0.14f;
+    const float measuredWidth = MeasureKeyLabelWidth(displayText, defaultFontSize);
+    const float widthBudget = std::max(10.0f, panel.Width - 10.0f);
+    if (measuredWidth <= widthBudget) {
+        return base;
+    }
+
+    const float requiredPanelWidth = measuredWidth + 10.0f;
+    const float requiredWindowWidth = requiredPanelWidth / 0.84f;
+    const int expanded = static_cast<int>(std::ceil(requiredWindowWidth));
+    const int maxWidth = std::max(base, base * 12);
+    return std::clamp(expanded, base, maxWidth);
+}
+
+void IndicatorRenderer::RenderKeyAction(Gdiplus::Graphics& g, int widthPx, int heightPx,
                                         const std::wstring& label,
-                                        const IndicatorAnimParams& anim) const {
-    const float size = static_cast<float>(sizePx);
-    const Gdiplus::RectF panel(size * 0.08f, size * 0.31f, size * 0.84f, size * 0.38f);
+                                        const IndicatorAnimParams& anim,
+                                        const std::string& layoutMode) const {
+    const float width = static_cast<float>(std::max(1, widthPx));
+    const float height = static_cast<float>(std::max(1, heightPx));
+    const float unit = std::min(width, height);
+    const Gdiplus::RectF panel = BuildKeyPanelRect(width, height);
 
     // Drop shadow
     Gdiplus::GraphicsPath shadowPath;
     AddRoundedRectPath(shadowPath,
         Gdiplus::RectF(panel.X + 2.0f, panel.Y + 3.0f, panel.Width, panel.Height),
-        size * 0.11f);
+        unit * 0.11f);
     Gdiplus::SolidBrush shadowBrush(C(static_cast<uint8_t>(std::min(255, anim.alpha / 3)), 0, 0, 0));
     g.FillPath(&shadowBrush, &shadowPath);
 
     // Panel fill + border
     Gdiplus::GraphicsPath panelPath;
-    AddRoundedRectPath(panelPath, panel, size * 0.11f);
+    AddRoundedRectPath(panelPath, panel, unit * 0.11f);
     Gdiplus::LinearGradientBrush panelBrush(
         Gdiplus::PointF(panel.X, panel.Y),
         Gdiplus::PointF(panel.X, panel.GetBottom()),
@@ -298,13 +389,20 @@ void IndicatorRenderer::RenderKeyAction(Gdiplus::Graphics& g, int sizePx,
     g.DrawPath(&panelPen, &panelPath);
 
     // Key label text
-    std::wstring displayText = label.empty() ? L"Key" : TruncateLabel(label, 12);
+    std::wstring displayText = label.empty() ? L"Key" : label;
     Gdiplus::FontFamily ff(L"Segoe UI");
-    Gdiplus::Font font(&ff, size * 0.14f, Gdiplus::FontStyleBold, Gdiplus::UnitPixel);
-    Gdiplus::SolidBrush textBrush(C(static_cast<uint8_t>(std::min(255, anim.alpha + 15)), 241, 247, 255));
     Gdiplus::StringFormat sf;
     sf.SetAlignment(Gdiplus::StringAlignmentCenter);
     sf.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+    sf.SetFormatFlags(sf.GetFormatFlags() | Gdiplus::StringFormatFlagsNoWrap);
+    sf.SetTrimming(Gdiplus::StringTrimmingNone);
+    const float defaultFontSize = height * 0.14f;
+    float fontSize = defaultFontSize;
+    if (NormalizeKeyLayoutMode(layoutMode) == "fixed_area") {
+        fontSize = ResolveFittedKeyFontSize(g, displayText, panel, ff, &sf, defaultFontSize);
+    }
+    Gdiplus::Font font(&ff, fontSize, Gdiplus::FontStyleBold, Gdiplus::UnitPixel);
+    Gdiplus::SolidBrush textBrush(C(static_cast<uint8_t>(std::min(255, anim.alpha + 15)), 241, 247, 255));
     g.DrawString(displayText.c_str(), static_cast<INT>(displayText.size()),
                  &font, panel, &sf, &textBrush);
 }
