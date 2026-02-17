@@ -224,6 +224,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Automation\InputAutomationEngine.h" />
     <ClInclude Include="MouseFx\Core\Automation\KeyboardInjector.h" />
     <ClInclude Include="MouseFx\Core\Automation\KeyChord.h" />
+    <ClInclude Include="MouseFx\Core\Automation\ShortcutCaptureSession.h" />
     <ClInclude Include="MouseFx\Compute\EffectComputeExecutor.h" />
     <ClInclude Include="MouseFx\Core\Config\ConfigPathResolver.h" />
     <ClInclude Include="MouseFx\Core\Control\EffectFactory.h" />
@@ -313,6 +314,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Automation\InputAutomationEngine.cpp" />
     <ClCompile Include="MouseFx\Core\Automation\KeyboardInjector.cpp" />
     <ClCompile Include="MouseFx\Core\Automation\KeyChord.cpp" />
+    <ClCompile Include="MouseFx\Core\Automation\ShortcutCaptureSession.cpp" />
     <ClCompile Include="MouseFx\Core\Config\ConfigPathResolver.cpp" />
     <ClCompile Include="MouseFx\Core\Control\EffectFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp" />

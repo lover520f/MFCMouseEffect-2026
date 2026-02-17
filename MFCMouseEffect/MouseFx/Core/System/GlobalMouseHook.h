@@ -42,6 +42,7 @@ public:
     void Stop();
     DWORD LastError() const { return lastError_; }
     bool ConsumeLatestMove(POINT& outPt);
+    void SetKeyboardCaptureExclusive(bool enabled);
 
 private:
     static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -55,6 +56,8 @@ private:
     std::atomic<bool> movePending_{false};
     std::atomic<LONG> latestMoveX_{0};
     std::atomic<LONG> latestMoveY_{0};
+    std::atomic<bool> keyboardCaptureExclusive_{false};
+    std::atomic<uint32_t> keyboardModifierMask_{0};
 };
 
 } // namespace mousefx

@@ -1,6 +1,11 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onDestroy } from 'svelte';
   import TriggerChainEditor from './TriggerChainEditor.svelte';
+  import {
+    pollShortcutCapture,
+    startShortcutCapture,
+    stopShortcutCapture,
+  } from './shortcut-capture-remote.js';
   import { shortcutFromKeyboardEvent } from './shortcuts.js';
   import { normalizeTriggerChain, serializeTriggerChain } from './trigger-chain.js';
 
@@ -13,9 +18,101 @@
 
   const dispatch = createEventDispatcher();
   let recordingRowId = '';
+  let remoteCaptureSessionId = '';
+  let remoteCapturePollTimer = 0;
 
   function isCapturing(rowId) {
     return recordingRowId === rowId;
+  }
+
+  function clearRemotePollTimer() {
+    if (!remoteCapturePollTimer) {
+      return;
+    }
+    window.clearTimeout(remoteCapturePollTimer);
+    remoteCapturePollTimer = 0;
+  }
+
+  async function endRemoteCapture(sessionId = remoteCaptureSessionId) {
+    clearRemotePollTimer();
+    if (!sessionId) {
+      return;
+    }
+    if (remoteCaptureSessionId === sessionId) {
+      remoteCaptureSessionId = '';
+    }
+    try {
+      await stopShortcutCapture(sessionId);
+    } catch (_error) {
+      // Keep UI responsive even if server session already ended.
+    }
+  }
+
+  function stopRecording(rowId, blurInput = false) {
+    if (recordingRowId !== rowId) {
+      return;
+    }
+    recordingRowId = '';
+    if (blurInput) {
+      const input = document.getElementById(shortcutInputId(rowId));
+      if (input) {
+        input.blur();
+      }
+    }
+  }
+
+  function scheduleRemotePoll(rowId, sessionId) {
+    clearRemotePollTimer();
+    remoteCapturePollTimer = window.setTimeout(() => {
+      void pollRemoteCapture(rowId, sessionId);
+    }, 120);
+  }
+
+  async function pollRemoteCapture(rowId, sessionId) {
+    if (recordingRowId !== rowId || remoteCaptureSessionId !== sessionId) {
+      return;
+    }
+
+    try {
+      const result = await pollShortcutCapture(sessionId);
+      if (recordingRowId !== rowId || remoteCaptureSessionId !== sessionId) {
+        return;
+      }
+
+      if (result.status === 'captured' && result.shortcut) {
+        emitRowChange(rowId, 'keys', result.shortcut);
+        remoteCaptureSessionId = '';
+        stopRecording(rowId, true);
+        return;
+      }
+
+      if (result.status === 'expired' || result.status === 'invalid') {
+        remoteCaptureSessionId = '';
+        stopRecording(rowId, true);
+        return;
+      }
+
+      scheduleRemotePoll(rowId, sessionId);
+    } catch (_error) {
+      // Fallback to local keydown capture if remote polling fails.
+      remoteCaptureSessionId = '';
+      clearRemotePollTimer();
+    }
+  }
+
+  async function beginRemoteCapture(rowId) {
+    try {
+      const sessionId = await startShortcutCapture(10000);
+      if (!sessionId || recordingRowId !== rowId) {
+        return;
+      }
+      remoteCaptureSessionId = sessionId;
+      scheduleRemotePoll(rowId, sessionId);
+    } catch (_error) {
+      // Server capture unavailable. Keep local keydown capture active.
+      remoteCaptureSessionId = '';
+      clearRemotePollTimer();
+    }
   }
 
   function emitRowChange(rowId, key, value) {
@@ -25,6 +122,7 @@
   function emitRemove(rowId) {
     if (recordingRowId === rowId) {
       recordingRowId = '';
+      void endRemoteCapture();
     }
     dispatch('remove', { kind, rowId });
   }
@@ -50,24 +148,23 @@
     input.select();
   }
 
-  function onShortcutBlur(rowId) {
-    if (recordingRowId === rowId) {
-      recordingRowId = '';
-    }
-  }
-
   function onShortcutKeydown(row, event) {
     if (!row.enabled) {
       return;
     }
 
+    if (!isCapturing(row.id)) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
     const lowered = `${event.key || ''}`.toLowerCase();
     if (lowered === 'escape') {
-      event.preventDefault();
       event.currentTarget.blur();
-      if (recordingRowId === row.id) {
-        recordingRowId = '';
-      }
+      stopRecording(row.id);
+      void endRemoteCapture();
       return;
     }
 
@@ -76,12 +173,9 @@
       !event.altKey &&
       !event.shiftKey &&
       !event.metaKey) {
-      event.preventDefault();
-      event.stopPropagation();
       emitRowChange(row.id, 'keys', '');
-      if (recordingRowId === row.id) {
-        recordingRowId = '';
-      }
+      stopRecording(row.id);
+      void endRemoteCapture();
       return;
     }
 
@@ -90,12 +184,16 @@
       return;
     }
 
-    event.preventDefault();
-    event.stopPropagation();
     emitRowChange(row.id, 'keys', shortcut);
-    if (recordingRowId === row.id) {
-      recordingRowId = '';
+    stopRecording(row.id);
+    void endRemoteCapture();
+  }
+
+  function onShortcutInput(row, event) {
+    if (isCapturing(row.id)) {
+      return;
     }
+    emitRowChange(row.id, 'keys', event.currentTarget.value);
   }
 
   function chainForRow(row) {
@@ -135,16 +233,49 @@
       if (input) {
         input.blur();
       }
+      void endRemoteCapture();
       return;
+    }
+
+    if (recordingRowId && recordingRowId !== rowId) {
+      stopRecording(recordingRowId, true);
+    }
+    if (remoteCaptureSessionId) {
+      void endRemoteCapture(remoteCaptureSessionId);
     }
 
     recordingRowId = rowId;
     focusShortcutInput(rowId);
+    void beginRemoteCapture(rowId);
   }
 
   function shortcutInputId(rowId) {
     return `auto_keys_${kind}_${rowId}`;
   }
+
+  $: {
+    if (recordingRowId) {
+      const activeRow = rows.find((item) => item.id === recordingRowId);
+      if (activeRow && activeRow.enabled) {
+        // Active capture row still valid.
+      } else {
+        const staleId = recordingRowId;
+        recordingRowId = '';
+        void endRemoteCapture();
+        const input = document.getElementById(shortcutInputId(staleId));
+        if (input) {
+          input.blur();
+        }
+      }
+    }
+  }
+
+  onDestroy(() => {
+    clearRemotePollTimer();
+    if (remoteCaptureSessionId) {
+      void endRemoteCapture(remoteCaptureSessionId);
+    }
+  });
 </script>
 
 <div class="automation-panel">
@@ -177,11 +308,11 @@
           class="automation-keys"
           type="text"
           disabled={!row.enabled}
+          readonly={isCapturing(row.id)}
           value={row.keys}
           placeholder={texts.shortcutPlaceholder}
-          on:blur={() => onShortcutBlur(row.id)}
           on:keydown={(event) => onShortcutKeydown(row, event)}
-          on:input={(event) => emitRowChange(row.id, 'keys', event.currentTarget.value)}
+          on:input={(event) => onShortcutInput(row, event)}
         />
         <button
           class="btn-soft automation-record"

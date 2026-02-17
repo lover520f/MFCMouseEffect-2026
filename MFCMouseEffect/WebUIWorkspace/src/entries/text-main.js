@@ -1,7 +1,6 @@
 import TextContentFields from '../text/TextContentFields.svelte';
+import { createLazyMountBridge } from './lazy-mount.js';
 
-const mountNode = document.getElementById('text_settings_mount');
-let component = null;
 let currentState = {
   text_content: '',
   text_font_size: 0,
@@ -21,26 +20,29 @@ function normalizeText(input) {
   };
 }
 
-if (mountNode) {
-  component = new TextContentFields({
-    target: mountNode,
-    props: {
-      text: currentState,
-    },
-  });
-
-  component.$on('change', (event) => {
-    const detail = event?.detail || {};
-    currentState = normalizeText(detail);
-  });
-}
+const bridge = createLazyMountBridge({
+  mountId: 'text_settings_mount',
+  initialProps: {
+    text: currentState,
+  },
+  createComponent: (mountNode, props) => {
+    const instance = new TextContentFields({
+      target: mountNode,
+      props,
+    });
+    instance.$on('change', (event) => {
+      const detail = event?.detail || {};
+      currentState = normalizeText(detail);
+    });
+    return instance;
+  },
+});
 
 function render(payload) {
-  if (!component) return;
   const appState = payload?.state || {};
   const text = normalizeText(appState);
   currentState = text;
-  component.$set({ text });
+  bridge.updateProps({ text });
 }
 
 function read() {
@@ -51,10 +53,3 @@ window.MfxTextSection = {
   render,
   read,
 };
-
-if (!component) {
-  window.MfxTextSection = {
-    render: () => {},
-    read,
-  };
-}

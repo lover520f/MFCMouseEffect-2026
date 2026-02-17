@@ -182,6 +182,34 @@ bool AppController::ConsumeIgnoreNextClick() {
     return true;
 }
 
+void AppController::OnGlobalKey(const KeyEvent& ev) {
+    const bool captureActiveBefore = shortcutCaptureSession_.IsActive();
+    shortcutCaptureSession_.OnKeyDown(ev);
+    const bool captureActiveAfter = shortcutCaptureSession_.IsActive();
+    hook_.SetKeyboardCaptureExclusive(captureActiveAfter);
+    if (captureActiveBefore || captureActiveAfter) {
+        return;
+    }
+    inputIndicatorOverlay_.OnKey(ev);
+}
+
+std::string AppController::StartShortcutCaptureSession(uint64_t timeoutMs) {
+    const std::string sessionId = shortcutCaptureSession_.Start(timeoutMs);
+    hook_.SetKeyboardCaptureExclusive(shortcutCaptureSession_.IsActive());
+    return sessionId;
+}
+
+void AppController::StopShortcutCaptureSession(const std::string& sessionId) {
+    shortcutCaptureSession_.Stop(sessionId);
+    hook_.SetKeyboardCaptureExclusive(shortcutCaptureSession_.IsActive());
+}
+
+ShortcutCaptureSession::PollResult AppController::PollShortcutCaptureSession(const std::string& sessionId) {
+    ShortcutCaptureSession::PollResult result = shortcutCaptureSession_.Poll(sessionId);
+    hook_.SetKeyboardCaptureExclusive(shortcutCaptureSession_.IsActive());
+    return result;
+}
+
 bool AppController::ConsumeLatestMove(POINT* outPt) {
     if (!outPt) {
         return false;
@@ -333,6 +361,7 @@ bool AppController::Start() {
 }
 
 void AppController::Stop() {
+    hook_.SetKeyboardCaptureExclusive(false);
     hook_.Stop();
     inputIndicatorOverlay_.Shutdown();
     inputAutomationEngine_.Reset();

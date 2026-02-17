@@ -105,6 +105,9 @@
     <ClInclude Include="MouseFx\Core\Automation\KeyChord.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Automation\ShortcutCaptureSession.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Compute\EffectComputeExecutor.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -264,6 +267,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Automation\KeyChord.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Automation\ShortcutCaptureSession.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Overlay\OverlayHostService.cpp">

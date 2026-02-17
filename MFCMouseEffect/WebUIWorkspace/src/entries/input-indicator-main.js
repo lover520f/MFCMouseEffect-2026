@@ -1,7 +1,6 @@
 import InputIndicatorFields from '../input-indicator/InputIndicatorFields.svelte';
+import { createLazyMountBridge } from './lazy-mount.js';
 
-const mountNode = document.getElementById('input_indicator_settings_mount');
-let component = null;
 let currentState = {
   enabled: true,
   keyboard_enabled: true,
@@ -41,35 +40,37 @@ function normalizeIndicator(input) {
   };
 }
 
-if (mountNode) {
-  component = new InputIndicatorFields({
-    target: mountNode,
-    props: {
-      positionModes: [],
-      targetMonitorOptions: [],
-      keyDisplayModes: [],
-      monitors: [],
-      monitorOverrides: {},
-      indicator: currentState,
-      texts: {},
-    },
-  });
-
-  component.$on('change', (event) => {
-    const detail = event?.detail || {};
-    currentState = normalizeIndicator(detail);
-  });
-}
+const bridge = createLazyMountBridge({
+  mountId: 'input_indicator_settings_mount',
+  initialProps: {
+    positionModes: [],
+    targetMonitorOptions: [],
+    keyDisplayModes: [],
+    monitors: [],
+    monitorOverrides: {},
+    indicator: currentState,
+    texts: {},
+  },
+  createComponent: (mountNode, props) => {
+    const instance = new InputIndicatorFields({
+      target: mountNode,
+      props,
+    });
+    instance.$on('change', (event) => {
+      const detail = event?.detail || {};
+      currentState = normalizeIndicator(detail);
+    });
+    return instance;
+  },
+});
 
 function render(payload) {
-  if (!component) return;
-
   const schema = payload?.schema || {};
   const indicator = normalizeIndicator(payload?.indicator || {});
   const texts = payload?.texts || {};
 
   currentState = indicator;
-  component.$set({
+  bridge.updateProps({
     positionModes: schema.input_indicator_position_modes || [],
     targetMonitorOptions: schema.target_monitor_options || [],
     keyDisplayModes: schema.key_display_modes || [],
@@ -93,12 +94,3 @@ window.MfxInputIndicatorSection = {
   read,
   syncIndicatorPositionUi,
 };
-
-if (!component) {
-  // Keep API available in non-mounted environments.
-  window.MfxInputIndicatorSection = {
-    render: () => {},
-    read,
-    syncIndicatorPositionUi: () => {},
-  };
-}

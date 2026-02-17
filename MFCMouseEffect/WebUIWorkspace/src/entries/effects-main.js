@@ -1,7 +1,6 @@
 import ActiveEffectsFields from '../effects/ActiveEffectsFields.svelte';
+import { createLazyMountBridge } from './lazy-mount.js';
 
-const mountNode = document.getElementById('effects_settings_mount');
-let component = null;
 let currentState = {
   click: '',
   trail: '',
@@ -21,32 +20,35 @@ function normalizeActive(input) {
   };
 }
 
-if (mountNode) {
-  component = new ActiveEffectsFields({
-    target: mountNode,
-    props: {
-      clickOptions: [],
-      trailOptions: [],
-      scrollOptions: [],
-      holdOptions: [],
-      hoverOptions: [],
-      active: currentState,
-    },
-  });
-
-  component.$on('change', (event) => {
-    const detail = event?.detail || {};
-    currentState = normalizeActive(detail);
-  });
-}
+const bridge = createLazyMountBridge({
+  mountId: 'effects_settings_mount',
+  initialProps: {
+    clickOptions: [],
+    trailOptions: [],
+    scrollOptions: [],
+    holdOptions: [],
+    hoverOptions: [],
+    active: currentState,
+  },
+  createComponent: (mountNode, props) => {
+    const instance = new ActiveEffectsFields({
+      target: mountNode,
+      props,
+    });
+    instance.$on('change', (event) => {
+      const detail = event?.detail || {};
+      currentState = normalizeActive(detail);
+    });
+    return instance;
+  },
+});
 
 function render(payload) {
-  if (!component) return;
   const schema = payload?.schema || {};
   const appState = payload?.state || {};
   const active = normalizeActive(appState.active || {});
   currentState = active;
-  component.$set({
+  bridge.updateProps({
     clickOptions: schema.effects?.click || [],
     trailOptions: schema.effects?.trail || [],
     scrollOptions: schema.effects?.scroll || [],
@@ -64,10 +66,3 @@ window.MfxEffectsSection = {
   render,
   read,
 };
-
-if (!component) {
-  window.MfxEffectsSection = {
-    render: () => {},
-    read,
-  };
-}

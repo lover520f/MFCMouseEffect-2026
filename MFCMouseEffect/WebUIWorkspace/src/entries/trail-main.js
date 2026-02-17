@@ -1,7 +1,6 @@
 import TrailTuningFields from '../trail/TrailTuningFields.svelte';
+import { createLazyMountBridge } from './lazy-mount.js';
 
-const mountNode = document.getElementById('trail_settings_mount');
-let component = null;
 let currentState = {
   trail_style: 'default',
   trail_profiles: {
@@ -74,26 +73,29 @@ function normalizeTrail(input) {
   };
 }
 
-if (mountNode) {
-  component = new TrailTuningFields({
-    target: mountNode,
-    props: {
-      trail: currentState,
-    },
-  });
-
-  component.$on('change', (event) => {
-    const detail = event?.detail || {};
-    currentState = normalizeTrail(detail);
-  });
-}
+const bridge = createLazyMountBridge({
+  mountId: 'trail_settings_mount',
+  initialProps: {
+    trail: currentState,
+  },
+  createComponent: (mountNode, props) => {
+    const instance = new TrailTuningFields({
+      target: mountNode,
+      props,
+    });
+    instance.$on('change', (event) => {
+      const detail = event?.detail || {};
+      currentState = normalizeTrail(detail);
+    });
+    return instance;
+  },
+});
 
 function render(payload) {
-  if (!component) return;
   const appState = payload?.state || {};
   const trail = normalizeTrail(appState);
   currentState = trail;
-  component.$set({ trail });
+  bridge.updateProps({ trail });
 }
 
 function read() {
@@ -104,10 +106,3 @@ window.MfxTrailSection = {
   render,
   read,
 };
-
-if (!component) {
-  window.MfxTrailSection = {
-    render: () => {},
-    read,
-  };
-}

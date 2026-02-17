@@ -114,7 +114,7 @@ LRESULT DispatchRouter::OnKey(HWND /*hwnd*/, LPARAM lParam) {
         return 0;
     }
     if (ev) {
-        ctrl_->IndicatorOverlay().OnKey(*ev);
+        ctrl_->OnGlobalKey(*ev);
         delete ev;
     }
     return 0;

@@ -10,11 +10,34 @@ function fallbackReadResult() {
 
 export function createAutomationApi(Component, mountId) {
   let component = null;
+  let mountObserver = null;
   let latestProps = {
     schema: {},
     payloadState: {},
     i18n: {},
   };
+
+  function stopMountObserver() {
+    if (!mountObserver) {
+      return;
+    }
+    mountObserver.disconnect();
+    mountObserver = null;
+  }
+
+  function observeMount() {
+    if (component || mountObserver || typeof MutationObserver !== 'function') {
+      return;
+    }
+    const root = document.body || document.documentElement;
+    if (!root) {
+      return;
+    }
+    mountObserver = new MutationObserver(() => {
+      ensureComponent();
+    });
+    mountObserver.observe(root, { childList: true, subtree: true });
+  }
 
   function ensureComponent(initialProps) {
     if (initialProps && typeof initialProps === 'object') {
@@ -29,12 +52,14 @@ export function createAutomationApi(Component, mountId) {
     }
     const mount = document.getElementById(mountId);
     if (!mount) {
+      observeMount();
       return null;
     }
     component = new Component({
       target: mount,
       props: latestProps,
     });
+    stopMountObserver();
     return component;
   }
 

@@ -1,7 +1,6 @@
 import GeneralSettingsFields from '../general/GeneralSettingsFields.svelte';
+import { createLazyMountBridge } from './lazy-mount.js';
 
-const mountNode = document.getElementById('general_settings_mount');
-let component = null;
 let currentState = {
   ui_language: '',
   theme: '',
@@ -19,31 +18,34 @@ function normalizeGeneral(input) {
   };
 }
 
-if (mountNode) {
-  component = new GeneralSettingsFields({
-    target: mountNode,
-    props: {
-      uiLanguages: [],
-      themes: [],
-      holdFollowModes: [],
-      holdPresenterBackends: [],
-      general: currentState,
-    },
-  });
-
-  component.$on('change', (event) => {
-    const detail = event?.detail || {};
-    currentState = normalizeGeneral(detail);
-  });
-}
+const bridge = createLazyMountBridge({
+  mountId: 'general_settings_mount',
+  initialProps: {
+    uiLanguages: [],
+    themes: [],
+    holdFollowModes: [],
+    holdPresenterBackends: [],
+    general: currentState,
+  },
+  createComponent: (mountNode, props) => {
+    const instance = new GeneralSettingsFields({
+      target: mountNode,
+      props,
+    });
+    instance.$on('change', (event) => {
+      const detail = event?.detail || {};
+      currentState = normalizeGeneral(detail);
+    });
+    return instance;
+  },
+});
 
 function render(payload) {
-  if (!component) return;
   const schema = payload?.schema || {};
   const appState = payload?.state || {};
   const general = normalizeGeneral(appState);
   currentState = general;
-  component.$set({
+  bridge.updateProps({
     uiLanguages: schema.ui_languages || [],
     themes: schema.themes || [],
     holdFollowModes: schema.hold_follow_modes || [],
@@ -60,10 +62,3 @@ window.MfxGeneralSection = {
   render,
   read,
 };
-
-if (!component) {
-  window.MfxGeneralSection = {
-    render: () => {},
-    read,
-  };
-}

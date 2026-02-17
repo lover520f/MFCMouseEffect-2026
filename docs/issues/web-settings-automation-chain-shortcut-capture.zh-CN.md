@@ -139,3 +139,222 @@
 3. `AutomationEditor.svelte` + `WebUI/i18n.js`：
    - 新增 `btn_record_stop_save` 文案键。
    - 录制按钮改为双态显示：空闲 `录制`，录制中 `结束/保存`。
+
+## 四次回归修正（手动输入与自动识别分离）
+问题反馈：
+1. 快捷键输入框手动输入时会被自动识别逻辑接管，不符合手动编辑预期。
+2. 录制状态按下已有页面快捷键（如刷新/导航类）可能被浏览器先处理，导致录制失败。
+
+修正：
+1. `MappingPanel.svelte`：
+   - 将快捷键输入拆为两种模式：
+     - 手动模式（默认）：输入框按普通文本编辑，`on:input` 直接回写字符串。
+     - 自动识别模式（点击 `录制` 后）：仅在该状态下解析 `keydown -> shortcut`。
+   - 录制状态下对按键统一 `preventDefault + stopPropagation`，优先拦截浏览器快捷键，避免抢占导致录制失败。
+   - 录制状态输入框切为 `readonly`，防止手动输入和自动识别混杂。
+2. `WebUI/i18n.js`：
+   - 更新中英文提示文案，明确“手动输入”与“自动识别”是两条路径，并说明录制时会拦截页面快捷键。
+
+## 五次回归修正（系统热键冲突导致录制失败）
+问题反馈：
+1. 当系统或其他应用已占用快捷键（例如 `Alt+A`）时，Web 输入框录制会先触发外部热键，前端拿不到 `keydown`。
+
+根因：
+1. 旧实现仅依赖网页层事件捕获；遇到系统级/全局热键抢占时，浏览器层不具备可靠捕获能力。
+
+修正：
+1. C++ 后端新增“原生快捷键录制会话”能力（基于已存在的 `WH_KEYBOARD_LL` 键盘钩子）：
+   - 新增 `ShortcutCaptureSession`，提供 `start/poll/stop` 会话接口。
+   - 录制期间由全局键盘事件直接产出标准快捷键文本（如 `Alt+A`），不再依赖网页 `keydown` 是否能收到。
+2. Web API 新增路由：
+   - `POST /api/automation/shortcut-capture/start`
+   - `POST /api/automation/shortcut-capture/poll`
+   - `POST /api/automation/shortcut-capture/stop`
+3. 前端 `MappingPanel.svelte` 录制流程改为：
+   - 点击 `录制` 后优先启动原生会话并轮询结果。
+   - 若原生会话不可用，自动回退到现有网页 `keydown` 捕获。
+4. `DispatchRouter` 键盘消息分发改造：
+   - 键盘事件统一先进入 `AppController::OnGlobalKey`，同时服务于“输入指示器显示”和“快捷键录制会话”，避免两套逻辑割裂。
+
+验证要点：
+1. 在录制状态下按 `Alt+A`（即使该组合在系统中有既有行为），应在映射行里稳定写入 `Alt+A`。
+2. 手动输入模式仍可直接编辑文本，不受原生录制流程干扰。
+
+## 六次回归修正（设置页下拉选项空白）
+问题反馈：
+1. 一般、特效、键鼠指示器等区域的下拉框显示为空，选项无法加载。
+2. 点击“恢复默认”后提示 `Reset failed: Cannot write to private field`。
+
+根因：
+1. `reload()` 流程中 `applyI18n()` 会调用 `syncConsumers`，其中任一消费者抛异常（本次为运行时 `Cannot write to private field`）会中断整个 `reload()`。
+2. `reload()` 被中断后，`settingsForm.render(...)` 后续流程未完成，页面停留在初始空选项状态。
+
+修正：
+1. `WebUI/app.js`：为 i18n consumer 同步增加隔离保护（逐个 `try/catch`），任何单个消费者异常都不会阻断主流程。
+2. `WebUI/i18n-runtime.js`：对 `syncConsumers(text)` 增加兜底 `try/catch`，确保 `applyI18n` 不因消费者异常失败。
+3. 保持 `settingsForm` 作为分区渲染/读回的单一入口，避免重复渲染链引入额外耦合风险。
+4. `reload()` 增加 i18n 应用防护：即使 `applyI18n` 或自动化分区 `syncI18n` 抛错，也不中断 schema/state 渲染链，确保下拉选项可继续加载。
+
+验证要点：
+1. 打开设置页后，一般/特效/键鼠指示器下拉应正常出现选项。
+2. 点击“恢复默认”后不再出现 `Cannot write to private field`，并可自动刷新配置。
+
+## 七次回归修正（Debug 下拉仍为空：分区挂载时序竞争）
+问题反馈：
+1. Debug 环境中下拉框仍然为空，且多个分区同时出现“初始空选项”状态。
+
+根因：
+1. `settings-shell` 负责渲染分区挂载节点（如 `general_settings_mount`），各分区入口脚本在初始化时立即 `getElementById(...)`。
+2. 在部分加载时序下，分区入口执行时挂载节点尚未就绪，组件实例创建失败后退化为空渲染分支，后续即使节点出现也不会自动恢复，导致下拉长期保持空数组。
+
+修正：
+1. 新增：`MFCMouseEffect/WebUIWorkspace/src/entries/lazy-mount.js`
+   - 提供统一“延迟挂载桥接”能力：缓存最新 props、节点出现后自动挂载、挂载后自动 `$set`。
+2. 接入分区入口：
+   - `MFCMouseEffect/WebUIWorkspace/src/entries/general-main.js`
+   - `MFCMouseEffect/WebUIWorkspace/src/entries/effects-main.js`
+   - `MFCMouseEffect/WebUIWorkspace/src/entries/input-indicator-main.js`
+   - `MFCMouseEffect/WebUIWorkspace/src/entries/text-main.js`
+   - `MFCMouseEffect/WebUIWorkspace/src/entries/trail-main.js`
+   - `MFCMouseEffect/WebUIWorkspace/src/automation/api.js`（自动化分区同样使用延迟挂载观察，避免同类时序问题）
+3. 取消“未挂载即永久 no-op”的导出方式，改为可恢复的懒挂载渲染路径。
+
+验证要点：
+1. 首次打开设置页（无需手动重载）时，各分区下拉立即出现选项。
+2. Debug/Release 环境下行为一致，不再依赖脚本加载先后顺序。
+
+## 八次回归修正（首轮加载失败后不自动恢复）
+问题反馈：
+1. Debug 环境仍偶发全部下拉空白，重开后有时恢复、有时不恢复。
+
+根因：
+1. `app.js` 在页面启动时只做一次 `reload()`。
+2. 若这一轮请求恰好失败（例如服务刚启动、短暂离线、端口握手未稳定），后续健康检查仅更新连接状态，不会重新拉取 schema/state。
+3. 结果是页面停留在“组件初始空选项”状态，用户看到所有下拉为空。
+
+修正：
+1. `MFCMouseEffect/WebUI/app.js`
+   - 增加加载状态机：`hasRenderedSettings`、`isReloading`、`reloadRetryTimer`。
+   - 首轮加载失败后自动定时重试，不再一次失败就永久空白。
+   - 连接状态从离线回到在线时，如果尚未成功渲染过配置，自动触发 `reload()` 补拉数据。
+   - 首次失败时显示明确错误状态，避免静默失败误判为“前端渲染问题”。
+
+验证要点：
+1. 在服务启动瞬间打开设置页，即使首轮请求失败，1~2 秒后也会自动恢复并加载下拉选项。
+2. 断网/服务短暂不可用后恢复，无需手动刷新页面即可恢复选项。
+
+## 九次回归修正（Svelte 产物全局符号冲突导致全界面失效）
+问题反馈：
+1. 控制台持续报错：`TypeError: Cannot write to private field`。
+2. 设置页“什么都点不了”，下拉、按钮等全部失效。
+
+根因：
+1. 多个 Svelte 分包文件（`*.svelte.js`）按普通 `<script>` 注入页面。
+2. 每个分包在最外层都会生成一组 helper（如 `T/a/H`），但这些 helper 变量位于分包 IIFE 之外，落在全局作用域。
+3. 后加载分包会覆盖先加载分包的 helper 实现，导致类私有字段访问函数错配，触发 `Cannot write to private field`，并中断后续渲染/交互流程。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUIWorkspace/scripts/copy-output.mjs`
+2. 对所有生成产物（`generatedFiles`）在复制阶段统一增加最外层作用域包装：
+   - 写入标记：`/* mfx-scope-wrapped */`
+   - 包装形式：`(() => { ...原始产物... })();`
+3. 这样每个分包的顶部 helper 都限定在独立函数作用域，不再互相覆盖。
+4. 包装在构建拷贝链路执行，`WebUI` 与 `x64/Debug|Release/webui` 同步得到同样修复产物，无需手动二次处理。
+
+验证要点：
+1. `pnpm run build` 完成后，`MFCMouseEffect/WebUI/*.svelte.js` 文件首行均为 `/* mfx-scope-wrapped */`。
+2. 打开设置页不再出现 `Cannot write to private field`。
+3. 各分区控件（下拉、按钮、输入）恢复可交互。
+
+## 十次回归修正（录制期间快捷键仍被前台应用触发）
+问题反馈：
+1. 快捷键录制已成功，但按键同时继续对当前前台应用生效（例如触发已有热键行为）。
+2. 预期是录制期间这些按键应被“只采集、不执行”。
+
+根因：
+1. 旧实现在 `WH_KEYBOARD_LL` 钩子中仅上报 `WM_MFX_KEY` 到应用，不拦截系统键盘链路。
+2. 因此录制逻辑能拿到按键，但同一按键仍会继续传给前台应用/系统快捷键链。
+
+修正：
+1. 文件：`MFCMouseEffect/MouseFx/Core/System/GlobalMouseHook.h`
+   - 新增 `SetKeyboardCaptureExclusive(bool enabled)`。
+   - 新增 `keyboardCaptureExclusive_` 原子标志。
+2. 文件：`MFCMouseEffect/MouseFx/Core/System/GlobalMouseHook.cpp`
+   - 录制独占打开时，`WM_KEYDOWN/WM_SYSKEYDOWN` 在上报后返回 `1`，阻断后续系统分发。
+   - 录制独占打开时，同时拦截 `WM_KEYUP/WM_SYSKEYUP`，防止残余按键状态泄漏。
+3. 文件：`MFCMouseEffect/MouseFx/Core/Automation/ShortcutCaptureSession.h/.cpp`
+   - 增加 `IsActive()` 用于同步录制会话状态到键盘钩子。
+4. 文件：`MFCMouseEffect/MouseFx/Core/Control/AppController.cpp/.h`
+   - `Start/Stop/PollShortcutCaptureSession` 全流程同步 `SetKeyboardCaptureExclusive(...)`。
+   - `OnGlobalKey` 在录制态下仅供捕获逻辑消费，跳过常规键盘指示器路径，避免“录制键仍生效”的副作用。
+   - `Stop()` 时显式关闭独占标志，确保退出后不残留键盘拦截状态。
+
+验证要点：
+1. 点击“录制”后按任意快捷键（如 `Ctrl+S` / `Alt+A`），映射可被采集。
+2. 录制期间前台应用不再执行该快捷键对应动作。
+3. 结束/取消录制后，系统快捷键行为恢复正常。
+
+## 十一次回归修正（录制组合键丢失修饰符）
+问题反馈：
+1. 录制期按 `Alt+A`，结果仅录入 `A`（修饰符丢失）。
+
+根因：
+1. 录制独占拦截开启后，键盘事件在低层钩子被吞掉，`GetAsyncKeyState` 对修饰键状态的可见性不稳定。
+2. 旧实现依赖 `GetAsyncKeyState(VK_MENU/VK_CONTROL/VK_SHIFT/...)` 组装 `KeyEvent`，因此出现“只剩主键”的回归。
+
+修正：
+1. 文件：`MFCMouseEffect/MouseFx/Core/System/GlobalMouseHook.h`
+   - 新增 `keyboardModifierMask_`，用于在钩子内部维护修饰键状态。
+2. 文件：`MFCMouseEffect/MouseFx/Core/System/GlobalMouseHook.cpp`
+   - 在 `KeyboardHookProc` 中按 `keydown/keyup` 更新 `keyboardModifierMask_`。
+   - 组装 `KeyEvent` 时从掩码读取 `ctrl/shift/alt/win`，不再依赖 `GetAsyncKeyState`。
+   - `alt` 同时兜底 `LLKHF_ALTDOWN` 标志，保证系统键路径一致。
+   - `Start/Stop` 时重置修饰键掩码，避免跨会话残留状态。
+
+验证要点：
+1. 录制期按 `Alt+A`，应稳定录入 `Alt+A`。
+2. 录制期按 `Ctrl+Shift+T`，应完整录入 `Ctrl+Shift+T`。
+3. 独占拦截行为保持不变：录制期间不触发前台应用快捷键。
+
+## 十二次回归修正（已撤销）
+说明：
+1. 本轮曾尝试通过“请求超时兜底”解决 loading 长驻问题。
+2. 你确认该方向不是根因（请求已成功返回），因此该方案已撤销，不纳入最终代码。
+
+## 十三次回归修正（重载成功但状态文案不更新）
+问题反馈：
+1. 接口已重载成功，但顶部状态仍停留在“正在加载...”。
+
+根因：
+1. `reload()` 成功后调用 `markConnection('online')`。
+2. 当当前连接状态本来就是 `online` 时，`markConnection` 的“同状态短路返回”触发，导致不会再次写入 `Ready` 文案。
+3. 若这次返回里没有 `gpu_route_notice`，状态条就保持在上一条 loading 文案。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUI/app.js`
+   - 将 `reload()` 成功路径里的 `markConnection('online')` 改为 `markConnection('online', true)`，强制刷新在线状态文案。
+2. 这样即使连接状态未变化，也会在每次成功重载后收敛状态，不残留 loading。
+
+验证要点：
+1. 点击“重载”后请求成功时，状态应从“正在加载...”切到“就绪/Ready”。
+2. 若存在 `gpu_route_notice`，仍会按原逻辑显示该提示文案。
+
+## 十四次回归修正（中文模式首屏状态仍显示 Ready）
+问题反馈：
+1. 中文配置下，页面刚启动左上角仍显示英文 `Ready.`，手动点击“重载”后才变成 `就绪。`。
+
+根因：
+1. 状态文案读取走 `currentText()`，旧实现每次都通过 `pickLang()` 读取 `ui_language` 下拉框值。
+2. 启动阶段下拉框尚未稳定到配置语言时，会回退到浏览器语言，导致状态文案被英文覆盖。
+
+修正：
+1. 文件：`MFCMouseEffect/WebUI/i18n-runtime.js`
+   - 新增 `activeLang`，由 `apply(lang)` 在每次应用语言时更新。
+   - `currentText()` 优先读取 `activeLang`，仅在未应用语言时才回退 `pickLang()`。
+2. 同步产物到运行目录：
+   - `x64/Debug/webui/i18n-runtime.js`
+   - `x64/Release/webui/i18n-runtime.js`
+
+验证要点：
+1. 中文配置下，首次打开页面后状态文案应直接显示 `就绪。`，不再出现英文 `Ready.`。
+2. 手动“重载”前后状态语言保持一致。

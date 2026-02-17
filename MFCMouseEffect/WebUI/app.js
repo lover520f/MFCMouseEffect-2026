@@ -2,6 +2,9 @@
   const token = new URL(location.href).searchParams.get('token') || '';
   const el = (id) => document.getElementById(id);
   let connectionState = 'unknown';
+  let hasRenderedSettings = false;
+  let isReloading = false;
+  let reloadRetryTimer = 0;
 
   const I18N = window.MfxWebI18n || {};
 
@@ -13,16 +16,21 @@
     if (!window.MfxI18nRuntime || typeof window.MfxI18nRuntime.create !== 'function') {
       return null;
     }
+    function safeSync(fn, text) {
+      if (typeof fn !== 'function') return;
+      try {
+        fn(text);
+      } catch (_error) {
+        // Do not block settings reload because of i18n consumer sync failures.
+      }
+    }
+
     return window.MfxI18nRuntime.create({
       catalog: I18N,
       getElement: el,
       syncConsumers: (text) => {
-        if (window.MfxAutomationUi && typeof window.MfxAutomationUi.syncI18n === 'function') {
-          window.MfxAutomationUi.syncI18n(text);
-        }
-        if (window.MfxSectionWorkspace && typeof window.MfxSectionWorkspace.syncI18n === 'function') {
-          window.MfxSectionWorkspace.syncI18n(text);
-        }
+        safeSync(window.MfxAutomationUi?.syncI18n, text);
+        safeSync(window.MfxSectionWorkspace?.syncI18n, text);
       },
     });
   }
@@ -119,6 +127,17 @@
     const t = currentText();
     if (next === 'online') {
       setActionButtonsEnabled(true);
+      if (!hasRenderedSettings && !isReloading) {
+        reload().catch((e) => {
+          handleReloadFailure(e);
+        });
+        return;
+      }
+      if (!hasRenderedSettings) {
+        // Keep current loading text before first successful render to avoid
+        // early "Ready" text in the wrong language.
+        return;
+      }
       setStatus(t.status_ready || 'Ready.', 'ok');
       return;
     }
@@ -134,6 +153,31 @@
     }
     setActionButtonsEnabled(true);
     setStatus(t.disconnected_hint || 'Disconnected from server.', 'offline');
+  }
+
+  function clearReloadRetryTimer() {
+    if (!reloadRetryTimer) return;
+    window.clearTimeout(reloadRetryTimer);
+    reloadRetryTimer = 0;
+  }
+
+  function scheduleReloadRetry() {
+    if (reloadRetryTimer) return;
+    if (isReloading) return;
+    reloadRetryTimer = window.setTimeout(() => {
+      reloadRetryTimer = 0;
+      reload().catch((e) => {
+        handleReloadFailure(e);
+      });
+    }, 1200);
+  }
+
+  function handleReloadFailure(e) {
+    if (e && e.code === 'unauthorized') return;
+    hasRenderedSettings = false;
+    markConnection('offline');
+    setStatus(statusError('status_reload_failed', 'Reload failed: ', e), 'warn');
+    scheduleReloadRetry();
   }
 
   function pickLang() {
@@ -182,40 +226,56 @@
   }
 
   async function reload() {
+    if (isReloading) return;
+    isReloading = true;
     setStatus(statusText('status_loading', 'Loading...'));
-    const schema = await apiGet('/api/schema');
-    const st = await apiGet('/api/state');
-    const uiLang = st.ui_language || 'en-US';
-    const i18n = I18N[uiLang] || I18N['en-US'] || {};
+    try {
+      const schema = await apiGet('/api/schema');
+      const st = await apiGet('/api/state');
+      const uiLang = st.ui_language || 'en-US';
+      const i18n = I18N[uiLang] || I18N['en-US'] || {};
 
-    applyI18n(uiLang);
-    const form = settingsForm();
-    if (form && typeof form.render === 'function') {
-      form.render({
-        schema,
-        state: st,
-        i18n,
-      });
-    }
-
-    if (window.MfxAutomationUi && typeof window.MfxAutomationUi.render === 'function') {
-      window.MfxAutomationUi.render({
-        schema,
-        state: st.automation || {},
-        i18n,
-      });
-      if (typeof window.MfxAutomationUi.syncI18n === 'function') {
-        window.MfxAutomationUi.syncI18n(i18n);
+      try {
+        applyI18n(uiLang);
+      } catch (_error) {
+        // Keep settings rendering alive even if a consumer throws during i18n sync.
       }
-    }
-    if (window.MfxSectionWorkspace && typeof window.MfxSectionWorkspace.refresh === 'function') {
-      window.MfxSectionWorkspace.refresh();
-    }
+      const form = settingsForm();
+      if (form && typeof form.render === 'function') {
+        form.render({
+          schema,
+          state: st,
+          i18n,
+        });
+      }
 
-    markConnection('online');
-    const routeNotice = st.gpu_route_notice;
-    if (routeNotice && routeNotice.message) {
-      setStatus(routeNotice.message, routeNotice.level === 'warn' ? 'warn' : 'ok');
+      if (window.MfxAutomationUi && typeof window.MfxAutomationUi.render === 'function') {
+        window.MfxAutomationUi.render({
+          schema,
+          state: st.automation || {},
+          i18n,
+        });
+        if (typeof window.MfxAutomationUi.syncI18n === 'function') {
+          try {
+            window.MfxAutomationUi.syncI18n(i18n);
+          } catch (_error) {
+            // Keep reload resilient if automation i18n sync fails.
+          }
+        }
+      }
+      if (window.MfxSectionWorkspace && typeof window.MfxSectionWorkspace.refresh === 'function') {
+        window.MfxSectionWorkspace.refresh();
+      }
+
+      hasRenderedSettings = true;
+      clearReloadRetryTimer();
+      markConnection('online', true);
+      const routeNotice = st.gpu_route_notice;
+      if (routeNotice && routeNotice.message) {
+        setStatus(routeNotice.message, routeNotice.level === 'warn' ? 'warn' : 'ok');
+      }
+    } finally {
+      isReloading = false;
     }
   }
 
@@ -328,7 +388,11 @@
   function handleLanguageChange() {
     const langEl = el('ui_language');
     if (!langEl) return;
-    applyI18n(langEl.value);
+    try {
+      applyI18n(langEl.value);
+    } catch (_error) {
+      // Ignore i18n runtime errors on language switch to keep UI usable.
+    }
     if (connectionState !== 'unknown') markConnection(connectionState, true);
   }
 
@@ -390,8 +454,7 @@
       window.MfxSectionWorkspace.refresh();
     }
   }).catch(e => {
-    if (e && e.code === 'unauthorized') return;
-    markConnection('offline');
+    handleReloadFailure(e);
   });
 })();
 

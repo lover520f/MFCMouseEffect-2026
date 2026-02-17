@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "WebSettingsServer.h"
 
+#include <algorithm>
+#include <cstdint>
 #include <exception>
 #include <string>
 
@@ -35,6 +37,41 @@ void SetPlainResponse(HttpResponse& resp, int code, const std::string& body) {
     resp.statusCode = code;
     resp.contentType = "text/plain; charset=utf-8";
     resp.body = body;
+}
+
+json ParseObjectOrEmpty(const std::string& body) {
+    if (body.empty()) {
+        return json::object();
+    }
+    try {
+        json parsed = json::parse(body);
+        if (parsed.is_object()) {
+            return parsed;
+        }
+    } catch (...) {
+    }
+    return json::object();
+}
+
+std::string ParseSessionId(const json& payload) {
+    if (!payload.contains("session") || !payload["session"].is_string()) {
+        return {};
+    }
+    return payload["session"].get<std::string>();
+}
+
+std::string PollStateToText(ShortcutCaptureSession::PollState state) {
+    switch (state) {
+    case ShortcutCaptureSession::PollState::Pending:
+        return "pending";
+    case ShortcutCaptureSession::PollState::Captured:
+        return "captured";
+    case ShortcutCaptureSession::PollState::Expired:
+        return "expired";
+    case ShortcutCaptureSession::PollState::InvalidSession:
+    default:
+        return "invalid";
+    }
 }
 
 } // namespace
@@ -74,6 +111,64 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
 
     if (req.method == "POST" && path == "/api/state") {
         SetJsonResponse(resp, ApplySettingsStateJson(controller_, req.body));
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/automation/shortcut-capture/start") {
+        if (!controller_) {
+            SetJsonResponse(resp, json({{"ok", false}, {"error", "no controller"}}).dump());
+            return true;
+        }
+
+        const json payload = ParseObjectOrEmpty(req.body);
+        uint64_t timeoutMs = 10000;
+        if (payload.contains("timeout_ms") && payload["timeout_ms"].is_number_integer()) {
+            const int64_t value = payload["timeout_ms"].get<int64_t>();
+            if (value > 0) {
+                timeoutMs = static_cast<uint64_t>(value);
+            }
+        }
+        timeoutMs = std::clamp<uint64_t>(timeoutMs, 1000, 30000);
+
+        const std::string sessionId = controller_->StartShortcutCaptureSession(timeoutMs);
+        SetJsonResponse(resp, json({
+            {"ok", !sessionId.empty()},
+            {"session", sessionId}
+        }).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/automation/shortcut-capture/poll") {
+        if (!controller_) {
+            SetJsonResponse(resp, json({{"ok", false}, {"error", "no controller"}}).dump());
+            return true;
+        }
+
+        const json payload = ParseObjectOrEmpty(req.body);
+        const std::string sessionId = ParseSessionId(payload);
+        const ShortcutCaptureSession::PollResult result = controller_->PollShortcutCaptureSession(sessionId);
+
+        json body{
+            {"ok", true},
+            {"status", PollStateToText(result.state)}
+        };
+        if (!result.shortcut.empty()) {
+            body["shortcut"] = result.shortcut;
+        }
+        SetJsonResponse(resp, body.dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/automation/shortcut-capture/stop") {
+        if (!controller_) {
+            SetJsonResponse(resp, json({{"ok", false}, {"error", "no controller"}}).dump());
+            return true;
+        }
+
+        const json payload = ParseObjectOrEmpty(req.body);
+        const std::string sessionId = ParseSessionId(payload);
+        controller_->StopShortcutCaptureSession(sessionId);
+        SetJsonResponse(resp, json({{"ok", true}}).dump());
         return true;
     }
 

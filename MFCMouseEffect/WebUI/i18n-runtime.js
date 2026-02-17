@@ -8,6 +8,7 @@
     const syncConsumers = typeof opts.syncConsumers === 'function'
       ? opts.syncConsumers
       : () => {};
+    let activeLang = '';
 
     function pickLang() {
       const languageSelect = getElement('ui_language');
@@ -19,11 +20,13 @@
     }
 
     function currentText() {
-      return catalog[pickLang()] || catalog['en-US'] || {};
+      const lang = activeLang || pickLang();
+      return catalog[lang] || catalog['en-US'] || {};
     }
 
     function apply(lang) {
-      const text = catalog[lang] || catalog['en-US'] || {};
+      activeLang = catalog[lang] ? lang : 'en-US';
+      const text = catalog[activeLang] || catalog['en-US'] || {};
       document.title = text.title || 'MFCMouseEffect Settings';
 
       document.querySelectorAll('[data-i18n]').forEach((node) => {
@@ -54,7 +57,11 @@
         });
       }
 
-      syncConsumers(text);
+      try {
+        syncConsumers(text);
+      } catch (_error) {
+        // Ignore consumer sync failures to avoid breaking settings reload flow.
+      }
       return text;
     }
 

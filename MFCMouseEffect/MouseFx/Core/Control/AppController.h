@@ -11,6 +11,7 @@
 #include "MouseFx/Core/System/GlobalMouseHook.h"
 #include "MouseFx/Core/Overlay/InputIndicatorOverlay.h"
 #include "MouseFx/Core/Automation/InputAutomationEngine.h"
+#include "MouseFx/Core/Automation/ShortcutCaptureSession.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Core/Config/EffectConfig.h"
 #include "MouseFx/Core/System/VmForegroundDetector.h"
@@ -97,6 +98,7 @@ public:
     void OnDispatchActivity(UINT msg, WPARAM wParam);
     bool IsVmEffectsSuppressed() const { return vmEffectsSuppressed_; }
     bool ConsumeIgnoreNextClick();
+    void OnGlobalKey(const KeyEvent& ev);
     InputIndicatorOverlay& IndicatorOverlay() { return inputIndicatorOverlay_; }
     InputAutomationEngine& InputAutomation() { return inputAutomationEngine_; }
     bool ConsumeLatestMove(POINT* outPt);
@@ -109,6 +111,9 @@ public:
     void MarkIgnoreNextClick();
     bool TryEnterHover(POINT* outPt);
     HWND DispatchWindowHandle() const { return dispatchHwnd_; }
+    std::string StartShortcutCaptureSession(uint64_t timeoutMs);
+    void StopShortcutCaptureSession(const std::string& sessionId);
+    ShortcutCaptureSession::PollResult PollShortcutCaptureSession(const std::string& sessionId);
     static constexpr UINT_PTR HoverTimerId() { return kHoverTimerId; }
     static constexpr UINT_PTR HoldTimerId() { return kHoldTimerId; }
     static constexpr DWORD HoldDelayMs() { return kHoldDelayMs; }
@@ -176,6 +181,7 @@ private:
     std::unique_ptr<DispatchRouter> dispatchRouter_;
     InputIndicatorOverlay inputIndicatorOverlay_{};
     InputAutomationEngine inputAutomationEngine_{};
+    mutable ShortcutCaptureSession shortcutCaptureSession_{};
     VmForegroundDetector vmForegroundDetector_{};
     bool vmEffectsSuppressed_ = false;
 

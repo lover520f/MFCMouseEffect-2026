@@ -12,6 +12,45 @@ namespace mousefx {
 
 GlobalMouseHook* GlobalMouseHook::instance_ = nullptr;
 
+namespace {
+
+constexpr uint32_t kModCtrl = 1u << 0;
+constexpr uint32_t kModShift = 1u << 1;
+constexpr uint32_t kModAlt = 1u << 2;
+constexpr uint32_t kModWin = 1u << 3;
+
+bool IsKeyDownMessage(WPARAM wParam) {
+    return wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN;
+}
+
+bool IsKeyUpMessage(WPARAM wParam) {
+    return wParam == WM_KEYUP || wParam == WM_SYSKEYUP;
+}
+
+uint32_t ModifierMaskForVk(UINT vkCode) {
+    switch (vkCode) {
+    case VK_CONTROL:
+    case VK_LCONTROL:
+    case VK_RCONTROL:
+        return kModCtrl;
+    case VK_SHIFT:
+    case VK_LSHIFT:
+    case VK_RSHIFT:
+        return kModShift;
+    case VK_MENU:
+    case VK_LMENU:
+    case VK_RMENU:
+        return kModAlt;
+    case VK_LWIN:
+    case VK_RWIN:
+        return kModWin;
+    default:
+        return 0;
+    }
+}
+
+} // namespace
+
 static POINT ResolveCursorPreferredPoint(const POINT& hookPt) {
     POINT cursor{};
     if (GetCursorPos(&cursor)) {
@@ -84,6 +123,8 @@ bool GlobalMouseHook::Start(HWND dispatchHwnd) {
     instance_ = this;
     lastError_ = ERROR_SUCCESS;
     movePending_.store(false, std::memory_order_release);
+    keyboardCaptureExclusive_.store(false, std::memory_order_release);
+    keyboardModifierMask_.store(0, std::memory_order_release);
 
     hook_ = SetWindowsHookExW(WH_MOUSE_LL, &GlobalMouseHook::HookProc, GetModuleHandleW(nullptr), 0);
     if (!hook_) {
@@ -115,6 +156,8 @@ void GlobalMouseHook::Stop() {
     }
     dispatchHwnd_ = nullptr;
     movePending_.store(false, std::memory_order_release);
+    keyboardCaptureExclusive_.store(false, std::memory_order_release);
+    keyboardModifierMask_.store(0, std::memory_order_release);
     if (instance_ == this) {
         instance_ = nullptr;
     }
@@ -128,6 +171,10 @@ bool GlobalMouseHook::ConsumeLatestMove(POINT& outPt) {
     outPt.x = latestMoveX_.load(std::memory_order_acquire);
     outPt.y = latestMoveY_.load(std::memory_order_acquire);
     return true;
+}
+
+void GlobalMouseHook::SetKeyboardCaptureExclusive(bool enabled) {
+    keyboardCaptureExclusive_.store(enabled, std::memory_order_release);
 }
 
 LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam) {
@@ -230,9 +277,25 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
 
 LRESULT CALLBACK GlobalMouseHook::KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION && instance_ && instance_->dispatchHwnd_) {
-        if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
-            const auto* kbd = reinterpret_cast<const KBDLLHOOKSTRUCT*>(lParam);
-            if (kbd) {
+        const bool keyDown = IsKeyDownMessage(wParam);
+        const bool keyUp = IsKeyUpMessage(wParam);
+        const bool captureExclusive = instance_->keyboardCaptureExclusive_.load(std::memory_order_acquire);
+
+        const auto* kbd = reinterpret_cast<const KBDLLHOOKSTRUCT*>(lParam);
+        if (kbd) {
+            const uint32_t modifierBit = ModifierMaskForVk(kbd->vkCode);
+            if (modifierBit != 0 && (keyDown || keyUp)) {
+                uint32_t mask = instance_->keyboardModifierMask_.load(std::memory_order_acquire);
+                if (keyDown) {
+                    mask |= modifierBit;
+                } else {
+                    mask &= ~modifierBit;
+                }
+                instance_->keyboardModifierMask_.store(mask, std::memory_order_release);
+            }
+
+            if (keyDown) {
+                const uint32_t mask = instance_->keyboardModifierMask_.load(std::memory_order_acquire);
                 auto* ev = new (std::nothrow) KeyEvent();
                 if (ev) {
                     POINT cursor{};
@@ -243,15 +306,17 @@ LRESULT CALLBACK GlobalMouseHook::KeyboardHookProc(int nCode, WPARAM wParam, LPA
                     ev->pt = NormalizeScreenPoint(cursor);
                     ev->vkCode = kbd->vkCode;
                     ev->systemKey = (wParam == WM_SYSKEYDOWN);
-                    ev->ctrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
-                    ev->shift = (GetAsyncKeyState(VK_SHIFT)   & 0x8000) != 0;
-                    ev->alt   = (GetAsyncKeyState(VK_MENU)    & 0x8000) != 0;
-                    ev->win   = (GetAsyncKeyState(VK_LWIN)    & 0x8000) != 0
-                             || (GetAsyncKeyState(VK_RWIN)    & 0x8000) != 0;
+                    ev->ctrl = (mask & kModCtrl) != 0;
+                    ev->shift = (mask & kModShift) != 0;
+                    ev->alt = (mask & kModAlt) != 0 || (kbd->flags & LLKHF_ALTDOWN) != 0;
+                    ev->win = (mask & kModWin) != 0;
                     ev->text = GetKeyDisplayText(kbd);
                     PostMessageW(instance_->dispatchHwnd_, WM_MFX_KEY, 0, reinterpret_cast<LPARAM>(ev));
                 }
             }
+        }
+        if (captureExclusive && (keyDown || keyUp)) {
+            return 1;
         }
     }
     return CallNextHookEx(nullptr, nCode, wParam, lParam);

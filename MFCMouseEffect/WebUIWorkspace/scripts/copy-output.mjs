@@ -38,10 +38,31 @@ function copyOrThrow(source, target) {
   fs.copyFileSync(source, target);
 }
 
+function wrapBundleScope(content) {
+  const marker = '/* mfx-scope-wrapped */';
+  if (content.includes(marker)) return content;
+  return [
+    '/* mfx-scope-wrapped */',
+    '(() => {',
+    content,
+    '})();',
+    '',
+  ].join('\n');
+}
+
+function copyGeneratedBundleOrThrow(source, target) {
+  if (!fs.existsSync(source)) {
+    throw new Error(`Build output not found: ${source}`);
+  }
+  const original = fs.readFileSync(source, 'utf8');
+  const wrapped = wrapBundleScope(original);
+  fs.writeFileSync(target, wrapped, 'utf8');
+}
+
 for (const fileName of generatedFiles) {
   const source = path.join(workspaceDir, 'dist', fileName);
   const target = path.join(webUiDir, fileName);
-  copyOrThrow(source, target);
+  copyGeneratedBundleOrThrow(source, target);
 }
 
 const runtimeWebUiDirs = [

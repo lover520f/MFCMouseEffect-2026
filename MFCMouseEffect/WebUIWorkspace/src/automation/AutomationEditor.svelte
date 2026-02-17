@@ -308,10 +308,10 @@
       recording: t('btn_recording', 'Press keys...'),
       captureHint: t(
         'hint_shortcut_capture',
-        'Focus shortcut input and press key combo directly. Esc to cancel, Backspace to clear.'),
+        'Manual mode: type shortcut text directly. Auto mode: click "Record" to start native capture, then press combo.'),
       captureHintActive: t(
         'hint_shortcut_capture_active',
-        'Recording shortcut. Press key combo directly, Esc to cancel, Backspace to clear.'),
+        'Recording mode: native capture is active (page shortcuts are blocked). Press combo, Esc to cancel, Backspace to clear.'),
       remove: t('btn_remove_mapping', 'Remove'),
       add: t('btn_add_mapping', 'Add mapping'),
       addChainNode: t('btn_add_chain_node', 'Add chain node'),
