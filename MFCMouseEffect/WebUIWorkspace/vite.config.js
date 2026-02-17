@@ -64,6 +64,9 @@ function pickBuildTarget(mode) {
 export default defineConfig(({ mode }) => {
   const target = pickBuildTarget(mode);
   return {
+    esbuild: {
+      legalComments: 'none',
+    },
     plugins: [svelte({
       compilerOptions: {
         compatibility: {
@@ -75,7 +78,7 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: false,
       outDir: path.resolve(__dirname, 'dist'),
       sourcemap: false,
-      minify: false,
+      minify: 'esbuild',
       lib: {
         entry: target.entry,
         name: target.name,
