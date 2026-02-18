@@ -8,7 +8,7 @@ class AppController;
 struct EffectConfig;
 
 // Build the current settings state as JSON for the WebUI.
-std::string BuildSettingsStateJson(const EffectConfig& config);
+std::string BuildSettingsStateJson(const EffectConfig& config, const AppController* controller = nullptr);
 
 // Apply a state JSON payload by forwarding an apply_settings command.
 // Returns a JSON response string { "ok": true/false }.

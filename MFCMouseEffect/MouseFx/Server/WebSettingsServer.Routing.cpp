@@ -121,7 +121,7 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
     }
 
     if (req.method == "GET" && path == "/api/state") {
-        SetJsonResponse(resp, controller_ ? BuildSettingsStateJson(controller_->GetConfigSnapshot()) : "{}");
+        SetJsonResponse(resp, controller_ ? BuildSettingsStateJson(controller_->GetConfigSnapshot(), controller_) : "{}");
         return true;
     }
 
