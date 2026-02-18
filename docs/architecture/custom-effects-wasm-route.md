@@ -166,4 +166,4 @@ Note: the prior 15 commits established architecture baseline; these 5 commits wi
 - [x] Commit A2: execute `spawn_image` in click path (image/icon command rendering)
 - [x] Commit A3: resource mapping for `text_id/image_id` with deterministic fallback
 - [x] Commit A4: harden render-execution with budget/error fallback coupling
-- [ ] Commit A5: end-to-end validation and documentation closure
+- [x] Commit A5: end-to-end validation and documentation closure
