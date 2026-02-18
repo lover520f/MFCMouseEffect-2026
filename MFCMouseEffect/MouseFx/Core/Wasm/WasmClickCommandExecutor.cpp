@@ -3,9 +3,9 @@
 #include "WasmClickCommandExecutor.h"
 
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
-#include "MouseFx/Renderers/Click/StarRenderer.h"
 #include "WasmCommandBufferParser.h"
 #include "WasmPluginAbi.h"
+#include "WasmRenderResourceResolver.h"
 
 #include <algorithm>
 #include <cmath>
@@ -14,14 +14,6 @@
 namespace mousefx::wasm {
 
 namespace {
-
-std::wstring ResolveTextById(const TextConfig& config, uint32_t textId) {
-    if (config.texts.empty()) {
-        return L"WASM";
-    }
-    const size_t index = static_cast<size_t>(textId % static_cast<uint32_t>(config.texts.size()));
-    return config.texts[index];
-}
 
 TextConfig BuildTextConfig(const TextConfig& base, const SpawnTextCommandV1& cmd) {
     TextConfig cfg = base;
@@ -54,8 +46,8 @@ void ExecuteSpawnText(
         static_cast<LONG>(std::lround(cmd.x)),
         static_cast<LONG>(std::lround(cmd.y)),
     };
-    const std::wstring text = ResolveTextById(config.textClick, cmd.textId);
-    const Argb color{cmd.colorRgba};
+    const std::wstring text = WasmRenderResourceResolver::ResolveTextById(config, cmd.textId);
+    const Argb color = WasmRenderResourceResolver::ResolveTextColor(config, cmd.textId, cmd.colorRgba);
 
     if (!OverlayHostService::Instance().ShowText(pt, text, color, textCfg)) {
         outResult->lastError = "failed to render spawn_text command";
@@ -79,9 +71,10 @@ RippleStyle BuildImageStyle(const EffectConfig& config, const SpawnImageCommandV
     const float diameter = style.endRadius * 2.0f;
     style.windowSize = std::clamp<int>(static_cast<int>(std::ceil(diameter + 32.0f)), 64, 640);
 
-    style.fill = Argb{cmd.tintRgba};
-    style.stroke = Argb{cmd.tintRgba};
-    style.glow = Argb{(cmd.tintRgba & 0x00FFFFFFu) | 0x44000000u};
+    const Argb tint = WasmRenderResourceResolver::ResolveImageTint(config, cmd.imageId, cmd.tintRgba);
+    style.fill = tint;
+    style.stroke = tint;
+    style.glow = Argb{(tint.value & 0x00FFFFFFu) | 0x44000000u};
     return style;
 }
 
@@ -104,8 +97,17 @@ void ExecuteSpawnImage(
     renderParams.directionRad = cmd.rotation;
 
     const RippleStyle style = BuildImageStyle(config, cmd);
+    std::string rendererKey;
+    std::unique_ptr<IRippleRenderer> renderer =
+        WasmRenderResourceResolver::CreateImageRendererById(cmd.imageId, &rendererKey);
+    if (!renderer) {
+        outResult->lastError = "cannot resolve image renderer";
+        outResult->droppedCommands += 1;
+        return;
+    }
+
     const uint64_t id = OverlayHostService::Instance().ShowRipple(
-        ev, style, std::make_unique<StarRenderer>(), renderParams);
+        ev, style, std::move(renderer), renderParams);
     if (id == 0) {
         outResult->lastError = "failed to render spawn_image command";
         outResult->droppedCommands += 1;

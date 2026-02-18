@@ -221,6 +221,6 @@ MVP 默认预算：
 
 - [x] Commit A1：`spawn_text` 命令执行器落地到点击链路（命中后优先渲染 WASM 文本）
 - [x] Commit A2：`spawn_image` 命令执行器落地到点击链路（命中后渲染图片/图标指令）
-- [ ] Commit A3：`text_id/image_id` 资源映射层与缺省回退策略
+- [x] Commit A3：`text_id/image_id` 资源映射层与缺省回退策略（确定性映射：文本池 + 渲染器池）
 - [ ] Commit A4：渲染执行与预算/异常联动收口（失败不影响主流程）
 - [ ] Commit A5：端到端回归与文档验收步骤固化
