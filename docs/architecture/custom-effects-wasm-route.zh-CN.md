@@ -201,7 +201,7 @@ MVP 默认预算：
 - [x] Commit 7：点击事件链路调用 Host（先日志化，不接渲染）
 - [x] Commit 8：预算控制（耗时/输出大小/命令数）和诊断状态
 - [x] Commit 9：诊断状态映射到 Settings 状态输出
-- [ ] Commit 10：Web API 暴露只读 WASM 状态
+- [x] Commit 10：Web API 暴露只读 WASM 状态
 - [ ] Commit 11：插件启停/重载命令入口（IPC/HTTP）
 - [ ] Commit 12：RuntimeFactory 扩展到真实 WASM 运行时（保留 Null 兜底）
 - [ ] Commit 13：官方模板与本地编译脚本样例

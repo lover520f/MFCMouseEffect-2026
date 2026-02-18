@@ -145,6 +145,30 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
     build(mousefx::HoldMetadata, "hold");
     build(mousefx::HoverMetadata, "hover");
 
+    out["wasm"] = {
+        {"supported_api_version", 1},
+        {"default_enabled", false},
+        {"diagnostic_keys", json::array({
+            "enabled",
+            "plugin_loaded",
+            "plugin_api_version",
+            "active_plugin_id",
+            "active_plugin_name",
+            "active_manifest_path",
+            "active_wasm_path",
+            "last_call_duration_us",
+            "last_output_bytes",
+            "last_command_count",
+            "last_call_exceeded_budget",
+            "last_call_rejected_by_budget",
+            "last_output_truncated_by_budget",
+            "last_command_truncated_by_budget",
+            "last_budget_reason",
+            "last_parse_error",
+            "last_error"
+        })}
+    };
+
     return out.dump();
 }
 

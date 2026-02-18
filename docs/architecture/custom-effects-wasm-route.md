@@ -144,7 +144,7 @@ Implementation is split into small commits: architecture skeleton first, then ev
 - [x] Commit 7: Click event-chain invocation (logging only, no render path yet)
 - [x] Commit 8: Budget controls (latency/output size/command count) and diagnostics
 - [x] Commit 9: Diagnostics mapping into settings state output
-- [ ] Commit 10: Read-only WASM state exposure in Web API
+- [x] Commit 10: Read-only WASM state exposure in Web API
 - [ ] Commit 11: Plugin enable/disable/reload command endpoints (IPC/HTTP)
 - [ ] Commit 12: RuntimeFactory extension to a real WASM runtime (keep Null fallback)
 - [ ] Commit 13: Official template + local compile script examples
