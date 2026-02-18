@@ -194,16 +194,16 @@ MVP 默认预算：
 
 - [x] Commit 1：`MouseFx/Core/Wasm` 模块骨架（Host/Runtime/ABI）与工程接线
 - [x] Commit 2：ABI v1 输入/输出序列化与命令缓冲解析器
-- [ ] Commit 3：RuntimeFactory 扩展到真实 WASM 运行时（先保留 Null 兜底）
-- [ ] Commit 4：插件清单模型（`plugin.json`）和校验器
-- [ ] Commit 5：插件目录发现与路径策略（默认目录 + 配置目录）
-- [ ] Commit 6：WasmEffectHost 生命周期（load/unload/reload）完善
-- [ ] Commit 7：`AppController` 启停链路接入（仅初始化，不改行为）
-- [ ] Commit 8：点击事件链路调用 Host（先日志化，不接渲染）
-- [ ] Commit 9：预算控制（耗时/输出大小/命令数）和诊断状态
-- [ ] Commit 10：诊断状态映射到 Settings 状态输出
-- [ ] Commit 11：Web API 暴露只读 WASM 状态
-- [ ] Commit 12：插件启停/重载命令入口（IPC/HTTP）
+- [x] Commit 3：插件清单模型（`plugin.json`）和校验器
+- [ ] Commit 4：插件目录发现与路径策略（默认目录 + 配置目录）
+- [ ] Commit 5：WasmEffectHost 生命周期（load/unload/reload）完善
+- [ ] Commit 6：`AppController` 启停链路接入（仅初始化，不改行为）
+- [ ] Commit 7：点击事件链路调用 Host（先日志化，不接渲染）
+- [ ] Commit 8：预算控制（耗时/输出大小/命令数）和诊断状态
+- [ ] Commit 9：诊断状态映射到 Settings 状态输出
+- [ ] Commit 10：Web API 暴露只读 WASM 状态
+- [ ] Commit 11：插件启停/重载命令入口（IPC/HTTP）
+- [ ] Commit 12：RuntimeFactory 扩展到真实 WASM 运行时（保留 Null 兜底）
 - [ ] Commit 13：官方模板与本地编译脚本样例
 - [ ] Commit 14：文档完善（快速开始/排错/兼容策略）
 - [ ] Commit 15：回归与稳定性收口（默认关闭、异常回退验证）

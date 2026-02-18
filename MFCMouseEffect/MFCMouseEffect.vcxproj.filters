@@ -237,6 +237,9 @@
     <ClInclude Include="MouseFx\Core\Wasm\WasmRuntime.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Wasm\WasmPluginManifest.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\Wasm\NullWasmRuntime.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -408,6 +411,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\WasmCommandBufferParser.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginManifest.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\NullWasmRuntime.cpp">

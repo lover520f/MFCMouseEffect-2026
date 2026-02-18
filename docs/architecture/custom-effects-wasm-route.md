@@ -137,16 +137,16 @@ Implementation is split into small commits: architecture skeleton first, then ev
 
 - [x] Commit 1: `MouseFx/Core/Wasm` skeleton (Host/Runtime/ABI) and project wiring
 - [x] Commit 2: ABI v1 input/output serialization and command-buffer parser
-- [ ] Commit 3: RuntimeFactory extension to a real WASM runtime (keep Null fallback)
-- [ ] Commit 4: Plugin manifest model (`plugin.json`) and validator
-- [ ] Commit 5: Plugin discovery and path strategy (default + config directory)
-- [ ] Commit 6: WasmEffectHost lifecycle hardening (load/unload/reload)
-- [ ] Commit 7: `AppController` startup/shutdown integration (init only, no behavior change)
-- [ ] Commit 8: Click event-chain invocation (logging only, no render path yet)
-- [ ] Commit 9: Budget controls (latency/output size/command count) and diagnostics
-- [ ] Commit 10: Diagnostics mapping into settings state output
-- [ ] Commit 11: Read-only WASM state exposure in Web API
-- [ ] Commit 12: Plugin enable/disable/reload command endpoints (IPC/HTTP)
+- [x] Commit 3: Plugin manifest model (`plugin.json`) and validator
+- [ ] Commit 4: Plugin discovery and path strategy (default + config directory)
+- [ ] Commit 5: WasmEffectHost lifecycle hardening (load/unload/reload)
+- [ ] Commit 6: `AppController` startup/shutdown integration (init only, no behavior change)
+- [ ] Commit 7: Click event-chain invocation (logging only, no render path yet)
+- [ ] Commit 8: Budget controls (latency/output size/command count) and diagnostics
+- [ ] Commit 9: Diagnostics mapping into settings state output
+- [ ] Commit 10: Read-only WASM state exposure in Web API
+- [ ] Commit 11: Plugin enable/disable/reload command endpoints (IPC/HTTP)
+- [ ] Commit 12: RuntimeFactory extension to a real WASM runtime (keep Null fallback)
 - [ ] Commit 13: Official template + local compile script examples
 - [ ] Commit 14: Docs hardening (quick start/troubleshooting/compatibility)
 - [ ] Commit 15: Regression and stabilization pass (default-off + fallback validation)
