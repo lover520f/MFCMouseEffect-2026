@@ -247,3 +247,8 @@ MVP 默认预算：
   - 新增共享策略模型，统一范围归一化与 clamp/snap
   - 新增“恢复默认策略”动作，并与服务端默认范围对齐
   - 详见：`docs/issues/wasm-web-settings-budget-schema-phase3d.zh-CN.md`
+- [x] Phase 3e：运行时诊断可视化
+  - WASM 面板新增预算遥测展示（调用指标/预算标记/预算原因/解析错误）
+  - 抽取诊断模型，统一归一化与风险高亮判定
+  - 新增诊断告警样式与中英文文案
+  - 详见：`docs/issues/wasm-web-settings-diagnostics-phase3e.zh-CN.md`

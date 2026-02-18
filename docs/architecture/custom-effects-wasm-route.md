@@ -190,3 +190,8 @@ Note: the prior 15 commits established architecture baseline; these 5 commits wi
   - Added shared policy model for range normalization and clamp/snap
   - Added `Reset Defaults` policy action and server-side default-range alignment
   - Details: `docs/issues/wasm-web-settings-budget-schema-phase3d.md`
+- [x] Phase 3e: runtime diagnostics visualization
+  - Exposed budget telemetry fields in WASM panel (call metrics/flags/reason/parse error)
+  - Added diagnostics model extraction for normalization + warning classification
+  - Added warning highlight style and localized labels
+  - Details: `docs/issues/wasm-web-settings-diagnostics-phase3e.md`

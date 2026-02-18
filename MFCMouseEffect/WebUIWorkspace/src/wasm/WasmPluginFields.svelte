@@ -5,6 +5,12 @@
     normalizePolicyRanges,
     resolvePolicyInputValue,
   } from './policy-model.js';
+  import {
+    buildWasmBudgetFlagsText,
+    buildWasmCallMetricsText,
+    hasWasmDiagnosticWarning,
+    normalizeWasmDiagnostics,
+  } from './diagnostics-model.js';
 
   export let schemaState = {};
   export let payloadState = {};
@@ -18,6 +24,7 @@
 
   function normalizeState(input) {
     const value = input || {};
+    const diagnostics = normalizeWasmDiagnostics(value);
     return {
       enabled: !!value.enabled,
       configured_enabled: !!value.configured_enabled,
@@ -29,6 +36,15 @@
       runtime_output_buffer_bytes: Number(value.runtime_output_buffer_bytes) || 0,
       runtime_max_commands: Number(value.runtime_max_commands) || 0,
       runtime_max_execution_ms: Number(value.runtime_max_execution_ms) || 0,
+      last_call_duration_us: diagnostics.last_call_duration_us,
+      last_output_bytes: diagnostics.last_output_bytes,
+      last_command_count: diagnostics.last_command_count,
+      last_call_exceeded_budget: diagnostics.last_call_exceeded_budget,
+      last_call_rejected_by_budget: diagnostics.last_call_rejected_by_budget,
+      last_output_truncated_by_budget: diagnostics.last_output_truncated_by_budget,
+      last_command_truncated_by_budget: diagnostics.last_command_truncated_by_budget,
+      last_budget_reason: diagnostics.last_budget_reason,
+      last_parse_error: diagnostics.last_parse_error,
       runtime_backend: `${value.runtime_backend || ''}`.trim(),
       runtime_fallback_reason: `${value.runtime_fallback_reason || ''}`.trim(),
       plugin_loaded: !!value.plugin_loaded,
@@ -100,6 +116,21 @@
     return `${text('label_wasm_last_rendered', 'Rendered by WASM')}: ${boolText(s.last_rendered_by_wasm)}, `
       + `text=${s.last_executed_text_commands}, image=${s.last_executed_image_commands}, `
       + `${text('label_wasm_dropped_commands', 'Dropped commands')}=${s.last_dropped_render_commands}`;
+  }
+
+  function renderCallMetricsText(snapshot) {
+    const s = snapshot || normalizeState({});
+    return buildWasmCallMetricsText(s, text);
+  }
+
+  function renderBudgetFlagsText(snapshot) {
+    const s = snapshot || normalizeState({});
+    return buildWasmBudgetFlagsText(s, text);
+  }
+
+  function isDiagnosticWarning(snapshot) {
+    const s = snapshot || normalizeState({});
+    return hasWasmDiagnosticWarning(s);
   }
 
   let current = normalizeState(payloadState);
@@ -401,6 +432,26 @@
 
   <div class="wasm-label" data-i18n="label_wasm_last_render_stats">Last render stats</div>
   <div class="wasm-value wasm-text-block">{renderStatsText(current)}</div>
+
+  <div class="wasm-label" data-i18n="label_wasm_last_call_metrics">Last call metrics</div>
+  <div class={`wasm-value wasm-text-block ${isDiagnosticWarning(current) ? 'is-warn' : ''}`}>
+    {renderCallMetricsText(current)}
+  </div>
+
+  <div class="wasm-label" data-i18n="label_wasm_budget_flags">Budget flags</div>
+  <div class={`wasm-value wasm-text-block ${isDiagnosticWarning(current) ? 'is-warn' : ''}`}>
+    {renderBudgetFlagsText(current)}
+  </div>
+
+  <div class="wasm-label" data-i18n="label_wasm_budget_reason">Budget reason</div>
+  <div class={`wasm-value wasm-text-block ${isDiagnosticWarning(current) ? 'is-warn' : ''}`}>
+    {current.last_budget_reason || '-'}
+  </div>
+
+  <div class="wasm-label" data-i18n="label_wasm_parse_error">Parse error</div>
+  <div class={`wasm-value wasm-text-block ${isDiagnosticWarning(current) ? 'is-warn' : ''}`}>
+    {current.last_parse_error || '-'}
+  </div>
 
   <div class="wasm-label" data-i18n="label_wasm_last_render_error">Last render error</div>
   <div class="wasm-value wasm-text-block">{current.last_render_error || '-'}</div>

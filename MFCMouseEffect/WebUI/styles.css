@@ -643,6 +643,12 @@ textarea {
   color: #1d6c55;
 }
 
+.wasm-value.is-warn {
+  border-color: #ead6a1;
+  background: #fff8e7;
+  color: #7a5a12;
+}
+
 .wasm-catalog {
   display: flex;
   flex-direction: column;

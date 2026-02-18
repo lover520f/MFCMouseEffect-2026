@@ -1,9 +1,11 @@
 import WasmPluginFields from '../wasm/WasmPluginFields.svelte';
 import { createLazyMountBridge } from './lazy-mount.js';
+import { normalizeWasmDiagnostics } from '../wasm/diagnostics-model.js';
 import { normalizePolicyRanges } from '../wasm/policy-model.js';
 
 function normalizeWasmState(input) {
   const value = input || {};
+  const diagnostics = normalizeWasmDiagnostics(value);
   return {
     enabled: !!value.enabled,
     configured_enabled: !!value.configured_enabled,
@@ -15,6 +17,15 @@ function normalizeWasmState(input) {
     runtime_output_buffer_bytes: Number(value.runtime_output_buffer_bytes) || 0,
     runtime_max_commands: Number(value.runtime_max_commands) || 0,
     runtime_max_execution_ms: Number(value.runtime_max_execution_ms) || 0,
+    last_call_duration_us: diagnostics.last_call_duration_us,
+    last_output_bytes: diagnostics.last_output_bytes,
+    last_command_count: diagnostics.last_command_count,
+    last_call_exceeded_budget: diagnostics.last_call_exceeded_budget,
+    last_call_rejected_by_budget: diagnostics.last_call_rejected_by_budget,
+    last_output_truncated_by_budget: diagnostics.last_output_truncated_by_budget,
+    last_command_truncated_by_budget: diagnostics.last_command_truncated_by_budget,
+    last_budget_reason: diagnostics.last_budget_reason,
+    last_parse_error: diagnostics.last_parse_error,
     runtime_backend: `${value.runtime_backend || ''}`.trim(),
     runtime_fallback_reason: `${value.runtime_fallback_reason || ''}`.trim(),
     plugin_loaded: !!value.plugin_loaded,
