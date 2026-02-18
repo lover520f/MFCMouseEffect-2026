@@ -157,3 +157,13 @@ Implementation is split into small commits: architecture skeleton first, then ev
 - [x] Commit 13: Official template + local compile script examples
 - [x] Commit 14: Docs hardening (quick start/troubleshooting/compatibility)
 - [x] Commit 15: Regression and stabilization pass (default-off + fallback validation)
+
+## True Delivery Progress (5 commits)
+
+Note: the prior 15 commits established architecture baseline; these 5 commits wire visible runtime rendering.
+
+- [x] Commit A1: execute `spawn_text` in click path (WASM text takes precedence when commands are emitted)
+- [ ] Commit A2: execute `spawn_image` in click path (image/icon command rendering)
+- [ ] Commit A3: resource mapping for `text_id/image_id` with deterministic fallback
+- [ ] Commit A4: harden render-execution with budget/error fallback coupling
+- [ ] Commit A5: end-to-end validation and documentation closure

@@ -295,6 +295,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Wasm\NullWasmRuntime.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmRuntimeFactory.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmEffectHost.h" />
+    <ClInclude Include="MouseFx\Core\Wasm\WasmClickCommandExecutor.h" />
     <ClInclude Include="MouseFx\ThirdParty\json.hpp" />
     <ClInclude Include="UI\Settings\SettingsWnd.h" />
     <ClInclude Include="UI\Settings\TrailTuningWnd.h" />
@@ -404,6 +405,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Wasm\NullWasmRuntime.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmRuntimeFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmEffectHost.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmClickCommandExecutor.cpp" />
     <ClCompile Include="MouseFx\Utils\StringUtils.cpp" />
     <ClCompile Include="MouseFx\Server\HttpServer.cpp" />
     <ClCompile Include="MouseFx\Server\HttpServer.Protocol.cpp" />

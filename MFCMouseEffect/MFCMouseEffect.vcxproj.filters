@@ -261,6 +261,9 @@
     <ClInclude Include="MouseFx\Core\Wasm\WasmEffectHost.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Wasm\WasmClickCommandExecutor.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMouseEffect.cpp">
@@ -450,6 +453,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\WasmEffectHost.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmClickCommandExecutor.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
   </ItemGroup>
