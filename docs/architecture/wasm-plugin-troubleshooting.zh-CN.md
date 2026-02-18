@@ -50,6 +50,20 @@
   - 检查当前是否被前台抑制策略（如 VM 前台）影响；
   - 检查 `wasm.last_budget_reason` 与预算截断标记。
 
+## 3.1 `spawn_image` 仍显示内置图形（不是图片文件）
+
+现象：
+- 插件调用了 `spawn_image`，但界面显示仍是 `star/ripple` 样式。
+
+排查：
+- `plugin.json` 是否声明了 `image_assets`；
+- `image_assets` 路径是否相对 `plugin.json` 且文件实际存在；
+- 扩展名是否在支持列表内：`.png/.jpg/.jpeg/.bmp/.gif/.tif/.tiff`；
+- `imageId` 是否对应到你期望的资源下标。
+
+说明：
+- 图片资源不可解析时，宿主会故意回退到内置渲染器，保证功能不中断。
+
 ## 4. 预算拒绝或截断
 
 现象：

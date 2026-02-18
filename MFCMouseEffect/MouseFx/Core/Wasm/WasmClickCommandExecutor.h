@@ -22,7 +22,8 @@ public:
     static CommandExecutionResult Execute(
         const uint8_t* commandBuffer,
         size_t commandBytes,
-        const EffectConfig& config);
+        const EffectConfig& config,
+        const std::wstring& activeManifestPath);
 };
 
 } // namespace mousefx::wasm

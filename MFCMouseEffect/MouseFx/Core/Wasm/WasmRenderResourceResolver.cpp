@@ -2,6 +2,8 @@
 
 #include "WasmRenderResourceResolver.h"
 
+#include "WasmImageFileRenderer.h"
+#include "WasmPluginImageAssetCatalog.h"
 #include "MouseFx/Renderers/RendererRegistry.h"
 
 #include <array>
@@ -60,7 +62,24 @@ Argb WasmRenderResourceResolver::ResolveTextColor(
 
 std::unique_ptr<IRippleRenderer> WasmRenderResourceResolver::CreateImageRendererById(
     uint32_t imageId,
+    const std::wstring& manifestPath,
+    uint32_t commandTintArgb,
+    bool applyTint,
+    float alphaScale,
     std::string* outRendererKey) {
+    std::wstring imagePath;
+    if (WasmPluginImageAssetCatalog::ResolveImageAssetPath(manifestPath, imageId, &imagePath, nullptr)) {
+        auto renderer = std::make_unique<WasmImageFileRenderer>(
+            imagePath,
+            commandTintArgb,
+            applyTint,
+            alphaScale);
+        if (outRendererKey) {
+            *outRendererKey = "plugin:image_file";
+        }
+        return renderer;
+    }
+
     const auto& keys = BuiltinImageRendererKeys();
     const char* preferred = keys[static_cast<size_t>(imageId % static_cast<uint32_t>(keys.size()))];
 

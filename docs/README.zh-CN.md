@@ -68,6 +68,7 @@
 - 问题记录：`docs/issues/wasm-plugin-button-clarity-tooltips.zh-CN.md`（WASM 面板按钮语义优化：应用扫描路径/保存回退与预算，并为全部核心按钮补充悬浮提示）
 - 问题记录：`docs/issues/wasm-plugin-catalog-root-config.zh-CN.md`（WASM 插件面板支持自定义扫描路径，并持久化到配置后用于扫描与导出）
 - 问题记录：`docs/issues/wasm-panel-initial-i18n-order-fix.zh-CN.md`（修复 WASM 分区首屏中英混显：i18n 应用时机晚于组件挂载）
+- 问题记录：`docs/issues/wasm-image-assets-gif-and-static-support.zh-CN.md`（WASM `spawn_image` 支持插件图片资源：png/jpg/bmp/gif/tiff，并保留内置回退）
 - 问题记录：`docs/issues/mouse-action-indicator-overlay.zh-CN.md`（旧：新增光标附近鼠标动作指示器）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
 - 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）
@@ -128,6 +129,10 @@ Release 版本已改为“完全不创建主框架窗口”，只创建隐藏宿
 - 确保这些目录下有 `plugin.json` + `effect.wasm`。
 - 参考：`docs/architecture/wasm-plugin-template-quickstart.zh-CN.md`
 - 参考：`docs/architecture/wasm-plugin-troubleshooting.zh-CN.md`
+
+如果你要让 `spawn_image` 使用自定义图片：
+- 在 `plugin.json` 中添加 `image_assets`（相对 `plugin.json` 的路径）；
+- 支持扩展名：`.png/.jpg/.jpeg/.bmp/.gif/.tif/.tiff`。
 
 ## 外观自定义
 - 主要文件：`MFCMouseEffect/MouseFx/Styles/RippleStyle.h`、`MFCMouseEffect/MouseFx/Windows/RippleWindow.cpp`。

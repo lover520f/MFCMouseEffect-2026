@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace mousefx::wasm {
 
@@ -11,6 +12,7 @@ struct PluginManifest final {
     std::string version{};
     uint32_t apiVersion = 0;
     std::wstring entryWasm{};
+    std::vector<std::wstring> imageAssets{};
 };
 
 struct PluginManifestLoadResult final {
@@ -26,4 +28,3 @@ public:
 };
 
 } // namespace mousefx::wasm
-

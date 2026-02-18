@@ -157,16 +157,25 @@ std::vector<std::wstring> WasmPluginPaths::ResolveSearchRoots(const std::wstring
     return roots;
 }
 
-std::wstring WasmPluginPaths::ResolveEntryWasmPath(const std::wstring& manifestPath, const PluginManifest& manifest) {
-    if (manifestPath.empty() || manifest.entryWasm.empty()) {
+std::wstring WasmPluginPaths::ResolveManifestRelativePath(
+    const std::wstring& manifestPath,
+    const std::wstring& relativePath) {
+    if (manifestPath.empty() || relativePath.empty()) {
         return {};
     }
-
+    const std::filesystem::path relPath(relativePath);
+    if (relPath.is_absolute()) {
+        return {};
+    }
     const std::filesystem::path manifestFile(manifestPath);
     const std::filesystem::path baseDir = manifestFile.parent_path();
-    std::filesystem::path entryPath = baseDir / std::filesystem::path(manifest.entryWasm);
-    entryPath = entryPath.lexically_normal();
-    return entryPath.wstring();
+    std::filesystem::path resolved = baseDir / relPath;
+    resolved = resolved.lexically_normal();
+    return resolved.wstring();
+}
+
+std::wstring WasmPluginPaths::ResolveEntryWasmPath(const std::wstring& manifestPath, const PluginManifest& manifest) {
+    return ResolveManifestRelativePath(manifestPath, manifest.entryWasm);
 }
 
 } // namespace mousefx::wasm

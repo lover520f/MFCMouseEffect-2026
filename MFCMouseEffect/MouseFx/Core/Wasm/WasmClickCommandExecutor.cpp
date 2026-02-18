@@ -81,6 +81,7 @@ RippleStyle BuildImageStyle(const EffectConfig& config, const SpawnImageCommandV
 void ExecuteSpawnImage(
     const SpawnImageCommandV1& cmd,
     const EffectConfig& config,
+    const std::wstring& activeManifestPath,
     CommandExecutionResult* outResult) {
     if (!outResult) {
         return;
@@ -93,13 +94,20 @@ void ExecuteSpawnImage(
 
     RenderParams renderParams{};
     renderParams.loop = false;
-    renderParams.intensity = 1.0f;
+    renderParams.intensity = (cmd.alpha > 0.0f) ? std::clamp(cmd.alpha, 0.0f, 1.0f) : 1.0f;
     renderParams.directionRad = cmd.rotation;
 
     const RippleStyle style = BuildImageStyle(config, cmd);
+    const bool applyTint = ((cmd.tintRgba >> 24) & 0xFFu) != 0;
     std::string rendererKey;
     std::unique_ptr<IRippleRenderer> renderer =
-        WasmRenderResourceResolver::CreateImageRendererById(cmd.imageId, &rendererKey);
+        WasmRenderResourceResolver::CreateImageRendererById(
+            cmd.imageId,
+            activeManifestPath,
+            cmd.tintRgba,
+            applyTint,
+            renderParams.intensity,
+            &rendererKey);
     if (!renderer) {
         outResult->lastError = "cannot resolve image renderer";
         outResult->droppedCommands += 1;
@@ -123,7 +131,8 @@ void ExecuteSpawnImage(
 CommandExecutionResult WasmClickCommandExecutor::Execute(
     const uint8_t* commandBuffer,
     size_t commandBytes,
-    const EffectConfig& config) {
+    const EffectConfig& config,
+    const std::wstring& activeManifestPath) {
     CommandExecutionResult result{};
     if (!commandBuffer || commandBytes == 0) {
         return result;
@@ -155,7 +164,7 @@ CommandExecutionResult WasmClickCommandExecutor::Execute(
         case CommandKind::SpawnImage: {
             SpawnImageCommandV1 cmd{};
             std::memcpy(&cmd, raw, sizeof(cmd));
-            ExecuteSpawnImage(cmd, config, &result);
+            ExecuteSpawnImage(cmd, config, activeManifestPath, &result);
             break;
         }
         default:

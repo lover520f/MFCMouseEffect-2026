@@ -37,6 +37,31 @@ npm run build:samples
 - `dist/samples/<sample_key>/effect.wasm`
 - `dist/samples/<sample_key>/plugin.json`
 
+## 1.1 `spawn_image` 的可选图片资源
+
+可在 `plugin.json` 中声明插件图片资源：
+
+```json
+{
+  "id": "demo.click.image-pack.v1",
+  "name": "Demo Click Image Pack",
+  "version": "0.1.0",
+  "api_version": 1,
+  "entry": "effect.wasm",
+  "image_assets": [
+    "assets/smile.png",
+    "assets/cat.gif"
+  ]
+}
+```
+
+规则：
+- `image_assets` 为可选字段；
+- 每一项路径相对 `plugin.json`；
+- 支持扩展名：`.png/.jpg/.jpeg/.bmp/.gif/.tif/.tiff`；
+- `imageId` 按数组下标映射（越界取模）；
+- 图片缺失或无效时，宿主会自动回退到内置图片渲染器。
+
 ## 2. 放到宿主插件目录
 
 按 `plugin.json.id` 建目录：

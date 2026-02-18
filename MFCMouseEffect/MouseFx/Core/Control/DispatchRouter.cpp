@@ -89,10 +89,12 @@ LRESULT DispatchRouter::OnClick(HWND /*hwnd*/, LPARAM lParam) {
                 const bool wasmOk = wasmHost->InvokeClick(invoke, &commandBuffer);
                 wasm::CommandExecutionResult execResult{};
                 if (wasmOk && !commandBuffer.empty()) {
+                    const std::wstring manifestPath = wasmHost->Diagnostics().activeManifestPath;
                     execResult = wasm::WasmClickCommandExecutor::Execute(
                         commandBuffer.data(),
                         commandBuffer.size(),
-                        ctrl_->Config());
+                        ctrl_->Config(),
+                        manifestPath);
                     renderedByWasm = execResult.renderedAny;
                 }
                 wasmHost->RecordRenderExecution(

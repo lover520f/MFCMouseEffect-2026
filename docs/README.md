@@ -81,6 +81,7 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Issues: `docs/issues/wasm-plugin-button-clarity-tooltips.md` (WASM panel action wording cleanup and hover tooltips for all core buttons)
 - Issues: `docs/issues/wasm-plugin-catalog-root-config.md` (WASM plugin panel: configurable catalog root path persisted in config and applied to scan/export flows)
 - Issues: `docs/issues/wasm-panel-initial-i18n-order-fix.md` (fix first-load WASM panel mixed-language labels caused by pre-mount i18n timing)
+- Issues: `docs/issues/wasm-image-assets-gif-and-static-support.md` (WASM `spawn_image` now supports plugin file assets: png/jpg/bmp/gif/tiff with built-in fallback)
 - Issues: `docs/issues/mouse-action-indicator-overlay.md` (Legacy: add cursor-adjacent mouse action indicator)
 - Architecture: `docs/architecture/tray-and-appcontroller-refactor.md` (tray menu table-driven + AppController cleanup)
 - Architecture: `docs/architecture/settingswnd-emoji-split.md` (SettingsWnd emoji logic split)
@@ -173,6 +174,10 @@ If catalog is empty:
 - Ensure `plugin.json` + `effect.wasm` exist under one of those roots.
 - See: `docs/architecture/wasm-plugin-template-quickstart.md`
 - See: `docs/architecture/wasm-plugin-troubleshooting.md`
+
+If you use custom image files in `spawn_image`:
+- add `image_assets` into `plugin.json` (paths relative to manifest);
+- supported extensions: `.png/.jpg/.jpeg/.bmp/.gif/.tif/.tiff`.
 
 ## Customizing the Look
 - File: `MFCMouseEffect/MouseFx/Styles/RippleStyle.h` and `MFCMouseEffect/MouseFx/Windows/RippleWindow.cpp`.

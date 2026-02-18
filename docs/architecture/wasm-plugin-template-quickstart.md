@@ -37,6 +37,31 @@ Sample outputs:
 - `dist/samples/<sample_key>/effect.wasm`
 - `dist/samples/<sample_key>/plugin.json`
 
+## 1.1 Optional image assets for `spawn_image`
+
+You can declare plugin image files in `plugin.json`:
+
+```json
+{
+  "id": "demo.click.image-pack.v1",
+  "name": "Demo Click Image Pack",
+  "version": "0.1.0",
+  "api_version": 1,
+  "entry": "effect.wasm",
+  "image_assets": [
+    "assets/smile.png",
+    "assets/cat.gif"
+  ]
+}
+```
+
+Rules:
+- `image_assets` is optional.
+- Each item is a path relative to `plugin.json`.
+- Supported extensions: `.png/.jpg/.jpeg/.bmp/.gif/.tif/.tiff`.
+- `imageId` maps to this array index (modulo).
+- If assets are missing/invalid, host falls back to built-in image renderers.
+
 ## 2. Place plugin into host search path
 
 Create a plugin folder named by `plugin.json.id`:

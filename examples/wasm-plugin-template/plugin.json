@@ -3,5 +3,6 @@
   "name": "Demo Click Text Rise",
   "version": "0.1.0",
   "api_version": 1,
-  "entry": "effect.wasm"
+  "entry": "effect.wasm",
+  "image_assets": []
 }

@@ -11,6 +11,7 @@ class WasmPluginPaths final {
 public:
     static std::wstring ResolvePrimaryPluginRoot();
     static std::vector<std::wstring> ResolveSearchRoots(const std::wstring& configuredRoot = {});
+    static std::wstring ResolveManifestRelativePath(const std::wstring& manifestPath, const std::wstring& relativePath);
     static std::wstring ResolveEntryWasmPath(const std::wstring& manifestPath, const PluginManifest& manifest);
 };
 

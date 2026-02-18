@@ -10,6 +10,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cwctype>
+#include <set>
 
 namespace mousefx::wasm {
 
@@ -91,6 +92,58 @@ bool TryReadUintField(const json& node, const char* key, uint32_t* outValue, std
     return true;
 }
 
+bool ContainsParentTraversal(const std::filesystem::path& path) {
+    for (const auto& part : path) {
+        if (part == L"..") {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool IsSupportedImageExt(const std::wstring& extLower) {
+    static const std::set<std::wstring> kSupported{
+        L".png",
+        L".jpg",
+        L".jpeg",
+        L".bmp",
+        L".gif",
+        L".tif",
+        L".tiff",
+    };
+    return kSupported.find(extLower) != kSupported.end();
+}
+
+bool TryReadImageAssetsField(
+    const json& node,
+    std::vector<std::wstring>* outAssets,
+    std::string* outError) {
+    if (!outAssets) {
+        return false;
+    }
+    outAssets->clear();
+    if (!node.contains("image_assets")) {
+        return true;
+    }
+    if (!node["image_assets"].is_array()) {
+        if (outError) {
+            *outError = "Manifest field 'image_assets' must be string array.";
+        }
+        return false;
+    }
+    for (const auto& item : node["image_assets"]) {
+        if (!item.is_string()) {
+            if (outError) {
+                *outError = "Manifest field 'image_assets' must be string array.";
+            }
+            return false;
+        }
+        const std::wstring value = Utf8ToWString(item.get<std::string>());
+        outAssets->push_back(value);
+    }
+    return true;
+}
+
 } // namespace
 
 PluginManifestLoadResult WasmPluginManifest::LoadFromFile(const std::wstring& manifestPath) {
@@ -140,6 +193,9 @@ PluginManifestLoadResult WasmPluginManifest::LoadFromFile(const std::wstring& ma
         return result;
     }
     manifest.entryWasm = Utf8ToWString(entryUtf8);
+    if (!TryReadImageAssetsField(root, &manifest.imageAssets, &result.error)) {
+        return result;
+    }
 
     if (!Validate(manifest, &result.error)) {
         return result;
@@ -194,6 +250,43 @@ bool WasmPluginManifest::Validate(const PluginManifest& manifest, std::string* o
         }
         return false;
     }
+    if (ContainsParentTraversal(entryPath)) {
+        if (outError) {
+            *outError = "Manifest entry must not use parent traversal.";
+        }
+        return false;
+    }
+
+    for (size_t i = 0; i < manifest.imageAssets.size(); ++i) {
+        const std::wstring& asset = manifest.imageAssets[i];
+        if (asset.empty()) {
+            if (outError) {
+                *outError = "Manifest image_assets item must not be empty.";
+            }
+            return false;
+        }
+        const std::filesystem::path assetPath(asset);
+        if (assetPath.is_absolute()) {
+            if (outError) {
+                *outError = "Manifest image_assets must use relative path.";
+            }
+            return false;
+        }
+        if (ContainsParentTraversal(assetPath)) {
+            if (outError) {
+                *outError = "Manifest image_assets must not use parent traversal.";
+            }
+            return false;
+        }
+        const std::wstring ext = ToLowerWide(assetPath.extension().wstring());
+        if (!IsSupportedImageExt(ext)) {
+            if (outError) {
+                *outError = "Manifest image_assets supports .png/.jpg/.jpeg/.bmp/.gif/.tif/.tiff only.";
+            }
+            return false;
+        }
+    }
+
     if (outError) {
         outError->clear();
     }

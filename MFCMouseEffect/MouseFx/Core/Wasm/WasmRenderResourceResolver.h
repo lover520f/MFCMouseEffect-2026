@@ -13,7 +13,13 @@ class WasmRenderResourceResolver final {
 public:
     static std::wstring ResolveTextById(const EffectConfig& config, uint32_t textId);
     static Argb ResolveTextColor(const EffectConfig& config, uint32_t textId, uint32_t commandColorArgb);
-    static std::unique_ptr<IRippleRenderer> CreateImageRendererById(uint32_t imageId, std::string* outRendererKey);
+    static std::unique_ptr<IRippleRenderer> CreateImageRendererById(
+        uint32_t imageId,
+        const std::wstring& manifestPath,
+        uint32_t commandTintArgb,
+        bool applyTint,
+        float alphaScale,
+        std::string* outRendererKey);
     static Argb ResolveImageTint(const EffectConfig& config, uint32_t imageId, uint32_t tintArgb);
 };
 

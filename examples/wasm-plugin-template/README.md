@@ -47,6 +47,29 @@ Sample outputs are under:
 - `dist/samples/<sample_key>/effect.wasm`
 - `dist/samples/<sample_key>/plugin.json`
 
+## Optional image assets (`spawn_image`)
+
+`plugin.json` can include optional `image_assets` for `spawn_image`:
+
+```json
+{
+  "id": "demo.click.image-pack.v1",
+  "name": "Demo Click Image Pack",
+  "version": "0.1.0",
+  "api_version": 1,
+  "entry": "effect.wasm",
+  "image_assets": [
+    "assets/smile.png",
+    "assets/cat.gif"
+  ]
+}
+```
+
+- Paths are relative to `plugin.json`.
+- Supported: `.png/.jpg/.jpeg/.bmp/.gif/.tif/.tiff`.
+- `imageId` maps to asset index (modulo).
+- If assets cannot be resolved, host falls back to built-in image renderers.
+
 ## Runtime Location
 
 Copy `effect.wasm` + `plugin.json` to:

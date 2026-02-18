@@ -50,6 +50,20 @@ Check:
   - check whether current effect route is suppressed by focus/VM policy
   - inspect `wasm.last_budget_reason` and truncation flags
 
+## 3.1 `spawn_image` still shows built-in effect instead of file image
+
+Symptoms:
+- Plugin uses `spawn_image`, but rendered output remains `star/ripple`.
+
+Check:
+- `plugin.json` has `image_assets` array.
+- paths are relative to `plugin.json` and files exist.
+- extensions are supported: `.png/.jpg/.jpeg/.bmp/.gif/.tif/.tiff`.
+- `imageId` matches expected asset index.
+
+Behavior:
+- When image assets cannot be resolved, host intentionally falls back to built-in renderers.
+
 ## 4. Budget rejection/truncation
 
 Symptoms:
