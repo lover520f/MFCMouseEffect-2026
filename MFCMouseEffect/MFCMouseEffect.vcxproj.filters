@@ -293,6 +293,9 @@
     <ClCompile Include="MouseFx\Core\Control\AppController.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Core\Control\AppController.Wasm.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Core\Automation\InputAutomationEngine.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>

@@ -20,6 +20,9 @@ namespace mousefx {
 
 class CommandHandler;
 class DispatchRouter;
+namespace wasm {
+class WasmEffectHost;
+}
 
 // Owns the subsystem lifecycle: message-only dispatcher, GDI+ init, hook, and effects.
 class AppController final {
@@ -114,6 +117,7 @@ public:
     std::string StartShortcutCaptureSession(uint64_t timeoutMs);
     void StopShortcutCaptureSession(const std::string& sessionId);
     ShortcutCaptureSession::PollResult PollShortcutCaptureSession(const std::string& sessionId);
+    wasm::WasmEffectHost* WasmHost() const { return wasmEffectHost_.get(); }
     static constexpr UINT_PTR HoverTimerId() { return kHoverTimerId; }
     static constexpr UINT_PTR HoldTimerId() { return kHoldTimerId; }
     static constexpr DWORD HoldDelayMs() { return kHoldDelayMs; }
@@ -137,6 +141,8 @@ private:
     std::string ResolveConfiguredClickType() const;
     void ApplyConfiguredEffects();
     bool NormalizeActiveEffectTypes();
+    void InitializeWasmHost();
+    void ShutdownWasmHost();
 
 
     void NotifyGpuFallbackIfNeeded(const std::string& reason);
@@ -182,6 +188,7 @@ private:
     InputIndicatorOverlay inputIndicatorOverlay_{};
     InputAutomationEngine inputAutomationEngine_{};
     mutable ShortcutCaptureSession shortcutCaptureSession_{};
+    std::unique_ptr<wasm::WasmEffectHost> wasmEffectHost_{};
     VmForegroundDetector vmForegroundDetector_{};
     bool vmEffectsSuppressed_ = false;
 

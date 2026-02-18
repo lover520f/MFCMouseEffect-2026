@@ -11,6 +11,7 @@
 #include "MouseFx/Core/Control/EffectFactory.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
+#include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
 #include "MouseFx/ThirdParty/json.hpp"
@@ -309,6 +310,7 @@ bool AppController::Start() {
     configDir_ = ResolveConfigDirectory();
     config_ = EffectConfig::Load(configDir_);
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
+    InitializeWasmHost();
     inputIndicatorOverlay_.Initialize();
     inputIndicatorOverlay_.UpdateConfig(config_.inputIndicator);
     inputAutomationEngine_.UpdateConfig(config_.automation);
@@ -361,6 +363,7 @@ bool AppController::Start() {
 }
 
 void AppController::Stop() {
+    ShutdownWasmHost();
     hook_.SetKeyboardCaptureExclusive(false);
     hook_.Stop();
     inputIndicatorOverlay_.Shutdown();
