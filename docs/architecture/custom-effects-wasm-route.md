@@ -46,6 +46,8 @@ User workflow:
 Current official template location:
 - `examples/wasm-plugin-template`
 - quick start: `docs/architecture/wasm-plugin-template-quickstart.md`
+- compatibility policy: `docs/architecture/wasm-plugin-compatibility.md`
+- troubleshooting: `docs/architecture/wasm-plugin-troubleshooting.md`
 
 Example manifest:
 
@@ -152,5 +154,5 @@ Implementation is split into small commits: architecture skeleton first, then ev
 - [x] Commit 11: Plugin enable/disable/reload command endpoints (IPC/HTTP)
 - [x] Commit 12: RuntimeFactory extension to a real WASM runtime (keep Null fallback)
 - [x] Commit 13: Official template + local compile script examples
-- [ ] Commit 14: Docs hardening (quick start/troubleshooting/compatibility)
+- [x] Commit 14: Docs hardening (quick start/troubleshooting/compatibility)
 - [ ] Commit 15: Regression and stabilization pass (default-off + fallback validation)

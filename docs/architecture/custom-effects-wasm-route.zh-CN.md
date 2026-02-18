@@ -52,6 +52,8 @@
 当前官方模板位置：
 - `examples/wasm-plugin-template`
 - 快速开始：`docs/architecture/wasm-plugin-template-quickstart.zh-CN.md`
+- 兼容策略：`docs/architecture/wasm-plugin-compatibility.zh-CN.md`
+- 排错手册：`docs/architecture/wasm-plugin-troubleshooting.zh-CN.md`
 
 ### 3.2 插件交付物
 - `effect.wasm`
@@ -209,5 +211,5 @@ MVP 默认预算：
 - [x] Commit 11：插件启停/重载命令入口（IPC/HTTP）
 - [x] Commit 12：RuntimeFactory 扩展到真实 WASM 运行时（保留 Null 兜底）
 - [x] Commit 13：官方模板与本地编译脚本样例
-- [ ] Commit 14：文档完善（快速开始/排错/兼容策略）
+- [x] Commit 14：文档完善（快速开始/排错/兼容策略）
 - [ ] Commit 15：回归与稳定性收口（默认关闭、异常回退验证）
