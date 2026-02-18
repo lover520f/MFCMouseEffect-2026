@@ -174,4 +174,9 @@ Note: the prior 15 commits established architecture baseline; these 5 commits wi
   - Added `/api/wasm/catalog`
   - Added Svelte section for plugin catalog + enable/disable/reload/load-manifest
   - Added i18n, build, and installer preflight wiring for `wasm-settings.svelte.js`
-- [ ] Phase 3b: policy controls in settings (fallback toggle/profile-level behavior)
+- [x] Phase 3b: policy controls in settings (fallback toggle/profile-level behavior)
+  - Added persisted `wasm` config (`enabled`, `fallback_to_builtin_click`, `manifest_path`)
+  - Added `/api/wasm/policy` and command `wasm_set_policy`
+  - Startup now restores manifest path and enabled state
+  - Click dispatch now honors fallback policy when WASM route is active
+  - Details: `docs/issues/wasm-web-settings-policy-phase3b.md`

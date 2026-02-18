@@ -95,9 +95,19 @@ bool ParseForceRefresh(const json& payload) {
 
 json BuildWasmResponse(AppController* controller, bool ok) {
     json body{{"ok", ok}};
-    if (!controller || !controller->WasmHost()) {
+    if (!controller) {
         return body;
     }
+
+    const EffectConfig cfg = controller->GetConfigSnapshot();
+    body["configured_enabled"] = cfg.wasm.enabled;
+    body["fallback_to_builtin_click"] = cfg.wasm.fallbackToBuiltinClick;
+    body["configured_manifest_path"] = cfg.wasm.manifestPath;
+
+    if (!controller->WasmHost()) {
+        return body;
+    }
+
     const wasm::HostDiagnostics& diag = controller->WasmHost()->Diagnostics();
     body["enabled"] = diag.enabled;
     body["runtime_backend"] = diag.runtimeBackend;
@@ -301,6 +311,28 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
             {"count", plugins.size()},
             {"error_count", errors.size()},
         }).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/policy") {
+        bool ok = false;
+        if (controller_) {
+            const json payload = ParseObjectOrEmpty(req.body);
+            json cmd;
+            cmd["cmd"] = "wasm_set_policy";
+            if (payload.contains("enabled") && payload["enabled"].is_boolean()) {
+                cmd["enabled"] = payload["enabled"].get<bool>();
+            }
+            if (payload.contains("fallback_to_builtin_click") && payload["fallback_to_builtin_click"].is_boolean()) {
+                cmd["fallback_to_builtin_click"] = payload["fallback_to_builtin_click"].get<bool>();
+            }
+            if (payload.contains("manifest_path") && payload["manifest_path"].is_string()) {
+                cmd["manifest_path"] = payload["manifest_path"].get<std::string>();
+            }
+            controller_->HandleCommand(cmd.dump());
+            ok = true;
+        }
+        SetJsonResponse(resp, BuildWasmResponse(controller_, ok).dump());
         return true;
     }
 

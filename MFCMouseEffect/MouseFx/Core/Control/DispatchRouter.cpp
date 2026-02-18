@@ -76,8 +76,10 @@ LRESULT DispatchRouter::OnClick(HWND /*hwnd*/, LPARAM lParam) {
 
     if (ev) {
         bool renderedByWasm = false;
+        bool wasmRouteActive = false;
         if (auto* wasmHost = ctrl_->WasmHost()) {
             if (wasmHost->Enabled() && wasmHost->IsPluginLoaded()) {
+                wasmRouteActive = true;
                 wasm::ClickInvokeInput invoke{};
                 invoke.x = ev->pt.x;
                 invoke.y = ev->pt.y;
@@ -123,7 +125,9 @@ LRESULT DispatchRouter::OnClick(HWND /*hwnd*/, LPARAM lParam) {
         ctrl_->InputAutomation().OnClick(*ev);
         ctrl_->IndicatorOverlay().OnClick(*ev);
         ctrl_->LogDebugClick(*ev);
-        if (!renderedByWasm) {
+        const bool shouldFallbackToBuiltin =
+            (!wasmRouteActive) || ctrl_->ShouldFallbackToBuiltinClickWhenWasmActive();
+        if (!renderedByWasm && shouldFallbackToBuiltin) {
             if (auto* effect = ctrl_->GetEffect(EffectCategory::Click)) {
                 effect->OnClick(*ev);
             }

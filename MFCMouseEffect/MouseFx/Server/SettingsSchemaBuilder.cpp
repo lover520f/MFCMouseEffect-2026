@@ -148,6 +148,11 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
     out["wasm"] = {
         {"supported_api_version", 1},
         {"default_enabled", false},
+        {"policy_keys", json::array({
+            "configured_enabled",
+            "fallback_to_builtin_click",
+            "configured_manifest_path"
+        })},
         {"diagnostic_keys", json::array({
             "enabled",
             "runtime_backend",

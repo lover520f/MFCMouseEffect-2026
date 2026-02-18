@@ -181,6 +181,15 @@ struct InputAutomationConfig {
     GestureAutomationConfig gesture;
 };
 
+struct WasmConfig {
+    // Whether WASM host is enabled after startup.
+    bool enabled = false;
+    // Fallback to built-in click effect when WASM call does not render output.
+    bool fallbackToBuiltinClick = true;
+    // Selected plugin manifest path (UTF-8 path string).
+    std::string manifestPath;
+};
+
 // Active effect selections per category (persisted).
 struct ActiveEffectConfig {
     std::string click = "text";
@@ -214,6 +223,7 @@ struct EffectConfig {
     TextConfig textClick;
     InputIndicatorConfig inputIndicator;
     InputAutomationConfig automation;
+    WasmConfig wasm;
     
     TrailHistoryProfile GetTrailHistoryProfile(const std::string& type) const;
     

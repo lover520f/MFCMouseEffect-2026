@@ -28,6 +28,7 @@ bool TryUtf8ToWide(const std::string& utf8, std::wstring* out);
 
 void ParseInputIndicator(const nlohmann::json& root, EffectConfig& config);
 void ParseAutomation(const nlohmann::json& root, EffectConfig& config);
+void ParseWasm(const nlohmann::json& root, EffectConfig& config);
 void ParseTrailParams(const nlohmann::json& root, EffectConfig& config);
 void ParseTrailProfiles(const nlohmann::json& root, EffectConfig& config);
 void ParseEffects(const nlohmann::json& root, EffectConfig& config);

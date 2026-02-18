@@ -314,6 +314,12 @@
         await reload();
         return result;
       }
+      if (action === 'setPolicy') {
+        setStatus(statusText('status_wasm_updating_policy', 'Updating WASM policy...'));
+        const result = await apiPost('/api/wasm/policy', body);
+        await reload();
+        return result;
+      }
       return { ok: false, error: 'unsupported action' };
     } catch (e) {
       if (e && e.code === 'unauthorized') {

@@ -257,6 +257,11 @@ InputAutomationConfig SanitizeInputAutomationConfig(InputAutomationConfig config
     return config;
 }
 
+WasmConfig SanitizeWasmConfig(WasmConfig config) {
+    config.manifestPath = TrimAscii(config.manifestPath);
+    return config;
+}
+
 std::string ReadFileAsUtf8(const std::wstring& path) {
     std::ifstream file(path, std::ios::binary);
     if (!file.is_open()) {

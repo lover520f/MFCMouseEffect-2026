@@ -231,4 +231,9 @@ MVP 默认预算：
   - 新增 `/api/wasm/catalog`
   - 新增 Svelte 分区（目录、加载、启停、重载、诊断展示）
   - 新增 i18n、构建链路与安装包预检（`wasm-settings.svelte.js`）
-- [ ] Phase 3b：设置页策略控制（回退开关/配置级行为）
+- [x] Phase 3b：设置页策略控制（回退开关/配置级行为）
+  - 新增持久化 `wasm` 配置（`enabled`、`fallback_to_builtin_click`、`manifest_path`）
+  - 新增 `/api/wasm/policy` 与 `wasm_set_policy` 命令
+  - 启动流程支持清单路径与启用状态恢复
+  - 点击分发链路支持“WASM 激活时是否回退内置点击特效”策略
+  - 详见：`docs/issues/wasm-web-settings-policy-phase3b.zh-CN.md`

@@ -12,6 +12,9 @@
     const value = input || {};
     return {
       enabled: !!value.enabled,
+      configured_enabled: !!value.configured_enabled,
+      fallback_to_builtin_click: value.fallback_to_builtin_click !== false,
+      configured_manifest_path: `${value.configured_manifest_path || ''}`.trim(),
       runtime_backend: `${value.runtime_backend || ''}`.trim(),
       runtime_fallback_reason: `${value.runtime_fallback_reason || ''}`.trim(),
       plugin_loaded: !!value.plugin_loaded,
@@ -94,6 +97,7 @@
   let statusTone = '';
   let statusMessage = '';
   let initialCatalogRequested = false;
+  let policyFallbackToBuiltin = current.fallback_to_builtin_click !== false;
 
   function setCatalogFromResponse(response) {
     catalog = normalizeCatalogItems(response?.plugins);
@@ -155,9 +159,16 @@
     });
   }
 
+  async function savePolicy() {
+    await runAction('setPolicy', {
+      fallback_to_builtin_click: !!policyFallbackToBuiltin,
+    });
+  }
+
   $: if (payloadState !== lastPayloadRef) {
     lastPayloadRef = payloadState;
     current = normalizeState(payloadState);
+    policyFallbackToBuiltin = current.fallback_to_builtin_click !== false;
   }
 
   $: if (!initialCatalogRequested && typeof onAction === 'function') {
@@ -170,6 +181,28 @@
   <div class="wasm-label" data-i18n="label_wasm_enabled">WASM plugin enabled</div>
   <div class="wasm-value">
     <span class={`wasm-pill ${current.enabled ? 'is-on' : 'is-off'}`}>{boolText(current.enabled)}</span>
+  </div>
+
+  <div class="wasm-label" data-i18n="label_wasm_config_enabled">Configured enabled</div>
+  <div class="wasm-value">
+    <span class={`wasm-pill ${current.configured_enabled ? 'is-on' : 'is-off'}`}>{boolText(current.configured_enabled)}</span>
+  </div>
+
+  <div class="wasm-label" data-i18n="label_wasm_fallback_to_builtin">Fallback to built-in click</div>
+  <div class="wasm-actions">
+    <label class="check-inline">
+      <input type="checkbox" bind:checked={policyFallbackToBuiltin} disabled={busy} />
+      <span data-i18n="label_wasm_fallback_to_builtin">Fallback to built-in click</span>
+    </label>
+    <button
+      type="button"
+      class="btn-soft"
+      on:click={savePolicy}
+      disabled={busy}
+      data-i18n="btn_wasm_save_policy"
+    >
+      Save Policy
+    </button>
   </div>
 
   <div class="wasm-label" data-i18n="label_wasm_plugin_loaded">Plugin loaded</div>
@@ -193,6 +226,9 @@
 
   <div class="wasm-label" data-i18n="label_wasm_manifest_path">Manifest path</div>
   <div class="wasm-value wasm-text-block">{current.active_manifest_path || '-'}</div>
+
+  <div class="wasm-label" data-i18n="label_wasm_configured_manifest_path">Configured manifest path</div>
+  <div class="wasm-value wasm-text-block">{current.configured_manifest_path || '-'}</div>
 
   <div class="wasm-label" data-i18n="label_wasm_wasm_path">WASM path</div>
   <div class="wasm-value wasm-text-block">{current.active_wasm_path || '-'}</div>

@@ -5,6 +5,7 @@
 #include "AppController.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
+#include "MouseFx/ThirdParty/json.hpp"
 #include "MouseFx/Utils/StringUtils.h"
 
 #include <array>
@@ -20,7 +21,7 @@ void CommandHandler::Handle(const std::string& jsonCmd) {
         const char* command;
         CommandHandlerMethod handler;
     };
-    static const std::array<CommandRoute, 12> kCommandRoutes{{
+    static const std::array<CommandRoute, 13> kCommandRoutes{{
         {"set_effect", &CommandHandler::HandleSetEffectCommand},
         {"clear_effect", &CommandHandler::HandleClearEffectCommand},
         {"set_theme", &CommandHandler::HandleSetThemeCommand},
@@ -33,6 +34,7 @@ void CommandHandler::Handle(const std::string& jsonCmd) {
         {"wasm_disable", &CommandHandler::HandleWasmDisableCommand},
         {"wasm_reload", &CommandHandler::HandleWasmReloadCommand},
         {"wasm_load_manifest", &CommandHandler::HandleWasmLoadManifestCommand},
+        {"wasm_set_policy", &CommandHandler::HandleWasmSetPolicyCommand},
     }};
 
     const std::string cmd = ExtractJsonStringValue(jsonCmd, "cmd");
@@ -107,15 +109,11 @@ void CommandHandler::HandleResetConfigCommand(const std::string&) {
 }
 
 void CommandHandler::HandleWasmEnableCommand(const std::string&) {
-    if (auto* host = controller_->WasmHost()) {
-        host->SetEnabled(true);
-    }
+    controller_->SetWasmEnabled(true);
 }
 
 void CommandHandler::HandleWasmDisableCommand(const std::string&) {
-    if (auto* host = controller_->WasmHost()) {
-        host->SetEnabled(false);
-    }
+    controller_->SetWasmEnabled(false);
 }
 
 void CommandHandler::HandleWasmReloadCommand(const std::string&) {
@@ -125,12 +123,32 @@ void CommandHandler::HandleWasmReloadCommand(const std::string&) {
 }
 
 void CommandHandler::HandleWasmLoadManifestCommand(const std::string& jsonCmd) {
-    if (auto* host = controller_->WasmHost()) {
-        const std::string pathUtf8 = ExtractJsonStringValue(jsonCmd, "manifest_path");
-        if (pathUtf8.empty()) {
-            return;
-        }
-        host->LoadPluginFromManifest(Utf8ToWString(pathUtf8));
+    if (!controller_->WasmHost()) {
+        return;
+    }
+    const std::string pathUtf8 = ExtractJsonStringValue(jsonCmd, "manifest_path");
+    if (pathUtf8.empty()) {
+        return;
+    }
+    controller_->LoadWasmPluginFromManifestPath(pathUtf8);
+}
+
+void CommandHandler::HandleWasmSetPolicyCommand(const std::string& jsonCmd) {
+    nlohmann::json root;
+    try {
+        root = nlohmann::json::parse(jsonCmd);
+    } catch (...) {
+        return;
+    }
+
+    if (root.contains("enabled") && root["enabled"].is_boolean()) {
+        controller_->SetWasmEnabled(root["enabled"].get<bool>());
+    }
+    if (root.contains("manifest_path") && root["manifest_path"].is_string()) {
+        controller_->SetWasmManifestPath(root["manifest_path"].get<std::string>());
+    }
+    if (root.contains("fallback_to_builtin_click") && root["fallback_to_builtin_click"].is_boolean()) {
+        controller_->SetWasmFallbackToBuiltinClick(root["fallback_to_builtin_click"].get<bool>());
     }
 }
 

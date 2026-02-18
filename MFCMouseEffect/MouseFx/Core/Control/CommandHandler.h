@@ -28,6 +28,7 @@ private:
     void HandleWasmDisableCommand(const std::string& jsonCmd);
     void HandleWasmReloadCommand(const std::string& jsonCmd);
     void HandleWasmLoadManifestCommand(const std::string& jsonCmd);
+    void HandleWasmSetPolicyCommand(const std::string& jsonCmd);
 
     AppController* controller_ = nullptr;
 };

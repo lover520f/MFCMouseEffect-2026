@@ -96,6 +96,11 @@ public:
     void SetActiveEffectType(EffectCategory category, const std::string& type);
     void ReloadConfigFromDisk();
     std::string ResolveRuntimeEffectType(EffectCategory category, const std::string& requestedType, std::string* outReason) const;
+    void SetWasmEnabled(bool enabled);
+    void SetWasmFallbackToBuiltinClick(bool enabled);
+    void SetWasmManifestPath(const std::string& manifestPath);
+    bool LoadWasmPluginFromManifestPath(const std::string& manifestPath);
+    bool ShouldFallbackToBuiltinClickWhenWasmActive() const;
     
     // --- Methods exposed for DispatchRouter delegation ---
     void OnDispatchActivity(UINT msg, WPARAM wParam);

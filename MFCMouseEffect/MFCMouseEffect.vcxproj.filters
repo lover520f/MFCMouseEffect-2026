@@ -222,6 +222,9 @@
     <ClInclude Include="MouseFx\Core\Config\EffectConfigJsonKeys.Automation.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Config\EffectConfigJsonKeys.Wasm.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\Input\GestureRecognizer.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -422,7 +425,13 @@
     <ClCompile Include="MouseFx\Core\Config\EffectConfigJsonCodec.Parse.Automation.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Core\Config\EffectConfigJsonCodec.Parse.Wasm.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Core\Config\EffectConfigJsonCodec.Serialize.Automation.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Config\EffectConfigJsonCodec.Serialize.Wasm.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.cpp">

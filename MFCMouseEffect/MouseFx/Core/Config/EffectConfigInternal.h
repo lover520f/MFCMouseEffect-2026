@@ -16,5 +16,6 @@ TrailHistoryProfile SanitizeTrailHistoryProfile(TrailHistoryProfile profile);
 TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig params);
 InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig config);
 InputAutomationConfig SanitizeInputAutomationConfig(InputAutomationConfig config);
+WasmConfig SanitizeWasmConfig(WasmConfig config);
 
 } // namespace mousefx::config_internal

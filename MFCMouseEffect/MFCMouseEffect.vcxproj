@@ -276,6 +276,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonKeys.Active.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonKeys.Input.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonKeys.Automation.h" />
+    <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonKeys.Wasm.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonKeys.Trail.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonKeys.Effects.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonCodecEffectsColorHelpers.h" />
@@ -383,11 +384,13 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.Common.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.Input.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.Automation.cpp" />
+    <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.Wasm.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.Trail.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.Effects.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Parse.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Serialize.Input.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Serialize.Automation.cpp" />
+    <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Serialize.Wasm.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Serialize.Trail.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Serialize.Effects.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.Serialize.cpp" />

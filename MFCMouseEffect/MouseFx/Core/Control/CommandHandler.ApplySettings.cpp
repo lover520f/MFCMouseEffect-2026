@@ -255,6 +255,26 @@ void ApplyAutomationSettings(const json& payload, AppController* controller) {
     controller->SetInputAutomationConfig(config_internal::SanitizeInputAutomationConfig(automation));
 }
 
+void ApplyWasmSettings(const json& payload, AppController* controller) {
+    if (!controller) {
+        return;
+    }
+    if (!payload.contains("wasm") || !payload["wasm"].is_object()) {
+        return;
+    }
+
+    const json& source = payload["wasm"];
+    if (source.contains("enabled") && source["enabled"].is_boolean()) {
+        controller->SetWasmEnabled(source["enabled"].get<bool>());
+    }
+    if (source.contains("fallback_to_builtin_click") && source["fallback_to_builtin_click"].is_boolean()) {
+        controller->SetWasmFallbackToBuiltinClick(source["fallback_to_builtin_click"].get<bool>());
+    }
+    if (source.contains("manifest_path") && source["manifest_path"].is_string()) {
+        controller->SetWasmManifestPath(source["manifest_path"].get<std::string>());
+    }
+}
+
 void ApplyTrailTuningSettings(const json& payload, AppController* controller) {
     if (!controller) {
         return;
@@ -380,6 +400,7 @@ void CommandHandler::HandleApplySettings(const std::string& jsonCmd) {
     ApplyTextSettings(payload, controller_);
     ApplyInputIndicatorSettings(payload, controller_);
     ApplyAutomationSettings(payload, controller_);
+    ApplyWasmSettings(payload, controller_);
 
     if (payload.contains("hold_follow_mode") && payload["hold_follow_mode"].is_string()) {
         controller_->SetHoldFollowMode(payload["hold_follow_mode"].get<std::string>());

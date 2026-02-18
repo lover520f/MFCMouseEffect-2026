@@ -17,6 +17,7 @@ nlohmann::json BuildRootFromConfig(const EffectConfig& config) {
     root[keys::kTrailStyle] = config.trailStyle;
     root[keys::kInputIndicator] = serialize_internal::BuildInputIndicatorJson(config.inputIndicator);
     root[keys::kAutomation] = serialize_internal::BuildAutomationJson(config.automation);
+    root[keys::kWasm] = serialize_internal::BuildWasmJson(config.wasm);
     root[keys::kTrailProfiles] = serialize_internal::BuildTrailProfilesJson(config.trailProfiles);
     root[keys::kTrailParams] = serialize_internal::BuildTrailParamsJson(config.trailParams);
     root[keys::kActiveEffects] = serialize_internal::BuildActiveEffectsJson(config.active);

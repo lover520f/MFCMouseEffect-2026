@@ -5,6 +5,9 @@ function normalizeWasmState(input) {
   const value = input || {};
   return {
     enabled: !!value.enabled,
+    configured_enabled: !!value.configured_enabled,
+    fallback_to_builtin_click: value.fallback_to_builtin_click !== false,
+    configured_manifest_path: `${value.configured_manifest_path || ''}`.trim(),
     runtime_backend: `${value.runtime_backend || ''}`.trim(),
     runtime_fallback_reason: `${value.runtime_fallback_reason || ''}`.trim(),
     plugin_loaded: !!value.plugin_loaded,

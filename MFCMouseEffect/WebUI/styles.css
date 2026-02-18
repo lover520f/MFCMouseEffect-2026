@@ -670,6 +670,19 @@ textarea {
   gap: 8px;
 }
 
+.check-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #35506f;
+  font-size: 12px;
+}
+
+.check-inline input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
 .automation-panel {
   display: flex;
   flex-direction: column;

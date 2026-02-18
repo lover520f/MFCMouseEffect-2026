@@ -80,7 +80,7 @@ static json BuildGpuRouteNotice(
     return notice;
 }
 
-static json BuildWasmState(const AppController* controller) {
+static json BuildWasmState(const EffectConfig& cfg, const AppController* controller) {
     if (!controller) {
         return {};
     }
@@ -98,6 +98,9 @@ static json BuildWasmState(const AppController* controller) {
     out["plugin_api_version"] = diag.pluginApiVersion;
     out["active_plugin_id"] = diag.activePluginId;
     out["active_plugin_name"] = diag.activePluginName;
+    out["configured_enabled"] = cfg.wasm.enabled;
+    out["fallback_to_builtin_click"] = cfg.wasm.fallbackToBuiltinClick;
+    out["configured_manifest_path"] = cfg.wasm.manifestPath;
     out["active_manifest_path"] = Utf16ToUtf8(diag.activeManifestPath.c_str());
     out["active_wasm_path"] = Utf16ToUtf8(diag.activeWasmPath.c_str());
     out["last_call_duration_us"] = diag.lastCallDurationMicros;
@@ -241,7 +244,7 @@ std::string BuildSettingsStateJson(const EffectConfig& cfg, const AppController*
         out["gpu_route_notice"] = routeNotice;
     }
 
-    const json wasmState = BuildWasmState(controller);
+    const json wasmState = BuildWasmState(cfg, controller);
     if (wasmState.is_object() && !wasmState.empty()) {
         out["wasm"] = wasmState;
     }
