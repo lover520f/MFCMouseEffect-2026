@@ -151,8 +151,31 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
         {"policy_keys", json::array({
             "configured_enabled",
             "fallback_to_builtin_click",
-            "configured_manifest_path"
+            "configured_manifest_path",
+            "configured_output_buffer_bytes",
+            "configured_max_commands",
+            "configured_max_execution_ms"
         })},
+        {"policy_ranges", {
+            {"output_buffer_bytes", {
+                {"min", 1024},
+                {"max", 262144},
+                {"step", 1024},
+                {"default", config.wasm.outputBufferBytes}
+            }},
+            {"max_commands", {
+                {"min", 1},
+                {"max", 2048},
+                {"step", 1},
+                {"default", config.wasm.maxCommands}
+            }},
+            {"max_execution_ms", {
+                {"min", 0.1},
+                {"max", 20.0},
+                {"step", 0.1},
+                {"default", config.wasm.maxEventExecutionMs}
+            }},
+        }},
         {"diagnostic_keys", json::array({
             "enabled",
             "runtime_backend",
@@ -163,6 +186,9 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
             "active_plugin_name",
             "active_manifest_path",
             "active_wasm_path",
+            "runtime_output_buffer_bytes",
+            "runtime_max_commands",
+            "runtime_max_execution_ms",
             "last_call_duration_us",
             "last_output_bytes",
             "last_command_count",

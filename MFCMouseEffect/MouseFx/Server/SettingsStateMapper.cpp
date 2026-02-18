@@ -90,6 +90,7 @@ static json BuildWasmState(const EffectConfig& cfg, const AppController* control
     }
 
     const wasm::HostDiagnostics& diag = host->Diagnostics();
+    const wasm::ExecutionBudget runtimeBudget = host->GetExecutionBudget();
     json out;
     out["enabled"] = diag.enabled;
     out["runtime_backend"] = diag.runtimeBackend;
@@ -101,6 +102,12 @@ static json BuildWasmState(const EffectConfig& cfg, const AppController* control
     out["configured_enabled"] = cfg.wasm.enabled;
     out["fallback_to_builtin_click"] = cfg.wasm.fallbackToBuiltinClick;
     out["configured_manifest_path"] = cfg.wasm.manifestPath;
+    out["configured_output_buffer_bytes"] = cfg.wasm.outputBufferBytes;
+    out["configured_max_commands"] = cfg.wasm.maxCommands;
+    out["configured_max_execution_ms"] = cfg.wasm.maxEventExecutionMs;
+    out["runtime_output_buffer_bytes"] = runtimeBudget.outputBufferBytes;
+    out["runtime_max_commands"] = runtimeBudget.maxCommands;
+    out["runtime_max_execution_ms"] = runtimeBudget.maxEventExecutionMs;
     out["active_manifest_path"] = Utf16ToUtf8(diag.activeManifestPath.c_str());
     out["active_wasm_path"] = Utf16ToUtf8(diag.activeWasmPath.c_str());
     out["last_call_duration_us"] = diag.lastCallDurationMicros;

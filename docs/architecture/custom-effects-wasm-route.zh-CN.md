@@ -237,3 +237,8 @@ MVP 默认预算：
   - 启动流程支持清单路径与启用状态恢复
   - 点击分发链路支持“WASM 激活时是否回退内置点击特效”策略
   - 详见：`docs/issues/wasm-web-settings-policy-phase3b.zh-CN.md`
+- [x] Phase 3c：可配置 WASM 执行预算策略
+  - 新增持久化预算策略（`output_buffer_bytes`、`max_commands`、`max_execution_ms`）
+  - 启动/重载/策略更新时，Host 预算从配置同步
+  - Web 面板支持预算编辑与运行时预算快照展示
+  - 详见：`docs/issues/wasm-web-settings-budget-policy-phase3c.zh-CN.md`

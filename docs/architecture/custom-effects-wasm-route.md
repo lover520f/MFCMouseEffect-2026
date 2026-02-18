@@ -180,3 +180,8 @@ Note: the prior 15 commits established architecture baseline; these 5 commits wi
   - Startup now restores manifest path and enabled state
   - Click dispatch now honors fallback policy when WASM route is active
   - Details: `docs/issues/wasm-web-settings-policy-phase3b.md`
+- [x] Phase 3c: configurable WASM execution budget policy
+  - Added persisted budget policy (`output_buffer_bytes`, `max_commands`, `max_execution_ms`)
+  - Runtime host budget now synced from config on startup/reload/policy update
+  - Web panel supports budget editing and runtime snapshot display
+  - Details: `docs/issues/wasm-web-settings-budget-policy-phase3c.md`

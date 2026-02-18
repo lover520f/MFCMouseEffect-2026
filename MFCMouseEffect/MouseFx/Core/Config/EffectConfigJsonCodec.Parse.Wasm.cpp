@@ -21,6 +21,18 @@ void ParseWasm(const nlohmann::json& root, EffectConfig& config) {
         wasmObj,
         keys::wasm::kManifestPath,
         config.wasm.manifestPath);
+    config.wasm.outputBufferBytes = GetOr<uint32_t>(
+        wasmObj,
+        keys::wasm::kOutputBufferBytes,
+        config.wasm.outputBufferBytes);
+    config.wasm.maxCommands = GetOr<uint32_t>(
+        wasmObj,
+        keys::wasm::kMaxCommands,
+        config.wasm.maxCommands);
+    config.wasm.maxEventExecutionMs = GetOr<double>(
+        wasmObj,
+        keys::wasm::kMaxExecutionMs,
+        config.wasm.maxEventExecutionMs);
 
     config.wasm = config_internal::SanitizeWasmConfig(config.wasm);
 }

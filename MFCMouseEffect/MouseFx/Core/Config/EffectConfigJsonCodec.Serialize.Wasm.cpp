@@ -12,6 +12,9 @@ nlohmann::json BuildWasmJson(const WasmConfig& source) {
         {keys::wasm::kEnabled, config.enabled},
         {keys::wasm::kFallbackToBuiltinClick, config.fallbackToBuiltinClick},
         {keys::wasm::kManifestPath, config.manifestPath},
+        {keys::wasm::kOutputBufferBytes, config.outputBufferBytes},
+        {keys::wasm::kMaxCommands, config.maxCommands},
+        {keys::wasm::kMaxExecutionMs, config.maxEventExecutionMs},
     };
 }
 

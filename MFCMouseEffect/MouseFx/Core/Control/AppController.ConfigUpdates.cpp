@@ -76,6 +76,7 @@ void AppController::ResetConfig() {
     ApplyConfiguredEffects();
     inputIndicatorOverlay_.UpdateConfig(config_.inputIndicator);
     inputAutomationEngine_.UpdateConfig(config_.automation);
+    ApplyWasmConfigToHost(false);
 
     // Theme/Language rely on being pulled by UI or re-applied if needed?
     // SettingsWnd calls sync, so it will pull new values.
@@ -90,6 +91,7 @@ void AppController::ReloadConfigFromDisk() {
     config_ = loaded;
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
     inputAutomationEngine_.UpdateConfig(config_.automation);
+    ApplyWasmConfigToHost(true);
 
     ApplyConfiguredEffects();
     if (NormalizeActiveEffectTypes()) {

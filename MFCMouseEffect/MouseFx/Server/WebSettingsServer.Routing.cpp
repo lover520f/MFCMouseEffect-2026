@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <exception>
+#include <limits>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -103,18 +104,25 @@ json BuildWasmResponse(AppController* controller, bool ok) {
     body["configured_enabled"] = cfg.wasm.enabled;
     body["fallback_to_builtin_click"] = cfg.wasm.fallbackToBuiltinClick;
     body["configured_manifest_path"] = cfg.wasm.manifestPath;
+    body["configured_output_buffer_bytes"] = cfg.wasm.outputBufferBytes;
+    body["configured_max_commands"] = cfg.wasm.maxCommands;
+    body["configured_max_execution_ms"] = cfg.wasm.maxEventExecutionMs;
 
     if (!controller->WasmHost()) {
         return body;
     }
 
     const wasm::HostDiagnostics& diag = controller->WasmHost()->Diagnostics();
+    const wasm::ExecutionBudget runtimeBudget = controller->WasmHost()->GetExecutionBudget();
     body["enabled"] = diag.enabled;
     body["runtime_backend"] = diag.runtimeBackend;
     body["runtime_fallback_reason"] = diag.runtimeFallbackReason;
     body["plugin_loaded"] = diag.pluginLoaded;
     body["active_plugin_id"] = diag.activePluginId;
     body["active_manifest_path"] = Utf16ToUtf8(diag.activeManifestPath.c_str());
+    body["runtime_output_buffer_bytes"] = runtimeBudget.outputBufferBytes;
+    body["runtime_max_commands"] = runtimeBudget.maxCommands;
+    body["runtime_max_execution_ms"] = runtimeBudget.maxEventExecutionMs;
     body["last_rendered_by_wasm"] = diag.lastRenderedByWasm;
     body["last_executed_text_commands"] = diag.lastExecutedTextCommands;
     body["last_executed_image_commands"] = diag.lastExecutedImageCommands;
@@ -328,6 +336,21 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
             }
             if (payload.contains("manifest_path") && payload["manifest_path"].is_string()) {
                 cmd["manifest_path"] = payload["manifest_path"].get<std::string>();
+            }
+            if (payload.contains("output_buffer_bytes") && payload["output_buffer_bytes"].is_number_integer()) {
+                const int64_t raw = payload["output_buffer_bytes"].get<int64_t>();
+                cmd["output_buffer_bytes"] = (raw <= 0)
+                    ? 0u
+                    : static_cast<uint32_t>(std::min<int64_t>(raw, static_cast<int64_t>(std::numeric_limits<uint32_t>::max())));
+            }
+            if (payload.contains("max_commands") && payload["max_commands"].is_number_integer()) {
+                const int64_t raw = payload["max_commands"].get<int64_t>();
+                cmd["max_commands"] = (raw <= 0)
+                    ? 0u
+                    : static_cast<uint32_t>(std::min<int64_t>(raw, static_cast<int64_t>(std::numeric_limits<uint32_t>::max())));
+            }
+            if (payload.contains("max_execution_ms") && payload["max_execution_ms"].is_number()) {
+                cmd["max_execution_ms"] = payload["max_execution_ms"].get<double>();
             }
             controller_->HandleCommand(cmd.dump());
             ok = true;

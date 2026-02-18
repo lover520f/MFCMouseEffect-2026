@@ -9,6 +9,7 @@
 #include "MouseFx/Utils/StringUtils.h"
 
 #include <array>
+#include <limits>
 
 namespace mousefx {
 
@@ -149,6 +150,35 @@ void CommandHandler::HandleWasmSetPolicyCommand(const std::string& jsonCmd) {
     }
     if (root.contains("fallback_to_builtin_click") && root["fallback_to_builtin_click"].is_boolean()) {
         controller_->SetWasmFallbackToBuiltinClick(root["fallback_to_builtin_click"].get<bool>());
+    }
+
+    bool hasOutputBudget = false;
+    bool hasCommandBudget = false;
+    bool hasExecutionBudget = false;
+    uint32_t outputBudgetBytes = controller_->Config().wasm.outputBufferBytes;
+    uint32_t maxCommands = controller_->Config().wasm.maxCommands;
+    double maxExecutionMs = controller_->Config().wasm.maxEventExecutionMs;
+
+    if (root.contains("output_buffer_bytes") && root["output_buffer_bytes"].is_number_integer()) {
+        const int64_t raw = root["output_buffer_bytes"].get<int64_t>();
+        outputBudgetBytes = (raw <= 0)
+            ? 0u
+            : static_cast<uint32_t>(std::min<int64_t>(raw, static_cast<int64_t>(std::numeric_limits<uint32_t>::max())));
+        hasOutputBudget = true;
+    }
+    if (root.contains("max_commands") && root["max_commands"].is_number_integer()) {
+        const int64_t raw = root["max_commands"].get<int64_t>();
+        maxCommands = (raw <= 0)
+            ? 0u
+            : static_cast<uint32_t>(std::min<int64_t>(raw, static_cast<int64_t>(std::numeric_limits<uint32_t>::max())));
+        hasCommandBudget = true;
+    }
+    if (root.contains("max_execution_ms") && root["max_execution_ms"].is_number()) {
+        maxExecutionMs = root["max_execution_ms"].get<double>();
+        hasExecutionBudget = true;
+    }
+    if (hasOutputBudget || hasCommandBudget || hasExecutionBudget) {
+        controller_->SetWasmExecutionBudget(outputBudgetBytes, maxCommands, maxExecutionMs);
     }
 }
 

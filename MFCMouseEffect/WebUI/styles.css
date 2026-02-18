@@ -670,6 +670,11 @@ textarea {
   gap: 8px;
 }
 
+.wasm-actions input[type="number"] {
+  width: 180px;
+  max-width: 100%;
+}
+
 .check-inline {
   display: inline-flex;
   align-items: center;

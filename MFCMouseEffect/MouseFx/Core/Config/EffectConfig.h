@@ -188,6 +188,10 @@ struct WasmConfig {
     bool fallbackToBuiltinClick = true;
     // Selected plugin manifest path (UTF-8 path string).
     std::string manifestPath;
+    // WASM execution budget policy.
+    uint32_t outputBufferBytes = 16u * 1024u;
+    uint32_t maxCommands = 256u;
+    double maxEventExecutionMs = 1.0;
 };
 
 // Active effect selections per category (persisted).

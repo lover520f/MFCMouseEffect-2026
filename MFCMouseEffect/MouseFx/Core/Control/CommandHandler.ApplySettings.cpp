@@ -10,6 +10,7 @@
 #include "MouseFx/Utils/StringUtils.h"
 
 #include <array>
+#include <limits>
 
 namespace mousefx {
 
@@ -272,6 +273,35 @@ void ApplyWasmSettings(const json& payload, AppController* controller) {
     }
     if (source.contains("manifest_path") && source["manifest_path"].is_string()) {
         controller->SetWasmManifestPath(source["manifest_path"].get<std::string>());
+    }
+
+    bool hasOutputBudget = false;
+    bool hasCommandBudget = false;
+    bool hasExecutionBudget = false;
+    uint32_t outputBudgetBytes = controller->Config().wasm.outputBufferBytes;
+    uint32_t maxCommands = controller->Config().wasm.maxCommands;
+    double maxExecutionMs = controller->Config().wasm.maxEventExecutionMs;
+
+    if (source.contains("output_buffer_bytes") && source["output_buffer_bytes"].is_number_integer()) {
+        const int64_t raw = source["output_buffer_bytes"].get<int64_t>();
+        outputBudgetBytes = (raw <= 0)
+            ? 0u
+            : static_cast<uint32_t>(std::min<int64_t>(raw, static_cast<int64_t>(std::numeric_limits<uint32_t>::max())));
+        hasOutputBudget = true;
+    }
+    if (source.contains("max_commands") && source["max_commands"].is_number_integer()) {
+        const int64_t raw = source["max_commands"].get<int64_t>();
+        maxCommands = (raw <= 0)
+            ? 0u
+            : static_cast<uint32_t>(std::min<int64_t>(raw, static_cast<int64_t>(std::numeric_limits<uint32_t>::max())));
+        hasCommandBudget = true;
+    }
+    if (source.contains("max_execution_ms") && source["max_execution_ms"].is_number()) {
+        maxExecutionMs = source["max_execution_ms"].get<double>();
+        hasExecutionBudget = true;
+    }
+    if (hasOutputBudget || hasCommandBudget || hasExecutionBudget) {
+        controller->SetWasmExecutionBudget(outputBudgetBytes, maxCommands, maxExecutionMs);
     }
 }
 

@@ -259,6 +259,23 @@ InputAutomationConfig SanitizeInputAutomationConfig(InputAutomationConfig config
 
 WasmConfig SanitizeWasmConfig(WasmConfig config) {
     config.manifestPath = TrimAscii(config.manifestPath);
+    config.outputBufferBytes = static_cast<uint32_t>(ClampInt(
+        static_cast<int>(config.outputBufferBytes),
+        1024,
+        262144));
+    config.maxCommands = static_cast<uint32_t>(ClampInt(
+        static_cast<int>(config.maxCommands),
+        1,
+        2048));
+    if (!(config.maxEventExecutionMs > 0.0)) {
+        config.maxEventExecutionMs = 1.0;
+    }
+    if (config.maxEventExecutionMs < 0.1) {
+        config.maxEventExecutionMs = 0.1;
+    }
+    if (config.maxEventExecutionMs > 20.0) {
+        config.maxEventExecutionMs = 20.0;
+    }
     return config;
 }
 

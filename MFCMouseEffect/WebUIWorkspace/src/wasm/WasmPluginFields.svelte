@@ -15,6 +15,12 @@
       configured_enabled: !!value.configured_enabled,
       fallback_to_builtin_click: value.fallback_to_builtin_click !== false,
       configured_manifest_path: `${value.configured_manifest_path || ''}`.trim(),
+      configured_output_buffer_bytes: Number(value.configured_output_buffer_bytes) || 0,
+      configured_max_commands: Number(value.configured_max_commands) || 0,
+      configured_max_execution_ms: Number(value.configured_max_execution_ms) || 0,
+      runtime_output_buffer_bytes: Number(value.runtime_output_buffer_bytes) || 0,
+      runtime_max_commands: Number(value.runtime_max_commands) || 0,
+      runtime_max_execution_ms: Number(value.runtime_max_execution_ms) || 0,
       runtime_backend: `${value.runtime_backend || ''}`.trim(),
       runtime_fallback_reason: `${value.runtime_fallback_reason || ''}`.trim(),
       plugin_loaded: !!value.plugin_loaded,
@@ -98,6 +104,19 @@
   let statusMessage = '';
   let initialCatalogRequested = false;
   let policyFallbackToBuiltin = current.fallback_to_builtin_click !== false;
+  let policyOutputBufferBytes = current.configured_output_buffer_bytes || 16384;
+  let policyMaxCommands = current.configured_max_commands || 256;
+  let policyMaxExecutionMs = current.configured_max_execution_ms || 1.0;
+
+  function toInt(value, fallback) {
+    const parsed = Number.parseInt(String(value || ''), 10);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  function toFloat(value, fallback) {
+    const parsed = Number.parseFloat(String(value || ''));
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
 
   function setCatalogFromResponse(response) {
     catalog = normalizeCatalogItems(response?.plugins);
@@ -162,6 +181,9 @@
   async function savePolicy() {
     await runAction('setPolicy', {
       fallback_to_builtin_click: !!policyFallbackToBuiltin,
+      output_buffer_bytes: toInt(policyOutputBufferBytes, current.configured_output_buffer_bytes || 16384),
+      max_commands: toInt(policyMaxCommands, current.configured_max_commands || 256),
+      max_execution_ms: toFloat(policyMaxExecutionMs, current.configured_max_execution_ms || 1.0),
     });
   }
 
@@ -169,6 +191,9 @@
     lastPayloadRef = payloadState;
     current = normalizeState(payloadState);
     policyFallbackToBuiltin = current.fallback_to_builtin_click !== false;
+    policyOutputBufferBytes = current.configured_output_buffer_bytes || 16384;
+    policyMaxCommands = current.configured_max_commands || 256;
+    policyMaxExecutionMs = current.configured_max_execution_ms || 1.0;
   }
 
   $: if (!initialCatalogRequested && typeof onAction === 'function') {
@@ -205,6 +230,42 @@
     </button>
   </div>
 
+  <div class="wasm-label" data-i18n="label_wasm_budget_output_buffer">Output buffer bytes</div>
+  <div class="wasm-actions">
+    <input
+      type="number"
+      min="1024"
+      max="262144"
+      step="1024"
+      bind:value={policyOutputBufferBytes}
+      disabled={busy}
+    />
+  </div>
+
+  <div class="wasm-label" data-i18n="label_wasm_budget_max_commands">Max commands</div>
+  <div class="wasm-actions">
+    <input
+      type="number"
+      min="1"
+      max="2048"
+      step="1"
+      bind:value={policyMaxCommands}
+      disabled={busy}
+    />
+  </div>
+
+  <div class="wasm-label" data-i18n="label_wasm_budget_max_execution_ms">Max execution ms</div>
+  <div class="wasm-actions">
+    <input
+      type="number"
+      min="0.1"
+      max="20"
+      step="0.1"
+      bind:value={policyMaxExecutionMs}
+      disabled={busy}
+    />
+  </div>
+
   <div class="wasm-label" data-i18n="label_wasm_plugin_loaded">Plugin loaded</div>
   <div class="wasm-value">
     <span class={`wasm-pill ${current.plugin_loaded ? 'is-on' : 'is-off'}`}>{boolText(current.plugin_loaded)}</span>
@@ -232,6 +293,11 @@
 
   <div class="wasm-label" data-i18n="label_wasm_wasm_path">WASM path</div>
   <div class="wasm-value wasm-text-block">{current.active_wasm_path || '-'}</div>
+
+  <div class="wasm-label" data-i18n="label_wasm_runtime_budget">Runtime budget</div>
+  <div class="wasm-value wasm-text-block">
+    buffer={current.runtime_output_buffer_bytes || '-'}, commands={current.runtime_max_commands || '-'}, exec={current.runtime_max_execution_ms || '-'}ms
+  </div>
 
   <div class="wasm-label" data-i18n="label_wasm_catalog">Plugin catalog</div>
   <div class="wasm-catalog">
