@@ -141,7 +141,7 @@ Implementation is split into small commits: architecture skeleton first, then ev
 - [x] Commit 4: Plugin discovery and path strategy (default + config directory)
 - [x] Commit 5: WasmEffectHost lifecycle hardening (load/unload/reload)
 - [x] Commit 6: `AppController` startup/shutdown integration (init only, no behavior change)
-- [ ] Commit 7: Click event-chain invocation (logging only, no render path yet)
+- [x] Commit 7: Click event-chain invocation (logging only, no render path yet)
 - [ ] Commit 8: Budget controls (latency/output size/command count) and diagnostics
 - [ ] Commit 9: Diagnostics mapping into settings state output
 - [ ] Commit 10: Read-only WASM state exposure in Web API

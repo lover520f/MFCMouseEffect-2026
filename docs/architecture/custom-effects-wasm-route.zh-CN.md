@@ -198,7 +198,7 @@ MVP 默认预算：
 - [x] Commit 4：插件目录发现与路径策略（默认目录 + 配置目录）
 - [x] Commit 5：WasmEffectHost 生命周期（load/unload/reload）完善
 - [x] Commit 6：`AppController` 启停链路接入（仅初始化，不改行为）
-- [ ] Commit 7：点击事件链路调用 Host（先日志化，不接渲染）
+- [x] Commit 7：点击事件链路调用 Host（先日志化，不接渲染）
 - [ ] Commit 8：预算控制（耗时/输出大小/命令数）和诊断状态
 - [ ] Commit 9：诊断状态映射到 Settings 状态输出
 - [ ] Commit 10：Web API 暴露只读 WASM 状态

@@ -4,10 +4,29 @@
 #include "DispatchRouter.h"
 #include "AppController.h"
 #include "MouseFx/Core/Protocol/MouseFxMessages.h"
+#include "MouseFx/Core/Wasm/WasmEffectHost.h"
 
 #include <windowsx.h>  // GET_X_LPARAM, GET_Y_LPARAM
+#include <vector>
 
 namespace mousefx {
+
+namespace {
+
+uint8_t ToWasmButton(MouseButton button) {
+    switch (button) {
+    case MouseButton::Left:
+        return 1;
+    case MouseButton::Right:
+        return 2;
+    case MouseButton::Middle:
+        return 3;
+    default:
+        return 0;
+    }
+}
+
+} // namespace
 
 DispatchRouter::DispatchRouter(AppController* controller)
     : ctrl_(controller) {}
@@ -55,6 +74,32 @@ LRESULT DispatchRouter::OnClick(HWND /*hwnd*/, LPARAM lParam) {
     }
 
     if (ev) {
+        if (auto* wasmHost = ctrl_->WasmHost()) {
+            if (wasmHost->Enabled() && wasmHost->IsPluginLoaded()) {
+                wasm::ClickInvokeInput invoke{};
+                invoke.x = ev->pt.x;
+                invoke.y = ev->pt.y;
+                invoke.button = ToWasmButton(ev->button);
+                invoke.eventTickMs = GetTickCount64();
+                std::vector<uint8_t> commandBuffer;
+                const bool wasmOk = wasmHost->InvokeClick(invoke, &commandBuffer);
+#ifdef _DEBUG
+                const wasm::HostDiagnostics& diag = wasmHost->Diagnostics();
+                wchar_t buffer[256]{};
+                wsprintfW(
+                    buffer,
+                    L"MouseFx: wasm_click ok=%d bytes=%lu commands=%lu parse=%hs err=%hs\n",
+                    wasmOk ? 1 : 0,
+                    static_cast<unsigned long>(diag.lastOutputBytes),
+                    static_cast<unsigned long>(diag.lastCommandCount),
+                    wasm::CommandParseErrorToString(diag.lastParseError),
+                    diag.lastError.c_str());
+                OutputDebugStringW(buffer);
+#else
+                (void)wasmOk;
+#endif
+            }
+        }
         ctrl_->InputAutomation().OnClick(*ev);
         ctrl_->IndicatorOverlay().OnClick(*ev);
         ctrl_->LogDebugClick(*ev);
