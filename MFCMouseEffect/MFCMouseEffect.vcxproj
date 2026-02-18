@@ -286,6 +286,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Wasm\WasmPluginAbi.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmBinaryCodec.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmCommandBufferParser.h" />
+    <ClInclude Include="MouseFx\Core\Wasm\WasmExecutionBudgetGuard.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmRuntime.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmPluginManifest.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmPluginPaths.h" />
@@ -394,6 +395,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmBinaryCodec.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmCommandBufferParser.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmExecutionBudgetGuard.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginManifest.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginPaths.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginCatalog.cpp" />

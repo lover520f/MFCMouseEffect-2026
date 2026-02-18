@@ -104,6 +104,10 @@ void WasmEffectHost::UnloadPlugin() {
     diagnostics_.lastCommandCount = 0;
     diagnostics_.lastCallDurationMicros = 0;
     diagnostics_.lastCallExceededBudget = false;
+    diagnostics_.lastCallRejectedByBudget = false;
+    diagnostics_.lastOutputTruncatedByBudget = false;
+    diagnostics_.lastCommandTruncatedByBudget = false;
+    diagnostics_.lastBudgetReason.clear();
     diagnostics_.lastParseError = CommandParseError::None;
 }
 
@@ -149,6 +153,10 @@ bool WasmEffectHost::InvokeClick(const ClickInvokeInput& input, std::vector<uint
     diagnostics_.lastOutputBytes = 0;
     diagnostics_.lastCommandCount = 0;
     diagnostics_.lastCallExceededBudget = false;
+    diagnostics_.lastCallRejectedByBudget = false;
+    diagnostics_.lastOutputTruncatedByBudget = false;
+    diagnostics_.lastCommandTruncatedByBudget = false;
+    diagnostics_.lastBudgetReason.clear();
     diagnostics_.lastParseError = CommandParseError::None;
 
     if (!enabled_) {
@@ -205,6 +213,28 @@ bool WasmEffectHost::InvokeClick(const ClickInvokeInput& input, std::vector<uint
         SetError(std::string("WASM command buffer parse failed: ") + CommandParseErrorToString(parseResult.error));
         return false;
     }
+
+    const BudgetCheckInput budgetInput{
+        budget_.outputBufferBytes,
+        budget_.maxCommands,
+        budget_.maxEventExecutionMs,
+        writtenBytes,
+        diagnostics_.lastCommandCount,
+        elapsedMs,
+        parseResult.error == CommandParseError::CommandLimitExceeded,
+    };
+    const BudgetCheckResult budgetResult = WasmExecutionBudgetGuard::Evaluate(budgetInput);
+    diagnostics_.lastCallRejectedByBudget = !budgetResult.accepted;
+    diagnostics_.lastOutputTruncatedByBudget = budgetResult.outputTruncated;
+    diagnostics_.lastCommandTruncatedByBudget = budgetResult.commandTruncated;
+    diagnostics_.lastBudgetReason = budgetResult.reason;
+    if (!budgetResult.accepted) {
+        output.clear();
+        diagnostics_.lastOutputBytes = 0;
+        SetError(std::string("WASM budget rejected event: ") + budgetResult.reason);
+        return false;
+    }
+
     outCommandBuffer->swap(output);
     ClearError();
     return true;

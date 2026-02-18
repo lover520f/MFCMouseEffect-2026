@@ -8,6 +8,7 @@
 
 #include "WasmBinaryCodec.h"
 #include "WasmCommandBufferParser.h"
+#include "WasmExecutionBudgetGuard.h"
 #include "WasmPluginManifest.h"
 #include "WasmPluginPaths.h"
 #include "WasmPluginAbi.h"
@@ -41,6 +42,10 @@ struct HostDiagnostics final {
     uint32_t lastOutputBytes = 0;
     uint32_t lastCommandCount = 0;
     bool lastCallExceededBudget = false;
+    bool lastCallRejectedByBudget = false;
+    bool lastOutputTruncatedByBudget = false;
+    bool lastCommandTruncatedByBudget = false;
+    std::string lastBudgetReason{};
     CommandParseError lastParseError = CommandParseError::None;
     std::string lastError{};
 };
