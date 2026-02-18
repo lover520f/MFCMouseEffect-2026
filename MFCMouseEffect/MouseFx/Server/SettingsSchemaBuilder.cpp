@@ -167,6 +167,11 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
             "last_command_truncated_by_budget",
             "last_budget_reason",
             "last_parse_error",
+            "last_rendered_by_wasm",
+            "last_executed_text_commands",
+            "last_executed_image_commands",
+            "last_dropped_render_commands",
+            "last_render_error",
             "last_error"
         })}
     };

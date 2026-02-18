@@ -165,5 +165,5 @@ Note: the prior 15 commits established architecture baseline; these 5 commits wi
 - [x] Commit A1: execute `spawn_text` in click path (WASM text takes precedence when commands are emitted)
 - [x] Commit A2: execute `spawn_image` in click path (image/icon command rendering)
 - [x] Commit A3: resource mapping for `text_id/image_id` with deterministic fallback
-- [ ] Commit A4: harden render-execution with budget/error fallback coupling
+- [x] Commit A4: harden render-execution with budget/error fallback coupling
 - [ ] Commit A5: end-to-end validation and documentation closure

@@ -124,6 +124,11 @@ void WasmEffectHost::UnloadPlugin() {
     diagnostics_.lastCommandTruncatedByBudget = false;
     diagnostics_.lastBudgetReason.clear();
     diagnostics_.lastParseError = CommandParseError::None;
+    diagnostics_.lastRenderedByWasm = false;
+    diagnostics_.lastExecutedTextCommands = 0;
+    diagnostics_.lastExecutedImageCommands = 0;
+    diagnostics_.lastDroppedRenderCommands = 0;
+    diagnostics_.lastRenderError.clear();
 }
 
 bool WasmEffectHost::IsPluginLoaded() const {
@@ -151,6 +156,19 @@ const HostDiagnostics& WasmEffectHost::Diagnostics() const {
     return diagnostics_;
 }
 
+void WasmEffectHost::RecordRenderExecution(
+    bool renderedByWasm,
+    uint32_t executedTextCommands,
+    uint32_t executedImageCommands,
+    uint32_t droppedRenderCommands,
+    const std::string& renderError) {
+    diagnostics_.lastRenderedByWasm = renderedByWasm;
+    diagnostics_.lastExecutedTextCommands = executedTextCommands;
+    diagnostics_.lastExecutedImageCommands = executedImageCommands;
+    diagnostics_.lastDroppedRenderCommands = droppedRenderCommands;
+    diagnostics_.lastRenderError = renderError;
+}
+
 void WasmEffectHost::ResetPluginState() {
     if (runtime_ && diagnostics_.pluginLoaded) {
         runtime_->ResetPluginState();
@@ -173,6 +191,11 @@ bool WasmEffectHost::InvokeClick(const ClickInvokeInput& input, std::vector<uint
     diagnostics_.lastCommandTruncatedByBudget = false;
     diagnostics_.lastBudgetReason.clear();
     diagnostics_.lastParseError = CommandParseError::None;
+    diagnostics_.lastRenderedByWasm = false;
+    diagnostics_.lastExecutedTextCommands = 0;
+    diagnostics_.lastExecutedImageCommands = 0;
+    diagnostics_.lastDroppedRenderCommands = 0;
+    diagnostics_.lastRenderError.clear();
 
     if (!enabled_) {
         return false;

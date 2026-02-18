@@ -104,6 +104,11 @@ json BuildWasmResponse(AppController* controller, bool ok) {
     body["plugin_loaded"] = diag.pluginLoaded;
     body["active_plugin_id"] = diag.activePluginId;
     body["active_manifest_path"] = Utf16ToUtf8(diag.activeManifestPath.c_str());
+    body["last_rendered_by_wasm"] = diag.lastRenderedByWasm;
+    body["last_executed_text_commands"] = diag.lastExecutedTextCommands;
+    body["last_executed_image_commands"] = diag.lastExecutedImageCommands;
+    body["last_dropped_render_commands"] = diag.lastDroppedRenderCommands;
+    body["last_render_error"] = diag.lastRenderError;
     body["last_error"] = diag.lastError;
     return body;
 }

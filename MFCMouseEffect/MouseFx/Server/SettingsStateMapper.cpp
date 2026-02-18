@@ -109,6 +109,11 @@ static json BuildWasmState(const AppController* controller) {
     out["last_command_truncated_by_budget"] = diag.lastCommandTruncatedByBudget;
     out["last_budget_reason"] = diag.lastBudgetReason;
     out["last_parse_error"] = wasm::CommandParseErrorToString(diag.lastParseError);
+    out["last_rendered_by_wasm"] = diag.lastRenderedByWasm;
+    out["last_executed_text_commands"] = diag.lastExecutedTextCommands;
+    out["last_executed_image_commands"] = diag.lastExecutedImageCommands;
+    out["last_dropped_render_commands"] = diag.lastDroppedRenderCommands;
+    out["last_render_error"] = diag.lastRenderError;
     out["last_error"] = diag.lastError;
     return out;
 }

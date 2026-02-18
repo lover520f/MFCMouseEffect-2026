@@ -43,6 +43,10 @@
 - `wasm.last_output_bytes`
 - `wasm.last_command_count`
 - `wasm.last_parse_error`
+- `wasm.last_rendered_by_wasm`
+- `wasm.last_executed_text_commands`
+- `wasm.last_executed_image_commands`
+- `wasm.last_render_error`
 
 ## 4. 预算拒绝或截断
 

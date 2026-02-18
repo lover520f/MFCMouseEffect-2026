@@ -93,6 +93,12 @@ LRESULT DispatchRouter::OnClick(HWND /*hwnd*/, LPARAM lParam) {
                         ctrl_->Config());
                     renderedByWasm = execResult.renderedAny;
                 }
+                wasmHost->RecordRenderExecution(
+                    renderedByWasm,
+                    execResult.executedTextCommands,
+                    execResult.executedImageCommands,
+                    execResult.droppedCommands,
+                    execResult.lastError);
 #ifdef _DEBUG
                 const wasm::HostDiagnostics& diag = wasmHost->Diagnostics();
                 wchar_t buffer[256]{};

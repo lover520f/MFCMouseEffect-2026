@@ -49,6 +49,11 @@ struct HostDiagnostics final {
     bool lastCommandTruncatedByBudget = false;
     std::string lastBudgetReason{};
     CommandParseError lastParseError = CommandParseError::None;
+    bool lastRenderedByWasm = false;
+    uint32_t lastExecutedTextCommands = 0;
+    uint32_t lastExecutedImageCommands = 0;
+    uint32_t lastDroppedRenderCommands = 0;
+    std::string lastRenderError{};
     std::string lastError{};
 };
 
@@ -68,6 +73,12 @@ public:
     void SetExecutionBudget(const ExecutionBudget& budget);
     const ExecutionBudget& GetExecutionBudget() const;
     const HostDiagnostics& Diagnostics() const;
+    void RecordRenderExecution(
+        bool renderedByWasm,
+        uint32_t executedTextCommands,
+        uint32_t executedImageCommands,
+        uint32_t droppedRenderCommands,
+        const std::string& renderError);
 
     void ResetPluginState();
     bool InvokeClick(const ClickInvokeInput& input, std::vector<uint8_t>* outCommandBuffer);
