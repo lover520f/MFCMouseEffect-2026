@@ -225,6 +225,21 @@
     <ClInclude Include="MouseFx\Core\Input\GestureRecognizer.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Wasm\WasmPluginAbi.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Wasm\WasmRuntime.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Wasm\NullWasmRuntime.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Wasm\WasmRuntimeFactory.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Wasm\WasmEffectHost.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMouseEffect.cpp">
@@ -381,6 +396,15 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\NullWasmRuntime.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmRuntimeFactory.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmEffectHost.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
   </ItemGroup>
