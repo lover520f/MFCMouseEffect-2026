@@ -1,0 +1,15 @@
+{
+  "targets": {
+    "release": {
+      "outFile": "dist/effect.wasm",
+      "textFile": "dist/effect.wat",
+      "optimizeLevel": 3,
+      "shrinkLevel": 2,
+      "converge": true,
+      "noAssert": true
+    }
+  },
+  "options": {
+    "bindings": "raw"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "id": "demo.click.text.v1",
+  "name": "Demo Click Text",
+  "version": "0.1.0",
+  "api_version": 1,
+  "entry": "effect.wasm"
+}

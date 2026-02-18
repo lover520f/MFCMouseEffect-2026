@@ -1,0 +1,13 @@
+{
+  "name": "mfx-wasm-plugin-template",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MFCMouseEffect WASM plugin template based on AssemblyScript.",
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "clean": "node ./scripts/clean.mjs"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.28.7"
+  }
+}

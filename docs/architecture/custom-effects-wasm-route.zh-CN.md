@@ -49,6 +49,10 @@
 3. 在设置页选择并启用该插件；
 4. 触发事件时由宿主调用插件并执行返回命令。
 
+当前官方模板位置：
+- `examples/wasm-plugin-template`
+- 快速开始：`docs/architecture/wasm-plugin-template-quickstart.zh-CN.md`
+
 ### 3.2 插件交付物
 - `effect.wasm`
 - `plugin.json`（清单，包含名字、版本、ABI 版本、入口能力）
@@ -204,6 +208,6 @@ MVP 默认预算：
 - [x] Commit 10：Web API 暴露只读 WASM 状态
 - [x] Commit 11：插件启停/重载命令入口（IPC/HTTP）
 - [x] Commit 12：RuntimeFactory 扩展到真实 WASM 运行时（保留 Null 兜底）
-- [ ] Commit 13：官方模板与本地编译脚本样例
+- [x] Commit 13：官方模板与本地编译脚本样例
 - [ ] Commit 14：文档完善（快速开始/排错/兼容策略）
 - [ ] Commit 15：回归与稳定性收口（默认关闭、异常回退验证）
