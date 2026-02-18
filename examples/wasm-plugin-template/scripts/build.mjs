@@ -1,23 +1,24 @@
-import { spawnSync } from "node:child_process";
-import { copyFileSync, mkdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
+import {
+  compileAssemblyScript,
+  loadTemplateManifest,
+  resolveTemplateRoot,
+  writeManifest,
+} from "./build-lib.mjs";
 
-const scriptDir = dirname(fileURLToPath(import.meta.url));
-const rootDir = resolve(scriptDir, "..");
+const rootDir = resolveTemplateRoot(import.meta.url);
 const distDir = resolve(rootDir, "dist");
 
-mkdirSync(distDir, { recursive: true });
-
-const ascPath = resolve(rootDir, "node_modules", "assemblyscript", "bin", "asc");
-const args = ["assembly/index.ts", "--config", "asconfig.json", "--target", "release"];
-const build = spawnSync(process.execPath, [ascPath, ...args], {
-  cwd: rootDir,
-  stdio: "inherit",
-});
-if (build.status !== 0) {
-  process.exit(build.status ?? 1);
+try {
+  compileAssemblyScript({
+    rootDir,
+    entryRelativePath: "assembly/index.ts",
+    wasmOutputPath: resolve(distDir, "effect.wasm"),
+    watOutputPath: resolve(distDir, "effect.wat"),
+  });
+  writeManifest(resolve(distDir, "plugin.json"), loadTemplateManifest(rootDir));
+  console.log("Template build complete:", resolve(distDir, "effect.wasm"));
+} catch (error) {
+  console.error(error?.message || error);
+  process.exit(1);
 }
-
-copyFileSync(resolve(rootDir, "plugin.json"), resolve(distDir, "plugin.json"));
-console.log("Template build complete:", resolve(distDir, "effect.wasm"));

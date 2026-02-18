@@ -200,3 +200,12 @@ Note: the prior 15 commits established architecture baseline; these 5 commits wi
   - Reuses cached schema when language is unchanged, reducing redundant schema requests
   - Keeps full reload fallback for robustness when local refresh fails
   - Details: `docs/issues/wasm-web-settings-state-refresh-phase3f.md`
+
+## Incremental Follow-up (Phase 4 Template Ecosystem)
+
+- [x] Phase 4a: official sample-preset matrix and build script split
+  - Added shared AssemblyScript modules (`common/abi.ts`, `common/random.ts`)
+  - Added preset samples (`text-rise`, `text-burst`, `image-pulse`, `mixed-text-image`)
+  - Added script toolchain (`build-lib`, `build-sample`, `build-all-samples`)
+  - Added pnpm-friendly compiler path probing (`asc.js` and legacy `asc`)
+  - Details: `docs/issues/wasm-plugin-template-sample-presets-phase4.md`

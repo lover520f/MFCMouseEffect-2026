@@ -23,6 +23,20 @@ Build output:
 - `dist/effect.wasm`
 - `dist/plugin.json`
 
+Optional sample presets:
+
+```bash
+# Build one sample preset
+npm run build:sample -- --sample text-burst
+
+# Build all sample presets
+npm run build:samples
+```
+
+Sample outputs:
+- `dist/samples/<sample_key>/effect.wasm`
+- `dist/samples/<sample_key>/plugin.json`
+
 ## 2. Place plugin into host search path
 
 Create a plugin folder named by `plugin.json.id`:
@@ -30,7 +44,10 @@ Create a plugin folder named by `plugin.json.id`:
 - Debug path (default): `<exe_dir>/plugins/wasm/<plugin_id>/`
 - Release path (default): `%AppData%\\MFCMouseEffect\\plugins\\wasm\\<plugin_id>/`
 
-Copy `dist/effect.wasm` and `dist/plugin.json` into that folder.
+Copy `effect.wasm` and `plugin.json` into that folder
+from either:
+- `dist/` (default template)
+- `dist/samples/<sample_key>/` (preset sample)
 
 ## 3. Enable plugin from command endpoint
 
@@ -39,7 +56,7 @@ HTTP:
 ```bash
 POST /api/wasm/load-manifest
 {
-  "manifest_path": "C:\\path\\to\\plugins\\wasm\\demo.click.text.v1\\plugin.json"
+  "manifest_path": "C:\\path\\to\\plugins\\wasm\\demo.click.text-rise.v1\\plugin.json"
 }
 ```
 
@@ -59,7 +76,14 @@ The template is aligned to ABI v1:
 Binary layout is defined in:
 - `MFCMouseEffect/MouseFx/Core/Wasm/WasmPluginAbi.h`
 
-## 5. Troubleshooting
+## 5. Built-in sample preset keys
+
+- `text-rise`
+- `text-burst`
+- `image-pulse`
+- `mixed-text-image`
+
+## 6. Troubleshooting
 
 - If `load-manifest` fails, check `entry` in `plugin.json` and file existence.
 - If runtime bridge is absent, host falls back to Null runtime (no command output).

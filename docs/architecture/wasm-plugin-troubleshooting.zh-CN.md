@@ -35,11 +35,9 @@
 现象：
 - `wasm.plugin_loaded=true`，但屏幕无可见变化
 
-说明：
-- 当前阶段点击链路先做“命令解析 + 诊断”闭环，
-  自定义命令到最终渲染主链还在后续阶段接入。
-
-此时可先看：
+排查：
+- 目前 `spawn_text` / `spawn_image` 已接入可见渲染链路。
+- 先看以下诊断字段：
 - `wasm.last_output_bytes`
 - `wasm.last_command_count`
 - `wasm.last_parse_error`
@@ -47,6 +45,9 @@
 - `wasm.last_executed_text_commands`
 - `wasm.last_executed_image_commands`
 - `wasm.last_render_error`
+- 如果解析成功但仍无可见效果：
+  - 检查当前是否被前台抑制策略（如 VM 前台）影响；
+  - 检查 `wasm.last_budget_reason` 与预算截断标记。
 
 ## 4. 预算拒绝或截断
 
@@ -83,3 +84,13 @@
 3. 调用 `/api/wasm/load-manifest`。
 4. 调用 `/api/wasm/enable`。
 5. 点击一次，然后查看 `/api/state` 的 `wasm` 诊断字段。
+
+## 7. Web 设置页诊断面板
+
+在 Web 设置 WASM 分区中，重点观察：
+- 最近调用指标
+- 预算标记
+- 预算原因
+- 解析错误
+
+若诊断行被告警样式高亮，通常表示预算/解析风险，可能导致无输出或输出受限。

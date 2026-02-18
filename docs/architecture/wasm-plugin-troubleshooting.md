@@ -36,9 +36,8 @@ Symptoms:
 - `wasm.plugin_loaded=true`, but no visual output
 
 Check:
-- current phase only logs parsed commands in click chain;
-  render-path hookup is not fully enabled for custom commands yet.
-- still validate by diagnostics:
+- render-path hookup is enabled for `spawn_text` and `spawn_image`.
+- validate runtime fields first:
   - `wasm.last_output_bytes`
   - `wasm.last_command_count`
   - `wasm.last_parse_error`
@@ -46,6 +45,9 @@ Check:
   - `wasm.last_executed_text_commands`
   - `wasm.last_executed_image_commands`
   - `wasm.last_render_error`
+- if parser succeeds but still no visible output:
+  - check whether current effect route is suppressed by focus/VM policy
+  - inspect `wasm.last_budget_reason` and truncation flags
 
 ## 4. Budget rejection/truncation
 
@@ -82,3 +84,13 @@ Action:
 3. Call `/api/wasm/load-manifest`.
 4. Call `/api/wasm/enable`.
 5. Click once, then inspect `/api/state` `wasm` diagnostics.
+
+## 7. Web settings diagnostics panel
+
+If you use Web settings WASM section:
+- verify:
+  - Last call metrics
+  - Budget flags
+  - Budget reason
+  - Parse error
+- warning-highlighted rows indicate budget/parse risks that can suppress output.

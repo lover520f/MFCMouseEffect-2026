@@ -257,3 +257,12 @@ MVP 默认预算：
   - 语言未变化时复用缓存 schema，减少重复请求
   - 局部刷新失败时自动回退全量 reload，保证稳定性
   - 详见：`docs/issues/wasm-web-settings-state-refresh-phase3f.zh-CN.md`
+
+## 14. 增量进度（Phase 4 模板生态）
+
+- [x] Phase 4a：官方样例预设矩阵与构建脚本拆分
+  - 新增 AssemblyScript 公共模块（`common/abi.ts`、`common/random.ts`）
+  - 新增样例预设（`text-rise`、`text-burst`、`image-pulse`、`mixed-text-image`）
+  - 新增脚本工具链（`build-lib`、`build-sample`、`build-all-samples`）
+  - 新增 pnpm 兼容编译器探测（兼容 `asc.js` 与旧 `asc` 路径）
+  - 详见：`docs/issues/wasm-plugin-template-sample-presets-phase4.zh-CN.md`

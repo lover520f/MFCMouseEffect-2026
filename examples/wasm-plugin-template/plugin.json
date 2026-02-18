@@ -1,6 +1,6 @@
 {
-  "id": "demo.click.text.v1",
-  "name": "Demo Click Text",
+  "id": "demo.click.text-rise.v1",
+  "name": "Demo Click Text Rise",
   "version": "0.1.0",
   "api_version": 1,
   "entry": "effect.wasm"

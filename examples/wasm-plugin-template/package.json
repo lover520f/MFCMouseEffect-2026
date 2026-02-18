@@ -5,6 +5,8 @@
   "description": "MFCMouseEffect WASM plugin template based on AssemblyScript.",
   "scripts": {
     "build": "node ./scripts/build.mjs",
+    "build:sample": "node ./scripts/build-sample.mjs",
+    "build:samples": "node ./scripts/build-all-samples.mjs",
     "clean": "node ./scripts/clean.mjs"
   },
   "devDependencies": {
