@@ -23,6 +23,7 @@ bool WasmEffectHost::LoadPlugin(const std::wstring& modulePath) {
 
     std::string error;
     if (!runtime_->LoadModuleFromFile(modulePath, &error)) {
+        ClearActivePluginMetadata();
         SetError(error.empty() ? "Failed to load WASM module." : error);
         diagnostics_.pluginLoaded = false;
         diagnostics_.pluginApiVersion = 0;
@@ -32,6 +33,7 @@ bool WasmEffectHost::LoadPlugin(const std::wstring& modulePath) {
     uint32_t apiVersion = 0;
     if (!runtime_->CallGetApiVersion(&apiVersion, &error)) {
         runtime_->UnloadModule();
+        ClearActivePluginMetadata();
         SetError(error.empty() ? "Failed to call mfx_plugin_get_api_version." : error);
         diagnostics_.pluginLoaded = false;
         diagnostics_.pluginApiVersion = 0;
@@ -39,6 +41,7 @@ bool WasmEffectHost::LoadPlugin(const std::wstring& modulePath) {
     }
     if (apiVersion != kPluginApiVersionV1) {
         runtime_->UnloadModule();
+        ClearActivePluginMetadata();
         SetError("Unsupported plugin api_version.");
         diagnostics_.pluginLoaded = false;
         diagnostics_.pluginApiVersion = 0;
@@ -47,14 +50,54 @@ bool WasmEffectHost::LoadPlugin(const std::wstring& modulePath) {
 
     diagnostics_.pluginLoaded = true;
     diagnostics_.pluginApiVersion = apiVersion;
+    diagnostics_.activeWasmPath = modulePath;
     ClearError();
     return true;
+}
+
+bool WasmEffectHost::LoadPluginFromManifest(const std::wstring& manifestPath) {
+    const PluginManifestLoadResult load = WasmPluginManifest::LoadFromFile(manifestPath);
+    if (!load.ok) {
+        SetError(load.error);
+        return false;
+    }
+    if (load.manifest.apiVersion != kPluginApiVersionV1) {
+        SetError("Manifest api_version is not supported by current host.");
+        return false;
+    }
+    const std::wstring wasmPath = WasmPluginPaths::ResolveEntryWasmPath(manifestPath, load.manifest);
+    if (wasmPath.empty()) {
+        SetError("Cannot resolve entry wasm path from manifest.");
+        return false;
+    }
+
+    if (!LoadPlugin(wasmPath)) {
+        return false;
+    }
+    activeManifest_ = load.manifest;
+    diagnostics_.activePluginId = load.manifest.id;
+    diagnostics_.activePluginName = load.manifest.name;
+    diagnostics_.activeManifestPath = manifestPath;
+    diagnostics_.activeWasmPath = wasmPath;
+    return true;
+}
+
+bool WasmEffectHost::ReloadPlugin() {
+    if (!diagnostics_.activeManifestPath.empty()) {
+        return LoadPluginFromManifest(diagnostics_.activeManifestPath);
+    }
+    if (!diagnostics_.activeWasmPath.empty()) {
+        return LoadPlugin(diagnostics_.activeWasmPath);
+    }
+    SetError("No active plugin to reload.");
+    return false;
 }
 
 void WasmEffectHost::UnloadPlugin() {
     if (runtime_) {
         runtime_->UnloadModule();
     }
+    ClearActivePluginMetadata();
     diagnostics_.pluginLoaded = false;
     diagnostics_.pluginApiVersion = 0;
     diagnostics_.lastOutputBytes = 0;
@@ -182,6 +225,14 @@ void WasmEffectHost::SetError(const std::string& error) {
 
 void WasmEffectHost::ClearError() {
     diagnostics_.lastError.clear();
+}
+
+void WasmEffectHost::ClearActivePluginMetadata() {
+    activeManifest_ = PluginManifest{};
+    diagnostics_.activePluginId.clear();
+    diagnostics_.activePluginName.clear();
+    diagnostics_.activeManifestPath.clear();
+    diagnostics_.activeWasmPath.clear();
 }
 
 } // namespace mousefx::wasm

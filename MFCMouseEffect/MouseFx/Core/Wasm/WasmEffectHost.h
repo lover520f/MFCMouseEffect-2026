@@ -8,6 +8,8 @@
 
 #include "WasmBinaryCodec.h"
 #include "WasmCommandBufferParser.h"
+#include "WasmPluginManifest.h"
+#include "WasmPluginPaths.h"
 #include "WasmPluginAbi.h"
 #include "WasmRuntime.h"
 #include "WasmRuntimeFactory.h"
@@ -31,6 +33,10 @@ struct HostDiagnostics final {
     bool enabled = false;
     bool pluginLoaded = false;
     uint32_t pluginApiVersion = 0;
+    std::string activePluginId{};
+    std::string activePluginName{};
+    std::wstring activeManifestPath{};
+    std::wstring activeWasmPath{};
     uint64_t lastCallDurationMicros = 0;
     uint32_t lastOutputBytes = 0;
     uint32_t lastCommandCount = 0;
@@ -44,6 +50,8 @@ public:
     explicit WasmEffectHost(std::unique_ptr<IWasmRuntime> runtime = CreateRuntime(RuntimeBackend::Null));
 
     bool LoadPlugin(const std::wstring& modulePath);
+    bool LoadPluginFromManifest(const std::wstring& manifestPath);
+    bool ReloadPlugin();
     void UnloadPlugin();
     bool IsPluginLoaded() const;
 
@@ -61,11 +69,13 @@ private:
     ClickInputV1 BuildClickInputV1(const ClickInvokeInput& input) const;
     void SetError(const std::string& error);
     void ClearError();
+    void ClearActivePluginMetadata();
 
     std::unique_ptr<IWasmRuntime> runtime_{};
     bool enabled_ = false;
     ExecutionBudget budget_{};
     HostDiagnostics diagnostics_{};
+    PluginManifest activeManifest_{};
 };
 
 } // namespace mousefx::wasm
