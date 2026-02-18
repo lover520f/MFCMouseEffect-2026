@@ -167,3 +167,11 @@ Note: the prior 15 commits established architecture baseline; these 5 commits wi
 - [x] Commit A3: resource mapping for `text_id/image_id` with deterministic fallback
 - [x] Commit A4: harden render-execution with budget/error fallback coupling
 - [x] Commit A5: end-to-end validation and documentation closure
+
+## Incremental Follow-up (Phase 3 UI)
+
+- [x] Phase 3a: Web settings WASM panel wired
+  - Added `/api/wasm/catalog`
+  - Added Svelte section for plugin catalog + enable/disable/reload/load-manifest
+  - Added i18n, build, and installer preflight wiring for `wasm-settings.svelte.js`
+- [ ] Phase 3b: policy controls in settings (fallback toggle/profile-level behavior)

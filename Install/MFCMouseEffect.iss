@@ -53,6 +53,9 @@
 #if !FileExists(ReleaseWebUiDir + "automation-ui.svelte.js")
   #error "Missing webui/automation-ui.svelte.js. Run WebUIWorkspace build before packaging."
 #endif
+#if !FileExists(ReleaseWebUiDir + "wasm-settings.svelte.js")
+  #error "Missing webui/wasm-settings.svelte.js. Run WebUIWorkspace build before packaging."
+#endif
 
 [Setup]
 ; Unique ID for the application

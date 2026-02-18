@@ -31,6 +31,7 @@
       syncConsumers: (text) => {
         safeSync(window.MfxAutomationUi?.syncI18n, text);
         safeSync(window.MfxSectionWorkspace?.syncI18n, text);
+        safeSync(window.MfxWasmSection?.syncI18n, text);
       },
     });
   }
@@ -246,6 +247,7 @@
           schema,
           state: st,
           i18n,
+          wasmAction: handleWasmAction,
         });
       }
 
@@ -276,6 +278,52 @@
       }
     } finally {
       isReloading = false;
+    }
+  }
+
+  async function handleWasmAction(action, payload) {
+    try {
+      if (blockActionWhenDisconnected()) {
+        return { ok: false, error: 'blocked' };
+      }
+      const body = payload || {};
+      if (action === 'catalog') {
+        return await apiPost('/api/wasm/catalog', body);
+      }
+      if (action === 'enable') {
+        setStatus(statusText('status_wasm_enabling', 'Enabling WASM plugin...'));
+        const result = await apiPost('/api/wasm/enable', {});
+        await reload();
+        return result;
+      }
+      if (action === 'disable') {
+        setStatus(statusText('status_wasm_disabling', 'Disabling WASM plugin...'));
+        const result = await apiPost('/api/wasm/disable', {});
+        await reload();
+        return result;
+      }
+      if (action === 'reload') {
+        setStatus(statusText('status_wasm_reloading', 'Reloading WASM plugin...'));
+        const result = await apiPost('/api/wasm/reload', {});
+        await reload();
+        return result;
+      }
+      if (action === 'loadManifest') {
+        setStatus(statusText('status_wasm_loading_manifest', 'Loading WASM manifest...'));
+        const result = await apiPost('/api/wasm/load-manifest', body);
+        await reload();
+        return result;
+      }
+      return { ok: false, error: 'unsupported action' };
+    } catch (e) {
+      if (e && e.code === 'unauthorized') {
+        return { ok: false, error: 'unauthorized' };
+      }
+      setStatus(statusError('status_wasm_action_failed', 'WASM action failed: ', e), 'warn');
+      return {
+        ok: false,
+        error: (e && e.message) ? e.message : String(e || ''),
+      };
     }
   }
 

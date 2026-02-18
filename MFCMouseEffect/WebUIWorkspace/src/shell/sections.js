@@ -47,6 +47,15 @@ export const CARD_SECTIONS = [
     mountClass: 'span2',
   },
   {
+    id: 'wasm',
+    cardClass: 'card-wasm',
+    titleKey: 'section_wasm_plugin',
+    titleDefault: 'WASM Plugin',
+    descKey: 'desc_wasm_plugin',
+    descDefault: 'Manage custom WASM effect plugins and runtime diagnostics.',
+    mountId: 'wasm_settings_mount',
+  },
+  {
     id: 'trail',
     cardClass: 'card-trail',
     titleKey: 'section_trail_tuning',

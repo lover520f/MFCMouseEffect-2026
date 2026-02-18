@@ -35,6 +35,11 @@ const TARGETS = {
     name: 'MfxAutomationUiBundle',
     fileName: 'automation-ui.svelte.js',
   },
+  wasm: {
+    entry: 'wasm-main.js',
+    name: 'MfxWasmSectionBundle',
+    fileName: 'wasm-settings.svelte.js',
+  },
   dialog: {
     entry: 'dialog-main.js',
     name: 'MfxDialogBundle',

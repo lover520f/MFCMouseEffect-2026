@@ -18,6 +18,7 @@ const generatedFiles = [
   'trail-settings.svelte.js',
   'input-indicator-settings.svelte.js',
   'automation-ui.svelte.js',
+  'wasm-settings.svelte.js',
 ];
 
 const staticWebUiFiles = [

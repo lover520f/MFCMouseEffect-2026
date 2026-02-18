@@ -12,6 +12,7 @@
 #include "MouseFx/Core/System/ApplicationCatalogScanner.h"
 #include "MouseFx/Core/System/ForegroundProcessResolver.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
+#include "MouseFx/Core/Wasm/WasmPluginCatalog.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/SettingsSchemaBuilder.h"
 #include "MouseFx/Server/SettingsStateMapper.h"
@@ -269,6 +270,37 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
             controller_->HandleCommand("{\"cmd\":\"wasm_enable\"}");
         }
         SetJsonResponse(resp, BuildWasmResponse(controller_, true).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/catalog") {
+        wasm::WasmPluginCatalog catalog;
+        const wasm::PluginCatalogResult result = catalog.Discover();
+
+        json plugins = json::array();
+        for (const auto& plugin : result.plugins) {
+            plugins.push_back({
+                {"id", plugin.manifest.id},
+                {"name", plugin.manifest.name},
+                {"version", plugin.manifest.version},
+                {"api_version", plugin.manifest.apiVersion},
+                {"manifest_path", Utf16ToUtf8(plugin.manifestPath.c_str())},
+                {"wasm_path", Utf16ToUtf8(plugin.wasmPath.c_str())},
+            });
+        }
+
+        json errors = json::array();
+        for (const auto& error : result.errors) {
+            errors.push_back(error);
+        }
+
+        SetJsonResponse(resp, json({
+            {"ok", true},
+            {"plugins", plugins},
+            {"errors", errors},
+            {"count", plugins.size()},
+            {"error_count", errors.size()},
+        }).dump());
         return true;
     }
 

@@ -28,6 +28,10 @@
     return window.MfxTrailSection || null;
   }
 
+  function wasmSection() {
+    return window.MfxWasmSection || null;
+  }
+
   function fillSelectByNode(selectNode, items, current) {
     if (!selectNode) {
       return;
@@ -343,10 +347,25 @@
     syncIndicatorPositionUi();
   }
 
+  function renderWasm(appState, texts, wasmAction) {
+    const section = wasmSection();
+    if (!section || typeof section.render !== 'function') {
+      return;
+    }
+    section.render({
+      state: appState?.wasm || {},
+      i18n: texts,
+      onAction: wasmAction,
+    });
+  }
+
   function render(payload) {
     const schema = payload?.schema || {};
     const appState = payload?.state || {};
     const texts = payload?.i18n || {};
+    const wasmAction = (typeof payload?.wasmAction === 'function')
+      ? payload.wasmAction
+      : null;
 
     state.schema = schema;
     renderGeneral(schema, appState);
@@ -354,6 +373,7 @@
     renderText(appState);
     renderTrail(appState);
     renderInputIndicator(schema, appState, texts);
+    renderWasm(appState, texts, wasmAction);
     bindIndicatorEvents();
   }
 

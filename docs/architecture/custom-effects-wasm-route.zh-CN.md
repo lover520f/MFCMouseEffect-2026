@@ -224,3 +224,11 @@ MVP 默认预算：
 - [x] Commit A3：`text_id/image_id` 资源映射层与缺省回退策略（确定性映射：文本池 + 渲染器池）
 - [x] Commit A4：渲染执行与预算/异常联动收口（失败不影响主流程）
 - [x] Commit A5：端到端回归与文档验收步骤固化
+
+## 13. 增量进度（Phase 3 Web 管理面板）
+
+- [x] Phase 3a：WASM Web 设置面板接线
+  - 新增 `/api/wasm/catalog`
+  - 新增 Svelte 分区（目录、加载、启停、重载、诊断展示）
+  - 新增 i18n、构建链路与安装包预检（`wasm-settings.svelte.js`）
+- [ ] Phase 3b：设置页策略控制（回退开关/配置级行为）
