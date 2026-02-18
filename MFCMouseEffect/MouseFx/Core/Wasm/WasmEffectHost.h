@@ -52,7 +52,7 @@ struct HostDiagnostics final {
 
 class WasmEffectHost final {
 public:
-    explicit WasmEffectHost(std::unique_ptr<IWasmRuntime> runtime = CreateRuntime(RuntimeBackend::Null));
+    explicit WasmEffectHost(std::unique_ptr<IWasmRuntime> runtime = CreateDefaultRuntime());
 
     bool LoadPlugin(const std::wstring& modulePath);
     bool LoadPluginFromManifest(const std::wstring& manifestPath);

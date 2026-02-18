@@ -203,7 +203,7 @@ MVP 默认预算：
 - [x] Commit 9：诊断状态映射到 Settings 状态输出
 - [x] Commit 10：Web API 暴露只读 WASM 状态
 - [x] Commit 11：插件启停/重载命令入口（IPC/HTTP）
-- [ ] Commit 12：RuntimeFactory 扩展到真实 WASM 运行时（保留 Null 兜底）
+- [x] Commit 12：RuntimeFactory 扩展到真实 WASM 运行时（保留 Null 兜底）
 - [ ] Commit 13：官方模板与本地编译脚本样例
 - [ ] Commit 14：文档完善（快速开始/排错/兼容策略）
 - [ ] Commit 15：回归与稳定性收口（默认关闭、异常回退验证）

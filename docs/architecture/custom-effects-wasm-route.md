@@ -146,7 +146,7 @@ Implementation is split into small commits: architecture skeleton first, then ev
 - [x] Commit 9: Diagnostics mapping into settings state output
 - [x] Commit 10: Read-only WASM state exposure in Web API
 - [x] Commit 11: Plugin enable/disable/reload command endpoints (IPC/HTTP)
-- [ ] Commit 12: RuntimeFactory extension to a real WASM runtime (keep Null fallback)
+- [x] Commit 12: RuntimeFactory extension to a real WASM runtime (keep Null fallback)
 - [ ] Commit 13: Official template + local compile script examples
 - [ ] Commit 14: Docs hardening (quick start/troubleshooting/compatibility)
 - [ ] Commit 15: Regression and stabilization pass (default-off + fallback validation)
