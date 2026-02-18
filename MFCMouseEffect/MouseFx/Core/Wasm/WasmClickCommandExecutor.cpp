@@ -3,6 +3,7 @@
 #include "WasmClickCommandExecutor.h"
 
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
+#include "MouseFx/Renderers/Click/StarRenderer.h"
 #include "WasmCommandBufferParser.h"
 #include "WasmPluginAbi.h"
 
@@ -65,6 +66,56 @@ void ExecuteSpawnText(
     outResult->renderedAny = true;
 }
 
+RippleStyle BuildImageStyle(const EffectConfig& config, const SpawnImageCommandV1& cmd) {
+    RippleStyle style{};
+    style.durationMs = (cmd.lifeMs > 0) ? std::clamp<uint32_t>(cmd.lifeMs, 60u, 10000u)
+                                        : static_cast<uint32_t>(std::max(60, config.icon.durationMs));
+
+    const float scale = (cmd.scale > 0.0f) ? cmd.scale : 1.0f;
+    style.startRadius = std::max(2.0f, config.icon.startRadius * scale);
+    style.endRadius = std::max(style.startRadius + 2.0f, config.icon.endRadius * scale);
+    style.strokeWidth = std::max(0.8f, config.icon.strokeWidth);
+
+    const float diameter = style.endRadius * 2.0f;
+    style.windowSize = std::clamp<int>(static_cast<int>(std::ceil(diameter + 32.0f)), 64, 640);
+
+    style.fill = Argb{cmd.tintRgba};
+    style.stroke = Argb{cmd.tintRgba};
+    style.glow = Argb{(cmd.tintRgba & 0x00FFFFFFu) | 0x44000000u};
+    return style;
+}
+
+void ExecuteSpawnImage(
+    const SpawnImageCommandV1& cmd,
+    const EffectConfig& config,
+    CommandExecutionResult* outResult) {
+    if (!outResult) {
+        return;
+    }
+
+    ClickEvent ev{};
+    ev.button = MouseButton::Left;
+    ev.pt.x = static_cast<LONG>(std::lround(cmd.x));
+    ev.pt.y = static_cast<LONG>(std::lround(cmd.y));
+
+    RenderParams renderParams{};
+    renderParams.loop = false;
+    renderParams.intensity = 1.0f;
+    renderParams.directionRad = cmd.rotation;
+
+    const RippleStyle style = BuildImageStyle(config, cmd);
+    const uint64_t id = OverlayHostService::Instance().ShowRipple(
+        ev, style, std::make_unique<StarRenderer>(), renderParams);
+    if (id == 0) {
+        outResult->lastError = "failed to render spawn_image command";
+        outResult->droppedCommands += 1;
+        return;
+    }
+
+    outResult->executedImageCommands += 1;
+    outResult->renderedAny = true;
+}
+
 } // namespace
 
 CommandExecutionResult WasmClickCommandExecutor::Execute(
@@ -97,6 +148,12 @@ CommandExecutionResult WasmClickCommandExecutor::Execute(
             SpawnTextCommandV1 cmd{};
             std::memcpy(&cmd, raw, sizeof(cmd));
             ExecuteSpawnText(cmd, config, &result);
+            break;
+        }
+        case CommandKind::SpawnImage: {
+            SpawnImageCommandV1 cmd{};
+            std::memcpy(&cmd, raw, sizeof(cmd));
+            ExecuteSpawnImage(cmd, config, &result);
             break;
         }
         default:

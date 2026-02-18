@@ -98,7 +98,7 @@ LRESULT DispatchRouter::OnClick(HWND /*hwnd*/, LPARAM lParam) {
                 wchar_t buffer[256]{};
                 wsprintfW(
                     buffer,
-                    L"MouseFx: wasm_click ok=%d bytes=%lu commands=%lu parse=%hs err=%hs rendered=%d text=%lu drop=%lu\n",
+                    L"MouseFx: wasm_click ok=%d bytes=%lu commands=%lu parse=%hs err=%hs rendered=%d text=%lu image=%lu drop=%lu\n",
                     wasmOk ? 1 : 0,
                     static_cast<unsigned long>(diag.lastOutputBytes),
                     static_cast<unsigned long>(diag.lastCommandCount),
@@ -106,6 +106,7 @@ LRESULT DispatchRouter::OnClick(HWND /*hwnd*/, LPARAM lParam) {
                     diag.lastError.c_str(),
                     renderedByWasm ? 1 : 0,
                     static_cast<unsigned long>(execResult.executedTextCommands),
+                    static_cast<unsigned long>(execResult.executedImageCommands),
                     static_cast<unsigned long>(execResult.droppedCommands));
                 OutputDebugStringW(buffer);
 #else
