@@ -30,6 +30,7 @@ static json MakeOpt(const char* value, const wchar_t* zh, const wchar_t* en, con
 
 std::string BuildSettingsSchemaJson(const EffectConfig& config) {
     const std::string lang = config.uiLanguage.empty() ? "zh-CN" : config.uiLanguage;
+    const EffectConfig defaultConfig{};
 
     json out;
     out["ui_languages"] = json::array({
@@ -161,19 +162,19 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
                 {"min", 1024},
                 {"max", 262144},
                 {"step", 1024},
-                {"default", config.wasm.outputBufferBytes}
+                {"default", defaultConfig.wasm.outputBufferBytes}
             }},
             {"max_commands", {
                 {"min", 1},
                 {"max", 2048},
                 {"step", 1},
-                {"default", config.wasm.maxCommands}
+                {"default", defaultConfig.wasm.maxCommands}
             }},
             {"max_execution_ms", {
                 {"min", 0.1},
                 {"max", 20.0},
                 {"step", 0.1},
-                {"default", config.wasm.maxEventExecutionMs}
+                {"default", defaultConfig.wasm.maxEventExecutionMs}
             }},
         }},
         {"diagnostic_keys", json::array({

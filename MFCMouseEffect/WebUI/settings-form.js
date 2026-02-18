@@ -347,12 +347,13 @@
     syncIndicatorPositionUi();
   }
 
-  function renderWasm(appState, texts, wasmAction) {
+  function renderWasm(schema, appState, texts, wasmAction) {
     const section = wasmSection();
     if (!section || typeof section.render !== 'function') {
       return;
     }
     section.render({
+      schema: schema?.wasm || {},
       state: appState?.wasm || {},
       i18n: texts,
       onAction: wasmAction,
@@ -373,7 +374,7 @@
     renderText(appState);
     renderTrail(appState);
     renderInputIndicator(schema, appState, texts);
-    renderWasm(appState, texts, wasmAction);
+    renderWasm(schema, appState, texts, wasmAction);
     bindIndicatorEvents();
   }
 

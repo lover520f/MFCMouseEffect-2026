@@ -242,3 +242,8 @@ MVP 默认预算：
   - 启动/重载/策略更新时，Host 预算从配置同步
   - Web 面板支持预算编辑与运行时预算快照展示
   - 详见：`docs/issues/wasm-web-settings-budget-policy-phase3c.zh-CN.md`
+- [x] Phase 3d：预算输入 schema 驱动与默认恢复
+  - Web 面板去除硬编码预算范围（`min/max/step` 来自 schema）
+  - 新增共享策略模型，统一范围归一化与 clamp/snap
+  - 新增“恢复默认策略”动作，并与服务端默认范围对齐
+  - 详见：`docs/issues/wasm-web-settings-budget-schema-phase3d.zh-CN.md`

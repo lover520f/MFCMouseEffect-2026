@@ -185,3 +185,8 @@ Note: the prior 15 commits established architecture baseline; these 5 commits wi
   - Runtime host budget now synced from config on startup/reload/policy update
   - Web panel supports budget editing and runtime snapshot display
   - Details: `docs/issues/wasm-web-settings-budget-policy-phase3c.md`
+- [x] Phase 3d: schema-driven budget inputs and default restore
+  - Removed hard-coded budget bounds in Web panel (`min/max/step` from schema)
+  - Added shared policy model for range normalization and clamp/snap
+  - Added `Reset Defaults` policy action and server-side default-range alignment
+  - Details: `docs/issues/wasm-web-settings-budget-schema-phase3d.md`

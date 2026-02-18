@@ -1,4 +1,12 @@
 <script>
+  import {
+    clampFloatByRange,
+    clampIntByRange,
+    normalizePolicyRanges,
+    resolvePolicyInputValue,
+  } from './policy-model.js';
+
+  export let schemaState = {};
   export let payloadState = {};
   export let i18n = {};
   export let onAction = async () => ({ ok: false, error: 'wasm action handler unavailable' });
@@ -95,6 +103,8 @@
   }
 
   let current = normalizeState(payloadState);
+  let currentRanges = normalizePolicyRanges(schemaState?.policy_ranges || {});
+  let lastSchemaRef = schemaState;
   let lastPayloadRef = payloadState;
   let catalog = [];
   let catalogErrors = [];
@@ -104,19 +114,18 @@
   let statusMessage = '';
   let initialCatalogRequested = false;
   let policyFallbackToBuiltin = current.fallback_to_builtin_click !== false;
-  let policyOutputBufferBytes = current.configured_output_buffer_bytes || 16384;
-  let policyMaxCommands = current.configured_max_commands || 256;
-  let policyMaxExecutionMs = current.configured_max_execution_ms || 1.0;
-
-  function toInt(value, fallback) {
-    const parsed = Number.parseInt(String(value || ''), 10);
-    return Number.isFinite(parsed) ? parsed : fallback;
-  }
-
-  function toFloat(value, fallback) {
-    const parsed = Number.parseFloat(String(value || ''));
-    return Number.isFinite(parsed) ? parsed : fallback;
-  }
+  let policyOutputBufferBytes = resolvePolicyInputValue(
+    current.configured_output_buffer_bytes,
+    currentRanges.output_buffer_bytes,
+  );
+  let policyMaxCommands = resolvePolicyInputValue(
+    current.configured_max_commands,
+    currentRanges.max_commands,
+  );
+  let policyMaxExecutionMs = resolvePolicyInputValue(
+    current.configured_max_execution_ms,
+    currentRanges.max_execution_ms,
+  );
 
   function setCatalogFromResponse(response) {
     catalog = normalizeCatalogItems(response?.plugins);
@@ -181,19 +190,44 @@
   async function savePolicy() {
     await runAction('setPolicy', {
       fallback_to_builtin_click: !!policyFallbackToBuiltin,
-      output_buffer_bytes: toInt(policyOutputBufferBytes, current.configured_output_buffer_bytes || 16384),
-      max_commands: toInt(policyMaxCommands, current.configured_max_commands || 256),
-      max_execution_ms: toFloat(policyMaxExecutionMs, current.configured_max_execution_ms || 1.0),
+      output_buffer_bytes: clampIntByRange(policyOutputBufferBytes, currentRanges.output_buffer_bytes),
+      max_commands: clampIntByRange(policyMaxCommands, currentRanges.max_commands),
+      max_execution_ms: clampFloatByRange(policyMaxExecutionMs, currentRanges.max_execution_ms),
     });
+  }
+
+  async function resetPolicyToDefaults() {
+    policyFallbackToBuiltin = true;
+    policyOutputBufferBytes = currentRanges.output_buffer_bytes.defaultValue;
+    policyMaxCommands = currentRanges.max_commands.defaultValue;
+    policyMaxExecutionMs = currentRanges.max_execution_ms.defaultValue;
+    await savePolicy();
+  }
+
+  $: if (schemaState !== lastSchemaRef) {
+    lastSchemaRef = schemaState;
+    currentRanges = normalizePolicyRanges(schemaState?.policy_ranges || {});
+    policyOutputBufferBytes = resolvePolicyInputValue(policyOutputBufferBytes, currentRanges.output_buffer_bytes);
+    policyMaxCommands = resolvePolicyInputValue(policyMaxCommands, currentRanges.max_commands);
+    policyMaxExecutionMs = resolvePolicyInputValue(policyMaxExecutionMs, currentRanges.max_execution_ms);
   }
 
   $: if (payloadState !== lastPayloadRef) {
     lastPayloadRef = payloadState;
     current = normalizeState(payloadState);
     policyFallbackToBuiltin = current.fallback_to_builtin_click !== false;
-    policyOutputBufferBytes = current.configured_output_buffer_bytes || 16384;
-    policyMaxCommands = current.configured_max_commands || 256;
-    policyMaxExecutionMs = current.configured_max_execution_ms || 1.0;
+    policyOutputBufferBytes = resolvePolicyInputValue(
+      current.configured_output_buffer_bytes,
+      currentRanges.output_buffer_bytes,
+    );
+    policyMaxCommands = resolvePolicyInputValue(
+      current.configured_max_commands,
+      currentRanges.max_commands,
+    );
+    policyMaxExecutionMs = resolvePolicyInputValue(
+      current.configured_max_execution_ms,
+      currentRanges.max_execution_ms,
+    );
   }
 
   $: if (!initialCatalogRequested && typeof onAction === 'function') {
@@ -228,15 +262,24 @@
     >
       Save Policy
     </button>
+    <button
+      type="button"
+      class="btn-soft"
+      on:click={resetPolicyToDefaults}
+      disabled={busy}
+      data-i18n="btn_wasm_reset_policy"
+    >
+      Reset Defaults
+    </button>
   </div>
 
   <div class="wasm-label" data-i18n="label_wasm_budget_output_buffer">Output buffer bytes</div>
   <div class="wasm-actions">
     <input
       type="number"
-      min="1024"
-      max="262144"
-      step="1024"
+      min={currentRanges.output_buffer_bytes.min}
+      max={currentRanges.output_buffer_bytes.max}
+      step={currentRanges.output_buffer_bytes.step}
       bind:value={policyOutputBufferBytes}
       disabled={busy}
     />
@@ -246,9 +289,9 @@
   <div class="wasm-actions">
     <input
       type="number"
-      min="1"
-      max="2048"
-      step="1"
+      min={currentRanges.max_commands.min}
+      max={currentRanges.max_commands.max}
+      step={currentRanges.max_commands.step}
       bind:value={policyMaxCommands}
       disabled={busy}
     />
@@ -258,9 +301,9 @@
   <div class="wasm-actions">
     <input
       type="number"
-      min="0.1"
-      max="20"
-      step="0.1"
+      min={currentRanges.max_execution_ms.min}
+      max={currentRanges.max_execution_ms.max}
+      step={currentRanges.max_execution_ms.step}
       bind:value={policyMaxExecutionMs}
       disabled={busy}
     />

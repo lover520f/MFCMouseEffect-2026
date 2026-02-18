@@ -1,5 +1,6 @@
 import WasmPluginFields from '../wasm/WasmPluginFields.svelte';
 import { createLazyMountBridge } from './lazy-mount.js';
+import { normalizePolicyRanges } from '../wasm/policy-model.js';
 
 function normalizeWasmState(input) {
   const value = input || {};
@@ -31,13 +32,22 @@ function normalizeWasmState(input) {
   };
 }
 
+function normalizeWasmSchema(input) {
+  const value = input || {};
+  return {
+    policy_ranges: normalizePolicyRanges(value.policy_ranges || {}),
+  };
+}
+
 let currentState = normalizeWasmState({});
+let currentSchema = normalizeWasmSchema({});
 let currentI18n = {};
 let currentActionHandler = async () => ({ ok: false, error: 'wasm action handler unavailable' });
 
 const bridge = createLazyMountBridge({
   mountId: 'wasm_settings_mount',
   initialProps: {
+    schemaState: currentSchema,
     payloadState: currentState,
     i18n: currentI18n,
     onAction: currentActionHandler,
@@ -50,6 +60,7 @@ const bridge = createLazyMountBridge({
 
 function refreshView() {
   bridge.updateProps({
+    schemaState: currentSchema,
     payloadState: currentState,
     i18n: currentI18n,
     onAction: currentActionHandler,
@@ -58,6 +69,7 @@ function refreshView() {
 
 function render(payload) {
   const value = payload || {};
+  currentSchema = normalizeWasmSchema(value.schema || {});
   currentState = normalizeWasmState(value.state || {});
   currentI18n = value.i18n || {};
   currentActionHandler = typeof value.onAction === 'function'
