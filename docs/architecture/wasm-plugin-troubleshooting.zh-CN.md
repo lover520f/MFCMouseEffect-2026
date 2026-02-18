@@ -23,6 +23,7 @@
 - `wasm.runtime_backend="null"` 且 `wasm.runtime_fallback_reason` 非空
 
 排查：
+- 先本地构建 `MFCMouseEffect.slnx`（`x64 Debug/Release`），现在会自动产出 `mfx_wasm_runtime.dll`；
 - `mfx_wasm_runtime.dll` 在 `MFCMouseEffect.exe` 同目录，
   或在进程可搜索路径中；
 - 桥接导出函数至少包含：

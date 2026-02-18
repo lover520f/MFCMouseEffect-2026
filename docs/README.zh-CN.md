@@ -61,6 +61,7 @@
 - 问题记录：`docs/issues/web-settings-automation-editor.zh-CN.md`（Web 设置页新增自动化映射编辑器：鼠标 action/手势 映射到键盘）
 - 问题记录：`docs/issues/web-settings-automation-chain-shortcut-capture.zh-CN.md`（自动化映射增强：快捷键输入框直录 + 动作链触发）
 - 问题记录：`docs/issues/wasm-phase2-runtime-render-landing.zh-CN.md`（WASM Phase2 真落地验收：spawn_text/spawn_image 接入点击渲染链）
+- 问题记录：`docs/issues/wasm-runtime-bridge-self-build.zh-CN.md`（`mfx_wasm_runtime.dll` 自构建链路落地：工程接线、导出对齐、安装包打包）
 - 问题记录：`docs/issues/mouse-action-indicator-overlay.zh-CN.md`（旧：新增光标附近鼠标动作指示器）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
 - 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）

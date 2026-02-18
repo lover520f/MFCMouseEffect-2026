@@ -1,0 +1,394 @@
+#include "WasmRuntimeBridgeContext.h"
+
+#include <cstring>
+#include <filesystem>
+#include <fstream>
+#include <limits>
+#include <string>
+
+#include "third_party/wasm3/source/m3_env.h"
+#include "third_party/wasm3/source/wasm3.h"
+
+namespace wasm_runtime_bridge {
+
+namespace {
+
+constexpr uint32_t kRuntimeStackBytes = 64u * 1024u;
+constexpr uint32_t kLinearMemoryLimitBytes = 4u * 1024u * 1024u;
+constexpr uint32_t kWasmPageBytes = 64u * 1024u;
+constexpr uint32_t kScratchAlignment = 16u;
+
+uint32_t AlignUp(uint32_t value, uint32_t alignment) {
+    if (alignment == 0) {
+        return value;
+    }
+    const uint32_t remainder = value % alignment;
+    return remainder == 0 ? value : (value + alignment - remainder);
+}
+
+std::string NarrowPathForLog(const std::filesystem::path& path) {
+    return path.string();
+}
+
+} // namespace
+
+RuntimeBridgeContext::RuntimeBridgeContext() = default;
+
+RuntimeBridgeContext::~RuntimeBridgeContext() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    ReleaseRuntimeLocked();
+    if (environment_) {
+        m3_FreeEnvironment(environment_);
+        environment_ = nullptr;
+    }
+}
+
+bool RuntimeBridgeContext::LoadModuleFromFile(const wchar_t* modulePath) {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    if (!modulePath || modulePath[0] == L'\0') {
+        SetErrorLocked("module path is empty.");
+        return false;
+    }
+
+    const std::filesystem::path path(modulePath);
+    std::error_code ec;
+    if (!std::filesystem::exists(path, ec) || ec) {
+        SetErrorLocked(std::string("module file does not exist: ") + NarrowPathForLog(path));
+        return false;
+    }
+    if (!std::filesystem::is_regular_file(path, ec) || ec) {
+        SetErrorLocked(std::string("module path is not a file: ") + NarrowPathForLog(path));
+        return false;
+    }
+
+    std::ifstream input(path, std::ios::binary | std::ios::ate);
+    if (!input) {
+        SetErrorLocked(std::string("cannot open module file: ") + NarrowPathForLog(path));
+        return false;
+    }
+    const std::streamoff fileSize = input.tellg();
+    if (fileSize <= 0) {
+        SetErrorLocked("module file is empty.");
+        return false;
+    }
+    if (static_cast<uint64_t>(fileSize) > static_cast<uint64_t>(std::numeric_limits<uint32_t>::max())) {
+        SetErrorLocked("module file is too large.");
+        return false;
+    }
+
+    wasmBytes_.assign(static_cast<size_t>(fileSize), 0);
+    input.seekg(0, std::ios::beg);
+    input.read(reinterpret_cast<char*>(wasmBytes_.data()), fileSize);
+    if (!input) {
+        SetErrorLocked("failed to read module bytes.");
+        wasmBytes_.clear();
+        return false;
+    }
+
+    ReleaseRuntimeLocked();
+    if (!CreateRuntimeLocked()) {
+        return false;
+    }
+
+    IM3Module module = nullptr;
+    M3Result result = m3_ParseModule(
+        environment_,
+        &module,
+        wasmBytes_.data(),
+        static_cast<uint32_t>(wasmBytes_.size()));
+    if (result) {
+        SetWasm3ErrorLocked("m3_ParseModule failed", result);
+        if (module) {
+            m3_FreeModule(module);
+        }
+        return false;
+    }
+
+    result = m3_LoadModule(runtime_, module);
+    if (result) {
+        SetWasm3ErrorLocked("m3_LoadModule failed", result);
+        if (module) {
+            m3_FreeModule(module);
+        }
+        ReleaseRuntimeLocked();
+        return false;
+    }
+
+    if (!ResolvePluginExportsLocked()) {
+        ReleaseRuntimeLocked();
+        return false;
+    }
+
+    moduleLoaded_ = true;
+    ClearErrorLocked();
+    return true;
+}
+
+void RuntimeBridgeContext::UnloadModule() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    ReleaseRuntimeLocked();
+    CreateRuntimeLocked();
+}
+
+bool RuntimeBridgeContext::IsModuleLoaded() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return moduleLoaded_ && runtime_ && fnGetApiVersion_ && fnOnClick_;
+}
+
+bool RuntimeBridgeContext::CallGetApiVersion(uint32_t* outApiVersion) {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    if (outApiVersion) {
+        *outApiVersion = 0;
+    }
+    if (!moduleLoaded_ || !runtime_ || !fnGetApiVersion_) {
+        SetErrorLocked("plugin module is not loaded.");
+        return false;
+    }
+
+    M3Result result = m3_CallV(fnGetApiVersion_);
+    if (result) {
+        SetWasm3ErrorLocked("m3_CallV(get_api_version) failed", result);
+        return false;
+    }
+
+    uint32_t apiVersion = 0;
+    result = m3_GetResultsV(fnGetApiVersion_, &apiVersion);
+    if (result) {
+        SetWasm3ErrorLocked("m3_GetResultsV(get_api_version) failed", result);
+        return false;
+    }
+
+    if (outApiVersion) {
+        *outApiVersion = apiVersion;
+    }
+    ClearErrorLocked();
+    return true;
+}
+
+bool RuntimeBridgeContext::CallOnClick(
+    const uint8_t* inputPtr,
+    uint32_t inputLen,
+    uint8_t* outputPtr,
+    uint32_t outputCap,
+    uint32_t* outWrittenBytes) {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    if (outWrittenBytes) {
+        *outWrittenBytes = 0;
+    }
+    if (!moduleLoaded_ || !runtime_ || !fnOnClick_) {
+        SetErrorLocked("plugin module is not loaded.");
+        return false;
+    }
+    if (inputLen > 0 && !inputPtr) {
+        SetErrorLocked("input pointer is null.");
+        return false;
+    }
+    if (outputCap > 0 && !outputPtr) {
+        SetErrorLocked("output pointer is null.");
+        return false;
+    }
+
+    uint32_t inputOffset = 0;
+    uint32_t outputOffset = 0;
+    if (!EnsureScratchMemoryLocked(inputLen, outputCap, &inputOffset, &outputOffset)) {
+        return false;
+    }
+
+    uint32_t memorySize = 0;
+    uint8_t* memory = m3_GetMemory(runtime_, &memorySize, 0);
+    if (!memory) {
+        SetErrorLocked("wasm linear memory is unavailable.");
+        return false;
+    }
+    if (inputLen > 0) {
+        std::memcpy(memory + inputOffset, inputPtr, inputLen);
+    }
+
+    M3Result result = m3_CallV(
+        fnOnClick_,
+        inputOffset,
+        inputLen,
+        outputOffset,
+        outputCap);
+    if (result) {
+        SetWasm3ErrorLocked("m3_CallV(on_click) failed", result);
+        return false;
+    }
+
+    uint32_t writtenBytes = 0;
+    result = m3_GetResultsV(fnOnClick_, &writtenBytes);
+    if (result) {
+        SetWasm3ErrorLocked("m3_GetResultsV(on_click) failed", result);
+        return false;
+    }
+    if (writtenBytes > outputCap) {
+        SetErrorLocked("plugin returned bytes larger than output capacity.");
+        return false;
+    }
+
+    if (writtenBytes > 0) {
+        if (!outputPtr) {
+            SetErrorLocked("output pointer is null while plugin returned data.");
+            return false;
+        }
+        std::memcpy(outputPtr, memory + outputOffset, writtenBytes);
+    }
+
+    if (outWrittenBytes) {
+        *outWrittenBytes = writtenBytes;
+    }
+    ClearErrorLocked();
+    return true;
+}
+
+void RuntimeBridgeContext::ResetPluginState() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!moduleLoaded_ || !runtime_ || !fnReset_) {
+        return;
+    }
+
+    M3Result result = m3_CallV(fnReset_);
+    if (result) {
+        SetWasm3ErrorLocked("m3_CallV(reset) failed", result);
+        return;
+    }
+    ClearErrorLocked();
+}
+
+const char* RuntimeBridgeContext::LastError() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return lastError_.c_str();
+}
+
+bool RuntimeBridgeContext::CreateRuntimeLocked() {
+    if (!environment_) {
+        environment_ = m3_NewEnvironment();
+        if (!environment_) {
+            SetErrorLocked("m3_NewEnvironment failed.");
+            return false;
+        }
+    }
+    if (runtime_) {
+        return true;
+    }
+
+    runtime_ = m3_NewRuntime(environment_, kRuntimeStackBytes, nullptr);
+    if (!runtime_) {
+        SetErrorLocked("m3_NewRuntime failed.");
+        return false;
+    }
+    runtime_->memoryLimit = kLinearMemoryLimitBytes;
+    return true;
+}
+
+void RuntimeBridgeContext::ReleaseRuntimeLocked() {
+    moduleLoaded_ = false;
+    fnGetApiVersion_ = nullptr;
+    fnOnClick_ = nullptr;
+    fnReset_ = nullptr;
+
+    if (runtime_) {
+        m3_FreeRuntime(runtime_);
+        runtime_ = nullptr;
+    }
+}
+
+bool RuntimeBridgeContext::ResolvePluginExportsLocked() {
+    if (!runtime_) {
+        SetErrorLocked("runtime is not initialized.");
+        return false;
+    }
+
+    M3Result result = m3_FindFunction(&fnGetApiVersion_, runtime_, "mfx_plugin_get_api_version");
+    if (result) {
+        SetWasm3ErrorLocked("m3_FindFunction(mfx_plugin_get_api_version) failed", result);
+        return false;
+    }
+
+    result = m3_FindFunction(&fnOnClick_, runtime_, "mfx_plugin_on_click");
+    if (result) {
+        SetWasm3ErrorLocked("m3_FindFunction(mfx_plugin_on_click) failed", result);
+        return false;
+    }
+
+    result = m3_FindFunction(&fnReset_, runtime_, "mfx_plugin_reset");
+    if (result) {
+        fnReset_ = nullptr;
+    }
+    return true;
+}
+
+bool RuntimeBridgeContext::EnsureScratchMemoryLocked(
+    uint32_t inputLen,
+    uint32_t outputCap,
+    uint32_t* outInputOffset,
+    uint32_t* outOutputOffset) {
+    if (!runtime_ || !outInputOffset || !outOutputOffset) {
+        SetErrorLocked("runtime scratch preparation failed.");
+        return false;
+    }
+
+    const uint32_t inputOffset = 0;
+    const uint32_t outputOffset = AlignUp(inputLen, kScratchAlignment);
+    const uint64_t requiredBytes = static_cast<uint64_t>(outputOffset) + static_cast<uint64_t>(outputCap);
+    if (requiredBytes > std::numeric_limits<uint32_t>::max()) {
+        SetErrorLocked("scratch memory request exceeds 32-bit addressable range.");
+        return false;
+    }
+
+    uint32_t currentBytes = m3_GetMemorySize(runtime_);
+    if (currentBytes < requiredBytes) {
+        const uint32_t requiredPages = static_cast<uint32_t>((requiredBytes + kWasmPageBytes - 1u) / kWasmPageBytes);
+        M3Result resizeResult = ResizeMemory(runtime_, requiredPages);
+        if (resizeResult) {
+            SetWasm3ErrorLocked("ResizeMemory failed", resizeResult);
+            return false;
+        }
+        currentBytes = m3_GetMemorySize(runtime_);
+    }
+
+    uint32_t memorySize = 0;
+    uint8_t* memory = m3_GetMemory(runtime_, &memorySize, 0);
+    if (!memory) {
+        SetErrorLocked("wasm memory allocation returned null.");
+        return false;
+    }
+    if (memorySize < requiredBytes) {
+        SetErrorLocked("wasm memory is smaller than requested scratch range.");
+        return false;
+    }
+
+    *outInputOffset = inputOffset;
+    *outOutputOffset = outputOffset;
+    return true;
+}
+
+void RuntimeBridgeContext::SetErrorLocked(const std::string& message) {
+    lastError_ = message;
+}
+
+void RuntimeBridgeContext::SetErrorLocked(const char* message) {
+    lastError_ = message ? message : "unknown runtime bridge error";
+}
+
+void RuntimeBridgeContext::SetWasm3ErrorLocked(const char* prefix, const char* wasm3Result) {
+    lastError_.clear();
+    if (prefix && prefix[0] != '\0') {
+        lastError_.append(prefix);
+        lastError_.append(": ");
+    }
+    lastError_.append(wasm3Result ? wasm3Result : "unknown wasm3 error");
+}
+
+void RuntimeBridgeContext::ClearErrorLocked() {
+    lastError_.clear();
+}
+
+std::unique_ptr<RuntimeBridgeContext> CreateRuntimeBridge() {
+    return std::make_unique<RuntimeBridgeContext>();
+}
+
+} // namespace wasm_runtime_bridge

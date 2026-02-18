@@ -23,6 +23,7 @@ Symptoms:
 - `wasm.runtime_backend="null"` and `wasm.runtime_fallback_reason` is non-empty
 
 Check:
+- Build from repo first: `MFCMouseEffect.slnx` (`x64 Debug/Release`) now produces `mfx_wasm_runtime.dll` automatically.
 - `mfx_wasm_runtime.dll` exists beside `MFCMouseEffect.exe`
   or in process search path.
 - bridge exports include:

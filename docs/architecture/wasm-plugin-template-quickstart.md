@@ -86,5 +86,6 @@ Binary layout is defined in:
 ## 6. Troubleshooting
 
 - If `load-manifest` fails, check `entry` in `plugin.json` and file existence.
-- If runtime bridge is absent, host falls back to Null runtime (no command output).
+- Runtime bridge is built from this repo: build `MFCMouseEffect.slnx` (`x64 Debug/Release`) to produce `mfx_wasm_runtime.dll`.
+- If runtime bridge is still absent at runtime, host falls back to Null runtime (no command output).
 - If output is dropped, check budget diagnostics in `/api/state` `wasm` block.

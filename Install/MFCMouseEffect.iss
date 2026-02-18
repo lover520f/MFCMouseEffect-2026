@@ -23,6 +23,9 @@
 #if !FileExists(ReleaseDir + MyAppExeName)
   #error "Missing release binary. Build x64 Release first."
 #endif
+#if !FileExists(ReleaseDir + "mfx_wasm_runtime.dll")
+  #error "Missing mfx_wasm_runtime.dll in x64 Release output. Build WasmRuntimeBridge first."
+#endif
 #if !FileExists(ReleaseWebUiDir + "index.html")
   #error "Missing webui/index.html in x64 Release output."
 #endif
@@ -119,6 +122,7 @@ Source: "..\x64\Release\webui\*"; DestDir: "{app}\webui"; Flags: ignoreversion r
 ; Runtime DLLs
 Source: "..\x64\Release\webgpu_dawn.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "..\x64\Release\d3dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "..\x64\Release\mfx_wasm_runtime.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 ; Docs + license (optional)
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist

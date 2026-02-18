@@ -266,3 +266,13 @@ MVP 默认预算：
   - 新增脚本工具链（`build-lib`、`build-sample`、`build-all-samples`）
   - 新增 pnpm 兼容编译器探测（兼容 `asc.js` 与旧 `asc` 路径）
   - 详见：`docs/issues/wasm-plugin-template-sample-presets-phase4.zh-CN.md`
+
+## 15. Runtime Bridge 自构建状态
+
+- [x] `mfx_wasm_runtime.dll` 已纳入仓库工程，可本地直接构建。
+- 构建接线：
+- `MFCMouseEffect/WasmRuntimeBridge/mfx_wasm_runtime.vcxproj`
+- `MFCMouseEffect.slnx` 与 `MFCMouseEffect/MFCMouseEffect.vcxproj` 已建立依赖
+- 安装包接线：
+- `Install/MFCMouseEffect.iss` 增加 `mfx_wasm_runtime.dll` 预检与打包
+- 详见：`docs/issues/wasm-runtime-bridge-self-build.zh-CN.md`

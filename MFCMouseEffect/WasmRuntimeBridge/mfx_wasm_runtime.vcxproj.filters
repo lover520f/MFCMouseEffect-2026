@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{2E2EC4D6-6F0F-4B36-9DFB-2B5088FD0347}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{BE1EA1B5-C2C6-4E6C-9BD3-5DB7CA3D98B8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\wasm3">
+      <UniqueIdentifier>{375CA26D-7A93-48E4-AFE2-D67A0D9CDE0E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{E52A6F47-E592-4A2C-A1F6-82A0B80DDB67}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="WasmRuntimeBridgeContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\wasm3\source\m3_env.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\wasm3\source\wasm3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="WasmRuntimeBridgeContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WasmRuntimeBridgeExports.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\wasm3\source\m3_bind.c">
+      <Filter>Source Files\wasm3</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\wasm3\source\m3_code.c">
+      <Filter>Source Files\wasm3</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\wasm3\source\m3_compile.c">
+      <Filter>Source Files\wasm3</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\wasm3\source\m3_core.c">
+      <Filter>Source Files\wasm3</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\wasm3\source\m3_env.c">
+      <Filter>Source Files\wasm3</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\wasm3\source\m3_exec.c">
+      <Filter>Source Files\wasm3</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\wasm3\source\m3_function.c">
+      <Filter>Source Files\wasm3</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\wasm3\source\m3_info.c">
+      <Filter>Source Files\wasm3</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\wasm3\source\m3_module.c">
+      <Filter>Source Files\wasm3</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\wasm3\source\m3_parse.c">
+      <Filter>Source Files\wasm3</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="mfx_wasm_runtime.def">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="third_party\wasm3\LICENSE">
+      <Filter>Assets</Filter>
+    </None>
+  </ItemGroup>
+</Project>

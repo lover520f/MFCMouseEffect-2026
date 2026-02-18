@@ -201,6 +201,16 @@ Note: the prior 15 commits established architecture baseline; these 5 commits wi
   - Keeps full reload fallback for robustness when local refresh fails
   - Details: `docs/issues/wasm-web-settings-state-refresh-phase3f.md`
 
+## Runtime Bridge Build Status
+
+- [x] `mfx_wasm_runtime.dll` is now built from this repo (no external download step).
+- Build integration:
+  - `MFCMouseEffect/WasmRuntimeBridge/mfx_wasm_runtime.vcxproj`
+  - `MFCMouseEffect.slnx` + `MFCMouseEffect/MFCMouseEffect.vcxproj` project reference
+- Installer integration:
+  - `Install/MFCMouseEffect.iss` preflight + file packaging for `mfx_wasm_runtime.dll`
+- Details: `docs/issues/wasm-runtime-bridge-self-build.md`
+
 ## Incremental Follow-up (Phase 4 Template Ecosystem)
 
 - [x] Phase 4a: official sample-preset matrix and build script split

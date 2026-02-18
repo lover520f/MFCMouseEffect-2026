@@ -475,6 +475,14 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <None Include="WebUI\app.js" />
     <None Include="WebUI\styles.css" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="WasmRuntimeBridge\mfx_wasm_runtime.vcxproj">
+      <Project>{3056E52C-9A32-4E9D-9F49-537D2145D1C2}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

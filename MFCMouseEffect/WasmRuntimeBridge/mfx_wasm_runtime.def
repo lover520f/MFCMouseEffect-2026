@@ -1,0 +1,12 @@
+LIBRARY "mfx_wasm_runtime"
+
+EXPORTS
+    mfx_wasm_runtime_create
+    mfx_wasm_runtime_destroy
+    mfx_wasm_runtime_load_module_file
+    mfx_wasm_runtime_unload_module
+    mfx_wasm_runtime_is_module_loaded
+    mfx_wasm_runtime_call_get_api_version
+    mfx_wasm_runtime_call_on_click
+    mfx_wasm_runtime_reset_plugin
+    mfx_wasm_runtime_last_error

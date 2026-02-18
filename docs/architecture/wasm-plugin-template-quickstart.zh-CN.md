@@ -85,5 +85,6 @@ POST /api/wasm/enable
 ## 6. 排错
 
 - `load-manifest` 失败：先检查 `plugin.json` 的 `entry` 与文件是否存在。
-- 本机没有运行时桥接库时，宿主会回退 Null runtime（不会产生命令输出）。
+- 运行时桥接库由本仓库构建：先编译 `MFCMouseEffect.slnx`（`x64 Debug/Release`）生成 `mfx_wasm_runtime.dll`。
+- 若运行时仍找不到桥接库，宿主会回退 Null runtime（不会产生命令输出）。
 - 触发后无效果时，先看 `/api/state` 里的 `wasm` 诊断字段是否被预算裁剪。
