@@ -267,6 +267,14 @@
       window.MfxSectionWorkspace.refresh();
     }
 
+    // Re-apply i18n after sections mount/update so newly inserted nodes
+    // (especially Svelte section roots) do not keep fallback English text.
+    try {
+      applyI18n(uiLang);
+    } catch (_error) {
+      // Ignore post-render i18n sync failures to keep page usable.
+    }
+
     hasRenderedSettings = true;
     clearReloadRetryTimer();
     markConnection('online', true);
@@ -339,6 +347,24 @@
       if (action === 'loadManifest') {
         setStatus(statusText('status_wasm_loading_manifest', 'Loading WASM manifest...'));
         const result = await apiPost('/api/wasm/load-manifest', body);
+        await refreshAfterWasmAction();
+        return result;
+      }
+      if (action === 'importSelected') {
+        setStatus(statusText('status_wasm_importing', 'Importing WASM plugin...'));
+        const result = await apiPost('/api/wasm/import-selected', body);
+        await refreshAfterWasmAction();
+        return result;
+      }
+      if (action === 'importFromFolderDialog') {
+        setStatus(statusText('status_wasm_importing_folder', 'Importing WASM plugin folder...'));
+        const result = await apiPost('/api/wasm/import-from-folder-dialog', body);
+        await refreshAfterWasmAction();
+        return result;
+      }
+      if (action === 'exportAll') {
+        setStatus(statusText('status_wasm_exporting', 'Exporting WASM plugins...'));
+        const result = await apiPost('/api/wasm/export-all', {});
         await refreshAfterWasmAction();
         return result;
       }

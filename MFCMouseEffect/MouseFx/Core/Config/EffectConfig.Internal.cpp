@@ -259,6 +259,7 @@ InputAutomationConfig SanitizeInputAutomationConfig(InputAutomationConfig config
 
 WasmConfig SanitizeWasmConfig(WasmConfig config) {
     config.manifestPath = TrimAscii(config.manifestPath);
+    config.catalogRootPath = TrimAscii(config.catalogRootPath);
     config.outputBufferBytes = static_cast<uint32_t>(ClampInt(
         static_cast<int>(config.outputBufferBytes),
         1024,

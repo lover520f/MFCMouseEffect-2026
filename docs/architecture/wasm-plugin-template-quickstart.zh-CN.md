@@ -43,6 +43,11 @@ npm run build:samples
 
 - Debug 默认目录：`<exe_dir>/plugins/wasm/<plugin_id>/`
 - Release 默认目录：`%AppData%\\MFCMouseEffect\\plugins\\wasm\\<plugin_id>/`
+- 额外扫描目录：`<exe_dir>/plugins/wasm`（Release 便携/本地打包兜底）
+- Debug 便捷能力：从仓库构建目录运行时，宿主会额外扫描 `examples/wasm-plugin-template/dist`，
+  模板产物可直接被发现（无需先手工复制）。
+- Web 设置页支持配置“额外扫描目录”（`WASM 插件 -> 插件扫描路径`），
+  保存后会进入插件扫描与“导出全部插件”的目录集合。
 
 把 `effect.wasm` 和 `plugin.json` 复制到该目录，来源可为：
 - `dist/`（默认模板构建）

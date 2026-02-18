@@ -2,6 +2,8 @@
   const state = {
     schema: null,
     indicatorBound: false,
+    wasmPendingRender: null,
+    wasmRenderRetryTimer: 0,
   };
 
   function el(id) {
@@ -30,6 +32,33 @@
 
   function wasmSection() {
     return window.MfxWasmSection || null;
+  }
+
+  function clearWasmRetryTimer() {
+    if (!state.wasmRenderRetryTimer) {
+      return;
+    }
+    window.clearTimeout(state.wasmRenderRetryTimer);
+    state.wasmRenderRetryTimer = 0;
+  }
+
+  function scheduleWasmRenderRetry() {
+    if (state.wasmRenderRetryTimer) {
+      return;
+    }
+    state.wasmRenderRetryTimer = window.setTimeout(() => {
+      state.wasmRenderRetryTimer = 0;
+      const pending = state.wasmPendingRender;
+      if (!pending) {
+        return;
+      }
+      renderWasm(
+        pending.schema,
+        pending.appState,
+        pending.texts,
+        pending.wasmAction,
+        pending.wasmStatus);
+    }, 120);
   }
 
   function fillSelectByNode(selectNode, items, current) {
@@ -347,16 +376,27 @@
     syncIndicatorPositionUi();
   }
 
-  function renderWasm(schema, appState, texts, wasmAction) {
+  function renderWasm(schema, appState, texts, wasmAction, wasmStatus) {
     const section = wasmSection();
     if (!section || typeof section.render !== 'function') {
+      state.wasmPendingRender = {
+        schema,
+        appState,
+        texts,
+        wasmAction,
+        wasmStatus,
+      };
+      scheduleWasmRenderRetry();
       return;
     }
+    clearWasmRetryTimer();
+    state.wasmPendingRender = null;
     section.render({
       schema: schema?.wasm || {},
       state: appState?.wasm || {},
       i18n: texts,
       onAction: wasmAction,
+      onStatus: wasmStatus,
     });
   }
 
@@ -367,6 +407,9 @@
     const wasmAction = (typeof payload?.wasmAction === 'function')
       ? payload.wasmAction
       : null;
+    const wasmStatus = (typeof payload?.wasmStatus === 'function')
+      ? payload.wasmStatus
+      : null;
 
     state.schema = schema;
     renderGeneral(schema, appState);
@@ -374,7 +417,7 @@
     renderText(appState);
     renderTrail(appState);
     renderInputIndicator(schema, appState, texts);
-    renderWasm(schema, appState, texts, wasmAction);
+    renderWasm(schema, appState, texts, wasmAction, wasmStatus);
     bindIndicatorEvents();
   }
 

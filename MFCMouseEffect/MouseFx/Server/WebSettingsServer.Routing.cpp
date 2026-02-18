@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <exception>
+#include <filesystem>
 #include <limits>
 #include <mutex>
 #include <string>
@@ -12,8 +13,11 @@
 #include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Core/System/ApplicationCatalogScanner.h"
 #include "MouseFx/Core/System/ForegroundProcessResolver.h"
+#include "MouseFx/Core/System/NativeFolderPicker.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Core/Wasm/WasmPluginCatalog.h"
+#include "MouseFx/Core/Wasm/WasmPluginPaths.h"
+#include "MouseFx/Core/Wasm/WasmPluginTransferService.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/SettingsSchemaBuilder.h"
 #include "MouseFx/Server/SettingsStateMapper.h"
@@ -94,6 +98,20 @@ bool ParseForceRefresh(const json& payload) {
     return false;
 }
 
+std::string ParseManifestPathUtf8(const json& payload) {
+    if (!payload.contains("manifest_path") || !payload["manifest_path"].is_string()) {
+        return {};
+    }
+    return payload["manifest_path"].get<std::string>();
+}
+
+std::string ParseInitialPathUtf8(const json& payload) {
+    if (!payload.contains("initial_path") || !payload["initial_path"].is_string()) {
+        return {};
+    }
+    return payload["initial_path"].get<std::string>();
+}
+
 json BuildWasmResponse(AppController* controller, bool ok) {
     json body{{"ok", ok}};
     if (!controller) {
@@ -104,6 +122,7 @@ json BuildWasmResponse(AppController* controller, bool ok) {
     body["configured_enabled"] = cfg.wasm.enabled;
     body["fallback_to_builtin_click"] = cfg.wasm.fallbackToBuiltinClick;
     body["configured_manifest_path"] = cfg.wasm.manifestPath;
+    body["configured_catalog_root_path"] = cfg.wasm.catalogRootPath;
     body["configured_output_buffer_bytes"] = cfg.wasm.outputBufferBytes;
     body["configured_max_commands"] = cfg.wasm.maxCommands;
     body["configured_max_execution_ms"] = cfg.wasm.maxEventExecutionMs;
@@ -129,6 +148,26 @@ json BuildWasmResponse(AppController* controller, bool ok) {
     body["last_dropped_render_commands"] = diag.lastDroppedRenderCommands;
     body["last_render_error"] = diag.lastRenderError;
     body["last_error"] = diag.lastError;
+    return body;
+}
+
+json BuildWasmActionResponse(AppController* controller, bool ok, const std::string& defaultError) {
+    json body = BuildWasmResponse(controller, ok);
+    if (ok) {
+        return body;
+    }
+
+    std::string error = TrimAscii(defaultError);
+    if (error.empty() && controller && controller->WasmHost()) {
+        const wasm::HostDiagnostics& diag = controller->WasmHost()->Diagnostics();
+        error = TrimAscii(diag.lastError);
+        if (error.empty()) {
+            error = TrimAscii(diag.lastRenderError);
+        }
+    }
+    if (!error.empty()) {
+        body["error"] = error;
+    }
     return body;
 }
 
@@ -293,7 +332,12 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
 
     if (req.method == "POST" && path == "/api/wasm/catalog") {
         wasm::WasmPluginCatalog catalog;
-        const wasm::PluginCatalogResult result = catalog.Discover();
+        std::wstring configuredCatalogRoot;
+        if (controller_) {
+            configuredCatalogRoot = Utf8ToWString(controller_->GetConfigSnapshot().wasm.catalogRootPath);
+        }
+        const std::vector<std::wstring> searchRoots = wasm::WasmPluginPaths::ResolveSearchRoots(configuredCatalogRoot);
+        const wasm::PluginCatalogResult result = catalog.DiscoverFromRoots(searchRoots);
 
         json plugins = json::array();
         for (const auto& plugin : result.plugins) {
@@ -312,12 +356,94 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
             errors.push_back(error);
         }
 
+        json roots = json::array();
+        for (const std::wstring& root : searchRoots) {
+            roots.push_back(Utf16ToUtf8(root.c_str()));
+        }
+
         SetJsonResponse(resp, json({
             {"ok", true},
             {"plugins", plugins},
             {"errors", errors},
+            {"search_roots", roots},
             {"count", plugins.size()},
             {"error_count", errors.size()},
+        }).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/import-selected") {
+        const json payload = ParseObjectOrEmpty(req.body);
+        const std::string manifestPathUtf8 = ParseManifestPathUtf8(payload);
+        wasm::WasmPluginTransferService transfer;
+        const wasm::PluginImportResult result = transfer.ImportFromManifestPath(Utf8ToWString(manifestPathUtf8));
+        SetJsonResponse(resp, json({
+            {"ok", result.ok},
+            {"error", result.error},
+            {"source_manifest_path", Utf16ToUtf8(result.sourceManifestPath.c_str())},
+            {"manifest_path", Utf16ToUtf8(result.destinationManifestPath.c_str())},
+            {"primary_root_path", Utf16ToUtf8(result.primaryRootPath.c_str())},
+        }).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/import-from-folder-dialog") {
+        const json payload = ParseObjectOrEmpty(req.body);
+        const std::wstring initialPath = Utf8ToWString(ParseInitialPathUtf8(payload));
+        const NativeFolderPickResult picked = NativeFolderPicker::PickFolder(
+            L"Select WASM plugin folder",
+            initialPath);
+
+        if (!picked.ok) {
+            SetJsonResponse(resp, json({
+                {"ok", false},
+                {"cancelled", picked.cancelled},
+                {"error", picked.error},
+                {"selected_folder_path", Utf16ToUtf8(picked.folderPath.c_str())},
+            }).dump());
+            return true;
+        }
+
+        const std::filesystem::path pluginDir(picked.folderPath);
+        const std::filesystem::path manifestPath = pluginDir / L"plugin.json";
+        std::error_code ec;
+        if (!std::filesystem::exists(manifestPath, ec) || ec || !std::filesystem::is_regular_file(manifestPath, ec) || ec) {
+            SetJsonResponse(resp, json({
+                {"ok", false},
+                {"cancelled", false},
+                {"error", "plugin.json is missing in selected folder"},
+                {"selected_folder_path", Utf16ToUtf8(pluginDir.c_str())},
+            }).dump());
+            return true;
+        }
+
+        wasm::WasmPluginTransferService transfer;
+        const wasm::PluginImportResult result = transfer.ImportFromManifestPath(manifestPath.wstring());
+        SetJsonResponse(resp, json({
+            {"ok", result.ok},
+            {"cancelled", false},
+            {"error", result.error},
+            {"selected_folder_path", Utf16ToUtf8(pluginDir.c_str())},
+            {"source_manifest_path", Utf16ToUtf8(result.sourceManifestPath.c_str())},
+            {"manifest_path", Utf16ToUtf8(result.destinationManifestPath.c_str())},
+            {"primary_root_path", Utf16ToUtf8(result.primaryRootPath.c_str())},
+        }).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/export-all") {
+        std::wstring configuredCatalogRoot;
+        if (controller_) {
+            configuredCatalogRoot = Utf8ToWString(controller_->GetConfigSnapshot().wasm.catalogRootPath);
+        }
+        const std::vector<std::wstring> searchRoots = wasm::WasmPluginPaths::ResolveSearchRoots(configuredCatalogRoot);
+        wasm::WasmPluginTransferService transfer;
+        const wasm::PluginExportResult result = transfer.ExportAllDiscoveredPlugins(searchRoots);
+        SetJsonResponse(resp, json({
+            {"ok", result.ok},
+            {"error", result.error},
+            {"export_path", Utf16ToUtf8(result.exportDirectoryPath.c_str())},
+            {"count", result.exportedPluginCount},
         }).dump());
         return true;
     }
@@ -336,6 +462,9 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
             }
             if (payload.contains("manifest_path") && payload["manifest_path"].is_string()) {
                 cmd["manifest_path"] = payload["manifest_path"].get<std::string>();
+            }
+            if (payload.contains("catalog_root_path") && payload["catalog_root_path"].is_string()) {
+                cmd["catalog_root_path"] = payload["catalog_root_path"].get<std::string>();
             }
             if (payload.contains("output_buffer_bytes") && payload["output_buffer_bytes"].is_number_integer()) {
                 const int64_t raw = payload["output_buffer_bytes"].get<int64_t>();
@@ -369,17 +498,26 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
 
     if (req.method == "POST" && path == "/api/wasm/reload") {
         bool ok = false;
+        std::string error = "no controller";
         if (controller_ && controller_->WasmHost()) {
+            error.clear();
             controller_->HandleCommand("{\"cmd\":\"wasm_reload\"}");
             ok = controller_->WasmHost()->Diagnostics().lastError.empty();
+            if (!ok) {
+                error = controller_->WasmHost()->Diagnostics().lastError;
+            }
+        } else if (controller_) {
+            error = "wasm host unavailable";
         }
-        SetJsonResponse(resp, BuildWasmResponse(controller_, ok).dump());
+        SetJsonResponse(resp, BuildWasmActionResponse(controller_, ok, error).dump());
         return true;
     }
 
     if (req.method == "POST" && path == "/api/wasm/load-manifest") {
         bool ok = false;
+        std::string error = "no controller";
         if (controller_ && controller_->WasmHost()) {
+            error.clear();
             const json payload = ParseObjectOrEmpty(req.body);
             std::string manifestPathUtf8;
             if (payload.contains("manifest_path") && payload["manifest_path"].is_string()) {
@@ -391,9 +529,16 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
                 cmd["manifest_path"] = manifestPathUtf8;
                 controller_->HandleCommand(cmd.dump());
                 ok = controller_->WasmHost()->Diagnostics().pluginLoaded;
+                if (!ok) {
+                    error = controller_->WasmHost()->Diagnostics().lastError;
+                }
+            } else {
+                error = "manifest_path required";
             }
+        } else if (controller_) {
+            error = "wasm host unavailable";
         }
-        SetJsonResponse(resp, BuildWasmResponse(controller_, ok).dump());
+        SetJsonResponse(resp, BuildWasmActionResponse(controller_, ok, error).dump());
         return true;
     }
 

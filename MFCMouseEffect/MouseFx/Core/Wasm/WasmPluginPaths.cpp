@@ -4,7 +4,11 @@
 
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 
+#include <algorithm>
+#include <array>
+#include <cwctype>
 #include <filesystem>
+#include <set>
 #include <system_error>
 
 namespace mousefx::wasm {
@@ -19,6 +23,102 @@ std::wstring JoinPath(const std::wstring& base, const wchar_t* child) {
     p /= child;
     return p.wstring();
 }
+
+std::filesystem::path ModuleDirectory() {
+    std::array<wchar_t, 4096> buffer{};
+    const DWORD n = GetModuleFileNameW(nullptr, buffer.data(), static_cast<DWORD>(buffer.size()));
+    if (n == 0 || n >= buffer.size()) {
+        return {};
+    }
+    return std::filesystem::path(buffer.data()).parent_path();
+}
+
+std::filesystem::path NormalizePath(const std::filesystem::path& path) {
+    std::error_code ec;
+    const std::filesystem::path canonical = std::filesystem::weakly_canonical(path, ec);
+    if (!ec) {
+        return canonical.lexically_normal();
+    }
+    return path.lexically_normal();
+}
+
+std::wstring BuildPathKey(const std::filesystem::path& path) {
+    std::wstring key = NormalizePath(path).wstring();
+    std::transform(key.begin(), key.end(), key.begin(), [](wchar_t ch) {
+        return static_cast<wchar_t>(std::towlower(ch));
+    });
+    return key;
+}
+
+bool ExistsDirectory(const std::filesystem::path& path) {
+    std::error_code ec;
+    return !path.empty() && std::filesystem::exists(path, ec) && std::filesystem::is_directory(path, ec) && !ec;
+}
+
+void AddRootIfValid(
+    const std::filesystem::path& root,
+    std::set<std::wstring>* seenKeys,
+    std::vector<std::wstring>* roots) {
+    if (!seenKeys || !roots || !ExistsDirectory(root)) {
+        return;
+    }
+    const std::wstring key = BuildPathKey(root);
+    if (!seenKeys->insert(key).second) {
+        return;
+    }
+    roots->push_back(NormalizePath(root).wstring());
+}
+
+void AddRootUnique(
+    const std::filesystem::path& root,
+    std::set<std::wstring>* seenKeys,
+    std::vector<std::wstring>* roots) {
+    if (!seenKeys || !roots || root.empty()) {
+        return;
+    }
+    const std::wstring key = BuildPathKey(root);
+    if (!seenKeys->insert(key).second) {
+        return;
+    }
+    roots->push_back(NormalizePath(root).wstring());
+}
+
+std::filesystem::path ResolveExecutablePluginRootPath() {
+    const std::filesystem::path exeDir = ModuleDirectory();
+    if (exeDir.empty()) {
+        return {};
+    }
+    return exeDir / L"plugins" / L"wasm";
+}
+
+#ifdef _DEBUG
+std::filesystem::path ResolveDevelopmentTemplateDistPath() {
+    std::filesystem::path cursor = ModuleDirectory();
+    if (cursor.empty()) {
+        return {};
+    }
+
+    constexpr int kMaxDepth = 8;
+    for (int depth = 0; depth < kMaxDepth; ++depth) {
+        const std::filesystem::path candidate = cursor / L"examples" / L"wasm-plugin-template" / L"dist";
+        const std::filesystem::path marker = candidate / L"plugin.json";
+        std::error_code ec;
+        if (std::filesystem::exists(marker, ec) && !ec) {
+            return candidate;
+        }
+
+        if (cursor == cursor.root_path()) {
+            break;
+        }
+        const std::filesystem::path parent = cursor.parent_path();
+        if (parent.empty() || parent == cursor) {
+            break;
+        }
+        cursor = parent;
+    }
+    return {};
+}
+#endif
 
 } // namespace
 
@@ -35,12 +135,25 @@ std::wstring WasmPluginPaths::ResolvePrimaryPluginRoot() {
     return root;
 }
 
-std::vector<std::wstring> WasmPluginPaths::ResolveSearchRoots() {
-    std::vector<std::wstring> roots;
+std::vector<std::wstring> WasmPluginPaths::ResolveSearchRoots(const std::wstring& configuredRoot) {
+    std::vector<std::wstring> roots{};
+    std::set<std::wstring> seenKeys{};
+
     const std::wstring primary = ResolvePrimaryPluginRoot();
     if (!primary.empty()) {
-        roots.push_back(primary);
+        AddRootIfValid(std::filesystem::path(primary), &seenKeys, &roots);
     }
+
+    AddRootIfValid(ResolveExecutablePluginRootPath(), &seenKeys, &roots);
+
+#ifdef _DEBUG
+    AddRootIfValid(ResolveDevelopmentTemplateDistPath(), &seenKeys, &roots);
+#endif
+
+    if (!configuredRoot.empty()) {
+        AddRootUnique(std::filesystem::path(configuredRoot), &seenKeys, &roots);
+    }
+
     return roots;
 }
 
@@ -57,4 +170,3 @@ std::wstring WasmPluginPaths::ResolveEntryWasmPath(const std::wstring& manifestP
 }
 
 } // namespace mousefx::wasm
-

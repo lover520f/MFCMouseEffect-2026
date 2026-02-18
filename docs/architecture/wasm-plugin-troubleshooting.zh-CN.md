@@ -78,7 +78,20 @@
 - 严格对齐 `WasmPluginAbi.h` 的二进制布局；
 - `sizeBytes` 必须与实际写入的结构体字节数一致。
 
-## 6. 最小自检流程
+## 6. 插件目录为空（`No plugins discovered`）
+
+现象：
+- Web 设置页 WASM 插件目录下拉为空；
+- `/api/wasm/catalog` 返回 `count=0`。
+
+排查：
+- 查看 `/api/wasm/catalog` 的 `search_roots`，确认实际扫描目录；
+- 在 Web 设置页检查“插件扫描路径”是否配置正确（或清空后回退默认扫描目录）；
+- 确保这些目录下至少有一个合法 `plugin.json`；
+- Debug 从仓库构建目录运行时，宿主会自动扫描 `examples/wasm-plugin-template/dist`；
+- 目录为空时，`重载插件` 按钮会被禁用（无活动插件不可重载）。
+
+## 7. 最小自检流程
 
 1. 构建模板（`examples/wasm-plugin-template`）。
 2. 复制 `effect.wasm` + `plugin.json` 到插件目录。
@@ -86,7 +99,7 @@
 4. 调用 `/api/wasm/enable`。
 5. 点击一次，然后查看 `/api/state` 的 `wasm` 诊断字段。
 
-## 7. Web 设置页诊断面板
+## 8. Web 设置页诊断面板
 
 在 Web 设置 WASM 分区中，重点观察：
 - 最近调用指标

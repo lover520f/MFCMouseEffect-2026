@@ -99,6 +99,7 @@ public:
     void SetWasmEnabled(bool enabled);
     void SetWasmFallbackToBuiltinClick(bool enabled);
     void SetWasmManifestPath(const std::string& manifestPath);
+    void SetWasmCatalogRootPath(const std::string& catalogRootPath);
     void SetWasmExecutionBudget(uint32_t outputBufferBytes, uint32_t maxCommands, double maxExecutionMs);
     bool LoadWasmPluginFromManifestPath(const std::string& manifestPath);
     bool ShouldFallbackToBuiltinClickWhenWasmActive() const;

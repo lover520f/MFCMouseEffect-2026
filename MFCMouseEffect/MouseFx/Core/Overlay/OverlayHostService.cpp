@@ -7,8 +7,32 @@
 #include "MouseFx/Layers/ParticleTrailOverlayLayer.h"
 #include "MouseFx/Layers/RippleOverlayLayer.h"
 #include "MouseFx/Layers/TextOverlayLayer.h"
+#include "MouseFx/Windows/TextWindowPool.h"
 #include "MouseFx/Layers/TrailOverlayLayer.h"
 #include "MouseFx/Windows/OverlayHostWindow.h"
+#include "Settings/EmojiUtils.h"
+
+namespace {
+
+bool HasEmojiStarter(const std::wstring& text) {
+    for (size_t i = 0; i < text.size();) {
+        const uint32_t cp = settings::NextCodePointUtf16(text, &i);
+        if (cp == 0) {
+            break;
+        }
+        if (settings::IsEmojiCodePoint(cp)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+mousefx::TextWindowPool& SharedTextWindowPool() {
+    static mousefx::TextWindowPool pool;
+    return pool;
+}
+
+} // namespace
 
 namespace mousefx {
 
@@ -31,6 +55,7 @@ void OverlayHostService::Shutdown() {
     if (!host_) return;
     rippleLayer_ = nullptr;
     textLayer_ = nullptr;
+    SharedTextWindowPool().Shutdown();
     host_->Shutdown();
     host_.reset();
 }
@@ -95,6 +120,14 @@ void OverlayHostService::BroadcastRippleCommand(const std::string& cmd, const st
 }
 
 bool OverlayHostService::ShowText(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config) {
+    if (HasEmojiStarter(text)) {
+        TextWindowPool& pool = SharedTextWindowPool();
+        if (!pool.Initialize(8)) {
+            return false;
+        }
+        pool.ShowText(pt, text, color, config);
+        return true;
+    }
     TextOverlayLayer* layer = EnsureTextLayer();
     if (!layer) return false;
     layer->ShowText(pt, text, color, config);

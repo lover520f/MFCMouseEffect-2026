@@ -148,6 +148,9 @@ void CommandHandler::HandleWasmSetPolicyCommand(const std::string& jsonCmd) {
     if (root.contains("manifest_path") && root["manifest_path"].is_string()) {
         controller_->SetWasmManifestPath(root["manifest_path"].get<std::string>());
     }
+    if (root.contains("catalog_root_path") && root["catalog_root_path"].is_string()) {
+        controller_->SetWasmCatalogRootPath(root["catalog_root_path"].get<std::string>());
+    }
     if (root.contains("fallback_to_builtin_click") && root["fallback_to_builtin_click"].is_boolean()) {
         controller_->SetWasmFallbackToBuiltinClick(root["fallback_to_builtin_click"].get<bool>());
     }

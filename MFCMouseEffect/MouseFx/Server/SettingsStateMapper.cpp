@@ -102,6 +102,7 @@ static json BuildWasmState(const EffectConfig& cfg, const AppController* control
     out["configured_enabled"] = cfg.wasm.enabled;
     out["fallback_to_builtin_click"] = cfg.wasm.fallbackToBuiltinClick;
     out["configured_manifest_path"] = cfg.wasm.manifestPath;
+    out["configured_catalog_root_path"] = cfg.wasm.catalogRootPath;
     out["configured_output_buffer_bytes"] = cfg.wasm.outputBufferBytes;
     out["configured_max_commands"] = cfg.wasm.maxCommands;
     out["configured_max_execution_ms"] = cfg.wasm.maxEventExecutionMs;

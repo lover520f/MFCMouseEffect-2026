@@ -4,5 +4,5 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="MFCMouseEffect/MFCMouseEffect.vcxproj" />
-  <Project Path="MFCMouseEffect/WasmRuntimeBridge/mfx_wasm_runtime.vcxproj" />
+  <Project Path="MFCMouseEffect/WasmRuntimeBridge/mfx_wasm_runtime.vcxproj" Id="3056e52c-9a32-4e9d-9f49-537d2145d1c2" />
 </Solution>

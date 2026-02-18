@@ -62,6 +62,12 @@
 - 问题记录：`docs/issues/web-settings-automation-chain-shortcut-capture.zh-CN.md`（自动化映射增强：快捷键输入框直录 + 动作链触发）
 - 问题记录：`docs/issues/wasm-phase2-runtime-render-landing.zh-CN.md`（WASM Phase2 真落地验收：spawn_text/spawn_image 接入点击渲染链）
 - 问题记录：`docs/issues/wasm-runtime-bridge-self-build.zh-CN.md`（`mfx_wasm_runtime.dll` 自构建链路落地：工程接线、导出对齐、安装包打包）
+- 问题记录：`docs/issues/wasm-plugin-import-export-phase3g.zh-CN.md`（WASM 插件面板支持“添加到主目录 / 导出全部插件”）
+- 问题记录：`docs/issues/wasm-plugin-folder-import-dialog.zh-CN.md`（WASM 插件面板支持“选择插件目录导入”：后端校验 plugin.json 与 entry wasm 后复制到主目录）
+- 问题记录：`docs/issues/wasm-plugin-path-label-clarity.zh-CN.md`（WASM 面板命名统一：WASM 插件 -> 特效插件，插件目录 -> 插件信息，路径字段与提示简化）
+- 问题记录：`docs/issues/wasm-plugin-button-clarity-tooltips.zh-CN.md`（WASM 面板按钮语义优化：应用扫描路径/保存回退与预算，并为全部核心按钮补充悬浮提示）
+- 问题记录：`docs/issues/wasm-plugin-catalog-root-config.zh-CN.md`（WASM 插件面板支持自定义扫描路径，并持久化到配置后用于扫描与导出）
+- 问题记录：`docs/issues/wasm-panel-initial-i18n-order-fix.zh-CN.md`（修复 WASM 分区首屏中英混显：i18n 应用时机晚于组件挂载）
 - 问题记录：`docs/issues/mouse-action-indicator-overlay.zh-CN.md`（旧：新增光标附近鼠标动作指示器）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
 - 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）
@@ -102,6 +108,26 @@ Release 版本已改为“完全不创建主框架窗口”，只创建隐藏宿
 - 配置持久化：写入同目录 `config.json`
 - 立即生效：保存后立刻应用
 - 详细说明：`docs/architecture/web-settings-ui.zh-CN.md`
+
+## WASM 插件快速验证
+如果你要快速确认自定义 WASM 点击特效是否真正生效：
+
+1. 先在 `examples/wasm-plugin-template` 构建模板产物。
+2. 打开设置页 -> `WASM 插件` 分区。
+3. 如果是外部下载的插件，先点 `导入插件目录`，选择包含 `plugin.json` 的插件目录并确认。
+4. 点击 `刷新插件目录`，选择插件后点击 `加载所选插件`。
+5. 点击 `启用`，然后在桌面点击几次鼠标。
+
+生效判据：
+- `插件已加载 = 是`
+- `WASM 已渲染 = 是`
+- `最近调用指标` 里 `耗时/输出/命令数` 都大于 0
+
+如果目录为空：
+- 看面板内的 `扫描目录`（Catalog roots）。
+- 确保这些目录下有 `plugin.json` + `effect.wasm`。
+- 参考：`docs/architecture/wasm-plugin-template-quickstart.zh-CN.md`
+- 参考：`docs/architecture/wasm-plugin-troubleshooting.zh-CN.md`
 
 ## 外观自定义
 - 主要文件：`MFCMouseEffect/MouseFx/Styles/RippleStyle.h`、`MFCMouseEffect/MouseFx/Windows/RippleWindow.cpp`。

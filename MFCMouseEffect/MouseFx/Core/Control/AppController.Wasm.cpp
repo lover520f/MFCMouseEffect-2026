@@ -72,6 +72,13 @@ void AppController::SetWasmManifestPath(const std::string& manifestPath) {
     PersistConfig();
 }
 
+void AppController::SetWasmCatalogRootPath(const std::string& catalogRootPath) {
+    WasmConfig next = config_.wasm;
+    next.catalogRootPath = catalogRootPath;
+    config_.wasm = config_internal::SanitizeWasmConfig(next);
+    PersistConfig();
+}
+
 void AppController::SetWasmExecutionBudget(
     uint32_t outputBufferBytes,
     uint32_t maxCommands,

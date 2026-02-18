@@ -153,6 +153,7 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
             "configured_enabled",
             "fallback_to_builtin_click",
             "configured_manifest_path",
+            "configured_catalog_root_path",
             "configured_output_buffer_bytes",
             "configured_max_commands",
             "configured_max_execution_ms"

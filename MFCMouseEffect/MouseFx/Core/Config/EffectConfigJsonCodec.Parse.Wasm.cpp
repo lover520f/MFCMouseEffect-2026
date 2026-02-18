@@ -21,6 +21,10 @@ void ParseWasm(const nlohmann::json& root, EffectConfig& config) {
         wasmObj,
         keys::wasm::kManifestPath,
         config.wasm.manifestPath);
+    config.wasm.catalogRootPath = GetOr<std::string>(
+        wasmObj,
+        keys::wasm::kCatalogRootPath,
+        config.wasm.catalogRootPath);
     config.wasm.outputBufferBytes = GetOr<uint32_t>(
         wasmObj,
         keys::wasm::kOutputBufferBytes,

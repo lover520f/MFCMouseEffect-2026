@@ -78,7 +78,20 @@ Action:
 - ensure command binary layout matches `WasmPluginAbi.h`.
 - ensure command `sizeBytes` exactly matches the emitted struct bytes.
 
-## 6. Quick self-check sequence
+## 6. Catalog is empty (`No plugins discovered`)
+
+Symptoms:
+- Web WASM section catalog is empty
+- `/api/wasm/catalog` returns `count=0`
+
+Check:
+- Inspect `/api/wasm/catalog` `search_roots` to see actual scan directories.
+- In Web settings, verify `Catalog root path` is set correctly (or clear it to use defaults).
+- Ensure at least one valid `plugin.json` exists under those roots.
+- In Debug-from-repo mode, host auto-scans `examples/wasm-plugin-template/dist`.
+- If catalog is empty, `Reload Plugin` is intentionally disabled (no active plugin).
+
+## 7. Quick self-check sequence
 
 1. Build template (`examples/wasm-plugin-template`).
 2. Copy `effect.wasm` + `plugin.json` to plugin folder.
@@ -86,7 +99,7 @@ Action:
 4. Call `/api/wasm/enable`.
 5. Click once, then inspect `/api/state` `wasm` diagnostics.
 
-## 7. Web settings diagnostics panel
+## 8. Web settings diagnostics panel
 
 If you use Web settings WASM section:
 - verify:

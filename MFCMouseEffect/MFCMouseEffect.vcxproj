@@ -235,6 +235,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\System\GlobalMouseHook.h" />
     <ClInclude Include="MouseFx\Core\System\ApplicationCatalogScanner.h" />
+    <ClInclude Include="MouseFx\Core\System\NativeFolderPicker.h" />
     <ClInclude Include="MouseFx\Effects\IconEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IMouseEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IOverlayLayer.h" />
@@ -292,6 +293,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Wasm\WasmPluginManifest.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmPluginPaths.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmPluginCatalog.h" />
+    <ClInclude Include="MouseFx\Core\Wasm\WasmPluginTransferService.h" />
     <ClInclude Include="MouseFx\Core\Wasm\DllWasmRuntime.h" />
     <ClInclude Include="MouseFx\Core\Wasm\NullWasmRuntime.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmRuntimeFactory.h" />
@@ -339,6 +341,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Overlay\InputIndicatorOverlay.cpp" />
     <ClCompile Include="MouseFx\Core\System\GlobalMouseHook.cpp" />
     <ClCompile Include="MouseFx\Core\System\ApplicationCatalogScanner.cpp" />
+    <ClCompile Include="MouseFx\Core\System\NativeFolderPicker.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
     <ClCompile Include="MouseFx\Core\Control\IpcController.cpp" />
     <ClCompile Include="MouseFx\Core\Protocol\JsonLite.cpp" />
@@ -405,6 +408,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginManifest.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginPaths.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginCatalog.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginTransferService.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\DllWasmRuntime.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\NullWasmRuntime.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmRuntimeFactory.cpp" />

@@ -10,9 +10,8 @@ namespace mousefx::wasm {
 class WasmPluginPaths final {
 public:
     static std::wstring ResolvePrimaryPluginRoot();
-    static std::vector<std::wstring> ResolveSearchRoots();
+    static std::vector<std::wstring> ResolveSearchRoots(const std::wstring& configuredRoot = {});
     static std::wstring ResolveEntryWasmPath(const std::wstring& manifestPath, const PluginManifest& manifest);
 };
 
 } // namespace mousefx::wasm
-

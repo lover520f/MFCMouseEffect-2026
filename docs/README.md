@@ -75,6 +75,12 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 - Issues: `docs/issues/web-settings-automation-chain-shortcut-capture.zh-CN.md` (upgrade automation mapping UX with direct shortcut capture and chained action triggers)
 - Issues: `docs/issues/wasm-phase2-runtime-render-landing.md` (Phase2 runtime render landing checklist for WASM click commands)
 - Issues: `docs/issues/wasm-runtime-bridge-self-build.md` (land first-party self-build pipeline for `mfx_wasm_runtime.dll` and wire installer packaging)
+- Issues: `docs/issues/wasm-plugin-import-export-phase3g.md` (WASM plugin panel: import selected plugin into primary root and export all discovered plugins)
+- Issues: `docs/issues/wasm-plugin-folder-import-dialog.md` (WASM plugin panel: import by selecting plugin folder via native picker, validate plugin.json/entry wasm, then copy to primary root)
+- Issues: `docs/issues/wasm-plugin-path-label-clarity.md` (WASM panel naming cleanup: WASM Plugin -> Effect Plugins, Plugin Catalog -> Plugin Info, and path-label simplification)
+- Issues: `docs/issues/wasm-plugin-button-clarity-tooltips.md` (WASM panel action wording cleanup and hover tooltips for all core buttons)
+- Issues: `docs/issues/wasm-plugin-catalog-root-config.md` (WASM plugin panel: configurable catalog root path persisted in config and applied to scan/export flows)
+- Issues: `docs/issues/wasm-panel-initial-i18n-order-fix.md` (fix first-load WASM panel mixed-language labels caused by pre-mount i18n timing)
 - Issues: `docs/issues/mouse-action-indicator-overlay.md` (Legacy: add cursor-adjacent mouse action indicator)
 - Architecture: `docs/architecture/tray-and-appcontroller-refactor.md` (tray menu table-driven + AppController cleanup)
 - Architecture: `docs/architecture/settingswnd-emoji-split.md` (SettingsWnd emoji logic split)
@@ -147,6 +153,26 @@ Tray menus are fine for quick toggles. For full configuration (including advance
 - Persistence: saved to `config.json`
 - Live apply: changes take effect immediately
 - Details: `docs/architecture/web-settings-ui.md`
+
+## WASM Plugin Quick Check
+If you want to verify custom WASM click effects end-to-end quickly:
+
+1. Build template artifact in `examples/wasm-plugin-template`.
+2. Open settings -> `WASM Plugin`.
+3. To import a downloaded plugin package, click `Import Plugin Folder`, select the folder that contains `plugin.json`, then confirm.
+4. Click `Refresh Catalog`, pick a plugin, then `Load Selected`.
+5. Click `Enable`, then click on desktop a few times.
+
+Success indicators:
+- `Plugin loaded = Yes`
+- `Rendered by WASM = Yes`
+- `Last call metrics`: `duration/output/commands` are all non-zero
+
+If catalog is empty:
+- Check `Catalog roots` in the same panel.
+- Ensure `plugin.json` + `effect.wasm` exist under one of those roots.
+- See: `docs/architecture/wasm-plugin-template-quickstart.md`
+- See: `docs/architecture/wasm-plugin-troubleshooting.md`
 
 ## Customizing the Look
 - File: `MFCMouseEffect/MouseFx/Styles/RippleStyle.h` and `MFCMouseEffect/MouseFx/Windows/RippleWindow.cpp`.

@@ -274,6 +274,9 @@ void ApplyWasmSettings(const json& payload, AppController* controller) {
     if (source.contains("manifest_path") && source["manifest_path"].is_string()) {
         controller->SetWasmManifestPath(source["manifest_path"].get<std::string>());
     }
+    if (source.contains("catalog_root_path") && source["catalog_root_path"].is_string()) {
+        controller->SetWasmCatalogRootPath(source["catalog_root_path"].get<std::string>());
+    }
 
     bool hasOutputBudget = false;
     bool hasCommandBudget = false;

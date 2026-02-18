@@ -43,6 +43,11 @@ Create a plugin folder named by `plugin.json.id`:
 
 - Debug path (default): `<exe_dir>/plugins/wasm/<plugin_id>/`
 - Release path (default): `%AppData%\\MFCMouseEffect\\plugins\\wasm\\<plugin_id>/`
+- Additional runtime search root: `<exe_dir>/plugins/wasm` (Release fallback for portable/local bundles)
+- Debug convenience: if running from repo build output, host also auto-scans `examples/wasm-plugin-template/dist`
+  so template artifacts are discoverable without manual copy.
+- Web settings supports a configurable extra catalog root (`WASM Plugin -> Catalog root path`).
+  Save it to include your custom directory in scan/export flows.
 
 Copy `effect.wasm` and `plugin.json` into that folder
 from either:

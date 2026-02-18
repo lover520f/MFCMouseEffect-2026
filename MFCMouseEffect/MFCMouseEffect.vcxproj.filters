@@ -126,6 +126,9 @@
     <ClInclude Include="MouseFx\Core\System\ApplicationCatalogScanner.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\System\NativeFolderPicker.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\Protocol\MouseFxMessages.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -252,6 +255,9 @@
     <ClInclude Include="MouseFx\Core\Wasm\WasmPluginCatalog.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Wasm\WasmPluginTransferService.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\Wasm\DllWasmRuntime.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -351,6 +357,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\System\ApplicationCatalogScanner.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\System\NativeFolderPicker.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Styles\ThemeStyle.cpp">
@@ -453,6 +462,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginCatalog.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginTransferService.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\DllWasmRuntime.cpp">

@@ -11,6 +11,7 @@ function normalizeWasmState(input) {
     configured_enabled: !!value.configured_enabled,
     fallback_to_builtin_click: value.fallback_to_builtin_click !== false,
     configured_manifest_path: `${value.configured_manifest_path || ''}`.trim(),
+    configured_catalog_root_path: `${value.configured_catalog_root_path || ''}`.trim(),
     configured_output_buffer_bytes: Number(value.configured_output_buffer_bytes) || 0,
     configured_max_commands: Number(value.configured_max_commands) || 0,
     configured_max_execution_ms: Number(value.configured_max_execution_ms) || 0,
@@ -53,7 +54,7 @@ function normalizeWasmSchema(input) {
 let currentState = normalizeWasmState({});
 let currentSchema = normalizeWasmSchema({});
 let currentI18n = {};
-let currentActionHandler = async () => ({ ok: false, error: 'wasm action handler unavailable' });
+let currentActionHandler = null;
 
 const bridge = createLazyMountBridge({
   mountId: 'wasm_settings_mount',
