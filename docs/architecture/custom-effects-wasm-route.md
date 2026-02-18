@@ -195,3 +195,8 @@ Note: the prior 15 commits established architecture baseline; these 5 commits wi
   - Added diagnostics model extraction for normalization + warning classification
   - Added warning highlight style and localized labels
   - Details: `docs/issues/wasm-web-settings-diagnostics-phase3e.md`
+- [x] Phase 3f: state-first refresh after WASM actions
+  - Replaced per-action full reload with state-first refresh path for WASM operations
+  - Reuses cached schema when language is unchanged, reducing redundant schema requests
+  - Keeps full reload fallback for robustness when local refresh fails
+  - Details: `docs/issues/wasm-web-settings-state-refresh-phase3f.md`

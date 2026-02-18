@@ -252,3 +252,8 @@ MVP 默认预算：
   - 抽取诊断模型，统一归一化与风险高亮判定
   - 新增诊断告警样式与中英文文案
   - 详见：`docs/issues/wasm-web-settings-diagnostics-phase3e.zh-CN.md`
+- [x] Phase 3f：WASM 动作后的状态优先刷新
+  - WASM 动作由“每次全量 reload”改为“状态优先刷新”
+  - 语言未变化时复用缓存 schema，减少重复请求
+  - 局部刷新失败时自动回退全量 reload，保证稳定性
+  - 详见：`docs/issues/wasm-web-settings-state-refresh-phase3f.zh-CN.md`

@@ -5,6 +5,8 @@
   let hasRenderedSettings = false;
   let isReloading = false;
   let reloadRetryTimer = 0;
+  let cachedSchema = null;
+  let cachedSchemaLang = '';
 
   const I18N = window.MfxWebI18n || {};
 
@@ -226,56 +228,82 @@
     return window.MfxSettingsForm || null;
   }
 
+  function renderSettingsSnapshot(schema, st) {
+    const uiLang = st.ui_language || 'en-US';
+    const i18n = I18N[uiLang] || I18N['en-US'] || {};
+    cachedSchema = schema;
+    cachedSchemaLang = uiLang;
+
+    try {
+      applyI18n(uiLang);
+    } catch (_error) {
+      // Keep settings rendering alive even if a consumer throws during i18n sync.
+    }
+    const form = settingsForm();
+    if (form && typeof form.render === 'function') {
+      form.render({
+        schema,
+        state: st,
+        i18n,
+        wasmAction: handleWasmAction,
+      });
+    }
+
+    if (window.MfxAutomationUi && typeof window.MfxAutomationUi.render === 'function') {
+      window.MfxAutomationUi.render({
+        schema,
+        state: st.automation || {},
+        i18n,
+      });
+      if (typeof window.MfxAutomationUi.syncI18n === 'function') {
+        try {
+          window.MfxAutomationUi.syncI18n(i18n);
+        } catch (_error) {
+          // Keep reload resilient if automation i18n sync fails.
+        }
+      }
+    }
+    if (window.MfxSectionWorkspace && typeof window.MfxSectionWorkspace.refresh === 'function') {
+      window.MfxSectionWorkspace.refresh();
+    }
+
+    hasRenderedSettings = true;
+    clearReloadRetryTimer();
+    markConnection('online', true);
+    const routeNotice = st.gpu_route_notice;
+    if (routeNotice && routeNotice.message) {
+      setStatus(routeNotice.message, routeNotice.level === 'warn' ? 'warn' : 'ok');
+    }
+  }
+
+  async function refreshStateSnapshot(useCachedSchema) {
+    const st = await apiGet('/api/state');
+    const uiLang = st.ui_language || 'en-US';
+    const canReuseSchema = !!cachedSchema && cachedSchemaLang === uiLang;
+    const schema = (useCachedSchema && canReuseSchema)
+      ? cachedSchema
+      : await apiGet('/api/schema');
+    renderSettingsSnapshot(schema, st);
+    return st;
+  }
+
+  async function refreshAfterWasmAction() {
+    try {
+      await refreshStateSnapshot(true);
+    } catch (e) {
+      if (e && e.code === 'unauthorized') {
+        throw e;
+      }
+      await reload();
+    }
+  }
+
   async function reload() {
     if (isReloading) return;
     isReloading = true;
     setStatus(statusText('status_loading', 'Loading...'));
     try {
-      const schema = await apiGet('/api/schema');
-      const st = await apiGet('/api/state');
-      const uiLang = st.ui_language || 'en-US';
-      const i18n = I18N[uiLang] || I18N['en-US'] || {};
-
-      try {
-        applyI18n(uiLang);
-      } catch (_error) {
-        // Keep settings rendering alive even if a consumer throws during i18n sync.
-      }
-      const form = settingsForm();
-      if (form && typeof form.render === 'function') {
-        form.render({
-          schema,
-          state: st,
-          i18n,
-          wasmAction: handleWasmAction,
-        });
-      }
-
-      if (window.MfxAutomationUi && typeof window.MfxAutomationUi.render === 'function') {
-        window.MfxAutomationUi.render({
-          schema,
-          state: st.automation || {},
-          i18n,
-        });
-        if (typeof window.MfxAutomationUi.syncI18n === 'function') {
-          try {
-            window.MfxAutomationUi.syncI18n(i18n);
-          } catch (_error) {
-            // Keep reload resilient if automation i18n sync fails.
-          }
-        }
-      }
-      if (window.MfxSectionWorkspace && typeof window.MfxSectionWorkspace.refresh === 'function') {
-        window.MfxSectionWorkspace.refresh();
-      }
-
-      hasRenderedSettings = true;
-      clearReloadRetryTimer();
-      markConnection('online', true);
-      const routeNotice = st.gpu_route_notice;
-      if (routeNotice && routeNotice.message) {
-        setStatus(routeNotice.message, routeNotice.level === 'warn' ? 'warn' : 'ok');
-      }
+      await refreshStateSnapshot(false);
     } finally {
       isReloading = false;
     }
@@ -293,31 +321,31 @@
       if (action === 'enable') {
         setStatus(statusText('status_wasm_enabling', 'Enabling WASM plugin...'));
         const result = await apiPost('/api/wasm/enable', {});
-        await reload();
+        await refreshAfterWasmAction();
         return result;
       }
       if (action === 'disable') {
         setStatus(statusText('status_wasm_disabling', 'Disabling WASM plugin...'));
         const result = await apiPost('/api/wasm/disable', {});
-        await reload();
+        await refreshAfterWasmAction();
         return result;
       }
       if (action === 'reload') {
         setStatus(statusText('status_wasm_reloading', 'Reloading WASM plugin...'));
         const result = await apiPost('/api/wasm/reload', {});
-        await reload();
+        await refreshAfterWasmAction();
         return result;
       }
       if (action === 'loadManifest') {
         setStatus(statusText('status_wasm_loading_manifest', 'Loading WASM manifest...'));
         const result = await apiPost('/api/wasm/load-manifest', body);
-        await reload();
+        await refreshAfterWasmAction();
         return result;
       }
       if (action === 'setPolicy') {
         setStatus(statusText('status_wasm_updating_policy', 'Updating WASM policy...'));
         const result = await apiPost('/api/wasm/policy', body);
-        await reload();
+        await refreshAfterWasmAction();
         return result;
       }
       return { ok: false, error: 'unsupported action' };
