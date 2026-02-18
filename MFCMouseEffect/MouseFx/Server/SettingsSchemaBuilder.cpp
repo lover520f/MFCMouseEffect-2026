@@ -150,6 +150,8 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
         {"default_enabled", false},
         {"diagnostic_keys", json::array({
             "enabled",
+            "runtime_backend",
+            "runtime_fallback_reason",
             "plugin_loaded",
             "plugin_api_version",
             "active_plugin_id",

@@ -32,6 +32,8 @@ struct ExecutionBudget final {
 
 struct HostDiagnostics final {
     bool enabled = false;
+    std::string runtimeBackend{"null"};
+    std::string runtimeFallbackReason{};
     bool pluginLoaded = false;
     uint32_t pluginApiVersion = 0;
     std::string activePluginId{};
@@ -52,7 +54,7 @@ struct HostDiagnostics final {
 
 class WasmEffectHost final {
 public:
-    explicit WasmEffectHost(std::unique_ptr<IWasmRuntime> runtime = CreateDefaultRuntime());
+    explicit WasmEffectHost(std::unique_ptr<IWasmRuntime> runtime = nullptr);
 
     bool LoadPlugin(const std::wstring& modulePath);
     bool LoadPluginFromManifest(const std::wstring& manifestPath);

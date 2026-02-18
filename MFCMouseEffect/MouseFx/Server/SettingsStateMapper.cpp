@@ -92,6 +92,8 @@ static json BuildWasmState(const AppController* controller) {
     const wasm::HostDiagnostics& diag = host->Diagnostics();
     json out;
     out["enabled"] = diag.enabled;
+    out["runtime_backend"] = diag.runtimeBackend;
+    out["runtime_fallback_reason"] = diag.runtimeFallbackReason;
     out["plugin_loaded"] = diag.pluginLoaded;
     out["plugin_api_version"] = diag.pluginApiVersion;
     out["active_plugin_id"] = diag.activePluginId;

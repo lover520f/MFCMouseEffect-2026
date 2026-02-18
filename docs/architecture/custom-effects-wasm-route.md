@@ -99,6 +99,7 @@ Fallback rules:
 - timeout => drop this event output
 - command overflow => truncate
 - repeated failure => disable plugin and fallback to built-in effect
+- runtime bridge fallback visibility: inspect `wasm.runtime_backend` and `wasm.runtime_fallback_reason`
 
 ## Packaging impact
 
@@ -155,4 +156,4 @@ Implementation is split into small commits: architecture skeleton first, then ev
 - [x] Commit 12: RuntimeFactory extension to a real WASM runtime (keep Null fallback)
 - [x] Commit 13: Official template + local compile script examples
 - [x] Commit 14: Docs hardening (quick start/troubleshooting/compatibility)
-- [ ] Commit 15: Regression and stabilization pass (default-off + fallback validation)
+- [x] Commit 15: Regression and stabilization pass (default-off + fallback validation)

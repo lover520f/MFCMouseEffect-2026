@@ -7,6 +7,16 @@
 
 namespace mousefx::wasm {
 
+const char* RuntimeBackendToString(RuntimeBackend backend) {
+    switch (backend) {
+    case RuntimeBackend::DynamicBridge:
+        return "dynamic_bridge";
+    case RuntimeBackend::Null:
+    default:
+        return "null";
+    }
+}
+
 std::unique_ptr<IWasmRuntime> CreateRuntime(RuntimeBackend backend) {
     switch (backend) {
     case RuntimeBackend::DynamicBridge: {
@@ -23,8 +33,29 @@ std::unique_ptr<IWasmRuntime> CreateRuntime(RuntimeBackend backend) {
     }
 }
 
+RuntimeCreationResult CreateDefaultRuntimeWithDiagnostics() {
+    RuntimeCreationResult result{};
+
+    auto runtime = std::make_unique<DllWasmRuntime>();
+    std::string error;
+    if (runtime->Initialize(&error)) {
+        result.runtime = std::move(runtime);
+        result.backend = RuntimeBackend::DynamicBridge;
+        return result;
+    }
+
+    result.runtime = std::make_unique<NullWasmRuntime>();
+    result.backend = RuntimeBackend::Null;
+    result.fallbackReason = "dynamic bridge unavailable";
+    if (!error.empty()) {
+        result.fallbackReason += ": " + error;
+    }
+    return result;
+}
+
 std::unique_ptr<IWasmRuntime> CreateDefaultRuntime() {
-    return CreateRuntime(RuntimeBackend::DynamicBridge);
+    RuntimeCreationResult result = CreateDefaultRuntimeWithDiagnostics();
+    return std::move(result.runtime);
 }
 
 } // namespace mousefx::wasm

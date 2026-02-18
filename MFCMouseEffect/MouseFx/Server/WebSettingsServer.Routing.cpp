@@ -99,6 +99,8 @@ json BuildWasmResponse(AppController* controller, bool ok) {
     }
     const wasm::HostDiagnostics& diag = controller->WasmHost()->Diagnostics();
     body["enabled"] = diag.enabled;
+    body["runtime_backend"] = diag.runtimeBackend;
+    body["runtime_fallback_reason"] = diag.runtimeFallbackReason;
     body["plugin_loaded"] = diag.pluginLoaded;
     body["active_plugin_id"] = diag.activePluginId;
     body["active_manifest_path"] = Utf16ToUtf8(diag.activeManifestPath.c_str());

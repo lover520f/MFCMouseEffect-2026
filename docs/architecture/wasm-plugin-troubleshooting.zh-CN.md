@@ -20,6 +20,7 @@
 现象：
 - `wasm.plugin_loaded=false`
 - `wasm.last_error` 含 dll/export 相关报错
+- `wasm.runtime_backend="null"` 且 `wasm.runtime_fallback_reason` 非空
 
 排查：
 - `mfx_wasm_runtime.dll` 在 `MFCMouseEffect.exe` 同目录，

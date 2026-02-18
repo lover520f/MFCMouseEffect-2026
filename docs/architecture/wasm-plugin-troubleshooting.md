@@ -20,6 +20,7 @@ Check:
 Symptoms:
 - `wasm.plugin_loaded=false`
 - `wasm.last_error` includes dll/export message
+- `wasm.runtime_backend="null"` and `wasm.runtime_fallback_reason` is non-empty
 
 Check:
 - `mfx_wasm_runtime.dll` exists beside `MFCMouseEffect.exe`

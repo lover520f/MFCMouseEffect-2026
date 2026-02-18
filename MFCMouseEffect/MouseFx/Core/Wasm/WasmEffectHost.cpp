@@ -9,7 +9,22 @@
 namespace mousefx::wasm {
 
 WasmEffectHost::WasmEffectHost(std::unique_ptr<IWasmRuntime> runtime)
-    : runtime_(runtime ? std::move(runtime) : CreateRuntime(RuntimeBackend::Null)) {
+    : runtime_(std::move(runtime)) {
+    if (!runtime_) {
+        RuntimeCreationResult created = CreateDefaultRuntimeWithDiagnostics();
+        runtime_ = std::move(created.runtime);
+        diagnostics_.runtimeBackend = RuntimeBackendToString(created.backend);
+        diagnostics_.runtimeFallbackReason = created.fallbackReason;
+    } else {
+        diagnostics_.runtimeBackend = "external";
+    }
+    if (!runtime_) {
+        runtime_ = CreateRuntime(RuntimeBackend::Null);
+        diagnostics_.runtimeBackend = RuntimeBackendToString(RuntimeBackend::Null);
+        if (diagnostics_.runtimeFallbackReason.empty()) {
+            diagnostics_.runtimeFallbackReason = "runtime creation returned null";
+        }
+    }
     diagnostics_.enabled = enabled_;
 }
 
