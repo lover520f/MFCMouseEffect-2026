@@ -4,6 +4,8 @@
 #include "CommandHandler.h"
 #include "AppController.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
+#include "MouseFx/Core/Wasm/WasmEffectHost.h"
+#include "MouseFx/Utils/StringUtils.h"
 
 #include <array>
 
@@ -18,7 +20,7 @@ void CommandHandler::Handle(const std::string& jsonCmd) {
         const char* command;
         CommandHandlerMethod handler;
     };
-    static const std::array<CommandRoute, 8> kCommandRoutes{{
+    static const std::array<CommandRoute, 12> kCommandRoutes{{
         {"set_effect", &CommandHandler::HandleSetEffectCommand},
         {"clear_effect", &CommandHandler::HandleClearEffectCommand},
         {"set_theme", &CommandHandler::HandleSetThemeCommand},
@@ -27,6 +29,10 @@ void CommandHandler::Handle(const std::string& jsonCmd) {
         {"reload_config", &CommandHandler::HandleReloadConfigCommand},
         {"reset_config", &CommandHandler::HandleResetConfigCommand},
         {"apply_settings", &CommandHandler::HandleApplySettings},
+        {"wasm_enable", &CommandHandler::HandleWasmEnableCommand},
+        {"wasm_disable", &CommandHandler::HandleWasmDisableCommand},
+        {"wasm_reload", &CommandHandler::HandleWasmReloadCommand},
+        {"wasm_load_manifest", &CommandHandler::HandleWasmLoadManifestCommand},
     }};
 
     const std::string cmd = ExtractJsonStringValue(jsonCmd, "cmd");
@@ -98,6 +104,34 @@ void CommandHandler::HandleReloadConfigCommand(const std::string&) {
 
 void CommandHandler::HandleResetConfigCommand(const std::string&) {
     controller_->ResetConfig();
+}
+
+void CommandHandler::HandleWasmEnableCommand(const std::string&) {
+    if (auto* host = controller_->WasmHost()) {
+        host->SetEnabled(true);
+    }
+}
+
+void CommandHandler::HandleWasmDisableCommand(const std::string&) {
+    if (auto* host = controller_->WasmHost()) {
+        host->SetEnabled(false);
+    }
+}
+
+void CommandHandler::HandleWasmReloadCommand(const std::string&) {
+    if (auto* host = controller_->WasmHost()) {
+        host->ReloadPlugin();
+    }
+}
+
+void CommandHandler::HandleWasmLoadManifestCommand(const std::string& jsonCmd) {
+    if (auto* host = controller_->WasmHost()) {
+        const std::string pathUtf8 = ExtractJsonStringValue(jsonCmd, "manifest_path");
+        if (pathUtf8.empty()) {
+            return;
+        }
+        host->LoadPluginFromManifest(Utf8ToWString(pathUtf8));
+    }
 }
 
 } // namespace mousefx

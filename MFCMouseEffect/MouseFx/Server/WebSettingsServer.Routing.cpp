@@ -11,6 +11,7 @@
 #include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Core/System/ApplicationCatalogScanner.h"
 #include "MouseFx/Core/System/ForegroundProcessResolver.h"
+#include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/SettingsSchemaBuilder.h"
 #include "MouseFx/Server/SettingsStateMapper.h"
@@ -89,6 +90,20 @@ bool ParseForceRefresh(const json& payload) {
         return payload["force"].get<int>() != 0;
     }
     return false;
+}
+
+json BuildWasmResponse(AppController* controller, bool ok) {
+    json body{{"ok", ok}};
+    if (!controller || !controller->WasmHost()) {
+        return body;
+    }
+    const wasm::HostDiagnostics& diag = controller->WasmHost()->Diagnostics();
+    body["enabled"] = diag.enabled;
+    body["plugin_loaded"] = diag.pluginLoaded;
+    body["active_plugin_id"] = diag.activePluginId;
+    body["active_manifest_path"] = Utf16ToUtf8(diag.activeManifestPath.c_str());
+    body["last_error"] = diag.lastError;
+    return body;
 }
 
 std::vector<ApplicationCatalogEntry> LoadAutomationAppCatalog(bool forceRefresh) {
@@ -239,6 +254,52 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
             {"apps", apps},
             {"count", apps.size()},
         }).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/enable") {
+        if (controller_) {
+            controller_->HandleCommand("{\"cmd\":\"wasm_enable\"}");
+        }
+        SetJsonResponse(resp, BuildWasmResponse(controller_, true).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/disable") {
+        if (controller_) {
+            controller_->HandleCommand("{\"cmd\":\"wasm_disable\"}");
+        }
+        SetJsonResponse(resp, BuildWasmResponse(controller_, true).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/reload") {
+        bool ok = false;
+        if (controller_ && controller_->WasmHost()) {
+            controller_->HandleCommand("{\"cmd\":\"wasm_reload\"}");
+            ok = controller_->WasmHost()->Diagnostics().lastError.empty();
+        }
+        SetJsonResponse(resp, BuildWasmResponse(controller_, ok).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/load-manifest") {
+        bool ok = false;
+        if (controller_ && controller_->WasmHost()) {
+            const json payload = ParseObjectOrEmpty(req.body);
+            std::string manifestPathUtf8;
+            if (payload.contains("manifest_path") && payload["manifest_path"].is_string()) {
+                manifestPathUtf8 = payload["manifest_path"].get<std::string>();
+            }
+            if (!manifestPathUtf8.empty()) {
+                json cmd;
+                cmd["cmd"] = "wasm_load_manifest";
+                cmd["manifest_path"] = manifestPathUtf8;
+                controller_->HandleCommand(cmd.dump());
+                ok = controller_->WasmHost()->Diagnostics().pluginLoaded;
+            }
+        }
+        SetJsonResponse(resp, BuildWasmResponse(controller_, ok).dump());
         return true;
     }
 

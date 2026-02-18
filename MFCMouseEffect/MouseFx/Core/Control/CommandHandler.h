@@ -24,6 +24,10 @@ private:
     void HandleReloadConfigCommand(const std::string& jsonCmd);
     void HandleResetConfigCommand(const std::string& jsonCmd);
     void HandleApplySettings(const std::string& jsonCmd);
+    void HandleWasmEnableCommand(const std::string& jsonCmd);
+    void HandleWasmDisableCommand(const std::string& jsonCmd);
+    void HandleWasmReloadCommand(const std::string& jsonCmd);
+    void HandleWasmLoadManifestCommand(const std::string& jsonCmd);
 
     AppController* controller_ = nullptr;
 };
