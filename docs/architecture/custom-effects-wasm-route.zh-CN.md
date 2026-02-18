@@ -193,7 +193,7 @@ MVP 默认预算：
 当前按“小步快跑”推进，先搭建架构骨架，再逐步接入事件链和设置页。
 
 - [x] Commit 1：`MouseFx/Core/Wasm` 模块骨架（Host/Runtime/ABI）与工程接线
-- [ ] Commit 2：ABI v1 输入/输出序列化与命令缓冲解析器
+- [x] Commit 2：ABI v1 输入/输出序列化与命令缓冲解析器
 - [ ] Commit 3：RuntimeFactory 扩展到真实 WASM 运行时（先保留 Null 兜底）
 - [ ] Commit 4：插件清单模型（`plugin.json`）和校验器
 - [ ] Commit 5：插件目录发现与路径策略（默认目录 + 配置目录）

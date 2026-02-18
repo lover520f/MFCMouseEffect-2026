@@ -136,7 +136,7 @@ Do not use as mainline:
 Implementation is split into small commits: architecture skeleton first, then event-chain and Web integration.
 
 - [x] Commit 1: `MouseFx/Core/Wasm` skeleton (Host/Runtime/ABI) and project wiring
-- [ ] Commit 2: ABI v1 input/output serialization and command-buffer parser
+- [x] Commit 2: ABI v1 input/output serialization and command-buffer parser
 - [ ] Commit 3: RuntimeFactory extension to a real WASM runtime (keep Null fallback)
 - [ ] Commit 4: Plugin manifest model (`plugin.json`) and validator
 - [ ] Commit 5: Plugin discovery and path strategy (default + config directory)

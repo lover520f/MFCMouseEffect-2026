@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <chrono>
-#include <cstring>
 #include <utility>
 
 namespace mousefx::wasm {
@@ -59,8 +58,10 @@ void WasmEffectHost::UnloadPlugin() {
     diagnostics_.pluginLoaded = false;
     diagnostics_.pluginApiVersion = 0;
     diagnostics_.lastOutputBytes = 0;
+    diagnostics_.lastCommandCount = 0;
     diagnostics_.lastCallDurationMicros = 0;
     diagnostics_.lastCallExceededBudget = false;
+    diagnostics_.lastParseError = CommandParseError::None;
 }
 
 bool WasmEffectHost::IsPluginLoaded() const {
@@ -103,7 +104,9 @@ bool WasmEffectHost::InvokeClick(const ClickInvokeInput& input, std::vector<uint
 
     diagnostics_.lastCallDurationMicros = 0;
     diagnostics_.lastOutputBytes = 0;
+    diagnostics_.lastCommandCount = 0;
     diagnostics_.lastCallExceededBudget = false;
+    diagnostics_.lastParseError = CommandParseError::None;
 
     if (!enabled_) {
         return false;
@@ -117,7 +120,8 @@ bool WasmEffectHost::InvokeClick(const ClickInvokeInput& input, std::vector<uint
         return false;
     }
 
-    const auto payload = BuildClickInputPayload(input);
+    const ClickInputV1 clickInput = BuildClickInputV1(input);
+    const auto payload = SerializeClickInputV1(clickInput);
     std::vector<uint8_t> output(budget_.outputBufferBytes, 0);
 
     uint32_t writtenBytes = 0;
@@ -145,21 +149,31 @@ bool WasmEffectHost::InvokeClick(const ClickInvokeInput& input, std::vector<uint
     const uint32_t cappedBytes = std::min<uint32_t>(writtenBytes, static_cast<uint32_t>(output.size()));
     output.resize(cappedBytes);
     diagnostics_.lastOutputBytes = cappedBytes;
+    const CommandParseResult parseResult =
+        WasmCommandBufferParser::Parse(output.data(), output.size(), budget_.maxCommands);
+    diagnostics_.lastCommandCount = static_cast<uint32_t>(parseResult.commands.size());
+    diagnostics_.lastParseError = parseResult.error;
+    if (parseResult.error == CommandParseError::CommandLimitExceeded) {
+        output.resize(parseResult.consumedBytes);
+        diagnostics_.lastOutputBytes = parseResult.consumedBytes;
+    } else if (parseResult.error != CommandParseError::None) {
+        output.clear();
+        diagnostics_.lastOutputBytes = 0;
+        SetError(std::string("WASM command buffer parse failed: ") + CommandParseErrorToString(parseResult.error));
+        return false;
+    }
     outCommandBuffer->swap(output);
     ClearError();
     return true;
 }
 
-std::array<uint8_t, sizeof(ClickInputV1)> WasmEffectHost::BuildClickInputPayload(const ClickInvokeInput& input) const {
+ClickInputV1 WasmEffectHost::BuildClickInputV1(const ClickInvokeInput& input) const {
     ClickInputV1 payload{};
     payload.x = input.x;
     payload.y = input.y;
     payload.button = input.button;
     payload.eventTickMs = input.eventTickMs;
-
-    std::array<uint8_t, sizeof(ClickInputV1)> bytes{};
-    std::memcpy(bytes.data(), &payload, sizeof(payload));
-    return bytes;
+    return payload;
 }
 
 void WasmEffectHost::SetError(const std::string& error) {
@@ -171,4 +185,3 @@ void WasmEffectHost::ClearError() {
 }
 
 } // namespace mousefx::wasm
-

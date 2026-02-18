@@ -284,6 +284,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Utils\MonitorUtils.h" />
     <ClInclude Include="MouseFx\Core\Input\GestureRecognizer.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmPluginAbi.h" />
+    <ClInclude Include="MouseFx\Core\Wasm\WasmBinaryCodec.h" />
+    <ClInclude Include="MouseFx\Core\Wasm\WasmCommandBufferParser.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmRuntime.h" />
     <ClInclude Include="MouseFx\Core\Wasm\NullWasmRuntime.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmRuntimeFactory.h" />
@@ -386,6 +388,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfig.cpp" />
     <ClCompile Include="MouseFx\Utils\MonitorUtils.cpp" />
     <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmBinaryCodec.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmCommandBufferParser.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\NullWasmRuntime.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmRuntimeFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmEffectHost.cpp" />

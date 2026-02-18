@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "WasmBinaryCodec.h"
+#include "WasmCommandBufferParser.h"
 #include "WasmPluginAbi.h"
 #include "WasmRuntime.h"
 #include "WasmRuntimeFactory.h"
@@ -21,6 +23,7 @@ struct ClickInvokeInput final {
 
 struct ExecutionBudget final {
     uint32_t outputBufferBytes = 16u * 1024u;
+    uint32_t maxCommands = 256;
     double maxEventExecutionMs = 1.0;
 };
 
@@ -30,7 +33,9 @@ struct HostDiagnostics final {
     uint32_t pluginApiVersion = 0;
     uint64_t lastCallDurationMicros = 0;
     uint32_t lastOutputBytes = 0;
+    uint32_t lastCommandCount = 0;
     bool lastCallExceededBudget = false;
+    CommandParseError lastParseError = CommandParseError::None;
     std::string lastError{};
 };
 
@@ -53,7 +58,7 @@ public:
     bool InvokeClick(const ClickInvokeInput& input, std::vector<uint8_t>* outCommandBuffer);
 
 private:
-    std::array<uint8_t, sizeof(ClickInputV1)> BuildClickInputPayload(const ClickInvokeInput& input) const;
+    ClickInputV1 BuildClickInputV1(const ClickInvokeInput& input) const;
     void SetError(const std::string& error);
     void ClearError();
 
@@ -64,4 +69,3 @@ private:
 };
 
 } // namespace mousefx::wasm
-

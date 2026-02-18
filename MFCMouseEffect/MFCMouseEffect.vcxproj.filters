@@ -228,6 +228,12 @@
     <ClInclude Include="MouseFx\Core\Wasm\WasmPluginAbi.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Wasm\WasmBinaryCodec.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Wasm\WasmCommandBufferParser.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\Wasm\WasmRuntime.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -396,6 +402,12 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmBinaryCodec.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmCommandBufferParser.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\NullWasmRuntime.cpp">
