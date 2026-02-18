@@ -138,7 +138,7 @@ Implementation is split into small commits: architecture skeleton first, then ev
 - [x] Commit 1: `MouseFx/Core/Wasm` skeleton (Host/Runtime/ABI) and project wiring
 - [x] Commit 2: ABI v1 input/output serialization and command-buffer parser
 - [x] Commit 3: Plugin manifest model (`plugin.json`) and validator
-- [ ] Commit 4: Plugin discovery and path strategy (default + config directory)
+- [x] Commit 4: Plugin discovery and path strategy (default + config directory)
 - [ ] Commit 5: WasmEffectHost lifecycle hardening (load/unload/reload)
 - [ ] Commit 6: `AppController` startup/shutdown integration (init only, no behavior change)
 - [ ] Commit 7: Click event-chain invocation (logging only, no render path yet)

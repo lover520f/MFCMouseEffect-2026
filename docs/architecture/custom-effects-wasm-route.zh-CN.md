@@ -195,7 +195,7 @@ MVP 默认预算：
 - [x] Commit 1：`MouseFx/Core/Wasm` 模块骨架（Host/Runtime/ABI）与工程接线
 - [x] Commit 2：ABI v1 输入/输出序列化与命令缓冲解析器
 - [x] Commit 3：插件清单模型（`plugin.json`）和校验器
-- [ ] Commit 4：插件目录发现与路径策略（默认目录 + 配置目录）
+- [x] Commit 4：插件目录发现与路径策略（默认目录 + 配置目录）
 - [ ] Commit 5：WasmEffectHost 生命周期（load/unload/reload）完善
 - [ ] Commit 6：`AppController` 启停链路接入（仅初始化，不改行为）
 - [ ] Commit 7：点击事件链路调用 Host（先日志化，不接渲染）
