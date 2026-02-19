@@ -5,6 +5,8 @@
 #include "MouseFx/Utils/TimeUtils.h"
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
 
 namespace mousefx {
 
@@ -19,8 +21,10 @@ uint64_t RippleOverlayLayer::ShowRipple(const ClickEvent& ev, const RippleStyle&
     instance.params = params;
     instance.renderer = std::move(renderer);
     instance.startTick = NowMs();
+    instance.rawElapsedMs = 0;
     instance.elapsedMs = 0;
     instance.t = 0.0f;
+    instance.renderReady = (instance.params.startDelayMs == 0u);
     instance.active = true;
     instance.continuous = false;
 
@@ -41,8 +45,10 @@ uint64_t RippleOverlayLayer::ShowContinuous(const ClickEvent& ev, const RippleSt
     instance.params = params;
     instance.renderer = std::move(renderer);
     instance.startTick = NowMs();
+    instance.rawElapsedMs = 0;
     instance.elapsedMs = 0;
     instance.t = 0.0f;
+    instance.renderReady = (instance.params.startDelayMs == 0u);
     instance.active = true;
     instance.continuous = true;
 
@@ -87,14 +93,25 @@ void RippleOverlayLayer::BroadcastCommand(const std::string& cmd, const std::str
 void RippleOverlayLayer::Update(uint64_t nowMs) {
     for (auto& instance : instances_) {
         if (!instance.active || !instance.renderer) continue;
-        instance.elapsedMs = (nowMs >= instance.startTick) ? (nowMs - instance.startTick) : 0;
+        instance.rawElapsedMs = (nowMs >= instance.startTick) ? (nowMs - instance.startTick) : 0;
+        if (instance.rawElapsedMs < static_cast<uint64_t>(instance.params.startDelayMs)) {
+            instance.renderReady = false;
+            instance.elapsedMs = 0;
+            instance.t = 0.0f;
+            continue;
+        }
+
+        instance.renderReady = true;
+        instance.elapsedMs = instance.rawElapsedMs - static_cast<uint64_t>(instance.params.startDelayMs);
         const uint32_t durationMs = (instance.style.durationMs == 0) ? 1u : instance.style.durationMs;
         float t = (float)instance.elapsedMs / (float)durationMs;
 
         if (instance.continuous) {
             if (instance.params.loop) {
                 if (t > 1.0f) {
-                    instance.startTick = nowMs;
+                    const uint64_t delayMs = static_cast<uint64_t>(instance.params.startDelayMs);
+                    instance.startTick = (nowMs >= delayMs) ? (nowMs - delayMs) : 0;
+                    instance.rawElapsedMs = delayMs;
                     instance.elapsedMs = 0;
                     t = 0.0f;
                     instance.renderer->Start(instance.style);
@@ -124,13 +141,13 @@ void RippleOverlayLayer::Update(uint64_t nowMs) {
 
 void RippleOverlayLayer::Render(Gdiplus::Graphics& graphics) {
     for (auto& instance : instances_) {
-        if (!instance.active || !instance.renderer) continue;
+        if (!instance.active || !instance.renderer || !instance.renderReady) continue;
 
         int sizePx = instance.style.windowSize;
         if (sizePx < 64) sizePx = 64;
         if (sizePx > 512) sizePx = 512;
 
-        const POINT centerPt = ScreenToOverlayPoint(instance.ev.pt);
+        const POINT centerPt = ResolveRenderCenter(instance);
         const int left = centerPt.x - (sizePx / 2);
         const int top = centerPt.y - (sizePx / 2);
 
@@ -139,6 +156,28 @@ void RippleOverlayLayer::Render(Gdiplus::Graphics& graphics) {
         instance.renderer->Render(graphics, instance.t, instance.elapsedMs, sizePx, instance.style);
         graphics.Restore(state);
     }
+}
+
+POINT RippleOverlayLayer::ResolveRenderCenter(const RippleInstance& instance) const {
+    POINT screenPt = instance.ev.pt;
+    if (instance.params.useKinematics) {
+        const double tSec = static_cast<double>(instance.elapsedMs) / 1000.0;
+        const double dx =
+            static_cast<double>(instance.params.velocityX) * tSec +
+            0.5 * static_cast<double>(instance.params.accelerationX) * tSec * tSec;
+        const double dy =
+            static_cast<double>(instance.params.velocityY) * tSec +
+            0.5 * static_cast<double>(instance.params.accelerationY) * tSec * tSec;
+
+        const long long x = static_cast<long long>(screenPt.x) + static_cast<long long>(std::llround(dx));
+        const long long y = static_cast<long long>(screenPt.y) + static_cast<long long>(std::llround(dy));
+
+        const long long minL = static_cast<long long>((std::numeric_limits<LONG>::min)());
+        const long long maxL = static_cast<long long>((std::numeric_limits<LONG>::max)());
+        screenPt.x = static_cast<LONG>((std::min)((std::max)(x, minL), maxL));
+        screenPt.y = static_cast<LONG>((std::min)((std::max)(y, minL), maxL));
+    }
+    return ScreenToOverlayPoint(screenPt);
 }
 
 RippleOverlayLayer::RippleInstance* RippleOverlayLayer::FindById(uint64_t id) {

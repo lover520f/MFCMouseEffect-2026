@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -95,4 +95,23 @@ export function loadTemplateManifest(rootDir) {
 export function writeManifest(manifestPath, manifest) {
   ensureDistDir(dirname(manifestPath));
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+}
+
+export function copyRelativeFiles(rootDir, outputDir, relativeFiles) {
+  if (!Array.isArray(relativeFiles) || relativeFiles.length <= 0) {
+    return;
+  }
+  for (const file of relativeFiles) {
+    const relPath = `${file || ""}`.trim();
+    if (!relPath) {
+      continue;
+    }
+    const sourcePath = resolve(rootDir, relPath);
+    if (!existsSync(sourcePath)) {
+      throw new Error(`Missing asset file: ${relPath}`);
+    }
+    const targetPath = resolve(outputDir, relPath);
+    ensureDistDir(dirname(targetPath));
+    copyFileSync(sourcePath, targetPath);
+  }
 }

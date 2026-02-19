@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import {
   compileAssemblyScript,
+  copyRelativeFiles,
   parseArgs,
   resolveTemplateRoot,
   writeManifest,
@@ -34,7 +35,9 @@ try {
     version: preset.version,
     api_version: 1,
     entry: "effect.wasm",
+    image_assets: Array.isArray(preset.imageAssets) ? preset.imageAssets : [],
   });
+  copyRelativeFiles(rootDir, outputDir, preset.imageAssets);
   console.log(`Sample build complete: ${preset.key}`);
   console.log(`  wasm: ${wasmPath}`);
   console.log(`  manifest: ${manifestPath}`);

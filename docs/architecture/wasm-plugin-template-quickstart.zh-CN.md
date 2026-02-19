@@ -36,6 +36,7 @@ npm run build:samples
 样例产物位置：
 - `dist/samples/<sample_key>/effect.wasm`
 - `dist/samples/<sample_key>/plugin.json`
+- `dist/samples/<sample_key>/assets/*`（该样例声明了 `image_assets` 时）
 
 ## 1.1 `spawn_image` 的可选图片资源
 
@@ -74,7 +75,11 @@ npm run build:samples
 - Web 设置页支持配置“额外扫描目录”（`WASM 插件 -> 插件扫描路径`），
   保存后会进入插件扫描与“导出全部插件”的目录集合。
 
-把 `effect.wasm` 和 `plugin.json` 复制到该目录，来源可为：
+把插件文件复制到该目录：
+- 必选：`effect.wasm` + `plugin.json`
+- 若 `plugin.json.image_assets` 存在：需连同 `assets/` 一起复制
+
+样例预设建议直接复制整个样例目录（`effect.wasm` + `plugin.json` + `assets/`），来源可为：
 - `dist/`（默认模板构建）
 - `dist/samples/<sample_key>/`（样例预设构建）
 
@@ -109,8 +114,18 @@ POST /api/wasm/enable
 
 - `text-rise`
 - `text-burst`
+- `text-spiral`
+- `text-wave-chain`
 - `image-pulse`
+- `image-burst`
+- `image-lift`
 - `mixed-text-image`
+- `mixed-emoji-celebrate`
+- `button-adaptive`
+
+模板目录结构与每个样例的行为说明见：
+- `examples/wasm-plugin-template/README.md`
+- `examples/wasm-plugin-template/README.zh-CN.md`
 
 ## 6. 排错
 

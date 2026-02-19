@@ -11,7 +11,10 @@ import {
   readClickY,
   writeSpawnImage,
 } from "../common/abi";
-import { colorFromSeed, rangedFromSeed, seedFromTickMs, signedFromSeed } from "../common/random";
+import { colorFromSeed, rangedFromSeed, seedFromTickMs } from "../common/random";
+
+const COMMAND_COUNT: u32 = 2;
+const OUTPUT_BYTES: u32 = SPAWN_IMAGE_COMMAND_BYTES * COMMAND_COUNT;
 
 export function mfx_plugin_get_api_version(): u32 {
   return API_VERSION;
@@ -25,40 +28,57 @@ export function mfx_plugin_on_click(
   outputPtr: usize,
   outputCap: u32,
 ): u32 {
-  if (!canHandleClick(inputLen, outputCap, SPAWN_IMAGE_COMMAND_BYTES)) {
+  if (!canHandleClick(inputLen, outputCap, OUTPUT_BYTES)) {
     return 0;
   }
 
   const x = <f32>readClickX(inputPtr);
   const y = <f32>readClickY(inputPtr);
-  const button = readClickButton(inputPtr);
   const seed = seedFromTickMs(readClickTickMs(inputPtr));
+  const button = readClickButton(inputPtr);
 
-  let imageId: u32 = 0;
+  let baseId: u32 = 0;
   if (button == BUTTON_RIGHT) {
-    imageId = 1;
+    baseId = 1;
   } else if (button == BUTTON_MIDDLE) {
-    imageId = 2;
+    baseId = 2;
   } else if (button != BUTTON_LEFT) {
-    imageId = seed % 4;
+    baseId = 3;
   }
 
   writeSpawnImage(
     outputPtr,
     x,
     y,
-    <f32>signedFromSeed(seed, 11, 20),
-    -180.0 - <f32>rangedFromSeed(seed, 3, 0, 60),
+    -72.0,
+    -165.0 - <f32>rangedFromSeed(seed, 6, 0, 46),
     0.0,
-    140.0,
-    1.0 + (<f32>rangedFromSeed(seed, 8, 0, 35) / 100.0),
-    0.0,
+    110.0,
     1.0,
-    colorFromSeed(seed ^ 0x55CCAA11),
+    -0.08,
+    1.0,
+    colorFromSeed(seed ^ 0x9E21B43),
     0,
-    700,
-    imageId,
+    650,
+    baseId,
   );
 
-  return SPAWN_IMAGE_COMMAND_BYTES;
+  writeSpawnImage(
+    outputPtr + <usize>SPAWN_IMAGE_COMMAND_BYTES,
+    x,
+    y,
+    72.0,
+    -172.0 - <f32>rangedFromSeed(seed, 9, 0, 42),
+    0.0,
+    120.0,
+    1.1,
+    0.08,
+    0.95,
+    colorFromSeed(seed ^ 0x7F4A7C15),
+    35,
+    700,
+    baseId + 1,
+  );
+
+  return OUTPUT_BYTES;
 }

@@ -266,6 +266,16 @@ MVP 默认预算：
   - 新增脚本工具链（`build-lib`、`build-sample`、`build-all-samples`）
   - 新增 pnpm 兼容编译器探测（兼容 `asc.js` 与旧 `asc` 路径）
   - 详见：`docs/issues/wasm-plugin-template-sample-presets-phase4.zh-CN.md`
+- [x] Phase 4b：面向用户的结构文档与全量样例扩充
+  - 样例扩展到完整矩阵（`text-spiral`、`text-wave-chain`、`image-burst`、`image-lift`、`mixed-emoji-celebrate`、`button-adaptive`）
+  - 样例构建脚本支持按预设输出 `image_assets` 清单字段
+  - 新增模板中英文文档（`examples/wasm-plugin-template/README.md`、`examples/wasm-plugin-template/README.zh-CN.md`）
+  - 详见：`docs/issues/wasm-plugin-template-full-sample-matrix-phase4b.zh-CN.md`
+- [x] Phase 4c：真实图片资源包与全格式样例产物
+  - 模板资源包覆盖全部支持格式（`png/jpg/jpeg/bmp/gif/tif/tiff`）
+  - 样例构建脚本自动复制 `image_assets` 到产物目录
+  - 预设清单映射调整为覆盖全部格式
+  - 详见：`docs/issues/wasm-plugin-template-assets-all-formats-phase4c.zh-CN.md`
 
 ## 15. Runtime Bridge 自构建状态
 

@@ -96,6 +96,13 @@ void ExecuteSpawnImage(
     renderParams.loop = false;
     renderParams.intensity = (cmd.alpha > 0.0f) ? std::clamp(cmd.alpha, 0.0f, 1.0f) : 1.0f;
     renderParams.directionRad = cmd.rotation;
+    renderParams.velocityX = cmd.vx;
+    renderParams.velocityY = cmd.vy;
+    renderParams.accelerationX = cmd.ax;
+    renderParams.accelerationY = cmd.ay;
+    renderParams.useKinematics = (std::abs(cmd.vx) > 0.001f) || (std::abs(cmd.vy) > 0.001f) ||
+                                 (std::abs(cmd.ax) > 0.001f) || (std::abs(cmd.ay) > 0.001f);
+    renderParams.startDelayMs = std::clamp<uint32_t>(cmd.delayMs, 0u, 60000u);
 
     const RippleStyle style = BuildImageStyle(config, cmd);
     const bool applyTint = ((cmd.tintRgba >> 24) & 0xFFu) != 0;

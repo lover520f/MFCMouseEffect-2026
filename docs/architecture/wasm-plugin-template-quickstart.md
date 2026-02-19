@@ -36,6 +36,7 @@ npm run build:samples
 Sample outputs:
 - `dist/samples/<sample_key>/effect.wasm`
 - `dist/samples/<sample_key>/plugin.json`
+- `dist/samples/<sample_key>/assets/*` (if that sample declares `image_assets`)
 
 ## 1.1 Optional image assets for `spawn_image`
 
@@ -74,7 +75,11 @@ Create a plugin folder named by `plugin.json.id`:
 - Web settings supports a configurable extra catalog root (`WASM Plugin -> Catalog root path`).
   Save it to include your custom directory in scan/export flows.
 
-Copy `effect.wasm` and `plugin.json` into that folder
+Copy plugin files into that folder:
+- always: `effect.wasm` + `plugin.json`
+- if `plugin.json.image_assets` exists: copy the referenced `assets/` files together
+
+For sample presets, copy the whole sample output folder (`effect.wasm` + `plugin.json` + `assets/` if present)
 from either:
 - `dist/` (default template)
 - `dist/samples/<sample_key>/` (preset sample)
@@ -110,8 +115,18 @@ Binary layout is defined in:
 
 - `text-rise`
 - `text-burst`
+- `text-spiral`
+- `text-wave-chain`
 - `image-pulse`
+- `image-burst`
+- `image-lift`
 - `mixed-text-image`
+- `mixed-emoji-celebrate`
+- `button-adaptive`
+
+For full template structure and per-sample behavior summary:
+- `examples/wasm-plugin-template/README.md`
+- `examples/wasm-plugin-template/README.zh-CN.md`
 
 ## 6. Troubleshooting
 

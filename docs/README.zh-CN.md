@@ -69,6 +69,9 @@
 - 问题记录：`docs/issues/wasm-plugin-catalog-root-config.zh-CN.md`（WASM 插件面板支持自定义扫描路径，并持久化到配置后用于扫描与导出）
 - 问题记录：`docs/issues/wasm-panel-initial-i18n-order-fix.zh-CN.md`（修复 WASM 分区首屏中英混显：i18n 应用时机晚于组件挂载）
 - 问题记录：`docs/issues/wasm-image-assets-gif-and-static-support.zh-CN.md`（WASM `spawn_image` 支持插件图片资源：png/jpg/bmp/gif/tiff，并保留内置回退）
+- 问题记录：`docs/issues/wasm-plugin-template-full-sample-matrix-phase4b.zh-CN.md`（扩充 wasm-plugin-template 为全量样例矩阵，并补齐模板根目录中英文用户文档）
+- 问题记录：`docs/issues/wasm-plugin-template-assets-all-formats-phase4c.zh-CN.md`（模板内置真实图片资源并覆盖全部支持格式，样例构建自动复制 `image_assets` 到产物目录）
+- 问题记录：`docs/issues/wasm-spawn-image-kinematics-fix.zh-CN.md`（修复 WASM 图片特效“仅贴点显示”问题：宿主补齐 `vx/vy/ax/ay/delayMs` 运动语义并重调样例轨迹）
 - 问题记录：`docs/issues/mouse-action-indicator-overlay.zh-CN.md`（旧：新增光标附近鼠标动作指示器）
 - 架构整理：`docs/architecture/tray-and-appcontroller-refactor.zh-CN.md`（托盘菜单表驱动 + AppController 解耦）
 - 架构整理：`docs/architecture/settingswnd-emoji-split.zh-CN.md`（SettingsWnd 表情处理拆分）

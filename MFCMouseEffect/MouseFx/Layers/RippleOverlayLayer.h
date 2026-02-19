@@ -36,12 +36,15 @@ private:
         RenderParams params{};
         std::unique_ptr<IRippleRenderer> renderer{};
         uint64_t startTick = 0;
+        uint64_t rawElapsedMs = 0;
         uint64_t elapsedMs = 0;
         float t = 0.0f;
+        bool renderReady = true;
         bool active = false;
         bool continuous = false;
     };
 
+    POINT ResolveRenderCenter(const RippleInstance& instance) const;
     RippleInstance* FindById(uint64_t id);
     const RippleInstance* FindById(uint64_t id) const;
 

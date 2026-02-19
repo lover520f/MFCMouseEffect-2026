@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import {
   compileAssemblyScript,
+  copyRelativeFiles,
   resolveTemplateRoot,
   writeManifest,
 } from "./build-lib.mjs";
@@ -27,7 +28,9 @@ try {
       version: preset.version,
       api_version: 1,
       entry: "effect.wasm",
+      image_assets: Array.isArray(preset.imageAssets) ? preset.imageAssets : [],
     });
+    copyRelativeFiles(rootDir, outputDir, preset.imageAssets);
     console.log(`Built sample: ${preset.key}`);
   }
   console.log("All sample bundles are ready under dist/samples.");

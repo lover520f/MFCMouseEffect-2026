@@ -219,3 +219,13 @@ Note: the prior 15 commits established architecture baseline; these 5 commits wi
   - Added script toolchain (`build-lib`, `build-sample`, `build-all-samples`)
   - Added pnpm-friendly compiler path probing (`asc.js` and legacy `asc`)
   - Details: `docs/issues/wasm-plugin-template-sample-presets-phase4.md`
+- [x] Phase 4b: user-facing structure docs and expanded sample coverage
+  - Expanded presets to a fuller matrix (`text-spiral`, `text-wave-chain`, `image-burst`, `image-lift`, `mixed-emoji-celebrate`, `button-adaptive`)
+  - Added sample-level `image_assets` manifest emission in sample build scripts
+  - Added bilingual template docs (`examples/wasm-plugin-template/README.md`, `examples/wasm-plugin-template/README.zh-CN.md`)
+  - Details: `docs/issues/wasm-plugin-template-full-sample-matrix-phase4b.md`
+- [x] Phase 4c: real image asset pack and format-complete sample outputs
+  - Added template asset pack with all supported formats (`png/jpg/jpeg/bmp/gif/tif/tiff`)
+  - Sample build scripts now copy declared `image_assets` into output folders
+  - Preset mappings updated to exercise all formats in sample manifests
+  - Details: `docs/issues/wasm-plugin-template-assets-all-formats-phase4c.md`

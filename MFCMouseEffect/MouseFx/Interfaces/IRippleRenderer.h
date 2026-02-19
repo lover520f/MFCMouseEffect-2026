@@ -12,6 +12,16 @@ struct RenderParams {
     float directionRad = 0.0f;
     float intensity = 1.0f;
     bool loop = true;
+
+    // Optional motion model (screen-space, pixels / second^2).
+    bool useKinematics = false;
+    float velocityX = 0.0f;
+    float velocityY = 0.0f;
+    float accelerationX = 0.0f;
+    float accelerationY = 0.0f;
+
+    // Optional delay before an instance becomes visible.
+    uint32_t startDelayMs = 0;
 };
 
 class IRippleRenderer {
