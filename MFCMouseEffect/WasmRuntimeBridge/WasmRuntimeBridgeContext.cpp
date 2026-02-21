@@ -1,5 +1,12 @@
 #include "WasmRuntimeBridgeContext.h"
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include <excpt.h>
+
+#include <cstdio>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
@@ -13,7 +20,7 @@ namespace wasm_runtime_bridge {
 
 namespace {
 
-constexpr uint32_t kRuntimeStackBytes = 64u * 1024u;
+constexpr uint32_t kRuntimeStackBytes = 256u * 1024u;
 constexpr uint32_t kLinearMemoryLimitBytes = 4u * 1024u * 1024u;
 constexpr uint32_t kWasmPageBytes = 64u * 1024u;
 constexpr uint32_t kScratchAlignment = 16u;
@@ -28,6 +35,100 @@ uint32_t AlignUp(uint32_t value, uint32_t alignment) {
 
 std::string NarrowPathForLog(const std::filesystem::path& path) {
     return path.string();
+}
+
+std::string BuildSehErrorMessage(const char* stage, DWORD exceptionCode, bool recovered) {
+    char buffer[192]{};
+    const int written = std::snprintf(
+        buffer,
+        sizeof(buffer),
+        "%s raised SEH 0x%08lX%s",
+        (stage && stage[0] != '\0') ? stage : "runtime call",
+        static_cast<unsigned long>(exceptionCode),
+        recovered ? " (runtime rebuilt)" : "");
+    if (written <= 0) {
+        return recovered ? "runtime call raised SEH (runtime rebuilt)" : "runtime call raised SEH";
+    }
+    return std::string(buffer);
+}
+
+enum class ProtectedInvokeStatus : uint8_t {
+    Ok = 0,
+    SehFault,
+};
+
+M3Result SuppressLookupFailure(M3Result result) {
+    return (result == m3Err_functionLookupFailed) ? m3Err_none : result;
+}
+
+m3ApiRawFunction(HostAbortNoArgs) {
+    m3ApiTrap(m3Err_trapAbort);
+}
+
+m3ApiRawFunction(HostAssemblyScriptAbort) {
+    m3ApiGetArg(uint32_t, messageOffset);
+    m3ApiGetArg(uint32_t, fileOffset);
+    m3ApiGetArg(uint32_t, lineNumber);
+    m3ApiGetArg(uint32_t, columnNumber);
+    (void)messageOffset;
+    (void)fileOffset;
+    (void)lineNumber;
+    (void)columnNumber;
+    m3ApiTrap(m3Err_trapAbort);
+}
+
+ProtectedInvokeStatus SafeM3Call(
+    IM3Function function,
+    uint32_t argc,
+    const void* args[],
+    M3Result* outResult,
+    DWORD* outSehCode) {
+    if (outResult) {
+        *outResult = m3Err_none;
+    }
+    if (outSehCode) {
+        *outSehCode = 0;
+    }
+    __try {
+        if (outResult) {
+            *outResult = m3_Call(function, argc, args);
+        } else {
+            (void)m3_Call(function, argc, args);
+        }
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
+        if (outSehCode) {
+            *outSehCode = static_cast<DWORD>(GetExceptionCode());
+        }
+        return ProtectedInvokeStatus::SehFault;
+    }
+    return ProtectedInvokeStatus::Ok;
+}
+
+ProtectedInvokeStatus SafeM3GetResults(
+    IM3Function function,
+    uint32_t retc,
+    const void* retPointers[],
+    M3Result* outResult,
+    DWORD* outSehCode) {
+    if (outResult) {
+        *outResult = m3Err_none;
+    }
+    if (outSehCode) {
+        *outSehCode = 0;
+    }
+    __try {
+        if (outResult) {
+            *outResult = m3_GetResults(function, retc, retPointers);
+        } else {
+            (void)m3_GetResults(function, retc, retPointers);
+        }
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
+        if (outSehCode) {
+            *outSehCode = static_cast<DWORD>(GetExceptionCode());
+        }
+        return ProtectedInvokeStatus::SehFault;
+    }
+    return ProtectedInvokeStatus::Ok;
 }
 
 } // namespace
@@ -72,7 +173,7 @@ bool RuntimeBridgeContext::LoadModuleFromFile(const wchar_t* modulePath) {
         SetErrorLocked("module file is empty.");
         return false;
     }
-    if (static_cast<uint64_t>(fileSize) > static_cast<uint64_t>(std::numeric_limits<uint32_t>::max())) {
+    if (static_cast<uint64_t>(fileSize) > static_cast<uint64_t>((std::numeric_limits<uint32_t>::max)())) {
         SetErrorLocked("module file is too large.");
         return false;
     }
@@ -90,38 +191,10 @@ bool RuntimeBridgeContext::LoadModuleFromFile(const wchar_t* modulePath) {
     if (!CreateRuntimeLocked()) {
         return false;
     }
-
-    IM3Module module = nullptr;
-    M3Result result = m3_ParseModule(
-        environment_,
-        &module,
-        wasmBytes_.data(),
-        static_cast<uint32_t>(wasmBytes_.size()));
-    if (result) {
-        SetWasm3ErrorLocked("m3_ParseModule failed", result);
-        if (module) {
-            m3_FreeModule(module);
-        }
-        return false;
-    }
-
-    result = m3_LoadModule(runtime_, module);
-    if (result) {
-        SetWasm3ErrorLocked("m3_LoadModule failed", result);
-        if (module) {
-            m3_FreeModule(module);
-        }
+    if (!LoadModuleFromCachedBytesLocked()) {
         ReleaseRuntimeLocked();
         return false;
     }
-
-    if (!ResolvePluginExportsLocked()) {
-        ReleaseRuntimeLocked();
-        return false;
-    }
-
-    moduleLoaded_ = true;
-    ClearErrorLocked();
     return true;
 }
 
@@ -147,16 +220,28 @@ bool RuntimeBridgeContext::CallGetApiVersion(uint32_t* outApiVersion) {
         return false;
     }
 
-    M3Result result = m3_CallV(fnGetApiVersion_);
+    M3Result result = m3Err_none;
+    DWORD sehCode = 0;
+    if (SafeM3Call(fnGetApiVersion_, 0, nullptr, &result, &sehCode) == ProtectedInvokeStatus::SehFault) {
+        const bool recovered = RecoverRuntimeAfterFaultLocked();
+        SetErrorLocked(BuildSehErrorMessage("m3_Call(get_api_version)", sehCode, recovered));
+        return false;
+    }
     if (result) {
-        SetWasm3ErrorLocked("m3_CallV(get_api_version) failed", result);
+        SetWasm3ErrorLocked("m3_Call(get_api_version) failed", result);
         return false;
     }
 
     uint32_t apiVersion = 0;
-    result = m3_GetResultsV(fnGetApiVersion_, &apiVersion);
+    const void* retPointers[1] = { &apiVersion };
+    sehCode = 0;
+    if (SafeM3GetResults(fnGetApiVersion_, 1, retPointers, &result, &sehCode) == ProtectedInvokeStatus::SehFault) {
+        const bool recovered = RecoverRuntimeAfterFaultLocked();
+        SetErrorLocked(BuildSehErrorMessage("m3_GetResults(get_api_version)", sehCode, recovered));
+        return false;
+    }
     if (result) {
-        SetWasm3ErrorLocked("m3_GetResultsV(get_api_version) failed", result);
+        SetWasm3ErrorLocked("m3_GetResults(get_api_version) failed", result);
         return false;
     }
 
@@ -207,21 +292,39 @@ bool RuntimeBridgeContext::CallOnClick(
         std::memcpy(memory + inputOffset, inputPtr, inputLen);
     }
 
-    M3Result result = m3_CallV(
-        fnOnClick_,
-        inputOffset,
-        inputLen,
-        outputOffset,
-        outputCap);
+    const uint32_t argInputOffset = inputOffset;
+    const uint32_t argInputLen = inputLen;
+    const uint32_t argOutputOffset = outputOffset;
+    const uint32_t argOutputCap = outputCap;
+    const void* argPointers[4] = {
+        &argInputOffset,
+        &argInputLen,
+        &argOutputOffset,
+        &argOutputCap,
+    };
+
+    M3Result result = m3Err_none;
+    DWORD sehCode = 0;
+    if (SafeM3Call(fnOnClick_, 4, argPointers, &result, &sehCode) == ProtectedInvokeStatus::SehFault) {
+        const bool recovered = RecoverRuntimeAfterFaultLocked();
+        SetErrorLocked(BuildSehErrorMessage("m3_Call(on_click)", sehCode, recovered));
+        return false;
+    }
     if (result) {
-        SetWasm3ErrorLocked("m3_CallV(on_click) failed", result);
+        SetWasm3ErrorLocked("m3_Call(on_click) failed", result);
         return false;
     }
 
     uint32_t writtenBytes = 0;
-    result = m3_GetResultsV(fnOnClick_, &writtenBytes);
+    const void* retPointers[1] = { &writtenBytes };
+    sehCode = 0;
+    if (SafeM3GetResults(fnOnClick_, 1, retPointers, &result, &sehCode) == ProtectedInvokeStatus::SehFault) {
+        const bool recovered = RecoverRuntimeAfterFaultLocked();
+        SetErrorLocked(BuildSehErrorMessage("m3_GetResults(on_click)", sehCode, recovered));
+        return false;
+    }
     if (result) {
-        SetWasm3ErrorLocked("m3_GetResultsV(on_click) failed", result);
+        SetWasm3ErrorLocked("m3_GetResults(on_click) failed", result);
         return false;
     }
     if (writtenBytes > outputCap) {
@@ -234,7 +337,18 @@ bool RuntimeBridgeContext::CallOnClick(
             SetErrorLocked("output pointer is null while plugin returned data.");
             return false;
         }
-        std::memcpy(outputPtr, memory + outputOffset, writtenBytes);
+        uint32_t memorySizeAfterCall = 0;
+        uint8_t* memoryAfterCall = m3_GetMemory(runtime_, &memorySizeAfterCall, 0);
+        if (!memoryAfterCall) {
+            SetErrorLocked("wasm linear memory is unavailable after plugin call.");
+            return false;
+        }
+        const uint64_t outputEnd = static_cast<uint64_t>(outputOffset) + static_cast<uint64_t>(writtenBytes);
+        if (outputEnd > static_cast<uint64_t>(memorySizeAfterCall)) {
+            SetErrorLocked("plugin output range exceeds wasm linear memory.");
+            return false;
+        }
+        std::memcpy(outputPtr, memoryAfterCall + outputOffset, writtenBytes);
     }
 
     if (outWrittenBytes) {
@@ -250,9 +364,15 @@ void RuntimeBridgeContext::ResetPluginState() {
         return;
     }
 
-    M3Result result = m3_CallV(fnReset_);
+    M3Result result = m3Err_none;
+    DWORD sehCode = 0;
+    if (SafeM3Call(fnReset_, 0, nullptr, &result, &sehCode) == ProtectedInvokeStatus::SehFault) {
+        const bool recovered = RecoverRuntimeAfterFaultLocked();
+        SetErrorLocked(BuildSehErrorMessage("m3_Call(reset)", sehCode, recovered));
+        return;
+    }
     if (result) {
-        SetWasm3ErrorLocked("m3_CallV(reset) failed", result);
+        SetWasm3ErrorLocked("m3_Call(reset) failed", result);
         return;
     }
     ClearErrorLocked();
@@ -281,6 +401,91 @@ bool RuntimeBridgeContext::CreateRuntimeLocked() {
         return false;
     }
     runtime_->memoryLimit = kLinearMemoryLimitBytes;
+    return true;
+}
+
+bool RuntimeBridgeContext::LoadModuleFromCachedBytesLocked() {
+    if (!runtime_ || !environment_) {
+        SetErrorLocked("runtime is not initialized.");
+        return false;
+    }
+    if (wasmBytes_.empty()) {
+        SetErrorLocked("module bytes are empty.");
+        return false;
+    }
+
+    IM3Module module = nullptr;
+    M3Result result = m3_ParseModule(
+        environment_,
+        &module,
+        wasmBytes_.data(),
+        static_cast<uint32_t>(wasmBytes_.size()));
+    if (result) {
+        SetWasm3ErrorLocked("m3_ParseModule failed", result);
+        if (module) {
+            m3_FreeModule(module);
+        }
+        return false;
+    }
+
+    result = m3_LoadModule(runtime_, module);
+    if (result) {
+        SetWasm3ErrorLocked("m3_LoadModule failed", result);
+        if (module) {
+            m3_FreeModule(module);
+        }
+        return false;
+    }
+
+    if (!LinkHostImportsLocked(module)) {
+        return false;
+    }
+
+    if (!ResolvePluginExportsLocked()) {
+        return false;
+    }
+
+    moduleLoaded_ = true;
+    ClearErrorLocked();
+    return true;
+}
+
+bool RuntimeBridgeContext::RecoverRuntimeAfterFaultLocked() {
+    const bool hasCachedModuleBytes = !wasmBytes_.empty();
+    ReleaseRuntimeLocked();
+    if (!hasCachedModuleBytes) {
+        return false;
+    }
+    if (!CreateRuntimeLocked()) {
+        return false;
+    }
+    if (!LoadModuleFromCachedBytesLocked()) {
+        ReleaseRuntimeLocked();
+        return false;
+    }
+    return true;
+}
+
+bool RuntimeBridgeContext::LinkHostImportsLocked(M3Module* module) {
+    if (!module) {
+        SetErrorLocked("module is null while linking host imports.");
+        return false;
+    }
+
+    M3Result result = SuppressLookupFailure(
+        m3_LinkRawFunction(module, "env", "abort", "v(iiii)", &HostAssemblyScriptAbort));
+    if (result) {
+        SetWasm3ErrorLocked("m3_LinkRawFunction(env.abort) failed", result);
+        return false;
+    }
+
+    result = SuppressLookupFailure(
+        m3_LinkRawFunction(module, "env", "_abort", "v()", &HostAbortNoArgs));
+    if (result) {
+        SetWasm3ErrorLocked("m3_LinkRawFunction(env._abort) failed", result);
+        return false;
+    }
+
     return true;
 }
 
@@ -334,7 +539,7 @@ bool RuntimeBridgeContext::EnsureScratchMemoryLocked(
     const uint32_t inputOffset = 0;
     const uint32_t outputOffset = AlignUp(inputLen, kScratchAlignment);
     const uint64_t requiredBytes = static_cast<uint64_t>(outputOffset) + static_cast<uint64_t>(outputCap);
-    if (requiredBytes > std::numeric_limits<uint32_t>::max()) {
+    if (requiredBytes > static_cast<uint64_t>((std::numeric_limits<uint32_t>::max)())) {
         SetErrorLocked("scratch memory request exceeds 32-bit addressable range.");
         return false;
     }

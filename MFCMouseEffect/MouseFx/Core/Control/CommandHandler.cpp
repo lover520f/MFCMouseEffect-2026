@@ -127,7 +127,15 @@ void CommandHandler::HandleWasmLoadManifestCommand(const std::string& jsonCmd) {
     if (!controller_->WasmHost()) {
         return;
     }
-    const std::string pathUtf8 = ExtractJsonStringValue(jsonCmd, "manifest_path");
+    std::string pathUtf8;
+    try {
+        const nlohmann::json root = nlohmann::json::parse(jsonCmd);
+        if (root.contains("manifest_path") && root["manifest_path"].is_string()) {
+            pathUtf8 = root["manifest_path"].get<std::string>();
+        }
+    } catch (...) {
+        pathUtf8 = ExtractJsonStringValue(jsonCmd, "manifest_path");
+    }
     if (pathUtf8.empty()) {
         return;
     }

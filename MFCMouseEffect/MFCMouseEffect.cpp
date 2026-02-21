@@ -369,8 +369,8 @@ void CMFCMouseEffectApp::ShowWebSettings(const wchar_t* fragment)
 	if (!webSettings_) {
 		webSettings_ = std::make_unique<mousefx::WebSettingsServer>(mouseFx_.get());
 	}
-	webSettings_->RotateToken();
 	if (!webSettings_->IsRunning()) {
+		webSettings_->RotateToken();
 		if (!webSettings_->Start()) {
 			AfxMessageBox(L"Web settings server start failed.", MB_OK | MB_ICONWARNING);
 			return;

@@ -15,6 +15,11 @@ namespace mousefx::wasm {
 
 namespace {
 
+SpawnImageCommandV1 ToSpawnImageCommand(const SpawnImageAffineCommandV1& cmd) {
+    // Current host renderer supports base image kinematics; keep affine extras for future extension.
+    return cmd.base;
+}
+
 TextConfig BuildTextConfig(const TextConfig& base, const SpawnTextCommandV1& cmd) {
     TextConfig cfg = base;
     if (cmd.lifeMs > 0) {
@@ -172,6 +177,12 @@ CommandExecutionResult WasmClickCommandExecutor::Execute(
             SpawnImageCommandV1 cmd{};
             std::memcpy(&cmd, raw, sizeof(cmd));
             ExecuteSpawnImage(cmd, config, activeManifestPath, &result);
+            break;
+        }
+        case CommandKind::SpawnImageAffine: {
+            SpawnImageAffineCommandV1 cmd{};
+            std::memcpy(&cmd, raw, sizeof(cmd));
+            ExecuteSpawnImage(ToSpawnImageCommand(cmd), config, activeManifestPath, &result);
             break;
         }
         default:

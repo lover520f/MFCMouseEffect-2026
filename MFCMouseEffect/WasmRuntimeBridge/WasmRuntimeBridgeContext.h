@@ -9,6 +9,7 @@
 struct M3Environment;
 struct M3Runtime;
 struct M3Function;
+struct M3Module;
 
 namespace wasm_runtime_bridge {
 
@@ -38,6 +39,9 @@ public:
 private:
     bool CreateRuntimeLocked();
     void ReleaseRuntimeLocked();
+    bool LoadModuleFromCachedBytesLocked();
+    bool LinkHostImportsLocked(M3Module* module);
+    bool RecoverRuntimeAfterFaultLocked();
     bool ResolvePluginExportsLocked();
     bool EnsureScratchMemoryLocked(
         uint32_t inputLen,

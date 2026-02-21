@@ -9,6 +9,7 @@ constexpr uint32_t kPluginApiVersionV1 = 1;
 enum class CommandKind : uint16_t {
     SpawnText = 1,
     SpawnImage = 2,
+    SpawnImageAffine = 3,
 };
 
 #pragma pack(push, 1)
@@ -62,9 +63,24 @@ struct SpawnImageCommandV1 final {
     uint32_t imageId = 0;
 };
 
+// Forward-compatible image command variant that keeps SpawnImageCommandV1 as prefix
+// and appends affine transform metadata.
+struct SpawnImageAffineCommandV1 final {
+    SpawnImageCommandV1 base{};
+    float affineM11 = 1.0f;
+    float affineM12 = 0.0f;
+    float affineM21 = 0.0f;
+    float affineM22 = 1.0f;
+    float affineDx = 0.0f;
+    float affineDy = 0.0f;
+    uint32_t affineAnchorMode = 0;
+    uint32_t affineEnabled = 0;
+};
+
 #pragma pack(pop)
 
 static_assert(sizeof(ClickInputV1) == 20, "ClickInputV1 layout drifted.");
 static_assert(sizeof(CommandHeaderV1) == 4, "CommandHeaderV1 layout drifted.");
+static_assert(sizeof(SpawnImageAffineCommandV1) == 88, "SpawnImageAffineCommandV1 layout drifted.");
 
 } // namespace mousefx::wasm

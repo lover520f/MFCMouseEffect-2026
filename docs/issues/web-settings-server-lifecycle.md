@@ -54,7 +54,18 @@
 - Text consistency:
   - Runtime status messages (`Loading`, `Applying`, `Reload failed`, etc.) are now localized and switch with UI language.
 
+## 2026-02-21 Update: Prevent Active Tab from Becoming Stale on Reopen
+- Problem:
+  - Clicking tray **Settings...** while the web server was already running minted a new token every time.
+  - Any already-open settings tab immediately became unauthorized, which could look like "buttons do nothing" (especially in WASM panel actions).
+- Fix:
+  - Keep the same token while the server is running.
+  - Rotate token only when starting a new web server session.
+- Result:
+  - Reopening settings from tray no longer invalidates the currently open tab.
+  - Unauthorized state is still possible after server restart, but not from same-session reopen.
+
 ## Manual Test Checklist
 - Leave settings idle past the timeout, then open settings again -> no crash.
-- Open settings twice; the first tab should fail API calls (unauthorized), the newest should work.
+- Open settings twice within the same running session; both tabs should keep working.
 - Apply settings from the newest tab; effects update immediately and `config.json` persists.

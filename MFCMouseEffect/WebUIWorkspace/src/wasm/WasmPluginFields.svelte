@@ -125,6 +125,14 @@
     return `${title} (${version})`;
   }
 
+  function normalizeManifestPathForCompare(path) {
+    const textValue = `${path || ''}`.trim();
+    if (!textValue) {
+      return '';
+    }
+    return textValue.replace(/\\/g, '/').replace(/\/+/g, '/').toLowerCase();
+  }
+
   function renderStatsText(snapshot) {
     const s = snapshot || normalizeState({});
     return `${text('label_wasm_last_rendered', 'Rendered by WASM')}: ${boolText(s.last_rendered_by_wasm)}, `
@@ -197,13 +205,35 @@
   let manifestPathDisplay = current.active_manifest_path || current.configured_manifest_path || '-';
   let showConfiguredManifestPath = false;
 
+  function findCatalogItemByManifestPath(path) {
+    const expected = normalizeManifestPathForCompare(path);
+    if (!expected) {
+      return null;
+    }
+    for (const item of catalog) {
+      if (normalizeManifestPathForCompare(item.manifest_path) === expected) {
+        return item;
+      }
+    }
+    return null;
+  }
+
   function setCatalogFromResponse(response) {
+    const previousSelected = selectedManifestPath;
     catalog = normalizeCatalogItems(response?.plugins);
     catalogErrors = normalizeCatalogErrors(response?.errors);
     catalogSearchRoots = normalizeCatalogRoots(response?.search_roots);
-    if (!selectedManifestPath || !catalog.some((item) => item.manifest_path === selectedManifestPath)) {
-      selectedManifestPath = catalog.length > 0 ? catalog[0].manifest_path : '';
+    const selectedMatch = findCatalogItemByManifestPath(previousSelected);
+    if (selectedMatch) {
+      selectedManifestPath = selectedMatch.manifest_path;
+      return;
     }
+    const activeMatch = findCatalogItemByManifestPath(current.active_manifest_path);
+    if (activeMatch) {
+      selectedManifestPath = activeMatch.manifest_path;
+      return;
+    }
+    selectedManifestPath = catalog.length > 0 ? catalog[0].manifest_path : '';
   }
 
   function resolveActionError(response) {
@@ -263,9 +293,18 @@
       statusMessage = text('wasm_manifest_required', 'Please select a plugin manifest first.');
       return;
     }
-    await runAction('loadManifest', {
+    const response = await runAction('loadManifest', {
       manifest_path: selectedManifestPath,
     });
+    if (!response || response.ok === false) {
+      return;
+    }
+    const activeManifestPath = `${response.active_manifest_path || ''}`.trim();
+    await requestCatalog(true);
+    const match = findCatalogItemByManifestPath(activeManifestPath || selectedManifestPath);
+    if (match) {
+      selectedManifestPath = match.manifest_path;
+    }
   }
 
   async function importFromFolderDialog() {

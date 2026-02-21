@@ -14,6 +14,8 @@ bool IsSupportedKind(CommandKind kind, uint16_t commandSizeBytes) {
         return commandSizeBytes >= sizeof(SpawnTextCommandV1);
     case CommandKind::SpawnImage:
         return commandSizeBytes >= sizeof(SpawnImageCommandV1);
+    case CommandKind::SpawnImageAffine:
+        return commandSizeBytes >= sizeof(SpawnImageAffineCommandV1);
     default:
         return false;
     }

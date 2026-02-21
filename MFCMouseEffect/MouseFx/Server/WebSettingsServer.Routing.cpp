@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cwctype>
 #include <exception>
 #include <filesystem>
 #include <limits>
@@ -110,6 +111,37 @@ std::string ParseInitialPathUtf8(const json& payload) {
         return {};
     }
     return payload["initial_path"].get<std::string>();
+}
+
+std::wstring NormalizeManifestPathForCompare(const std::wstring& path) {
+    std::wstring normalized = path;
+    for (wchar_t& ch : normalized) {
+        if (ch == L'/') {
+            ch = L'\\';
+        }
+        ch = static_cast<wchar_t>(std::towlower(ch));
+    }
+    return normalized;
+}
+
+bool IsSameManifestPath(const std::wstring& expected, const std::wstring& actual) {
+    if (expected.empty() || actual.empty()) {
+        return false;
+    }
+
+    std::error_code ecExpected;
+    std::error_code ecActual;
+    const std::wstring expectedCanonical =
+        NormalizeManifestPathForCompare(std::filesystem::path(expected).lexically_normal().wstring());
+    const std::wstring actualCanonical =
+        NormalizeManifestPathForCompare(std::filesystem::path(actual).lexically_normal().wstring());
+    if (!expectedCanonical.empty() && !actualCanonical.empty()) {
+        return expectedCanonical == actualCanonical;
+    }
+
+    (void)ecExpected;
+    (void)ecActual;
+    return NormalizeManifestPathForCompare(expected) == NormalizeManifestPathForCompare(actual);
 }
 
 json BuildWasmResponse(AppController* controller, bool ok) {
@@ -528,9 +560,14 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
                 cmd["cmd"] = "wasm_load_manifest";
                 cmd["manifest_path"] = manifestPathUtf8;
                 controller_->HandleCommand(cmd.dump());
-                ok = controller_->WasmHost()->Diagnostics().pluginLoaded;
+                const wasm::HostDiagnostics& diag = controller_->WasmHost()->Diagnostics();
+                ok = diag.pluginLoaded &&
+                    IsSameManifestPath(Utf8ToWString(manifestPathUtf8), diag.activeManifestPath);
                 if (!ok) {
-                    error = controller_->WasmHost()->Diagnostics().lastError;
+                    error = diag.lastError;
+                    if (error.empty()) {
+                        error = "manifest switch did not take effect";
+                    }
                 }
             } else {
                 error = "manifest_path required";
