@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "TextWindow.h"
 #include "MouseFx/Utils/TimeUtils.h"
+#include "MouseFx/Utils/D2DFactory.h"
+#include "Settings/EmojiUtils.h"
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -27,68 +29,10 @@ static Gdiplus::Color ToGdiPlus(Argb c, BYTE alpha) {
     return Gdiplus::Color(alpha, (BYTE)((c.value >> 16) & 0xFF), (BYTE)((c.value >> 8) & 0xFF), (BYTE)(c.value & 0xFF));
 }
 
-static uint32_t NextCodePoint(const std::wstring& text, size_t* i) {
-    if (!i || *i >= text.size()) return 0;
-    wchar_t lead = text[*i];
-    (*i)++;
-    if (lead >= 0xD800 && lead <= 0xDBFF) {
-        if (*i < text.size()) {
-            wchar_t trail = text[*i];
-            if (trail >= 0xDC00 && trail <= 0xDFFF) {
-                (*i)++;
-                return (((uint32_t)lead - 0xD800) << 10) + ((uint32_t)trail - 0xDC00) + 0x10000;
-            }
-        }
-    }
-    return (uint32_t)lead;
-}
 
-static bool IsEmojiCodePoint(uint32_t cp) {
-    if (cp >= 0x1F300 && cp <= 0x1F5FF) return true; // Misc Symbols & Pictographs
-    if (cp >= 0x1F600 && cp <= 0x1F64F) return true; // Emoticons
-    if (cp >= 0x1F680 && cp <= 0x1F6FF) return true; // Transport & Map
-    if (cp >= 0x1F700 && cp <= 0x1F77F) return true; // Alchemical Symbols
-    if (cp >= 0x1F900 && cp <= 0x1F9FF) return true; // Supplemental Symbols & Pictographs
-    if (cp >= 0x1FA70 && cp <= 0x1FAFF) return true; // Symbols & Pictographs Extended-A
-    if (cp >= 0x2600 && cp <= 0x27BF) return true;   // Misc symbols
-    if (cp >= 0x1F1E6 && cp <= 0x1F1FF) return true; // Flags
-    return false;
-}
-
-static bool IsEmojiComponent(uint32_t cp) {
-    if (IsEmojiCodePoint(cp)) return true;
-    if (cp == 0xFE0F || cp == 0xFE0E || cp == 0x200D) return true;
-    if (cp >= 0x1F3FB && cp <= 0x1F3FF) return true;
-    return false;
-}
-
-static bool IsEmojiOnlyText(const std::wstring& text) {
-    bool hasEmoji = false;
-    for (size_t i = 0; i < text.size(); ) {
-        uint32_t cp = NextCodePoint(text, &i);
-        if (cp == 0) break;
-        if (cp == 0xFE0F || cp == 0xFE0E || cp == 0x200D) continue; // VS16/VS15/ZWJ
-        if (cp >= 0x1F3FB && cp <= 0x1F3FF) continue; // skin tone modifiers
-        if (IsEmojiCodePoint(cp)) {
-            hasEmoji = true;
-            continue;
-        }
-        return false;
-    }
-    return hasEmoji;
-}
-
-static bool HasEmojiStarter(const std::wstring& text) {
-    for (size_t i = 0; i < text.size(); ) {
-        uint32_t cp = NextCodePoint(text, &i);
-        if (cp == 0) break;
-        if (IsEmojiCodePoint(cp)) return true;
-    }
-    return false;
-}
 
 static std::wstring ResolveFontFamilyName(const TextConfig& config, const std::wstring& text) {
-    if (IsEmojiOnlyText(text)) {
+    if (settings::IsEmojiOnlyText(text)) {
         return L"Segoe UI Emoji";
     }
     if (!config.fontFamily.empty()) return config.fontFamily;
@@ -172,7 +116,7 @@ void TextWindow::StartAt(const POINT& pt, const std::wstring& text, Argb color, 
     const int top = pt.y - (winSize / 2);
     baseLeft_ = left;
     baseTop_ = top;
-    emojiColorMode_ = HasEmojiStarter(text_);
+    emojiColorMode_ = settings::HasEmojiStarter(text_);
     emojiFrameReady_ = false;
 
     SetWindowPos(hwnd_, HWND_TOPMOST, left, top, winSize, winSize, SWP_NOACTIVATE | SWP_SHOWWINDOW);
@@ -285,17 +229,8 @@ static float EaseOutCubic(float t) {
 
 bool TextWindow::EnsureD2DResources() {
     if (!memDc_) return false;
-    if (!d2dFactory_) {
-        if (FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, d2dFactory_.GetAddressOf()))) {
-            return false;
-        }
-    }
-    if (!dwriteFactory_) {
-        if (FAILED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
-            reinterpret_cast<IUnknown**>(dwriteFactory_.GetAddressOf())))) {
-            return false;
-        }
-    }
+    ID2D1Factory* d2dFactory = SharedD2D1Factory();
+    if (!d2dFactory) return false;
     if (!d2dTarget_) {
         D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
             D2D1_RENDER_TARGET_TYPE_DEFAULT,
@@ -303,7 +238,7 @@ bool TextWindow::EnsureD2DResources() {
             0.0f, 0.0f,
             D2D1_RENDER_TARGET_USAGE_NONE,
             D2D1_FEATURE_LEVEL_DEFAULT);
-        if (FAILED(d2dFactory_->CreateDCRenderTarget(&props, d2dTarget_.GetAddressOf()))) {
+        if (FAILED(d2dFactory->CreateDCRenderTarget(&props, d2dTarget_.GetAddressOf()))) {
             return false;
         }
         d2dTarget_->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE);
@@ -317,7 +252,8 @@ bool TextWindow::EnsureD2DResources() {
 }
 
 bool TextWindow::EnsureTextLayout(float dpi, float widthDip, float heightDip) {
-    if (!dwriteFactory_) return false;
+    IDWriteFactory* dwriteFactory = SharedDWriteFactory();
+    if (!dwriteFactory) return false;
 
     const float fontSize = (config_.fontSize) * (96.0f / 72.0f);
     const bool sizeChanged =
@@ -332,13 +268,13 @@ bool TextWindow::EnsureTextLayout(float dpi, float widthDip, float heightDip) {
     textLayout_.Reset();
     textFormat_.Reset();
 
-    const bool emojiOnly = IsEmojiOnlyText(text_);
-    const bool hasEmoji = HasEmojiStarter(text_);
+    const bool emojiOnly = settings::IsEmojiOnlyText(text_);
+    const bool hasEmoji = settings::HasEmojiStarter(text_);
     const std::wstring fontName = ResolveFontFamilyName(config_, text_);
     const std::wstring emojiFontName = L"Segoe UI Emoji";
     const DWRITE_FONT_WEIGHT baseWeight = emojiOnly ? DWRITE_FONT_WEIGHT_REGULAR : DWRITE_FONT_WEIGHT_BOLD;
 
-    if (FAILED(dwriteFactory_->CreateTextFormat(
+    if (FAILED(dwriteFactory->CreateTextFormat(
         fontName.c_str(),
         nullptr,
         baseWeight,
@@ -354,7 +290,7 @@ bool TextWindow::EnsureTextLayout(float dpi, float widthDip, float heightDip) {
     textFormat_->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
     textFormat_->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
-    if (FAILED(dwriteFactory_->CreateTextLayout(
+    if (FAILED(dwriteFactory->CreateTextLayout(
         text_.c_str(),
         (UINT32)text_.size(),
         textFormat_.Get(),
@@ -370,16 +306,16 @@ bool TextWindow::EnsureTextLayout(float dpi, float widthDip, float heightDip) {
         while (pos < text_.size()) {
             size_t runStart = pos;
             size_t next = pos;
-            uint32_t cp = NextCodePoint(text_, &next);
+            uint32_t cp = settings::NextCodePointUtf16(text_, &next);
             if (cp == 0) break;
             pos = next;
-            if (IsEmojiCodePoint(cp)) {
+            if (settings::IsEmojiCodePoint(cp)) {
                 size_t runEnd = pos;
                 while (runEnd < text_.size()) {
                     size_t probe = runEnd;
-                    uint32_t cp2 = NextCodePoint(text_, &probe);
+                    uint32_t cp2 = settings::NextCodePointUtf16(text_, &probe);
                     if (cp2 == 0) break;
-                    if (!IsEmojiComponent(cp2)) break;
+                    if (!settings::IsEmojiComponent(cp2)) break;
                     runEnd = probe;
                 }
                 DWRITE_TEXT_RANGE range{ (UINT32)runStart, (UINT32)(runEnd - runStart) };
@@ -390,9 +326,9 @@ bool TextWindow::EnsureTextLayout(float dpi, float widthDip, float heightDip) {
                 size_t runEnd = pos;
                 while (runEnd < text_.size()) {
                     size_t probe = runEnd;
-                    uint32_t cp2 = NextCodePoint(text_, &probe);
+                    uint32_t cp2 = settings::NextCodePointUtf16(text_, &probe);
                     if (cp2 == 0) break;
-                    if (IsEmojiCodePoint(cp2)) break;
+                    if (settings::IsEmojiCodePoint(cp2)) break;
                     runEnd = probe;
                 }
                 DWRITE_TEXT_RANGE range{ (UINT32)runStart, (UINT32)(runEnd - runStart) };

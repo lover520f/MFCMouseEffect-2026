@@ -68,8 +68,6 @@ private:
     int width_ = 0;
     int height_ = 0;
 
-    Microsoft::WRL::ComPtr<ID2D1Factory> d2dFactory_;
-    Microsoft::WRL::ComPtr<IDWriteFactory> dwriteFactory_;
     Microsoft::WRL::ComPtr<ID2D1DCRenderTarget> d2dTarget_;
     Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> d2dBrush_;
     Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat_;

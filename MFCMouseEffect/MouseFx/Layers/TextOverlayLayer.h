@@ -33,7 +33,6 @@ private:
     };
 
     static float EaseOutCubic(float t);
-    static bool IsEmojiOnlyText(const std::wstring& text);
     static std::wstring ResolveFontFamilyName(const TextConfig& config, const std::wstring& text);
     static std::wstring EnsureFontFamily(const std::wstring& name);
     static Gdiplus::Color ToGdiPlus(Argb color, BYTE alpha);

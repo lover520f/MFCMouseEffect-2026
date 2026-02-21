@@ -39,5 +39,29 @@ bool IsEmojiComponent(uint32_t cp) {
     return false;
 }
 
-} // namespace settings
+bool HasEmojiStarter(const std::wstring& text) {
+    for (size_t i = 0; i < text.size();) {
+        const uint32_t cp = NextCodePointUtf16(text, &i);
+        if (cp == 0) break;
+        if (IsEmojiCodePoint(cp)) return true;
+    }
+    return false;
+}
 
+bool IsEmojiOnlyText(const std::wstring& text) {
+    bool hasEmoji = false;
+    for (size_t i = 0; i < text.size();) {
+        uint32_t cp = NextCodePointUtf16(text, &i);
+        if (cp == 0) break;
+        if (cp == 0xFE0F || cp == 0xFE0E || cp == 0x200D) continue; // VS16/VS15/ZWJ
+        if (cp >= 0x1F3FB && cp <= 0x1F3FF) continue; // skin tone modifiers
+        if (IsEmojiCodePoint(cp)) {
+            hasEmoji = true;
+            continue;
+        }
+        return false;
+    }
+    return hasEmoji;
+}
+
+} // namespace settings

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "EmojiPreviewWnd.h"
+#include "Settings/EmojiUtils.h"
 
 #include <dxgiformat.h>
 #include <vector>
@@ -19,40 +20,7 @@ static float GetWindowDpi(HWND hwnd) {
     return 96.0f;
 }
 
-static uint32_t NextCodePoint(const std::wstring& text, size_t* i) {
-    if (!i || *i >= text.size()) return 0;
-    wchar_t lead = text[*i];
-    (*i)++;
-    if (lead >= 0xD800 && lead <= 0xDBFF) {
-        if (*i < text.size()) {
-            wchar_t trail = text[*i];
-            if (trail >= 0xDC00 && trail <= 0xDFFF) {
-                (*i)++;
-                return (((uint32_t)lead - 0xD800) << 10) + ((uint32_t)trail - 0xDC00) + 0x10000;
-            }
-        }
-    }
-    return (uint32_t)lead;
-}
 
-static bool IsEmojiCodePoint(uint32_t cp) {
-    if (cp >= 0x1F300 && cp <= 0x1F5FF) return true;
-    if (cp >= 0x1F600 && cp <= 0x1F64F) return true;
-    if (cp >= 0x1F680 && cp <= 0x1F6FF) return true;
-    if (cp >= 0x1F700 && cp <= 0x1F77F) return true;
-    if (cp >= 0x1F900 && cp <= 0x1F9FF) return true;
-    if (cp >= 0x1FA70 && cp <= 0x1FAFF) return true;
-    if (cp >= 0x2600 && cp <= 0x27BF) return true;
-    if (cp >= 0x1F1E6 && cp <= 0x1F1FF) return true;
-    return false;
-}
-
-static bool IsEmojiComponent(uint32_t cp) {
-    if (IsEmojiCodePoint(cp)) return true;
-    if (cp == 0xFE0F || cp == 0xFE0E || cp == 0x200D) return true;
-    if (cp >= 0x1F3FB && cp <= 0x1F3FF) return true;
-    return false;
-}
 
 } // namespace
 
@@ -212,16 +180,16 @@ void EmojiPreviewWnd::Render() {
     while (pos < text_.size()) {
         size_t runStart = pos;
         size_t next = pos;
-        uint32_t cp = NextCodePoint(text_, &next);
+        uint32_t cp = settings::NextCodePointUtf16(text_, &next);
         if (cp == 0) break;
         pos = next;
-        if (IsEmojiCodePoint(cp)) {
+        if (settings::IsEmojiCodePoint(cp)) {
             size_t runEnd = pos;
             while (runEnd < text_.size()) {
                 size_t probe = runEnd;
-                uint32_t cp2 = NextCodePoint(text_, &probe);
+                uint32_t cp2 = settings::NextCodePointUtf16(text_, &probe);
                 if (cp2 == 0) break;
-                if (!IsEmojiComponent(cp2)) break;
+                if (!settings::IsEmojiComponent(cp2)) break;
                 runEnd = probe;
             }
             DWRITE_TEXT_RANGE range{ (UINT32)runStart, (UINT32)(runEnd - runStart) };
@@ -232,9 +200,9 @@ void EmojiPreviewWnd::Render() {
             size_t runEnd = pos;
             while (runEnd < text_.size()) {
                 size_t probe = runEnd;
-                uint32_t cp2 = NextCodePoint(text_, &probe);
+                uint32_t cp2 = settings::NextCodePointUtf16(text_, &probe);
                 if (cp2 == 0) break;
-                if (IsEmojiCodePoint(cp2)) break;
+                if (settings::IsEmojiCodePoint(cp2)) break;
                 runEnd = probe;
             }
             DWRITE_TEXT_RANGE range{ (UINT32)runStart, (UINT32)(runEnd - runStart) };

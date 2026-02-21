@@ -3,6 +3,7 @@
 #include "TextOverlayLayer.h"
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TimeUtils.h"
+#include "Settings/EmojiUtils.h"
 
 #include <algorithm>
 #include <cmath>
@@ -15,58 +16,10 @@ float TextOverlayLayer::EaseOutCubic(float t) {
     return 1.0f - (u * u * u);
 }
 
-static uint32_t NextCodePoint(const std::wstring& text, size_t* index) {
-    if (!index || *index >= text.size()) return 0;
-    wchar_t lead = text[*index];
-    (*index)++;
-    if (lead >= 0xD800 && lead <= 0xDBFF && *index < text.size()) {
-        wchar_t trail = text[*index];
-        if (trail >= 0xDC00 && trail <= 0xDFFF) {
-            (*index)++;
-            return (((uint32_t)lead - 0xD800) << 10) + ((uint32_t)trail - 0xDC00) + 0x10000;
-        }
-    }
-    return (uint32_t)lead;
-}
 
-static bool IsEmojiCodePoint(uint32_t cp) {
-    if (cp >= 0x1F300 && cp <= 0x1F5FF) return true;
-    if (cp >= 0x1F600 && cp <= 0x1F64F) return true;
-    if (cp >= 0x1F680 && cp <= 0x1F6FF) return true;
-    if (cp >= 0x1F900 && cp <= 0x1F9FF) return true;
-    if (cp >= 0x1FA70 && cp <= 0x1FAFF) return true;
-    if (cp >= 0x2600 && cp <= 0x27BF) return true;
-    if (cp >= 0x1F1E6 && cp <= 0x1F1FF) return true;
-    return false;
-}
-
-static bool HasEmojiStarter(const std::wstring& text) {
-    for (size_t i = 0; i < text.size();) {
-        uint32_t cp = NextCodePoint(text, &i);
-        if (cp == 0) break;
-        if (IsEmojiCodePoint(cp)) return true;
-    }
-    return false;
-}
-
-bool TextOverlayLayer::IsEmojiOnlyText(const std::wstring& text) {
-    bool hasEmoji = false;
-    for (size_t i = 0; i < text.size();) {
-        uint32_t cp = NextCodePoint(text, &i);
-        if (cp == 0) break;
-        if (cp == 0xFE0F || cp == 0xFE0E || cp == 0x200D) continue;
-        if (cp >= 0x1F3FB && cp <= 0x1F3FF) continue;
-        if (IsEmojiCodePoint(cp)) {
-            hasEmoji = true;
-            continue;
-        }
-        return false;
-    }
-    return hasEmoji;
-}
 
 std::wstring TextOverlayLayer::ResolveFontFamilyName(const TextConfig& config, const std::wstring& text) {
-    if (HasEmojiStarter(text)) {
+    if (settings::HasEmojiStarter(text)) {
         return L"Segoe UI Emoji";
     }
     if (!config.fontFamily.empty()) {
@@ -164,7 +117,7 @@ void TextOverlayLayer::Render(Gdiplus::Graphics& graphics) {
         std::wstring family = EnsureFontFamily(ResolveFontFamilyName(instance.config, instance.text));
         float fontSizePt = instance.config.fontSize * scale;
         if (fontSizePt < 6.0f) fontSizePt = 6.0f;
-        const bool hasEmoji = HasEmojiStarter(instance.text);
+        const bool hasEmoji = settings::HasEmojiStarter(instance.text);
         const int fontStyle = hasEmoji ? Gdiplus::FontStyleRegular : Gdiplus::FontStyleBold;
         Gdiplus::Font font(family.c_str(), fontSizePt, fontStyle, Gdiplus::UnitPoint);
 
