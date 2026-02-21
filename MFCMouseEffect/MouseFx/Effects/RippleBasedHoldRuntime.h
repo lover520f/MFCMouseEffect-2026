@@ -30,6 +30,7 @@ public:
 
 private:
     void SendHoldStateCommand(uint32_t holdMs, const POINT& pt) const;
+    void SendHoldEndCommand(const POINT& pt) const;
 
     std::string rendererName_;
     bool isGpuV2Route_ = false;

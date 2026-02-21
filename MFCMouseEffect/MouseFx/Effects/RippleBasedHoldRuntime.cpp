@@ -86,7 +86,8 @@ void RippleBasedHoldRuntime::Update(uint32_t holdMs, const POINT& pt) {
 void RippleBasedHoldRuntime::Stop() {
     if (rippleId_ == 0) return;
     if (isGpuV2Route_) {
-        SendHoldStateCommand(0, lastSentPoint_);
+        const POINT finalPt = hasLastSentPoint_ ? lastSentPoint_ : POINT{};
+        SendHoldEndCommand(finalPt);
     }
     OverlayHostService::Instance().StopRipple(rippleId_);
     rippleId_ = 0;
@@ -102,6 +103,13 @@ void RippleBasedHoldRuntime::SendHoldStateCommand(uint32_t holdMs, const POINT& 
     char buf[96]{};
     snprintf(buf, sizeof(buf), "%u,%ld,%ld", holdMs, (long)pt.x, (long)pt.y);
     OverlayHostService::Instance().SendRippleCommand(rippleId_, "hold_state", buf);
+}
+
+void RippleBasedHoldRuntime::SendHoldEndCommand(const POINT& pt) const {
+    if (rippleId_ == 0) return;
+    char buf[64]{};
+    snprintf(buf, sizeof(buf), "%ld,%ld", (long)pt.x, (long)pt.y);
+    OverlayHostService::Instance().SendRippleCommand(rippleId_, "hold_end", buf);
 }
 
 } // namespace mousefx

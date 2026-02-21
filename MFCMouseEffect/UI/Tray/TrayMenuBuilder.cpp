@@ -66,7 +66,7 @@ static CString FallbackOptionLabel(UINT cmd, bool zh) {
         case kCmdHoldNeon3D: return PickLabel(L"\u9713\u8679 HUD (3D)", L"Neon HUD (3D)", zh);
         case kCmdHoldQuantumHaloGpuV2: return PickLabel(L"\u91CF\u5B50\u5149\u73AF GPU", L"Quantum Halo GPU", zh);
         case kCmdHoldFluxFieldCpu: return PickLabel(L"\u78C1\u901A\u573A HUD\uff08CPU\u4EC5\uff09", L"FluxField HUD (CPU Only)", zh);
-        case kCmdHoldFluxFieldGpuV2: return PickLabel(L"\u78C1\u901A\u573A HUD GPU\uff08CPU\u515C\u5E95\uff09", L"FluxField HUD GPU (CPU Fallback)", zh);
+        case kCmdHoldFluxFieldGpuV2: return PickLabel(L"\u78C1\u901A\u573A HUD GPU", L"FluxField HUD GPU", zh);
         case kCmdHoldNone: return PickLabel(L"\u65E0", L"None", zh);
 
         case kCmdHoverGlow: return PickLabel(L"\u547C\u5438\u706F", L"Glow", zh);

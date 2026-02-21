@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "FluxFieldHudGpuV2D2DBackend.h"
-#include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/MathUtils.h"
 
 #include <algorithm>
@@ -85,42 +84,47 @@ bool FluxFieldHudGpuV2D2DBackend::Render(
         do {
             LONG left = static_cast<LONG>(std::lround(m[4]));
             LONG top = static_cast<LONG>(std::lround(m[5]));
-            const int dcW = GetDeviceCaps(hdc, HORZRES);
-            const int dcH = GetDeviceCaps(hdc, VERTRES);
-            if (hasCursorState) {
-                POINT screenPt{};
-                screenPt.x = cursorScreenX;
-                screenPt.y = cursorScreenY;
-                const POINT localPt = ScreenToOverlayPoint(screenPt);
-                if (dcW > 0 && dcH > 0) {
-                    if (localPt.x < -sizePx || localPt.x > dcW + sizePx ||
-                        localPt.y < -sizePx || localPt.y > dcH + sizePx) {
-                        // keep matrix-derived left/top as fallback anchor
-                    } else {
-                        left = static_cast<LONG>(localPt.x - sizePx / 2);
-                        top = static_cast<LONG>(localPt.y - sizePx / 2);
-                    }
-                } else {
-                    left = static_cast<LONG>(localPt.x - sizePx / 2);
-                    top = static_cast<LONG>(localPt.y - sizePx / 2);
-                }
+            RECT clipRc{};
+            const int clipType = GetClipBox(hdc, &clipRc);
+            if (clipType == NULLREGION) {
+                // This surface has no visible draw region in the current frame.
+                // Treat as a no-op success so multi-surface render does not
+                // accidentally disable the whole renderer session.
+                ok = true;
+                break;
             }
+            if (clipType == ERROR) {
+                clipRc.left = 0;
+                clipRc.top = 0;
+                clipRc.right = sizePx;
+                clipRc.bottom = sizePx;
+            }
+            const int clipW = clipRc.right - clipRc.left;
+            const int clipH = clipRc.bottom - clipRc.top;
+            if (clipW <= 0 || clipH <= 0) {
+                ok = true;
+                break;
+            }
+            (void)hasCursorState;
+            (void)cursorScreenX;
+            (void)cursorScreenY;
 
             LONG rcLeft = left;
             LONG rcTop = top;
             LONG rcRight = left + sizePx;
             LONG rcBottom = top + sizePx;
-            if (dcW > 0 && dcH > 0) {
-                rcLeft = (std::max)(0L, rcLeft);
-                rcTop = (std::max)(0L, rcTop);
-                rcRight = (std::min)(rcRight, static_cast<LONG>(dcW));
-                rcBottom = (std::min)(rcBottom, static_cast<LONG>(dcH));
-            }
+            rcLeft = (std::max)(clipRc.left, rcLeft);
+            rcTop = (std::max)(clipRc.top, rcTop);
+            rcRight = (std::min)(rcRight, clipRc.right);
+            rcBottom = (std::min)(rcBottom, clipRc.bottom);
             if (rcRight <= rcLeft || rcBottom <= rcTop) {
+                // Ripple is outside this surface; no draw needed.
+                ok = true;
                 break;
             }
-            RECT rc = { rcLeft, rcTop, rcRight, rcBottom };
-            if (FAILED(target_->BindDC(hdc, &rc))) break;
+            // Bind full clip box to avoid driver-dependent coordinate origin behavior
+            // when binding a sub-rect and drawing with absolute coordinates.
+            if (FAILED(target_->BindDC(hdc, &clipRc))) break;
 
             target_->BeginDraw();
             target_->SetTransform(D2D1::Matrix3x2F::Identity());

@@ -3,7 +3,6 @@
 #include "FluxFieldGpuV2ComputeEngine.h"
 #include "FluxFieldHudGpuV2D2DBackend.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"
-#include "FluxFieldHudCpuRenderer.h"
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 
 #include <cstdio>
@@ -19,46 +18,46 @@ public:
     void Start(const RippleStyle& style) override {
         state_ = {};
         style_ = style;
+        renderAttemptCount_ = 0;
+        renderSuccessCount_ = 0;
+        renderFailureCount_ = 0;
         gpuVisualBackend_.ResetSession();
-        cpuFallbackRenderer_.Start(style_);
         gpuStarted_ = gpuCompute_.Start();
         gpuVisualActive_ = gpuVisualBackend_.IsAvailable();
-        cpuFallbackActive_ = !gpuVisualActive_;
-        routeReason_ = gpuVisualActive_
-            ? "gpu_d2d_visual_active"
-            : "gpu_visual_unavailable_fallback_cpu";
+        cpuFallbackActive_ = false;
+        if (!gpuStarted_) {
+            routeReason_ = "gpu_compute_start_failed";
+            gpuVisualActive_ = false;
+            return;
+        }
+        routeReason_ = gpuVisualActive_ ? "gpu_d2d_visual_active" : "gpu_visual_unavailable";
     }
 
     void Render(Gdiplus::Graphics& g, float t, uint64_t elapsedMs, int sizePx, const RippleStyle& style) override {
-        if (gpuVisualActive_ && gpuStarted_ && gpuCompute_.IsActive()) {
-            gpuCompute_.Tick(elapsedMs, state_.holdMs);
+        if (!gpuStarted_ || !gpuCompute_.IsActive() || !gpuVisualActive_) {
+            return;
         }
+        ++renderAttemptCount_;
+        gpuCompute_.Tick(elapsedMs, state_.holdMs);
 
-        if (gpuVisualActive_) {
-            const bool ok = gpuVisualBackend_.Render(
-                g,
-                t,
-                elapsedMs,
-                sizePx,
-                style_,
-                state_.holdMs,
-                state_.hasCursorState,
-                state_.cursorX,
-                state_.cursorY);
-            if (ok) {
-                return;
-            }
-            // GPU visual path failed in runtime: hard switch to CPU fallback for this hold session.
+        const bool ok = gpuVisualBackend_.Render(
+            g,
+            t,
+            elapsedMs,
+            sizePx,
+            style_,
+            state_.holdMs,
+            state_.hasCursorState,
+            state_.cursorX,
+            state_.cursorY);
+        if (!ok) {
+            ++renderFailureCount_;
             gpuVisualActive_ = false;
-            cpuFallbackActive_ = true;
-            routeReason_ = "gpu_visual_runtime_failed_fallback_cpu";
-            gpuCompute_.Shutdown();
-            gpuStarted_ = false;
+            routeReason_ = "gpu_visual_runtime_failed";
+            WriteGpuSnapshot();
+            return;
         }
-
-        if (cpuFallbackActive_) {
-            cpuFallbackRenderer_.Render(g, t, elapsedMs, sizePx, style_);
-        }
+        ++renderSuccessCount_;
     }
 
     void OnCommand(const std::string& cmd, const std::string& args) override {
@@ -72,14 +71,18 @@ public:
                 state_.cursorX = x;
                 state_.cursorY = y;
                 state_.hasCursorState = true;
-                if (ms == 0) {
-                    state_.active = false;
-                    state_.hasCursorState = false;
-                    WriteGpuSnapshot();
-                }
             }
+            return;
         }
-        cpuFallbackRenderer_.OnCommand(cmd, args);
+        if (cmd == "hold_end") {
+            state_.active = false;
+            state_.holdMs = 0;
+            state_.hasCursorState = false;
+            WriteGpuSnapshot();
+            return;
+        }
+        (void)cmd;
+        (void)args;
     }
 
 private:
@@ -103,6 +106,9 @@ private:
            << "\"gpu_last_passes\":" << snap.lastPasses << ","
            << "\"gpu_visual_active\":" << (gpuVisualActive_ ? "true" : "false") << ","
            << "\"cpu_fallback_active\":" << (cpuFallbackActive_ ? "true" : "false") << ","
+           << "\"render_attempt_count\":" << renderAttemptCount_ << ","
+           << "\"render_success_count\":" << renderSuccessCount_ << ","
+           << "\"render_failure_count\":" << renderFailureCount_ << ","
            << "\"route_reason\":\"" << routeReason_ << "\""
            << "}";
         out << ss.str();
@@ -118,12 +124,14 @@ private:
 
     RippleStyle style_{};
     FluxFieldHudGpuV2D2DBackend gpuVisualBackend_{};
-    FluxFieldHudCpuRenderer cpuFallbackRenderer_{};
     FluxFieldGpuV2ComputeEngine gpuCompute_{};
     HoldState state_{};
     bool gpuStarted_ = false;
     bool gpuVisualActive_ = false;
     bool cpuFallbackActive_ = false;
+    uint64_t renderAttemptCount_ = 0;
+    uint64_t renderSuccessCount_ = 0;
+    uint64_t renderFailureCount_ = 0;
     std::string routeReason_ = "uninitialized";
 };
 
