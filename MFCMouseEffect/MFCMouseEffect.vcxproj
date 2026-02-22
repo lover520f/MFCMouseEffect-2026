@@ -348,7 +348,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonCodecEffectsColorHelpers.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonCodecParseInternal.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonCodecSerializeInternal.h" />
-    <ClInclude Include="MouseFx\Utils\D2DFactory.h" />
+    <ClInclude Include="Platform\windows\Graphics\Win32D2DFactory.h" />
     <ClInclude Include="MouseFx\Core\Input\GestureRecognizer.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmPluginAbi.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmBinaryCodec.h" />
@@ -506,7 +506,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfig.Load.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfig.Save.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfig.cpp" />
-    <ClCompile Include="MouseFx\Utils\D2DFactory.cpp" />
+    <ClCompile Include="Platform\windows\Graphics\Win32D2DFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmBinaryCodec.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmCommandBufferParser.cpp" />

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TextWindow.h"
 #include "MouseFx/Utils/TimeUtils.h"
-#include "MouseFx/Utils/D2DFactory.h"
+#include "Platform/windows/Graphics/Win32D2DFactory.h"
 #include "Settings/EmojiUtils.h"
 #include <algorithm>
 #include <cmath>

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "D2DFactory.h"
+#include "Win32D2DFactory.h"
 
 #include <wrl/client.h>
 
