@@ -1,7 +1,8 @@
 #include "pch.h"
-#include "KeyboardInjector.h"
 
-#include "KeyChord.h"
+#include "Platform/windows/System/Win32KeyboardInjector.h"
+
+#include "MouseFx/Core/Automation/KeyChord.h"
 
 #include <vector>
 
@@ -10,7 +11,7 @@ namespace {
 
 constexpr ULONG_PTR kInjectedExtraInfo = 0x4D46584B; // "MFXK"
 
-INPUT MakeKeyInput(UINT vk, bool keyUp) {
+INPUT MakeKeyInput(uint32_t vk, bool keyUp) {
     INPUT input{};
     input.type = INPUT_KEYBOARD;
     input.ki.wVk = static_cast<WORD>(vk);
@@ -22,7 +23,7 @@ INPUT MakeKeyInput(UINT vk, bool keyUp) {
 
 } // namespace
 
-bool KeyboardInjector::SendChord(const std::string& chordText) const {
+bool Win32KeyboardInjector::SendChord(const std::string& chordText) {
     KeyChord chord{};
     if (!ParseKeyChord(chordText, &chord)) {
         return false;
@@ -31,7 +32,7 @@ bool KeyboardInjector::SendChord(const std::string& chordText) const {
     std::vector<INPUT> inputs;
     inputs.reserve(chord.modifiers.size() * 2 + 2);
 
-    for (UINT vk : chord.modifiers) {
+    for (uint32_t vk : chord.modifiers) {
         inputs.push_back(MakeKeyInput(vk, false));
     }
 

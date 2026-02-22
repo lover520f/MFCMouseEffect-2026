@@ -3,8 +3,8 @@
 #include "MouseFx/Core/Config/EffectConfig.h"
 #include "MouseFx/Core/Protocol/InputTypes.h"
 #include "MouseFx/Core/System/IForegroundProcessService.h"
+#include "MouseFx/Core/System/IKeyboardInjector.h"
 #include "MouseFx/Core/Input/GestureRecognizer.h"
-#include "MouseFx/Core/Automation/KeyboardInjector.h"
 
 #include <chrono>
 #include <string>
@@ -30,6 +30,7 @@ public:
     void OnClick(const ClickEvent& ev);
     void OnScroll(short delta);
     void SetForegroundProcessService(IForegroundProcessService* service);
+    void SetKeyboardInjector(IKeyboardInjector* injector);
 
 private:
     struct ActionHistoryItem {
@@ -76,7 +77,7 @@ private:
 
     InputAutomationConfig config_{};
     GestureRecognizer gestureRecognizer_{};
-    KeyboardInjector keyboardInjector_{};
+    IKeyboardInjector* keyboardInjector_ = nullptr;
     std::string suppressNextClickActionId_{};
     std::vector<ActionHistoryItem> mouseActionHistory_{};
     std::vector<ActionHistoryItem> gestureHistory_{};

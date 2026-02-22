@@ -15,6 +15,7 @@
 #include "MouseFx/Core/System/NullCursorPositionService.h"
 #include "MouseFx/Core/System/NullForegroundProcessService.h"
 #include "MouseFx/Core/System/NullForegroundSuppressionService.h"
+#include "MouseFx/Core/System/NullKeyboardInjector.h"
 #include "MouseFx/Core/System/GdiPlusSession.h"
 #include "MouseFx/Core/System/StdMonotonicClockService.h"
 #include "MouseFx/Core/Overlay/NullInputIndicatorOverlay.h"
@@ -75,6 +76,7 @@ AppController::AppController()
     , foregroundProcessService_(platform::CreateForegroundProcessService())
     , foregroundSuppressionService_(platform::CreateForegroundSuppressionService())
     , hook_(platform::CreateGlobalMouseHook())
+    , keyboardInjector_(platform::CreateKeyboardInjector())
     , inputIndicatorOverlay_(platform::CreateInputIndicatorOverlay())
     , commandHandler_(std::make_unique<CommandHandler>(this))
     , dispatchRouter_(std::make_unique<DispatchRouter>(this)) {
@@ -96,8 +98,12 @@ AppController::AppController()
     if (!foregroundSuppressionService_) {
         foregroundSuppressionService_ = std::make_unique<NullForegroundSuppressionService>();
     }
+    if (!keyboardInjector_) {
+        keyboardInjector_ = std::make_unique<NullKeyboardInjector>();
+    }
     shortcutCaptureSession_.SetClockService(monotonicClockService_.get());
     inputAutomationEngine_.SetForegroundProcessService(foregroundProcessService_.get());
+    inputAutomationEngine_.SetKeyboardInjector(keyboardInjector_.get());
     if (!inputIndicatorOverlay_) {
         inputIndicatorOverlay_ = std::make_unique<NullInputIndicatorOverlay>();
     }

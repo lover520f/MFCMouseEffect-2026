@@ -222,7 +222,6 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Control\NullDispatchMessageHost.h" />
     <ClInclude Include="MouseFx\Core\Control\AppController.h" />
     <ClInclude Include="MouseFx\Core\Automation\InputAutomationEngine.h" />
-    <ClInclude Include="MouseFx\Core\Automation\KeyboardInjector.h" />
     <ClInclude Include="MouseFx\Core\Automation\KeyChord.h" />
     <ClInclude Include="MouseFx\Core\Automation\ShortcutCaptureSession.h" />
     <ClInclude Include="MouseFx\Compute\EffectComputeExecutor.h" />
@@ -276,10 +275,12 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\System\IForegroundProcessService.h" />
     <ClInclude Include="MouseFx\Core\System\IForegroundSuppressionService.h" />
     <ClInclude Include="MouseFx\Core\System\IGlobalMouseHook.h" />
+    <ClInclude Include="MouseFx\Core\System\IKeyboardInjector.h" />
     <ClInclude Include="MouseFx\Core\System\NullCursorPositionService.h" />
     <ClInclude Include="MouseFx\Core\System\NullForegroundProcessService.h" />
     <ClInclude Include="MouseFx\Core\System\NullForegroundSuppressionService.h" />
     <ClInclude Include="MouseFx\Core\System\NullGlobalMouseHook.h" />
+    <ClInclude Include="MouseFx\Core\System\NullKeyboardInjector.h" />
     <ClInclude Include="MouseFx\Core\System\StdMonotonicClockService.h" />
     <ClInclude Include="Platform\PlatformApplicationCatalog.h" />
     <ClInclude Include="Platform\PlatformNativeFolderPicker.h" />
@@ -369,6 +370,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\windows\Overlay\Win32OverlayHostBackend.h" />
     <ClInclude Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.h" />
     <ClInclude Include="Platform\windows\System\Win32GlobalMouseHook.h" />
+    <ClInclude Include="Platform\windows\System\Win32KeyboardInjector.h" />
     <ClInclude Include="Platform\windows\System\Win32CursorPositionService.h" />
     <ClInclude Include="Platform\windows\System\Win32MonotonicClockService.h" />
     <ClInclude Include="Platform\windows\System\Win32ForegroundProcessService.h" />
@@ -389,7 +391,6 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Control\AppController.Wasm.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.ConfigUpdates.cpp" />
     <ClCompile Include="MouseFx\Core\Automation\InputAutomationEngine.cpp" />
-    <ClCompile Include="MouseFx\Core\Automation\KeyboardInjector.cpp" />
     <ClCompile Include="MouseFx\Core\Automation\KeyChord.cpp" />
     <ClCompile Include="MouseFx\Core\Automation\ShortcutCaptureSession.cpp" />
     <ClCompile Include="MouseFx\Core\Config\ConfigPathResolver.cpp" />
@@ -431,6 +432,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\windows\Effects\Win32TrailEffectFallback.cpp" />
     <ClCompile Include="Platform\windows\Effects\Win32ParticleTrailEffectFallback.cpp" />
     <ClCompile Include="Platform\windows\System\Win32GlobalMouseHook.cpp" />
+    <ClCompile Include="Platform\windows\System\Win32KeyboardInjector.cpp" />
     <ClCompile Include="Platform\windows\System\Win32CursorPositionService.cpp" />
     <ClCompile Include="Platform\windows\System\Win32MonotonicClockService.cpp" />
     <ClCompile Include="Platform\windows\System\Win32ForegroundProcessService.cpp" />

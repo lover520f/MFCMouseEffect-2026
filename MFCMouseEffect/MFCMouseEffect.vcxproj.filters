@@ -96,9 +96,6 @@
     <ClInclude Include="MouseFx\Core\Automation\InputAutomationEngine.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\Automation\KeyboardInjector.h">
-      <Filter>头文件\MouseFx</Filter>
-    </ClInclude>
     <ClInclude Include="MouseFx\Core\Automation\KeyChord.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -129,6 +126,9 @@
     <ClInclude Include="MouseFx\Core\System\IGlobalMouseHook.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\System\IKeyboardInjector.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\System\NullCursorPositionService.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -139,6 +139,9 @@
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\System\NullGlobalMouseHook.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\System\NullKeyboardInjector.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\System\StdMonotonicClockService.h">
@@ -396,6 +399,9 @@
     <ClInclude Include="Platform\windows\System\Win32GlobalMouseHook.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\windows\System\Win32KeyboardInjector.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\windows\System\Win32CursorPositionService.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -459,9 +465,6 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Automation\InputAutomationEngine.cpp">
-      <Filter>源文件\MouseFx</Filter>
-    </ClCompile>
-    <ClCompile Include="MouseFx\Core\Automation\KeyboardInjector.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Automation\KeyChord.cpp">
@@ -597,6 +600,9 @@
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32GlobalMouseHook.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\System\Win32KeyboardInjector.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32CursorPositionService.cpp">

@@ -110,6 +110,10 @@ void InputAutomationEngine::SetForegroundProcessService(IForegroundProcessServic
     foregroundProcessService_ = service;
 }
 
+void InputAutomationEngine::SetKeyboardInjector(IKeyboardInjector* injector) {
+    keyboardInjector_ = injector;
+}
+
 std::string InputAutomationEngine::NormalizeId(std::string value) {
     return NormalizeTextId(std::move(value));
 }
@@ -255,7 +259,7 @@ int InputAutomationEngine::AppScopeSpecificity(const std::vector<std::string>& a
 }
 
 bool InputAutomationEngine::TriggerMouseAction(const std::string& actionId) {
-    if (!config_.enabled || actionId.empty()) {
+    if (!config_.enabled || actionId.empty() || !keyboardInjector_) {
         return false;
     }
     const std::string normalizedActionId = NormalizeMouseActionId(actionId);
@@ -277,11 +281,11 @@ bool InputAutomationEngine::TriggerMouseAction(const std::string& actionId) {
     if (!binding) {
         return false;
     }
-    return keyboardInjector_.SendChord(NormalizeShortcutText(binding->keys));
+    return keyboardInjector_->SendChord(NormalizeShortcutText(binding->keys));
 }
 
 bool InputAutomationEngine::TriggerGesture(const std::string& gestureId) {
-    if (!config_.enabled || !config_.gesture.enabled || gestureId.empty()) {
+    if (!config_.enabled || !config_.gesture.enabled || gestureId.empty() || !keyboardInjector_) {
         return false;
     }
     const std::string normalizedGestureId = NormalizeGestureId(gestureId);
@@ -303,7 +307,7 @@ bool InputAutomationEngine::TriggerGesture(const std::string& gestureId) {
     if (!binding) {
         return false;
     }
-    return keyboardInjector_.SendChord(NormalizeShortcutText(binding->keys));
+    return keyboardInjector_->SendChord(NormalizeShortcutText(binding->keys));
 }
 
 void InputAutomationEngine::AppendActionHistory(

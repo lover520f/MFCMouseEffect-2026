@@ -14,6 +14,7 @@
 #include "MouseFx/Core/System/IForegroundProcessService.h"
 #include "MouseFx/Core/System/IForegroundSuppressionService.h"
 #include "MouseFx/Core/System/IGlobalMouseHook.h"
+#include "MouseFx/Core/System/IKeyboardInjector.h"
 #include "MouseFx/Core/Overlay/IInputIndicatorOverlay.h"
 #include "MouseFx/Core/Automation/InputAutomationEngine.h"
 #include "MouseFx/Core/Automation/ShortcutCaptureSession.h"
@@ -182,6 +183,7 @@ private:
     std::unique_ptr<IForegroundProcessService> foregroundProcessService_{};
     std::unique_ptr<IForegroundSuppressionService> foregroundSuppressionService_{};
     std::unique_ptr<IGlobalMouseHook> hook_{};
+    std::unique_ptr<IKeyboardInjector> keyboardInjector_{};
     
     // One effect slot per category.
     static constexpr size_t kCategoryCount = static_cast<size_t>(EffectCategory::Count);
