@@ -271,6 +271,10 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\windows\Effects\Win32HoldQuantumHaloGpuV2DirectRuntime.h" />
     <ClInclude Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2Presenter.h" />
     <ClInclude Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ShaderPipeline.h" />
+    <ClInclude Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ComputeEngine.h" />
+    <ClInclude Include="Platform\windows\Renderers\Hold\FluxFieldGpuV2ComputeEngine.h" />
+    <ClInclude Include="Platform\windows\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.h" />
+    <ClInclude Include="Platform\windows\Renderers\Hold\HoldQuantumHaloGpuV2D2DBackend.h" />
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\System\CursorPositionProvider.h" />
@@ -456,10 +460,10 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterHost.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterSelection.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.cpp" />
-    <ClCompile Include="MouseFx\Renderers\Hold\QuantumHaloGpuV2ComputeEngine.cpp" />
-    <ClCompile Include="MouseFx\Renderers\Hold\HoldQuantumHaloGpuV2D2DBackend.cpp" />
-    <ClCompile Include="MouseFx\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.cpp" />
-    <ClCompile Include="MouseFx\Renderers\Hold\FluxFieldGpuV2ComputeEngine.cpp" />
+    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ComputeEngine.cpp" />
+    <ClCompile Include="Platform\windows\Renderers\Hold\HoldQuantumHaloGpuV2D2DBackend.cpp" />
+    <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.cpp" />
+    <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldGpuV2ComputeEngine.cpp" />
     <ClCompile Include="MouseFx\Effects\HoldRouteCatalog.cpp" />
     <ClCompile Include="Platform\windows\Effects\Win32HoldQuantumHaloGpuV2DirectRuntime.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Neon3D\Neon3DFx.cpp" />

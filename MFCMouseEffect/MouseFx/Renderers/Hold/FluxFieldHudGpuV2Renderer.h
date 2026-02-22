@@ -1,7 +1,7 @@
 #pragma once
 
-#include "FluxFieldGpuV2ComputeEngine.h"
-#include "FluxFieldHudGpuV2D2DBackend.h"
+#include "Platform/windows/Renderers/Hold/FluxFieldGpuV2ComputeEngine.h"
+#include "Platform/windows/Renderers/Hold/FluxFieldHudGpuV2D2DBackend.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 

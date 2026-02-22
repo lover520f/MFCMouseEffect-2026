@@ -3,7 +3,7 @@
 #include "Platform/windows/Effects/Win32HoldQuantumHaloGpuV2DirectRuntime.h"
 
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
-#include "MouseFx/Renderers/Hold/QuantumHaloGpuV2ComputeEngine.h"
+#include "Platform/windows/Renderers/Hold/QuantumHaloGpuV2ComputeEngine.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterHost.h"
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/TimeUtils.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "QuantumHaloGpuV2ComputeEngine.h"
+#include "Platform/windows/Renderers/Hold/QuantumHaloGpuV2ComputeEngine.h"
 #include "Presentation/QuantumHaloPresenterHost.h"
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Core/System/CursorPositionProvider.h"

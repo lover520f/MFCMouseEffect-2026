@@ -408,6 +408,18 @@
     <ClInclude Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ShaderPipeline.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ComputeEngine.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Renderers\Hold\FluxFieldGpuV2ComputeEngine.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Renderers\Hold\HoldQuantumHaloGpuV2D2DBackend.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\windows\System\Win32GlobalMouseHook.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -657,6 +669,18 @@
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ShaderPipeline.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ComputeEngine.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldGpuV2ComputeEngine.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\HoldQuantumHaloGpuV2D2DBackend.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.cpp">
