@@ -100,12 +100,12 @@ bool ParticleTrailWindow::Create() {
     return true;
 }
 
-void ParticleTrailWindow::UpdateCursor(const POINT& pt) {
+void ParticleTrailWindow::UpdateCursor(const ScreenPoint& pt) {
     latestCursorPt_ = pt;
     hasLatestCursorPt_ = true;
 }
 
-void ParticleTrailWindow::Emit(const POINT& pt, int count) {
+void ParticleTrailWindow::Emit(const ScreenPoint& pt, int count) {
     if (!hwnd_ && !Create()) return;
 
     int x_offset = GetSystemMetrics(SM_XVIRTUALSCREEN);
@@ -186,17 +186,14 @@ void ParticleTrailWindow::OnTick() {
     if (dt > 0.1f) dt = 0.1f;
     lastTick_ = now;
 
-    POINT pt{};
+    ScreenPoint pt{};
     bool havePt = false;
     if (hasLatestCursorPt_) {
         pt = latestCursorPt_;
         hasLatestCursorPt_ = false;
         havePt = true;
     } else {
-        ScreenPoint cursorPt{};
-        if (TryGetCursorScreenPoint(&cursorPt)) {
-            pt.x = cursorPt.x;
-            pt.y = cursorPt.y;
+        if (TryGetCursorScreenPoint(&pt)) {
             havePt = true;
         }
     }

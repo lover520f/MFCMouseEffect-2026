@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "ParticleTrailEffect.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
-#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Layers/ParticleTrailOverlayLayer.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 
@@ -41,7 +40,7 @@ void ParticleTrailEffect::OnMouseMove(const ScreenPoint& pt) {
         return;
     }
     if (window_) {
-        window_->UpdateCursor(ToNativePoint(pt));
+        window_->UpdateCursor(pt);
     }
 }
 

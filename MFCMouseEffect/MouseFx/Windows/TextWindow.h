@@ -9,6 +9,7 @@
 #include <dwrite.h>
 
 #include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Core/Protocol/InputTypes.h"
 
 namespace mousefx {
 
@@ -24,7 +25,7 @@ public:
     bool IsActive() const { return active_; }
     uint64_t StartTick() const { return startTick_; }
 
-    void StartAt(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config);
+    void StartAt(const ScreenPoint& pt, const std::wstring& text, Argb color, const TextConfig& config);
 
 private:
     static constexpr UINT_PTR kTimerId = 4;
@@ -51,7 +52,6 @@ private:
     TextConfig config_{};
     std::wstring text_;
     Argb color_{};
-    POINT startPt_{};
     uint64_t startTick_ = 0;
     float driftX_ = 0.0f;
     float swayFreq_ = 1.0f;

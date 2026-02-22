@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "TextEffect.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
-#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "Settings/EmojiUtils.h"
 #include <random>
@@ -59,7 +58,7 @@ void TextEffect::OnClick(const ClickEvent& event) {
 
     if (settings::HasEmojiStarter(text)) {
         if (!pool_.Initialize(8)) return;
-        pool_.ShowText(ToNativePoint(event.pt), text, color, config_);
+        pool_.ShowText(event.pt, text, color, config_);
         return;
     }
 
@@ -68,7 +67,7 @@ void TextEffect::OnClick(const ClickEvent& event) {
     }
 
     if (!pool_.Initialize(8)) return;
-    pool_.ShowText(ToNativePoint(event.pt), text, color, config_);
+    pool_.ShowText(event.pt, text, color, config_);
 }
 
 } // namespace mousefx

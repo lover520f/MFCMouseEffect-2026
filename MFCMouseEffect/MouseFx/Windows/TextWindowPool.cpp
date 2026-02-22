@@ -20,7 +20,7 @@ void TextWindowPool::Shutdown() {
     windows_.clear();
 }
 
-void TextWindowPool::ShowText(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config) {
+void TextWindowPool::ShowText(const ScreenPoint& pt, const std::wstring& text, Argb color, const TextConfig& config) {
     if (windows_.empty()) {
         if (!Initialize(10)) return;
     }

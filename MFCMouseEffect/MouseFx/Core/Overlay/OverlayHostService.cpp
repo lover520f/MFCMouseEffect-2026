@@ -4,7 +4,6 @@
 
 #include "MouseFx/Interfaces/IRippleRenderer.h"
 #include "MouseFx/Interfaces/ITrailRenderer.h"
-#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Layers/ParticleTrailOverlayLayer.h"
 #include "MouseFx/Layers/RippleOverlayLayer.h"
 #include "MouseFx/Layers/TextOverlayLayer.h"
@@ -124,13 +123,12 @@ void OverlayHostService::BroadcastRippleCommand(const std::string& cmd, const st
 }
 
 bool OverlayHostService::ShowText(const ScreenPoint& pt, const std::wstring& text, Argb color, const TextConfig& config) {
-    const POINT nativePt = ToNativePoint(pt);
     if (HasEmojiStarter(text)) {
         TextWindowPool& pool = SharedTextWindowPool();
         if (!pool.Initialize(8)) {
             return false;
         }
-        pool.ShowText(nativePt, text, color, config);
+        pool.ShowText(pt, text, color, config);
         return true;
     }
     TextOverlayLayer* layer = EnsureTextLayer();

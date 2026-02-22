@@ -4,6 +4,7 @@
 #include <gdiplus.h>
 #include <vector>
 #include <memory>
+#include "MouseFx/Core/Protocol/InputTypes.h"
 
 namespace mousefx {
 
@@ -15,8 +16,8 @@ public:
     bool Create();
     void Shutdown();
     
-    void Emit(const POINT& pt, int count = 5);
-    void UpdateCursor(const POINT& pt);
+    void Emit(const ScreenPoint& pt, int count = 5);
+    void UpdateCursor(const ScreenPoint& pt);
     void Clear();
     void SetChromatic(bool b) { isChromatic_ = b; }
 
@@ -60,9 +61,9 @@ private:
     int height_ = 0;
     uint64_t lastTopmostEnsureMs_ = 0;
     HWINEVENTHOOK foregroundHook_ = nullptr;
-    POINT latestCursorPt_{};
+    ScreenPoint latestCursorPt_{};
     bool hasLatestCursorPt_ = false;
-    POINT lastEmitCursorPt_{};
+    ScreenPoint lastEmitCursorPt_{};
     bool hasLastEmitCursorPt_ = false;
 };
 

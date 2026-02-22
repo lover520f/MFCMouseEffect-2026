@@ -89,7 +89,7 @@ bool TrailWindow::Create() {
     return true;
 }
 
-void TrailWindow::AddPoint(const POINT& pt) {
+void TrailWindow::AddPoint(const ScreenPoint& pt) {
     latestCursorPt_ = pt;
     hasLatestCursorPt_ = true;
 }
@@ -157,17 +157,14 @@ void TrailWindow::OnTick() {
 }
 
 void TrailWindow::SampleCursorPoint(uint64_t nowMs) {
-    POINT pt{};
+    ScreenPoint pt{};
     bool havePoint = false;
     if (hasLatestCursorPt_) {
         pt = latestCursorPt_;
         hasLatestCursorPt_ = false;
         havePoint = true;
     } else {
-        ScreenPoint cursorPt{};
-        if (TryGetCursorScreenPoint(&cursorPt)) {
-            pt.x = cursorPt.x;
-            pt.y = cursorPt.y;
+        if (TryGetCursorScreenPoint(&pt)) {
             havePoint = true;
         }
     }

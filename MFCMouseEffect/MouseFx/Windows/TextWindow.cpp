@@ -97,10 +97,9 @@ bool TextWindow::Create() {
     return true;
 }
 
-void TextWindow::StartAt(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config) {
+void TextWindow::StartAt(const ScreenPoint& pt, const std::wstring& text, Argb color, const TextConfig& config) {
     if (!hwnd_ && !Create()) return;
 
-    startPt_ = pt;
     text_ = text;
     color_ = color;
     config_ = config;
