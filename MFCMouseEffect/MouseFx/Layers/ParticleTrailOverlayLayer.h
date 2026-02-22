@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IOverlayLayer.h"
+#include "MouseFx/Core/Protocol/InputTypes.h"
 
 #include <vector>
 
@@ -10,7 +11,7 @@ class ParticleTrailOverlayLayer final : public IOverlayLayer {
 public:
     explicit ParticleTrailOverlayLayer(bool isChromatic);
 
-    void UpdateCursor(const POINT& pt);
+    void UpdateCursor(const ScreenPoint& pt);
     void Clear();
 
     void Update(uint64_t nowMs) override;
@@ -29,14 +30,14 @@ private:
     };
 
     static Gdiplus::Color HslToRgb(float h, float s, float l, BYTE alpha);
-    void Emit(const POINT& pt, int count);
+    void Emit(const ScreenPoint& pt, int count);
 
     bool isChromatic_ = false;
     std::vector<Particle> particles_{};
     uint64_t lastTickMs_ = 0;
-    POINT latestCursorPt_{};
+    ScreenPoint latestCursorPt_{};
     bool hasLatestCursorPt_ = false;
-    POINT lastEmitCursorPt_{};
+    ScreenPoint lastEmitCursorPt_{};
     bool hasLastEmitCursorPt_ = false;
     float globalHue_ = 0.0f;
 };

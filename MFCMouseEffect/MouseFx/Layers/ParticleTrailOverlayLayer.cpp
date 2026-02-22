@@ -2,6 +2,7 @@
 
 #include "ParticleTrailOverlayLayer.h"
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
+#include "MouseFx/Core/System/CursorPositionProvider.h"
 
 #include <algorithm>
 #include <cmath>
@@ -10,7 +11,7 @@ namespace mousefx {
 
 ParticleTrailOverlayLayer::ParticleTrailOverlayLayer(bool isChromatic) : isChromatic_(isChromatic) {}
 
-void ParticleTrailOverlayLayer::UpdateCursor(const POINT& pt) {
+void ParticleTrailOverlayLayer::UpdateCursor(const ScreenPoint& pt) {
     latestCursorPt_ = pt;
     hasLatestCursorPt_ = true;
 }
@@ -28,13 +29,13 @@ void ParticleTrailOverlayLayer::Update(uint64_t nowMs) {
     }
     lastTickMs_ = nowMs;
 
-    POINT pt{};
+    ScreenPoint pt{};
     bool havePt = false;
     if (hasLatestCursorPt_) {
         pt = latestCursorPt_;
         hasLatestCursorPt_ = false;
         havePt = true;
-    } else if (GetCursorPos(&pt)) {
+    } else if (TryGetCursorScreenPoint(&pt)) {
         havePt = true;
     }
 
@@ -114,7 +115,7 @@ Gdiplus::Color ParticleTrailOverlayLayer::HslToRgb(float h, float s, float l, BY
         (BYTE)((b + m) * 255.0f));
 }
 
-void ParticleTrailOverlayLayer::Emit(const POINT& pt, int count) {
+void ParticleTrailOverlayLayer::Emit(const ScreenPoint& pt, int count) {
     globalHue_ = std::fmod(globalHue_ + 5.0f, 360.0f);
 
     for (int i = 0; i < count; ++i) {

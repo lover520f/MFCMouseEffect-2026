@@ -114,6 +114,9 @@
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\System\CursorPositionProvider.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\System\ICursorPositionService.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -441,6 +444,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\System\CursorPositionProvider.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Server\HttpServer.cpp">

@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "TrailOverlayLayer.h"
+#include "MouseFx/Core/System/CursorPositionProvider.h"
 
 namespace mousefx {
 
@@ -51,13 +52,8 @@ void TrailOverlayLayer::SampleCursorPoint(uint64_t nowMs) {
         pt = latestCursorPt_;
         hasLatestCursorPt_ = false;
         havePoint = true;
-    } else {
-        POINT nativePt{};
-        if (GetCursorPos(&nativePt)) {
-            pt.x = nativePt.x;
-            pt.y = nativePt.y;
-            havePoint = true;
-        }
+    } else if (TryGetCursorScreenPoint(&pt)) {
+        havePoint = true;
     }
     if (!havePoint) return;
 

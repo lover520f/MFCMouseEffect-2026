@@ -37,7 +37,7 @@ void ParticleTrailEffect::Shutdown() {
 
 void ParticleTrailEffect::OnMouseMove(const ScreenPoint& pt) {
     if (hostLayer_) {
-        hostLayer_->UpdateCursor(ToNativePoint(pt));
+        hostLayer_->UpdateCursor(pt);
         return;
     }
     if (window_) {

@@ -261,6 +261,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\windows\Control\Win32DispatchMessageHost.h" />
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
+    <ClInclude Include="MouseFx\Core\System\CursorPositionProvider.h" />
     <ClInclude Include="MouseFx\Core\System\ICursorPositionService.h" />
     <ClInclude Include="MouseFx\Core\System\IMonotonicClockService.h" />
     <ClInclude Include="MouseFx\Core\System\IForegroundProcessService.h" />
@@ -373,6 +374,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Control\EffectFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayHostService.cpp" />
+    <ClCompile Include="MouseFx\Core\System\CursorPositionProvider.cpp" />
     <ClCompile Include="MouseFx\Core\System\ApplicationCatalogScanner.cpp" />
     <ClCompile Include="MouseFx\Core\System\NativeFolderPicker.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />

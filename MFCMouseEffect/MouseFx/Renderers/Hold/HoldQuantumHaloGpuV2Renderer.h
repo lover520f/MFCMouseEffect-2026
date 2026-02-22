@@ -3,9 +3,9 @@
 #include "QuantumHaloGpuV2ComputeEngine.h"
 #include "Presentation/QuantumHaloPresenterHost.h"
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
+#include "MouseFx/Core/System/CursorPositionProvider.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"
 
-#include <windows.h>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -67,8 +67,8 @@ public:
         }
 
         if (!state_.hasCursorState) {
-            POINT pt{};
-            if (GetCursorPos(&pt)) {
+            ScreenPoint pt{};
+            if (TryGetCursorScreenPoint(&pt)) {
                 state_.hasCursorState = true;
                 state_.cursorX = pt.x;
                 state_.cursorY = pt.y;
