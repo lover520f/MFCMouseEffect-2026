@@ -67,7 +67,7 @@ AppShellCore::~AppShellCore() {
 }
 
 bool AppShellCore::Initialize(const AppShellStartOptions& options) {
-    if (!trayService_ || !settingsLauncher_ || !singleInstanceGuard_ || !eventLoopService_) {
+    if (!settingsLauncher_ || !singleInstanceGuard_ || !eventLoopService_) {
         return false;
     }
 
@@ -79,10 +79,12 @@ bool AppShellCore::Initialize(const AppShellStartOptions& options) {
         dpiAwarenessService_->EnableForScreenCoords();
     }
 
-    backgroundMode_ = !options.showTrayIcon;
-    if (!trayService_->Start(this, options.showTrayIcon)) {
-        singleInstanceGuard_->Release();
-        return false;
+    backgroundMode_ = !options.showTrayIcon || !trayService_;
+    if (!backgroundMode_ && trayService_) {
+        if (!trayService_->Start(this, options.showTrayIcon)) {
+            singleInstanceGuard_->Release();
+            return false;
+        }
     }
 
     mouseFx_ = std::make_unique<AppController>();
@@ -155,7 +157,7 @@ void AppShellCore::OpenSettingsFromShell() {
 }
 
 void AppShellCore::RequestExitFromShell() {
-    if (trayService_) {
+    if (trayService_ && !backgroundMode_) {
         trayService_->RequestExit();
         return;
     }

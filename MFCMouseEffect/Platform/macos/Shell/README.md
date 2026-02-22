@@ -2,12 +2,14 @@
 
 This folder mirrors Flutter-style platform package partitioning.
 
-Planned implementations:
+Implemented in this stage:
+- `SettingsLauncher` (shell `open` command)
+- `SingleInstanceGuard` (POSIX file lock in `/tmp`)
+- `EventLoopService` (minimal polling loop)
+
+Planned next:
 - `TrayService` (menu-bar icon + menu actions)
-- `SettingsLauncher` (open browser or embedded webview)
-- `SingleInstanceGuard`
 - `DpiAwarenessService` equivalent
-- `EventLoopService`
 - `UserNotificationService`
 
 The concrete classes should implement the cross-platform interfaces in:

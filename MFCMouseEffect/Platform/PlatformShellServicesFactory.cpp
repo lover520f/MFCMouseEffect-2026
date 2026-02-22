@@ -9,6 +9,14 @@
 #include "Platform/windows/Shell/Win32SingleInstanceGuard.h"
 #include "Platform/windows/Shell/Win32TrayService.h"
 #include "Platform/windows/Shell/Win32UserNotificationService.h"
+#elif defined(__APPLE__)
+#include "Platform/macos/Shell/MacosEventLoopService.h"
+#include "Platform/macos/Shell/MacosSettingsLauncher.h"
+#include "Platform/macos/Shell/MacosSingleInstanceGuard.h"
+#elif defined(__linux__)
+#include "Platform/linux/Shell/LinuxEventLoopService.h"
+#include "Platform/linux/Shell/LinuxSettingsLauncher.h"
+#include "Platform/linux/Shell/LinuxSingleInstanceGuard.h"
 #endif
 
 namespace mousefx::platform {
@@ -23,6 +31,14 @@ ShellPlatformServices CreateShellPlatformServices() {
     services.dpiAwarenessService = std::make_unique<Win32DpiAwarenessService>();
     services.eventLoopService = std::make_unique<Win32EventLoopService>();
     services.notifier = std::make_unique<Win32UserNotificationService>();
+#elif defined(__APPLE__)
+    services.settingsLauncher = std::make_unique<MacosSettingsLauncher>();
+    services.singleInstanceGuard = std::make_unique<MacosSingleInstanceGuard>();
+    services.eventLoopService = std::make_unique<MacosEventLoopService>();
+#elif defined(__linux__)
+    services.settingsLauncher = std::make_unique<LinuxSettingsLauncher>();
+    services.singleInstanceGuard = std::make_unique<LinuxSingleInstanceGuard>();
+    services.eventLoopService = std::make_unique<LinuxEventLoopService>();
 #endif
 
     return services;
