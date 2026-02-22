@@ -106,6 +106,10 @@ void InputAutomationEngine::OnScroll(short delta) {
     TriggerMouseAction(ScrollActionId(delta));
 }
 
+void InputAutomationEngine::SetForegroundProcessService(IForegroundProcessService* service) {
+    foregroundProcessService_ = service;
+}
+
 std::string InputAutomationEngine::NormalizeId(std::string value) {
     return NormalizeTextId(std::move(value));
 }
@@ -260,7 +264,9 @@ bool InputAutomationEngine::TriggerMouseAction(const std::string& actionId) {
     }
 
     AppendActionHistory(&mouseActionHistory_, normalizedActionId, mouseChainCap_, mouseChainTimingLimit_);
-    const std::string processBaseName = foregroundProcessResolver_.CurrentProcessBaseName();
+    const std::string processBaseName = foregroundProcessService_
+        ? foregroundProcessService_->CurrentProcessBaseName()
+        : std::string{};
     const AutomationKeyBinding* binding =
         FindEnabledBinding(
             config_.mouseMappings,
@@ -284,7 +290,9 @@ bool InputAutomationEngine::TriggerGesture(const std::string& gestureId) {
     }
 
     AppendActionHistory(&gestureHistory_, normalizedGestureId, gestureChainCap_, gestureChainTimingLimit_);
-    const std::string processBaseName = foregroundProcessResolver_.CurrentProcessBaseName();
+    const std::string processBaseName = foregroundProcessService_
+        ? foregroundProcessService_->CurrentProcessBaseName()
+        : std::string{};
     const AutomationKeyBinding* binding =
         FindEnabledBinding(
             config_.gesture.mappings,

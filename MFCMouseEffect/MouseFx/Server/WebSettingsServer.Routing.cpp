@@ -2,6 +2,7 @@
 #include "WebSettingsServer.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <cwctype>
 #include <exception>
@@ -13,7 +14,6 @@
 
 #include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Core/System/ApplicationCatalogScanner.h"
-#include "MouseFx/Core/System/ForegroundProcessResolver.h"
 #include "MouseFx/Core/System/NativeFolderPicker.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Core/Wasm/WasmPluginCatalog.h"
@@ -209,7 +209,8 @@ std::vector<ApplicationCatalogEntry> LoadAutomationAppCatalog(bool forceRefresh)
     static std::vector<ApplicationCatalogEntry> cacheEntries;
 
     constexpr uint64_t kCacheTtlMs = 30 * 1000;
-    const uint64_t nowTickMs = ::GetTickCount64();
+    const auto now = std::chrono::steady_clock::now().time_since_epoch();
+    const uint64_t nowTickMs = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
 
     std::lock_guard<std::mutex> lock(cacheMutex);
     if (!forceRefresh &&
@@ -323,8 +324,9 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
     }
 
     if (req.method == "POST" && path == "/api/automation/active-process") {
-        ForegroundProcessResolver resolver;
-        const std::string processBaseName = resolver.CurrentProcessBaseName();
+        const std::string processBaseName = controller_
+            ? controller_->CurrentForegroundProcessBaseName()
+            : std::string{};
         SetJsonResponse(resp, json({
             {"ok", true},
             {"process", processBaseName}

@@ -2,7 +2,7 @@
 
 #include "MouseFx/Core/Config/EffectConfig.h"
 #include "MouseFx/Core/Protocol/InputTypes.h"
-#include "MouseFx/Core/System/ForegroundProcessResolver.h"
+#include "MouseFx/Core/System/IForegroundProcessService.h"
 #include "MouseFx/Core/Input/GestureRecognizer.h"
 #include "MouseFx/Core/Automation/KeyboardInjector.h"
 
@@ -29,6 +29,7 @@ public:
     void OnButtonUp(const ScreenPoint& pt, int button);
     void OnClick(const ClickEvent& ev);
     void OnScroll(short delta);
+    void SetForegroundProcessService(IForegroundProcessService* service);
 
 private:
     struct ActionHistoryItem {
@@ -79,7 +80,7 @@ private:
     std::string suppressNextClickActionId_{};
     std::vector<ActionHistoryItem> mouseActionHistory_{};
     std::vector<ActionHistoryItem> gestureHistory_{};
-    ForegroundProcessResolver foregroundProcessResolver_{};
+    IForegroundProcessService* foregroundProcessService_ = nullptr;
     size_t mouseChainCap_ = 1;
     size_t gestureChainCap_ = 1;
     ChainTimingLimit mouseChainTimingLimit_{};

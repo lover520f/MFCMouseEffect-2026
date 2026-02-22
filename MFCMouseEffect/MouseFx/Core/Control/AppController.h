@@ -13,6 +13,7 @@
 #include "MouseFx/Core/System/GdiPlusSession.h"
 #include "MouseFx/Core/System/ICursorPositionService.h"
 #include "MouseFx/Core/System/IMonotonicClockService.h"
+#include "MouseFx/Core/System/IForegroundProcessService.h"
 #include "MouseFx/Core/System/IGlobalMouseHook.h"
 #include "MouseFx/Core/Overlay/IInputIndicatorOverlay.h"
 #include "MouseFx/Core/Automation/InputAutomationEngine.h"
@@ -129,6 +130,7 @@ public:
     void MarkIgnoreNextClick();
     bool TryEnterHover(ScreenPoint* outPt);
     bool QueryCursorScreenPoint(ScreenPoint* outPt) const;
+    std::string CurrentForegroundProcessBaseName();
     HWND DispatchWindowHandle() const {
         return reinterpret_cast<HWND>(dispatchMessageHost_ ? dispatchMessageHost_->NativeHandle() : 0);
     }
@@ -180,6 +182,7 @@ private:
     std::unique_ptr<IDispatchMessageCodec> dispatchMessageCodec_{};
     std::unique_ptr<ICursorPositionService> cursorPositionService_{};
     std::unique_ptr<IMonotonicClockService> monotonicClockService_{};
+    std::unique_ptr<IForegroundProcessService> foregroundProcessService_{};
     std::unique_ptr<IGlobalMouseHook> hook_{};
     
     // One effect slot per category.

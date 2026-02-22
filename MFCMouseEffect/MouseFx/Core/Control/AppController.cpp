@@ -13,6 +13,7 @@
 #include "MouseFx/Core/Control/NullDispatchMessageHost.h"
 #include "MouseFx/Core/Control/NullDispatchMessageCodec.h"
 #include "MouseFx/Core/System/NullCursorPositionService.h"
+#include "MouseFx/Core/System/NullForegroundProcessService.h"
 #include "MouseFx/Core/System/StdMonotonicClockService.h"
 #include "MouseFx/Core/Overlay/NullInputIndicatorOverlay.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
@@ -69,6 +70,7 @@ AppController::AppController()
     , dispatchMessageCodec_(platform::CreateDispatchMessageCodec())
     , cursorPositionService_(platform::CreateCursorPositionService())
     , monotonicClockService_(platform::CreateMonotonicClockService())
+    , foregroundProcessService_(platform::CreateForegroundProcessService())
     , hook_(platform::CreateGlobalMouseHook())
     , inputIndicatorOverlay_(platform::CreateInputIndicatorOverlay())
     , commandHandler_(std::make_unique<CommandHandler>(this))
@@ -85,7 +87,11 @@ AppController::AppController()
     if (!monotonicClockService_) {
         monotonicClockService_ = std::make_unique<StdMonotonicClockService>();
     }
+    if (!foregroundProcessService_) {
+        foregroundProcessService_ = std::make_unique<NullForegroundProcessService>();
+    }
     shortcutCaptureSession_.SetClockService(monotonicClockService_.get());
+    inputAutomationEngine_.SetForegroundProcessService(foregroundProcessService_.get());
     if (!inputIndicatorOverlay_) {
         inputIndicatorOverlay_ = std::make_unique<NullInputIndicatorOverlay>();
     }
@@ -383,6 +389,13 @@ bool AppController::QueryCursorScreenPoint(ScreenPoint* outPt) const {
         return false;
     }
     return cursorPositionService_->TryGetCursorScreenPoint(outPt);
+}
+
+std::string AppController::CurrentForegroundProcessBaseName() {
+    if (!foregroundProcessService_) {
+        return {};
+    }
+    return foregroundProcessService_->CurrentProcessBaseName();
 }
 
 #ifdef _DEBUG
