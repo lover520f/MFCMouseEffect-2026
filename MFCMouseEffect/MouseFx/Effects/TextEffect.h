@@ -1,8 +1,9 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
-#include "MouseFx/Windows/TextWindowPool.h"
+#include "MouseFx/Interfaces/ITextEffectFallback.h"
 #include "MouseFx/Core/Config/EffectConfig.h"
+#include <memory>
 
 namespace mousefx {
 
@@ -21,7 +22,7 @@ public:
 
 private:
     TextConfig config_;
-    TextWindowPool pool_{};
+    std::unique_ptr<ITextEffectFallback> fallback_;
     bool isChromatic_ = false;
 };
 

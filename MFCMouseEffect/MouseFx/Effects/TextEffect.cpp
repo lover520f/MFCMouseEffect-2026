@@ -2,6 +2,7 @@
 #include "TextEffect.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Styles/ThemeStyle.h"
+#include "Platform/PlatformEffectFallbackFactory.h"
 #include "Settings/EmojiUtils.h"
 #include <random>
 
@@ -15,7 +16,9 @@ static int RandomRange(int min, int max) {
 }
 
 
-TextEffect::TextEffect(const TextConfig& config, const std::string& themeName) : config_(config) {
+TextEffect::TextEffect(const TextConfig& config, const std::string& themeName)
+    : config_(config),
+      fallback_(platform::CreateTextEffectFallback()) {
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
 }
 
@@ -32,14 +35,16 @@ bool TextEffect::Initialize() {
         }
     }
     if (hasEmojiText) {
-        if (!pool_.Initialize(8)) return false;
+        if (!fallback_ || !fallback_->EnsureInitialized(8)) return false;
     }
     (void)OverlayHostService::Instance().Initialize();
     return true;
 }
 
 void TextEffect::Shutdown() {
-    pool_.Shutdown();
+    if (fallback_) {
+        fallback_->Shutdown();
+    }
 }
 
 void TextEffect::OnClick(const ClickEvent& event) {
@@ -57,8 +62,8 @@ void TextEffect::OnClick(const ClickEvent& event) {
     }
 
     if (settings::HasEmojiStarter(text)) {
-        if (!pool_.Initialize(8)) return;
-        pool_.ShowText(event.pt, text, color, config_);
+        if (!fallback_ || !fallback_->EnsureInitialized(8)) return;
+        fallback_->ShowText(event.pt, text, color, config_);
         return;
     }
 
@@ -66,8 +71,8 @@ void TextEffect::OnClick(const ClickEvent& event) {
         return;
     }
 
-    if (!pool_.Initialize(8)) return;
-    pool_.ShowText(event.pt, text, color, config_);
+    if (!fallback_ || !fallback_->EnsureInitialized(8)) return;
+    fallback_->ShowText(event.pt, text, color, config_);
 }
 
 } // namespace mousefx

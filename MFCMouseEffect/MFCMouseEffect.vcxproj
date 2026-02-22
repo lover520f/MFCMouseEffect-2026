@@ -249,6 +249,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\PlatformControlServicesFactory.h" />
     <ClInclude Include="Platform\PlatformInputServicesFactory.h" />
     <ClInclude Include="Platform\PlatformOverlayServicesFactory.h" />
+    <ClInclude Include="Platform\PlatformEffectFallbackFactory.h" />
     <ClInclude Include="Platform\PlatformSystemServicesFactory.h" />
     <ClInclude Include="Platform\PlatformShellServicesFactory.h" />
     <ClInclude Include="Platform\windows\Shell\Win32DpiAwarenessService.h" />
@@ -259,6 +260,9 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\windows\Shell\Win32UserNotificationService.h" />
     <ClInclude Include="Platform\windows\Control\Win32DispatchMessageCodec.h" />
     <ClInclude Include="Platform\windows\Control\Win32DispatchMessageHost.h" />
+    <ClInclude Include="Platform\windows\Effects\Win32TextEffectFallback.h" />
+    <ClInclude Include="Platform\windows\Effects\Win32TrailEffectFallback.h" />
+    <ClInclude Include="Platform\windows\Effects\Win32ParticleTrailEffectFallback.h" />
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\System\CursorPositionProvider.h" />
@@ -277,6 +281,12 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Effects\IconEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IMouseEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IOverlayLayer.h" />
+    <ClInclude Include="MouseFx\Interfaces\ITextEffectFallback.h" />
+    <ClInclude Include="MouseFx\Interfaces\ITrailEffectFallback.h" />
+    <ClInclude Include="MouseFx\Interfaces\IParticleTrailEffectFallback.h" />
+    <ClInclude Include="MouseFx\Interfaces\NullTextEffectFallback.h" />
+    <ClInclude Include="MouseFx\Interfaces\NullTrailEffectFallback.h" />
+    <ClInclude Include="MouseFx\Interfaces\NullParticleTrailEffectFallback.h" />
     <ClInclude Include="MouseFx\Layers\ParticleTrailOverlayLayer.h" />
     <ClInclude Include="MouseFx\Layers\RippleOverlayLayer.h" />
     <ClInclude Include="MouseFx\Layers\TextOverlayLayer.h" />
@@ -386,6 +396,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\PlatformControlServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformInputServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformOverlayServicesFactory.cpp" />
+    <ClCompile Include="Platform\PlatformEffectFallbackFactory.cpp" />
     <ClCompile Include="Platform\PlatformSystemServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformShellServicesFactory.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32DpiAwarenessService.cpp" />
@@ -398,6 +409,9 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\windows\Overlay\Win32OverlayHostWindow.cpp" />
     <ClCompile Include="Platform\windows\Overlay\Win32OverlayHostBackend.cpp" />
     <ClCompile Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.cpp" />
+    <ClCompile Include="Platform\windows\Effects\Win32TextEffectFallback.cpp" />
+    <ClCompile Include="Platform\windows\Effects\Win32TrailEffectFallback.cpp" />
+    <ClCompile Include="Platform\windows\Effects\Win32ParticleTrailEffectFallback.cpp" />
     <ClCompile Include="Platform\windows\System\Win32GlobalMouseHook.cpp" />
     <ClCompile Include="Platform\windows\System\Win32CursorPositionService.cpp" />
     <ClCompile Include="Platform\windows\System\Win32MonotonicClockService.cpp" />

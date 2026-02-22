@@ -6,6 +6,7 @@
 #include "MouseFx/Interfaces/TrailRenderStrategies.h"
 #include "MouseFx/Renderers/Trail/TubesRenderer.h"
 #include "MouseFx/Renderers/Trail/MeteorRenderer.h"
+#include "Platform/PlatformEffectFallbackFactory.h"
 #include <algorithm>
 #include <cctype>
 #include <string>
@@ -13,7 +14,7 @@
 namespace mousefx {
 
 TrailEffect::TrailEffect(const std::string& themeName, const std::string& type, int durationMs, int maxPoints, const TrailRendererParamsConfig& params)
-    : window_(std::make_unique<TrailWindow>()), type_(type) {
+    : fallback_(platform::CreateTrailEffectFallback()), type_(type) {
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
     durationMs_ = durationMs;
     maxPoints_ = maxPoints;
@@ -29,11 +30,8 @@ bool TrailEffect::Initialize() {
         CreateRenderer(), durationMs_, maxPoints_, isChromatic_);
     if (hostLayer_) return true;
 
-    if (!window_->Create()) return false;
-    window_->SetDurationMs(durationMs_);
-    window_->SetMaxPoints(maxPoints_);
-    window_->SetRenderer(CreateRenderer());
-    window_->SetChromatic(isChromatic_);
+    if (!fallback_ || !fallback_->Create()) return false;
+    fallback_->Configure(isChromatic_, durationMs_, maxPoints_, CreateRenderer());
     return true;
 }
 
@@ -42,9 +40,8 @@ void TrailEffect::Shutdown() {
         OverlayHostService::Instance().DetachLayer(hostLayer_);
         hostLayer_ = nullptr;
     }
-    if (window_) {
-        window_->Shutdown();
-        window_.reset();
+    if (fallback_) {
+        fallback_->Shutdown();
     }
 }
 
@@ -53,8 +50,8 @@ void TrailEffect::OnMouseMove(const ScreenPoint& pt) {
         hostLayer_->AddPoint(pt);
         return;
     }
-    if (window_) {
-        window_->AddPoint(pt);
+    if (fallback_) {
+        fallback_->AddPoint(pt);
     }
 }
 

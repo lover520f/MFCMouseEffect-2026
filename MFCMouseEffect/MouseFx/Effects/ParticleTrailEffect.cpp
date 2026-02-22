@@ -3,10 +3,11 @@
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Layers/ParticleTrailOverlayLayer.h"
 #include "MouseFx/Styles/ThemeStyle.h"
+#include "Platform/PlatformEffectFallbackFactory.h"
 
 namespace mousefx {
 
-ParticleTrailEffect::ParticleTrailEffect(const std::string& themeName) : window_(std::make_unique<ParticleTrailWindow>()) {
+ParticleTrailEffect::ParticleTrailEffect(const std::string& themeName) : fallback_(platform::CreateParticleTrailEffectFallback()) {
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
 }
 
@@ -18,8 +19,8 @@ bool ParticleTrailEffect::Initialize() {
     hostLayer_ = OverlayHostService::Instance().AttachParticleTrailLayer(isChromatic_);
     if (hostLayer_) return true;
 
-    if (!window_->Create()) return false;
-    window_->SetChromatic(isChromatic_);
+    if (!fallback_ || !fallback_->Create()) return false;
+    fallback_->SetChromatic(isChromatic_);
     return true;
 }
 
@@ -28,9 +29,8 @@ void ParticleTrailEffect::Shutdown() {
         OverlayHostService::Instance().DetachLayer(hostLayer_);
         hostLayer_ = nullptr;
     }
-    if (window_) {
-        window_->Shutdown();
-        window_.reset();
+    if (fallback_) {
+        fallback_->Shutdown();
     }
 }
 
@@ -39,8 +39,8 @@ void ParticleTrailEffect::OnMouseMove(const ScreenPoint& pt) {
         hostLayer_->UpdateCursor(pt);
         return;
     }
-    if (window_) {
-        window_->UpdateCursor(pt);
+    if (fallback_) {
+        fallback_->UpdateCursor(pt);
     }
 }
 

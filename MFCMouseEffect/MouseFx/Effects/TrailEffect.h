@@ -2,7 +2,7 @@
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Core/Config/EffectConfig.h"
-#include "MouseFx/Windows/TrailWindow.h"
+#include "MouseFx/Interfaces/ITrailEffectFallback.h"
 #include <memory>
 
 namespace mousefx {
@@ -25,7 +25,7 @@ public:
 private:
     std::unique_ptr<ITrailRenderer> CreateRenderer() const;
 
-    std::unique_ptr<TrailWindow> window_;
+    std::unique_ptr<ITrailEffectFallback> fallback_;
     TrailOverlayLayer* hostLayer_ = nullptr;
     std::string type_;
     int durationMs_ = 350;

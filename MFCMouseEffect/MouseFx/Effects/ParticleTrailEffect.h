@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
-#include "MouseFx/Windows/ParticleTrailWindow.h"
+#include "MouseFx/Interfaces/IParticleTrailEffectFallback.h"
 #include <memory>
 
 namespace mousefx {
@@ -22,7 +22,7 @@ public:
     void OnMouseMove(const ScreenPoint& pt) override;
 
 private:
-    std::unique_ptr<ParticleTrailWindow> window_;
+    std::unique_ptr<IParticleTrailEffectFallback> fallback_;
     ParticleTrailOverlayLayer* hostLayer_ = nullptr;
     bool isChromatic_ = false;
 };
