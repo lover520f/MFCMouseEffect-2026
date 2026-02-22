@@ -47,19 +47,6 @@ ScreenPoint MessagePoint(const DispatchMessage& message) {
     return pt;
 }
 
-bool TryReadCursorScreenPoint(ScreenPoint* outPt) {
-    if (!outPt) {
-        return false;
-    }
-    POINT nativePt{};
-    if (!GetCursorPos(&nativePt)) {
-        return false;
-    }
-    outPt->x = nativePt.x;
-    outPt->y = nativePt.y;
-    return true;
-}
-
 bool IsKnownTimerId(UINT_PTR timerId) {
     if (timerId == AppController::HoverTimerId()) {
         return true;
@@ -310,7 +297,7 @@ intptr_t DispatchRouter::OnScroll(const DispatchMessage& message) {
 
     const short delta = static_cast<short>(message.delta);
     ScreenPoint pt{};
-    if (!TryReadCursorScreenPoint(&pt)) {
+    if (!ctrl_->QueryCursorScreenPoint(&pt)) {
         pt = MessagePoint(message);
     }
 
@@ -367,7 +354,7 @@ intptr_t DispatchRouter::OnButtonDown(const DispatchMessage& message) {
 
     const int button = static_cast<int>(message.button);
     ScreenPoint pt{};
-    if (!TryReadCursorScreenPoint(&pt)) {
+    if (!ctrl_->QueryCursorScreenPoint(&pt)) {
         pt = MessagePoint(message);
     }
 
@@ -388,7 +375,7 @@ intptr_t DispatchRouter::OnButtonUp(const DispatchMessage& message) {
     }
 
     ScreenPoint pt{};
-    if (!TryReadCursorScreenPoint(&pt)) {
+    if (!ctrl_->QueryCursorScreenPoint(&pt)) {
         pt.x = 0;
         pt.y = 0;
     }
@@ -494,7 +481,7 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
         }
         ClickEvent ev{};
         ScreenPoint cursor{};
-        if (!TryReadCursorScreenPoint(&cursor)) {
+        if (!ctrl_->QueryCursorScreenPoint(&cursor)) {
             cursor.x = 0;
             cursor.y = 0;
         }

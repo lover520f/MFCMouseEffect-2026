@@ -114,7 +114,13 @@
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\System\ICursorPositionService.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\System\IGlobalMouseHook.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\System\NullCursorPositionService.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\System\NullGlobalMouseHook.h">
@@ -354,6 +360,9 @@
     <ClInclude Include="Platform\windows\System\Win32GlobalMouseHook.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\windows\System\Win32CursorPositionService.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\windows\Overlay\Win32OverlayCoordSpaceService.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -501,6 +510,9 @@
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32GlobalMouseHook.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\System\Win32CursorPositionService.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.cpp">

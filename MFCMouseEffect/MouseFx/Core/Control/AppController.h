@@ -11,6 +11,7 @@
 #include "MouseFx/Core/Control/IDispatchMessageHost.h"
 #include "MouseFx/Core/Control/IDispatchMessageCodec.h"
 #include "MouseFx/Core/System/GdiPlusSession.h"
+#include "MouseFx/Core/System/ICursorPositionService.h"
 #include "MouseFx/Core/System/IGlobalMouseHook.h"
 #include "MouseFx/Core/Overlay/IInputIndicatorOverlay.h"
 #include "MouseFx/Core/Automation/InputAutomationEngine.h"
@@ -125,6 +126,7 @@ public:
     bool ConsumePendingHold(ScreenPoint* outPt, int* outButton);
     void MarkIgnoreNextClick();
     bool TryEnterHover(ScreenPoint* outPt);
+    bool QueryCursorScreenPoint(ScreenPoint* outPt) const;
     HWND DispatchWindowHandle() const {
         return reinterpret_cast<HWND>(dispatchMessageHost_ ? dispatchMessageHost_->NativeHandle() : 0);
     }
@@ -174,6 +176,7 @@ private:
     GdiPlusSession gdiplus_{};
     std::unique_ptr<IDispatchMessageHost> dispatchMessageHost_{};
     std::unique_ptr<IDispatchMessageCodec> dispatchMessageCodec_{};
+    std::unique_ptr<ICursorPositionService> cursorPositionService_{};
     std::unique_ptr<IGlobalMouseHook> hook_{};
     
     // One effect slot per category.

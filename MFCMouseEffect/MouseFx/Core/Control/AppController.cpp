@@ -12,6 +12,7 @@
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Core/Control/NullDispatchMessageHost.h"
 #include "MouseFx/Core/Control/NullDispatchMessageCodec.h"
+#include "MouseFx/Core/System/NullCursorPositionService.h"
 #include "MouseFx/Core/Overlay/NullInputIndicatorOverlay.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
 #include "MouseFx/Core/Wasm/WasmClickCommandExecutor.h"
@@ -64,6 +65,7 @@ constexpr std::array<ActiveCategoryDescriptor, 5> kActiveCategoryDescriptors{{
 AppController::AppController()
     : dispatchMessageHost_(platform::CreateDispatchMessageHost())
     , dispatchMessageCodec_(platform::CreateDispatchMessageCodec())
+    , cursorPositionService_(platform::CreateCursorPositionService())
     , hook_(platform::CreateGlobalMouseHook())
     , inputIndicatorOverlay_(platform::CreateInputIndicatorOverlay())
     , commandHandler_(std::make_unique<CommandHandler>(this))
@@ -73,6 +75,9 @@ AppController::AppController()
     }
     if (!dispatchMessageCodec_) {
         dispatchMessageCodec_ = std::make_unique<NullDispatchMessageCodec>();
+    }
+    if (!cursorPositionService_) {
+        cursorPositionService_ = std::make_unique<NullCursorPositionService>();
     }
     if (!inputIndicatorOverlay_) {
         inputIndicatorOverlay_ = std::make_unique<NullInputIndicatorOverlay>();
@@ -191,10 +196,9 @@ void AppController::OnDispatchActivity(UINT msg, WPARAM wParam) {
     bool hoverWasmRouteActive = false;
     if (wasmEffectHost_ && wasmEffectHost_->Enabled() && wasmEffectHost_->IsPluginLoaded()) {
         hoverWasmRouteActive = true;
-        POINT pt{};
-        if (!GetCursorPos(&pt)) {
-            pt.x = 0;
-            pt.y = 0;
+        ScreenPoint pt{};
+        if (!QueryCursorScreenPoint(&pt)) {
+            pt = ScreenPoint{};
         }
         wasm::EventInvokeInput invoke{};
         invoke.kind = wasm::EventKind::HoverEnd;
@@ -352,15 +356,19 @@ bool AppController::TryEnterHover(ScreenPoint* outPt) {
 
     hovering_ = true;
     if (outPt) {
-        POINT nativePt{};
-        if (!GetCursorPos(&nativePt)) {
-            nativePt.x = 0;
-            nativePt.y = 0;
+        if (!QueryCursorScreenPoint(outPt)) {
+            outPt->x = 0;
+            outPt->y = 0;
         }
-        outPt->x = nativePt.x;
-        outPt->y = nativePt.y;
     }
     return true;
+}
+
+bool AppController::QueryCursorScreenPoint(ScreenPoint* outPt) const {
+    if (!outPt || !cursorPositionService_) {
+        return false;
+    }
+    return cursorPositionService_->TryGetCursorScreenPoint(outPt);
 }
 
 #ifdef _DEBUG
