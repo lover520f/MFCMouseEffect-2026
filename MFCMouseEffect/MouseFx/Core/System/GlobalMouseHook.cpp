@@ -4,6 +4,7 @@
 
 #include "GlobalMouseHook.h"
 #include "MouseFx/Core/Protocol/MouseFxMessages.h"
+#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 
 #include <new>
 #include <string>
@@ -265,7 +266,7 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
             // Create click event
             auto* ev = new (std::nothrow) ClickEvent();
             if (ev) {
-                ev->pt = ResolveCursorPreferredPoint(s->pt);
+                ev->pt = ToScreenPoint(ResolveCursorPreferredPoint(s->pt));
                 ev->button = button;
                 PostMessageW(instance_->dispatchHwnd_, WM_MFX_CLICK, 0, reinterpret_cast<LPARAM>(ev));
             }
@@ -303,8 +304,8 @@ LRESULT CALLBACK GlobalMouseHook::KeyboardHookProc(int nCode, WPARAM wParam, LPA
                         cursor.x = 0;
                         cursor.y = 0;
                     }
-                    ev->pt = NormalizeScreenPoint(cursor);
-                    ev->vkCode = kbd->vkCode;
+                    ev->pt = ToScreenPoint(NormalizeScreenPoint(cursor));
+                    ev->vkCode = static_cast<uint32_t>(kbd->vkCode);
                     ev->systemKey = (wParam == WM_SYSKEYDOWN);
                     ev->ctrl = (mask & kModCtrl) != 0;
                     ev->shift = (mask & kModShift) != 0;

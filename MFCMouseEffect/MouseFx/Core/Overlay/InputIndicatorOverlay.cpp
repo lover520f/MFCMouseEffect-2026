@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Utils/MonitorUtils.h"
 
 namespace mousefx {
@@ -199,7 +200,7 @@ void InputIndicatorOverlay::OnClick(const ClickEvent& ev) {
         return;
     }
 
-    Trigger(kind, ev.pt);
+    Trigger(kind, ToNativePoint(ev.pt));
 }
 
 void InputIndicatorOverlay::OnScroll(const ScrollEvent& ev) {
@@ -231,7 +232,7 @@ void InputIndicatorOverlay::OnScroll(const ScrollEvent& ev) {
 
     const IndicatorEventKind kind = (ev.delta > 0) ? IndicatorEventKind::WheelUp : IndicatorEventKind::WheelDown;
     // Pass the label to Trigger (which sets eventLabel_, used by Render)
-    Trigger(kind, ev.pt, label);
+    Trigger(kind, ToNativePoint(ev.pt), label);
 }
 
 void InputIndicatorOverlay::OnKey(const KeyEvent& ev) {
@@ -289,7 +290,7 @@ void InputIndicatorOverlay::OnKey(const KeyEvent& ev) {
         label += L" x" + std::to_wstring(keyStreak_);
     }
 
-    Trigger(IndicatorEventKind::KeyInput, ev.pt, std::move(label), /*isKeyboard=*/true);
+    Trigger(IndicatorEventKind::KeyInput, ToNativePoint(ev.pt), std::move(label), /*isKeyboard=*/true);
 }
 
 // ============================================================================

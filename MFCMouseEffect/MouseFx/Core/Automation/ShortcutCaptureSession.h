@@ -6,7 +6,7 @@
 #include <mutex>
 #include <string>
 
-#include "MouseFx/Core/System/GlobalMouseHook.h"
+#include "MouseFx/Core/Protocol/InputTypes.h"
 
 namespace mousefx {
 

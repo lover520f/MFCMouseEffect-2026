@@ -1,11 +1,11 @@
 #pragma once
 
-#include <windows.h>
+#include <cstdint>
 
 namespace mousefx {
 
 // Command IDs used by the tray popup menu and other UI components.
-enum TrayMenuCmd : UINT {
+enum TrayMenuCmd : uint32_t {
     kCmdTrayExit = 1001,
     kCmdTraySettings = 1002,
     kCmdStarRepo = 1003,

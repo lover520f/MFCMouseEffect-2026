@@ -19,7 +19,7 @@ public:
     bool Initialize() override;
     void Shutdown() override;
     
-    void OnHoverStart(const POINT& pt) override;
+    void OnHoverStart(const ScreenPoint& pt) override;
     void OnHoverEnd() override;
 
 private:

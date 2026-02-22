@@ -23,20 +23,20 @@ public:
 
     ~RippleBasedHoldRuntime() override = default;
 
-    bool Start(const RippleStyle& style, const POINT& pt) override;
-    void Update(uint32_t holdMs, const POINT& pt) override;
+    bool Start(const RippleStyle& style, const ScreenPoint& pt) override;
+    void Update(uint32_t holdMs, const ScreenPoint& pt) override;
     void Stop() override;
     bool IsRunning() const override;
 
 private:
-    void SendHoldStateCommand(uint32_t holdMs, const POINT& pt) const;
-    void SendHoldEndCommand(const POINT& pt) const;
+    void SendHoldStateCommand(uint32_t holdMs, const ScreenPoint& pt) const;
+    void SendHoldEndCommand(const ScreenPoint& pt) const;
 
     std::string rendererName_;
     bool isGpuV2Route_ = false;
     bool isChromatic_ = false;
     uint64_t rippleId_ = 0;
-    POINT lastSentPoint_{};
+    ScreenPoint lastSentPoint_{};
     bool hasLastSentPoint_ = false;
 };
 

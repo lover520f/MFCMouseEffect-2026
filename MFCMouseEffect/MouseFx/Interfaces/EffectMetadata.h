@@ -1,6 +1,6 @@
 #pragma once
 
-#include <windows.h>
+#include <cstdint>
 #include <string>
 
 namespace mousefx {
@@ -8,7 +8,7 @@ namespace mousefx {
 // Master metadata for an effect option to ensure consistency across UI components.
 struct EffectOption {
     const char* value;       // Internal type name (e.g. "ripple")
-    UINT trayCmd;            // Corresponding Tray menu command ID
+    uint32_t trayCmd;        // Corresponding Tray menu command ID
     const wchar_t* displayZh; // Chinese display name
     const wchar_t* displayEn; // English display name
     const char* secondType = nullptr; // Optional alias for matching

@@ -6,7 +6,7 @@
 #include <string>
 
 #include "MouseFx/Core/Config/EffectConfig.h"
-#include "MouseFx/Core/System/GlobalMouseHook.h"
+#include "MouseFx/Core/Protocol/InputTypes.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Renderers/Indicator/IndicatorRenderer.h"
 

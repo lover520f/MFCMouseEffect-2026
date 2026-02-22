@@ -9,6 +9,7 @@
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/TimeUtils.h"
+#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 
 #include <cmath>
 #include <filesystem>
@@ -25,8 +26,8 @@ static void WriteHoldRuntimeSnapshot(
     const char* eventName,
     const std::string& type,
     bool running,
-    const POINT& pt,
-    DWORD holdMs) {
+    const ScreenPoint& pt,
+    uint32_t holdMs) {
     const std::wstring diagDir = ResolveLocalDiagDirectory();
     if (diagDir.empty()) return;
     std::error_code ec;
@@ -98,7 +99,7 @@ void HoldEffect::Shutdown() {
     OnHoldEnd();
 }
 
-void HoldEffect::OnHoldStart(const POINT& pt, int button) {
+void HoldEffect::OnHoldStart(const ScreenPoint& pt, int button) {
     if (holdButton_ != 0) return; // Already holding
 
     holdPoint_ = pt;
@@ -117,11 +118,11 @@ void HoldEffect::OnHoldStart(const POINT& pt, int button) {
         pt, 0);
 }
 
-void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
+void HoldEffect::OnHoldUpdate(const ScreenPoint& pt, uint32_t durationMs) {
     holdPoint_ = pt;
 
     const uint64_t nowMs = NowMs();
-    POINT outPt = pt;
+    ScreenPoint outPt = pt;
     bool shouldUpdate = false;
 
     switch (followMode_) {
@@ -138,8 +139,8 @@ void HoldEffect::OnHoldUpdate(const POINT& pt, DWORD durationMs) {
                 smoothedX_ += ((float)pt.x - smoothedX_) * alpha;
                 smoothedY_ += ((float)pt.y - smoothedY_) * alpha;
             }
-            outPt.x = (LONG)std::lround(smoothedX_);
-            outPt.y = (LONG)std::lround(smoothedY_);
+            outPt.x = static_cast<int32_t>(std::lround(smoothedX_));
+            outPt.y = static_cast<int32_t>(std::lround(smoothedY_));
             shouldUpdate = true;
             break;
         }
@@ -184,7 +185,7 @@ HoldEffect::FollowMode HoldEffect::ParseFollowMode(const std::string& mode) {
     return FollowMode::Smooth;
 }
 
-bool HoldEffect::IsSamePoint(const POINT& a, const POINT& b) {
+bool HoldEffect::IsSamePoint(const ScreenPoint& a, const ScreenPoint& b) {
     return a.x == b.x && a.y == b.y;
 }
 

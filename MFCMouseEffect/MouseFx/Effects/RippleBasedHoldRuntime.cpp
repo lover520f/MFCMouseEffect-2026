@@ -5,6 +5,7 @@
 #include "MouseFx/Renderers/RendererRegistry.h"
 #include "MouseFx/Renderers/HoldRuntimeRegistry.h"
 #include "MouseFx/Styles/ThemeStyle.h"
+#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 
 // Include hold renderer headers to ensure static registration occurs.
 #include "MouseFx/Renderers/Hold/ChargeRenderer.h"
@@ -30,7 +31,7 @@ RippleBasedHoldRuntime::RippleBasedHoldRuntime(
       isChromatic_(isChromatic) {
 }
 
-bool RippleBasedHoldRuntime::Start(const RippleStyle& style, const POINT& pt) {
+bool RippleBasedHoldRuntime::Start(const RippleStyle& style, const ScreenPoint& pt) {
     if (rippleId_ != 0) return false; // Already running
 
     ClickEvent ev{};
@@ -65,11 +66,11 @@ bool RippleBasedHoldRuntime::Start(const RippleStyle& style, const POINT& pt) {
     return rippleId_ != 0;
 }
 
-void RippleBasedHoldRuntime::Update(uint32_t holdMs, const POINT& pt) {
+void RippleBasedHoldRuntime::Update(uint32_t holdMs, const ScreenPoint& pt) {
     if (rippleId_ == 0) return;
 
     if (!hasLastSentPoint_ || lastSentPoint_.x != pt.x || lastSentPoint_.y != pt.y) {
-        OverlayHostService::Instance().UpdateRipplePosition(rippleId_, pt);
+        OverlayHostService::Instance().UpdateRipplePosition(rippleId_, ToNativePoint(pt));
         lastSentPoint_ = pt;
         hasLastSentPoint_ = true;
     }
@@ -78,7 +79,7 @@ void RippleBasedHoldRuntime::Update(uint32_t holdMs, const POINT& pt) {
     snprintf(buf, sizeof(buf), "%u", holdMs);
     OverlayHostService::Instance().SendRippleCommand(rippleId_, "hold_ms", buf);
     if (isGpuV2Route_) {
-        const POINT statePt = hasLastSentPoint_ ? lastSentPoint_ : pt;
+        const ScreenPoint statePt = hasLastSentPoint_ ? lastSentPoint_ : pt;
         SendHoldStateCommand(holdMs, statePt);
     }
 }
@@ -86,7 +87,7 @@ void RippleBasedHoldRuntime::Update(uint32_t holdMs, const POINT& pt) {
 void RippleBasedHoldRuntime::Stop() {
     if (rippleId_ == 0) return;
     if (isGpuV2Route_) {
-        const POINT finalPt = hasLastSentPoint_ ? lastSentPoint_ : POINT{};
+        const ScreenPoint finalPt = hasLastSentPoint_ ? lastSentPoint_ : ScreenPoint{};
         SendHoldEndCommand(finalPt);
     }
     OverlayHostService::Instance().StopRipple(rippleId_);
@@ -98,14 +99,14 @@ bool RippleBasedHoldRuntime::IsRunning() const {
     return rippleId_ != 0;
 }
 
-void RippleBasedHoldRuntime::SendHoldStateCommand(uint32_t holdMs, const POINT& pt) const {
+void RippleBasedHoldRuntime::SendHoldStateCommand(uint32_t holdMs, const ScreenPoint& pt) const {
     if (rippleId_ == 0) return;
     char buf[96]{};
     snprintf(buf, sizeof(buf), "%u,%ld,%ld", holdMs, (long)pt.x, (long)pt.y);
     OverlayHostService::Instance().SendRippleCommand(rippleId_, "hold_state", buf);
 }
 
-void RippleBasedHoldRuntime::SendHoldEndCommand(const POINT& pt) const {
+void RippleBasedHoldRuntime::SendHoldEndCommand(const ScreenPoint& pt) const {
     if (rippleId_ == 0) return;
     char buf[64]{};
     snprintf(buf, sizeof(buf), "%ld,%ld", (long)pt.x, (long)pt.y);

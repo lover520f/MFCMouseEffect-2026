@@ -2,6 +2,7 @@
 
 #include "RippleOverlayLayer.h"
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
+#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Utils/TimeUtils.h"
 
 #include <algorithm>
@@ -62,7 +63,7 @@ uint64_t RippleOverlayLayer::ShowContinuous(const ClickEvent& ev, const RippleSt
 void RippleOverlayLayer::UpdatePosition(uint64_t id, const POINT& pt) {
     RippleInstance* instance = FindById(id);
     if (!instance) return;
-    instance->ev.pt = pt;
+    instance->ev.pt = ToScreenPoint(pt);
 }
 
 void RippleOverlayLayer::Stop(uint64_t id) {
@@ -159,7 +160,7 @@ void RippleOverlayLayer::Render(Gdiplus::Graphics& graphics) {
 }
 
 POINT RippleOverlayLayer::ResolveRenderCenter(const RippleInstance& instance) const {
-    POINT screenPt = instance.ev.pt;
+    POINT screenPt = ToNativePoint(instance.ev.pt);
     if (instance.params.useKinematics) {
         const double tSec = static_cast<double>(instance.elapsedMs) / 1000.0;
         const double dx =

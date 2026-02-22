@@ -20,7 +20,7 @@ public:
 
     bool Initialize() override;
     void Shutdown() override;
-    void OnMouseMove(const POINT& pt) override;
+    void OnMouseMove(const ScreenPoint& pt) override;
 
 private:
     std::unique_ptr<ITrailRenderer> CreateRenderer() const;

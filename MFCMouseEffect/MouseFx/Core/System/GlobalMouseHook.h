@@ -5,29 +5,9 @@
 #include <atomic>
 #include <string>
 
+#include "MouseFx/Core/Protocol/InputTypes.h"
+
 namespace mousefx {
-
-enum class MouseButton : uint8_t {
-    Left = 1,
-    Right = 2,
-    Middle = 3,
-};
-
-struct ClickEvent {
-    POINT pt{};
-    MouseButton button{MouseButton::Left};
-};
-
-struct KeyEvent {
-    POINT pt{};
-    UINT vkCode{0};
-    bool systemKey{false};
-    bool ctrl{false};
-    bool shift{false};
-    bool alt{false};
-    bool win{false};
-    std::wstring text{};
-};
 
 // WH_MOUSE_LL hook that posts ClickEvent objects to a dispatch window (message-only HWND).
 class GlobalMouseHook final {

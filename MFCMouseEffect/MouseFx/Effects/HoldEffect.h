@@ -25,8 +25,8 @@ public:
 
     bool Initialize() override;
     void Shutdown() override;
-    void OnHoldStart(const POINT& pt, int button) override;
-    void OnHoldUpdate(const POINT& pt, DWORD durationMs) override;
+    void OnHoldStart(const ScreenPoint& pt, int button) override;
+    void OnHoldUpdate(const ScreenPoint& pt, uint32_t durationMs) override;
     void OnHoldEnd() override;
     void OnCommand(const std::string& cmd, const std::string& args) override;
 
@@ -38,9 +38,9 @@ private:
     };
 
     static FollowMode ParseFollowMode(const std::string& mode);
-    static bool IsSamePoint(const POINT& a, const POINT& b);
+    static bool IsSamePoint(const ScreenPoint& a, const ScreenPoint& b);
 
-    POINT holdPoint_{};
+    ScreenPoint holdPoint_{};
     int holdButton_ = 0;
 
     std::string type_;

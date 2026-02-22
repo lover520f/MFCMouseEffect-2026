@@ -83,7 +83,7 @@ HoldQuantumHaloGpuV2DirectRuntime::~HoldQuantumHaloGpuV2DirectRuntime() {
     Stop();
 }
 
-bool HoldQuantumHaloGpuV2DirectRuntime::Start(const RippleStyle& style, const POINT& startPt) {
+bool HoldQuantumHaloGpuV2DirectRuntime::Start(const RippleStyle& style, const ScreenPoint& startPt) {
     Stop();
 
     style_ = style;
@@ -109,7 +109,7 @@ bool HoldQuantumHaloGpuV2DirectRuntime::Start(const RippleStyle& style, const PO
     return true;
 }
 
-void HoldQuantumHaloGpuV2DirectRuntime::Update(uint32_t holdMs, const POINT& pt) {
+void HoldQuantumHaloGpuV2DirectRuntime::Update(uint32_t holdMs, const ScreenPoint& pt) {
     if (!running_.load(std::memory_order_acquire)) {
         return;
     }

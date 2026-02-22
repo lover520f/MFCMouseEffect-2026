@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-#include "MouseFx/Core/System/GlobalMouseHook.h"
+#include "MouseFx/Core/Protocol/InputTypes.h"
 #include "MouseFx/Styles/RippleStyle.h"
 
 namespace mousefx {

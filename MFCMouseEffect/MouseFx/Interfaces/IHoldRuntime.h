@@ -1,9 +1,9 @@
 #pragma once
 
+#include "MouseFx/Core/Protocol/InputTypes.h"
 #include "MouseFx/Styles/RippleStyle.h"
 
 #include <cstdint>
-#include <windows.h>
 
 namespace mousefx {
 
@@ -15,12 +15,12 @@ public:
     virtual ~IHoldRuntime() = default;
 
     /// Begin the hold effect with the given visual style at screen point.
-    virtual bool Start(const RippleStyle& style, const POINT& pt) = 0;
+    virtual bool Start(const RippleStyle& style, const ScreenPoint& pt) = 0;
 
     /// Called every frame while the button is held.
     /// @param holdMs   milliseconds since hold started.
     /// @param pt       current (possibly smoothed) cursor position.
-    virtual void Update(uint32_t holdMs, const POINT& pt) = 0;
+    virtual void Update(uint32_t holdMs, const ScreenPoint& pt) = 0;
 
     /// End the hold effect (button released or shutdown).
     virtual void Stop() = 0;

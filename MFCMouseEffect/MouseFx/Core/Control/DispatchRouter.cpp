@@ -4,6 +4,7 @@
 #include "DispatchRouter.h"
 #include "AppController.h"
 #include "MouseFx/Core/Protocol/MouseFxMessages.h"
+#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Core/Wasm/WasmClickCommandExecutor.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 
@@ -212,7 +213,7 @@ LRESULT DispatchRouter::OnMove(HWND /*hwnd*/, WPARAM wParam, LPARAM lParam) {
     }
     if ((!moveRouteActive || !moveRenderedByWasm) && (ctrl_->GetEffect(EffectCategory::Trail) != nullptr)) {
         if (auto* effect = ctrl_->GetEffect(EffectCategory::Trail)) {
-            effect->OnMouseMove(pt);
+            effect->OnMouseMove(ToScreenPoint(pt));
         }
     }
 
@@ -233,7 +234,7 @@ LRESULT DispatchRouter::OnMove(HWND /*hwnd*/, WPARAM wParam, LPARAM lParam) {
         }
     }
     if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
-        effect->OnHoldUpdate(pt, ctrl_->CurrentHoldDurationMs());
+        effect->OnHoldUpdate(ToScreenPoint(pt), ctrl_->CurrentHoldDurationMs());
     }
     return 0;
 }
@@ -249,7 +250,7 @@ LRESULT DispatchRouter::OnScroll(HWND /*hwnd*/, WPARAM wParam, LPARAM lParam) {
         pt.y = GET_Y_LPARAM(lParam);
     }
     ScrollEvent ev{};
-    ev.pt = pt;
+    ev.pt = ToScreenPoint(pt);
     ev.delta = delta;
     ev.horizontal = false;
     ctrl_->InputAutomation().OnScroll(delta);
@@ -369,7 +370,7 @@ LRESULT DispatchRouter::OnTimer(HWND hwnd, WPARAM wParam) {
             }
             if (!hoverRouteActive || !hoverRenderedByWasm) {
                 if (auto* effect = ctrl_->GetEffect(EffectCategory::Hover)) {
-                    effect->OnHoverStart(pt);
+                    effect->OnHoverStart(ToScreenPoint(pt));
                 }
             }
         }
@@ -408,7 +409,7 @@ LRESULT DispatchRouter::OnTimer(HWND hwnd, WPARAM wParam) {
             }
             if (!holdRouteActive || !holdRenderedByWasm) {
                 if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
-                    effect->OnHoldStart(pt, button);
+                    effect->OnHoldStart(ToScreenPoint(pt), button);
                 }
             }
             ctrl_->MarkIgnoreNextClick();  // Timer fired = Hold triggered = ignore next click.
@@ -421,7 +422,9 @@ LRESULT DispatchRouter::OnTimer(HWND hwnd, WPARAM wParam) {
     if (wParam == kSelfTestTimerId) {
         KillTimer(ctrl_->DispatchWindowHandle(), kSelfTestTimerId);
         ClickEvent ev{};
-        GetCursorPos(&ev.pt);
+        POINT cursor{};
+        GetCursorPos(&cursor);
+        ev.pt = ToScreenPoint(cursor);
         ev.button = MouseButton::Left;
         if (auto* effect = ctrl_->GetEffect(EffectCategory::Click)) {
             effect->OnClick(ev);

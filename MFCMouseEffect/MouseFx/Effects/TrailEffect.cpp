@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "TrailEffect.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
+#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Layers/TrailOverlayLayer.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Interfaces/TrailRenderStrategies.h"
@@ -48,13 +49,14 @@ void TrailEffect::Shutdown() {
     }
 }
 
-void TrailEffect::OnMouseMove(const POINT& pt) {
+void TrailEffect::OnMouseMove(const ScreenPoint& pt) {
+    const POINT nativePt = ToNativePoint(pt);
     if (hostLayer_) {
-        hostLayer_->AddPoint(pt);
+        hostLayer_->AddPoint(nativePt);
         return;
     }
     if (window_) {
-        window_->AddPoint(pt);
+        window_->AddPoint(nativePt);
     }
 }
 

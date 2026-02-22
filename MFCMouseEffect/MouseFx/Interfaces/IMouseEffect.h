@@ -1,9 +1,9 @@
 #pragma once
 
-#include <windows.h>
 #include <cstdint>
 #include <string>
-#include "MouseFx/Core/System/GlobalMouseHook.h"
+
+#include "MouseFx/Core/Protocol/InputTypes.h"
 
 namespace mousefx {
 
@@ -23,14 +23,14 @@ enum class EffectCategory : uint8_t {
 
 // Scroll event data
 struct ScrollEvent {
-    POINT pt;       // Mouse position
+    ScreenPoint pt;  // Mouse position
     int delta;      // Scroll amount (positive = up, negative = down)
     bool horizontal;// True if horizontal scroll
 };
 
 // Edge event data
 struct EdgeEvent {
-    POINT pt;       // Mouse position
+    ScreenPoint pt;  // Mouse position
     enum Edge { Left = 1, Right = 2, Top = 4, Bottom = 8 } edge;
 };
 
@@ -54,12 +54,12 @@ public:
     // Category-specific event handlers.
     // Override only the ones relevant to your effect's category.
     virtual void OnClick(const ClickEvent& event) { (void)event; }
-    virtual void OnMouseMove(const POINT& pt) { (void)pt; }
+    virtual void OnMouseMove(const ScreenPoint& pt) { (void)pt; }
     virtual void OnScroll(const ScrollEvent& event) { (void)event; }
-    virtual void OnHoverStart(const POINT& pt) { (void)pt; }
+    virtual void OnHoverStart(const ScreenPoint& pt) { (void)pt; }
     virtual void OnHoverEnd() {}
-    virtual void OnHoldStart(const POINT& pt, int button) { (void)pt; (void)button; }
-    virtual void OnHoldUpdate(const POINT& pt, DWORD durationMs) { (void)pt; (void)durationMs; }
+    virtual void OnHoldStart(const ScreenPoint& pt, int button) { (void)pt; (void)button; }
+    virtual void OnHoldUpdate(const ScreenPoint& pt, uint32_t durationMs) { (void)pt; (void)durationMs; }
     virtual void OnHoldEnd() {}
     virtual void OnEdgeHit(const EdgeEvent& event) { (void)event; }
     

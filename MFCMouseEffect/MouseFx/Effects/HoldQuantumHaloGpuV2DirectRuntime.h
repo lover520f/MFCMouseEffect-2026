@@ -20,8 +20,8 @@ public:
     HoldQuantumHaloGpuV2DirectRuntime(const HoldQuantumHaloGpuV2DirectRuntime&) = delete;
     HoldQuantumHaloGpuV2DirectRuntime& operator=(const HoldQuantumHaloGpuV2DirectRuntime&) = delete;
 
-    bool Start(const RippleStyle& style, const POINT& startPt) override;
-    void Update(uint32_t holdMs, const POINT& pt) override;
+    bool Start(const RippleStyle& style, const ScreenPoint& startPt) override;
+    void Update(uint32_t holdMs, const ScreenPoint& pt) override;
     void Stop() override;
     bool IsRunning() const override;
 

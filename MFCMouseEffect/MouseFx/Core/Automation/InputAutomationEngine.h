@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MouseFx/Core/Config/EffectConfig.h"
-#include "MouseFx/Core/System/GlobalMouseHook.h"
+#include "MouseFx/Core/Protocol/InputTypes.h"
 #include "MouseFx/Core/System/ForegroundProcessResolver.h"
 #include "MouseFx/Core/Input/GestureRecognizer.h"
 #include "MouseFx/Core/Automation/KeyboardInjector.h"
