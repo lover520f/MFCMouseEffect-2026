@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IQuantumHaloPresenterBackend.h"
-#include "MouseFx/Renderers/Hold/QuantumHaloGpuV2Presenter.h"
+#include "Platform/windows/Renderers/Hold/QuantumHaloGpuV2Presenter.h"
 
 #include <string>
 

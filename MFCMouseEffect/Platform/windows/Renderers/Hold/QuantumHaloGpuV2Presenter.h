@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MouseFx/Renderers/Hold/QuantumHaloGpuV2ShaderPipeline.h"
+#include "Platform/windows/Renderers/Hold/QuantumHaloGpuV2ShaderPipeline.h"
 #include "MouseFx/Styles/RippleStyle.h"
 
 #include <d3d11.h>
