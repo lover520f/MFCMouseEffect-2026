@@ -15,6 +15,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Platform\windows\WasmRuntimeSehGuard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="WasmRuntimeBridgeContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -26,6 +29,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Platform\windows\WasmRuntimeSehGuard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="WasmRuntimeBridgeContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

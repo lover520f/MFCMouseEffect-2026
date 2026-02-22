@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "framework.h"
 
 #include "Platform/windows/Shell/Win32EventLoopService.h"
 

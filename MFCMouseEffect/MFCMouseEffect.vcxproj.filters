@@ -60,6 +60,9 @@
     <ClInclude Include="framework.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\windows\Common\Win32Base.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>

@@ -213,6 +213,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="MFCMouseEffect.h" />
+    <ClInclude Include="Platform\windows\Common\Win32Base.h" />
     <ClInclude Include="MouseFx\Core\Control\IDispatchMessageHandler.h" />
     <ClInclude Include="MouseFx\Core\Control\DispatchMessage.h" />
     <ClInclude Include="MouseFx\Core\Control\IDispatchMessageCodec.h" />

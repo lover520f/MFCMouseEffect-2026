@@ -149,11 +149,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Platform\windows\WasmRuntimeSehGuard.h" />
     <ClInclude Include="WasmRuntimeBridgeContext.h" />
     <ClInclude Include="third_party\wasm3\source\m3_env.h" />
     <ClInclude Include="third_party\wasm3\source\wasm3.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Platform\windows\WasmRuntimeSehGuard.cpp">
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
     <ClCompile Include="WasmRuntimeBridgeContext.cpp">
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>

@@ -1,11 +1,5 @@
 #include "WasmRuntimeBridgeContext.h"
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
-#include <excpt.h>
-
 #include <cstdio>
 #include <cstring>
 #include <filesystem>
@@ -13,6 +7,7 @@
 #include <limits>
 #include <string>
 
+#include "Platform/windows/WasmRuntimeSehGuard.h"
 #include "third_party/wasm3/source/m3_env.h"
 #include "third_party/wasm3/source/wasm3.h"
 
@@ -37,7 +32,7 @@ std::string NarrowPathForLog(const std::filesystem::path& path) {
     return path.string();
 }
 
-std::string BuildSehErrorMessage(const char* stage, DWORD exceptionCode, bool recovered) {
+std::string BuildSehErrorMessage(const char* stage, uint32_t exceptionCode, bool recovered) {
     char buffer[192]{};
     const int written = std::snprintf(
         buffer,
@@ -51,11 +46,6 @@ std::string BuildSehErrorMessage(const char* stage, DWORD exceptionCode, bool re
     }
     return std::string(buffer);
 }
-
-enum class ProtectedInvokeStatus : uint8_t {
-    Ok = 0,
-    SehFault,
-};
 
 M3Result SuppressLookupFailure(M3Result result) {
     return (result == m3Err_functionLookupFailed) ? m3Err_none : result;
@@ -75,60 +65,6 @@ m3ApiRawFunction(HostAssemblyScriptAbort) {
     (void)lineNumber;
     (void)columnNumber;
     m3ApiTrap(m3Err_trapAbort);
-}
-
-ProtectedInvokeStatus SafeM3Call(
-    IM3Function function,
-    uint32_t argc,
-    const void* args[],
-    M3Result* outResult,
-    DWORD* outSehCode) {
-    if (outResult) {
-        *outResult = m3Err_none;
-    }
-    if (outSehCode) {
-        *outSehCode = 0;
-    }
-    __try {
-        if (outResult) {
-            *outResult = m3_Call(function, argc, args);
-        } else {
-            (void)m3_Call(function, argc, args);
-        }
-    } __except (EXCEPTION_EXECUTE_HANDLER) {
-        if (outSehCode) {
-            *outSehCode = static_cast<DWORD>(GetExceptionCode());
-        }
-        return ProtectedInvokeStatus::SehFault;
-    }
-    return ProtectedInvokeStatus::Ok;
-}
-
-ProtectedInvokeStatus SafeM3GetResults(
-    IM3Function function,
-    uint32_t retc,
-    const void* retPointers[],
-    M3Result* outResult,
-    DWORD* outSehCode) {
-    if (outResult) {
-        *outResult = m3Err_none;
-    }
-    if (outSehCode) {
-        *outSehCode = 0;
-    }
-    __try {
-        if (outResult) {
-            *outResult = m3_GetResults(function, retc, retPointers);
-        } else {
-            (void)m3_GetResults(function, retc, retPointers);
-        }
-    } __except (EXCEPTION_EXECUTE_HANDLER) {
-        if (outSehCode) {
-            *outSehCode = static_cast<DWORD>(GetExceptionCode());
-        }
-        return ProtectedInvokeStatus::SehFault;
-    }
-    return ProtectedInvokeStatus::Ok;
 }
 
 } // namespace
@@ -221,7 +157,7 @@ bool RuntimeBridgeContext::CallGetApiVersion(uint32_t* outApiVersion) {
     }
 
     M3Result result = m3Err_none;
-    DWORD sehCode = 0;
+    uint32_t sehCode = 0;
     if (SafeM3Call(fnGetApiVersion_, 0, nullptr, &result, &sehCode) == ProtectedInvokeStatus::SehFault) {
         const bool recovered = RecoverRuntimeAfterFaultLocked();
         SetErrorLocked(BuildSehErrorMessage("m3_Call(get_api_version)", sehCode, recovered));
@@ -328,7 +264,7 @@ bool RuntimeBridgeContext::CallPluginBufferFunctionLocked(
     };
 
     M3Result result = m3Err_none;
-    DWORD sehCode = 0;
+    uint32_t sehCode = 0;
     std::string stageCall = "m3_Call(";
     stageCall += (stageTag && stageTag[0] != '\0') ? stageTag : "plugin";
     stageCall += ")";
@@ -397,7 +333,7 @@ void RuntimeBridgeContext::ResetPluginState() {
     }
 
     M3Result result = m3Err_none;
-    DWORD sehCode = 0;
+    uint32_t sehCode = 0;
     if (SafeM3Call(fnReset_, 0, nullptr, &result, &sehCode) == ProtectedInvokeStatus::SehFault) {
         const bool recovered = RecoverRuntimeAfterFaultLocked();
         SetErrorLocked(BuildSehErrorMessage("m3_Call(reset)", sehCode, recovered));
