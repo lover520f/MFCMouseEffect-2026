@@ -282,6 +282,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\System\StdMonotonicClockService.h" />
     <ClInclude Include="Platform\PlatformApplicationCatalog.h" />
     <ClInclude Include="Platform\PlatformNativeFolderPicker.h" />
+    <ClInclude Include="Platform\PlatformDisplayTopology.h" />
     <ClInclude Include="MouseFx\Effects\IconEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IMouseEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IOverlayLayer.h" />
@@ -337,7 +338,6 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonCodecEffectsColorHelpers.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonCodecParseInternal.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonCodecSerializeInternal.h" />
-    <ClInclude Include="MouseFx\Utils\MonitorUtils.h" />
     <ClInclude Include="MouseFx\Utils\D2DFactory.h" />
     <ClInclude Include="MouseFx\Core\Input\GestureRecognizer.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmPluginAbi.h" />
@@ -374,6 +374,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\windows\System\Win32VmForegroundSuppressionService.h" />
     <ClInclude Include="Platform\windows\System\Win32ApplicationCatalogScanner.h" />
     <ClInclude Include="Platform\windows\System\Win32NativeFolderPicker.h" />
+    <ClInclude Include="Platform\windows\System\Win32DisplayTopology.h" />
     <ClInclude Include="Platform\windows\System\Win32TextEncoding.h" />
     <ClInclude Include="Platform\windows\System\Win32BinaryResourceLoader.h" />
     <ClInclude Include="Platform\windows\System\Win32RuntimeEnvironment.h" />
@@ -397,6 +398,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\System\CursorPositionProvider.cpp" />
     <ClCompile Include="Platform\PlatformApplicationCatalog.cpp" />
     <ClCompile Include="Platform\PlatformNativeFolderPicker.cpp" />
+    <ClCompile Include="Platform\PlatformDisplayTopology.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
     <ClCompile Include="MouseFx\Core\Control\IpcController.cpp" />
     <ClCompile Include="MouseFx\Core\Shell\AppShellCore.cpp" />
@@ -433,6 +435,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\windows\System\Win32VmForegroundSuppressionService.cpp" />
     <ClCompile Include="Platform\windows\System\Win32ApplicationCatalogScanner.cpp" />
     <ClCompile Include="Platform\windows\System\Win32NativeFolderPicker.cpp" />
+    <ClCompile Include="Platform\windows\System\Win32DisplayTopology.cpp" />
     <ClCompile Include="Platform\windows\System\Win32TextEncoding.cpp" />
     <ClCompile Include="Platform\windows\System\Win32BinaryResourceLoader.cpp" />
     <ClCompile Include="MouseFx\Core\Protocol\JsonLite.cpp" />
@@ -490,7 +493,6 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfig.Load.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfig.Save.cpp" />
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfig.cpp" />
-    <ClCompile Include="MouseFx\Utils\MonitorUtils.cpp" />
     <ClCompile Include="MouseFx\Utils\D2DFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmBinaryCodec.cpp" />

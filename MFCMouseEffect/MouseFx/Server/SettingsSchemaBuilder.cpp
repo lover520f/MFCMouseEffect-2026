@@ -6,8 +6,8 @@
 #include "MouseFx/Core/Config/EffectConfig.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterBackendRegistry.h"
 #include "MouseFx/Core/Json/JsonFacade.h"
-#include "MouseFx/Utils/MonitorUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
+#include "Platform/PlatformDisplayTopology.h"
 #include "Settings/SettingsOptions.h"
 
 using json = nlohmann::json;
@@ -111,7 +111,7 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
         tmOpts.push_back({{"value","cursor"},{"label", LabelByLang(L"\u8ddf\u968f\u5149\u6807\u6240\u5728\u5c4f\u5e55", L"Follow Cursor Screen", lang)}});
         tmOpts.push_back({{"value","primary"},{"label", LabelByLang(L"\u4e3b\u5c4f\u5e55", L"Primary Monitor", lang)}});
         tmOpts.push_back({{"value","custom"},{"label", LabelByLang(L"\u81ea\u5b9a\u4e49\u591a\u5c4f", L"Custom Multi-Screen", lang)}});
-        auto monitors = mousefx::EnumMonitors();
+        auto monitors = platform::EnumerateDisplayMonitors();
         json monArr = json::array();
         for (const auto& m : monitors) {
             std::wstring monLabel = m.deviceName;

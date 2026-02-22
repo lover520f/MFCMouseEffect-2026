@@ -10,7 +10,7 @@
 #include <string>
 
 #include "Platform/windows/Protocol/Win32InputTypes.h"
-#include "MouseFx/Utils/MonitorUtils.h"
+#include "Platform/PlatformDisplayTopology.h"
 
 namespace mousefx {
 
@@ -513,8 +513,8 @@ void Win32InputIndicatorOverlay::UpdateClonePlacement(HWND targetHwnd, const std
     if (!targetHwnd) return;
 
     // Find the monitor entry
-    auto monitors = mousefx::EnumMonitors();
-    RECT monRect{};
+    const auto monitors = platform::EnumerateDisplayMonitors();
+    platform::DisplayRect monRect{};
     bool found = false;
     for (const auto& m : monitors) {
         if (m.id == monitorId) {
@@ -602,7 +602,8 @@ void Win32InputIndicatorOverlay::UpdatePlacement(POINT anchorPt, bool isKeyboard
         target.y = anchorPt.y + offY;
     } else {
         // Absolute mode: resolve target monitor and place relative to its origin.
-        const auto [resolvedMonId, monRect] = ResolveTargetMonitor(monId, anchorPt);
+        const platform::DisplayPoint anchorPoint{anchorPt.x, anchorPt.y};
+        const auto [resolvedMonId, monRect] = platform::ResolveTargetDisplayMonitor(monId, anchorPoint);
         
         int finalAbsX = absX;
         int finalAbsY = absY;
