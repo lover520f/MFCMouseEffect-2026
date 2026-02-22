@@ -159,7 +159,6 @@ void AppShellCore::OpenSettingsFromShell() {
 void AppShellCore::RequestExitFromShell() {
     if (trayService_ && !backgroundMode_) {
         trayService_->RequestExit();
-        return;
     }
     if (eventLoopService_) {
         eventLoopService_->RequestExit();
