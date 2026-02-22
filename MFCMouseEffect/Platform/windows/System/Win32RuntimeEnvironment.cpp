@@ -1,14 +1,14 @@
-// GpuProbeHelper.cpp -- Dawn runtime probe extracted from AppController
+// Win32RuntimeEnvironment.cpp -- Win32 runtime probe and path helpers
 
 #include "pch.h"
-#include "GpuProbeHelper.h"
+#include "Platform/windows/System/Win32RuntimeEnvironment.h"
 
 #include <windows.h>
 #include <filesystem>
 
-namespace mousefx {
+namespace mousefx::platform::windows {
 
-std::wstring GetExeDirW() {
+std::wstring GetExecutableDirectoryW() {
     wchar_t exePath[MAX_PATH] = {};
     GetModuleFileNameW(nullptr, exePath, MAX_PATH);
     std::wstring p(exePath);
@@ -17,17 +17,17 @@ std::wstring GetExeDirW() {
     return p.substr(0, pos);
 }
 
-std::wstring ParentDirW(const std::wstring& path) {
+std::wstring GetParentDirectoryW(const std::wstring& path) {
     const size_t pos = path.find_last_of(L"\\/");
     if (pos == std::wstring::npos) return {};
     return path.substr(0, pos);
 }
 
-DawnRuntimeProbeResult ProbeDawnRuntimeOnce() {
-    const std::wstring exeDir = GetExeDirW();
+RuntimeProbeResult ProbeDawnRuntimeOnce() {
+    const std::wstring exeDir = GetExecutableDirectoryW();
     const std::filesystem::path primary = std::filesystem::path(exeDir) / L"webgpu_dawn.dll";
     const std::filesystem::path fallback = std::filesystem::path(exeDir) / L"Runtime" / L"Dawn" / L"webgpu_dawn.dll";
-    const std::wstring repoRoot = ParentDirW(ParentDirW(exeDir));
+    const std::wstring repoRoot = GetParentDirectoryW(GetParentDirectoryW(exeDir));
     const std::filesystem::path repoRuntime = std::filesystem::path(repoRoot) / L"MFCMouseEffect" / L"Runtime" / L"Dawn" / L"webgpu_dawn.dll";
 
     auto tryLoad = [](const std::filesystem::path& p) -> bool {
@@ -39,7 +39,7 @@ DawnRuntimeProbeResult ProbeDawnRuntimeOnce() {
         return true;
     };
 
-    DawnRuntimeProbeResult r{};
+    RuntimeProbeResult r{};
     if (tryLoad(primary)) {
         r.available = true;
         r.reason = "dawn_runtime_loaded_from_exe_dir";
@@ -60,4 +60,4 @@ DawnRuntimeProbeResult ProbeDawnRuntimeOnce() {
     return r;
 }
 
-} // namespace mousefx
+} // namespace mousefx::platform::windows

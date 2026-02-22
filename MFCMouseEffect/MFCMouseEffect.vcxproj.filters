@@ -354,6 +354,9 @@
     <ClInclude Include="Platform\PlatformWasmRuntimeFactory.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\PlatformRuntimeEnvironment.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\windows\Shell\Win32DpiAwarenessService.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -391,6 +394,9 @@
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\windows\System\Win32VmForegroundSuppressionService.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\System\Win32RuntimeEnvironment.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\windows\Overlay\Win32OverlayCoordSpaceService.h">
@@ -521,6 +527,9 @@
     <ClCompile Include="Platform\PlatformWasmRuntimeFactory.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
+    <ClCompile Include="Platform\PlatformRuntimeEnvironment.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
     <ClCompile Include="Platform\windows\Shell\Win32DpiAwarenessService.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
@@ -561,6 +570,9 @@
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32VmForegroundSuppressionService.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\System\Win32RuntimeEnvironment.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.cpp">

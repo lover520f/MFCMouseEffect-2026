@@ -249,6 +249,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\PlatformControlServicesFactory.h" />
     <ClInclude Include="Platform\PlatformInputServicesFactory.h" />
     <ClInclude Include="Platform\PlatformOverlayServicesFactory.h" />
+    <ClInclude Include="Platform\PlatformRuntimeEnvironment.h" />
     <ClInclude Include="Platform\PlatformEffectFallbackFactory.h" />
     <ClInclude Include="Platform\PlatformSystemServicesFactory.h" />
     <ClInclude Include="Platform\PlatformShellServicesFactory.h" />
@@ -368,6 +369,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\windows\System\Win32MonotonicClockService.h" />
     <ClInclude Include="Platform\windows\System\Win32ForegroundProcessService.h" />
     <ClInclude Include="Platform\windows\System\Win32VmForegroundSuppressionService.h" />
+    <ClInclude Include="Platform\windows\System\Win32RuntimeEnvironment.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -397,6 +399,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\PlatformControlServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformInputServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformOverlayServicesFactory.cpp" />
+    <ClCompile Include="Platform\PlatformRuntimeEnvironment.cpp" />
     <ClCompile Include="Platform\PlatformEffectFallbackFactory.cpp" />
     <ClCompile Include="Platform\PlatformSystemServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformShellServicesFactory.cpp" />
@@ -437,7 +440,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Renderers\Hold\Neon3D\Neon3DFx.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.ApplySettings.cpp" />
-    <ClCompile Include="MouseFx\Core\System\GpuProbeHelper.cpp" />
+    <ClCompile Include="Platform\windows\System\Win32RuntimeEnvironment.cpp" />
     <ClCompile Include="MouseFx\Core\Control\DispatchRouter.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleBasedHoldRuntime.cpp" />
     <ClCompile Include="MouseFx\Renderers\Indicator\IndicatorRenderer.cpp" />

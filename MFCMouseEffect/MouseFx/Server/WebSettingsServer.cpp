@@ -4,7 +4,7 @@
 #include <random>
 #include <sstream>
 
-#include "MouseFx/Core/System/GpuProbeHelper.h"
+#include "Platform/PlatformRuntimeEnvironment.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/WebUiAssets.h"
 
@@ -14,7 +14,7 @@ WebSettingsServer::WebSettingsServer(AppController* controller) : controller_(co
     RotateToken();
     http_ = std::make_unique<HttpServer>();
 
-    std::wstring base = GetExeDirW();
+    std::wstring base = platform::GetExecutableDirectoryW();
     if (!base.empty()) base += L"\\webui";
     assets_ = std::make_unique<WebUiAssets>(base);
 }
