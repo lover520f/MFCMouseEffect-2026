@@ -213,6 +213,9 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="MFCMouseEffect.h" />
+    <ClInclude Include="MouseFx\Core\Control\IDispatchMessageHandler.h" />
+    <ClInclude Include="MouseFx\Core\Control\IDispatchMessageHost.h" />
+    <ClInclude Include="MouseFx\Core\Control\NullDispatchMessageHost.h" />
     <ClInclude Include="MouseFx\Core\Control\AppController.h" />
     <ClInclude Include="MouseFx\Core\Automation\InputAutomationEngine.h" />
     <ClInclude Include="MouseFx\Core\Automation\KeyboardInjector.h" />
@@ -239,6 +242,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Shell\ShellPlatformServices.h" />
     <ClInclude Include="MouseFx\Core\Shell\Win32AppShell.h" />
     <ClInclude Include="Platform\PlatformOverlayCoordSpaceFactory.h" />
+    <ClInclude Include="Platform\PlatformControlServicesFactory.h" />
     <ClInclude Include="Platform\PlatformInputServicesFactory.h" />
     <ClInclude Include="Platform\PlatformOverlayServicesFactory.h" />
     <ClInclude Include="Platform\PlatformShellServicesFactory.h" />
@@ -248,6 +252,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\windows\Shell\Win32SingleInstanceGuard.h" />
     <ClInclude Include="Platform\windows\Shell\Win32TrayService.h" />
     <ClInclude Include="Platform\windows\Shell\Win32UserNotificationService.h" />
+    <ClInclude Include="Platform\windows\Control\Win32DispatchMessageHost.h" />
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\System\IGlobalMouseHook.h" />
@@ -337,6 +342,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMouseEffect.cpp" />
+    <ClCompile Include="Platform\windows\Control\Win32DispatchMessageHost.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.Wasm.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.ConfigUpdates.cpp" />
@@ -355,6 +361,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Shell\AppShellCore.cpp" />
     <ClCompile Include="MouseFx\Core\Shell\Win32AppShell.cpp" />
     <ClCompile Include="Platform\PlatformOverlayCoordSpaceFactory.cpp" />
+    <ClCompile Include="Platform\PlatformControlServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformInputServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformOverlayServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformShellServicesFactory.cpp" />

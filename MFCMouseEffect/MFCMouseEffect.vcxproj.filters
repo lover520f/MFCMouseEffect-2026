@@ -78,6 +78,15 @@
     <ClInclude Include="MouseFx\Core\Control\AppController.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Control\IDispatchMessageHandler.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Control\IDispatchMessageHost.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Control\NullDispatchMessageHost.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\Automation\InputAutomationEngine.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -294,6 +303,9 @@
     <ClInclude Include="Platform\PlatformOverlayCoordSpaceFactory.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\PlatformControlServicesFactory.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\PlatformInputServicesFactory.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -321,6 +333,9 @@
     <ClInclude Include="Platform\windows\Shell\Win32UserNotificationService.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\windows\Control\Win32DispatchMessageHost.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\windows\System\Win32GlobalMouseHook.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -340,6 +355,9 @@
   <ItemGroup>
     <ClCompile Include="MFCMouseEffect.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Control\Win32DispatchMessageHost.cpp">
+      <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
@@ -420,6 +438,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="Platform\PlatformOverlayCoordSpaceFactory.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\PlatformControlServicesFactory.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\PlatformInputServicesFactory.cpp">

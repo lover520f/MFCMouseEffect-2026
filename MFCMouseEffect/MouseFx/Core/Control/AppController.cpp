@@ -11,6 +11,7 @@
 #include "MouseFx/Core/Config/EffectConfigInternal.h"
 #include "MouseFx/Core/Control/EffectFactory.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
+#include "MouseFx/Core/Control/NullDispatchMessageHost.h"
 #include "MouseFx/Core/Overlay/NullInputIndicatorOverlay.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
 #include "MouseFx/Core/Wasm/WasmClickCommandExecutor.h"
@@ -21,6 +22,7 @@
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
 #include "MouseFx/Core/System/VmForegroundDetector.h"
+#include "Platform/PlatformControlServicesFactory.h"
 #include "Platform/PlatformInputServicesFactory.h"
 #include "Platform/PlatformOverlayServicesFactory.h"
 
@@ -36,9 +38,6 @@
 namespace mousefx {
 
 using json = nlohmann::json;
-
-static const wchar_t* kDispatchClassName = L"MouseFxDispatchWindow";
-static constexpr UINT_PTR kSelfTestTimerId = 0x4D46;
 
 static std::string NormalizeHoldFollowMode(std::string mode) {
     mode = ToLowerAscii(mode);
@@ -63,10 +62,14 @@ constexpr std::array<ActiveCategoryDescriptor, 5> kActiveCategoryDescriptors{{
 
 
 AppController::AppController()
-    : hook_(platform::CreateGlobalMouseHook())
+    : dispatchMessageHost_(platform::CreateDispatchMessageHost())
+    , hook_(platform::CreateGlobalMouseHook())
     , inputIndicatorOverlay_(platform::CreateInputIndicatorOverlay())
     , commandHandler_(std::make_unique<CommandHandler>(this))
     , dispatchRouter_(std::make_unique<DispatchRouter>(this)) {
+    if (!dispatchMessageHost_) {
+        dispatchMessageHost_ = std::make_unique<NullDispatchMessageHost>();
+    }
     if (!inputIndicatorOverlay_) {
         inputIndicatorOverlay_ = std::make_unique<NullInputIndicatorOverlay>();
     }
@@ -77,15 +80,15 @@ AppController::~AppController() {
 }
 
 EffectConfig AppController::GetConfigSnapshot() const {
-    if (!dispatchHwnd_ || !IsWindow(dispatchHwnd_)) {
+    if (!dispatchMessageHost_ || !dispatchMessageHost_->IsCreated()) {
         return config_;
     }
-    if (GetWindowThreadProcessId(dispatchHwnd_, nullptr) == GetCurrentThreadId()) {
+    if (dispatchMessageHost_->IsOwnerThread()) {
         return config_;
     }
 
     EffectConfig snapshot{};
-    SendMessageW(dispatchHwnd_, WM_MFX_GET_CONFIG, 0, reinterpret_cast<LPARAM>(&snapshot));
+    dispatchMessageHost_->SendSync(WM_MFX_GET_CONFIG, 0, reinterpret_cast<intptr_t>(&snapshot));
     return snapshot;
 }
 
@@ -294,15 +297,23 @@ void AppController::EndHoldTracking() {
     holdDownTick_ = 0;
 }
 
+void AppController::ArmHoldTimer() {
+    if (dispatchMessageHost_ && dispatchMessageHost_->IsCreated()) {
+        dispatchMessageHost_->SetTimer(kHoldTimerId, kHoldDelayMs);
+    }
+}
+
 void AppController::ClearPendingHold() {
     pendingHold_.active = false;
 }
 
-void AppController::CancelPendingHold(HWND hwnd) {
+void AppController::CancelPendingHold() {
     if (!pendingHold_.active) {
         return;
     }
-    KillTimer(hwnd, kHoldTimerId);
+    if (dispatchMessageHost_ && dispatchMessageHost_->IsCreated()) {
+        dispatchMessageHost_->KillTimer(kHoldTimerId);
+    }
     pendingHold_.active = false;
 }
 
@@ -355,7 +366,7 @@ void AppController::LogDebugClick(const ClickEvent& ev) {
 #endif
 
 bool AppController::Start() {
-    if (dispatchHwnd_) return true;
+    if (dispatchMessageHost_ && dispatchMessageHost_->IsCreated()) return true;
     diag_ = {};
 
     // Load config from the best available directory (AppData preferred)
@@ -394,10 +405,10 @@ bool AppController::Start() {
     }
 
     lastInputTime_ = GetTickCount64();
-    SetTimer(dispatchHwnd_, kHoverTimerId, 100, nullptr);
+    dispatchMessageHost_->SetTimer(kHoverTimerId, 100);
 
     diag_.stage = StartStage::GlobalHook;
-    if (!hook_->Start(reinterpret_cast<uintptr_t>(dispatchHwnd_))) {
+    if (!hook_->Start(dispatchMessageHost_ ? dispatchMessageHost_->NativeHandle() : 0)) {
         const uint32_t hookError = hook_->LastError();
 #ifdef _DEBUG
         wchar_t buf[256]{};
@@ -409,9 +420,6 @@ bool AppController::Start() {
         return false;
     }
 
-//#ifdef _DEBUG
-//    SetTimer(dispatchHwnd_, kSelfTestTimerId, 250, nullptr);
-//#endif
     return true;
 }
 
@@ -594,11 +602,11 @@ IMouseEffect* AppController::GetEffect(EffectCategory category) const {
 }
 
 void AppController::HandleCommand(const std::string& jsonCmd) {
-    if (!dispatchHwnd_) return;
+    if (!dispatchMessageHost_ || !dispatchMessageHost_->IsCreated()) return;
 
     // Thread Safety: Marshal to UI thread if we are on a background thread.
-    if (GetWindowThreadProcessId(dispatchHwnd_, nullptr) != GetCurrentThreadId()) {
-        SendMessageW(dispatchHwnd_, WM_MFX_EXEC_CMD, 0, reinterpret_cast<LPARAM>(&jsonCmd));
+    if (!dispatchMessageHost_->IsOwnerThread()) {
+        dispatchMessageHost_->SendSync(WM_MFX_EXEC_CMD, 0, reinterpret_cast<intptr_t>(&jsonCmd));
         return;
     }
 
@@ -606,34 +614,23 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
 }
 
 bool AppController::CreateDispatchWindow() {
-    if (dispatchHwnd_) return true;
-
-    WNDCLASSEXW wc{};
-    wc.cbSize = sizeof(wc);
-    wc.lpfnWndProc = &AppController::DispatchWndProc;
-    wc.hInstance = GetModuleHandleW(nullptr);
-    wc.lpszClassName = kDispatchClassName;
-    if (RegisterClassExW(&wc) == 0 && GetLastError() != ERROR_CLASS_ALREADY_EXISTS) {
-        diag_.error = GetLastError();
+    if (!dispatchMessageHost_) {
+        diag_.error = ERROR_INVALID_HANDLE;
         return false;
     }
-
-    dispatchHwnd_ = CreateWindowExW(
-        0, kDispatchClassName, L"", 0,
-        0, 0, 0, 0,
-        HWND_MESSAGE, nullptr,
-        GetModuleHandleW(nullptr), this
-    );
-    if (!dispatchHwnd_) {
-        diag_.error = GetLastError();
+    if (dispatchMessageHost_->IsCreated()) {
+        return true;
     }
-    return dispatchHwnd_ != nullptr;
+    if (!dispatchMessageHost_->Create(this)) {
+        diag_.error = static_cast<DWORD>(dispatchMessageHost_->LastError());
+        return false;
+    }
+    return true;
 }
 
 void AppController::DestroyDispatchWindow() {
-    if (dispatchHwnd_) {
-        DestroyWindow(dispatchHwnd_);
-        dispatchHwnd_ = nullptr;
+    if (dispatchMessageHost_) {
+        dispatchMessageHost_->Destroy();
     }
 }
 
@@ -654,8 +651,8 @@ void AppController::ApplyVmSuppression(bool suppressed) {
 }
 
 void AppController::SuspendEffectsForVm() {
-    if (dispatchHwnd_) {
-        KillTimer(dispatchHwnd_, kHoldTimerId);
+    if (dispatchMessageHost_ && dispatchMessageHost_->IsCreated()) {
+        dispatchMessageHost_->KillTimer(kHoldTimerId);
     }
     pendingHold_.active = false;
     ignoreNextClick_ = false;
@@ -676,21 +673,19 @@ void AppController::ResumeEffectsAfterVm() {
     }
 }
 
-LRESULT CALLBACK AppController::DispatchWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    AppController* self = nullptr;
-    if (msg == WM_NCCREATE) {
-        auto* cs = reinterpret_cast<CREATESTRUCTW*>(lParam);
-        self = reinterpret_cast<AppController*>(cs->lpCreateParams);
-        SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
-        self->dispatchHwnd_ = hwnd;
-    } else {
-        self = reinterpret_cast<AppController*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+intptr_t AppController::OnDispatchMessage(
+    uintptr_t sourceHandle,
+    uint32_t msg,
+    uintptr_t wParam,
+    intptr_t lParam) {
+    if (!dispatchRouter_) {
+        return 0;
     }
-
-    if (self) {
-        return self->dispatchRouter_->Route(hwnd, msg, wParam, lParam);
-    }
-    return DefWindowProcW(hwnd, msg, wParam, lParam);
+    return static_cast<intptr_t>(dispatchRouter_->Route(
+        reinterpret_cast<HWND>(sourceHandle),
+        static_cast<UINT>(msg),
+        static_cast<WPARAM>(wParam),
+        static_cast<LPARAM>(lParam)));
 }
 
 

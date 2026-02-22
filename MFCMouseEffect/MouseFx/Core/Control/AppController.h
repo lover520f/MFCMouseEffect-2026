@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "MouseFx/Core/Control/IDispatchMessageHandler.h"
+#include "MouseFx/Core/Control/IDispatchMessageHost.h"
 #include "MouseFx/Core/System/GdiPlusSession.h"
 #include "MouseFx/Core/System/IGlobalMouseHook.h"
 #include "MouseFx/Core/Overlay/IInputIndicatorOverlay.h"
@@ -25,7 +27,7 @@ class WasmEffectHost;
 }
 
 // Owns the subsystem lifecycle: message-only dispatcher, GDI+ init, hook, and effects.
-class AppController final {
+class AppController final : public IDispatchMessageHandler {
 public:
     AppController();
     ~AppController();
@@ -115,12 +117,15 @@ public:
     DWORD CurrentHoldDurationMs() const;
     void BeginHoldTracking(const POINT& pt, int button);
     void EndHoldTracking();
+    void ArmHoldTimer();
     void ClearPendingHold();
-    void CancelPendingHold(HWND hwnd);
+    void CancelPendingHold();
     bool ConsumePendingHold(POINT* outPt, int* outButton);
     void MarkIgnoreNextClick();
     bool TryEnterHover(POINT* outPt);
-    HWND DispatchWindowHandle() const { return dispatchHwnd_; }
+    HWND DispatchWindowHandle() const {
+        return reinterpret_cast<HWND>(dispatchMessageHost_ ? dispatchMessageHost_->NativeHandle() : 0);
+    }
     std::string StartShortcutCaptureSession(uint64_t timeoutMs);
     void StopShortcutCaptureSession(const std::string& sessionId);
     ShortcutCaptureSession::PollResult PollShortcutCaptureSession(const std::string& sessionId);
@@ -135,7 +140,11 @@ public:
 #endif
 
 private:
-    static LRESULT CALLBACK DispatchWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    intptr_t OnDispatchMessage(
+        uintptr_t sourceHandle,
+        uint32_t msg,
+        uintptr_t wParam,
+        intptr_t lParam) override;
     bool CreateDispatchWindow();
     void DestroyDispatchWindow();
     
@@ -160,9 +169,8 @@ private:
     void SuspendEffectsForVm();
     void ResumeEffectsAfterVm();
 
-    HWND dispatchHwnd_ = nullptr;
-
     GdiPlusSession gdiplus_{};
+    std::unique_ptr<IDispatchMessageHost> dispatchMessageHost_{};
     std::unique_ptr<IGlobalMouseHook> hook_{};
     
     // One effect slot per category.

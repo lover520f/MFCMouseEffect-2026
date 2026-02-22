@@ -292,7 +292,7 @@ LRESULT DispatchRouter::OnKey(HWND /*hwnd*/, LPARAM lParam) {
     return 0;
 }
 
-LRESULT DispatchRouter::OnButtonDown(HWND hwnd, WPARAM wParam, LPARAM lParam) {
+LRESULT DispatchRouter::OnButtonDown(HWND /*hwnd*/, WPARAM wParam, LPARAM lParam) {
     if (ctrl_->IsVmEffectsSuppressed()) {
         ctrl_->ClearPendingHold();
         return 0;
@@ -306,14 +306,14 @@ LRESULT DispatchRouter::OnButtonDown(HWND hwnd, WPARAM wParam, LPARAM lParam) {
 
     ctrl_->BeginHoldTracking(pt, button);
     ctrl_->InputAutomation().OnButtonDown(pt, button);
-    SetTimer(hwnd, AppController::HoldTimerId(), AppController::HoldDelayMs(), nullptr);
+    ctrl_->ArmHoldTimer();
 
     return 0;
 }
 
-LRESULT DispatchRouter::OnButtonUp(HWND hwnd, WPARAM wParam, LPARAM /*lParam*/) {
+LRESULT DispatchRouter::OnButtonUp(HWND /*hwnd*/, WPARAM wParam, LPARAM /*lParam*/) {
     ctrl_->EndHoldTracking();
-    ctrl_->CancelPendingHold(hwnd);
+    ctrl_->CancelPendingHold();
 
     if (ctrl_->IsVmEffectsSuppressed()) {
         ctrl_->InputAutomation().Reset();
