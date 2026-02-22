@@ -369,6 +369,9 @@
     <ClInclude Include="Platform\PlatformBinaryResourceLoader.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\PlatformHoldRuntimeFactory.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\PlatformRuntimeEnvironment.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -394,6 +397,9 @@
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\windows\Control\Win32DispatchMessageCodec.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Effects\Win32HoldQuantumHaloGpuV2DirectRuntime.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\windows\System\Win32GlobalMouseHook.h">
@@ -569,6 +575,9 @@
     <ClCompile Include="Platform\PlatformBinaryResourceLoader.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
+    <ClCompile Include="Platform\PlatformHoldRuntimeFactory.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
     <ClCompile Include="Platform\PlatformRuntimeEnvironment.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
@@ -633,6 +642,9 @@
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32RuntimeEnvironment.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Effects\Win32HoldQuantumHaloGpuV2DirectRuntime.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.cpp">

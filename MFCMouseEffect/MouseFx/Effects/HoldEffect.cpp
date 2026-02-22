@@ -3,12 +3,12 @@
 
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Effects/RippleBasedHoldRuntime.h"
-#include "MouseFx/Effects/HoldQuantumHaloGpuV2DirectRuntime.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"
 #include "MouseFx/Renderers/HoldRuntimeRegistry.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/TimeUtils.h"
+#include "Platform/PlatformHoldRuntimeFactory.h"
 
 #include <cmath>
 #include <filesystem>
@@ -60,7 +60,9 @@ static std::unique_ptr<IHoldRuntime> CreateRuntime(
 
     // 2. Direct GPU path
     if (hold_route::IsQuantumHaloGpuV2DirectType(type)) {
-        return std::make_unique<HoldQuantumHaloGpuV2DirectRuntime>();
+        if (auto runtime = platform::CreatePlatformHoldRuntime(type)) {
+            return runtime;
+        }
     }
 
     // 3. Ripple-based path (default)

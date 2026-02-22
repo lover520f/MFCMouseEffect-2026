@@ -251,6 +251,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\PlatformOverlayServicesFactory.h" />
     <ClInclude Include="Platform\PlatformRuntimeEnvironment.h" />
     <ClInclude Include="Platform\PlatformEffectFallbackFactory.h" />
+    <ClInclude Include="Platform\PlatformHoldRuntimeFactory.h" />
     <ClInclude Include="Platform\PlatformSystemServicesFactory.h" />
     <ClInclude Include="Platform\PlatformShellServicesFactory.h" />
     <ClInclude Include="Platform\PlatformWasmRuntimeFactory.h" />
@@ -267,6 +268,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\windows\Effects\Win32TextEffectFallback.h" />
     <ClInclude Include="Platform\windows\Effects\Win32TrailEffectFallback.h" />
     <ClInclude Include="Platform\windows\Effects\Win32ParticleTrailEffectFallback.h" />
+    <ClInclude Include="Platform\windows\Effects\Win32HoldQuantumHaloGpuV2DirectRuntime.h" />
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\System\CursorPositionProvider.h" />
@@ -413,6 +415,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\PlatformOverlayServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformRuntimeEnvironment.cpp" />
     <ClCompile Include="Platform\PlatformEffectFallbackFactory.cpp" />
+    <ClCompile Include="Platform\PlatformHoldRuntimeFactory.cpp" />
     <ClCompile Include="Platform\PlatformSystemServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformShellServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformWasmRuntimeFactory.cpp" />
@@ -456,7 +459,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\FluxFieldGpuV2ComputeEngine.cpp" />
     <ClCompile Include="MouseFx\Effects\HoldRouteCatalog.cpp" />
-    <ClCompile Include="MouseFx\Effects\HoldQuantumHaloGpuV2DirectRuntime.cpp" />
+    <ClCompile Include="Platform\windows\Effects\Win32HoldQuantumHaloGpuV2DirectRuntime.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Neon3D\Neon3DFx.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.ApplySettings.cpp" />

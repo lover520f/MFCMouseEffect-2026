@@ -10,13 +10,13 @@
 
 namespace mousefx {
 
-class HoldQuantumHaloGpuV2DirectRuntime final : public IHoldRuntime {
+class Win32HoldQuantumHaloGpuV2DirectRuntime final : public IHoldRuntime {
 public:
-    HoldQuantumHaloGpuV2DirectRuntime() = default;
-    ~HoldQuantumHaloGpuV2DirectRuntime();
+    Win32HoldQuantumHaloGpuV2DirectRuntime() = default;
+    ~Win32HoldQuantumHaloGpuV2DirectRuntime();
 
-    HoldQuantumHaloGpuV2DirectRuntime(const HoldQuantumHaloGpuV2DirectRuntime&) = delete;
-    HoldQuantumHaloGpuV2DirectRuntime& operator=(const HoldQuantumHaloGpuV2DirectRuntime&) = delete;
+    Win32HoldQuantumHaloGpuV2DirectRuntime(const Win32HoldQuantumHaloGpuV2DirectRuntime&) = delete;
+    Win32HoldQuantumHaloGpuV2DirectRuntime& operator=(const Win32HoldQuantumHaloGpuV2DirectRuntime&) = delete;
 
     bool Start(const RippleStyle& style, const ScreenPoint& startPt) override;
     void Update(uint32_t holdMs, const ScreenPoint& pt) override;

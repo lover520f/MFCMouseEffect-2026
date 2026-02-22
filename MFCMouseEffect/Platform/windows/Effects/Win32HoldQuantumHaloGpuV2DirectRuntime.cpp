@@ -1,5 +1,6 @@
 #include "pch.h"
-#include "HoldQuantumHaloGpuV2DirectRuntime.h"
+
+#include "Platform/windows/Effects/Win32HoldQuantumHaloGpuV2DirectRuntime.h"
 
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Renderers/Hold/QuantumHaloGpuV2ComputeEngine.h"
@@ -13,10 +14,6 @@
 #include <sstream>
 
 namespace mousefx {
-
-// ---------------------------------------------------------------------------
-// Helpers (file-scope)
-// ---------------------------------------------------------------------------
 
 static float ComputeProgress(uint64_t elapsedMs, uint32_t holdMs, uint32_t durationMs) {
     const float elapsedT = ClampFloat(static_cast<float>(elapsedMs) / static_cast<float>(durationMs), 0.0f, 1.0f);
@@ -76,15 +73,11 @@ static void WriteSnapshot(
     out << ss.str();
 }
 
-// ---------------------------------------------------------------------------
-// HoldQuantumHaloGpuV2DirectRuntime
-// ---------------------------------------------------------------------------
-
-HoldQuantumHaloGpuV2DirectRuntime::~HoldQuantumHaloGpuV2DirectRuntime() {
+Win32HoldQuantumHaloGpuV2DirectRuntime::~Win32HoldQuantumHaloGpuV2DirectRuntime() {
     Stop();
 }
 
-bool HoldQuantumHaloGpuV2DirectRuntime::Start(const RippleStyle& style, const ScreenPoint& startPt) {
+bool Win32HoldQuantumHaloGpuV2DirectRuntime::Start(const RippleStyle& style, const ScreenPoint& startPt) {
     Stop();
 
     style_ = style;
@@ -106,11 +99,11 @@ bool HoldQuantumHaloGpuV2DirectRuntime::Start(const RippleStyle& style, const Sc
 
     stopRequested_.store(false, std::memory_order_release);
     running_.store(true, std::memory_order_release);
-    worker_ = std::thread(&HoldQuantumHaloGpuV2DirectRuntime::WorkerMain, this);
+    worker_ = std::thread(&Win32HoldQuantumHaloGpuV2DirectRuntime::WorkerMain, this);
     return true;
 }
 
-void HoldQuantumHaloGpuV2DirectRuntime::Update(uint32_t holdMs, const ScreenPoint& pt) {
+void Win32HoldQuantumHaloGpuV2DirectRuntime::Update(uint32_t holdMs, const ScreenPoint& pt) {
     if (!running_.load(std::memory_order_acquire)) {
         return;
     }
@@ -119,7 +112,7 @@ void HoldQuantumHaloGpuV2DirectRuntime::Update(uint32_t holdMs, const ScreenPoin
     cursorY_.store(pt.y, std::memory_order_relaxed);
 }
 
-void HoldQuantumHaloGpuV2DirectRuntime::Stop() {
+void Win32HoldQuantumHaloGpuV2DirectRuntime::Stop() {
     stopRequested_.store(true, std::memory_order_release);
     if (stopEvent_) {
         ::SetEvent(static_cast<HANDLE>(stopEvent_));
@@ -134,11 +127,11 @@ void HoldQuantumHaloGpuV2DirectRuntime::Stop() {
     }
 }
 
-bool HoldQuantumHaloGpuV2DirectRuntime::IsRunning() const {
+bool Win32HoldQuantumHaloGpuV2DirectRuntime::IsRunning() const {
     return running_.load(std::memory_order_acquire);
 }
 
-void HoldQuantumHaloGpuV2DirectRuntime::WorkerMain() {
+void Win32HoldQuantumHaloGpuV2DirectRuntime::WorkerMain() {
     std::string runtimeReason = "ok";
 
     const HRESULT comHr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
