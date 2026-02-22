@@ -1,13 +1,14 @@
 #include "pch.h"
 #include "ShortcutCaptureSession.h"
 
+#include "MouseFx/Core/Protocol/VirtualKeyCodes.h"
+
 #include <algorithm>
 #include <array>
 #include <chrono>
 #include <cstdio>
 #include <random>
 #include <vector>
-#include <windows.h>
 
 namespace mousefx {
 namespace {
@@ -55,17 +56,17 @@ std::string ShortcutCaptureSession::CreateSessionId() {
 
 bool ShortcutCaptureSession::IsModifierKey(uint32_t vkCode) {
     switch (vkCode) {
-    case VK_CONTROL:
-    case VK_LCONTROL:
-    case VK_RCONTROL:
-    case VK_SHIFT:
-    case VK_LSHIFT:
-    case VK_RSHIFT:
-    case VK_MENU:
-    case VK_LMENU:
-    case VK_RMENU:
-    case VK_LWIN:
-    case VK_RWIN:
+    case vk::kControl:
+    case vk::kLControl:
+    case vk::kRControl:
+    case vk::kShift:
+    case vk::kLShift:
+    case vk::kRShift:
+    case vk::kMenu:
+    case vk::kLMenu:
+    case vk::kRMenu:
+    case vk::kLWin:
+    case vk::kRWin:
         return true;
     default:
         return false;
@@ -79,35 +80,35 @@ std::string ShortcutCaptureSession::KeyTokenFromVk(uint32_t vkCode) {
     if (vkCode >= '0' && vkCode <= '9') {
         return std::string(1, static_cast<char>(vkCode));
     }
-    if (vkCode >= VK_F1 && vkCode <= VK_F24) {
-        const int index = static_cast<int>(vkCode - VK_F1 + 1);
+    if (vkCode >= vk::kF1 && vkCode <= vk::kF24) {
+        const int index = static_cast<int>(vkCode - vk::kF1 + 1);
         return "F" + std::to_string(index);
     }
-    if (vkCode >= VK_NUMPAD0 && vkCode <= VK_NUMPAD9) {
-        const int index = static_cast<int>(vkCode - VK_NUMPAD0);
+    if (vkCode >= vk::kNumpad0 && vkCode <= vk::kNumpad9) {
+        const int index = static_cast<int>(vkCode - vk::kNumpad0);
         return std::to_string(index);
     }
 
     switch (vkCode) {
-    case VK_TAB: return "Tab";
-    case VK_RETURN: return "Enter";
-    case VK_ESCAPE: return "Esc";
-    case VK_SPACE: return "Space";
-    case VK_BACK: return "Backspace";
-    case VK_DELETE: return "Delete";
-    case VK_INSERT: return "Insert";
-    case VK_HOME: return "Home";
-    case VK_END: return "End";
-    case VK_PRIOR: return "PageUp";
-    case VK_NEXT: return "PageDown";
-    case VK_UP: return "Up";
-    case VK_DOWN: return "Down";
-    case VK_LEFT: return "Left";
-    case VK_RIGHT: return "Right";
-    case VK_CAPITAL: return "CapsLock";
-    case VK_SNAPSHOT: return "PrintScreen";
-    case VK_PAUSE: return "Pause";
-    case VK_APPS: return "Apps";
+    case vk::kTab: return "Tab";
+    case vk::kReturn: return "Enter";
+    case vk::kEscape: return "Esc";
+    case vk::kSpace: return "Space";
+    case vk::kBackspace: return "Backspace";
+    case vk::kDelete: return "Delete";
+    case vk::kInsert: return "Insert";
+    case vk::kHome: return "Home";
+    case vk::kEnd: return "End";
+    case vk::kPrior: return "PageUp";
+    case vk::kNext: return "PageDown";
+    case vk::kUp: return "Up";
+    case vk::kDown: return "Down";
+    case vk::kLeft: return "Left";
+    case vk::kRight: return "Right";
+    case vk::kCapital: return "CapsLock";
+    case vk::kSnapshot: return "PrintScreen";
+    case vk::kPause: return "Pause";
+    case vk::kApps: return "Apps";
     default:
         break;
     }

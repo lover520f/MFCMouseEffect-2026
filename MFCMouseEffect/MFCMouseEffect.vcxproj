@@ -295,6 +295,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Layers\TrailOverlayLayer.h" />
     <ClInclude Include="MouseFx\Core\Control\IpcController.h" />
     <ClInclude Include="MouseFx\Core\Protocol\JsonLite.h" />
+    <ClInclude Include="MouseFx\Core\Protocol\VirtualKeyCodes.h" />
     <ClInclude Include="MouseFx\Core\Json\JsonFacade.h" />
     <ClInclude Include="MouseFx\Core\Protocol\MouseFxMessages.h" />
     <ClInclude Include="MouseFx\Server\HttpServer.h" />

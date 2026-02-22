@@ -165,6 +165,9 @@
     <ClInclude Include="MouseFx\Core\Protocol\MouseFxMessages.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Protocol\VirtualKeyCodes.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\Json\JsonFacade.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>

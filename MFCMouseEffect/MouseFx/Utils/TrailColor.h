@@ -1,12 +1,12 @@
 #pragma once
 
-#include <windows.h>
 #include <gdiplus.h>
+#include <cstdint>
 
 namespace mousefx {
 namespace trail_color {
 
-inline Gdiplus::Color HslToRgbColor(float h, float s, float l, BYTE alpha) {
+inline Gdiplus::Color HslToRgbColor(float h, float s, float l, uint8_t alpha) {
     auto hue2rgb = [](float p, float q, float t) {
         if (t < 0.0f) t += 1.0f;
         if (t > 1.0f) t -= 1.0f;
@@ -25,9 +25,9 @@ inline Gdiplus::Color HslToRgbColor(float h, float s, float l, BYTE alpha) {
 
     return Gdiplus::Color(
         alpha,
-        (BYTE)(hue2rgb(p, q, tr) * 255.0f),
-        (BYTE)(hue2rgb(p, q, tg) * 255.0f),
-        (BYTE)(hue2rgb(p, q, tb) * 255.0f)
+        static_cast<uint8_t>(hue2rgb(p, q, tr) * 255.0f),
+        static_cast<uint8_t>(hue2rgb(p, q, tg) * 255.0f),
+        static_cast<uint8_t>(hue2rgb(p, q, tb) * 255.0f)
     );
 }
 

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "KeyChord.h"
 
+#include "MouseFx/Core/Protocol/VirtualKeyCodes.h"
 #include "MouseFx/Utils/StringUtils.h"
 
 #include <algorithm>
@@ -25,7 +26,7 @@ std::vector<std::string> SplitPlusSeparated(const std::string& text) {
     return tokens;
 }
 
-UINT ParseFunctionKey(const std::string& token) {
+uint32_t ParseFunctionKey(const std::string& token) {
     if (token.size() < 2 || token[0] != 'f') {
         return 0;
     }
@@ -39,36 +40,36 @@ UINT ParseFunctionKey(const std::string& token) {
     if (value < 1 || value > 24) {
         return 0;
     }
-    return static_cast<UINT>(VK_F1 + (value - 1));
+    return static_cast<uint32_t>(vk::kF1 + (value - 1));
 }
 
-UINT ParseNamedKey(const std::string& token) {
-    static const std::unordered_map<std::string, UINT> kNamedKeys{
-        {"tab", VK_TAB},
-        {"enter", VK_RETURN},
-        {"return", VK_RETURN},
-        {"esc", VK_ESCAPE},
-        {"escape", VK_ESCAPE},
-        {"space", VK_SPACE},
-        {"backspace", VK_BACK},
-        {"delete", VK_DELETE},
-        {"del", VK_DELETE},
-        {"insert", VK_INSERT},
-        {"ins", VK_INSERT},
-        {"home", VK_HOME},
-        {"end", VK_END},
-        {"pageup", VK_PRIOR},
-        {"pgup", VK_PRIOR},
-        {"pagedown", VK_NEXT},
-        {"pgdn", VK_NEXT},
-        {"up", VK_UP},
-        {"down", VK_DOWN},
-        {"left", VK_LEFT},
-        {"right", VK_RIGHT},
-        {"capslock", VK_CAPITAL},
-        {"printscreen", VK_SNAPSHOT},
-        {"pause", VK_PAUSE},
-        {"apps", VK_APPS},
+uint32_t ParseNamedKey(const std::string& token) {
+    static const std::unordered_map<std::string, uint32_t> kNamedKeys{
+        {"tab", vk::kTab},
+        {"enter", vk::kReturn},
+        {"return", vk::kReturn},
+        {"esc", vk::kEscape},
+        {"escape", vk::kEscape},
+        {"space", vk::kSpace},
+        {"backspace", vk::kBackspace},
+        {"delete", vk::kDelete},
+        {"del", vk::kDelete},
+        {"insert", vk::kInsert},
+        {"ins", vk::kInsert},
+        {"home", vk::kHome},
+        {"end", vk::kEnd},
+        {"pageup", vk::kPrior},
+        {"pgup", vk::kPrior},
+        {"pagedown", vk::kNext},
+        {"pgdn", vk::kNext},
+        {"up", vk::kUp},
+        {"down", vk::kDown},
+        {"left", vk::kLeft},
+        {"right", vk::kRight},
+        {"capslock", vk::kCapital},
+        {"printscreen", vk::kSnapshot},
+        {"pause", vk::kPause},
+        {"apps", vk::kApps},
     };
 
     const auto it = kNamedKeys.find(token);
@@ -78,32 +79,32 @@ UINT ParseNamedKey(const std::string& token) {
     return it->second;
 }
 
-UINT ParseModifier(const std::string& token) {
-    if (token == "ctrl" || token == "control") return VK_CONTROL;
-    if (token == "shift") return VK_SHIFT;
-    if (token == "alt" || token == "menu") return VK_MENU;
-    if (token == "win" || token == "windows" || token == "meta") return VK_LWIN;
+uint32_t ParseModifier(const std::string& token) {
+    if (token == "ctrl" || token == "control") return vk::kControl;
+    if (token == "shift") return vk::kShift;
+    if (token == "alt" || token == "menu") return vk::kMenu;
+    if (token == "win" || token == "windows" || token == "meta") return vk::kLWin;
     return 0;
 }
 
-UINT ParseSingleKeyToken(const std::string& token) {
+uint32_t ParseSingleKeyToken(const std::string& token) {
     if (token.size() == 1) {
         const unsigned char c = static_cast<unsigned char>(token[0]);
         if (std::isalpha(c)) {
-            return static_cast<UINT>(std::toupper(c));
+            return static_cast<uint32_t>(std::toupper(c));
         }
         if (std::isdigit(c)) {
-            return static_cast<UINT>(c);
+            return static_cast<uint32_t>(c);
         }
     }
 
-    if (UINT vk = ParseFunctionKey(token); vk != 0) {
+    if (uint32_t vk = ParseFunctionKey(token); vk != 0) {
         return vk;
     }
     return ParseNamedKey(token);
 }
 
-bool PushUniqueModifier(std::vector<UINT>* modifiers, UINT vk) {
+bool PushUniqueModifier(std::vector<uint32_t>* modifiers, uint32_t vk) {
     if (!modifiers || vk == 0) {
         return false;
     }
@@ -136,14 +137,14 @@ bool ParseKeyChord(const std::string& text, KeyChord* outChord) {
         }
         ++nonEmptyCount;
 
-        if (const UINT modifier = ParseModifier(token); modifier != 0) {
+        if (const uint32_t modifier = ParseModifier(token); modifier != 0) {
             if (!PushUniqueModifier(&chord.modifiers, modifier)) {
                 return false;
             }
             continue;
         }
 
-        const UINT key = ParseSingleKeyToken(token);
+        const uint32_t key = ParseSingleKeyToken(token);
         if (key == 0 || chord.key != 0) {
             return false;
         }
