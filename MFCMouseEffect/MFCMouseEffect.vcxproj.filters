@@ -123,6 +123,9 @@
     <ClInclude Include="MouseFx\Core\System\IForegroundProcessService.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\System\IForegroundSuppressionService.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\System\IGlobalMouseHook.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -130,6 +133,9 @@
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\System\NullForegroundProcessService.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\System\NullForegroundSuppressionService.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\System\NullGlobalMouseHook.h">
@@ -384,6 +390,9 @@
     <ClInclude Include="Platform\windows\System\Win32ForegroundProcessService.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\windows\System\Win32VmForegroundSuppressionService.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\windows\Overlay\Win32OverlayCoordSpaceService.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -543,6 +552,9 @@
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32ForegroundProcessService.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\System\Win32VmForegroundSuppressionService.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.cpp">

@@ -264,9 +264,11 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\System\ICursorPositionService.h" />
     <ClInclude Include="MouseFx\Core\System\IMonotonicClockService.h" />
     <ClInclude Include="MouseFx\Core\System\IForegroundProcessService.h" />
+    <ClInclude Include="MouseFx\Core\System\IForegroundSuppressionService.h" />
     <ClInclude Include="MouseFx\Core\System\IGlobalMouseHook.h" />
     <ClInclude Include="MouseFx\Core\System\NullCursorPositionService.h" />
     <ClInclude Include="MouseFx\Core\System\NullForegroundProcessService.h" />
+    <ClInclude Include="MouseFx\Core\System\NullForegroundSuppressionService.h" />
     <ClInclude Include="MouseFx\Core\System\NullGlobalMouseHook.h" />
     <ClInclude Include="MouseFx\Core\System\StdMonotonicClockService.h" />
     <ClInclude Include="MouseFx\Core\System\ApplicationCatalogScanner.h" />
@@ -353,6 +355,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\windows\System\Win32CursorPositionService.h" />
     <ClInclude Include="Platform\windows\System\Win32MonotonicClockService.h" />
     <ClInclude Include="Platform\windows\System\Win32ForegroundProcessService.h" />
+    <ClInclude Include="Platform\windows\System\Win32VmForegroundSuppressionService.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -397,6 +400,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\windows\System\Win32CursorPositionService.cpp" />
     <ClCompile Include="Platform\windows\System\Win32MonotonicClockService.cpp" />
     <ClCompile Include="Platform\windows\System\Win32ForegroundProcessService.cpp" />
+    <ClCompile Include="Platform\windows\System\Win32VmForegroundSuppressionService.cpp" />
     <ClCompile Include="MouseFx\Core\Protocol\JsonLite.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleEffect.cpp" />
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />

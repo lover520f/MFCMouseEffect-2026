@@ -12,6 +12,7 @@
 #include "MouseFx/Core/System/ICursorPositionService.h"
 #include "MouseFx/Core/System/IMonotonicClockService.h"
 #include "MouseFx/Core/System/IForegroundProcessService.h"
+#include "MouseFx/Core/System/IForegroundSuppressionService.h"
 #include "MouseFx/Core/System/IGlobalMouseHook.h"
 #include "MouseFx/Core/Overlay/IInputIndicatorOverlay.h"
 #include "MouseFx/Core/Automation/InputAutomationEngine.h"
@@ -24,7 +25,6 @@ namespace mousefx {
 class CommandHandler;
 class DispatchRouter;
 class GdiPlusSession;
-class VmForegroundDetector;
 namespace wasm {
 class WasmEffectHost;
 }
@@ -180,6 +180,7 @@ private:
     std::unique_ptr<ICursorPositionService> cursorPositionService_{};
     std::unique_ptr<IMonotonicClockService> monotonicClockService_{};
     std::unique_ptr<IForegroundProcessService> foregroundProcessService_{};
+    std::unique_ptr<IForegroundSuppressionService> foregroundSuppressionService_{};
     std::unique_ptr<IGlobalMouseHook> hook_{};
     
     // One effect slot per category.
@@ -214,7 +215,6 @@ private:
     InputAutomationEngine inputAutomationEngine_{};
     mutable ShortcutCaptureSession shortcutCaptureSession_{};
     std::unique_ptr<wasm::WasmEffectHost> wasmEffectHost_{};
-    std::unique_ptr<VmForegroundDetector> vmForegroundDetector_{};
     bool vmEffectsSuppressed_ = false;
 
 #ifdef _DEBUG

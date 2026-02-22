@@ -5,8 +5,10 @@
 #if defined(_WIN32)
 #include "Platform/windows/System/Win32ForegroundProcessService.h"
 #include "Platform/windows/System/Win32MonotonicClockService.h"
+#include "Platform/windows/System/Win32VmForegroundSuppressionService.h"
 #else
 #include "MouseFx/Core/System/NullForegroundProcessService.h"
+#include "MouseFx/Core/System/NullForegroundSuppressionService.h"
 #include "MouseFx/Core/System/StdMonotonicClockService.h"
 #endif
 
@@ -25,6 +27,14 @@ std::unique_ptr<IForegroundProcessService> CreateForegroundProcessService() {
     return std::make_unique<Win32ForegroundProcessService>();
 #else
     return std::make_unique<NullForegroundProcessService>();
+#endif
+}
+
+std::unique_ptr<IForegroundSuppressionService> CreateForegroundSuppressionService() {
+#if defined(_WIN32)
+    return std::make_unique<Win32VmForegroundSuppressionService>();
+#else
+    return std::make_unique<NullForegroundSuppressionService>();
 #endif
 }
 

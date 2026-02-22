@@ -14,6 +14,7 @@
 #include "MouseFx/Core/Control/NullDispatchMessageCodec.h"
 #include "MouseFx/Core/System/NullCursorPositionService.h"
 #include "MouseFx/Core/System/NullForegroundProcessService.h"
+#include "MouseFx/Core/System/NullForegroundSuppressionService.h"
 #include "MouseFx/Core/System/GdiPlusSession.h"
 #include "MouseFx/Core/System/StdMonotonicClockService.h"
 #include "MouseFx/Core/Overlay/NullInputIndicatorOverlay.h"
@@ -25,7 +26,6 @@
 #include "MouseFx/Core/Json/JsonFacade.h"
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
-#include "MouseFx/Core/System/VmForegroundDetector.h"
 #include "Platform/PlatformControlServicesFactory.h"
 #include "Platform/PlatformControlMessageCodecFactory.h"
 #include "Platform/PlatformInputServicesFactory.h"
@@ -73,11 +73,11 @@ AppController::AppController()
     , cursorPositionService_(platform::CreateCursorPositionService())
     , monotonicClockService_(platform::CreateMonotonicClockService())
     , foregroundProcessService_(platform::CreateForegroundProcessService())
+    , foregroundSuppressionService_(platform::CreateForegroundSuppressionService())
     , hook_(platform::CreateGlobalMouseHook())
     , inputIndicatorOverlay_(platform::CreateInputIndicatorOverlay())
     , commandHandler_(std::make_unique<CommandHandler>(this))
-    , dispatchRouter_(std::make_unique<DispatchRouter>(this))
-    , vmForegroundDetector_(std::make_unique<VmForegroundDetector>()) {
+    , dispatchRouter_(std::make_unique<DispatchRouter>(this)) {
     if (!dispatchMessageHost_) {
         dispatchMessageHost_ = std::make_unique<NullDispatchMessageHost>();
     }
@@ -92,6 +92,9 @@ AppController::AppController()
     }
     if (!foregroundProcessService_) {
         foregroundProcessService_ = std::make_unique<NullForegroundProcessService>();
+    }
+    if (!foregroundSuppressionService_) {
+        foregroundSuppressionService_ = std::make_unique<NullForegroundSuppressionService>();
     }
     shortcutCaptureSession_.SetClockService(monotonicClockService_.get());
     inputAutomationEngine_.SetForegroundProcessService(foregroundProcessService_.get());
@@ -693,11 +696,11 @@ void AppController::DestroyDispatchWindow() {
 }
 
 void AppController::UpdateVmSuppressionState() {
-    if (!vmForegroundDetector_) {
+    if (!foregroundSuppressionService_) {
         return;
     }
     const uint64_t now = CurrentTickMs();
-    const bool suppress = vmForegroundDetector_->ShouldSuppress(now);
+    const bool suppress = foregroundSuppressionService_->ShouldSuppress(now);
     if (suppress == vmEffectsSuppressed_) return;
     ApplyVmSuppression(suppress);
 }
