@@ -2,13 +2,13 @@
 
 #include "ConfigPathResolver.h"
 
+#include "Platform/PlatformRuntimeEnvironment.h"
+
 #include <shlobj.h>
 
 namespace mousefx {
 
 std::wstring ResolveConfigDirectory() {
-    wchar_t exePath[MAX_PATH] = {};
-
     // Try to use %AppData%\\MFCMouseEffect for Release builds.
 #ifndef _DEBUG
     PWSTR appDataPath = nullptr;
@@ -24,21 +24,18 @@ std::wstring ResolveConfigDirectory() {
 #endif
 
     // Fallback to EXE directory.
-    GetModuleFileNameW(nullptr, exePath, MAX_PATH);
-    std::wstring p(exePath);
-    const size_t pos = p.find_last_of(L"\\/");
-    if (pos != std::wstring::npos) {
-        return p.substr(0, pos);
+    const std::wstring exeDir = platform::GetExecutableDirectoryW();
+    if (!exeDir.empty()) {
+        return exeDir;
     }
     return L".";
 }
 
 std::wstring ResolveLocalDiagDirectory() {
-    wchar_t exePath[MAX_PATH] = {};
-    GetModuleFileNameW(nullptr, exePath, MAX_PATH);
-    std::wstring p(exePath);
-    const size_t pos = p.find_last_of(L"\\/");
-    const std::wstring exeDir = (pos != std::wstring::npos) ? p.substr(0, pos) : L".";
+    const std::wstring exeDir = platform::GetExecutableDirectoryW();
+    if (exeDir.empty()) {
+        return L".\\.local\\diag";
+    }
     return exeDir + L"\\.local\\diag";
 }
 

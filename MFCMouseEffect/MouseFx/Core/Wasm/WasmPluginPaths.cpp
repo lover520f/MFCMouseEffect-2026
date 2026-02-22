@@ -3,9 +3,9 @@
 #include "WasmPluginPaths.h"
 
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
+#include "Platform/PlatformRuntimeEnvironment.h"
 
 #include <algorithm>
-#include <array>
 #include <cwctype>
 #include <filesystem>
 #include <set>
@@ -25,12 +25,11 @@ std::wstring JoinPath(const std::wstring& base, const wchar_t* child) {
 }
 
 std::filesystem::path ModuleDirectory() {
-    std::array<wchar_t, 4096> buffer{};
-    const DWORD n = GetModuleFileNameW(nullptr, buffer.data(), static_cast<DWORD>(buffer.size()));
-    if (n == 0 || n >= buffer.size()) {
+    const std::wstring exeDir = platform::GetExecutableDirectoryW();
+    if (exeDir.empty()) {
         return {};
     }
-    return std::filesystem::path(buffer.data()).parent_path();
+    return std::filesystem::path(exeDir);
 }
 
 std::filesystem::path NormalizePath(const std::filesystem::path& path) {
