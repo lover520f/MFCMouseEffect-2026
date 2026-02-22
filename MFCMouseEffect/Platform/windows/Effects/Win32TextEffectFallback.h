@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/ITextEffectFallback.h"
-#include "MouseFx/Windows/TextWindowPool.h"
+#include "Platform/windows/Effects/TextWindowPool.h"
 
 namespace mousefx {
 

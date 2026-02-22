@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IParticleTrailEffectFallback.h"
-#include "MouseFx/Windows/ParticleTrailWindow.h"
+#include "Platform/windows/Effects/ParticleTrailWindow.h"
 
 namespace mousefx {
 
