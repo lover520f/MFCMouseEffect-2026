@@ -333,7 +333,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterBackendRegistry.h" />
     <ClInclude Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterHost.h" />
     <ClInclude Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterSelection.h" />
-    <ClInclude Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.h" />
+    <ClInclude Include="Platform\windows\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfig.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigInternal.h" />
     <ClInclude Include="MouseFx\\Core\\Config\\EffectConfigJsonCodec.h" />
@@ -459,7 +459,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterBackendRegistry.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterHost.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterSelection.cpp" />
-    <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.cpp" />
+    <ClCompile Include="Platform\windows\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.cpp" />
     <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ComputeEngine.cpp" />
     <ClCompile Include="Platform\windows\Renderers\Hold\HoldQuantumHaloGpuV2D2DBackend.cpp" />
     <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.cpp" />
