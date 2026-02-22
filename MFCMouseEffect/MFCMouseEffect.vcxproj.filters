@@ -19,30 +19,6 @@
     <Filter Include="源文件\MouseFx">
       <UniqueIdentifier>{E7EE45A7-94C9-4B1C-97B1-63AB0E7DA8DE}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\UI\Settings">
-      <UniqueIdentifier>{C30FD4F2-3EA5-4EFA-9D27-2C2A5588013E}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\UI\Settings">
-      <UniqueIdentifier>{8E035E5B-7D2E-4F0A-9D56-48C95E5DB16F}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\UI\Frame">
-      <UniqueIdentifier>{C2A05F42-AE12-40DD-8DF1-AB1E7A8C1EC0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\UI\Frame">
-      <UniqueIdentifier>{1D2B38B4-9C8A-4F88-9A28-A95E6E0840AE}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\UI\Panes">
-      <UniqueIdentifier>{0BA3EC56-2A14-49E2-BC65-719438DE6F0C}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\UI\Panes">
-      <UniqueIdentifier>{A68BFC3E-7F86-4CD4-80F7-0A6E23EF0E67}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="头文件\UI\DocView">
-      <UniqueIdentifier>{DAA0E9EB-67DB-4134-9C08-0DCEB67820E1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\UI\DocView">
-      <UniqueIdentifier>{2F165E40-04A3-4EDE-9BE7-0452268D49A4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\MouseFx\Core\Shell">
       <UniqueIdentifier>{E3F5D0DF-96FC-4E67-8A95-93288A01055A}</UniqueIdentifier>
     </Filter>
