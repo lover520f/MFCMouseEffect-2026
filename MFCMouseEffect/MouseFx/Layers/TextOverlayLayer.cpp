@@ -45,7 +45,7 @@ Gdiplus::Color TextOverlayLayer::ToGdiPlus(Argb color, BYTE alpha) {
         (BYTE)(color.value & 0xFF));
 }
 
-void TextOverlayLayer::ShowText(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config) {
+void TextOverlayLayer::ShowText(const ScreenPoint& pt, const std::wstring& text, Argb color, const TextConfig& config) {
     if (text.empty()) return;
     TextInstance instance{};
     instance.startPt = pt;
@@ -121,7 +121,7 @@ void TextOverlayLayer::Render(Gdiplus::Graphics& graphics) {
         const int fontStyle = hasEmoji ? Gdiplus::FontStyleRegular : Gdiplus::FontStyleBold;
         Gdiplus::Font font(family.c_str(), fontSizePt, fontStyle, Gdiplus::UnitPoint);
 
-        const POINT startPt = ScreenToOverlayPoint(instance.startPt);
+        const ScreenPoint startPt = ScreenToOverlayPoint(instance.startPt);
         const float x = (float)startPt.x + xOffset;
         const float y = (float)startPt.y - yOffset;
         const Gdiplus::RectF layout(x - 120.0f, y - 60.0f, 240.0f, 120.0f);

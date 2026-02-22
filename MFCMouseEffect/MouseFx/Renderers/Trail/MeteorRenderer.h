@@ -43,12 +43,12 @@ public:
         lastUpdate_ = now;
 
         const auto& head = points.back();
-        const POINT headLocal = ScreenToOverlayPoint(head.pt);
+        const ScreenPoint headLocal = ScreenToOverlayPoint(ScreenPoint{head.pt.x, head.pt.y});
 
         // 1. Emit Sparks if moving
         if (points.size() >= 2) {
             const auto& prev = points[points.size() - 2];
-            const POINT prevLocal = ScreenToOverlayPoint(prev.pt);
+            const ScreenPoint prevLocal = ScreenToOverlayPoint(ScreenPoint{prev.pt.x, prev.pt.y});
             float dx = (float)(headLocal.x - prevLocal.x);
             float dy = (float)(headLocal.y - prevLocal.y);
             float dist = std::sqrt(dx * dx + dy * dy);
@@ -101,7 +101,7 @@ public:
         if (points.size() >= 2) {
             std::vector<Gdiplus::PointF> pathPoints;
             for (const auto& p : points) {
-                const POINT localPt = ScreenToOverlayPoint(p.pt);
+                const ScreenPoint localPt = ScreenToOverlayPoint(ScreenPoint{p.pt.x, p.pt.y});
                 pathPoints.push_back(Gdiplus::PointF((float)localPt.x, (float)localPt.y));
             }
 
@@ -184,7 +184,7 @@ public:
         // Directional flare (meteor head streak), only while actively moving.
         if (idleFactor > 0.6f && points.size() >= 2) {
             const auto& prev = points[points.size() - 2];
-            const POINT prevLocal = ScreenToOverlayPoint(prev.pt);
+            const ScreenPoint prevLocal = ScreenToOverlayPoint(ScreenPoint{prev.pt.x, prev.pt.y});
             float mdx = (float)(headLocal.x - prevLocal.x);
             float mdy = (float)(headLocal.y - prevLocal.y);
             float mlen = std::sqrt(mdx * mdx + mdy * mdy);

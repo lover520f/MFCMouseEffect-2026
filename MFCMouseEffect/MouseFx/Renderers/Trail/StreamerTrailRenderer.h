@@ -34,8 +34,8 @@ public:
         for (size_t i = 0; i + 1 < n; ++i) {
             const auto& p1 = points[i];
             const auto& p2 = points[i + 1];
-            const POINT lp1 = ScreenToOverlayPoint(p1.pt);
-            const POINT lp2 = ScreenToOverlayPoint(p2.pt);
+            const ScreenPoint lp1 = ScreenToOverlayPoint(ScreenPoint{p1.pt.x, p1.pt.y});
+            const ScreenPoint lp2 = ScreenToOverlayPoint(ScreenPoint{p2.pt.x, p2.pt.y});
 
             const float t = (n <= 2) ? 1.0f : (float)i / (float)(n - 1); // 0 tail -> 1 head
 

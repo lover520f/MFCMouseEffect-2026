@@ -18,7 +18,7 @@ public:
 
     uint64_t ShowRipple(const ClickEvent& ev, const RippleStyle& style, std::unique_ptr<IRippleRenderer> renderer, const RenderParams& params);
     uint64_t ShowContinuous(const ClickEvent& ev, const RippleStyle& style, std::unique_ptr<IRippleRenderer> renderer, const RenderParams& params);
-    void UpdatePosition(uint64_t id, const POINT& pt);
+    void UpdatePosition(uint64_t id, const ScreenPoint& pt);
     void Stop(uint64_t id);
     bool IsActive(uint64_t id) const;
     void SendCommand(uint64_t id, const std::string& cmd, const std::string& args);
@@ -44,7 +44,7 @@ private:
         bool continuous = false;
     };
 
-    POINT ResolveRenderCenter(const RippleInstance& instance) const;
+    ScreenPoint ResolveRenderCenter(const RippleInstance& instance) const;
     RippleInstance* FindById(uint64_t id);
     const RippleInstance* FindById(uint64_t id) const;
 

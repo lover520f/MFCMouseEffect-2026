@@ -73,10 +73,10 @@ void ParticleTrailOverlayLayer::Render(Gdiplus::Graphics& graphics) {
     graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
     for (const auto& particle : particles_) {
-        POINT screenPt{};
-        screenPt.x = static_cast<LONG>(std::lround(particle.x));
-        screenPt.y = static_cast<LONG>(std::lround(particle.y));
-        const POINT localPt = ScreenToOverlayPoint(screenPt);
+        ScreenPoint screenPt{};
+        screenPt.x = static_cast<int32_t>(std::lround(particle.x));
+        screenPt.y = static_cast<int32_t>(std::lround(particle.y));
+        const ScreenPoint localPt = ScreenToOverlayPoint(screenPt);
 
         BYTE alpha = (BYTE)(particle.life * 255.0f);
         Gdiplus::Color color = HslToRgb(particle.hue, 0.8f, 0.6f, alpha);

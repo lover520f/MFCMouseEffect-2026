@@ -100,7 +100,7 @@ uint64_t OverlayHostService::ShowContinuousRipple(const ClickEvent& ev, const Ri
 
 void OverlayHostService::UpdateRipplePosition(uint64_t id, const ScreenPoint& pt) {
     if (!rippleLayer_) return;
-    rippleLayer_->UpdatePosition(id, ToNativePoint(pt));
+    rippleLayer_->UpdatePosition(id, pt);
 }
 
 void OverlayHostService::StopRipple(uint64_t id) {
@@ -135,7 +135,7 @@ bool OverlayHostService::ShowText(const ScreenPoint& pt, const std::wstring& tex
     }
     TextOverlayLayer* layer = EnsureTextLayer();
     if (!layer) return false;
-    layer->ShowText(nativePt, text, color, config);
+    layer->ShowText(pt, text, color, config);
     return true;
 }
 

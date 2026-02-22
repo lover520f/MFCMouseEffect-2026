@@ -364,7 +364,7 @@ bool Win32OverlayHostWindow::RebuildSurfaces() {
     }
 
     timerHwnd_ = surfaces_.empty() ? nullptr : surfaces_[0].hwnd;
-    SetOverlayWindowHandle(timerHwnd_);
+    SetOverlayWindowHandle(reinterpret_cast<uintptr_t>(timerHwnd_));
 
     UnionRects(surfaces_, &virtualX_, &virtualY_, &virtualW_, &virtualH_);
     SetOverlayOriginOverride(virtualX_, virtualY_);

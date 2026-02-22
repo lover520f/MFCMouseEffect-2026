@@ -1,14 +1,16 @@
 #pragma once
 
-#include <windows.h>
+#include <cstdint>
+
+#include "MouseFx/Core/Protocol/InputTypes.h"
 
 namespace mousefx {
 
-void SetOverlayWindowHandle(HWND hwnd);
+void SetOverlayWindowHandle(uintptr_t windowHandle);
 void ClearOverlayWindowHandle();
 void SetOverlayOriginOverride(int x, int y);
 void ClearOverlayOriginOverride();
-POINT GetOverlayOrigin();
-POINT ScreenToOverlayPoint(const POINT& screenPt);
+ScreenPoint GetOverlayOrigin();
+ScreenPoint ScreenToOverlayPoint(const ScreenPoint& screenPt);
 
 } // namespace mousefx

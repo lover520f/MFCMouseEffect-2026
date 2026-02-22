@@ -2,6 +2,7 @@
 
 #include "MouseFx/Interfaces/IOverlayLayer.h"
 #include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Core/Protocol/InputTypes.h"
 
 #include <string>
 #include <vector>
@@ -13,7 +14,7 @@ public:
     TextOverlayLayer() = default;
     ~TextOverlayLayer() override = default;
 
-    void ShowText(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config);
+    void ShowText(const ScreenPoint& pt, const std::wstring& text, Argb color, const TextConfig& config);
 
     void Update(uint64_t nowMs) override;
     void Render(Gdiplus::Graphics& graphics) override;
@@ -21,7 +22,7 @@ public:
 
 private:
     struct TextInstance {
-        POINT startPt{};
+        ScreenPoint startPt{};
         std::wstring text{};
         Argb color{};
         TextConfig config{};

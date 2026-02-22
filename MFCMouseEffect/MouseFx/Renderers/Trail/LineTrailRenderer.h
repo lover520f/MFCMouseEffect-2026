@@ -30,8 +30,8 @@ public:
         for (size_t i = 0; i + 1 < points.size(); ++i) {
             const auto& p1 = points[i];
             const auto& p2 = points[i + 1];
-            const POINT lp1 = ScreenToOverlayPoint(p1.pt);
-            const POINT lp2 = ScreenToOverlayPoint(p2.pt);
+            const ScreenPoint lp1 = ScreenToOverlayPoint(ScreenPoint{p1.pt.x, p1.pt.y});
+            const ScreenPoint lp2 = ScreenToOverlayPoint(ScreenPoint{p2.pt.x, p2.pt.y});
 
             const uint64_t age = now - p1.addedTime;
             float life = 1.0f - ((float)age / (float)durationMs_);

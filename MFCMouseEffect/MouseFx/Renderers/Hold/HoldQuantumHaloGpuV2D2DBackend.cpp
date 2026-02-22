@@ -89,10 +89,10 @@ bool HoldQuantumHaloGpuV2D2DBackend::Render(
             const int dcW = GetDeviceCaps(hdc, HORZRES);
             const int dcH = GetDeviceCaps(hdc, VERTRES);
             if (hasCursorState) {
-                POINT screenPt{};
+                ScreenPoint screenPt{};
                 screenPt.x = cursorScreenX;
                 screenPt.y = cursorScreenY;
-                const POINT localPt = ScreenToOverlayPoint(screenPt);
+                const ScreenPoint localPt = ScreenToOverlayPoint(screenPt);
                 if (dcW > 0 && dcH > 0) {
                     if (localPt.x < -sizePx || localPt.x > dcW + sizePx ||
                         localPt.y < -sizePx || localPt.y > dcH + sizePx) {

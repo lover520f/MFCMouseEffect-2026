@@ -150,8 +150,10 @@ public:
                     radius *= fadeScale;
                 } 
                 
-                const POINT nodePt{(LONG)std::lround(node.x), (LONG)std::lround(node.y)};
-                const POINT localPt = ScreenToOverlayPoint(nodePt);
+                const ScreenPoint nodePt{
+                    static_cast<int32_t>(std::lround(node.x)),
+                    static_cast<int32_t>(std::lround(node.y))};
+                const ScreenPoint localPt = ScreenToOverlayPoint(nodePt);
                 float renderX = (float)localPt.x;
                 float renderY = (float)localPt.y;
                 

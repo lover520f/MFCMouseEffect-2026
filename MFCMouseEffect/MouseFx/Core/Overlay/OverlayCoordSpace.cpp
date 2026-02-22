@@ -2,7 +2,6 @@
 
 #include "OverlayCoordSpace.h"
 #include "MouseFx/Core/Overlay/NullOverlayCoordSpaceService.h"
-#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "Platform/PlatformOverlayCoordSpaceFactory.h"
 
 #include <memory>
@@ -22,8 +21,8 @@ IOverlayCoordSpaceService& CoordSpaceService() {
 
 } // namespace
 
-void SetOverlayWindowHandle(HWND hwnd) {
-    CoordSpaceService().SetOverlayWindowHandle(reinterpret_cast<uintptr_t>(hwnd));
+void SetOverlayWindowHandle(uintptr_t windowHandle) {
+    CoordSpaceService().SetOverlayWindowHandle(windowHandle);
 }
 
 void ClearOverlayWindowHandle() {
@@ -38,12 +37,12 @@ void ClearOverlayOriginOverride() {
     CoordSpaceService().ClearOverlayOriginOverride();
 }
 
-POINT GetOverlayOrigin() {
-    return ToNativePoint(CoordSpaceService().GetOverlayOrigin());
+ScreenPoint GetOverlayOrigin() {
+    return CoordSpaceService().GetOverlayOrigin();
 }
 
-POINT ScreenToOverlayPoint(const POINT& screenPt) {
-    return ToNativePoint(CoordSpaceService().ScreenToOverlayPoint(ToScreenPoint(screenPt)));
+ScreenPoint ScreenToOverlayPoint(const ScreenPoint& screenPt) {
+    return CoordSpaceService().ScreenToOverlayPoint(screenPt);
 }
 
 } // namespace mousefx

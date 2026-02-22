@@ -2,11 +2,11 @@
 
 #include "RippleOverlayLayer.h"
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
-#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Utils/TimeUtils.h"
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 
 namespace mousefx {
@@ -60,10 +60,10 @@ uint64_t RippleOverlayLayer::ShowContinuous(const ClickEvent& ev, const RippleSt
     return instances_.back().id;
 }
 
-void RippleOverlayLayer::UpdatePosition(uint64_t id, const POINT& pt) {
+void RippleOverlayLayer::UpdatePosition(uint64_t id, const ScreenPoint& pt) {
     RippleInstance* instance = FindById(id);
     if (!instance) return;
-    instance->ev.pt = ToScreenPoint(pt);
+    instance->ev.pt = pt;
 }
 
 void RippleOverlayLayer::Stop(uint64_t id) {
@@ -148,7 +148,7 @@ void RippleOverlayLayer::Render(Gdiplus::Graphics& graphics) {
         if (sizePx < 64) sizePx = 64;
         if (sizePx > 512) sizePx = 512;
 
-        const POINT centerPt = ResolveRenderCenter(instance);
+        const ScreenPoint centerPt = ResolveRenderCenter(instance);
         const int left = centerPt.x - (sizePx / 2);
         const int top = centerPt.y - (sizePx / 2);
 
@@ -159,8 +159,8 @@ void RippleOverlayLayer::Render(Gdiplus::Graphics& graphics) {
     }
 }
 
-POINT RippleOverlayLayer::ResolveRenderCenter(const RippleInstance& instance) const {
-    POINT screenPt = ToNativePoint(instance.ev.pt);
+ScreenPoint RippleOverlayLayer::ResolveRenderCenter(const RippleInstance& instance) const {
+    ScreenPoint screenPt = instance.ev.pt;
     if (instance.params.useKinematics) {
         const double tSec = static_cast<double>(instance.elapsedMs) / 1000.0;
         const double dx =
@@ -173,10 +173,10 @@ POINT RippleOverlayLayer::ResolveRenderCenter(const RippleInstance& instance) co
         const long long x = static_cast<long long>(screenPt.x) + static_cast<long long>(std::llround(dx));
         const long long y = static_cast<long long>(screenPt.y) + static_cast<long long>(std::llround(dy));
 
-        const long long minL = static_cast<long long>((std::numeric_limits<LONG>::min)());
-        const long long maxL = static_cast<long long>((std::numeric_limits<LONG>::max)());
-        screenPt.x = static_cast<LONG>((std::min)((std::max)(x, minL), maxL));
-        screenPt.y = static_cast<LONG>((std::min)((std::max)(y, minL), maxL));
+        const long long minV = static_cast<long long>((std::numeric_limits<int32_t>::min)());
+        const long long maxV = static_cast<long long>((std::numeric_limits<int32_t>::max)());
+        screenPt.x = static_cast<int32_t>((std::min)((std::max)(x, minV), maxV));
+        screenPt.y = static_cast<int32_t>((std::min)((std::max)(y, minV), maxV));
     }
     return ScreenToOverlayPoint(screenPt);
 }
