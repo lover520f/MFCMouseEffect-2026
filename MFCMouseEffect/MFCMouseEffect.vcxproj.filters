@@ -156,11 +156,11 @@
     <ClInclude Include="MouseFx\Core\Overlay\IOverlayHostBackend.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\System\ApplicationCatalogScanner.h">
-      <Filter>头文件\MouseFx</Filter>
+    <ClInclude Include="Platform\PlatformApplicationCatalog.h">
+      <Filter>头文件\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\System\NativeFolderPicker.h">
-      <Filter>头文件\MouseFx</Filter>
+    <ClInclude Include="Platform\PlatformNativeFolderPicker.h">
+      <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\Protocol\MouseFxMessages.h">
       <Filter>头文件\MouseFx</Filter>
@@ -396,6 +396,12 @@
     <ClInclude Include="Platform\windows\System\Win32VmForegroundSuppressionService.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\windows\System\Win32ApplicationCatalogScanner.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\System\Win32NativeFolderPicker.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\windows\System\Win32RuntimeEnvironment.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -470,11 +476,11 @@
     <ClCompile Include="MouseFx\Server\WebSettingsServer.TokenMonitor.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Core\System\ApplicationCatalogScanner.cpp">
-      <Filter>源文件\MouseFx</Filter>
+    <ClCompile Include="Platform\PlatformApplicationCatalog.cpp">
+      <Filter>源文件\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Core\System\NativeFolderPicker.cpp">
-      <Filter>源文件\MouseFx</Filter>
+    <ClCompile Include="Platform\PlatformNativeFolderPicker.cpp">
+      <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Styles\ThemeStyle.cpp">
       <Filter>源文件\MouseFx</Filter>
@@ -570,6 +576,12 @@
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32VmForegroundSuppressionService.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\System\Win32ApplicationCatalogScanner.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\System\Win32NativeFolderPicker.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32RuntimeEnvironment.cpp">

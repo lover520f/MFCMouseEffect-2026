@@ -13,8 +13,6 @@
 #include <vector>
 
 #include "MouseFx/Core/Control/AppController.h"
-#include "MouseFx/Core/System/ApplicationCatalogScanner.h"
-#include "MouseFx/Core/System/NativeFolderPicker.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Core/Wasm/WasmPluginCatalog.h"
 #include "MouseFx/Core/Wasm/WasmPluginPaths.h"
@@ -25,6 +23,8 @@
 #include "MouseFx/Server/WebUiAssets.h"
 #include "MouseFx/Core/Json/JsonFacade.h"
 #include "MouseFx/Utils/StringUtils.h"
+#include "Platform/PlatformApplicationCatalog.h"
+#include "Platform/PlatformNativeFolderPicker.h"
 
 using json = nlohmann::json;
 
@@ -203,10 +203,10 @@ json BuildWasmActionResponse(AppController* controller, bool ok, const std::stri
     return body;
 }
 
-std::vector<ApplicationCatalogEntry> LoadAutomationAppCatalog(bool forceRefresh) {
+std::vector<platform::ApplicationCatalogEntry> LoadAutomationAppCatalog(bool forceRefresh) {
     static std::mutex cacheMutex;
     static uint64_t cacheTickMs = 0;
-    static std::vector<ApplicationCatalogEntry> cacheEntries;
+    static std::vector<platform::ApplicationCatalogEntry> cacheEntries;
 
     constexpr uint64_t kCacheTtlMs = 30 * 1000;
     const auto now = std::chrono::steady_clock::now().time_since_epoch();
@@ -219,8 +219,7 @@ std::vector<ApplicationCatalogEntry> LoadAutomationAppCatalog(bool forceRefresh)
         return cacheEntries;
     }
 
-    ApplicationCatalogScanner scanner;
-    cacheEntries = scanner.Scan();
+    cacheEntries = platform::ScanApplicationCatalog();
     cacheTickMs = nowTickMs;
     return cacheEntries;
 }
@@ -337,7 +336,7 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
     if (req.method == "POST" && path == "/api/automation/app-catalog") {
         const json payload = ParseObjectOrEmpty(req.body);
         const bool forceRefresh = ParseForceRefresh(payload);
-        const std::vector<ApplicationCatalogEntry> entries = LoadAutomationAppCatalog(forceRefresh);
+        const std::vector<platform::ApplicationCatalogEntry> entries = LoadAutomationAppCatalog(forceRefresh);
 
         json apps = json::array();
         for (const auto& entry : entries) {
@@ -424,7 +423,7 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
     if (req.method == "POST" && path == "/api/wasm/import-from-folder-dialog") {
         const json payload = ParseObjectOrEmpty(req.body);
         const std::wstring initialPath = Utf8ToWString(ParseInitialPathUtf8(payload));
-        const NativeFolderPickResult picked = NativeFolderPicker::PickFolder(
+        const platform::NativeFolderPickResult picked = platform::PickFolder(
             L"Select WASM plugin folder",
             initialPath);
 

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "ApplicationCatalogScanner.h"
+#include "Platform/windows/System/Win32ApplicationCatalogScanner.h"
 
 #include <KnownFolders.h>
 #include <ShlObj.h>
@@ -18,7 +18,7 @@
 
 #include "MouseFx/Utils/StringUtils.h"
 
-namespace mousefx {
+namespace mousefx::platform::windows {
 namespace {
 
 struct ScanRoot {
@@ -428,7 +428,7 @@ void ScanSingleRoot(
 
 } // namespace
 
-std::vector<ApplicationCatalogEntry> ApplicationCatalogScanner::Scan() const {
+std::vector<ApplicationCatalogEntry> Win32ApplicationCatalogScanner::Scan() const {
     ScopedComApartment scopedCom;
 
     std::vector<ScanRoot> roots;
@@ -456,4 +456,4 @@ std::vector<ApplicationCatalogEntry> ApplicationCatalogScanner::Scan() const {
     return entries;
 }
 
-} // namespace mousefx
+} // namespace mousefx::platform::windows

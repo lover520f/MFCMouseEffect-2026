@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "NativeFolderPicker.h"
+#include "Platform/windows/System/Win32NativeFolderPicker.h"
 
 #include <ShObjIdl.h>
 #include <combaseapi.h>
@@ -10,7 +10,7 @@
 #include <string>
 #include <thread>
 
-namespace mousefx {
+namespace mousefx::platform::windows {
 namespace {
 
 std::string HrToHexString(HRESULT hr) {
@@ -146,7 +146,9 @@ NativeFolderPickResult PickFolderOnCurrentThread(const std::wstring& title, cons
 
 } // namespace
 
-NativeFolderPickResult NativeFolderPicker::PickFolder(const std::wstring& title, const std::wstring& initialPath) {
+NativeFolderPickResult Win32NativeFolderPicker::PickFolder(
+    const std::wstring& title,
+    const std::wstring& initialPath) {
     std::promise<NativeFolderPickResult> promise;
     std::future<NativeFolderPickResult> future = promise.get_future();
     std::thread worker([title, initialPath, p = std::move(promise)]() mutable {
@@ -156,5 +158,4 @@ NativeFolderPickResult NativeFolderPicker::PickFolder(const std::wstring& title,
     return future.get();
 }
 
-} // namespace mousefx
-
+} // namespace mousefx::platform::windows
