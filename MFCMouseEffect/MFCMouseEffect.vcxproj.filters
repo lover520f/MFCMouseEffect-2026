@@ -759,6 +759,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MouseFx\Renderers\Hold\HoldRendererLinkage.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\Win32HoldRendererLinkage.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
     <ResourceCompile Include="MFCMouseEffect.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>

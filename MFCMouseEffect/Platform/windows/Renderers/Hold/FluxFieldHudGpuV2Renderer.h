@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MouseFx/Renderers/RendererRegistry.h"
 #include "Platform/windows/Renderers/Hold/FluxFieldGpuV2ComputeEngine.h"
 #include "Platform/windows/Renderers/Hold/FluxFieldHudGpuV2D2DBackend.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"

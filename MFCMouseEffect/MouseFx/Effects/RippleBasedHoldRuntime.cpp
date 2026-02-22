@@ -6,17 +6,6 @@
 #include "MouseFx/Renderers/HoldRuntimeRegistry.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 
-// Include hold renderer headers to ensure static registration occurs.
-#include "MouseFx/Renderers/Hold/ChargeRenderer.h"
-#include "MouseFx/Renderers/Hold/LightningRenderer.h"
-#include "MouseFx/Renderers/Hold/HexRenderer.h"
-#include "MouseFx/Renderers/Hold/TechRingRenderer.h"
-#include "MouseFx/Renderers/Hold/HologramHudRenderer.h"
-#include "MouseFx/Renderers/Hold/HoldNeon3DRenderer.h"
-#include "MouseFx/Renderers/Hold/HoldQuantumHaloGpuV2Renderer.h"
-#include "MouseFx/Renderers/Hold/FluxFieldHudCpuRenderer.h"
-#include "MouseFx/Renderers/Hold/FluxFieldHudGpuV2Renderer.h"
-
 #include <cstdio>
 
 namespace mousefx {

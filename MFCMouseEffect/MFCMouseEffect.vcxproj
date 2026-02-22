@@ -454,6 +454,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Protocol\JsonLite.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleEffect.cpp" />
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />
+    <ClCompile Include="MouseFx\Renderers\Hold\HoldRendererLinkage.cpp" />
+    <ClCompile Include="Platform\windows\Renderers\Hold\Win32HoldRendererLinkage.cpp" />
     <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ShaderPipeline.cpp" />
     <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2Presenter.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterBackendRegistry.cpp" />
