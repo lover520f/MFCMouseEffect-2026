@@ -306,8 +306,8 @@
     <ClInclude Include="MouseFx\Core\Shell\AppShellCore.h">
       <Filter>Header Files\MouseFx\Core\Shell</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\Shell\Win32AppShell.h">
-      <Filter>Header Files\MouseFx\Core\Shell</Filter>
+    <ClInclude Include="Platform\windows\Shell\Win32AppShell.h">
+      <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\Shell\ITrayService.h">
       <Filter>Header Files\MouseFx\Core\Shell</Filter>
@@ -491,8 +491,8 @@
     <ClCompile Include="MouseFx\Core\Shell\AppShellCore.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Core\Shell\Win32AppShell.cpp">
-      <Filter>源文件\MouseFx</Filter>
+    <ClCompile Include="Platform\windows\Shell\Win32AppShell.cpp">
+      <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\PlatformOverlayCoordSpaceFactory.cpp">
       <Filter>源文件\Platform</Filter>

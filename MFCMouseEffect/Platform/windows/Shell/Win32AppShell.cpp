@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "MouseFx/Core/Shell/Win32AppShell.h"
+#include "Platform/windows/Shell/Win32AppShell.h"
 
 #include <shellapi.h>
 #include <utility>

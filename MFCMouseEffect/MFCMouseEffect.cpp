@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "MouseFx/Core/Shell/Win32AppShell.h"
+#include "Platform/windows/Shell/Win32AppShell.h"
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int) {
     mousefx::Win32AppShell app;
