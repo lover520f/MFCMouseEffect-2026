@@ -7,8 +7,8 @@
 #include "MouseFx/Layers/ParticleTrailOverlayLayer.h"
 #include "MouseFx/Layers/RippleOverlayLayer.h"
 #include "MouseFx/Layers/TextOverlayLayer.h"
-#include "MouseFx/Windows/TextWindowPool.h"
 #include "MouseFx/Layers/TrailOverlayLayer.h"
+#include "Platform/PlatformEffectFallbackFactory.h"
 #include "Platform/PlatformOverlayServicesFactory.h"
 #include "Settings/EmojiUtils.h"
 
@@ -25,11 +25,6 @@ bool HasEmojiStarter(const std::wstring& text) {
         }
     }
     return false;
-}
-
-mousefx::TextWindowPool& SharedTextWindowPool() {
-    static mousefx::TextWindowPool pool;
-    return pool;
 }
 
 } // namespace
@@ -58,7 +53,9 @@ void OverlayHostService::Shutdown() {
     if (!hostBackend_) return;
     rippleLayer_ = nullptr;
     textLayer_ = nullptr;
-    SharedTextWindowPool().Shutdown();
+    if (textFallback_) {
+        textFallback_->Shutdown();
+    }
     hostBackend_->Shutdown();
     hostBackend_.reset();
 }
@@ -124,11 +121,13 @@ void OverlayHostService::BroadcastRippleCommand(const std::string& cmd, const st
 
 bool OverlayHostService::ShowText(const ScreenPoint& pt, const std::wstring& text, Argb color, const TextConfig& config) {
     if (HasEmojiStarter(text)) {
-        TextWindowPool& pool = SharedTextWindowPool();
-        if (!pool.Initialize(8)) {
+        if (!textFallback_) {
+            textFallback_ = platform::CreateTextEffectFallback();
+        }
+        if (!textFallback_ || !textFallback_->EnsureInitialized(8)) {
             return false;
         }
-        pool.ShowText(pt, text, color, config);
+        textFallback_->ShowText(pt, text, color, config);
         return true;
     }
     TextOverlayLayer* layer = EnsureTextLayer();

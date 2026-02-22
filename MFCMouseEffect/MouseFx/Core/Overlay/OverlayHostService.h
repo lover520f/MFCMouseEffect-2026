@@ -16,6 +16,7 @@ class TrailOverlayLayer;
 class ParticleTrailOverlayLayer;
 class RippleOverlayLayer;
 class TextOverlayLayer;
+class ITextEffectFallback;
 struct RenderParams;
 struct TextConfig;
 
@@ -47,6 +48,7 @@ private:
     OverlayHostService& operator=(const OverlayHostService&) = delete;
 
     std::unique_ptr<IOverlayHostBackend> hostBackend_{};
+    std::unique_ptr<ITextEffectFallback> textFallback_{};
     RippleOverlayLayer* rippleLayer_ = nullptr;
     TextOverlayLayer* textLayer_ = nullptr;
 
