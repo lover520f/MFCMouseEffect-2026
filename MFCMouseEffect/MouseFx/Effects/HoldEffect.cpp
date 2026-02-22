@@ -9,7 +9,6 @@
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/TimeUtils.h"
-#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 
 #include <cmath>
 #include <filesystem>

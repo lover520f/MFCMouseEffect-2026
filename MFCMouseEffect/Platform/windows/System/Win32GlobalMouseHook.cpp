@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "Platform/windows/System/Win32GlobalMouseHook.h"
-#include "MouseFx/Core/Protocol/InputTypesWin32.h"
+#include "Platform/windows/Protocol/Win32InputTypes.h"
 #include "MouseFx/Core/Protocol/MouseFxMessages.h"
 
 #include <new>

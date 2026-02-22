@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "MouseFx/Core/Protocol/InputTypesWin32.h"
+#include "Platform/windows/Protocol/Win32InputTypes.h"
 #include "MouseFx/Utils/MonitorUtils.h"
 
 namespace mousefx {

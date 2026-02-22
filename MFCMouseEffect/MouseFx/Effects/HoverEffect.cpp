@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "HoverEffect.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
-#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Renderers/Hover/CrosshairRenderer.h"
 #include "MouseFx/Renderers/Hover/TubesHoverRenderer.h"
