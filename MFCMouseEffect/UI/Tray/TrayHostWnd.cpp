@@ -54,6 +54,14 @@ void CTrayHostWnd::DestroyHost() {
     }
 }
 
+void CTrayHostWnd::RequestExit() {
+    if (hwnd_) {
+        PostMessageW(hwnd_, WM_CLOSE, 0, 0);
+    } else {
+        PostQuitMessage(0);
+    }
+}
+
 HWND CTrayHostWnd::GetHostHwnd() const noexcept {
     return hwnd_;
 }

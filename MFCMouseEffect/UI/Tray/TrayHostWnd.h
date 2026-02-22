@@ -15,6 +15,7 @@ public:
 
     bool CreateHost(mousefx::IAppShellHost* shellHost, bool showTrayIcon = true);
     void DestroyHost();
+    void RequestExit();
     HWND GetHostHwnd() const noexcept;
 
 private:

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="源文件">
@@ -51,6 +51,12 @@
     </Filter>
     <Filter Include="Header Files\MouseFx\Core\Shell">
       <UniqueIdentifier>{E3F5D0DF-96FC-4E67-8A95-93288A01055A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Platform">
+      <UniqueIdentifier>{C4F6C98E-4F1A-4F04-8CD8-0B445D7DCE7F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Platform">
+      <UniqueIdentifier>{58D07EEA-2199-421D-94AE-918063F2E32E}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -249,6 +255,36 @@
     <ClInclude Include="MouseFx\Core\Shell\Win32AppShell.h">
       <Filter>Header Files\MouseFx\Core\Shell</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Shell\ITrayService.h">
+      <Filter>Header Files\MouseFx\Core\Shell</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Shell\ISettingsLauncher.h">
+      <Filter>Header Files\MouseFx\Core\Shell</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Shell\ISingleInstanceGuard.h">
+      <Filter>Header Files\MouseFx\Core\Shell</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Shell\IDpiAwarenessService.h">
+      <Filter>Header Files\MouseFx\Core\Shell</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Shell\ShellPlatformServices.h">
+      <Filter>Header Files\MouseFx\Core\Shell</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\PlatformShellServicesFactory.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Shell\Win32DpiAwarenessService.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Shell\Win32SettingsLauncher.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Shell\Win32SingleInstanceGuard.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Shell\Win32TrayService.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMouseEffect.cpp">
@@ -334,6 +370,21 @@
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Shell\Win32AppShell.cpp">
       <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\PlatformShellServicesFactory.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Shell\Win32DpiAwarenessService.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Shell\Win32SettingsLauncher.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Shell\Win32SingleInstanceGuard.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Shell\Win32TrayService.cpp">
+      <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Overlay\InputIndicatorOverlay.cpp">
       <Filter>源文件\MouseFx</Filter>

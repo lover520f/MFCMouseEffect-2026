@@ -3,13 +3,17 @@
 
 #include "MouseFx/Core/Shell/Win32AppShell.h"
 
-#include "UI/Tray/TrayHostWnd.h"
-
 #include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Core/Control/IpcController.h"
+#include "MouseFx/Core/Shell/IDpiAwarenessService.h"
+#include "MouseFx/Core/Shell/ISettingsLauncher.h"
+#include "MouseFx/Core/Shell/ISingleInstanceGuard.h"
+#include "MouseFx/Core/Shell/ITrayService.h"
 #include "MouseFx/Server/WebSettingsServer.h"
+#include "Platform/PlatformShellServicesFactory.h"
 
 #include <shellapi.h>
+#include <utility>
 
 namespace mousefx {
 
@@ -56,62 +60,61 @@ static const wchar_t* StartStageToString(AppController::StartStage stage) {
     }
 }
 
-static std::wstring Utf8ToWide(const std::string& value) {
-    if (value.empty()) {
-        return {};
-    }
-
-    const int required = MultiByteToWideChar(
-        CP_UTF8,
-        MB_ERR_INVALID_CHARS,
-        value.c_str(),
-        static_cast<int>(value.size()),
-        nullptr,
-        0);
-    if (required <= 0) {
-        return {};
-    }
-
-    std::wstring wide(static_cast<size_t>(required), L'\0');
-    const int written = MultiByteToWideChar(
-        CP_UTF8,
-        MB_ERR_INVALID_CHARS,
-        value.c_str(),
-        static_cast<int>(value.size()),
-        wide.data(),
-        required);
-    if (written != required) {
-        return {};
-    }
-    return wide;
-}
-
 } // namespace
 
-Win32AppShell::Win32AppShell() = default;
+Win32AppShell::Win32AppShell(ShellPlatformServices services)
+    : trayService_(std::move(services.trayService)),
+      settingsLauncher_(std::move(services.settingsLauncher)),
+      singleInstanceGuard_(std::move(services.singleInstanceGuard)),
+      dpiAwarenessService_(std::move(services.dpiAwarenessService)) {
+    EnsurePlatformServices();
+}
 
 Win32AppShell::~Win32AppShell() {
     Shutdown();
 }
 
+void Win32AppShell::EnsurePlatformServices() {
+    if (trayService_ && settingsLauncher_ && singleInstanceGuard_ && dpiAwarenessService_) {
+        return;
+    }
+
+    ShellPlatformServices defaults = platform::CreateShellPlatformServices();
+    if (!trayService_) {
+        trayService_ = std::move(defaults.trayService);
+    }
+    if (!settingsLauncher_) {
+        settingsLauncher_ = std::move(defaults.settingsLauncher);
+    }
+    if (!singleInstanceGuard_) {
+        singleInstanceGuard_ = std::move(defaults.singleInstanceGuard);
+    }
+    if (!dpiAwarenessService_) {
+        dpiAwarenessService_ = std::move(defaults.dpiAwarenessService);
+    }
+}
+
 bool Win32AppShell::Initialize() {
-    singleInstanceMutex_ = CreateMutexW(nullptr, TRUE, L"Global\\MFCMouseEffect_SingleInstance_Mutex");
-    if (singleInstanceMutex_ && GetLastError() == ERROR_ALREADY_EXISTS) {
-        CloseHandle(singleInstanceMutex_);
-        singleInstanceMutex_ = nullptr;
+    EnsurePlatformServices();
+    if (!singleInstanceGuard_ || !trayService_ || !settingsLauncher_) {
         return false;
     }
 
-    EnableDpiAwarenessForScreenCoords();
+    if (!singleInstanceGuard_->Acquire(L"Global\\MFCMouseEffect_SingleInstance_Mutex")) {
+        return false;
+    }
+
+    if (dpiAwarenessService_) {
+        dpiAwarenessService_->EnableForScreenCoords();
+    }
+
     const HRESULT oleHr = OleInitialize(nullptr);
     oleInitialized_ = SUCCEEDED(oleHr) || (oleHr == S_FALSE);
 
     const bool showTrayIcon = ParseShowTrayIcon();
     backgroundMode_ = !showTrayIcon;
 
-    trayHost_ = std::make_unique<CTrayHostWnd>();
-    if (!trayHost_->CreateHost(this, showTrayIcon)) {
-        trayHost_.reset();
+    if (!trayService_->Start(this, showTrayIcon)) {
         return false;
     }
 
@@ -185,18 +188,15 @@ void Win32AppShell::Shutdown() {
         mouseFx_->Stop();
         mouseFx_.reset();
     }
-    if (trayHost_) {
-        trayHost_->DestroyHost();
-        trayHost_.reset();
+    if (trayService_) {
+        trayService_->Stop();
     }
     if (oleInitialized_) {
         OleUninitialize();
         oleInitialized_ = false;
     }
-    if (singleInstanceMutex_) {
-        ReleaseMutex(singleInstanceMutex_);
-        CloseHandle(singleInstanceMutex_);
-        singleInstanceMutex_ = nullptr;
+    if (singleInstanceGuard_) {
+        singleInstanceGuard_->Release();
     }
 }
 
@@ -209,11 +209,11 @@ void Win32AppShell::OpenSettingsFromShell() {
 }
 
 void Win32AppShell::RequestExitFromShell() {
-    if (trayHost_ && trayHost_->GetHostHwnd()) {
-        PostMessageW(trayHost_->GetHostHwnd(), WM_CLOSE, 0, 0);
-    } else {
-        PostQuitMessage(0);
+    if (trayService_) {
+        trayService_->RequestExit();
+        return;
     }
+    PostQuitMessage(0);
 }
 
 bool Win32AppShell::ParseShowTrayIcon() const {
@@ -237,7 +237,7 @@ bool Win32AppShell::ParseShowTrayIcon() const {
     return showTrayIcon;
 }
 
-void Win32AppShell::ShowWebSettings(const wchar_t* fragment) {
+void Win32AppShell::ShowWebSettings() {
     if (backgroundMode_ || !mouseFx_) {
         return;
     }
@@ -253,73 +253,12 @@ void Win32AppShell::ShowWebSettings(const wchar_t* fragment) {
         }
     }
 
-    std::wstring url = Utf8ToWide(webSettings_->Url());
-    if (url.empty()) {
-        MessageBoxW(nullptr, L"Web settings URL conversion failed.", L"MFCMouseEffect", MB_OK | MB_ICONWARNING);
-        return;
-    }
-    if (fragment && *fragment) {
-        url += fragment;
-    }
-    ShellExecuteW(nullptr, L"open", url.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-}
-
-void Win32AppShell::EnableDpiAwarenessForScreenCoords() const {
-#ifndef DPI_AWARENESS_CONTEXT
-    DECLARE_HANDLE(DPI_AWARENESS_CONTEXT);
-#endif
-#ifndef DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
-#define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
-#endif
-
-    enum PROCESS_DPI_AWARENESS_LOCAL {
-        ProcessDpiUnaware = 0,
-        ProcessSystemDpiAware = 1,
-        ProcessPerMonitorDpiAware = 2
-    };
-
-    HMODULE user32 = GetModuleHandleW(L"user32.dll");
-    if (user32) {
-        using SetProcessDpiAwarenessContextFn = BOOL(WINAPI*)(DPI_AWARENESS_CONTEXT);
-        auto* setContext = reinterpret_cast<SetProcessDpiAwarenessContextFn>(
-            GetProcAddress(user32, "SetProcessDpiAwarenessContext"));
-        if (setContext && setContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)) {
-            using SetThreadDpiAwarenessContextFn = DPI_AWARENESS_CONTEXT(WINAPI*)(DPI_AWARENESS_CONTEXT);
-            auto* setThreadContext = reinterpret_cast<SetThreadDpiAwarenessContextFn>(
-                GetProcAddress(user32, "SetThreadDpiAwarenessContext"));
-            if (setThreadContext) {
-                setThreadContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-            }
-            return;
-        }
-    }
-
-    HMODULE shcore = LoadLibraryW(L"Shcore.dll");
-    if (shcore) {
-        using SetProcessDpiAwarenessFn = HRESULT(WINAPI*)(PROCESS_DPI_AWARENESS_LOCAL);
-        auto* setAwareness = reinterpret_cast<SetProcessDpiAwarenessFn>(
-            GetProcAddress(shcore, "SetProcessDpiAwareness"));
-        if (setAwareness) {
-            const HRESULT hr = setAwareness(ProcessPerMonitorDpiAware);
-            FreeLibrary(shcore);
-            if (SUCCEEDED(hr)) {
-                return;
-            }
-        } else {
-            FreeLibrary(shcore);
-        }
-    }
-
-    if (user32) {
-        using SetProcessDPIAwareFn = BOOL(WINAPI*)();
-        auto* setAware = reinterpret_cast<SetProcessDPIAwareFn>(GetProcAddress(user32, "SetProcessDPIAware"));
-        if (setAware) {
-            setAware();
-        }
+    if (!settingsLauncher_ || !settingsLauncher_->OpenUrlUtf8(webSettings_->Url())) {
+        MessageBoxW(nullptr, L"Web settings open failed.", L"MFCMouseEffect", MB_OK | MB_ICONWARNING);
     }
 }
 
-std::wstring Win32AppShell::FormatWin32ErrorMessage(DWORD error) {
+std::wstring Win32AppShell::FormatWin32ErrorMessage(unsigned long error) {
     if (error == ERROR_SUCCESS) return L"(none)";
 
     wchar_t* msg = nullptr;

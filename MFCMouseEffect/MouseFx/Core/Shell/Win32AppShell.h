@@ -1,22 +1,24 @@
 #pragma once
 
-#include <windows.h>
-
 #include <memory>
 #include <string>
 
 #include "MouseFx/Core/Shell/IAppShellHost.h"
-#include "UI/Tray/TrayHostWnd.h"
+#include "MouseFx/Core/Shell/ShellPlatformServices.h"
 
 namespace mousefx {
 
 class AppController;
 class IpcController;
 class WebSettingsServer;
+class ITrayService;
+class ISettingsLauncher;
+class ISingleInstanceGuard;
+class IDpiAwarenessService;
 
 class Win32AppShell final : public IAppShellHost {
 public:
-    Win32AppShell();
+    explicit Win32AppShell(ShellPlatformServices services = {});
     ~Win32AppShell() override;
 
     Win32AppShell(const Win32AppShell&) = delete;
@@ -32,19 +34,21 @@ public:
 
 private:
     bool ParseShowTrayIcon() const;
-    void ShowWebSettings(const wchar_t* fragment = nullptr);
-    void EnableDpiAwarenessForScreenCoords() const;
+    void ShowWebSettings();
+    void EnsurePlatformServices();
 
-    static std::wstring FormatWin32ErrorMessage(DWORD error);
+    static std::wstring FormatWin32ErrorMessage(unsigned long error);
 
 private:
     std::unique_ptr<AppController> mouseFx_{};
     std::unique_ptr<IpcController> ipc_{};
     std::unique_ptr<WebSettingsServer> webSettings_{};
-    std::unique_ptr<CTrayHostWnd> trayHost_{};
+    std::unique_ptr<ITrayService> trayService_{};
+    std::unique_ptr<ISettingsLauncher> settingsLauncher_{};
+    std::unique_ptr<ISingleInstanceGuard> singleInstanceGuard_{};
+    std::unique_ptr<IDpiAwarenessService> dpiAwarenessService_{};
 
     bool backgroundMode_ = false;
-    HANDLE singleInstanceMutex_ = nullptr;
     bool oleInitialized_ = false;
 };
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -225,7 +225,17 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Overlay\OverlayHostService.h" />
     <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorOverlay.h" />
     <ClInclude Include="MouseFx\Core\Shell\IAppShellHost.h" />
+    <ClInclude Include="MouseFx\Core\Shell\ITrayService.h" />
+    <ClInclude Include="MouseFx\Core\Shell\ISettingsLauncher.h" />
+    <ClInclude Include="MouseFx\Core\Shell\ISingleInstanceGuard.h" />
+    <ClInclude Include="MouseFx\Core\Shell\IDpiAwarenessService.h" />
+    <ClInclude Include="MouseFx\Core\Shell\ShellPlatformServices.h" />
     <ClInclude Include="MouseFx\Core\Shell\Win32AppShell.h" />
+    <ClInclude Include="Platform\PlatformShellServicesFactory.h" />
+    <ClInclude Include="Platform\windows\Shell\Win32DpiAwarenessService.h" />
+    <ClInclude Include="Platform\windows\Shell\Win32SettingsLauncher.h" />
+    <ClInclude Include="Platform\windows\Shell\Win32SingleInstanceGuard.h" />
+    <ClInclude Include="Platform\windows\Shell\Win32TrayService.h" />
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\System\GlobalMouseHook.h" />
@@ -328,6 +338,11 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
     <ClCompile Include="MouseFx\Core\Control\IpcController.cpp" />
     <ClCompile Include="MouseFx\Core\Shell\Win32AppShell.cpp" />
+    <ClCompile Include="Platform\PlatformShellServicesFactory.cpp" />
+    <ClCompile Include="Platform\windows\Shell\Win32DpiAwarenessService.cpp" />
+    <ClCompile Include="Platform\windows\Shell\Win32SettingsLauncher.cpp" />
+    <ClCompile Include="Platform\windows\Shell\Win32SingleInstanceGuard.cpp" />
+    <ClCompile Include="Platform\windows\Shell\Win32TrayService.cpp" />
     <ClCompile Include="MouseFx\Core\Protocol\JsonLite.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleEffect.cpp" />
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />
