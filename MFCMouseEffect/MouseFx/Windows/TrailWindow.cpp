@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TrailWindow.h"
+#include "MouseFx/Core/System/CursorPositionProvider.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include "MouseFx/Utils/TimeUtils.h"
 #include <algorithm>
@@ -162,8 +163,13 @@ void TrailWindow::SampleCursorPoint(uint64_t nowMs) {
         pt = latestCursorPt_;
         hasLatestCursorPt_ = false;
         havePoint = true;
-    } else if (GetCursorPos(&pt)) {
-        havePoint = true;
+    } else {
+        ScreenPoint cursorPt{};
+        if (TryGetCursorScreenPoint(&cursorPt)) {
+            pt.x = cursorPt.x;
+            pt.y = cursorPt.y;
+            havePoint = true;
+        }
     }
     if (!havePoint) return;
 

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ParticleTrailWindow.h"
+#include "MouseFx/Core/System/CursorPositionProvider.h"
 #include "MouseFx/Utils/TimeUtils.h"
 #include <algorithm>
 #include <cmath>
@@ -191,8 +192,13 @@ void ParticleTrailWindow::OnTick() {
         pt = latestCursorPt_;
         hasLatestCursorPt_ = false;
         havePt = true;
-    } else if (GetCursorPos(&pt)) {
-        havePt = true;
+    } else {
+        ScreenPoint cursorPt{};
+        if (TryGetCursorScreenPoint(&cursorPt)) {
+            pt.x = cursorPt.x;
+            pt.y = cursorPt.y;
+            havePt = true;
+        }
     }
 
     if (havePt) {
