@@ -50,12 +50,12 @@ void TrailEffect::Shutdown() {
 }
 
 void TrailEffect::OnMouseMove(const ScreenPoint& pt) {
-    const POINT nativePt = ToNativePoint(pt);
     if (hostLayer_) {
-        hostLayer_->AddPoint(nativePt);
+        hostLayer_->AddPoint(pt);
         return;
     }
     if (window_) {
+        const POINT nativePt = ToNativePoint(pt);
         window_->AddPoint(nativePt);
     }
 }

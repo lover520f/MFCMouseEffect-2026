@@ -1,5 +1,5 @@
 #pragma once
-#include <windows.h>
+#include "MouseFx/Core/Protocol/InputTypes.h"
 #include <gdiplus.h>
 #include <deque>
 #include "MouseFx/Core/Config/EffectConfig.h" // For Theme/Color
@@ -7,7 +7,7 @@
 namespace mousefx {
 
 struct TrailPoint {
-    POINT pt;
+    ScreenPoint pt{};
     uint64_t addedTime;
 };
 

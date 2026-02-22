@@ -53,7 +53,7 @@ public:
 
     void Render(Gdiplus::Graphics& g, const std::deque<TrailPoint>& points, int width, int height, Gdiplus::Color color, bool isChromatic) override {
         // 1. Determine Target
-        POINT target = { 0, 0 };
+        ScreenPoint target{};
         bool hasInput = !points.empty();
         
         if (hasInput) {
@@ -255,7 +255,7 @@ private:
 
     static constexpr size_t NUM_NODES = 30; // Length of tail
     std::vector<TubeChain> chains_;
-    POINT lastTarget_ = { 0, 0 };
+    ScreenPoint lastTarget_{};
 
     bool inited_ = false;
     float fadeAlpha_ = 255.0f;

@@ -172,7 +172,8 @@ void TrailWindow::SampleCursorPoint(uint64_t nowMs) {
     }
 
     TrailPoint tp;
-    tp.pt = pt;
+    tp.pt.x = pt.x;
+    tp.pt.y = pt.y;
     tp.addedTime = nowMs;
     points_.push_back(tp);
     if (points_.size() > (size_t)maxPoints_) {
