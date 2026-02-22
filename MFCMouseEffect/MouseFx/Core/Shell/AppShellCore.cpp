@@ -153,10 +153,29 @@ AppController* AppShellCore::AppControllerForShell() noexcept {
 }
 
 void AppShellCore::OpenSettingsFromShell() {
-    ShowWebSettings();
+    if (!PostShellTask([this]() {
+            ShowWebSettings();
+        })) {
+        ShowWebSettings();
+    }
 }
 
 void AppShellCore::RequestExitFromShell() {
+    if (!PostShellTask([this]() {
+            RequestExitOnLoop();
+        })) {
+        RequestExitOnLoop();
+    }
+}
+
+bool AppShellCore::PostShellTask(std::function<void()> task) {
+    if (!initialized_ || !eventLoopService_) {
+        return false;
+    }
+    return eventLoopService_->PostTask(std::move(task));
+}
+
+void AppShellCore::RequestExitOnLoop() {
     if (trayService_ && !backgroundMode_) {
         trayService_->RequestExit();
     }

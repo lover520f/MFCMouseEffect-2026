@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -35,6 +36,8 @@ public:
     void RequestExitFromShell() override;
 
 private:
+    bool PostShellTask(std::function<void()> task);
+    void RequestExitOnLoop();
     void ShowWebSettings();
     void NotifyWarning(const char* titleUtf8, const std::string& messageUtf8);
     static std::string BuildStartupFailureMessage(const AppController* controller);

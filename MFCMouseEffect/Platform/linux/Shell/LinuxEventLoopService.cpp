@@ -1,21 +1,19 @@
 #include "Platform/linux/Shell/LinuxEventLoopService.h"
 
-#include <chrono>
-#include <thread>
+#include <utility>
 
 namespace mousefx {
 
 int LinuxEventLoopService::Run() {
-    using namespace std::chrono_literals;
-    exitRequested_.store(false, std::memory_order_release);
-    while (!exitRequested_.load(std::memory_order_acquire)) {
-        std::this_thread::sleep_for(10ms);
-    }
-    return 0;
+    return loop_.Run();
 }
 
 void LinuxEventLoopService::RequestExit() {
-    exitRequested_.store(true, std::memory_order_release);
+    loop_.RequestExit();
+}
+
+bool LinuxEventLoopService::PostTask(std::function<void()> task) {
+    return loop_.PostTask(std::move(task));
 }
 
 } // namespace mousefx
