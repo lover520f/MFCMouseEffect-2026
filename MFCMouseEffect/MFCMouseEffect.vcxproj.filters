@@ -473,6 +473,9 @@
     <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Core\System\GdiPlusSession.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Core\System\CursorPositionProvider.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>

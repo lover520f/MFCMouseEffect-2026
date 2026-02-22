@@ -395,6 +395,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Control\EffectFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayHostService.cpp" />
+    <ClCompile Include="MouseFx\Core\System\GdiPlusSession.cpp" />
     <ClCompile Include="MouseFx\Core\System\CursorPositionProvider.cpp" />
     <ClCompile Include="Platform\PlatformApplicationCatalog.cpp" />
     <ClCompile Include="Platform\PlatformNativeFolderPicker.cpp" />

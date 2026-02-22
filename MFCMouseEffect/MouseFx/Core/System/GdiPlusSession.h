@@ -1,7 +1,6 @@
 #pragma once
 
-#include <windows.h>
-#include <gdiplus.h>
+#include <cstdint>
 
 // Small RAII wrapper for GDI+ initialization.
 namespace mousefx {
@@ -14,26 +13,12 @@ public:
     GdiPlusSession(const GdiPlusSession&) = delete;
     GdiPlusSession& operator=(const GdiPlusSession&) = delete;
 
-    bool Startup() {
-        if (started_) return true;
-        Gdiplus::GdiplusStartupInput input;
-        if (Gdiplus::GdiplusStartup(&token_, &input, nullptr) != Gdiplus::Ok) {
-            token_ = 0;
-            return false;
-        }
-        started_ = true;
-        return true;
-    }
+    bool Startup();
 
-    void Shutdown() {
-        if (!started_) return;
-        Gdiplus::GdiplusShutdown(token_);
-        token_ = 0;
-        started_ = false;
-    }
+    void Shutdown();
 
 private:
-    ULONG_PTR token_ = 0;
+    std::uintptr_t token_ = 0;
     bool started_ = false;
 };
 
