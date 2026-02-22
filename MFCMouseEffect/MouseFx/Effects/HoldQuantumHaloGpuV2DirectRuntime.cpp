@@ -99,7 +99,7 @@ bool HoldQuantumHaloGpuV2DirectRuntime::Start(const RippleStyle& style, const Sc
     submitCount_.store(0ull, std::memory_order_relaxed);
     missCount_.store(0ull, std::memory_order_relaxed);
 
-    stopEvent_ = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    stopEvent_ = static_cast<void*>(::CreateEventW(nullptr, TRUE, FALSE, nullptr));
     if (!stopEvent_) {
         return false;
     }
@@ -122,14 +122,14 @@ void HoldQuantumHaloGpuV2DirectRuntime::Update(uint32_t holdMs, const ScreenPoin
 void HoldQuantumHaloGpuV2DirectRuntime::Stop() {
     stopRequested_.store(true, std::memory_order_release);
     if (stopEvent_) {
-        SetEvent(stopEvent_);
+        ::SetEvent(static_cast<HANDLE>(stopEvent_));
     }
     if (worker_.joinable()) {
         worker_.join();
     }
     running_.store(false, std::memory_order_release);
     if (stopEvent_) {
-        CloseHandle(stopEvent_);
+        ::CloseHandle(static_cast<HANDLE>(stopEvent_));
         stopEvent_ = nullptr;
     }
 }
@@ -217,13 +217,13 @@ void HoldQuantumHaloGpuV2DirectRuntime::WorkerMain() {
         }
 
         if (stopEvent_) {
-            const HANDLE handles[1] = { stopEvent_ };
-            const DWORD waitResult = MsgWaitForMultipleObjects(1, handles, FALSE, 8u, QS_ALLINPUT);
+            const HANDLE handles[1] = { static_cast<HANDLE>(stopEvent_) };
+            const DWORD waitResult = ::MsgWaitForMultipleObjects(1, handles, FALSE, 8u, QS_ALLINPUT);
             if (waitResult == WAIT_OBJECT_0) {
                 break;
             }
         } else {
-            Sleep(8u);
+            ::Sleep(8u);
         }
     }
 

@@ -13,14 +13,14 @@ bool FluxFieldGpuV2ComputeEngine::Start() {
     active_ = false;
     reason_ = "unknown";
 
-    d3d11Module_ = LoadLibraryW(L"d3d11.dll");
+    d3d11Module_ = static_cast<void*>(::LoadLibraryW(L"d3d11.dll"));
     if (!d3d11Module_) {
         reason_ = "load_d3d11_dll_failed";
         return false;
     }
 
     auto* createDevice = reinterpret_cast<PFN_D3D11_CREATE_DEVICE>(
-        GetProcAddress(d3d11Module_, "D3D11CreateDevice"));
+        ::GetProcAddress(static_cast<HMODULE>(d3d11Module_), "D3D11CreateDevice"));
     if (!createDevice) {
         reason_ = "resolve_d3d11_create_device_failed";
         return false;
@@ -70,7 +70,7 @@ void FluxFieldGpuV2ComputeEngine::Shutdown() {
     context_.Reset();
     device_.Reset();
     if (d3d11Module_) {
-        FreeLibrary(d3d11Module_);
+        ::FreeLibrary(static_cast<HMODULE>(d3d11Module_));
         d3d11Module_ = nullptr;
     }
     tickCount_ = 0;

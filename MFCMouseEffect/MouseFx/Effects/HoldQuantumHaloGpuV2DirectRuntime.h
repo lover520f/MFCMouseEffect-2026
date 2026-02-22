@@ -3,8 +3,6 @@
 #include "MouseFx/Interfaces/IHoldRuntime.h"
 #include "MouseFx/Styles/RippleStyle.h"
 
-#include <windows.h>
-
 #include <atomic>
 #include <cstdint>
 #include <string>
@@ -36,7 +34,7 @@ private:
     std::atomic<int> cursorY_{0};
     std::atomic<uint64_t> submitCount_{0ull};
     std::atomic<uint64_t> missCount_{0ull};
-    HANDLE stopEvent_ = nullptr;
+    void* stopEvent_ = nullptr;
     std::thread worker_{};
 };
 

@@ -6,7 +6,6 @@
 #include <d2d1.h>
 #include <dxgiformat.h>
 #include <wrl/client.h>
-#include <windows.h>
 
 #include <atomic>
 #include <cstdint>

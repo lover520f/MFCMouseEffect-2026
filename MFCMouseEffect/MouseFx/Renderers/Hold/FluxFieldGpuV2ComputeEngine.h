@@ -1,6 +1,5 @@
 #pragma once
 
-#include <windows.h>
 #include <d3d11.h>
 #include <wrl/client.h>
 
@@ -33,7 +32,7 @@ public:
 private:
     bool CreateWorkResources();
 
-    HMODULE d3d11Module_ = nullptr;
+    void* d3d11Module_ = nullptr;
     Microsoft::WRL::ComPtr<ID3D11Device> device_{};
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> context_{};
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texA_{};
