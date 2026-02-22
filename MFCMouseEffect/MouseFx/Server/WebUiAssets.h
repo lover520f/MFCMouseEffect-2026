@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -21,11 +22,10 @@ public:
     bool TryGet(const std::string& path, WebUiAsset& out) const;
 
 private:
-    bool TryGetFromDisk(const std::wstring& filePath, WebUiAsset& out) const;
+    bool TryGetFromDisk(const std::filesystem::path& filePath, WebUiAsset& out) const;
     bool TryGetFromResource(int resourceId, WebUiAsset& out) const;
 
     static std::string ContentTypeForPath(const std::string& path);
-    static std::wstring Utf8ToWide(const std::string& s);
 
     std::wstring baseDir_;
 };

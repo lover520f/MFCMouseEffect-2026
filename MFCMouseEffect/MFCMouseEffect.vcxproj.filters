@@ -357,6 +357,12 @@
     <ClInclude Include="Platform\PlatformWasmRuntimeFactory.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\PlatformTextEncoding.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\PlatformBinaryResourceLoader.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\PlatformRuntimeEnvironment.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -403,6 +409,12 @@
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\windows\System\Win32NativeFolderPicker.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\System\Win32TextEncoding.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\System\Win32BinaryResourceLoader.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\windows\System\Win32RuntimeEnvironment.h">
@@ -536,6 +548,12 @@
     <ClCompile Include="Platform\PlatformWasmRuntimeFactory.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
+    <ClCompile Include="Platform\PlatformTextEncoding.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\PlatformBinaryResourceLoader.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
     <ClCompile Include="Platform\PlatformRuntimeEnvironment.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
@@ -585,6 +603,12 @@
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32NativeFolderPicker.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\System\Win32TextEncoding.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\System\Win32BinaryResourceLoader.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32RuntimeEnvironment.cpp">

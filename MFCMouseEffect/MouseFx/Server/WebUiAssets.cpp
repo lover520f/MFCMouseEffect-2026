@@ -1,11 +1,13 @@
 #include "pch.h"
 #include "WebUiAssets.h"
 
-#include <windows.h>
-
+#include <cstring>
+#include <filesystem>
 #include <fstream>
 
 #include "Resource.h"
+#include "MouseFx/Utils/StringUtils.h"
+#include "Platform/PlatformBinaryResourceLoader.h"
 
 namespace mousefx {
 
@@ -20,9 +22,10 @@ static bool IsSafeWebPath(const std::string& path) {
 }
 
 std::string WebUiAssets::ContentTypeForPath(const std::string& path) {
+    const std::string lowered = ToLowerAscii(path);
     auto ends = [&](const char* suf) {
-        size_t n = strlen(suf);
-        return path.size() >= n && _stricmp(path.c_str() + (path.size() - n), suf) == 0;
+        size_t n = std::strlen(suf);
+        return lowered.size() >= n && lowered.compare(lowered.size() - n, n, suf) == 0;
     };
     if (ends(".html")) return "text/html; charset=utf-8";
     if (ends(".js")) return "application/javascript; charset=utf-8";
@@ -31,17 +34,6 @@ std::string WebUiAssets::ContentTypeForPath(const std::string& path) {
     if (ends(".png")) return "image/png";
     if (ends(".svg")) return "image/svg+xml";
     return "application/octet-stream";
-}
-
-std::wstring WebUiAssets::Utf8ToWide(const std::string& s) {
-    if (s.empty()) return {};
-    int len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
-    if (len <= 0) return {};
-    std::wstring out((size_t)len, L'\0');
-    int written = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, out.empty() ? nullptr : &out[0], len);
-    if (written <= 0) return {};
-    if (!out.empty() && out.back() == L'\0') out.pop_back();
-    return out;
 }
 
 bool WebUiAssets::TryGet(const std::string& path, WebUiAsset& out) const {
@@ -56,9 +48,9 @@ bool WebUiAssets::TryGet(const std::string& path, WebUiAsset& out) const {
 
     // Disk override: $(OutDir)\webui\*
     if (!baseDir_.empty()) {
-        std::wstring rel = Utf8ToWide(p.substr(1)); // strip leading '/'
+        std::wstring rel = Utf8ToWString(p.substr(1)); // strip leading '/'
         if (!rel.empty()) {
-            std::wstring disk = baseDir_ + L"\\" + rel;
+            const std::filesystem::path disk = std::filesystem::path(baseDir_) / std::filesystem::path(rel);
             if (TryGetFromDisk(disk, out)) return true;
         }
     }
@@ -71,7 +63,7 @@ bool WebUiAssets::TryGet(const std::string& path, WebUiAsset& out) const {
     return false;
 }
 
-bool WebUiAssets::TryGetFromDisk(const std::wstring& filePath, WebUiAsset& out) const {
+bool WebUiAssets::TryGetFromDisk(const std::filesystem::path& filePath, WebUiAsset& out) const {
     std::ifstream f(filePath, std::ios::binary);
     if (!f.is_open()) return false;
     f.seekg(0, std::ios::end);
@@ -84,16 +76,11 @@ bool WebUiAssets::TryGetFromDisk(const std::wstring& filePath, WebUiAsset& out) 
 }
 
 bool WebUiAssets::TryGetFromResource(int resourceId, WebUiAsset& out) const {
-    HINSTANCE h = GetModuleHandleW(nullptr);
-    HRSRC r = FindResourceW(h, MAKEINTRESOURCEW(resourceId), RT_RCDATA);
-    if (!r) return false;
-    HGLOBAL hg = LoadResource(h, r);
-    if (!hg) return false;
-    DWORD sz = SizeofResource(h, r);
-    if (sz == 0) return false;
-    void* p = LockResource(hg);
-    if (!p) return false;
-    out.bytes.assign((const uint8_t*)p, (const uint8_t*)p + sz);
+    std::vector<uint8_t> bytes;
+    if (!platform::TryLoadEmbeddedBinaryResource(resourceId, &bytes)) {
+        return false;
+    }
+    out.bytes = std::move(bytes);
     return true;
 }
 

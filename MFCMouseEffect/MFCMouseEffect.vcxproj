@@ -254,6 +254,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\PlatformSystemServicesFactory.h" />
     <ClInclude Include="Platform\PlatformShellServicesFactory.h" />
     <ClInclude Include="Platform\PlatformWasmRuntimeFactory.h" />
+    <ClInclude Include="Platform\PlatformTextEncoding.h" />
+    <ClInclude Include="Platform\PlatformBinaryResourceLoader.h" />
     <ClInclude Include="Platform\windows\Shell\Win32DpiAwarenessService.h" />
     <ClInclude Include="Platform\windows\Shell\Win32EventLoopService.h" />
     <ClInclude Include="Platform\windows\Shell\Win32SettingsLauncher.h" />
@@ -372,6 +374,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\windows\System\Win32VmForegroundSuppressionService.h" />
     <ClInclude Include="Platform\windows\System\Win32ApplicationCatalogScanner.h" />
     <ClInclude Include="Platform\windows\System\Win32NativeFolderPicker.h" />
+    <ClInclude Include="Platform\windows\System\Win32TextEncoding.h" />
+    <ClInclude Include="Platform\windows\System\Win32BinaryResourceLoader.h" />
     <ClInclude Include="Platform\windows\System\Win32RuntimeEnvironment.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -407,6 +411,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\PlatformSystemServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformShellServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformWasmRuntimeFactory.cpp" />
+    <ClCompile Include="Platform\PlatformTextEncoding.cpp" />
+    <ClCompile Include="Platform\PlatformBinaryResourceLoader.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32DpiAwarenessService.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32EventLoopService.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32SettingsLauncher.cpp" />
@@ -427,6 +433,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\windows\System\Win32VmForegroundSuppressionService.cpp" />
     <ClCompile Include="Platform\windows\System\Win32ApplicationCatalogScanner.cpp" />
     <ClCompile Include="Platform\windows\System\Win32NativeFolderPicker.cpp" />
+    <ClCompile Include="Platform\windows\System\Win32TextEncoding.cpp" />
+    <ClCompile Include="Platform\windows\System\Win32BinaryResourceLoader.cpp" />
     <ClCompile Include="MouseFx\Core\Protocol\JsonLite.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleEffect.cpp" />
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />

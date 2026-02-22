@@ -19,21 +19,7 @@ std::string ArgbToHex(Argb color) {
 }
 
 std::string WStringToUtf8(const std::wstring& ws) {
-    if (ws.empty()) {
-        return {};
-    }
-
-    int len = WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    if (len <= 0) {
-        return {};
-    }
-
-    std::string out(static_cast<size_t>(len), '\0');
-    WideCharToMultiByte(CP_UTF8, 0, ws.c_str(), -1, out.data(), len, nullptr, nullptr);
-    if (!out.empty() && out.back() == '\0') {
-        out.pop_back();
-    }
-    return out;
+    return Utf16ToUtf8(ws.c_str());
 }
 
 std::string NormalizeHoldFollowMode(std::string mode) {
@@ -300,28 +286,13 @@ std::string ReadFileAsUtf8(const std::wstring& path) {
         raw = raw.substr(3);
     }
 
-    int utf8Result = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, raw.c_str(), -1, nullptr, 0);
-    if (utf8Result > 0) {
+    if (IsValidUtf8(raw)) {
         return raw;
     }
 
-    int wlen = MultiByteToWideChar(CP_ACP, 0, raw.c_str(), -1, nullptr, 0);
-    if (wlen <= 0) {
+    const std::string utf8 = EnsureUtf8(raw);
+    if (utf8.empty()) {
         return raw;
-    }
-
-    std::wstring wstr(wlen, 0);
-    MultiByteToWideChar(CP_ACP, 0, raw.c_str(), -1, &wstr[0], wlen);
-
-    int ulen = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    if (ulen <= 0) {
-        return raw;
-    }
-
-    std::string utf8(static_cast<size_t>(ulen), '\0');
-    WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, utf8.data(), ulen, nullptr, nullptr);
-    if (!utf8.empty() && utf8.back() == '\0') {
-        utf8.pop_back();
     }
     return utf8;
 }

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "StringUtils.h"
 
-#include <windows.h>
+#include "Platform/PlatformTextEncoding.h"
 
 namespace mousefx {
 
@@ -28,25 +28,11 @@ std::string ToLowerAscii(const std::string& s) {
 }
 
 std::wstring Utf8ToWString(const std::string& s) {
-    if (s.empty()) return {};
-    int len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
-    if (len <= 0) return {};
-    std::wstring out((size_t)len, L'\0');
-    int written = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, out.empty() ? nullptr : &out[0], len);
-    if (written <= 0) return {};
-    if (!out.empty() && out.back() == L'\0') out.pop_back();
-    return out;
+    return platform::Utf8ToWide(s);
 }
 
 std::string Utf16ToUtf8(const wchar_t* ws) {
-    if (!ws || !*ws) return {};
-    int len = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, ws, -1, nullptr, 0, nullptr, nullptr);
-    if (len <= 0) return {};
-    std::string out((size_t)len, '\0');
-    int written = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, ws, -1, out.empty() ? nullptr : &out[0], len, nullptr, nullptr);
-    if (written <= 0) return {};
-    if (!out.empty() && out.back() == '\0') out.pop_back();
-    return out;
+    return platform::WideToUtf8(ws);
 }
 
 bool IsValidUtf8(const std::string& s) {
@@ -78,21 +64,7 @@ bool IsValidUtf8(const std::string& s) {
 std::string EnsureUtf8(const std::string& s) {
     if (s.empty()) return s;
     if (IsValidUtf8(s)) return s;
-
-    int wlen = MultiByteToWideChar(CP_ACP, 0, s.c_str(), -1, nullptr, 0);
-    if (wlen <= 0) return {};
-    std::wstring w((size_t)wlen, L'\0');
-    int wwritten = MultiByteToWideChar(CP_ACP, 0, s.c_str(), -1, w.empty() ? nullptr : &w[0], wlen);
-    if (wwritten <= 0) return {};
-    if (!w.empty() && w.back() == L'\0') w.pop_back();
-
-    int ulen = WideCharToMultiByte(CP_UTF8, 0, w.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    if (ulen <= 0) return {};
-    std::string out((size_t)ulen, '\0');
-    int uwritten = WideCharToMultiByte(CP_UTF8, 0, w.c_str(), -1, out.empty() ? nullptr : &out[0], ulen, nullptr, nullptr);
-    if (uwritten <= 0) return {};
-    if (!out.empty() && out.back() == '\0') out.pop_back();
-    return out;
+    return platform::ActiveCodePageToUtf8(s);
 }
 
 } // namespace mousefx

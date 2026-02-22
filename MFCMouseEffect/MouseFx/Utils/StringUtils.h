@@ -10,10 +10,10 @@ std::string TrimAscii(std::string s);
 // Convert ASCII letters to lowercase (leaves non-ASCII untouched).
 std::string ToLowerAscii(const std::string& s);
 
-// Convert UTF-8 string to wide string (Windows API).
+// Convert UTF-8 string to wide string.
 std::wstring Utf8ToWString(const std::string& s);
 
-// Convert wide string to UTF-8 string (Windows API).
+// Convert wide string to UTF-8 string.
 std::string Utf16ToUtf8(const wchar_t* ws);
 
 // Check if a string is valid UTF-8.
