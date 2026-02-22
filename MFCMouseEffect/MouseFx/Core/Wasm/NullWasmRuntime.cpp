@@ -36,7 +36,7 @@ bool NullWasmRuntime::CallGetApiVersion(uint32_t* outApiVersion, std::string* ou
     return false;
 }
 
-bool NullWasmRuntime::CallOnClick(
+bool NullWasmRuntime::CallOnEvent(
     const uint8_t* inputPtr,
     uint32_t inputLen,
     uint8_t* outputPtr,

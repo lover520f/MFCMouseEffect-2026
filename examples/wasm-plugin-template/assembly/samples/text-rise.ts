@@ -3,11 +3,11 @@ import {
   BUTTON_LEFT,
   BUTTON_RIGHT,
   SPAWN_TEXT_COMMAND_BYTES,
-  canHandleClick,
-  readClickButton,
-  readClickTickMs,
-  readClickX,
-  readClickY,
+  canHandleClickEvent,
+  readEventButton,
+  readEventTickMs,
+  readEventX,
+  readEventY,
   writeSpawnText,
 } from "../common/abi";
 import { colorFromSeed, rangedFromSeed, seedFromTickMs, signedFromSeed } from "../common/random";
@@ -18,20 +18,20 @@ export function mfx_plugin_get_api_version(): u32 {
 
 export function mfx_plugin_reset(): void {}
 
-export function mfx_plugin_on_click(
+export function mfx_plugin_on_event(
   inputPtr: usize,
   inputLen: u32,
   outputPtr: usize,
   outputCap: u32,
 ): u32 {
-  if (!canHandleClick(inputLen, outputCap, SPAWN_TEXT_COMMAND_BYTES)) {
+  if (!canHandleClickEvent(inputPtr, inputLen, outputCap, SPAWN_TEXT_COMMAND_BYTES)) {
     return 0;
   }
 
-  const x = <f32>readClickX(inputPtr);
-  const y = <f32>readClickY(inputPtr);
-  const button = readClickButton(inputPtr);
-  const seed = seedFromTickMs(readClickTickMs(inputPtr));
+  const x = <f32>readEventX(inputPtr);
+  const y = <f32>readEventY(inputPtr);
+  const button = readEventButton(inputPtr);
+  const seed = seedFromTickMs(readEventTickMs(inputPtr));
 
   let vx: f32 = 20.0 + <f32>rangedFromSeed(seed, 2, 0, 30);
   let vy: f32 = -90.0 - <f32>rangedFromSeed(seed, 7, 0, 48);

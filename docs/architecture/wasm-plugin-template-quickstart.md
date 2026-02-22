@@ -105,8 +105,16 @@ POST /api/wasm/enable
 
 The template is aligned to ABI v1:
 - `mfx_plugin_get_api_version() -> 1`
-- `mfx_plugin_on_click(input_ptr, input_len, output_ptr, output_cap)`
 - `mfx_plugin_reset()`
+
+Event entry exports:
+- `mfx_plugin_on_event(input_ptr, input_len, output_ptr, output_cap)` (required)
+
+Current template presets:
+- all built-in sample presets export `mfx_plugin_on_event`.
+
+Compatibility rule:
+- plugin must export `mfx_plugin_on_event`.
 
 Binary layout is defined in:
 - `MFCMouseEffect/MouseFx/Core/Wasm/WasmPluginAbi.h`
@@ -123,6 +131,7 @@ Binary layout is defined in:
 - `mixed-text-image`
 - `mixed-emoji-celebrate`
 - `button-adaptive`
+- `scroll-particle-burst`
 
 For full template structure and per-sample behavior summary:
 - `examples/wasm-plugin-template/README.md`

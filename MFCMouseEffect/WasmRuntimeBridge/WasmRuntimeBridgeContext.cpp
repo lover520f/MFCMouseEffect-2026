@@ -206,7 +206,7 @@ void RuntimeBridgeContext::UnloadModule() {
 
 bool RuntimeBridgeContext::IsModuleLoaded() const {
     std::lock_guard<std::mutex> lock(mutex_);
-    return moduleLoaded_ && runtime_ && fnGetApiVersion_ && fnOnClick_;
+    return moduleLoaded_ && runtime_ && fnGetApiVersion_ && fnOnEvent_;
 }
 
 bool RuntimeBridgeContext::CallGetApiVersion(uint32_t* outApiVersion) {
@@ -252,18 +252,42 @@ bool RuntimeBridgeContext::CallGetApiVersion(uint32_t* outApiVersion) {
     return true;
 }
 
-bool RuntimeBridgeContext::CallOnClick(
+bool RuntimeBridgeContext::CallOnEvent(
     const uint8_t* inputPtr,
     uint32_t inputLen,
     uint8_t* outputPtr,
     uint32_t outputCap,
     uint32_t* outWrittenBytes) {
     std::lock_guard<std::mutex> lock(mutex_);
+    if (!moduleLoaded_ || !runtime_ || !fnOnEvent_) {
+        if (outWrittenBytes) {
+            *outWrittenBytes = 0;
+        }
+        SetErrorLocked("plugin module does not export mfx_plugin_on_event.");
+        return false;
+    }
+    return CallPluginBufferFunctionLocked(
+        fnOnEvent_,
+        "on_event",
+        inputPtr,
+        inputLen,
+        outputPtr,
+        outputCap,
+        outWrittenBytes);
+}
 
+bool RuntimeBridgeContext::CallPluginBufferFunctionLocked(
+    M3Function* function,
+    const char* stageTag,
+    const uint8_t* inputPtr,
+    uint32_t inputLen,
+    uint8_t* outputPtr,
+    uint32_t outputCap,
+    uint32_t* outWrittenBytes) {
     if (outWrittenBytes) {
         *outWrittenBytes = 0;
     }
-    if (!moduleLoaded_ || !runtime_ || !fnOnClick_) {
+    if (!moduleLoaded_ || !runtime_ || !function) {
         SetErrorLocked("plugin module is not loaded.");
         return false;
     }
@@ -305,26 +329,34 @@ bool RuntimeBridgeContext::CallOnClick(
 
     M3Result result = m3Err_none;
     DWORD sehCode = 0;
-    if (SafeM3Call(fnOnClick_, 4, argPointers, &result, &sehCode) == ProtectedInvokeStatus::SehFault) {
+    std::string stageCall = "m3_Call(";
+    stageCall += (stageTag && stageTag[0] != '\0') ? stageTag : "plugin";
+    stageCall += ")";
+    if (SafeM3Call(function, 4, argPointers, &result, &sehCode) == ProtectedInvokeStatus::SehFault) {
         const bool recovered = RecoverRuntimeAfterFaultLocked();
-        SetErrorLocked(BuildSehErrorMessage("m3_Call(on_click)", sehCode, recovered));
+        SetErrorLocked(BuildSehErrorMessage(stageCall.c_str(), sehCode, recovered));
         return false;
     }
     if (result) {
-        SetWasm3ErrorLocked("m3_Call(on_click) failed", result);
+        std::string errorPrefix = stageCall + " failed";
+        SetWasm3ErrorLocked(errorPrefix.c_str(), result);
         return false;
     }
 
     uint32_t writtenBytes = 0;
     const void* retPointers[1] = { &writtenBytes };
     sehCode = 0;
-    if (SafeM3GetResults(fnOnClick_, 1, retPointers, &result, &sehCode) == ProtectedInvokeStatus::SehFault) {
+    std::string stageGetResults = "m3_GetResults(";
+    stageGetResults += (stageTag && stageTag[0] != '\0') ? stageTag : "plugin";
+    stageGetResults += ")";
+    if (SafeM3GetResults(function, 1, retPointers, &result, &sehCode) == ProtectedInvokeStatus::SehFault) {
         const bool recovered = RecoverRuntimeAfterFaultLocked();
-        SetErrorLocked(BuildSehErrorMessage("m3_GetResults(on_click)", sehCode, recovered));
+        SetErrorLocked(BuildSehErrorMessage(stageGetResults.c_str(), sehCode, recovered));
         return false;
     }
     if (result) {
-        SetWasm3ErrorLocked("m3_GetResults(on_click) failed", result);
+        std::string errorPrefix = stageGetResults + " failed";
+        SetWasm3ErrorLocked(errorPrefix.c_str(), result);
         return false;
     }
     if (writtenBytes > outputCap) {
@@ -492,7 +524,7 @@ bool RuntimeBridgeContext::LinkHostImportsLocked(M3Module* module) {
 void RuntimeBridgeContext::ReleaseRuntimeLocked() {
     moduleLoaded_ = false;
     fnGetApiVersion_ = nullptr;
-    fnOnClick_ = nullptr;
+    fnOnEvent_ = nullptr;
     fnReset_ = nullptr;
 
     if (runtime_) {
@@ -513,9 +545,13 @@ bool RuntimeBridgeContext::ResolvePluginExportsLocked() {
         return false;
     }
 
-    result = m3_FindFunction(&fnOnClick_, runtime_, "mfx_plugin_on_click");
+    result = m3_FindFunction(&fnOnEvent_, runtime_, "mfx_plugin_on_event");
     if (result) {
-        SetWasm3ErrorLocked("m3_FindFunction(mfx_plugin_on_click) failed", result);
+        fnOnEvent_ = nullptr;
+    }
+
+    if (!fnOnEvent_) {
+        SetErrorLocked("plugin does not export mfx_plugin_on_event.");
         return false;
     }
 

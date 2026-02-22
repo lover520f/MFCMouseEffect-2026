@@ -63,7 +63,7 @@ __declspec(dllexport) int __cdecl mfx_wasm_runtime_call_get_api_version(void* ha
     return context->CallGetApiVersion(outApiVersion) ? 1 : 0;
 }
 
-__declspec(dllexport) int __cdecl mfx_wasm_runtime_call_on_click(
+__declspec(dllexport) int __cdecl mfx_wasm_runtime_call_on_event(
     void* handle,
     const uint8_t* inputPtr,
     uint32_t inputLen,
@@ -77,7 +77,7 @@ __declspec(dllexport) int __cdecl mfx_wasm_runtime_call_on_click(
         }
         return 0;
     }
-    return context->CallOnClick(inputPtr, inputLen, outputPtr, outputCap, outWrittenBytes) ? 1 : 0;
+    return context->CallOnEvent(inputPtr, inputLen, outputPtr, outputCap, outWrittenBytes) ? 1 : 0;
 }
 
 __declspec(dllexport) void __cdecl mfx_wasm_runtime_reset_plugin(void* handle) {

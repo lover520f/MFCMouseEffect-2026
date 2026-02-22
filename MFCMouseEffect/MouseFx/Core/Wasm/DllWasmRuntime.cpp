@@ -125,7 +125,7 @@ bool DllWasmRuntime::CallGetApiVersion(uint32_t* outApiVersion, std::string* out
     return true;
 }
 
-bool DllWasmRuntime::CallOnClick(
+bool DllWasmRuntime::CallOnEvent(
     const uint8_t* inputPtr,
     uint32_t inputLen,
     uint8_t* outputPtr,
@@ -135,14 +135,14 @@ bool DllWasmRuntime::CallOnClick(
     if (outWrittenBytes) {
         *outWrittenBytes = 0;
     }
-    if (!onClickFn_ || !runtimeHandle_) {
+    if (!onEventFn_ || !runtimeHandle_) {
         if (outError) {
-            *outError = "Runtime bridge is not initialized.";
+            *outError = "Runtime bridge does not support mfx_plugin_on_event.";
         }
         return false;
     }
     uint32_t written = 0;
-    const int ok = onClickFn_(runtimeHandle_, inputPtr, inputLen, outputPtr, outputCap, &written);
+    const int ok = onEventFn_(runtimeHandle_, inputPtr, inputLen, outputPtr, outputCap, &written);
     if (!ok) {
         if (outError) {
             *outError = ReadBridgeError();
@@ -176,7 +176,7 @@ bool DllWasmRuntime::ResolveExports(std::string* outError) {
         {"mfx_wasm_runtime_unload_module", reinterpret_cast<void**>(&unloadModuleFn_)},
         {"mfx_wasm_runtime_is_module_loaded", reinterpret_cast<void**>(&isModuleLoadedFn_)},
         {"mfx_wasm_runtime_call_get_api_version", reinterpret_cast<void**>(&getApiVersionFn_)},
-        {"mfx_wasm_runtime_call_on_click", reinterpret_cast<void**>(&onClickFn_)},
+        {"mfx_wasm_runtime_call_on_event", reinterpret_cast<void**>(&onEventFn_)},
         {"mfx_wasm_runtime_reset_plugin", reinterpret_cast<void**>(&resetFn_)},
         {"mfx_wasm_runtime_last_error", reinterpret_cast<void**>(&lastErrorFn_)},
     };
@@ -191,6 +191,7 @@ bool DllWasmRuntime::ResolveExports(std::string* outError) {
         }
         *(route.fnPtr) = reinterpret_cast<void*>(proc);
     }
+
     if (outError) {
         outError->clear();
     }
@@ -216,7 +217,7 @@ void DllWasmRuntime::Shutdown() {
     unloadModuleFn_ = nullptr;
     isModuleLoadedFn_ = nullptr;
     getApiVersionFn_ = nullptr;
-    onClickFn_ = nullptr;
+    onEventFn_ = nullptr;
     resetFn_ = nullptr;
     lastErrorFn_ = nullptr;
     if (module_) {

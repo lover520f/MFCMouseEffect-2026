@@ -104,8 +104,16 @@ POST /api/wasm/enable
 
 模板与 ABI v1 对齐：
 - `mfx_plugin_get_api_version() -> 1`
-- `mfx_plugin_on_click(input_ptr, input_len, output_ptr, output_cap)`
 - `mfx_plugin_reset()`
+
+事件入口导出：
+- `mfx_plugin_on_event(input_ptr, input_len, output_ptr, output_cap)`（必需）
+
+当前模板样例：
+- 内置样例预设已全部导出 `mfx_plugin_on_event`。
+
+兼容规则：
+- 插件必须导出 `mfx_plugin_on_event`。
 
 二进制布局定义在：
 - `MFCMouseEffect/MouseFx/Core/Wasm/WasmPluginAbi.h`
@@ -122,6 +130,7 @@ POST /api/wasm/enable
 - `mixed-text-image`
 - `mixed-emoji-celebrate`
 - `button-adaptive`
+- `scroll-particle-burst`
 
 模板目录结构与每个样例的行为说明见：
 - `examples/wasm-plugin-template/README.md`

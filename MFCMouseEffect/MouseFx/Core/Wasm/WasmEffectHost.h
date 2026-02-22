@@ -17,10 +17,25 @@
 
 namespace mousefx::wasm {
 
-struct ClickInvokeInput final {
+enum class EventKind : uint8_t {
+    Click = 1,
+    Move = 2,
+    Scroll = 3,
+    HoldStart = 4,
+    HoldUpdate = 5,
+    HoldEnd = 6,
+    HoverStart = 7,
+    HoverEnd = 8,
+};
+
+struct EventInvokeInput final {
+    EventKind kind = EventKind::Click;
     int32_t x = 0;
     int32_t y = 0;
+    int32_t delta = 0;
+    uint32_t holdMs = 0;
     uint8_t button = 0;
+    uint8_t flags = 0;
     uint64_t eventTickMs = 0;
 };
 
@@ -81,10 +96,10 @@ public:
         const std::string& renderError);
 
     void ResetPluginState();
-    bool InvokeClick(const ClickInvokeInput& input, std::vector<uint8_t>* outCommandBuffer);
+    bool InvokeEvent(const EventInvokeInput& input, std::vector<uint8_t>* outCommandBuffer);
 
 private:
-    ClickInputV1 BuildClickInputV1(const ClickInvokeInput& input) const;
+    EventInputV1 BuildEventInputV1(const EventInvokeInput& input) const;
     void SetError(const std::string& error);
     void ClearError();
     void ClearActivePluginMetadata();

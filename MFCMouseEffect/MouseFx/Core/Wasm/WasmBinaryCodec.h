@@ -8,7 +8,7 @@
 
 namespace mousefx::wasm {
 
-std::array<uint8_t, sizeof(ClickInputV1)> SerializeClickInputV1(const ClickInputV1& input);
+std::array<uint8_t, sizeof(EventInputV1)> SerializeEventInputV1(const EventInputV1& input);
 bool TryReadCommandHeaderV1(
     const uint8_t* buffer,
     size_t bufferBytes,

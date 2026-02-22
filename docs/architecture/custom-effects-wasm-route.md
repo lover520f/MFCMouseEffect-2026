@@ -66,7 +66,9 @@ Example manifest:
 ```c
 uint32_t mfx_plugin_get_api_version(void);
 
-uint32_t mfx_plugin_on_click(
+// Recommended unified event entry:
+// kind = click/move/scroll/hold-start/hold-update/hold-end/hover-start/hover-end
+uint32_t mfx_plugin_on_event(
   const uint8_t* input_ptr,
   uint32_t input_len,
   uint8_t* output_ptr,
@@ -74,6 +76,9 @@ uint32_t mfx_plugin_on_click(
 
 void mfx_plugin_reset(void);
 ```
+
+Compatibility rule:
+- plugin exports must include `mfx_plugin_get_api_version` and `mfx_plugin_on_event`.
 
 ## Command buffer v1 draft
 

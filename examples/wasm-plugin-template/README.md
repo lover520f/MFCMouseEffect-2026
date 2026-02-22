@@ -6,9 +6,9 @@ Language: [English](README.md) | [中文](README.zh-CN.md)
 
 ## What This Template Contains
 
-- Stable ABI helpers for click-event input and command-buffer output.
+- Stable ABI helpers for click/event input and command-buffer output.
 - Reusable random/color helpers.
-- A full sample matrix covering text, image, mixed, and button-adaptive effects.
+- A full sample matrix covering text, image, mixed, button-adaptive, and scroll-event effects.
 - Build scripts for default build, single sample build, and all-samples build.
 
 ## Directory Structure
@@ -30,6 +30,7 @@ examples/wasm-plugin-template/
       mixed-text-image.ts
       mixed-emoji-celebrate.ts
       button-adaptive.ts
+      scroll-particle-burst.ts
     index.ts                  # default entry (currently exports text-rise)
   scripts/
     build-lib.mjs             # shared build helper
@@ -98,6 +99,7 @@ Sample output layout:
 | `mixed-text-image` | mixed | one text + one image | yes |
 | `mixed-emoji-celebrate` | mixed | 2 texts + 2 images celebration | yes |
 | `button-adaptive` | mixed | text/image ids adapt by mouse button | yes |
+| `scroll-particle-burst` | event(scroll) | wheel-driven colorful particle burst with ring accents | yes |
 
 `sample-presets.mjs` is the source of truth for:
 - sample key
@@ -167,8 +169,13 @@ Current ABI:
 
 Required exports:
 - `mfx_plugin_get_api_version`
-- `mfx_plugin_on_click`
 - `mfx_plugin_reset`
+
+Event entry exports:
+- `mfx_plugin_on_event` (required by current host; supports click/move/scroll/hold/hover)
+
+Host compatibility rule:
+- plugin must export `mfx_plugin_on_event`.
 
 Binary layout source of truth:
 - `MFCMouseEffect/MouseFx/Core/Wasm/WasmPluginAbi.h`

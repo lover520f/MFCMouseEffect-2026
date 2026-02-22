@@ -11,6 +11,7 @@
 #include "MouseFx/Core/Control/EffectFactory.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
+#include "MouseFx/Core/Wasm/WasmClickCommandExecutor.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
@@ -169,9 +170,45 @@ void AppController::OnDispatchActivity(UINT msg, WPARAM wParam) {
         return;
     }
 
+    bool hoverEndRenderedByWasm = false;
+    bool hoverWasmRouteActive = false;
+    if (wasmEffectHost_ && wasmEffectHost_->Enabled() && wasmEffectHost_->IsPluginLoaded()) {
+        hoverWasmRouteActive = true;
+        POINT pt{};
+        if (!GetCursorPos(&pt)) {
+            pt.x = 0;
+            pt.y = 0;
+        }
+        wasm::EventInvokeInput invoke{};
+        invoke.kind = wasm::EventKind::HoverEnd;
+        invoke.x = pt.x;
+        invoke.y = pt.y;
+        invoke.eventTickMs = GetTickCount64();
+        std::vector<uint8_t> commandBuffer;
+        const bool wasmOk = wasmEffectHost_->InvokeEvent(invoke, &commandBuffer);
+        wasm::CommandExecutionResult execResult{};
+        if (wasmOk && !commandBuffer.empty()) {
+            const std::wstring manifestPath = wasmEffectHost_->Diagnostics().activeManifestPath;
+            execResult = wasm::WasmClickCommandExecutor::Execute(
+                commandBuffer.data(),
+                commandBuffer.size(),
+                config_,
+                manifestPath);
+            hoverEndRenderedByWasm = execResult.renderedAny;
+        }
+        wasmEffectHost_->RecordRenderExecution(
+            hoverEndRenderedByWasm,
+            execResult.executedTextCommands,
+            execResult.executedImageCommands,
+            execResult.droppedCommands,
+            execResult.lastError);
+    }
+
     hovering_ = false;
-    if (auto* effect = GetEffect(EffectCategory::Hover)) {
-        effect->OnHoverEnd();
+    if (!hoverWasmRouteActive || !hoverEndRenderedByWasm) {
+        if (auto* effect = GetEffect(EffectCategory::Hover)) {
+            effect->OnHoverEnd();
+        }
     }
 }
 

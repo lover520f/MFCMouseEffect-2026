@@ -5,6 +5,9 @@
 namespace mousefx {
 
 class AppController;
+namespace wasm {
+struct EventInvokeInput;
+}
 
 // Routes Win32 messages from the dispatch HWND to the appropriate
 // AppController subsystems (effects, indicator, timers).
@@ -17,6 +20,10 @@ public:
     LRESULT Route(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 private:
+    bool TryInvokeAndRenderWasmEvent(
+        const wasm::EventInvokeInput& input,
+        bool* outRenderedByWasm,
+        bool* outInvokeOk);
     LRESULT OnClick(HWND hwnd, LPARAM lParam);
     LRESULT OnMove(HWND hwnd, WPARAM wParam, LPARAM lParam);
     LRESULT OnScroll(HWND hwnd, WPARAM wParam, LPARAM lParam);
@@ -26,6 +33,8 @@ private:
     LRESULT OnTimer(HWND hwnd, WPARAM wParam);
 
     AppController* ctrl_ = nullptr;
+    bool wasmHoldEventActive_ = false;
+    uint8_t wasmHoldButton_ = 0;
 };
 
 } // namespace mousefx

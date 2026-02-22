@@ -26,7 +26,7 @@ public:
     bool IsModuleLoaded() const;
 
     bool CallGetApiVersion(uint32_t* outApiVersion);
-    bool CallOnClick(
+    bool CallOnEvent(
         const uint8_t* inputPtr,
         uint32_t inputLen,
         uint8_t* outputPtr,
@@ -43,6 +43,14 @@ private:
     bool LinkHostImportsLocked(M3Module* module);
     bool RecoverRuntimeAfterFaultLocked();
     bool ResolvePluginExportsLocked();
+    bool CallPluginBufferFunctionLocked(
+        M3Function* function,
+        const char* stageTag,
+        const uint8_t* inputPtr,
+        uint32_t inputLen,
+        uint8_t* outputPtr,
+        uint32_t outputCap,
+        uint32_t* outWrittenBytes);
     bool EnsureScratchMemoryLocked(
         uint32_t inputLen,
         uint32_t outputCap,
@@ -61,7 +69,7 @@ private:
     M3Runtime* runtime_ = nullptr;
 
     M3Function* fnGetApiVersion_ = nullptr;
-    M3Function* fnOnClick_ = nullptr;
+    M3Function* fnOnEvent_ = nullptr;
     M3Function* fnReset_ = nullptr;
 
     std::vector<uint8_t> wasmBytes_{};

@@ -79,11 +79,9 @@
 // 必选：返回插件 ABI 版本
 uint32_t mfx_plugin_get_api_version(void);
 
-// 必选：事件入口（点击）
-// input_ptr/input_len 指向宿主序列化输入结构
-// output_ptr/output_cap 由宿主提供缓冲区
-// 返回写入字节数（0 表示无命令）
-uint32_t mfx_plugin_on_click(
+// 推荐：统一事件入口
+// kind 支持 click/move/scroll/hold-start/hold-update/hold-end/hover-start/hover-end
+uint32_t mfx_plugin_on_event(
   const uint8_t* input_ptr,
   uint32_t input_len,
   uint8_t* output_ptr,
@@ -92,6 +90,9 @@ uint32_t mfx_plugin_on_click(
 // 可选：插件重置（热重载或设置变化时）
 void mfx_plugin_reset(void);
 ```
+
+兼容规则：
+- 插件必须导出 `mfx_plugin_get_api_version` 与 `mfx_plugin_on_event`。
 
 输入与输出使用二进制结构（或紧凑 JSON，MVP 先二进制更省开销）。
 

@@ -28,7 +28,7 @@ Check:
   or in process search path.
 - bridge exports include:
   - `mfx_wasm_runtime_create`
-  - `mfx_wasm_runtime_call_on_click`
+  - `mfx_wasm_runtime_call_on_event`
   - `mfx_wasm_runtime_last_error`
 
 ## 3. Plugin loaded but no visible effect

@@ -18,6 +18,7 @@ For ABI v1:
 - Existing binary struct field order must stay stable.
 - New fields are append-only.
 - Existing enum values are immutable.
+- `mfx_plugin_on_event` is the required event entry for the current host.
 
 Breaking layout/function changes require ABI major bump (v2+).
 

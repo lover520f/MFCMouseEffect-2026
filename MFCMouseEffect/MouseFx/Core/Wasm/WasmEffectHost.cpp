@@ -175,7 +175,7 @@ void WasmEffectHost::ResetPluginState() {
     }
 }
 
-bool WasmEffectHost::InvokeClick(const ClickInvokeInput& input, std::vector<uint8_t>* outCommandBuffer) {
+bool WasmEffectHost::InvokeEvent(const EventInvokeInput& input, std::vector<uint8_t>* outCommandBuffer) {
     if (!outCommandBuffer) {
         SetError("Output command buffer pointer is null.");
         return false;
@@ -209,14 +209,15 @@ bool WasmEffectHost::InvokeClick(const ClickInvokeInput& input, std::vector<uint
         return false;
     }
 
-    const ClickInputV1 clickInput = BuildClickInputV1(input);
-    const auto payload = SerializeClickInputV1(clickInput);
     std::vector<uint8_t> output(budget_.outputBufferBytes, 0);
-
     uint32_t writtenBytes = 0;
     std::string error;
+    bool ok = false;
+
     const auto start = std::chrono::steady_clock::now();
-    const bool ok = runtime_->CallOnClick(
+    const EventInputV1 eventInput = BuildEventInputV1(input);
+    const auto payload = SerializeEventInputV1(eventInput);
+    ok = runtime_->CallOnEvent(
         payload.data(),
         static_cast<uint32_t>(payload.size()),
         output.data(),
@@ -278,11 +279,15 @@ bool WasmEffectHost::InvokeClick(const ClickInvokeInput& input, std::vector<uint
     return true;
 }
 
-ClickInputV1 WasmEffectHost::BuildClickInputV1(const ClickInvokeInput& input) const {
-    ClickInputV1 payload{};
+EventInputV1 WasmEffectHost::BuildEventInputV1(const EventInvokeInput& input) const {
+    EventInputV1 payload{};
     payload.x = input.x;
     payload.y = input.y;
+    payload.delta = input.delta;
+    payload.holdMs = input.holdMs;
+    payload.kind = static_cast<uint8_t>(input.kind);
     payload.button = input.button;
+    payload.flags = input.flags;
     payload.eventTickMs = input.eventTickMs;
     return payload;
 }

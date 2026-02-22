@@ -14,7 +14,7 @@ public:
     virtual bool IsModuleLoaded() const = 0;
 
     virtual bool CallGetApiVersion(uint32_t* outApiVersion, std::string* outError) = 0;
-    virtual bool CallOnClick(
+    virtual bool CallOnEvent(
         const uint8_t* inputPtr,
         uint32_t inputLen,
         uint8_t* outputPtr,

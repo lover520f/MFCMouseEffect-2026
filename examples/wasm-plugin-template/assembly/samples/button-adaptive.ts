@@ -5,11 +5,11 @@ import {
   BUTTON_RIGHT,
   SPAWN_IMAGE_COMMAND_BYTES,
   SPAWN_TEXT_COMMAND_BYTES,
-  canHandleClick,
-  readClickButton,
-  readClickTickMs,
-  readClickX,
-  readClickY,
+  canHandleClickEvent,
+  readEventButton,
+  readEventTickMs,
+  readEventX,
+  readEventY,
   writeSpawnImage,
   writeSpawnText,
 } from "../common/abi";
@@ -49,20 +49,20 @@ export function mfx_plugin_get_api_version(): u32 {
 
 export function mfx_plugin_reset(): void {}
 
-export function mfx_plugin_on_click(
+export function mfx_plugin_on_event(
   inputPtr: usize,
   inputLen: u32,
   outputPtr: usize,
   outputCap: u32,
 ): u32 {
-  if (!canHandleClick(inputLen, outputCap, OUTPUT_BYTES)) {
+  if (!canHandleClickEvent(inputPtr, inputLen, outputCap, OUTPUT_BYTES)) {
     return 0;
   }
 
-  const x = <f32>readClickX(inputPtr);
-  const y = <f32>readClickY(inputPtr);
-  const button = readClickButton(inputPtr);
-  const seed = seedFromTickMs(readClickTickMs(inputPtr));
+  const x = <f32>readEventX(inputPtr);
+  const y = <f32>readEventY(inputPtr);
+  const button = readEventButton(inputPtr);
+  const seed = seedFromTickMs(readEventTickMs(inputPtr));
 
   writeSpawnText(
     outputPtr,

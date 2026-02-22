@@ -28,7 +28,7 @@
   或在进程可搜索路径中；
 - 桥接导出函数至少包含：
   - `mfx_wasm_runtime_create`
-  - `mfx_wasm_runtime_call_on_click`
+  - `mfx_wasm_runtime_call_on_event`
   - `mfx_wasm_runtime_last_error`
 
 ## 3. 插件已加载但看不到效果

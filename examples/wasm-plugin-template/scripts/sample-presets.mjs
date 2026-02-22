@@ -98,6 +98,19 @@ export const SAMPLE_PRESETS = [
       "assets/btn-middle.tiff",
     ],
   },
+  {
+    key: "scroll-particle-burst",
+    source: "assembly/samples/scroll-particle-burst.ts",
+    id: "demo.event.scroll-particle-burst.v1",
+    name: "Demo Event Scroll Particle Burst",
+    version: "0.1.0",
+    imageAssets: [
+      "assets/smile.png",
+      "assets/confetti.png",
+      "assets/party.gif",
+      "assets/emoji-2.png",
+    ],
+  },
 ];
 
 export function findSamplePreset(key) {

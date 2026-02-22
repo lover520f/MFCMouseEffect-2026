@@ -4,11 +4,11 @@ import {
   BUTTON_MIDDLE,
   BUTTON_RIGHT,
   SPAWN_IMAGE_COMMAND_BYTES,
-  canHandleClick,
-  readClickButton,
-  readClickTickMs,
-  readClickX,
-  readClickY,
+  canHandleClickEvent,
+  readEventButton,
+  readEventTickMs,
+  readEventX,
+  readEventY,
   writeSpawnImage,
 } from "../common/abi";
 import { colorFromSeed, rangedFromSeed, seedFromTickMs } from "../common/random";
@@ -22,20 +22,20 @@ export function mfx_plugin_get_api_version(): u32 {
 
 export function mfx_plugin_reset(): void {}
 
-export function mfx_plugin_on_click(
+export function mfx_plugin_on_event(
   inputPtr: usize,
   inputLen: u32,
   outputPtr: usize,
   outputCap: u32,
 ): u32 {
-  if (!canHandleClick(inputLen, outputCap, OUTPUT_BYTES)) {
+  if (!canHandleClickEvent(inputPtr, inputLen, outputCap, OUTPUT_BYTES)) {
     return 0;
   }
 
-  const x = <f32>readClickX(inputPtr);
-  const y = <f32>readClickY(inputPtr);
-  const seed = seedFromTickMs(readClickTickMs(inputPtr));
-  const button = readClickButton(inputPtr);
+  const x = <f32>readEventX(inputPtr);
+  const y = <f32>readEventY(inputPtr);
+  const seed = seedFromTickMs(readEventTickMs(inputPtr));
+  const button = readEventButton(inputPtr);
 
   let baseId: u32 = 0;
   if (button == BUTTON_RIGHT) {

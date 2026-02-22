@@ -12,7 +12,7 @@ public:
     bool IsModuleLoaded() const override;
 
     bool CallGetApiVersion(uint32_t* outApiVersion, std::string* outError) override;
-    bool CallOnClick(
+    bool CallOnEvent(
         const uint8_t* inputPtr,
         uint32_t inputLen,
         uint8_t* outputPtr,

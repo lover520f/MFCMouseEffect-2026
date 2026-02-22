@@ -6,9 +6,9 @@
 
 ## 模板包含内容
 
-- 稳定 ABI 辅助：点击事件输入解析 + 命令缓冲输出写入。
+- 稳定 ABI 辅助：点击/通用事件输入解析 + 命令缓冲输出写入。
 - 可复用随机/颜色工具。
-- 覆盖文本、图片、混合、按键自适应的完整样例矩阵。
+- 覆盖文本、图片、混合、按键自适应、滚轮事件的完整样例矩阵。
 - 默认构建 / 单样例构建 / 全样例构建脚本。
 
 ## 目录结构
@@ -30,6 +30,7 @@ examples/wasm-plugin-template/
       mixed-text-image.ts
       mixed-emoji-celebrate.ts
       button-adaptive.ts
+      scroll-particle-burst.ts
     index.ts                  # 默认入口（当前导出 text-rise）
   scripts/
     build-lib.mjs             # 构建公共能力
@@ -98,6 +99,7 @@ pnpm run build:samples
 | `mixed-text-image` | 混合 | 1 文本 + 1 图片 | 是 |
 | `mixed-emoji-celebrate` | 混合 | 2 文本 + 2 图片庆祝效果 | 是 |
 | `button-adaptive` | 混合 | 根据鼠标键位选择文本/图片资源 | 是 |
+| `scroll-particle-burst` | 事件（滚轮） | 滚轮驱动的彩色粒子爆发 + 环形点缀 | 是 |
 
 `sample-presets.mjs` 是样例元数据唯一来源，包含：
 - 样例 key
@@ -166,8 +168,13 @@ pnpm run build:samples
 
 必须导出：
 - `mfx_plugin_get_api_version`
-- `mfx_plugin_on_click`
 - `mfx_plugin_reset`
+
+事件入口导出：
+- `mfx_plugin_on_event`（当前宿主必需；支持 click/move/scroll/hold/hover）
+
+宿主兼容规则：
+- 插件必须导出 `mfx_plugin_on_event`。
 
 二进制布局权威定义：
 - `MFCMouseEffect/MouseFx/Core/Wasm/WasmPluginAbi.h`

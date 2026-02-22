@@ -38,7 +38,7 @@ DLL 现在完整导出宿主所需符号：
 - `mfx_wasm_runtime_unload_module`
 - `mfx_wasm_runtime_is_module_loaded`
 - `mfx_wasm_runtime_call_get_api_version`
-- `mfx_wasm_runtime_call_on_click`
+- `mfx_wasm_runtime_call_on_event`
 - `mfx_wasm_runtime_reset_plugin`
 - `mfx_wasm_runtime_last_error`
 
