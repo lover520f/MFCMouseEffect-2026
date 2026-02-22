@@ -5,7 +5,7 @@
 #include "AppController.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
-#include "MouseFx/ThirdParty/json.hpp"
+#include "MouseFx/Core/Json/JsonFacade.h"
 #include "MouseFx/Utils/StringUtils.h"
 
 #include <array>
@@ -194,3 +194,4 @@ void CommandHandler::HandleWasmSetPolicyCommand(const std::string& jsonCmd) {
 }
 
 } // namespace mousefx
+

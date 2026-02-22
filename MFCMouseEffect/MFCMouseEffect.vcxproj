@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <ProjectGuid>{58E124AB-0DA0-9EF7-0B0B-7F826CE29FFD}</ProjectGuid>
-    <Keyword>MFCProj</Keyword>
+    <Keyword>Win32Proj</Keyword>
     <RootNamespace>MFCMouseEffect</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -31,7 +31,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -39,14 +39,14 @@
     <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -54,7 +54,7 @@
     <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -211,15 +211,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="UI\Frame\ChildFrm.h" />
-    <ClInclude Include="UI\Panes\ClassView.h" />
-    <ClInclude Include="UI\Panes\FileView.h" />
-    <ClInclude Include="UI\Settings\EmojiPreviewWnd.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="UI\Frame\MainFrm.h" />
     <ClInclude Include="MFCMouseEffect.h" />
-    <ClInclude Include="UI\DocView\MFCMouseEffectDoc.h" />
-    <ClInclude Include="UI\DocView\MFCMouseEffectView.h" />
     <ClInclude Include="MouseFx\Core\Control\AppController.h" />
     <ClInclude Include="MouseFx\Core\Automation\InputAutomationEngine.h" />
     <ClInclude Include="MouseFx\Core\Automation\KeyboardInjector.h" />
@@ -231,6 +224,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Overlay\OverlayCoordSpace.h" />
     <ClInclude Include="MouseFx\Core\Overlay\OverlayHostService.h" />
     <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorOverlay.h" />
+    <ClInclude Include="MouseFx\Core\Shell\IAppShellHost.h" />
+    <ClInclude Include="MouseFx\Core\Shell\Win32AppShell.h" />
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\System\GlobalMouseHook.h" />
@@ -245,6 +240,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Layers\TrailOverlayLayer.h" />
     <ClInclude Include="MouseFx\Core\Control\IpcController.h" />
     <ClInclude Include="MouseFx\Core\Protocol\JsonLite.h" />
+    <ClInclude Include="MouseFx\Core\Json\JsonFacade.h" />
     <ClInclude Include="MouseFx\Core\Protocol\MouseFxMessages.h" />
     <ClInclude Include="MouseFx\Server\HttpServer.h" />
     <ClInclude Include="MouseFx\Server\WebUiAssets.h" />
@@ -303,33 +299,17 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Wasm\WasmClickCommandExecutor.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmRenderResourceResolver.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmImageFileRenderer.h" />
-    <ClInclude Include="MouseFx\ThirdParty\json.hpp" />
-    <ClInclude Include="UI\Settings\SettingsWnd.h" />
-    <ClInclude Include="UI\Settings\TrailTuningWnd.h" />
-    <ClInclude Include="Settings\SettingsBackend.h" />
-    <ClInclude Include="Settings\SettingsModel.h" />
-    <ClInclude Include="Settings\TrailTuningModel.h" />
     <ClInclude Include="Settings\SettingsOptions.h" />
     <ClInclude Include="Settings\EmojiUtils.h" />
-    <ClInclude Include="UI\Panes\OutputWnd.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="UI\Panes\PropertiesWnd.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="UI\Tray\TrayMenuBuilder.h" />
     <ClInclude Include="UI\Tray\TrayMenuCommands.h" />
     <ClInclude Include="UI\Tray\TrayHostWnd.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="UI\Panes\ViewTree.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="UI\Frame\ChildFrm.cpp" />
-    <ClCompile Include="UI\Panes\ClassView.cpp" />
-    <ClCompile Include="UI\Panes\FileView.cpp" />
-    <ClCompile Include="UI\Settings\EmojiPreviewWnd.cpp" />
-    <ClCompile Include="UI\Frame\MainFrm.cpp" />
     <ClCompile Include="MFCMouseEffect.cpp" />
-    <ClCompile Include="UI\DocView\MFCMouseEffectDoc.cpp" />
-    <ClCompile Include="UI\DocView\MFCMouseEffectView.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.Wasm.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.ConfigUpdates.cpp" />
@@ -347,6 +327,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\System\NativeFolderPicker.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
     <ClCompile Include="MouseFx\Core\Control\IpcController.cpp" />
+    <ClCompile Include="MouseFx\Core\Shell\Win32AppShell.cpp" />
     <ClCompile Include="MouseFx\Core\Protocol\JsonLite.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleEffect.cpp" />
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />
@@ -430,24 +411,15 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Server\WebSettingsServer.TokenMonitor.cpp" />
     <ClCompile Include="MouseFx\Server\SettingsSchemaBuilder.cpp" />
     <ClCompile Include="MouseFx\Server\SettingsStateMapper.cpp" />
-    <ClCompile Include="UI\Settings\SettingsWnd.cpp" />
-    <ClCompile Include="UI\Settings\TrailTuningWnd.Chrome.cpp" />
-    <ClCompile Include="UI\Settings\TrailTuningWnd.Core.cpp" />
-    <ClCompile Include="UI\Settings\TrailTuningWnd.Model.cpp" />
-    <ClCompile Include="UI\Settings\SettingsWnd.Emoji.cpp" />
-    <ClCompile Include="Settings\SettingsBackend.cpp" />
     <ClCompile Include="Settings\EmojiUtils.cpp" />
-    <ClCompile Include="UI\Panes\OutputWnd.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="UI\Panes\PropertiesWnd.cpp" />
     <ClCompile Include="UI\Tray\TrayMenuBuilder.cpp" />
     <ClCompile Include="UI\Tray\TrayHostWnd.cpp" />
-    <ClCompile Include="UI\Panes\ViewTree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MFCMouseEffect.rc" />

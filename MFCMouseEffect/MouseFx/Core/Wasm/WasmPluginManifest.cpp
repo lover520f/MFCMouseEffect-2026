@@ -2,7 +2,7 @@
 
 #include "WasmPluginManifest.h"
 
-#include "MouseFx/ThirdParty/json.hpp"
+#include "MouseFx/Core/Json/JsonFacade.h"
 #include "MouseFx/Utils/StringUtils.h"
 
 #include <filesystem>
@@ -294,3 +294,4 @@ bool WasmPluginManifest::Validate(const PluginManifest& manifest, std::string* o
 }
 
 } // namespace mousefx::wasm
+

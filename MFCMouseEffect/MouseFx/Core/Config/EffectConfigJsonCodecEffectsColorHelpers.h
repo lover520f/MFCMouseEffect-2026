@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EffectConfig.h"
-#include "MouseFx/ThirdParty/json.hpp"
+#include "MouseFx/Core/Json/JsonFacade.h"
 
 namespace mousefx::config_json::effects_color_helpers {
 
@@ -12,3 +12,4 @@ nlohmann::json BuildRippleButtonColors(const RippleConfig::ButtonColors& colors)
 nlohmann::json BuildFillStrokeColors(Argb fill, Argb stroke);
 
 } // namespace mousefx::config_json::effects_color_helpers
+

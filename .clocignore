@@ -1,0 +1,9 @@
+# Third-party code
+MFCMouseEffect/MouseFx/ThirdParty
+MFCMouseEffect/WasmRuntimeBridge/third_party
+MFCMouseEffect/WebUIWorkspace/node_modules
+
+# Generated outputs
+MFCMouseEffect/WebUI
+x64
+Win32

@@ -1,31 +1,38 @@
 #pragma once
 
-#include <afxwin.h>
+#include <windows.h>
 #include <shellapi.h>
 
-#include "TrayMenuCommands.h"
+#include "MouseFx/Core/Shell/IAppShellHost.h"
 
-// A hidden, non-UI host window for the system tray icon.
-class CTrayHostWnd final : public CWnd
-{
+class CTrayHostWnd final {
 public:
-	CTrayHostWnd() = default;
-	~CTrayHostWnd() override = default;
+    CTrayHostWnd() = default;
+    ~CTrayHostWnd();
 
-	BOOL CreateHost(bool showTrayIcon = true);
+    CTrayHostWnd(const CTrayHostWnd&) = delete;
+    CTrayHostWnd& operator=(const CTrayHostWnd&) = delete;
 
-protected:
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnDestroy();
-	afx_msg void OnClose();
-	afx_msg LRESULT OnTrayNotify(WPARAM wp, LPARAM lp);
-	afx_msg void OnTrayExit();
-	DECLARE_MESSAGE_MAP()
+    bool CreateHost(mousefx::IAppShellHost* shellHost, bool showTrayIcon = true);
+    void DestroyHost();
+    HWND GetHostHwnd() const noexcept;
 
 private:
-	static constexpr UINT kTrayMsg = WM_APP + 1;
-	static constexpr UINT kTrayIconId = 1;
+    static constexpr UINT kTrayMsg = WM_APP + 1;
+    static constexpr UINT kTrayIconId = 1;
+    static constexpr const wchar_t* kHostClassName = L"MFCMouseEffectTrayHost";
 
-	NOTIFYICONDATA m_trayIcon{};
-	bool m_showTrayIcon{ true };
+    static LRESULT CALLBACK StaticWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    LRESULT WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+    bool RegisterHostClass() const;
+    bool AddTrayIcon();
+    void RemoveTrayIcon();
+    void HandleTrayMenu();
+
+private:
+    HWND hwnd_ = nullptr;
+    NOTIFYICONDATAW trayIcon_{};
+    bool showTrayIcon_ = true;
+    mousefx::IAppShellHost* shellHost_ = nullptr;
 };

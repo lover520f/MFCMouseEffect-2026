@@ -5,7 +5,7 @@
 
 #include "MouseFx/Core/Config/EffectConfig.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterBackendRegistry.h"
-#include "MouseFx/ThirdParty/json.hpp"
+#include "MouseFx/Core/Json/JsonFacade.h"
 #include "MouseFx/Utils/MonitorUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
 #include "Settings/SettingsOptions.h"
@@ -213,3 +213,4 @@ std::string BuildSettingsSchemaJson(const EffectConfig& config) {
 }
 
 } // namespace mousefx
+

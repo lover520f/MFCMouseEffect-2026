@@ -49,6 +49,9 @@
     <Filter Include="源文件\UI\DocView">
       <UniqueIdentifier>{2F165E40-04A3-4EDE-9BE7-0452268D49A4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\MouseFx\Core\Shell">
+      <UniqueIdentifier>{E3F5D0DF-96FC-4E67-8A95-93288A01055A}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MFCMouseEffect.h">
@@ -60,35 +63,8 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="UI\Frame\MainFrm.h">
-      <Filter>头文件\UI\Frame</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\Frame\ChildFrm.h">
-      <Filter>头文件\UI\Frame</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\DocView\MFCMouseEffectDoc.h">
-      <Filter>头文件\UI\DocView</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\DocView\MFCMouseEffectView.h">
-      <Filter>头文件\UI\DocView</Filter>
-    </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\Panes\FileView.h">
-      <Filter>头文件\UI\Panes</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\Panes\ClassView.h">
-      <Filter>头文件\UI\Panes</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\Panes\ViewTree.h">
-      <Filter>头文件\UI\Panes</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\Panes\OutputWnd.h">
-      <Filter>头文件\UI\Panes</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\Panes\PropertiesWnd.h">
-      <Filter>头文件\UI\Panes</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
@@ -132,6 +108,9 @@
     <ClInclude Include="MouseFx\Core\Protocol\MouseFxMessages.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Json\JsonFacade.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Server\HttpServer.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -173,24 +152,6 @@
     </ClInclude>
     <ClInclude Include="UI\Tray\TrayMenuCommands.h">
       <Filter>头文件\UI\Tray</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\Settings\SettingsWnd.h">
-      <Filter>头文件\UI\Settings</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\Settings\TrailTuningWnd.h">
-      <Filter>头文件\UI\Settings</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\Settings\EmojiPreviewWnd.h">
-      <Filter>头文件\UI\Settings</Filter>
-    </ClInclude>
-    <ClInclude Include="Settings\SettingsBackend.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Settings\SettingsModel.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Settings\TrailTuningModel.h">
-      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Settings\SettingsOptions.h">
       <Filter>头文件</Filter>
@@ -282,37 +243,16 @@
     <ClInclude Include="MouseFx\Core\Wasm\WasmImageFileRenderer.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Shell\IAppShellHost.h">
+      <Filter>Header Files\MouseFx\Core\Shell</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Shell\Win32AppShell.h">
+      <Filter>Header Files\MouseFx\Core\Shell</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCMouseEffect.cpp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Frame\MainFrm.cpp">
-      <Filter>源文件\UI\Frame</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Frame\ChildFrm.cpp">
-      <Filter>源文件\UI\Frame</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\DocView\MFCMouseEffectDoc.cpp">
-      <Filter>源文件\UI\DocView</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\DocView\MFCMouseEffectView.cpp">
-      <Filter>源文件\UI\DocView</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Panes\FileView.cpp">
-      <Filter>源文件\UI\Panes</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Panes\ClassView.cpp">
-      <Filter>源文件\UI\Panes</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Panes\ViewTree.cpp">
-      <Filter>源文件\UI\Panes</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Panes\OutputWnd.cpp">
-      <Filter>源文件\UI\Panes</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Panes\PropertiesWnd.cpp">
-      <Filter>源文件\UI\Panes</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>源文件</Filter>
@@ -392,26 +332,8 @@
     <ClCompile Include="UI\Tray\TrayMenuBuilder.cpp">
       <Filter>源文件\UI\Tray</Filter>
     </ClCompile>
-    <ClCompile Include="UI\Settings\SettingsWnd.cpp">
-      <Filter>源文件\UI\Settings</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Settings\TrailTuningWnd.Chrome.cpp">
-      <Filter>源文件\UI\Settings</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Settings\TrailTuningWnd.Core.cpp">
-      <Filter>源文件\UI\Settings</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Settings\TrailTuningWnd.Model.cpp">
-      <Filter>源文件\UI\Settings</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Settings\SettingsWnd.Emoji.cpp">
-      <Filter>源文件\UI\Settings</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Settings\EmojiPreviewWnd.cpp">
-      <Filter>源文件\UI\Settings</Filter>
-    </ClCompile>
-    <ClCompile Include="Settings\SettingsBackend.cpp">
-      <Filter>源文件</Filter>
+    <ClCompile Include="MouseFx\Core\Shell\Win32AppShell.cpp">
+      <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Overlay\InputIndicatorOverlay.cpp">
       <Filter>源文件\MouseFx</Filter>

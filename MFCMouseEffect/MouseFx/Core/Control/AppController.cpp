@@ -15,7 +15,7 @@
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
-#include "MouseFx/ThirdParty/json.hpp"
+#include "MouseFx/Core/Json/JsonFacade.h"
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
 #include "MouseFx/Core/System/VmForegroundDetector.h"
@@ -679,3 +679,4 @@ LRESULT CALLBACK AppController::DispatchWndProc(HWND hwnd, UINT msg, WPARAM wPar
 
 
 } // namespace mousefx
+

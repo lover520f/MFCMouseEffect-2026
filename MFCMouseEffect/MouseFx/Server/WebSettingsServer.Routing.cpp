@@ -23,7 +23,7 @@
 #include "MouseFx/Server/SettingsSchemaBuilder.h"
 #include "MouseFx/Server/SettingsStateMapper.h"
 #include "MouseFx/Server/WebUiAssets.h"
-#include "MouseFx/ThirdParty/json.hpp"
+#include "MouseFx/Core/Json/JsonFacade.h"
 #include "MouseFx/Utils/StringUtils.h"
 
 using json = nlohmann::json;
@@ -639,3 +639,4 @@ void WebSettingsServer::HandleRequest(const HttpRequest& req, HttpResponse& resp
 }
 
 } // namespace mousefx
+

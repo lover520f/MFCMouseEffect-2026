@@ -10,7 +10,7 @@
 #include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
-#include "MouseFx/ThirdParty/json.hpp"
+#include "MouseFx/Core/Json/JsonFacade.h"
 #include "MouseFx/Utils/StringUtils.h"
 
 using json = nlohmann::json;
@@ -278,3 +278,4 @@ std::string ApplySettingsStateJson(AppController* controller, const std::string&
 }
 
 } // namespace mousefx
+

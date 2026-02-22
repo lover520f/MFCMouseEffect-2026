@@ -5,7 +5,7 @@
 
 #include "AppController.h"
 #include "MouseFx/Core/Config/EffectConfigInternal.h"
-#include "MouseFx/ThirdParty/json.hpp"
+#include "MouseFx/Core/Json/JsonFacade.h"
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
 
@@ -451,3 +451,4 @@ void CommandHandler::HandleApplySettings(const std::string& jsonCmd) {
 }
 
 } // namespace mousefx
+
