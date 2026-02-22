@@ -7,6 +7,7 @@
 #include "MFCMouseEffect.h"
 #include "Settings/SettingsBackend.h"
 #include "Settings/SettingsOptions.h"
+#include "MouseFx/Utils/StringUtils.h"
 
 #include <vector>
 
@@ -32,6 +33,18 @@ static const SettingOption* FindByValue(const SettingOption* opts, size_t n, con
 static std::string GetValueFromItemData(DWORD_PTR data) {
     const char* v = reinterpret_cast<const char*>(data);
     return v ? std::string(v) : std::string();
+}
+
+static CString Utf8ToCString(const std::string& utf8) {
+    const std::wstring wide = mousefx::Utf8ToWString(utf8);
+    return CString(wide.c_str());
+}
+
+static std::string CStringToUtf8(const CString& text) {
+    if (text.IsEmpty()) {
+        return {};
+    }
+    return mousefx::Utf16ToUtf8(text.GetString());
 }
 
 } // namespace
@@ -260,13 +273,7 @@ int CSettingsWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     SetComboValue(cmbHover_, model_.hover);
     
     // Set edit text from UTF-8 string model
-    CString wText;
-    int len = MultiByteToWideChar(CP_UTF8, 0, model_.textContent.c_str(), -1, nullptr, 0);
-    if (len > 0) {
-        std::vector<wchar_t> buf(len);
-        MultiByteToWideChar(CP_UTF8, 0, model_.textContent.c_str(), -1, buf.data(), len);
-        wText = buf.data();
-    }
+    const CString wText = Utf8ToCString(model_.textContent);
     {
         CHARFORMAT2W cf{};
         cf.cbSize = sizeof(cf);
@@ -313,18 +320,7 @@ void CSettingsWnd::CaptureUI() {
     // Capture text content
     CString wText;
     edtTexts_.GetWindowTextW(wText);
-    if (wText.IsEmpty()) {
-        model_.textContent.clear();
-    } else {
-        int len = WideCharToMultiByte(CP_UTF8, 0, wText, -1, nullptr, 0, nullptr, nullptr);
-        if (len > 0) {
-            std::string utf8(len - 1, 0);
-            WideCharToMultiByte(CP_UTF8, 0, wText, -1, &utf8[0], len, nullptr, nullptr);
-            model_.textContent = utf8;
-        } else {
-            model_.textContent.clear();
-        }
-    }
+    model_.textContent = CStringToUtf8(wText);
 }
 
 void CSettingsWnd::OnCommandApply() {
@@ -573,13 +569,7 @@ void CSettingsWnd::SyncFromBackend() {
     ApplyLanguageToControls();
     
     // Convert UTF-8 model.textContent to wstring
-    CString wText;
-    int len = MultiByteToWideChar(CP_UTF8, 0, model_.textContent.c_str(), -1, nullptr, 0);
-    if (len > 0) {
-        std::vector<wchar_t> buf(len);
-        MultiByteToWideChar(CP_UTF8, 0, model_.textContent.c_str(), -1, buf.data(), len);
-        wText = buf.data();
-    }
+    const CString wText = Utf8ToCString(model_.textContent);
     edtTexts_.SetWindowTextW(wText);
     ApplyEmojiFormatting();
     UpdatePreviewFromEdit();
