@@ -73,15 +73,15 @@ void InputAutomationEngine::Reset() {
     gestureHistory_.clear();
 }
 
-void InputAutomationEngine::OnMouseMove(const POINT& pt) {
+void InputAutomationEngine::OnMouseMove(const ScreenPoint& pt) {
     gestureRecognizer_.OnMouseMove(pt);
 }
 
-void InputAutomationEngine::OnButtonDown(const POINT& pt, int button) {
+void InputAutomationEngine::OnButtonDown(const ScreenPoint& pt, int button) {
     gestureRecognizer_.OnButtonDown(pt, button);
 }
 
-void InputAutomationEngine::OnButtonUp(const POINT& pt, int button) {
+void InputAutomationEngine::OnButtonUp(const ScreenPoint& pt, int button) {
     const std::string gestureId = gestureRecognizer_.OnButtonUp(pt, button);
     if (!gestureId.empty()) {
         if (TriggerGesture(gestureId)) {

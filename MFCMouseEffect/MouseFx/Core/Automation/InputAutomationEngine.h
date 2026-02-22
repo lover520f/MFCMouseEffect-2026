@@ -6,8 +6,6 @@
 #include "MouseFx/Core/Input/GestureRecognizer.h"
 #include "MouseFx/Core/Automation/KeyboardInjector.h"
 
-#include <windows.h>
-
 #include <chrono>
 #include <string>
 #include <vector>
@@ -26,9 +24,9 @@ public:
     void UpdateConfig(const InputAutomationConfig& config);
     void Reset();
 
-    void OnMouseMove(const POINT& pt);
-    void OnButtonDown(const POINT& pt, int button);
-    void OnButtonUp(const POINT& pt, int button);
+    void OnMouseMove(const ScreenPoint& pt);
+    void OnButtonDown(const ScreenPoint& pt, int button);
+    void OnButtonUp(const ScreenPoint& pt, int button);
     void OnClick(const ClickEvent& ev);
     void OnScroll(short delta);
 

@@ -23,7 +23,7 @@ int ButtonFromName(const std::string& name) {
     return kButtonRight;
 }
 
-char QuantizeDirection(const POINT& from, const POINT& to) {
+char QuantizeDirection(const ScreenPoint& from, const ScreenPoint& to) {
     const int dx = to.x - from.x;
     const int dy = to.y - from.y;
     if (dx == 0 && dy == 0) {
@@ -61,11 +61,11 @@ void GestureRecognizer::Reset() {
     activeButton_ = 0;
     totalDistancePx_ = 0;
     samples_.clear();
-    lastRawPt_ = POINT{};
-    lastSamplePt_ = POINT{};
+    lastRawPt_ = ScreenPoint{};
+    lastSamplePt_ = ScreenPoint{};
 }
 
-void GestureRecognizer::OnButtonDown(const POINT& pt, int button) {
+void GestureRecognizer::OnButtonDown(const ScreenPoint& pt, int button) {
     Reset();
     if (!config_.enabled) {
         return;
@@ -81,7 +81,7 @@ void GestureRecognizer::OnButtonDown(const POINT& pt, int button) {
     samples_.push_back(pt);
 }
 
-void GestureRecognizer::OnMouseMove(const POINT& pt) {
+void GestureRecognizer::OnMouseMove(const ScreenPoint& pt) {
     if (!active_) {
         return;
     }
@@ -100,7 +100,7 @@ void GestureRecognizer::OnMouseMove(const POINT& pt) {
     lastSamplePt_ = pt;
 }
 
-std::string GestureRecognizer::OnButtonUp(const POINT& pt, int button) {
+std::string GestureRecognizer::OnButtonUp(const ScreenPoint& pt, int button) {
     if (!active_ || button != activeButton_) {
         Reset();
         return {};
@@ -168,7 +168,7 @@ std::string GestureRecognizer::BuildGestureId(const std::vector<char>& dirs) {
     return out;
 }
 
-long long GestureRecognizer::DistanceSquared(const POINT& a, const POINT& b) const {
+long long GestureRecognizer::DistanceSquared(const ScreenPoint& a, const ScreenPoint& b) const {
     const long long dx = static_cast<long long>(b.x) - static_cast<long long>(a.x);
     const long long dy = static_cast<long long>(b.y) - static_cast<long long>(a.y);
     return dx * dx + dy * dy;

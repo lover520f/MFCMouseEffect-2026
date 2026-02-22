@@ -5,7 +5,6 @@
 #include "DispatchRouter.h"
 
 #include "AppController.h"
-#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Core/Wasm/WasmClickCommandExecutor.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 
@@ -39,6 +38,26 @@ uint8_t ToWasmButtonFromCode(int button) {
     default:
         return 0;
     }
+}
+
+ScreenPoint MessagePoint(const DispatchMessage& message) {
+    ScreenPoint pt{};
+    pt.x = message.x;
+    pt.y = message.y;
+    return pt;
+}
+
+bool TryReadCursorScreenPoint(ScreenPoint* outPt) {
+    if (!outPt) {
+        return false;
+    }
+    POINT nativePt{};
+    if (!GetCursorPos(&nativePt)) {
+        return false;
+    }
+    outPt->x = nativePt.x;
+    outPt->y = nativePt.y;
+    return true;
 }
 
 bool IsKnownTimerId(UINT_PTR timerId) {
@@ -235,10 +254,9 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
         return 0;
     }
 
-    POINT pt{};
+    ScreenPoint pt{};
     if (!ctrl_->ConsumeLatestMove(&pt)) {
-        pt.x = static_cast<LONG>(message.x);
-        pt.y = static_cast<LONG>(message.y);
+        pt = MessagePoint(message);
     }
 
     ctrl_->InputAutomation().OnMouseMove(pt);
@@ -259,7 +277,7 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
     }
     if ((!moveRouteActive || !moveRenderedByWasm) && (ctrl_->GetEffect(EffectCategory::Trail) != nullptr)) {
         if (auto* effect = ctrl_->GetEffect(EffectCategory::Trail)) {
-            effect->OnMouseMove(ToScreenPoint(pt));
+            effect->OnMouseMove(pt);
         }
     }
 
@@ -280,7 +298,7 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
         }
     }
     if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
-        effect->OnHoldUpdate(ToScreenPoint(pt), ctrl_->CurrentHoldDurationMs());
+        effect->OnHoldUpdate(pt, ctrl_->CurrentHoldDurationMs());
     }
     return 0;
 }
@@ -291,14 +309,13 @@ intptr_t DispatchRouter::OnScroll(const DispatchMessage& message) {
     }
 
     const short delta = static_cast<short>(message.delta);
-    POINT pt{};
-    if (!GetCursorPos(&pt)) {
-        pt.x = static_cast<LONG>(message.x);
-        pt.y = static_cast<LONG>(message.y);
+    ScreenPoint pt{};
+    if (!TryReadCursorScreenPoint(&pt)) {
+        pt = MessagePoint(message);
     }
 
     ScrollEvent ev{};
-    ev.pt = ToScreenPoint(pt);
+    ev.pt = pt;
     ev.delta = delta;
     ev.horizontal = false;
 
@@ -349,10 +366,9 @@ intptr_t DispatchRouter::OnButtonDown(const DispatchMessage& message) {
     }
 
     const int button = static_cast<int>(message.button);
-    POINT pt{};
-    if (!GetCursorPos(&pt)) {
-        pt.x = static_cast<LONG>(message.x);
-        pt.y = static_cast<LONG>(message.y);
+    ScreenPoint pt{};
+    if (!TryReadCursorScreenPoint(&pt)) {
+        pt = MessagePoint(message);
     }
 
     ctrl_->BeginHoldTracking(pt, button);
@@ -371,8 +387,8 @@ intptr_t DispatchRouter::OnButtonUp(const DispatchMessage& message) {
         return 0;
     }
 
-    POINT pt{};
-    if (!GetCursorPos(&pt)) {
+    ScreenPoint pt{};
+    if (!TryReadCursorScreenPoint(&pt)) {
         pt.x = 0;
         pt.y = 0;
     }
@@ -404,7 +420,7 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
         if (ctrl_->IsVmEffectsSuppressed()) {
             return 0;
         }
-        POINT pt{};
+        ScreenPoint pt{};
         if (ctrl_->TryEnterHover(&pt)) {
             bool hoverRenderedByWasm = false;
             bool hoverRouteActive = false;
@@ -422,7 +438,7 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
             }
             if (!hoverRouteActive || !hoverRenderedByWasm) {
                 if (auto* effect = ctrl_->GetEffect(EffectCategory::Hover)) {
-                    effect->OnHoverStart(ToScreenPoint(pt));
+                    effect->OnHoverStart(pt);
                 }
             }
         }
@@ -435,7 +451,7 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
             ctrl_->ClearPendingHold();
             return 0;
         }
-        POINT pt{};
+        ScreenPoint pt{};
         int button = 0;
         if (ctrl_->ConsumePendingHold(&pt, &button)) {
             bool holdRenderedByWasm = false;
@@ -461,7 +477,7 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
             }
             if (!holdRouteActive || !holdRenderedByWasm) {
                 if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
-                    effect->OnHoldStart(ToScreenPoint(pt), button);
+                    effect->OnHoldStart(pt, button);
                 }
             }
             ctrl_->MarkIgnoreNextClick();
@@ -477,9 +493,12 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
             KillTimer(hwnd, kSelfTestTimerId);
         }
         ClickEvent ev{};
-        POINT cursor{};
-        GetCursorPos(&cursor);
-        ev.pt = ToScreenPoint(cursor);
+        ScreenPoint cursor{};
+        if (!TryReadCursorScreenPoint(&cursor)) {
+            cursor.x = 0;
+            cursor.y = 0;
+        }
+        ev.pt = cursor;
         ev.button = MouseButton::Left;
         if (auto* effect = ctrl_->GetEffect(EffectCategory::Click)) {
             effect->OnClick(ev);

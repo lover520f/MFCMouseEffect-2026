@@ -114,17 +114,17 @@ public:
     void OnGlobalKey(const KeyEvent& ev);
     IInputIndicatorOverlay& IndicatorOverlay() { return *inputIndicatorOverlay_; }
     InputAutomationEngine& InputAutomation() { return inputAutomationEngine_; }
-    bool ConsumeLatestMove(POINT* outPt);
+    bool ConsumeLatestMove(ScreenPoint* outPt);
     DWORD CurrentHoldDurationMs() const;
-    void BeginHoldTracking(const POINT& pt, int button);
+    void BeginHoldTracking(const ScreenPoint& pt, int button);
     void EndHoldTracking();
     void ArmHoldTimer();
     void DisarmHoldTimer();
     void ClearPendingHold();
     void CancelPendingHold();
-    bool ConsumePendingHold(POINT* outPt, int* outButton);
+    bool ConsumePendingHold(ScreenPoint* outPt, int* outButton);
     void MarkIgnoreNextClick();
-    bool TryEnterHover(POINT* outPt);
+    bool TryEnterHover(ScreenPoint* outPt);
     HWND DispatchWindowHandle() const {
         return reinterpret_cast<HWND>(dispatchMessageHost_ ? dispatchMessageHost_->NativeHandle() : 0);
     }
@@ -193,7 +193,7 @@ private:
     static constexpr UINT_PTR kHoldTimerId = 5;
     static constexpr DWORD kHoldDelayMs = 350; // Increased to 350ms to distinguish from click
     struct PendingHold {
-        POINT pt;
+        ScreenPoint pt{};
         int button;
         bool active = false;
     } pendingHold_{};

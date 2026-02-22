@@ -1,6 +1,6 @@
 #pragma once
 
-#include <windows.h>
+#include "MouseFx/Core/Protocol/InputTypes.h"
 
 #include <cstdint>
 #include <string>
@@ -24,9 +24,9 @@ public:
 
     void UpdateConfig(const GestureRecognitionConfig& config);
     void Reset();
-    void OnButtonDown(const POINT& pt, int button);
-    void OnMouseMove(const POINT& pt);
-    std::string OnButtonUp(const POINT& pt, int button);
+    void OnButtonDown(const ScreenPoint& pt, int button);
+    void OnMouseMove(const ScreenPoint& pt);
+    std::string OnButtonUp(const ScreenPoint& pt, int button);
 
 private:
     static std::string NormalizeButtonName(std::string button);
@@ -34,15 +34,15 @@ private:
     static std::string BuildGestureId(const std::vector<char>& dirs);
 
     std::vector<char> QuantizeDirections() const;
-    long long DistanceSquared(const POINT& a, const POINT& b) const;
+    long long DistanceSquared(const ScreenPoint& a, const ScreenPoint& b) const;
 
     GestureRecognitionConfig config_{};
     bool active_ = false;
     int activeButton_ = 0;
     int totalDistancePx_ = 0;
-    POINT lastRawPt_{};
-    POINT lastSamplePt_{};
-    std::vector<POINT> samples_{};
+    ScreenPoint lastRawPt_{};
+    ScreenPoint lastSamplePt_{};
+    std::vector<ScreenPoint> samples_{};
 };
 
 } // namespace mousefx

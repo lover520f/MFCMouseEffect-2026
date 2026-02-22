@@ -6,7 +6,6 @@
 #include "CommandHandler.h"
 #include "DispatchRouter.h"
 #include "MouseFx/Core/Protocol/MouseFxMessages.h"
-#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Core/Config/EffectConfigInternal.h"
 #include "MouseFx/Core/Control/EffectFactory.h"
@@ -266,16 +265,11 @@ ShortcutCaptureSession::PollResult AppController::PollShortcutCaptureSession(con
     return result;
 }
 
-bool AppController::ConsumeLatestMove(POINT* outPt) {
+bool AppController::ConsumeLatestMove(ScreenPoint* outPt) {
     if (!outPt) {
         return false;
     }
-    ScreenPoint latestPt{};
-    if (!hook_->ConsumeLatestMove(latestPt)) {
-        return false;
-    }
-    *outPt = ToNativePoint(latestPt);
-    return true;
+    return hook_->ConsumeLatestMove(*outPt);
 }
 
 DWORD AppController::CurrentHoldDurationMs() const {
@@ -288,7 +282,7 @@ DWORD AppController::CurrentHoldDurationMs() const {
     return static_cast<DWORD>(std::min<uint64_t>(delta, 0xFFFFFFFFu));
 }
 
-void AppController::BeginHoldTracking(const POINT& pt, int button) {
+void AppController::BeginHoldTracking(const ScreenPoint& pt, int button) {
     holdButtonDown_ = true;
     holdDownTick_ = GetTickCount64();
     pendingHold_.pt = pt;
@@ -328,7 +322,7 @@ void AppController::CancelPendingHold() {
     pendingHold_.active = false;
 }
 
-bool AppController::ConsumePendingHold(POINT* outPt, int* outButton) {
+bool AppController::ConsumePendingHold(ScreenPoint* outPt, int* outButton) {
     if (!pendingHold_.active) {
         return false;
     }
@@ -346,7 +340,7 @@ void AppController::MarkIgnoreNextClick() {
     ignoreNextClick_ = true;
 }
 
-bool AppController::TryEnterHover(POINT* outPt) {
+bool AppController::TryEnterHover(ScreenPoint* outPt) {
     if (hovering_) {
         return false;
     }
@@ -358,7 +352,13 @@ bool AppController::TryEnterHover(POINT* outPt) {
 
     hovering_ = true;
     if (outPt) {
-        GetCursorPos(outPt);
+        POINT nativePt{};
+        if (!GetCursorPos(&nativePt)) {
+            nativePt.x = 0;
+            nativePt.y = 0;
+        }
+        outPt->x = nativePt.x;
+        outPt->y = nativePt.y;
     }
     return true;
 }
