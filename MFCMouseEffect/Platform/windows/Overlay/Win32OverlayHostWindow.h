@@ -11,10 +11,10 @@
 
 namespace mousefx {
 
-class OverlayHostWindow final {
+class Win32OverlayHostWindow final {
 public:
-    OverlayHostWindow();
-    ~OverlayHostWindow();
+    Win32OverlayHostWindow();
+    ~Win32OverlayHostWindow();
 
     bool Create();
     void Shutdown();
@@ -70,3 +70,7 @@ private:
 };
 
 } // namespace mousefx
+
+
+
+

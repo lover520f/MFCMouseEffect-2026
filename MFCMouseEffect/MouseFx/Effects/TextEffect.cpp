@@ -57,20 +57,18 @@ void TextEffect::OnClick(const ClickEvent& event) {
         color = config_.colors[RandomRange(0, (int)config_.colors.size() - 1)];
     }
 
-    const POINT clickPt = ToNativePoint(event.pt);
-
     if (settings::HasEmojiStarter(text)) {
         if (!pool_.Initialize(8)) return;
-        pool_.ShowText(clickPt, text, color, config_);
+        pool_.ShowText(ToNativePoint(event.pt), text, color, config_);
         return;
     }
 
-    if (OverlayHostService::Instance().ShowText(clickPt, text, color, config_)) {
+    if (OverlayHostService::Instance().ShowText(event.pt, text, color, config_)) {
         return;
     }
 
     if (!pool_.Initialize(8)) return;
-    pool_.ShowText(clickPt, text, color, config_);
+    pool_.ShowText(ToNativePoint(event.pt), text, color, config_);
 }
 
 } // namespace mousefx

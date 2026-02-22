@@ -6,10 +6,12 @@
 #include "CommandHandler.h"
 #include "DispatchRouter.h"
 #include "MouseFx/Core/Protocol/MouseFxMessages.h"
+#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Core/Config/EffectConfigInternal.h"
 #include "MouseFx/Core/Control/EffectFactory.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
+#include "MouseFx/Core/Overlay/NullInputIndicatorOverlay.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
 #include "MouseFx/Core/Wasm/WasmClickCommandExecutor.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
@@ -19,6 +21,8 @@
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
 #include "MouseFx/Core/System/VmForegroundDetector.h"
+#include "Platform/PlatformInputServicesFactory.h"
+#include "Platform/PlatformOverlayServicesFactory.h"
 
 #include <new>
 #include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM
@@ -59,8 +63,14 @@ constexpr std::array<ActiveCategoryDescriptor, 5> kActiveCategoryDescriptors{{
 
 
 AppController::AppController()
-    : commandHandler_(std::make_unique<CommandHandler>(this))
-    , dispatchRouter_(std::make_unique<DispatchRouter>(this)) {}
+    : hook_(platform::CreateGlobalMouseHook())
+    , inputIndicatorOverlay_(platform::CreateInputIndicatorOverlay())
+    , commandHandler_(std::make_unique<CommandHandler>(this))
+    , dispatchRouter_(std::make_unique<DispatchRouter>(this)) {
+    if (!inputIndicatorOverlay_) {
+        inputIndicatorOverlay_ = std::make_unique<NullInputIndicatorOverlay>();
+    }
+}
 
 AppController::~AppController() {
     Stop();
@@ -224,27 +234,27 @@ void AppController::OnGlobalKey(const KeyEvent& ev) {
     const bool captureActiveBefore = shortcutCaptureSession_.IsActive();
     shortcutCaptureSession_.OnKeyDown(ev);
     const bool captureActiveAfter = shortcutCaptureSession_.IsActive();
-    hook_.SetKeyboardCaptureExclusive(captureActiveAfter);
+    hook_->SetKeyboardCaptureExclusive(captureActiveAfter);
     if (captureActiveBefore || captureActiveAfter) {
         return;
     }
-    inputIndicatorOverlay_.OnKey(ev);
+    inputIndicatorOverlay_->OnKey(ev);
 }
 
 std::string AppController::StartShortcutCaptureSession(uint64_t timeoutMs) {
     const std::string sessionId = shortcutCaptureSession_.Start(timeoutMs);
-    hook_.SetKeyboardCaptureExclusive(shortcutCaptureSession_.IsActive());
+    hook_->SetKeyboardCaptureExclusive(shortcutCaptureSession_.IsActive());
     return sessionId;
 }
 
 void AppController::StopShortcutCaptureSession(const std::string& sessionId) {
     shortcutCaptureSession_.Stop(sessionId);
-    hook_.SetKeyboardCaptureExclusive(shortcutCaptureSession_.IsActive());
+    hook_->SetKeyboardCaptureExclusive(shortcutCaptureSession_.IsActive());
 }
 
 ShortcutCaptureSession::PollResult AppController::PollShortcutCaptureSession(const std::string& sessionId) {
     ShortcutCaptureSession::PollResult result = shortcutCaptureSession_.Poll(sessionId);
-    hook_.SetKeyboardCaptureExclusive(shortcutCaptureSession_.IsActive());
+    hook_->SetKeyboardCaptureExclusive(shortcutCaptureSession_.IsActive());
     return result;
 }
 
@@ -252,7 +262,12 @@ bool AppController::ConsumeLatestMove(POINT* outPt) {
     if (!outPt) {
         return false;
     }
-    return hook_.ConsumeLatestMove(*outPt);
+    ScreenPoint latestPt{};
+    if (!hook_->ConsumeLatestMove(latestPt)) {
+        return false;
+    }
+    *outPt = ToNativePoint(latestPt);
+    return true;
 }
 
 DWORD AppController::CurrentHoldDurationMs() const {
@@ -348,8 +363,8 @@ bool AppController::Start() {
     config_ = EffectConfig::Load(configDir_);
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
     InitializeWasmHost();
-    inputIndicatorOverlay_.Initialize();
-    inputIndicatorOverlay_.UpdateConfig(config_.inputIndicator);
+    inputIndicatorOverlay_->Initialize();
+    inputIndicatorOverlay_->UpdateConfig(config_.inputIndicator);
     inputAutomationEngine_.UpdateConfig(config_.automation);
 
     diag_.stage = StartStage::GdiPlusStartup;
@@ -372,7 +387,7 @@ bool AppController::Start() {
     // Initialize effects with defaults
     diag_.stage = StartStage::EffectInit;
     ApplyConfiguredEffects();
-    inputIndicatorOverlay_.UpdateConfig(config_.inputIndicator);
+    inputIndicatorOverlay_->UpdateConfig(config_.inputIndicator);
 
     if (NormalizeActiveEffectTypes()) {
         PersistConfig();
@@ -382,13 +397,14 @@ bool AppController::Start() {
     SetTimer(dispatchHwnd_, kHoverTimerId, 100, nullptr);
 
     diag_.stage = StartStage::GlobalHook;
-    if (!hook_.Start(dispatchHwnd_)) {
+    if (!hook_->Start(reinterpret_cast<uintptr_t>(dispatchHwnd_))) {
+        const uint32_t hookError = hook_->LastError();
 #ifdef _DEBUG
         wchar_t buf[256]{};
-        wsprintfW(buf, L"MouseFx: global hook start failed. GetLastError=%lu\n", hook_.LastError());
+        wsprintfW(buf, L"MouseFx: global hook start failed. GetLastError=%lu\n", static_cast<unsigned long>(hookError));
         OutputDebugStringW(buf);
 #endif
-        diag_.error = hook_.LastError();
+        diag_.error = static_cast<DWORD>(hookError);
         Stop();
         return false;
     }
@@ -401,9 +417,9 @@ bool AppController::Start() {
 
 void AppController::Stop() {
     ShutdownWasmHost();
-    hook_.SetKeyboardCaptureExclusive(false);
-    hook_.Stop();
-    inputIndicatorOverlay_.Shutdown();
+    hook_->SetKeyboardCaptureExclusive(false);
+    hook_->Stop();
+    inputIndicatorOverlay_->Shutdown();
     inputAutomationEngine_.Reset();
     for (auto& effect : effects_) {
         if (effect) {
@@ -646,7 +662,7 @@ void AppController::SuspendEffectsForVm() {
     holdButtonDown_ = false;
     holdDownTick_ = 0;
     hovering_ = false;
-    inputIndicatorOverlay_.Hide();
+    inputIndicatorOverlay_->Hide();
     inputAutomationEngine_.Reset();
 
     for (auto& effect : effects_) {

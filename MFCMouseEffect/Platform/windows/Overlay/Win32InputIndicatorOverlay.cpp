@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "InputIndicatorOverlay.h"
+#include "Platform/windows/Overlay/Win32InputIndicatorOverlay.h"
 
 #include <algorithm>
 #include <cmath>
@@ -108,13 +108,13 @@ static std::wstring BuildComboLabel(const KeyEvent& ev) {
 // Lifecycle
 // ============================================================================
 
-bool InputIndicatorOverlay::Initialize() {
+bool Win32InputIndicatorOverlay::Initialize() {
     if (initialized_) return true;
     initialized_ = true;
     return true;
 }
 
-void InputIndicatorOverlay::Shutdown() {
+void Win32InputIndicatorOverlay::Shutdown() {
     DestroyClones();
     if (hwnd_) {
         KillTimer(hwnd_, kIndicatorTimerId);
@@ -125,7 +125,7 @@ void InputIndicatorOverlay::Shutdown() {
     active_ = false;
 }
 
-void InputIndicatorOverlay::Hide() {
+void Win32InputIndicatorOverlay::Hide() {
     active_ = false;
     eventKind_ = IndicatorEventKind::None;
     if (hwnd_) {
@@ -138,7 +138,7 @@ void InputIndicatorOverlay::Hide() {
     }
 }
 
-void InputIndicatorOverlay::UpdateConfig(const InputIndicatorConfig& cfg) {
+void Win32InputIndicatorOverlay::UpdateConfig(const InputIndicatorConfig& cfg) {
     config_ = cfg;
     config_.positionMode = IsRelativeMode(config_.positionMode) ? "relative" : "absolute";
     config_.sizePx = ClampInt(config_.sizePx, 40, 200);
@@ -172,7 +172,7 @@ void InputIndicatorOverlay::UpdateConfig(const InputIndicatorConfig& cfg) {
 // Event handlers
 // ============================================================================
 
-void InputIndicatorOverlay::OnClick(const ClickEvent& ev) {
+void Win32InputIndicatorOverlay::OnClick(const ClickEvent& ev) {
     if (!config_.enabled) return;
 
     const uint64_t now = TickNow();
@@ -203,7 +203,7 @@ void InputIndicatorOverlay::OnClick(const ClickEvent& ev) {
     Trigger(kind, ToNativePoint(ev.pt));
 }
 
-void InputIndicatorOverlay::OnScroll(const ScrollEvent& ev) {
+void Win32InputIndicatorOverlay::OnScroll(const ScrollEvent& ev) {
     if (!config_.enabled) return;
     if (ev.delta == 0) return;
 
@@ -235,7 +235,7 @@ void InputIndicatorOverlay::OnScroll(const ScrollEvent& ev) {
     Trigger(kind, ToNativePoint(ev.pt), label);
 }
 
-void InputIndicatorOverlay::OnKey(const KeyEvent& ev) {
+void Win32InputIndicatorOverlay::OnKey(const KeyEvent& ev) {
     if (!config_.enabled || !config_.keyboardEnabled) return;
 
     // Filter based on Display Mode
@@ -297,18 +297,18 @@ void InputIndicatorOverlay::OnKey(const KeyEvent& ev) {
 // Window management
 // ============================================================================
 
-LRESULT CALLBACK InputIndicatorOverlay::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    auto* self = reinterpret_cast<InputIndicatorOverlay*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+LRESULT CALLBACK Win32InputIndicatorOverlay::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    auto* self = reinterpret_cast<Win32InputIndicatorOverlay*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
     if (msg == WM_NCCREATE) {
         auto* cs = reinterpret_cast<CREATESTRUCTW*>(lParam);
-        self = reinterpret_cast<InputIndicatorOverlay*>(cs->lpCreateParams);
+        self = reinterpret_cast<Win32InputIndicatorOverlay*>(cs->lpCreateParams);
         SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
     }
     if (!self) return DefWindowProcW(hwnd, msg, wParam, lParam);
     return self->OnWndProc(hwnd, msg, wParam, lParam);
 }
 
-LRESULT InputIndicatorOverlay::OnWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+LRESULT Win32InputIndicatorOverlay::OnWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
     case WM_TIMER:
         if (wParam == kIndicatorTimerId) {
@@ -338,13 +338,13 @@ LRESULT InputIndicatorOverlay::OnWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
-bool InputIndicatorOverlay::EnsureWindow() {
+bool Win32InputIndicatorOverlay::EnsureWindow() {
     if (hwnd_ && IsWindow(hwnd_)) return true;
 
     if (!windowClassRegistered_) {
         WNDCLASSEXW wc{};
         wc.cbSize = sizeof(wc);
-        wc.lpfnWndProc = &InputIndicatorOverlay::WndProc;
+        wc.lpfnWndProc = &Win32InputIndicatorOverlay::WndProc;
         wc.hInstance = GetModuleHandleW(nullptr);
         wc.lpszClassName = kWindowClassName;
         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -370,7 +370,7 @@ bool InputIndicatorOverlay::EnsureWindow() {
 // Trigger + Render
 // ============================================================================
 
-void InputIndicatorOverlay::UpdateRenderSize(IndicatorEventKind kind, const std::wstring& label) {
+void Win32InputIndicatorOverlay::UpdateRenderSize(IndicatorEventKind kind, const std::wstring& label) {
     renderHeightPx_ = config_.sizePx;
     renderWidthPx_ = config_.sizePx;
     if (kind != IndicatorEventKind::KeyInput) {
@@ -382,7 +382,7 @@ void InputIndicatorOverlay::UpdateRenderSize(IndicatorEventKind kind, const std:
         config_.keyLabelLayoutMode);
 }
 
-void InputIndicatorOverlay::Trigger(IndicatorEventKind kind, POINT anchorPt, std::wstring label, bool isKeyboard) {
+void Win32InputIndicatorOverlay::Trigger(IndicatorEventKind kind, POINT anchorPt, std::wstring label, bool isKeyboard) {
     if (!initialized_ && !Initialize()) return;
 
     eventKind_ = kind;
@@ -408,12 +408,12 @@ void InputIndicatorOverlay::Trigger(IndicatorEventKind kind, POINT anchorPt, std
     Render();
 }
 
-void InputIndicatorOverlay::Render() {
+void Win32InputIndicatorOverlay::Render() {
     if (!hwnd_ || !active_) return;
     RenderToWindow(hwnd_);
 }
 
-void InputIndicatorOverlay::RenderToWindow(HWND targetHwnd) {
+void Win32InputIndicatorOverlay::RenderToWindow(HWND targetHwnd) {
     if (!targetHwnd || !active_) return;
 
     const int width = std::max(1, renderWidthPx_);
@@ -462,7 +462,7 @@ void InputIndicatorOverlay::RenderToWindow(HWND targetHwnd) {
 // Multi-monitor clone management
 // ============================================================================
 
-HWND InputIndicatorOverlay::CreateCloneWindow() {
+HWND Win32InputIndicatorOverlay::CreateCloneWindow() {
     if (!windowClassRegistered_) {
         // Window class should already be registered by EnsureWindow,
         // but just in case we create clones before the main window.
@@ -480,11 +480,11 @@ HWND InputIndicatorOverlay::CreateCloneWindow() {
     return clone;
 }
 
-bool InputIndicatorOverlay::IsCustomMode(bool /*isKeyboard*/) const {
+bool Win32InputIndicatorOverlay::IsCustomMode(bool /*isKeyboard*/) const {
     return config_.targetMonitor == "custom";
 }
 
-void InputIndicatorOverlay::TriggerOnEnabledMonitors(
+void Win32InputIndicatorOverlay::TriggerOnEnabledMonitors(
     IndicatorEventKind kind, POINT anchorPt, std::wstring label, bool isKeyboard) {
 
     // Sync clone windows with enabled monitors
@@ -509,7 +509,7 @@ void InputIndicatorOverlay::TriggerOnEnabledMonitors(
     }
 }
 
-void InputIndicatorOverlay::UpdateClonePlacement(HWND targetHwnd, const std::string& monitorId, bool /*isKeyboard*/) {
+void Win32InputIndicatorOverlay::UpdateClonePlacement(HWND targetHwnd, const std::string& monitorId, bool /*isKeyboard*/) {
     if (!targetHwnd) return;
 
     // Find the monitor entry
@@ -547,7 +547,7 @@ void InputIndicatorOverlay::UpdateClonePlacement(HWND targetHwnd, const std::str
                  renderWidthPx_, renderHeightPx_, SWP_NOACTIVATE);
 }
 
-void InputIndicatorOverlay::SyncCloneWindows(bool /*isKeyboard*/) {
+void Win32InputIndicatorOverlay::SyncCloneWindows(bool /*isKeyboard*/) {
     // Collect enabled monitor IDs
     std::map<std::string, bool> enabledMonitors;
     for (const auto& [id, ov] : config_.perMonitorOverrides) {
@@ -575,7 +575,7 @@ void InputIndicatorOverlay::SyncCloneWindows(bool /*isKeyboard*/) {
     }
 }
 
-void InputIndicatorOverlay::DestroyClones() {
+void Win32InputIndicatorOverlay::DestroyClones() {
     for (auto& [id, clone] : cloneWindows_) {
         if (clone && IsWindow(clone)) {
             DestroyWindow(clone);
@@ -585,7 +585,7 @@ void InputIndicatorOverlay::DestroyClones() {
     customModeActive_ = false;
 }
 
-void InputIndicatorOverlay::UpdatePlacement(POINT anchorPt, bool isKeyboard) {
+void Win32InputIndicatorOverlay::UpdatePlacement(POINT anchorPt, bool isKeyboard) {
     if (!hwnd_) return;
 
     // Decide which position parameters to use.
@@ -640,14 +640,15 @@ void InputIndicatorOverlay::UpdatePlacement(POINT anchorPt, bool isKeyboard) {
 // Utilities
 // ============================================================================
 
-int InputIndicatorOverlay::ClampInt(int v, int lo, int hi) {
+int Win32InputIndicatorOverlay::ClampInt(int v, int lo, int hi) {
     if (v < lo) return lo;
     if (v > hi) return hi;
     return v;
 }
 
-bool InputIndicatorOverlay::IsRelativeMode(const std::string& mode) {
+bool Win32InputIndicatorOverlay::IsRelativeMode(const std::string& mode) {
     return mode == "relative";
 }
 
 } // namespace mousefx
+

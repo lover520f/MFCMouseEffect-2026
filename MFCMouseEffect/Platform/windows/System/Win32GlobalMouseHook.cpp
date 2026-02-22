@@ -1,17 +1,15 @@
-// GlobalMouseHook.cpp
-
 #include "pch.h"
 
-#include "GlobalMouseHook.h"
-#include "MouseFx/Core/Protocol/MouseFxMessages.h"
+#include "Platform/windows/System/Win32GlobalMouseHook.h"
 #include "MouseFx/Core/Protocol/InputTypesWin32.h"
+#include "MouseFx/Core/Protocol/MouseFxMessages.h"
 
 #include <new>
 #include <string>
 
 namespace mousefx {
 
-GlobalMouseHook* GlobalMouseHook::instance_ = nullptr;
+Win32GlobalMouseHook* Win32GlobalMouseHook::instance_ = nullptr;
 
 namespace {
 
@@ -115,10 +113,11 @@ static std::wstring GetKeyDisplayText(const KBDLLHOOKSTRUCT* kbd) {
     return FallbackVkName(kbd->vkCode);
 }
 
-bool GlobalMouseHook::Start(HWND dispatchHwnd) {
+bool Win32GlobalMouseHook::Start(uintptr_t dispatchHandle) {
     if (hook_ != nullptr) return true;
+    HWND dispatchHwnd = reinterpret_cast<HWND>(dispatchHandle);
     if (!IsWindow(dispatchHwnd)) return false;
-    if (instance_ != nullptr) return false; // keep it simple: single hook per process
+    if (instance_ != nullptr) return false;
 
     dispatchHwnd_ = dispatchHwnd;
     instance_ = this;
@@ -127,7 +126,7 @@ bool GlobalMouseHook::Start(HWND dispatchHwnd) {
     keyboardCaptureExclusive_.store(false, std::memory_order_release);
     keyboardModifierMask_.store(0, std::memory_order_release);
 
-    hook_ = SetWindowsHookExW(WH_MOUSE_LL, &GlobalMouseHook::HookProc, GetModuleHandleW(nullptr), 0);
+    hook_ = SetWindowsHookExW(WH_MOUSE_LL, &Win32GlobalMouseHook::HookProc, GetModuleHandleW(nullptr), 0);
     if (!hook_) {
         lastError_ = GetLastError();
         instance_ = nullptr;
@@ -135,7 +134,7 @@ bool GlobalMouseHook::Start(HWND dispatchHwnd) {
         return false;
     }
 
-    keyboardHook_ = SetWindowsHookExW(WH_KEYBOARD_LL, &GlobalMouseHook::KeyboardHookProc, GetModuleHandleW(nullptr), 0);
+    keyboardHook_ = SetWindowsHookExW(WH_KEYBOARD_LL, &Win32GlobalMouseHook::KeyboardHookProc, GetModuleHandleW(nullptr), 0);
 #ifdef _DEBUG
     if (!keyboardHook_) {
         wchar_t buf[128]{};
@@ -146,7 +145,7 @@ bool GlobalMouseHook::Start(HWND dispatchHwnd) {
     return true;
 }
 
-void GlobalMouseHook::Stop() {
+void Win32GlobalMouseHook::Stop() {
     if (keyboardHook_) {
         UnhookWindowsHookEx(keyboardHook_);
         keyboardHook_ = nullptr;
@@ -165,7 +164,7 @@ void GlobalMouseHook::Stop() {
     lastError_ = ERROR_SUCCESS;
 }
 
-bool GlobalMouseHook::ConsumeLatestMove(POINT& outPt) {
+bool Win32GlobalMouseHook::ConsumeLatestMove(ScreenPoint& outPt) {
     if (!movePending_.exchange(false, std::memory_order_acq_rel)) {
         return false;
     }
@@ -174,11 +173,11 @@ bool GlobalMouseHook::ConsumeLatestMove(POINT& outPt) {
     return true;
 }
 
-void GlobalMouseHook::SetKeyboardCaptureExclusive(bool enabled) {
+void Win32GlobalMouseHook::SetKeyboardCaptureExclusive(bool enabled) {
     keyboardCaptureExclusive_.store(enabled, std::memory_order_release);
 }
 
-LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK Win32GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION && instance_ && instance_->dispatchHwnd_) {
         const auto* s = reinterpret_cast<const MSLLHOOKSTRUCT*>(lParam);
 
@@ -250,20 +249,16 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
                 static_cast<WPARAM>(scrollDelta), MAKELPARAM(pt.x, pt.y));
         }
 
-        // Button down event (for Hold detection)
         if (fireButtonDown && s) {
             const POINT pt = NormalizeScreenPoint(s->pt);
             PostMessageW(instance_->dispatchHwnd_, WM_MFX_BUTTON_DOWN,
-                (WPARAM)button, MAKELPARAM(pt.x, pt.y));
+                static_cast<WPARAM>(button), MAKELPARAM(pt.x, pt.y));
         }
 
-        // Button up event (triggers click + ends hold)
         if (fireClick && s) {
-            // Post button up for Hold end
             PostMessageW(instance_->dispatchHwnd_, WM_MFX_BUTTON_UP,
-                (WPARAM)button, 0);
+                static_cast<WPARAM>(button), 0);
 
-            // Create click event
             auto* ev = new (std::nothrow) ClickEvent();
             if (ev) {
                 ev->pt = ToScreenPoint(ResolveCursorPreferredPoint(s->pt));
@@ -276,7 +271,7 @@ LRESULT CALLBACK GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM lPar
     return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
 
-LRESULT CALLBACK GlobalMouseHook::KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK Win32GlobalMouseHook::KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION && instance_ && instance_->dispatchHwnd_) {
         const bool keyDown = IsKeyDownMessage(wParam);
         const bool keyUp = IsKeyUpMessage(wParam);

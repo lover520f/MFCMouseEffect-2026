@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "MouseFx/Core/System/GdiPlusSession.h"
-#include "MouseFx/Core/System/GlobalMouseHook.h"
-#include "MouseFx/Core/Overlay/InputIndicatorOverlay.h"
+#include "MouseFx/Core/System/IGlobalMouseHook.h"
+#include "MouseFx/Core/Overlay/IInputIndicatorOverlay.h"
 #include "MouseFx/Core/Automation/InputAutomationEngine.h"
 #include "MouseFx/Core/Automation/ShortcutCaptureSession.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
@@ -109,7 +109,7 @@ public:
     bool IsVmEffectsSuppressed() const { return vmEffectsSuppressed_; }
     bool ConsumeIgnoreNextClick();
     void OnGlobalKey(const KeyEvent& ev);
-    InputIndicatorOverlay& IndicatorOverlay() { return inputIndicatorOverlay_; }
+    IInputIndicatorOverlay& IndicatorOverlay() { return *inputIndicatorOverlay_; }
     InputAutomationEngine& InputAutomation() { return inputAutomationEngine_; }
     bool ConsumeLatestMove(POINT* outPt);
     DWORD CurrentHoldDurationMs() const;
@@ -163,7 +163,7 @@ private:
     HWND dispatchHwnd_ = nullptr;
 
     GdiPlusSession gdiplus_{};
-    GlobalMouseHook hook_{};
+    std::unique_ptr<IGlobalMouseHook> hook_{};
     
     // One effect slot per category.
     static constexpr size_t kCategoryCount = static_cast<size_t>(EffectCategory::Count);
@@ -193,7 +193,7 @@ private:
     bool gpuFallbackNotifiedThisSession_ = false;
     std::unique_ptr<CommandHandler> commandHandler_;
     std::unique_ptr<DispatchRouter> dispatchRouter_;
-    InputIndicatorOverlay inputIndicatorOverlay_{};
+    std::unique_ptr<IInputIndicatorOverlay> inputIndicatorOverlay_{};
     InputAutomationEngine inputAutomationEngine_{};
     mutable ShortcutCaptureSession shortcutCaptureSession_{};
     std::unique_ptr<wasm::WasmEffectHost> wasmEffectHost_{};

@@ -47,7 +47,7 @@ void ExecuteSpawnText(
         return;
     }
     const TextConfig textCfg = BuildTextConfig(config.textClick, cmd);
-    const POINT pt{
+    const ScreenPoint pt{
         static_cast<LONG>(std::lround(cmd.x)),
         static_cast<LONG>(std::lround(cmd.y)),
     };

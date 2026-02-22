@@ -222,8 +222,12 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Config\ConfigPathResolver.h" />
     <ClInclude Include="MouseFx\Core\Control\EffectFactory.h" />
     <ClInclude Include="MouseFx\Core\Overlay\OverlayCoordSpace.h" />
+    <ClInclude Include="MouseFx\Core\Overlay\IOverlayCoordSpaceService.h" />
+    <ClInclude Include="MouseFx\Core\Overlay\NullOverlayCoordSpaceService.h" />
+    <ClInclude Include="MouseFx\Core\Overlay\IOverlayHostBackend.h" />
     <ClInclude Include="MouseFx\Core\Overlay\OverlayHostService.h" />
-    <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorOverlay.h" />
+    <ClInclude Include="MouseFx\Core\Overlay\IInputIndicatorOverlay.h" />
+    <ClInclude Include="MouseFx\Core\Overlay\NullInputIndicatorOverlay.h" />
     <ClInclude Include="MouseFx\Core\Shell\IAppShellHost.h" />
     <ClInclude Include="MouseFx\Core\Shell\AppShellCore.h" />
     <ClInclude Include="MouseFx\Core\Shell\ITrayService.h" />
@@ -234,6 +238,9 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Shell\IDpiAwarenessService.h" />
     <ClInclude Include="MouseFx\Core\Shell\ShellPlatformServices.h" />
     <ClInclude Include="MouseFx\Core\Shell\Win32AppShell.h" />
+    <ClInclude Include="Platform\PlatformOverlayCoordSpaceFactory.h" />
+    <ClInclude Include="Platform\PlatformInputServicesFactory.h" />
+    <ClInclude Include="Platform\PlatformOverlayServicesFactory.h" />
     <ClInclude Include="Platform\PlatformShellServicesFactory.h" />
     <ClInclude Include="Platform\windows\Shell\Win32DpiAwarenessService.h" />
     <ClInclude Include="Platform\windows\Shell\Win32EventLoopService.h" />
@@ -243,7 +250,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\windows\Shell\Win32UserNotificationService.h" />
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
-    <ClInclude Include="MouseFx\Core\System\GlobalMouseHook.h" />
+    <ClInclude Include="MouseFx\Core\System\IGlobalMouseHook.h" />
+    <ClInclude Include="MouseFx\Core\System\NullGlobalMouseHook.h" />
     <ClInclude Include="MouseFx\Core\System\ApplicationCatalogScanner.h" />
     <ClInclude Include="MouseFx\Core\System\NativeFolderPicker.h" />
     <ClInclude Include="MouseFx\Effects\IconEffect.h" />
@@ -270,7 +278,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Windows\TrailWindow.h" />
     <ClInclude Include="MouseFx\Effects\ParticleTrailEffect.h" />
     <ClInclude Include="MouseFx\Windows\ParticleTrailWindow.h" />
-    <ClInclude Include="MouseFx\Windows\OverlayHostWindow.h" />
+    <ClInclude Include="Platform\windows\Overlay\Win32OverlayHostWindow.h" />
     <ClInclude Include="MouseFx\Effects\ScrollEffect.h" />
     <ClInclude Include="MouseFx\Effects\HoldEffect.h" />
     <ClInclude Include="MouseFx\Effects\HoverEffect.h" />
@@ -321,6 +329,10 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="UI\Tray\TrayMenuBuilder.h" />
     <ClInclude Include="UI\Tray\TrayMenuCommands.h" />
     <ClInclude Include="UI\Tray\TrayHostWnd.h" />
+    <ClInclude Include="Platform\windows\Overlay\Win32OverlayCoordSpaceService.h" />
+    <ClInclude Include="Platform\windows\Overlay\Win32OverlayHostBackend.h" />
+    <ClInclude Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.h" />
+    <ClInclude Include="Platform\windows\System\Win32GlobalMouseHook.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -336,14 +348,15 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Control\EffectFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayHostService.cpp" />
-    <ClCompile Include="MouseFx\Core\Overlay\InputIndicatorOverlay.cpp" />
-    <ClCompile Include="MouseFx\Core\System\GlobalMouseHook.cpp" />
     <ClCompile Include="MouseFx\Core\System\ApplicationCatalogScanner.cpp" />
     <ClCompile Include="MouseFx\Core\System\NativeFolderPicker.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
     <ClCompile Include="MouseFx\Core\Control\IpcController.cpp" />
     <ClCompile Include="MouseFx\Core\Shell\AppShellCore.cpp" />
     <ClCompile Include="MouseFx\Core\Shell\Win32AppShell.cpp" />
+    <ClCompile Include="Platform\PlatformOverlayCoordSpaceFactory.cpp" />
+    <ClCompile Include="Platform\PlatformInputServicesFactory.cpp" />
+    <ClCompile Include="Platform\PlatformOverlayServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformShellServicesFactory.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32DpiAwarenessService.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32EventLoopService.cpp" />
@@ -351,6 +364,11 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\windows\Shell\Win32SingleInstanceGuard.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32TrayService.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32UserNotificationService.cpp" />
+    <ClCompile Include="Platform\windows\Overlay\Win32OverlayCoordSpaceService.cpp" />
+    <ClCompile Include="Platform\windows\Overlay\Win32OverlayHostWindow.cpp" />
+    <ClCompile Include="Platform\windows\Overlay\Win32OverlayHostBackend.cpp" />
+    <ClCompile Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.cpp" />
+    <ClCompile Include="Platform\windows\System\Win32GlobalMouseHook.cpp" />
     <ClCompile Include="MouseFx\Core\Protocol\JsonLite.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleEffect.cpp" />
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />
@@ -385,7 +403,6 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Layers\TextOverlayLayer.cpp" />
     <ClCompile Include="MouseFx\Layers\TrailOverlayLayer.cpp" />
     <ClCompile Include="MouseFx\Windows\ParticleTrailWindow.cpp" />
-    <ClCompile Include="MouseFx\Windows\OverlayHostWindow.cpp" />
     <ClCompile Include="MouseFx\Effects\ScrollEffect.cpp" />
     <ClCompile Include="MouseFx\Effects\HoldEffect.cpp" />
     <ClCompile Include="MouseFx\Effects\HoverEffect.cpp" />

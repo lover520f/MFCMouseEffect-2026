@@ -6,8 +6,7 @@
 #include <string>
 
 #include "MouseFx/Core/Config/EffectConfig.h"
-#include "MouseFx/Core/Protocol/InputTypes.h"
-#include "MouseFx/Interfaces/IMouseEffect.h"
+#include "MouseFx/Core/Overlay/IInputIndicatorOverlay.h"
 #include "MouseFx/Renderers/Indicator/IndicatorRenderer.h"
 
 namespace mousefx {
@@ -16,22 +15,22 @@ namespace mousefx {
 // mouse clicks, scroll wheel events, and keyboard key presses.
 // Window lifecycle and timer management live here; all GDI+
 // drawing is delegated to IndicatorRenderer.
-class InputIndicatorOverlay final {
+class Win32InputIndicatorOverlay final : public IInputIndicatorOverlay {
 public:
-    InputIndicatorOverlay() = default;
-    ~InputIndicatorOverlay() { Shutdown(); }
+    Win32InputIndicatorOverlay() = default;
+    ~Win32InputIndicatorOverlay() override { Shutdown(); }
 
-    InputIndicatorOverlay(const InputIndicatorOverlay&) = delete;
-    InputIndicatorOverlay& operator=(const InputIndicatorOverlay&) = delete;
+    Win32InputIndicatorOverlay(const Win32InputIndicatorOverlay&) = delete;
+    Win32InputIndicatorOverlay& operator=(const Win32InputIndicatorOverlay&) = delete;
 
-    bool Initialize();
-    void Shutdown();
-    void Hide();
-    void UpdateConfig(const InputIndicatorConfig& cfg);
+    bool Initialize() override;
+    void Shutdown() override;
+    void Hide() override;
+    void UpdateConfig(const InputIndicatorConfig& cfg) override;
 
-    void OnClick(const ClickEvent& ev);
-    void OnScroll(const ScrollEvent& ev);
-    void OnKey(const KeyEvent& ev);
+    void OnClick(const ClickEvent& ev) override;
+    void OnScroll(const ScrollEvent& ev) override;
+    void OnKey(const KeyEvent& ev) override;
 
 private:
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

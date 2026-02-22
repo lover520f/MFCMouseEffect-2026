@@ -96,13 +96,25 @@
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\System\IGlobalMouseHook.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\System\NullGlobalMouseHook.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\Overlay\OverlayHostService.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\Overlay\OverlayCoordSpace.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\System\GlobalMouseHook.h">
+    <ClInclude Include="MouseFx\Core\Overlay\IOverlayCoordSpaceService.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Overlay\NullOverlayCoordSpaceService.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Overlay\IOverlayHostBackend.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\System\ApplicationCatalogScanner.h">
@@ -135,9 +147,6 @@
     <ClInclude Include="MouseFx\Interfaces\IOverlayLayer.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Windows\OverlayHostWindow.h">
-      <Filter>头文件\MouseFx</Filter>
-    </ClInclude>
     <ClInclude Include="MouseFx\Layers\TrailOverlayLayer.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -162,7 +171,10 @@
     <ClInclude Include="Settings\SettingsOptions.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorOverlay.h">
+    <ClInclude Include="MouseFx\Core\Overlay\IInputIndicatorOverlay.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Overlay\NullInputIndicatorOverlay.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h">
@@ -279,6 +291,15 @@
     <ClInclude Include="MouseFx\Core\Shell\ShellPlatformServices.h">
       <Filter>Header Files\MouseFx\Core\Shell</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\PlatformOverlayCoordSpaceFactory.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\PlatformInputServicesFactory.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\PlatformOverlayServicesFactory.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\PlatformShellServicesFactory.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -298,6 +319,21 @@
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\windows\Shell\Win32UserNotificationService.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\System\Win32GlobalMouseHook.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Overlay\Win32OverlayCoordSpaceService.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Overlay\Win32OverlayHostWindow.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Overlay\Win32OverlayHostBackend.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
   </ItemGroup>
@@ -350,9 +386,6 @@
     <ClCompile Include="MouseFx\Server\WebSettingsServer.TokenMonitor.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Core\System\GlobalMouseHook.cpp">
-      <Filter>源文件\MouseFx</Filter>
-    </ClCompile>
     <ClCompile Include="MouseFx\Core\System\ApplicationCatalogScanner.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
@@ -360,9 +393,6 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Styles\ThemeStyle.cpp">
-      <Filter>源文件\MouseFx</Filter>
-    </ClCompile>
-    <ClCompile Include="MouseFx\Windows\OverlayHostWindow.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Layers\TrailOverlayLayer.cpp">
@@ -389,6 +419,15 @@
     <ClCompile Include="MouseFx\Core\Shell\Win32AppShell.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="Platform\PlatformOverlayCoordSpaceFactory.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\PlatformInputServicesFactory.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\PlatformOverlayServicesFactory.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
     <ClCompile Include="Platform\PlatformShellServicesFactory.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
@@ -410,8 +449,20 @@
     <ClCompile Include="Platform\windows\Shell\Win32UserNotificationService.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Core\Overlay\InputIndicatorOverlay.cpp">
-      <Filter>源文件\MouseFx</Filter>
+    <ClCompile Include="Platform\windows\Overlay\Win32OverlayCoordSpaceService.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Overlay\Win32OverlayHostWindow.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Overlay\Win32OverlayHostBackend.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\System\Win32GlobalMouseHook.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.cpp">
+      <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Renderers\Indicator\IndicatorRenderer.cpp">
       <Filter>源文件\MouseFx</Filter>

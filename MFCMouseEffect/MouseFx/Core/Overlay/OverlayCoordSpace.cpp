@@ -1,61 +1,49 @@
 #include "pch.h"
 
 #include "OverlayCoordSpace.h"
+#include "MouseFx/Core/Overlay/NullOverlayCoordSpaceService.h"
+#include "MouseFx/Core/Protocol/InputTypesWin32.h"
+#include "Platform/PlatformOverlayCoordSpaceFactory.h"
 
-#include <atomic>
+#include <memory>
 
 namespace mousefx {
 namespace {
 
-std::atomic<bool> g_overlayOriginOverrideEnabled{false};
-std::atomic<int> g_overlayOriginX{0};
-std::atomic<int> g_overlayOriginY{0};
-std::atomic<UINT_PTR> g_overlayWindowHandle{0};
-
-POINT GetVirtualScreenOrigin() {
-    POINT pt{};
-    pt.x = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    pt.y = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    return pt;
+IOverlayCoordSpaceService& CoordSpaceService() {
+    static std::unique_ptr<IOverlayCoordSpaceService> service =
+        platform::CreateOverlayCoordSpaceService();
+    static NullOverlayCoordSpaceService fallbackService{};
+    if (service) {
+        return *service;
+    }
+    return fallbackService;
 }
 
 } // namespace
 
 void SetOverlayWindowHandle(HWND hwnd) {
-    g_overlayWindowHandle.store((UINT_PTR)hwnd, std::memory_order_release);
+    CoordSpaceService().SetOverlayWindowHandle(reinterpret_cast<uintptr_t>(hwnd));
 }
 
 void ClearOverlayWindowHandle() {
-    g_overlayWindowHandle.store(0, std::memory_order_release);
+    CoordSpaceService().ClearOverlayWindowHandle();
 }
 
 void SetOverlayOriginOverride(int x, int y) {
-    g_overlayOriginX.store(x, std::memory_order_relaxed);
-    g_overlayOriginY.store(y, std::memory_order_relaxed);
-    g_overlayOriginOverrideEnabled.store(true, std::memory_order_release);
+    CoordSpaceService().SetOverlayOriginOverride(x, y);
 }
 
 void ClearOverlayOriginOverride() {
-    g_overlayOriginOverrideEnabled.store(false, std::memory_order_release);
+    CoordSpaceService().ClearOverlayOriginOverride();
 }
 
 POINT GetOverlayOrigin() {
-    if (g_overlayOriginOverrideEnabled.load(std::memory_order_acquire)) {
-        POINT pt{};
-        pt.x = g_overlayOriginX.load(std::memory_order_relaxed);
-        pt.y = g_overlayOriginY.load(std::memory_order_relaxed);
-        return pt;
-    }
-
-    return GetVirtualScreenOrigin();
+    return ToNativePoint(CoordSpaceService().GetOverlayOrigin());
 }
 
 POINT ScreenToOverlayPoint(const POINT& screenPt) {
-    POINT pt = screenPt;
-    const POINT origin = GetOverlayOrigin();
-    pt.x -= origin.x;
-    pt.y -= origin.y;
-    return pt;
+    return ToNativePoint(CoordSpaceService().ScreenToOverlayPoint(ToScreenPoint(screenPt)));
 }
 
 } // namespace mousefx

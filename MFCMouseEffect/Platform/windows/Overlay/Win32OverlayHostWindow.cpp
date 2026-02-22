@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "OverlayHostWindow.h"
+#include "Platform/windows/Overlay/Win32OverlayHostWindow.h"
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TimeUtils.h"
 
@@ -53,7 +53,7 @@ std::vector<ScreenRect> QueryMonitorRects() {
     return state.rects;
 }
 
-void UnionRects(const std::vector<OverlayHostWindow::HostSurface>& surfaces, int* x, int* y, int* w, int* h) {
+void UnionRects(const std::vector<Win32OverlayHostWindow::HostSurface>& surfaces, int* x, int* y, int* w, int* h) {
     if (!x || !y || !w || !h) return;
     if (surfaces.empty()) {
         *x = GetSystemMetrics(SM_XVIRTUALSCREEN);
@@ -80,7 +80,7 @@ void UnionRects(const std::vector<OverlayHostWindow::HostSurface>& surfaces, int
     *h = bottom - top;
 }
 
-bool EnsureSurfaceBuffer(OverlayHostWindow::HostSurface& surface, int w, int h) {
+bool EnsureSurfaceBuffer(Win32OverlayHostWindow::HostSurface& surface, int w, int h) {
     if (w <= 0 || h <= 0) return false;
     if (surface.memDc && surface.bits && surface.width == w && surface.height == h) return true;
 
@@ -126,7 +126,7 @@ bool EnsureSurfaceBuffer(OverlayHostWindow::HostSurface& surface, int w, int h) 
     return true;
 }
 
-void RefreshSurfaceRect(OverlayHostWindow::HostSurface& surface) {
+void RefreshSurfaceRect(Win32OverlayHostWindow::HostSurface& surface) {
     if (!surface.hwnd) return;
 
     RECT rcWindow{};
@@ -144,21 +144,21 @@ void RefreshSurfaceRect(OverlayHostWindow::HostSurface& surface) {
 }
 
 static const uint64_t kTopmostReassertIntervalMs = 2500;
-static OverlayHostWindow* g_overlayForegroundHookOwner = nullptr;
+static Win32OverlayHostWindow* g_overlayForegroundHookOwner = nullptr;
 
 } // namespace
 
-OverlayHostWindow::OverlayHostWindow() = default;
+Win32OverlayHostWindow::Win32OverlayHostWindow() = default;
 
-OverlayHostWindow::~OverlayHostWindow() {
+Win32OverlayHostWindow::~Win32OverlayHostWindow() {
     Shutdown();
 }
 
-const wchar_t* OverlayHostWindow::ClassName() {
-    return L"MouseFxOverlayHostWindow";
+const wchar_t* Win32OverlayHostWindow::ClassName() {
+    return L"MouseFxWin32OverlayHostWindow";
 }
 
-bool OverlayHostWindow::EnsureClassRegistered() {
+bool Win32OverlayHostWindow::EnsureClassRegistered() {
     static bool registered = false;
     static bool ok = false;
     if (registered) return ok;
@@ -167,7 +167,7 @@ bool OverlayHostWindow::EnsureClassRegistered() {
     WNDCLASSEXW wc{};
     wc.cbSize = sizeof(wc);
     wc.style = CS_HREDRAW | CS_VREDRAW;
-    wc.lpfnWndProc = &OverlayHostWindow::WndProc;
+    wc.lpfnWndProc = &Win32OverlayHostWindow::WndProc;
     wc.hInstance = GetModuleHandleW(nullptr);
     wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     wc.lpszClassName = ClassName();
@@ -175,7 +175,7 @@ bool OverlayHostWindow::EnsureClassRegistered() {
     return ok;
 }
 
-bool OverlayHostWindow::Create() {
+bool Win32OverlayHostWindow::Create() {
     if (timerHwnd_) return true;
     if (!EnsureClassRegistered()) return false;
     if (!RebuildSurfaces()) return false;
@@ -189,7 +189,7 @@ bool OverlayHostWindow::Create() {
     return true;
 }
 
-void OverlayHostWindow::Shutdown() {
+void Win32OverlayHostWindow::Shutdown() {
     StopFrameLoop();
     UnregisterForegroundHook();
     DestroySurfaces();
@@ -198,7 +198,7 @@ void OverlayHostWindow::Shutdown() {
     ClearOverlayOriginOverride();
 }
 
-IOverlayLayer* OverlayHostWindow::AddLayer(std::unique_ptr<IOverlayLayer> layer) {
+IOverlayLayer* Win32OverlayHostWindow::AddLayer(std::unique_ptr<IOverlayLayer> layer) {
     if (!layer) return nullptr;
     IOverlayLayer* raw = layer.get();
     layers_.push_back(std::move(layer));
@@ -206,7 +206,7 @@ IOverlayLayer* OverlayHostWindow::AddLayer(std::unique_ptr<IOverlayLayer> layer)
     return raw;
 }
 
-void OverlayHostWindow::RemoveLayer(IOverlayLayer* layer) {
+void Win32OverlayHostWindow::RemoveLayer(IOverlayLayer* layer) {
     if (!layer) return;
     layers_.erase(
         std::remove_if(
@@ -219,26 +219,26 @@ void OverlayHostWindow::RemoveLayer(IOverlayLayer* layer) {
     }
 }
 
-void OverlayHostWindow::ClearLayers() {
+void Win32OverlayHostWindow::ClearLayers() {
     layers_.clear();
     StopFrameLoop();
 }
 
-LRESULT CALLBACK OverlayHostWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    OverlayHostWindow* self = nullptr;
+LRESULT CALLBACK Win32OverlayHostWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    Win32OverlayHostWindow* self = nullptr;
     if (msg == WM_NCCREATE) {
         auto* cs = reinterpret_cast<CREATESTRUCTW*>(lParam);
-        self = reinterpret_cast<OverlayHostWindow*>(cs->lpCreateParams);
+        self = reinterpret_cast<Win32OverlayHostWindow*>(cs->lpCreateParams);
         SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
     } else {
-        self = reinterpret_cast<OverlayHostWindow*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+        self = reinterpret_cast<Win32OverlayHostWindow*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
     }
 
     if (self) return self->OnMessage(hwnd, msg, wParam, lParam);
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
-LRESULT OverlayHostWindow::OnMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+LRESULT Win32OverlayHostWindow::OnMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
     case WM_NCHITTEST:
         return HTTRANSPARENT;
@@ -271,7 +271,7 @@ LRESULT OverlayHostWindow::OnMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
-void OverlayHostWindow::OnTick() {
+void Win32OverlayHostWindow::OnTick() {
     if (layers_.empty()) {
         StopFrameLoop();
         return;
@@ -292,13 +292,13 @@ void OverlayHostWindow::OnTick() {
     Render();
 }
 
-void OverlayHostWindow::Render() {
+void Win32OverlayHostWindow::Render() {
     for (auto& surface : surfaces_) {
         RenderSurface(surface);
     }
 }
 
-void OverlayHostWindow::RenderSurface(HostSurface& surface) {
+void Win32OverlayHostWindow::RenderSurface(HostSurface& surface) {
     if (!surface.hwnd || !surface.memDc || !surface.bits || surface.width <= 0 || surface.height <= 0) return;
 
     SetOverlayOriginOverride(surface.x, surface.y);
@@ -321,7 +321,7 @@ void OverlayHostWindow::RenderSurface(HostSurface& surface) {
     UpdateLayeredWindow(surface.hwnd, nullptr, &ptDst, &sizeWnd, surface.memDc, &ptSrc, 0, &bf, ULW_ALPHA);
 }
 
-bool OverlayHostWindow::RebuildSurfaces() {
+bool Win32OverlayHostWindow::RebuildSurfaces() {
     const std::vector<ScreenRect> desired = QueryMonitorRects();
     if (desired.empty()) return false;
 
@@ -373,7 +373,7 @@ bool OverlayHostWindow::RebuildSurfaces() {
     return timerHwnd_ != nullptr;
 }
 
-void OverlayHostWindow::DestroySurfaces() {
+void Win32OverlayHostWindow::DestroySurfaces() {
     for (auto& surface : surfaces_) {
         if (surface.dib) {
             DeleteObject(surface.dib);
@@ -399,7 +399,7 @@ void OverlayHostWindow::DestroySurfaces() {
     virtualH_ = 0;
 }
 
-void OverlayHostWindow::SyncBoundsWithVirtualScreen(bool forceMove) {
+void Win32OverlayHostWindow::SyncBoundsWithVirtualScreen(bool forceMove) {
     if (surfaces_.empty()) return;
 
     const std::vector<ScreenRect> desired = QueryMonitorRects();
@@ -430,7 +430,7 @@ void OverlayHostWindow::SyncBoundsWithVirtualScreen(bool forceMove) {
     SetOverlayOriginOverride(virtualX_, virtualY_);
 }
 
-void OverlayHostWindow::StartFrameLoop() {
+void Win32OverlayHostWindow::StartFrameLoop() {
     if (surfaces_.empty()) {
         if (!RebuildSurfaces()) return;
     }
@@ -445,7 +445,7 @@ void OverlayHostWindow::StartFrameLoop() {
     EnsureTopmostZOrder(true);
 }
 
-void OverlayHostWindow::StopFrameLoop() {
+void Win32OverlayHostWindow::StopFrameLoop() {
     if (!ticking_) return;
     ticking_ = false;
     if (timerHwnd_) {
@@ -456,7 +456,7 @@ void OverlayHostWindow::StopFrameLoop() {
     }
 }
 
-void OverlayHostWindow::EnsureTopmostZOrder(bool force) {
+void Win32OverlayHostWindow::EnsureTopmostZOrder(bool force) {
     if (surfaces_.empty()) return;
     const uint64_t now = NowMs();
     if (!force && (now - lastTopmostEnsureMs_ < kTopmostReassertIntervalMs)) return;
@@ -468,22 +468,22 @@ void OverlayHostWindow::EnsureTopmostZOrder(bool force) {
     }
 }
 
-void CALLBACK OverlayHostWindow::ForegroundEventProc(HWINEVENTHOOK, DWORD event, HWND hwnd, LONG, LONG, DWORD, DWORD) {
+void CALLBACK Win32OverlayHostWindow::ForegroundEventProc(HWINEVENTHOOK, DWORD event, HWND hwnd, LONG, LONG, DWORD, DWORD) {
     if (event != EVENT_SYSTEM_FOREGROUND) return;
-    OverlayHostWindow* self = g_overlayForegroundHookOwner;
+    Win32OverlayHostWindow* self = g_overlayForegroundHookOwner;
     if (!self || !self->timerHwnd_) return;
     if (!IsWindow(self->timerHwnd_)) return;
     if (hwnd == self->timerHwnd_) return;
     PostMessageW(self->timerHwnd_, kMsgEnsureTopmost, 0, 0);
 }
 
-void OverlayHostWindow::RegisterForegroundHook() {
+void Win32OverlayHostWindow::RegisterForegroundHook() {
     if (foregroundHook_) return;
     foregroundHook_ = SetWinEventHook(
         EVENT_SYSTEM_FOREGROUND,
         EVENT_SYSTEM_FOREGROUND,
         nullptr,
-        &OverlayHostWindow::ForegroundEventProc,
+        &Win32OverlayHostWindow::ForegroundEventProc,
         0,
         0,
         WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
@@ -492,7 +492,7 @@ void OverlayHostWindow::RegisterForegroundHook() {
     }
 }
 
-void OverlayHostWindow::UnregisterForegroundHook() {
+void Win32OverlayHostWindow::UnregisterForegroundHook() {
     if (foregroundHook_) {
         UnhookWinEvent(foregroundHook_);
         foregroundHook_ = nullptr;
@@ -503,3 +503,7 @@ void OverlayHostWindow::UnregisterForegroundHook() {
 }
 
 } // namespace mousefx
+
+
+
+

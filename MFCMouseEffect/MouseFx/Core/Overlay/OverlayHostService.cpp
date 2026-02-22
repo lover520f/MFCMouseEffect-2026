@@ -4,12 +4,13 @@
 
 #include "MouseFx/Interfaces/IRippleRenderer.h"
 #include "MouseFx/Interfaces/ITrailRenderer.h"
+#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Layers/ParticleTrailOverlayLayer.h"
 #include "MouseFx/Layers/RippleOverlayLayer.h"
 #include "MouseFx/Layers/TextOverlayLayer.h"
 #include "MouseFx/Windows/TextWindowPool.h"
 #include "MouseFx/Layers/TrailOverlayLayer.h"
-#include "MouseFx/Windows/OverlayHostWindow.h"
+#include "Platform/PlatformOverlayServicesFactory.h"
 #include "Settings/EmojiUtils.h"
 
 namespace {
@@ -42,28 +43,31 @@ OverlayHostService& OverlayHostService::Instance() {
 }
 
 bool OverlayHostService::Initialize() {
-    if (host_) return true;
-    host_ = std::make_unique<OverlayHostWindow>();
-    if (!host_->Create()) {
-        host_.reset();
+    if (hostBackend_) return true;
+    hostBackend_ = platform::CreateOverlayHostBackend();
+    if (!hostBackend_) {
+        return false;
+    }
+    if (!hostBackend_->Create()) {
+        hostBackend_.reset();
         return false;
     }
     return true;
 }
 
 void OverlayHostService::Shutdown() {
-    if (!host_) return;
+    if (!hostBackend_) return;
     rippleLayer_ = nullptr;
     textLayer_ = nullptr;
     SharedTextWindowPool().Shutdown();
-    host_->Shutdown();
-    host_.reset();
+    hostBackend_->Shutdown();
+    hostBackend_.reset();
 }
 
 IOverlayLayer* OverlayHostService::AttachLayer(std::unique_ptr<IOverlayLayer> layer) {
     if (!layer) return nullptr;
     if (!Initialize()) return nullptr;
-    return host_->AddLayer(std::move(layer));
+    return hostBackend_->AddLayer(std::move(layer));
 }
 
 TrailOverlayLayer* OverlayHostService::AttachTrailLayer(std::unique_ptr<ITrailRenderer> renderer, int durationMs, int maxPoints, bool isChromatic) {
@@ -94,9 +98,9 @@ uint64_t OverlayHostService::ShowContinuousRipple(const ClickEvent& ev, const Ri
     return layer->ShowContinuous(ev, style, std::move(renderer), params);
 }
 
-void OverlayHostService::UpdateRipplePosition(uint64_t id, const POINT& pt) {
+void OverlayHostService::UpdateRipplePosition(uint64_t id, const ScreenPoint& pt) {
     if (!rippleLayer_) return;
-    rippleLayer_->UpdatePosition(id, pt);
+    rippleLayer_->UpdatePosition(id, ToNativePoint(pt));
 }
 
 void OverlayHostService::StopRipple(uint64_t id) {
@@ -119,30 +123,31 @@ void OverlayHostService::BroadcastRippleCommand(const std::string& cmd, const st
     rippleLayer_->BroadcastCommand(cmd, args);
 }
 
-bool OverlayHostService::ShowText(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config) {
+bool OverlayHostService::ShowText(const ScreenPoint& pt, const std::wstring& text, Argb color, const TextConfig& config) {
+    const POINT nativePt = ToNativePoint(pt);
     if (HasEmojiStarter(text)) {
         TextWindowPool& pool = SharedTextWindowPool();
         if (!pool.Initialize(8)) {
             return false;
         }
-        pool.ShowText(pt, text, color, config);
+        pool.ShowText(nativePt, text, color, config);
         return true;
     }
     TextOverlayLayer* layer = EnsureTextLayer();
     if (!layer) return false;
-    layer->ShowText(pt, text, color, config);
+    layer->ShowText(nativePt, text, color, config);
     return true;
 }
 
 void OverlayHostService::DetachLayer(IOverlayLayer* layer) {
-    if (!host_ || !layer) return;
+    if (!hostBackend_ || !layer) return;
     if (rippleLayer_ == layer) {
         rippleLayer_ = nullptr;
     }
     if (textLayer_ == layer) {
         textLayer_ = nullptr;
     }
-    host_->RemoveLayer(layer);
+    hostBackend_->RemoveLayer(layer);
 }
 
 RippleOverlayLayer* OverlayHostService::EnsureRippleLayer() {

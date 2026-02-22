@@ -42,7 +42,7 @@ void AppController::SetTextEffectFontSize(float sizePt) {
 
 void AppController::SetInputIndicatorConfig(const InputIndicatorConfig& cfg) {
     config_.inputIndicator = cfg;
-    inputIndicatorOverlay_.UpdateConfig(config_.inputIndicator);
+    inputIndicatorOverlay_->UpdateConfig(config_.inputIndicator);
     PersistConfig();
 }
 
@@ -74,7 +74,7 @@ void AppController::ResetConfig() {
 
     // 3. Re-apply everything
     ApplyConfiguredEffects();
-    inputIndicatorOverlay_.UpdateConfig(config_.inputIndicator);
+    inputIndicatorOverlay_->UpdateConfig(config_.inputIndicator);
     inputAutomationEngine_.UpdateConfig(config_.automation);
     ApplyWasmConfigToHost(false);
 

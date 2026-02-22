@@ -5,7 +5,6 @@
 #include "MouseFx/Renderers/RendererRegistry.h"
 #include "MouseFx/Renderers/HoldRuntimeRegistry.h"
 #include "MouseFx/Styles/ThemeStyle.h"
-#include "MouseFx/Core/Protocol/InputTypesWin32.h"
 
 // Include hold renderer headers to ensure static registration occurs.
 #include "MouseFx/Renderers/Hold/ChargeRenderer.h"
@@ -70,7 +69,7 @@ void RippleBasedHoldRuntime::Update(uint32_t holdMs, const ScreenPoint& pt) {
     if (rippleId_ == 0) return;
 
     if (!hasLastSentPoint_ || lastSentPoint_.x != pt.x || lastSentPoint_.y != pt.y) {
-        OverlayHostService::Instance().UpdateRipplePosition(rippleId_, ToNativePoint(pt));
+        OverlayHostService::Instance().UpdateRipplePosition(rippleId_, pt);
         lastSentPoint_ = pt;
         hasLastSentPoint_ = true;
     }

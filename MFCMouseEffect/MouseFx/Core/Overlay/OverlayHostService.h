@@ -1,6 +1,5 @@
 #pragma once
 
-#include <windows.h>
 #include <memory>
 #include <string>
 
@@ -12,7 +11,7 @@ namespace mousefx {
 class ITrailRenderer;
 class IRippleRenderer;
 class IOverlayLayer;
-class OverlayHostWindow;
+class IOverlayHostBackend;
 class TrailOverlayLayer;
 class ParticleTrailOverlayLayer;
 class RippleOverlayLayer;
@@ -32,12 +31,12 @@ public:
     ParticleTrailOverlayLayer* AttachParticleTrailLayer(bool isChromatic);
     uint64_t ShowRipple(const ClickEvent& ev, const RippleStyle& style, std::unique_ptr<IRippleRenderer> renderer, const RenderParams& params);
     uint64_t ShowContinuousRipple(const ClickEvent& ev, const RippleStyle& style, std::unique_ptr<IRippleRenderer> renderer, const RenderParams& params);
-    void UpdateRipplePosition(uint64_t id, const POINT& pt);
+    void UpdateRipplePosition(uint64_t id, const ScreenPoint& pt);
     void StopRipple(uint64_t id);
     bool IsRippleActive(uint64_t id) const;
     void SendRippleCommand(uint64_t id, const std::string& cmd, const std::string& args);
     void BroadcastRippleCommand(const std::string& cmd, const std::string& args);
-    bool ShowText(const POINT& pt, const std::wstring& text, Argb color, const TextConfig& config);
+    bool ShowText(const ScreenPoint& pt, const std::wstring& text, Argb color, const TextConfig& config);
     void DetachLayer(IOverlayLayer* layer);
 
 private:
@@ -47,7 +46,7 @@ private:
     OverlayHostService(const OverlayHostService&) = delete;
     OverlayHostService& operator=(const OverlayHostService&) = delete;
 
-    std::unique_ptr<OverlayHostWindow> host_{};
+    std::unique_ptr<IOverlayHostBackend> hostBackend_{};
     RippleOverlayLayer* rippleLayer_ = nullptr;
     TextOverlayLayer* textLayer_ = nullptr;
 
