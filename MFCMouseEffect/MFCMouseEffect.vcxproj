@@ -249,6 +249,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\PlatformControlServicesFactory.h" />
     <ClInclude Include="Platform\PlatformInputServicesFactory.h" />
     <ClInclude Include="Platform\PlatformOverlayServicesFactory.h" />
+    <ClInclude Include="Platform\PlatformSystemServicesFactory.h" />
     <ClInclude Include="Platform\PlatformShellServicesFactory.h" />
     <ClInclude Include="Platform\windows\Shell\Win32DpiAwarenessService.h" />
     <ClInclude Include="Platform\windows\Shell\Win32EventLoopService.h" />
@@ -261,9 +262,11 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\System\ICursorPositionService.h" />
+    <ClInclude Include="MouseFx\Core\System\IMonotonicClockService.h" />
     <ClInclude Include="MouseFx\Core\System\IGlobalMouseHook.h" />
     <ClInclude Include="MouseFx\Core\System\NullCursorPositionService.h" />
     <ClInclude Include="MouseFx\Core\System\NullGlobalMouseHook.h" />
+    <ClInclude Include="MouseFx\Core\System\StdMonotonicClockService.h" />
     <ClInclude Include="MouseFx\Core\System\ApplicationCatalogScanner.h" />
     <ClInclude Include="MouseFx\Core\System\NativeFolderPicker.h" />
     <ClInclude Include="MouseFx\Effects\IconEffect.h" />
@@ -346,6 +349,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.h" />
     <ClInclude Include="Platform\windows\System\Win32GlobalMouseHook.h" />
     <ClInclude Include="Platform\windows\System\Win32CursorPositionService.h" />
+    <ClInclude Include="Platform\windows\System\Win32MonotonicClockService.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -374,6 +378,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\PlatformControlServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformInputServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformOverlayServicesFactory.cpp" />
+    <ClCompile Include="Platform\PlatformSystemServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformShellServicesFactory.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32DpiAwarenessService.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32EventLoopService.cpp" />
@@ -387,6 +392,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.cpp" />
     <ClCompile Include="Platform\windows\System\Win32GlobalMouseHook.cpp" />
     <ClCompile Include="Platform\windows\System\Win32CursorPositionService.cpp" />
+    <ClCompile Include="Platform\windows\System\Win32MonotonicClockService.cpp" />
     <ClCompile Include="MouseFx\Core\Protocol\JsonLite.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleEffect.cpp" />
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />

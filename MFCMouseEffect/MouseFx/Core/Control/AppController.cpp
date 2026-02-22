@@ -13,6 +13,7 @@
 #include "MouseFx/Core/Control/NullDispatchMessageHost.h"
 #include "MouseFx/Core/Control/NullDispatchMessageCodec.h"
 #include "MouseFx/Core/System/NullCursorPositionService.h"
+#include "MouseFx/Core/System/StdMonotonicClockService.h"
 #include "MouseFx/Core/Overlay/NullInputIndicatorOverlay.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
 #include "MouseFx/Core/Wasm/WasmClickCommandExecutor.h"
@@ -27,6 +28,7 @@
 #include "Platform/PlatformControlMessageCodecFactory.h"
 #include "Platform/PlatformInputServicesFactory.h"
 #include "Platform/PlatformOverlayServicesFactory.h"
+#include "Platform/PlatformSystemServicesFactory.h"
 
 #include <new>
 #include <algorithm>
@@ -66,6 +68,7 @@ AppController::AppController()
     : dispatchMessageHost_(platform::CreateDispatchMessageHost())
     , dispatchMessageCodec_(platform::CreateDispatchMessageCodec())
     , cursorPositionService_(platform::CreateCursorPositionService())
+    , monotonicClockService_(platform::CreateMonotonicClockService())
     , hook_(platform::CreateGlobalMouseHook())
     , inputIndicatorOverlay_(platform::CreateInputIndicatorOverlay())
     , commandHandler_(std::make_unique<CommandHandler>(this))
@@ -78,6 +81,9 @@ AppController::AppController()
     }
     if (!cursorPositionService_) {
         cursorPositionService_ = std::make_unique<NullCursorPositionService>();
+    }
+    if (!monotonicClockService_) {
+        monotonicClockService_ = std::make_unique<StdMonotonicClockService>();
     }
     if (!inputIndicatorOverlay_) {
         inputIndicatorOverlay_ = std::make_unique<NullInputIndicatorOverlay>();
@@ -187,7 +193,7 @@ void AppController::OnDispatchActivity(UINT msg, WPARAM wParam) {
         return;
     }
 
-    lastInputTime_ = GetTickCount64();
+    lastInputTime_ = CurrentTickMs();
     if (!hovering_) {
         return;
     }
@@ -204,7 +210,7 @@ void AppController::OnDispatchActivity(UINT msg, WPARAM wParam) {
         invoke.kind = wasm::EventKind::HoverEnd;
         invoke.x = pt.x;
         invoke.y = pt.y;
-        invoke.eventTickMs = GetTickCount64();
+        invoke.eventTickMs = CurrentTickMs();
         std::vector<uint8_t> commandBuffer;
         const bool wasmOk = wasmEffectHost_->InvokeEvent(invoke, &commandBuffer);
         wasm::CommandExecutionResult execResult{};
@@ -276,19 +282,26 @@ bool AppController::ConsumeLatestMove(ScreenPoint* outPt) {
     return hook_->ConsumeLatestMove(*outPt);
 }
 
+uint64_t AppController::CurrentTickMs() const {
+    if (!monotonicClockService_) {
+        return 0;
+    }
+    return monotonicClockService_->NowMs();
+}
+
 DWORD AppController::CurrentHoldDurationMs() const {
     if (!holdButtonDown_ || holdDownTick_ == 0) {
         return 0;
     }
 
-    const uint64_t now = GetTickCount64();
+    const uint64_t now = CurrentTickMs();
     const uint64_t delta = (now >= holdDownTick_) ? (now - holdDownTick_) : 0;
     return static_cast<DWORD>(std::min<uint64_t>(delta, 0xFFFFFFFFu));
 }
 
 void AppController::BeginHoldTracking(const ScreenPoint& pt, int button) {
     holdButtonDown_ = true;
-    holdDownTick_ = GetTickCount64();
+    holdDownTick_ = CurrentTickMs();
     pendingHold_.pt = pt;
     pendingHold_.button = button;
     pendingHold_.active = true;
@@ -349,7 +362,7 @@ bool AppController::TryEnterHover(ScreenPoint* outPt) {
         return false;
     }
 
-    const uint64_t elapsed = GetTickCount64() - lastInputTime_;
+    const uint64_t elapsed = CurrentTickMs() - lastInputTime_;
     if (elapsed < kHoverThresholdMs) {
         return false;
     }
@@ -423,7 +436,7 @@ bool AppController::Start() {
         PersistConfig();
     }
 
-    lastInputTime_ = GetTickCount64();
+    lastInputTime_ = CurrentTickMs();
     dispatchMessageHost_->SetTimer(kHoverTimerId, 100);
 
     diag_.stage = StartStage::GlobalHook;
@@ -654,7 +667,7 @@ void AppController::DestroyDispatchWindow() {
 }
 
 void AppController::UpdateVmSuppressionState() {
-    const uint64_t now = GetTickCount64();
+    const uint64_t now = CurrentTickMs();
     const bool suppress = vmForegroundDetector_.ShouldSuppress(now);
     if (suppress == vmEffectsSuppressed_) return;
     ApplyVmSuppression(suppress);
@@ -712,4 +725,5 @@ intptr_t AppController::OnDispatchMessage(
 
 
 } // namespace mousefx
+
 

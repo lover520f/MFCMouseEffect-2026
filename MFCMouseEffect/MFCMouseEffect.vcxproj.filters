@@ -117,6 +117,9 @@
     <ClInclude Include="MouseFx\Core\System\ICursorPositionService.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\System\IMonotonicClockService.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\System\IGlobalMouseHook.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -124,6 +127,9 @@
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\System\NullGlobalMouseHook.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\System\StdMonotonicClockService.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\Overlay\OverlayHostService.h">
@@ -330,6 +336,9 @@
     <ClInclude Include="Platform\PlatformOverlayServicesFactory.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\PlatformSystemServicesFactory.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\PlatformShellServicesFactory.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -361,6 +370,9 @@
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\windows\System\Win32CursorPositionService.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\System\Win32MonotonicClockService.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\windows\Overlay\Win32OverlayCoordSpaceService.h">
@@ -479,6 +491,9 @@
     <ClCompile Include="Platform\PlatformOverlayServicesFactory.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
+    <ClCompile Include="Platform\PlatformSystemServicesFactory.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
     <ClCompile Include="Platform\PlatformShellServicesFactory.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
@@ -513,6 +528,9 @@
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32CursorPositionService.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\System\Win32MonotonicClockService.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.cpp">

@@ -12,6 +12,7 @@
 #include "MouseFx/Core/Control/IDispatchMessageCodec.h"
 #include "MouseFx/Core/System/GdiPlusSession.h"
 #include "MouseFx/Core/System/ICursorPositionService.h"
+#include "MouseFx/Core/System/IMonotonicClockService.h"
 #include "MouseFx/Core/System/IGlobalMouseHook.h"
 #include "MouseFx/Core/Overlay/IInputIndicatorOverlay.h"
 #include "MouseFx/Core/Automation/InputAutomationEngine.h"
@@ -116,6 +117,7 @@ public:
     IInputIndicatorOverlay& IndicatorOverlay() { return *inputIndicatorOverlay_; }
     InputAutomationEngine& InputAutomation() { return inputAutomationEngine_; }
     bool ConsumeLatestMove(ScreenPoint* outPt);
+    uint64_t CurrentTickMs() const;
     DWORD CurrentHoldDurationMs() const;
     void BeginHoldTracking(const ScreenPoint& pt, int button);
     void EndHoldTracking();
@@ -177,6 +179,7 @@ private:
     std::unique_ptr<IDispatchMessageHost> dispatchMessageHost_{};
     std::unique_ptr<IDispatchMessageCodec> dispatchMessageCodec_{};
     std::unique_ptr<ICursorPositionService> cursorPositionService_{};
+    std::unique_ptr<IMonotonicClockService> monotonicClockService_{};
     std::unique_ptr<IGlobalMouseHook> hook_{};
     
     // One effect slot per category.

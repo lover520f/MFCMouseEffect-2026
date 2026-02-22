@@ -217,7 +217,7 @@ intptr_t DispatchRouter::OnClick(const DispatchMessage& message) {
             invoke.x = ev->pt.x;
             invoke.y = ev->pt.y;
             invoke.button = ToWasmButton(ev->button);
-            invoke.eventTickMs = GetTickCount64();
+            invoke.eventTickMs = ctrl_->CurrentTickMs();
             bool invokeOk = false;
             TryInvokeAndRenderWasmEvent(invoke, &renderedByWasm, &invokeOk);
         }
@@ -258,7 +258,7 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
         moveInvoke.kind = wasm::EventKind::Move;
         moveInvoke.x = pt.x;
         moveInvoke.y = pt.y;
-        moveInvoke.eventTickMs = GetTickCount64();
+        moveInvoke.eventTickMs = ctrl_->CurrentTickMs();
         bool invokeOk = false;
         TryInvokeAndRenderWasmEvent(moveInvoke, &moveRenderedByWasm, &invokeOk);
     }
@@ -275,7 +275,7 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
         holdInvoke.y = pt.y;
         holdInvoke.button = wasmHoldButton_;
         holdInvoke.holdMs = static_cast<uint32_t>(ctrl_->CurrentHoldDurationMs());
-        holdInvoke.eventTickMs = GetTickCount64();
+        holdInvoke.eventTickMs = ctrl_->CurrentTickMs();
         bool renderedByWasm = false;
         bool invokeOk = false;
         TryInvokeAndRenderWasmEvent(holdInvoke, &renderedByWasm, &invokeOk);
@@ -321,7 +321,7 @@ intptr_t DispatchRouter::OnScroll(const DispatchMessage& message) {
         invoke.y = pt.y;
         invoke.delta = static_cast<int32_t>(delta);
         invoke.flags = ev.horizontal ? wasm::kEventFlagScrollHorizontal : 0x00u;
-        invoke.eventTickMs = GetTickCount64();
+        invoke.eventTickMs = ctrl_->CurrentTickMs();
         bool invokeOk = false;
         TryInvokeAndRenderWasmEvent(invoke, &scrollRenderedByWasm, &invokeOk);
     }
@@ -387,7 +387,7 @@ intptr_t DispatchRouter::OnButtonUp(const DispatchMessage& message) {
         holdEnd.x = pt.x;
         holdEnd.y = pt.y;
         holdEnd.button = wasmHoldButton_;
-        holdEnd.eventTickMs = GetTickCount64();
+        holdEnd.eventTickMs = ctrl_->CurrentTickMs();
         bool renderedByWasm = false;
         bool invokeOk = false;
         TryInvokeAndRenderWasmEvent(holdEnd, &renderedByWasm, &invokeOk);
@@ -419,7 +419,7 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
                 invoke.kind = wasm::EventKind::HoverStart;
                 invoke.x = pt.x;
                 invoke.y = pt.y;
-                invoke.eventTickMs = GetTickCount64();
+                invoke.eventTickMs = ctrl_->CurrentTickMs();
                 bool invokeOk = false;
                 TryInvokeAndRenderWasmEvent(invoke, &hoverRenderedByWasm, &invokeOk);
             }
@@ -454,7 +454,7 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
                 invoke.y = pt.y;
                 invoke.button = ToWasmButtonFromCode(button);
                 invoke.holdMs = static_cast<uint32_t>(ctrl_->CurrentHoldDurationMs());
-                invoke.eventTickMs = GetTickCount64();
+                invoke.eventTickMs = ctrl_->CurrentTickMs();
                 TryInvokeAndRenderWasmEvent(invoke, &holdRenderedByWasm, &holdInvokeOk);
                 wasmHoldEventActive_ = holdInvokeOk;
                 wasmHoldButton_ = invoke.button;
@@ -499,3 +499,4 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
 }
 
 } // namespace mousefx
+
