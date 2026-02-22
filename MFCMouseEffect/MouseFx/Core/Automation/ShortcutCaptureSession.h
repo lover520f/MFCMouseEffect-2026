@@ -1,12 +1,11 @@
 #pragma once
 
-#include <windows.h>
-
 #include <cstdint>
 #include <mutex>
 #include <string>
 
 #include "MouseFx/Core/Protocol/InputTypes.h"
+#include "MouseFx/Core/System/IMonotonicClockService.h"
 
 namespace mousefx {
 
@@ -31,12 +30,13 @@ public:
     PollResult Poll(const std::string& sessionId);
     void OnKeyDown(const KeyEvent& ev);
     bool IsActive() const;
+    void SetClockService(const IMonotonicClockService* clockService);
 
 private:
-    static uint64_t NowMs();
+    uint64_t NowMs() const;
     static std::string CreateSessionId();
-    static bool IsModifierKey(UINT vkCode);
-    static std::string KeyTokenFromVk(UINT vkCode);
+    static bool IsModifierKey(uint32_t vkCode);
+    static std::string KeyTokenFromVk(uint32_t vkCode);
     static std::string BuildShortcutText(const KeyEvent& ev);
 
     mutable std::mutex mutex_{};
@@ -45,6 +45,7 @@ private:
     bool active_{false};
     bool captured_{false};
     std::string capturedShortcut_{};
+    const IMonotonicClockService* clockService_{nullptr};
 };
 
 } // namespace mousefx

@@ -85,6 +85,7 @@ AppController::AppController()
     if (!monotonicClockService_) {
         monotonicClockService_ = std::make_unique<StdMonotonicClockService>();
     }
+    shortcutCaptureSession_.SetClockService(monotonicClockService_.get());
     if (!inputIndicatorOverlay_) {
         inputIndicatorOverlay_ = std::make_unique<NullInputIndicatorOverlay>();
     }

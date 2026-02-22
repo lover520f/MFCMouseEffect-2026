@@ -2,6 +2,7 @@
 
 #include <windows.h>
 
+#include <chrono>
 #include <string>
 
 #include "MouseFx/Utils/StringUtils.h"
@@ -12,7 +13,11 @@ namespace mousefx {
 // querying process info for every mouse event.
 class ForegroundProcessResolver final {
 public:
-    std::string CurrentProcessBaseName(uint64_t nowTickMs = ::GetTickCount64()) {
+    std::string CurrentProcessBaseName() {
+        return CurrentProcessBaseName(NowMs());
+    }
+
+    std::string CurrentProcessBaseName(uint64_t nowTickMs) {
         if ((nowTickMs - lastCheckTickMs_) < kCacheIntervalMs) {
             return lastProcessBaseName_;
         }
@@ -22,6 +27,12 @@ public:
     }
 
 private:
+    static uint64_t NowMs() {
+        using namespace std::chrono;
+        const auto now = steady_clock::now().time_since_epoch();
+        return static_cast<uint64_t>(duration_cast<milliseconds>(now).count());
+    }
+
     static std::string QueryForegroundProcessBaseName() {
         const HWND hwnd = GetForegroundWindow();
         if (!hwnd || !IsWindow(hwnd)) {

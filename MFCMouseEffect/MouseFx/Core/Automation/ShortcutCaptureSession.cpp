@@ -3,9 +3,11 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cstdio>
 #include <random>
 #include <vector>
+#include <windows.h>
 
 namespace mousefx {
 namespace {
@@ -30,8 +32,13 @@ std::string JoinTokens(const std::vector<std::string>& tokens) {
 
 } // namespace
 
-uint64_t ShortcutCaptureSession::NowMs() {
-    return static_cast<uint64_t>(GetTickCount64());
+uint64_t ShortcutCaptureSession::NowMs() const {
+    if (clockService_) {
+        return clockService_->NowMs();
+    }
+    using namespace std::chrono;
+    const auto now = steady_clock::now().time_since_epoch();
+    return static_cast<uint64_t>(duration_cast<milliseconds>(now).count());
 }
 
 std::string ShortcutCaptureSession::CreateSessionId() {
@@ -46,7 +53,7 @@ std::string ShortcutCaptureSession::CreateSessionId() {
     return std::string(buf);
 }
 
-bool ShortcutCaptureSession::IsModifierKey(UINT vkCode) {
+bool ShortcutCaptureSession::IsModifierKey(uint32_t vkCode) {
     switch (vkCode) {
     case VK_CONTROL:
     case VK_LCONTROL:
@@ -65,7 +72,7 @@ bool ShortcutCaptureSession::IsModifierKey(UINT vkCode) {
     }
 }
 
-std::string ShortcutCaptureSession::KeyTokenFromVk(UINT vkCode) {
+std::string ShortcutCaptureSession::KeyTokenFromVk(uint32_t vkCode) {
     if (vkCode >= 'A' && vkCode <= 'Z') {
         return std::string(1, static_cast<char>(vkCode));
     }
@@ -211,6 +218,11 @@ void ShortcutCaptureSession::OnKeyDown(const KeyEvent& ev) {
 bool ShortcutCaptureSession::IsActive() const {
     std::lock_guard<std::mutex> lock(mutex_);
     return active_;
+}
+
+void ShortcutCaptureSession::SetClockService(const IMonotonicClockService* clockService) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    clockService_ = clockService;
 }
 
 } // namespace mousefx
