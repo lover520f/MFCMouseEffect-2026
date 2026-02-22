@@ -279,8 +279,8 @@
     <ClInclude Include="MouseFx\Core\Wasm\WasmPluginImageAssetCatalog.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Core\Wasm\DllWasmRuntime.h">
-      <Filter>头文件\MouseFx</Filter>
+    <ClInclude Include="Platform\windows\Wasm\Win32DllWasmRuntime.h">
+      <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\Wasm\NullWasmRuntime.h">
       <Filter>头文件\MouseFx</Filter>
@@ -349,6 +349,9 @@
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\PlatformShellServicesFactory.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\PlatformWasmRuntimeFactory.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\windows\Shell\Win32DpiAwarenessService.h">
@@ -515,6 +518,9 @@
     <ClCompile Include="Platform\PlatformShellServicesFactory.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
+    <ClCompile Include="Platform\PlatformWasmRuntimeFactory.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
     <ClCompile Include="Platform\windows\Shell\Win32DpiAwarenessService.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
@@ -620,8 +626,8 @@
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginImageAssetCatalog.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Core\Wasm\DllWasmRuntime.cpp">
-      <Filter>源文件\MouseFx</Filter>
+    <ClCompile Include="Platform\windows\Wasm\Win32DllWasmRuntime.cpp">
+      <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\NullWasmRuntime.cpp">
       <Filter>源文件\MouseFx</Filter>

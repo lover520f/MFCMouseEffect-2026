@@ -2,8 +2,8 @@
 
 #include "WasmRuntimeFactory.h"
 
-#include "DllWasmRuntime.h"
 #include "NullWasmRuntime.h"
+#include "Platform/PlatformWasmRuntimeFactory.h"
 
 namespace mousefx::wasm {
 
@@ -20,9 +20,9 @@ const char* RuntimeBackendToString(RuntimeBackend backend) {
 std::unique_ptr<IWasmRuntime> CreateRuntime(RuntimeBackend backend) {
     switch (backend) {
     case RuntimeBackend::DynamicBridge: {
-        auto runtime = std::make_unique<DllWasmRuntime>();
         std::string error;
-        if (runtime->Initialize(&error)) {
+        auto runtime = platform::CreateDynamicBridgeWasmRuntime(&error);
+        if (runtime) {
             return runtime;
         }
         return std::make_unique<NullWasmRuntime>();
@@ -36,9 +36,9 @@ std::unique_ptr<IWasmRuntime> CreateRuntime(RuntimeBackend backend) {
 RuntimeCreationResult CreateDefaultRuntimeWithDiagnostics() {
     RuntimeCreationResult result{};
 
-    auto runtime = std::make_unique<DllWasmRuntime>();
     std::string error;
-    if (runtime->Initialize(&error)) {
+    auto runtime = platform::CreateDynamicBridgeWasmRuntime(&error);
+    if (runtime) {
         result.runtime = std::move(runtime);
         result.backend = RuntimeBackend::DynamicBridge;
         return result;

@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "DllWasmRuntime.h"
+#include "Platform/windows/Wasm/Win32DllWasmRuntime.h"
 
 #include "MouseFx/Utils/StringUtils.h"
 
@@ -22,11 +22,11 @@ std::filesystem::path ModuleDirectory() {
 
 } // namespace
 
-DllWasmRuntime::~DllWasmRuntime() {
+Win32DllWasmRuntime::~Win32DllWasmRuntime() {
     Shutdown();
 }
 
-bool DllWasmRuntime::Initialize(std::string* outError) {
+bool Win32DllWasmRuntime::Initialize(std::string* outError) {
     if (module_ && runtimeHandle_) {
         if (outError) {
             outError->clear();
@@ -65,7 +65,7 @@ bool DllWasmRuntime::Initialize(std::string* outError) {
     return true;
 }
 
-bool DllWasmRuntime::LoadModuleFromFile(const std::wstring& modulePath, std::string* outError) {
+bool Win32DllWasmRuntime::LoadModuleFromFile(const std::wstring& modulePath, std::string* outError) {
     if (!loadModuleFn_ || !runtimeHandle_) {
         if (outError) {
             *outError = "Runtime bridge is not initialized.";
@@ -85,20 +85,20 @@ bool DllWasmRuntime::LoadModuleFromFile(const std::wstring& modulePath, std::str
     return true;
 }
 
-void DllWasmRuntime::UnloadModule() {
+void Win32DllWasmRuntime::UnloadModule() {
     if (unloadModuleFn_ && runtimeHandle_) {
         unloadModuleFn_(runtimeHandle_);
     }
 }
 
-bool DllWasmRuntime::IsModuleLoaded() const {
+bool Win32DllWasmRuntime::IsModuleLoaded() const {
     if (!isModuleLoadedFn_ || !runtimeHandle_) {
         return false;
     }
     return isModuleLoadedFn_(runtimeHandle_) != 0;
 }
 
-bool DllWasmRuntime::CallGetApiVersion(uint32_t* outApiVersion, std::string* outError) {
+bool Win32DllWasmRuntime::CallGetApiVersion(uint32_t* outApiVersion, std::string* outError) {
     if (outApiVersion) {
         *outApiVersion = 0;
     }
@@ -125,7 +125,7 @@ bool DllWasmRuntime::CallGetApiVersion(uint32_t* outApiVersion, std::string* out
     return true;
 }
 
-bool DllWasmRuntime::CallOnEvent(
+bool Win32DllWasmRuntime::CallOnEvent(
     const uint8_t* inputPtr,
     uint32_t inputLen,
     uint8_t* outputPtr,
@@ -158,13 +158,13 @@ bool DllWasmRuntime::CallOnEvent(
     return true;
 }
 
-void DllWasmRuntime::ResetPluginState() {
+void Win32DllWasmRuntime::ResetPluginState() {
     if (resetFn_ && runtimeHandle_) {
         resetFn_(runtimeHandle_);
     }
 }
 
-bool DllWasmRuntime::ResolveExports(std::string* outError) {
+bool Win32DllWasmRuntime::ResolveExports(std::string* outError) {
     struct ExportRoute {
         const char* name;
         void** fnPtr;
@@ -198,7 +198,7 @@ bool DllWasmRuntime::ResolveExports(std::string* outError) {
     return true;
 }
 
-std::string DllWasmRuntime::ReadBridgeError() const {
+std::string Win32DllWasmRuntime::ReadBridgeError() const {
     if (!lastErrorFn_ || !runtimeHandle_) {
         return "Runtime bridge call failed.";
     }
@@ -206,7 +206,7 @@ std::string DllWasmRuntime::ReadBridgeError() const {
     return message ? EnsureUtf8(message) : "Runtime bridge call failed.";
 }
 
-void DllWasmRuntime::Shutdown() {
+void Win32DllWasmRuntime::Shutdown() {
     if (destroyFn_ && runtimeHandle_) {
         destroyFn_(runtimeHandle_);
     }

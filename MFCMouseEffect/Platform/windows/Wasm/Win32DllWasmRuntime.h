@@ -2,14 +2,14 @@
 
 #include <windows.h>
 
-#include "WasmRuntime.h"
+#include "MouseFx/Core/Wasm/WasmRuntime.h"
 
 namespace mousefx::wasm {
 
-class DllWasmRuntime final : public IWasmRuntime {
+class Win32DllWasmRuntime final : public IWasmRuntime {
 public:
-    DllWasmRuntime() = default;
-    ~DllWasmRuntime() override;
+    Win32DllWasmRuntime() = default;
+    ~Win32DllWasmRuntime() override;
 
     bool Initialize(std::string* outError);
 
