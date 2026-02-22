@@ -4,6 +4,7 @@
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include "MouseFx/Utils/TrailMath.h"
+#include "MouseFx/Utils/TimeUtils.h"
 #include "MouseFx/Utils/XorShift.h"
 #include <algorithm>
 #include <cmath>
@@ -23,7 +24,7 @@ public:
                 bool isChromatic) override {
         if (points.size() < 2) return;
 
-        const uint64_t now = GetTickCount64();
+        const uint64_t now = NowMs();
         const uint64_t frameKey = now / 30; // stabilize jitter within ~1-2 frames
         int fadeStart = idle_.startMs > 0 ? idle_.startMs : 40;
         int fadeEnd = idle_.endMs > 0 ? idle_.endMs : 180;

@@ -5,6 +5,7 @@
 #include "MouseFx/Renderers/Hold/QuantumHaloGpuV2ComputeEngine.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterHost.h"
 #include "MouseFx/Utils/MathUtils.h"
+#include "MouseFx/Utils/TimeUtils.h"
 
 #include <filesystem>
 #include <fstream>
@@ -163,7 +164,7 @@ void HoldQuantumHaloGpuV2DirectRuntime::WorkerMain() {
         runtimeReason = "presenter_not_ready_" + presenter.LastErrorReason();
     }
 
-    const uint64_t startTick = GetTickCount64();
+    const uint64_t startTick = NowMs();
     uint64_t lastComputeTickMs = 0;
     bool renderedLastFrame = false;
 
@@ -174,7 +175,7 @@ void HoldQuantumHaloGpuV2DirectRuntime::WorkerMain() {
             DispatchMessageW(&msg);
         }
 
-        const uint64_t nowMs = GetTickCount64();
+        const uint64_t nowMs = NowMs();
         const uint64_t elapsedMs = (nowMs >= startTick) ? (nowMs - startTick) : 0;
         const uint32_t holdMs = holdMs_.load(std::memory_order_relaxed);
         const int cursorX = cursorX_.load(std::memory_order_relaxed);

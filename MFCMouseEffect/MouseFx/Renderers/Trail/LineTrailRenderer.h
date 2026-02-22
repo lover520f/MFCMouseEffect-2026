@@ -4,6 +4,7 @@
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include "MouseFx/Utils/TrailMath.h"
+#include "MouseFx/Utils/TimeUtils.h"
 #include <cmath>
 
 namespace mousefx {
@@ -21,7 +22,7 @@ public:
                 bool isChromatic) override {
         if (points.size() < 2) return;
 
-        const uint64_t now = GetTickCount64();
+        const uint64_t now = NowMs();
         int fadeStart = idle_.startMs > 0 ? idle_.startMs : 60;
         int fadeEnd = idle_.endMs > 0 ? idle_.endMs : 220;
         if (fadeEnd <= fadeStart) fadeEnd = fadeStart + 1;

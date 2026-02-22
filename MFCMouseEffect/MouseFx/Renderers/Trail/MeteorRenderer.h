@@ -3,6 +3,7 @@
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include "MouseFx/Utils/TrailMath.h"
+#include "MouseFx/Utils/TimeUtils.h"
 #include "MouseFx/Utils/XorShift.h"
 #include <vector>
 #include <cmath>
@@ -25,16 +26,16 @@ public:
         : durationMs_(durationMs),
           params_(params.meteor),
           idle_(params.idleFade),
-          rng_(prng::Mix32((uint32_t)GetTickCount64())) {}
+          rng_(prng::Mix32(static_cast<uint32_t>(NowMs()))) {}
 
     void Render(Gdiplus::Graphics& g, const std::deque<TrailPoint>& points, int width, int height, Gdiplus::Color color, bool isChromatic) override {
         if (points.empty()) {
             sparks_.clear();
-            lastUpdate_ = GetTickCount64();
+            lastUpdate_ = NowMs();
             return;
         }
 
-        uint64_t now = GetTickCount64();
+        const uint64_t now = NowMs();
         int fadeStart = idle_.startMs > 0 ? idle_.startMs : 50;
         int fadeEnd = idle_.endMs > 0 ? idle_.endMs : 260;
         if (fadeEnd <= fadeStart) fadeEnd = fadeStart + 1;

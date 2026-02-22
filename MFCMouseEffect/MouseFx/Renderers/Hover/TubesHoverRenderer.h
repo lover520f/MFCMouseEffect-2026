@@ -1,6 +1,7 @@
 #pragma once
 #include "../../Interfaces/IRippleRenderer.h"
 #include "MouseFx/Compute/EffectComputeExecutor.h"
+#include "MouseFx/Utils/TimeUtils.h"
 #include <vector>
 #include <cmath>
 #include <algorithm>
@@ -82,7 +83,7 @@ public:
         
         float cx = sizePx / 2.0f;
         float cy = sizePx / 2.0f;
-        const uint64_t nowTick = GetTickCount64();
+        const uint64_t nowTick = NowMs();
         
         g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 

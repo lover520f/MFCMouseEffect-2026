@@ -3,6 +3,7 @@
 #include "MouseFx/Compute/EffectComputeExecutor.h"
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/TrailColor.h"
+#include "MouseFx/Utils/TimeUtils.h"
 #include <vector>
 #include <cmath>
 #include <gdiplus.h>
@@ -66,7 +67,7 @@ public:
         }
 
         // Global Alpha management for Disappearance
-        uint64_t now = GetTickCount64();
+        const uint64_t now = NowMs();
         bool isIdle = !hasInput || (now - points.back().addedTime > 50);
 
         if (!isIdle) {
