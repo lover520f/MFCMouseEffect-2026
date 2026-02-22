@@ -81,7 +81,16 @@
     <ClInclude Include="MouseFx\Core\Control\IDispatchMessageHandler.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Control\DispatchMessage.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Control\IDispatchMessageCodec.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\Control\IDispatchMessageHost.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Control\NullDispatchMessageCodec.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\Control\NullDispatchMessageHost.h">
@@ -303,6 +312,9 @@
     <ClInclude Include="Platform\PlatformOverlayCoordSpaceFactory.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\PlatformControlMessageCodecFactory.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\PlatformControlServicesFactory.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -336,6 +348,9 @@
     <ClInclude Include="Platform\windows\Control\Win32DispatchMessageHost.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\windows\Control\Win32DispatchMessageCodec.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\windows\System\Win32GlobalMouseHook.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -357,6 +372,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Control\Win32DispatchMessageHost.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Control\Win32DispatchMessageCodec.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -438,6 +456,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="Platform\PlatformOverlayCoordSpaceFactory.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\PlatformControlMessageCodecFactory.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\PlatformControlServicesFactory.cpp">

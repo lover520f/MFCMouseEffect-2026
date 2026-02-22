@@ -1,14 +1,14 @@
-// DispatchRouter.cpp -- Win32 message routing extracted from AppController
+// DispatchRouter.cpp -- platform-neutral dispatch routing.
 
 #include "pch.h"
+
 #include "DispatchRouter.h"
+
 #include "AppController.h"
-#include "MouseFx/Core/Protocol/MouseFxMessages.h"
 #include "MouseFx/Core/Protocol/InputTypesWin32.h"
 #include "MouseFx/Core/Wasm/WasmClickCommandExecutor.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 
-#include <windowsx.h>  // GET_X_LPARAM, GET_Y_LPARAM
 #include <vector>
 
 namespace mousefx {
@@ -39,6 +39,22 @@ uint8_t ToWasmButtonFromCode(int button) {
     default:
         return 0;
     }
+}
+
+bool IsKnownTimerId(UINT_PTR timerId) {
+    if (timerId == AppController::HoverTimerId()) {
+        return true;
+    }
+    if (timerId == AppController::HoldTimerId()) {
+        return true;
+    }
+#ifdef _DEBUG
+    static constexpr UINT_PTR kSelfTestTimerId = 0x4D46;
+    if (timerId == kSelfTestTimerId) {
+        return true;
+    }
+#endif
+    return false;
 }
 
 } // namespace
@@ -114,46 +130,73 @@ bool DispatchRouter::TryInvokeAndRenderWasmEvent(
     return true;
 }
 
-LRESULT DispatchRouter::Route(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    ctrl_->OnDispatchActivity(msg, wParam);
+intptr_t DispatchRouter::Route(const DispatchMessage& message, bool* outHandled) {
+    if (!ctrl_) {
+        if (outHandled) {
+            *outHandled = false;
+        }
+        return 0;
+    }
 
-    switch (msg) {
-        case WM_MFX_CLICK:      return OnClick(hwnd, lParam);
-        case WM_MFX_MOVE:       return OnMove(hwnd, wParam, lParam);
-        case WM_MFX_SCROLL:     return OnScroll(hwnd, wParam, lParam);
-        case WM_MFX_KEY:        return OnKey(hwnd, lParam);
-        case WM_MFX_BUTTON_DOWN:return OnButtonDown(hwnd, wParam, lParam);
-        case WM_MFX_BUTTON_UP:  return OnButtonUp(hwnd, wParam, lParam);
-        case WM_TIMER:          return OnTimer(hwnd, wParam);
+    ctrl_->OnDispatchActivity(
+        static_cast<UINT>(message.nativeMsg),
+        static_cast<WPARAM>(message.nativeWParam));
 
-        case WM_MFX_EXEC_CMD: {
-            auto* cmdStr = reinterpret_cast<const std::string*>(lParam);
-            if (cmdStr) {
-                ctrl_->HandleCommand(*cmdStr);
+    if (outHandled) {
+        *outHandled = true;
+    }
+
+    switch (message.kind) {
+    case DispatchMessageKind::Click:
+        return OnClick(message);
+    case DispatchMessageKind::Move:
+        return OnMove(message);
+    case DispatchMessageKind::Scroll:
+        return OnScroll(message);
+    case DispatchMessageKind::Key:
+        return OnKey(message);
+    case DispatchMessageKind::ButtonDown:
+        return OnButtonDown(message);
+    case DispatchMessageKind::ButtonUp:
+        return OnButtonUp(message);
+    case DispatchMessageKind::Timer: {
+        const UINT_PTR timerId = static_cast<UINT_PTR>(message.timerId);
+        if (!IsKnownTimerId(timerId)) {
+            if (outHandled) {
+                *outHandled = false;
             }
             return 0;
         }
-        case WM_MFX_GET_CONFIG: {
-            auto* out = reinterpret_cast<EffectConfig*>(lParam);
-            if (out) {
-                *out = ctrl_->Config();
-            }
-            return 0;
+        return OnTimer(message);
+    }
+    case DispatchMessageKind::ExecCmd:
+        if (message.commandJson) {
+            ctrl_->HandleCommand(*message.commandJson);
         }
-        default:
-            return DefWindowProcW(hwnd, msg, wParam, lParam);
+        return 0;
+    case DispatchMessageKind::GetConfig:
+        if (message.configOut) {
+            *message.configOut = ctrl_->Config();
+        }
+        return 0;
+    case DispatchMessageKind::Unknown:
+    default:
+        if (outHandled) {
+            *outHandled = false;
+        }
+        return 0;
     }
 }
 
-LRESULT DispatchRouter::OnClick(HWND /*hwnd*/, LPARAM lParam) {
-    auto* ev = reinterpret_cast<ClickEvent*>(lParam);
+intptr_t DispatchRouter::OnClick(const DispatchMessage& message) {
+    ClickEvent* ev = message.clickEvent;
     if (ctrl_->IsVmEffectsSuppressed()) {
         if (ev) delete ev;
         return 0;
     }
     if (ctrl_->ConsumeIgnoreNextClick()) {
         if (ev) delete ev;
-        return 0;  // Suppress click after a long hold
+        return 0;
     }
 
     if (ev) {
@@ -187,16 +230,19 @@ LRESULT DispatchRouter::OnClick(HWND /*hwnd*/, LPARAM lParam) {
     return 0;
 }
 
-LRESULT DispatchRouter::OnMove(HWND /*hwnd*/, WPARAM wParam, LPARAM lParam) {
+intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
     if (ctrl_->IsVmEffectsSuppressed()) {
         return 0;
     }
+
     POINT pt{};
     if (!ctrl_->ConsumeLatestMove(&pt)) {
-        pt.x = static_cast<LONG>(wParam);
-        pt.y = static_cast<LONG>(lParam);
+        pt.x = static_cast<LONG>(message.x);
+        pt.y = static_cast<LONG>(message.y);
     }
+
     ctrl_->InputAutomation().OnMouseMove(pt);
+
     bool moveRenderedByWasm = false;
     bool moveRouteActive = false;
     if (auto* wasmHost = ctrl_->WasmHost()) {
@@ -239,22 +285,26 @@ LRESULT DispatchRouter::OnMove(HWND /*hwnd*/, WPARAM wParam, LPARAM lParam) {
     return 0;
 }
 
-LRESULT DispatchRouter::OnScroll(HWND /*hwnd*/, WPARAM wParam, LPARAM lParam) {
+intptr_t DispatchRouter::OnScroll(const DispatchMessage& message) {
     if (ctrl_->IsVmEffectsSuppressed()) {
         return 0;
     }
-    short delta = static_cast<short>(wParam);
+
+    const short delta = static_cast<short>(message.delta);
     POINT pt{};
     if (!GetCursorPos(&pt)) {
-        pt.x = GET_X_LPARAM(lParam);
-        pt.y = GET_Y_LPARAM(lParam);
+        pt.x = static_cast<LONG>(message.x);
+        pt.y = static_cast<LONG>(message.y);
     }
+
     ScrollEvent ev{};
     ev.pt = ToScreenPoint(pt);
     ev.delta = delta;
     ev.horizontal = false;
+
     ctrl_->InputAutomation().OnScroll(delta);
     ctrl_->IndicatorOverlay().OnScroll(ev);
+
     bool scrollRenderedByWasm = false;
     bool scrollRouteActive = false;
     if (auto* wasmHost = ctrl_->WasmHost()) {
@@ -279,8 +329,8 @@ LRESULT DispatchRouter::OnScroll(HWND /*hwnd*/, WPARAM wParam, LPARAM lParam) {
     return 0;
 }
 
-LRESULT DispatchRouter::OnKey(HWND /*hwnd*/, LPARAM lParam) {
-    auto* ev = reinterpret_cast<KeyEvent*>(lParam);
+intptr_t DispatchRouter::OnKey(const DispatchMessage& message) {
+    KeyEvent* ev = message.keyEvent;
     if (ctrl_->IsVmEffectsSuppressed()) {
         if (ev) delete ev;
         return 0;
@@ -292,16 +342,17 @@ LRESULT DispatchRouter::OnKey(HWND /*hwnd*/, LPARAM lParam) {
     return 0;
 }
 
-LRESULT DispatchRouter::OnButtonDown(HWND /*hwnd*/, WPARAM wParam, LPARAM lParam) {
+intptr_t DispatchRouter::OnButtonDown(const DispatchMessage& message) {
     if (ctrl_->IsVmEffectsSuppressed()) {
         ctrl_->ClearPendingHold();
         return 0;
     }
-    int button = static_cast<int>(wParam);
+
+    const int button = static_cast<int>(message.button);
     POINT pt{};
     if (!GetCursorPos(&pt)) {
-        pt.x = GET_X_LPARAM(lParam);
-        pt.y = GET_Y_LPARAM(lParam);
+        pt.x = static_cast<LONG>(message.x);
+        pt.y = static_cast<LONG>(message.y);
     }
 
     ctrl_->BeginHoldTracking(pt, button);
@@ -311,7 +362,7 @@ LRESULT DispatchRouter::OnButtonDown(HWND /*hwnd*/, WPARAM wParam, LPARAM lParam
     return 0;
 }
 
-LRESULT DispatchRouter::OnButtonUp(HWND /*hwnd*/, WPARAM wParam, LPARAM /*lParam*/) {
+intptr_t DispatchRouter::OnButtonUp(const DispatchMessage& message) {
     ctrl_->EndHoldTracking();
     ctrl_->CancelPendingHold();
 
@@ -325,7 +376,7 @@ LRESULT DispatchRouter::OnButtonUp(HWND /*hwnd*/, WPARAM wParam, LPARAM /*lParam
         pt.x = 0;
         pt.y = 0;
     }
-    ctrl_->InputAutomation().OnButtonUp(pt, static_cast<int>(wParam));
+    ctrl_->InputAutomation().OnButtonUp(pt, static_cast<int>(message.button));
 
     if (wasmHoldEventActive_) {
         wasm::EventInvokeInput holdEnd{};
@@ -347,8 +398,9 @@ LRESULT DispatchRouter::OnButtonUp(HWND /*hwnd*/, WPARAM wParam, LPARAM /*lParam
     return 0;
 }
 
-LRESULT DispatchRouter::OnTimer(HWND hwnd, WPARAM wParam) {
-    if (wParam == AppController::HoverTimerId()) {
+intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
+    const UINT_PTR timerId = static_cast<UINT_PTR>(message.timerId);
+    if (timerId == AppController::HoverTimerId()) {
         if (ctrl_->IsVmEffectsSuppressed()) {
             return 0;
         }
@@ -377,8 +429,8 @@ LRESULT DispatchRouter::OnTimer(HWND hwnd, WPARAM wParam) {
         return 0;
     }
 
-    if (wParam == AppController::HoldTimerId()) {
-        KillTimer(hwnd, AppController::HoldTimerId());
+    if (timerId == AppController::HoldTimerId()) {
+        ctrl_->DisarmHoldTimer();
         if (ctrl_->IsVmEffectsSuppressed()) {
             ctrl_->ClearPendingHold();
             return 0;
@@ -412,15 +464,18 @@ LRESULT DispatchRouter::OnTimer(HWND hwnd, WPARAM wParam) {
                     effect->OnHoldStart(ToScreenPoint(pt), button);
                 }
             }
-            ctrl_->MarkIgnoreNextClick();  // Timer fired = Hold triggered = ignore next click.
+            ctrl_->MarkIgnoreNextClick();
         }
         return 0;
     }
 
 #ifdef _DEBUG
     static constexpr UINT_PTR kSelfTestTimerId = 0x4D46;
-    if (wParam == kSelfTestTimerId) {
-        KillTimer(ctrl_->DispatchWindowHandle(), kSelfTestTimerId);
+    if (timerId == kSelfTestTimerId) {
+        const HWND hwnd = ctrl_->DispatchWindowHandle();
+        if (hwnd) {
+            KillTimer(hwnd, kSelfTestTimerId);
+        }
         ClickEvent ev{};
         POINT cursor{};
         GetCursorPos(&cursor);
@@ -434,7 +489,7 @@ LRESULT DispatchRouter::OnTimer(HWND hwnd, WPARAM wParam) {
     }
 #endif
 
-    return DefWindowProcW(hwnd, WM_TIMER, wParam, 0);
+    return 0;
 }
 
 } // namespace mousefx

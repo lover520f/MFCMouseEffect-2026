@@ -9,6 +9,7 @@
 
 #include "MouseFx/Core/Control/IDispatchMessageHandler.h"
 #include "MouseFx/Core/Control/IDispatchMessageHost.h"
+#include "MouseFx/Core/Control/IDispatchMessageCodec.h"
 #include "MouseFx/Core/System/GdiPlusSession.h"
 #include "MouseFx/Core/System/IGlobalMouseHook.h"
 #include "MouseFx/Core/Overlay/IInputIndicatorOverlay.h"
@@ -118,6 +119,7 @@ public:
     void BeginHoldTracking(const POINT& pt, int button);
     void EndHoldTracking();
     void ArmHoldTimer();
+    void DisarmHoldTimer();
     void ClearPendingHold();
     void CancelPendingHold();
     bool ConsumePendingHold(POINT* outPt, int* outButton);
@@ -171,6 +173,7 @@ private:
 
     GdiPlusSession gdiplus_{};
     std::unique_ptr<IDispatchMessageHost> dispatchMessageHost_{};
+    std::unique_ptr<IDispatchMessageCodec> dispatchMessageCodec_{};
     std::unique_ptr<IGlobalMouseHook> hook_{};
     
     // One effect slot per category.

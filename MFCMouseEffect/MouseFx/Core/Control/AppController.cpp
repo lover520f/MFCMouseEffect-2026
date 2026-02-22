@@ -12,6 +12,7 @@
 #include "MouseFx/Core/Control/EffectFactory.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Core/Control/NullDispatchMessageHost.h"
+#include "MouseFx/Core/Control/NullDispatchMessageCodec.h"
 #include "MouseFx/Core/Overlay/NullInputIndicatorOverlay.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
 #include "MouseFx/Core/Wasm/WasmClickCommandExecutor.h"
@@ -23,11 +24,11 @@
 #include "MouseFx/Utils/StringUtils.h"
 #include "MouseFx/Core/System/VmForegroundDetector.h"
 #include "Platform/PlatformControlServicesFactory.h"
+#include "Platform/PlatformControlMessageCodecFactory.h"
 #include "Platform/PlatformInputServicesFactory.h"
 #include "Platform/PlatformOverlayServicesFactory.h"
 
 #include <new>
-#include <windowsx.h>  // For GET_X_LPARAM, GET_Y_LPARAM
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -63,12 +64,16 @@ constexpr std::array<ActiveCategoryDescriptor, 5> kActiveCategoryDescriptors{{
 
 AppController::AppController()
     : dispatchMessageHost_(platform::CreateDispatchMessageHost())
+    , dispatchMessageCodec_(platform::CreateDispatchMessageCodec())
     , hook_(platform::CreateGlobalMouseHook())
     , inputIndicatorOverlay_(platform::CreateInputIndicatorOverlay())
     , commandHandler_(std::make_unique<CommandHandler>(this))
     , dispatchRouter_(std::make_unique<DispatchRouter>(this)) {
     if (!dispatchMessageHost_) {
         dispatchMessageHost_ = std::make_unique<NullDispatchMessageHost>();
+    }
+    if (!dispatchMessageCodec_) {
+        dispatchMessageCodec_ = std::make_unique<NullDispatchMessageCodec>();
     }
     if (!inputIndicatorOverlay_) {
         inputIndicatorOverlay_ = std::make_unique<NullInputIndicatorOverlay>();
@@ -300,6 +305,12 @@ void AppController::EndHoldTracking() {
 void AppController::ArmHoldTimer() {
     if (dispatchMessageHost_ && dispatchMessageHost_->IsCreated()) {
         dispatchMessageHost_->SetTimer(kHoldTimerId, kHoldDelayMs);
+    }
+}
+
+void AppController::DisarmHoldTimer() {
+    if (dispatchMessageHost_ && dispatchMessageHost_->IsCreated()) {
+        dispatchMessageHost_->KillTimer(kHoldTimerId);
     }
 }
 
@@ -678,14 +689,17 @@ intptr_t AppController::OnDispatchMessage(
     uint32_t msg,
     uintptr_t wParam,
     intptr_t lParam) {
-    if (!dispatchRouter_) {
+    if (!dispatchRouter_ || !dispatchMessageCodec_) {
         return 0;
     }
-    return static_cast<intptr_t>(dispatchRouter_->Route(
-        reinterpret_cast<HWND>(sourceHandle),
-        static_cast<UINT>(msg),
-        static_cast<WPARAM>(wParam),
-        static_cast<LPARAM>(lParam)));
+
+    const DispatchMessage decoded = dispatchMessageCodec_->Decode(sourceHandle, msg, wParam, lParam);
+    bool handled = false;
+    const intptr_t routeResult = dispatchRouter_->Route(decoded, &handled);
+    if (handled) {
+        return routeResult;
+    }
+    return dispatchMessageCodec_->DefaultResult(sourceHandle, msg, wParam, lParam);
 }
 
 
