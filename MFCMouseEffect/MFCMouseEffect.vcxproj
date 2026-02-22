@@ -356,9 +356,9 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Settings\EmojiUtils.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="UI\Tray\TrayMenuBuilder.h" />
-    <ClInclude Include="UI\Tray\TrayMenuCommands.h" />
-    <ClInclude Include="UI\Tray\TrayHostWnd.h" />
+    <ClInclude Include="Platform\windows\Shell\Tray\Win32TrayMenuBuilder.h" />
+    <ClInclude Include="Platform\windows\Shell\Tray\Win32TrayMenuCommands.h" />
+    <ClInclude Include="Platform\windows\Shell\Tray\Win32TrayHostWindow.h" />
     <ClInclude Include="Platform\windows\Overlay\Win32OverlayCoordSpaceService.h" />
     <ClInclude Include="Platform\windows\Overlay\Win32OverlayHostBackend.h" />
     <ClInclude Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.h" />
@@ -506,8 +506,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="UI\Tray\TrayMenuBuilder.cpp" />
-    <ClCompile Include="UI\Tray\TrayHostWnd.cpp" />
+    <ClCompile Include="Platform\windows\Shell\Tray\Win32TrayMenuBuilder.cpp" />
+    <ClCompile Include="Platform\windows\Shell\Tray\Win32TrayHostWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MFCMouseEffect.rc" />

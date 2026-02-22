@@ -1,7 +1,7 @@
 #include "pch.h"
 
-#include "TrayMenuBuilder.h"
-#include "TrayMenuCommands.h"
+#include "Platform/windows/Shell/Tray/Win32TrayMenuBuilder.h"
+#include "Platform/windows/Shell/Tray/Win32TrayMenuCommands.h"
 
 #include "MouseFx/Core/Control/AppController.h"
 #include "Settings/SettingsOptions.h"
@@ -259,7 +259,7 @@ static bool TryBuildEffectJsonByCommand(UINT cmd, std::string* outJson) {
 
 } // namespace
 
-void TrayMenuBuilder::BuildTrayMenu(HMENU menu, mousefx::AppController* mouseFx) {
+void Win32TrayMenuBuilder::BuildTrayMenu(HMENU menu, mousefx::AppController* mouseFx) {
     if (!::IsMenu(menu)) return;
 
     size_t n = 0;
@@ -294,7 +294,7 @@ void TrayMenuBuilder::BuildTrayMenu(HMENU menu, mousefx::AppController* mouseFx)
     AppendMenuW(menu, MF_STRING, kCmdTrayExit, PickLabel(L"\u9000\u51FA", L"Exit", zh).c_str());
 }
 
-bool TrayMenuBuilder::TryBuildIpcJson(UINT cmd, std::string* outJson) {
+bool Win32TrayMenuBuilder::TryBuildIpcJson(UINT cmd, std::string* outJson) {
     if (cmd == kCmdTrayReloadConfig) {
         if (outJson) *outJson = "{\"cmd\":\"reload_config\"}";
         return true;
@@ -302,7 +302,7 @@ bool TrayMenuBuilder::TryBuildIpcJson(UINT cmd, std::string* outJson) {
     return TryBuildEffectJsonByCommand(cmd, outJson);
 }
 
-bool TrayMenuBuilder::TryBuildTheme(UINT cmd, std::string* outTheme) {
+bool Win32TrayMenuBuilder::TryBuildTheme(UINT cmd, std::string* outTheme) {
     if (!outTheme) return false;
     switch (cmd) {
     case kCmdThemeChromatic: *outTheme = "chromatic"; return true;

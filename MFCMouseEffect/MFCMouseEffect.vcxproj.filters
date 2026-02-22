@@ -19,12 +19,6 @@
     <Filter Include="源文件\MouseFx">
       <UniqueIdentifier>{E7EE45A7-94C9-4B1C-97B1-63AB0E7DA8DE}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\UI\Tray">
-      <UniqueIdentifier>{D0A4770E-35DB-4ED9-8449-2BF1D4D16533}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="源文件\UI\Tray">
-      <UniqueIdentifier>{BB4C1101-706E-4FEF-AFD4-4348B0230DC8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="头文件\UI\Settings">
       <UniqueIdentifier>{C30FD4F2-3EA5-4EFA-9D27-2C2A5588013E}</UniqueIdentifier>
     </Filter>
@@ -204,14 +198,14 @@
     <ClInclude Include="MouseFx\Layers\TextOverlayLayer.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="UI\Tray\TrayHostWnd.h">
-      <Filter>头文件\UI\Tray</Filter>
+    <ClInclude Include="Platform\windows\Shell\Tray\Win32TrayHostWindow.h">
+      <Filter>头文件\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="UI\Tray\TrayMenuBuilder.h">
-      <Filter>头文件\UI\Tray</Filter>
+    <ClInclude Include="Platform\windows\Shell\Tray\Win32TrayMenuBuilder.h">
+      <Filter>头文件\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="UI\Tray\TrayMenuCommands.h">
-      <Filter>头文件\UI\Tray</Filter>
+    <ClInclude Include="Platform\windows\Shell\Tray\Win32TrayMenuCommands.h">
+      <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Settings\SettingsOptions.h">
       <Filter>头文件</Filter>
@@ -488,11 +482,11 @@
     <ClCompile Include="MouseFx\Layers\TextOverlayLayer.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="UI\Tray\TrayHostWnd.cpp">
-      <Filter>源文件\UI\Tray</Filter>
+    <ClCompile Include="Platform\windows\Shell\Tray\Win32TrayHostWindow.cpp">
+      <Filter>源文件\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="UI\Tray\TrayMenuBuilder.cpp">
-      <Filter>源文件\UI\Tray</Filter>
+    <ClCompile Include="Platform\windows\Shell\Tray\Win32TrayMenuBuilder.cpp">
+      <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Shell\AppShellCore.cpp">
       <Filter>源文件\MouseFx</Filter>

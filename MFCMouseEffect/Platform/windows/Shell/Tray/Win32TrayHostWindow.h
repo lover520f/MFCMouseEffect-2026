@@ -5,15 +5,17 @@
 
 #include "MouseFx/Core/Shell/IAppShellHost.h"
 
-class CTrayHostWnd final {
+namespace mousefx {
+
+class Win32TrayHostWindow final {
 public:
-    CTrayHostWnd() = default;
-    ~CTrayHostWnd();
+    Win32TrayHostWindow() = default;
+    ~Win32TrayHostWindow();
 
-    CTrayHostWnd(const CTrayHostWnd&) = delete;
-    CTrayHostWnd& operator=(const CTrayHostWnd&) = delete;
+    Win32TrayHostWindow(const Win32TrayHostWindow&) = delete;
+    Win32TrayHostWindow& operator=(const Win32TrayHostWindow&) = delete;
 
-    bool CreateHost(mousefx::IAppShellHost* shellHost, bool showTrayIcon = true);
+    bool CreateHost(IAppShellHost* shellHost, bool showTrayIcon = true);
     void DestroyHost();
     void RequestExit();
     HWND GetHostHwnd() const noexcept;
@@ -35,5 +37,7 @@ private:
     HWND hwnd_ = nullptr;
     NOTIFYICONDATAW trayIcon_{};
     bool showTrayIcon_ = true;
-    mousefx::IAppShellHost* shellHost_ = nullptr;
+    IAppShellHost* shellHost_ = nullptr;
 };
+
+} // namespace mousefx

@@ -51,7 +51,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CFrameWndEx::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
-	// 注意：托盘图标由 CTrayHostWnd 统一管理，这里不再创建。
+	// 注意：托盘图标由 Win32TrayHostWindow 统一管理，这里不再创建。
 	return 0;
 }
 
@@ -98,7 +98,7 @@ LRESULT CMainFrame::OnTrayNotify(WPARAM wp, LPARAM lp)
 
 void CMainFrame::OnDestroy()
 {
-	// 注意：托盘图标由 CTrayHostWnd 管理，这里不需要删除。
+	// 注意：托盘图标由 Win32TrayHostWindow 管理，这里不需要删除。
 	CFrameWndEx::OnDestroy();
 }
 

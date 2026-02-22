@@ -1,13 +1,16 @@
 #pragma once
 
 #include "MouseFx/Core/Shell/ITrayService.h"
-#include "UI/Tray/TrayHostWnd.h"
+
+#include <memory>
 
 namespace mousefx {
 
+class Win32TrayHostWindow;
+
 class Win32TrayService final : public ITrayService {
 public:
-    Win32TrayService() = default;
+    Win32TrayService();
     ~Win32TrayService() override;
 
     Win32TrayService(const Win32TrayService&) = delete;
@@ -18,7 +21,7 @@ public:
     void RequestExit() override;
 
 private:
-    CTrayHostWnd trayHost_{};
+    std::unique_ptr<Win32TrayHostWindow> trayHost_;
 };
 
 } // namespace mousefx

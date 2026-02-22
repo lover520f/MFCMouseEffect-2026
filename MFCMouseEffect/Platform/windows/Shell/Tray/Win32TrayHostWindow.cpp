@@ -1,24 +1,24 @@
 #include "pch.h"
 #include "framework.h"
 
-#include "TrayHostWnd.h"
+#include "Platform/windows/Shell/Tray/Win32TrayHostWindow.h"
 
 #include "resource.h"
-#include "TrayMenuBuilder.h"
-#include "TrayMenuCommands.h"
+#include "Platform/windows/Shell/Tray/Win32TrayMenuBuilder.h"
+#include "Platform/windows/Shell/Tray/Win32TrayMenuCommands.h"
 
 #include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 
 #include <shellapi.h>
 
-using namespace mousefx;
+namespace mousefx {
 
-CTrayHostWnd::~CTrayHostWnd() {
+Win32TrayHostWindow::~Win32TrayHostWindow() {
     DestroyHost();
 }
 
-bool CTrayHostWnd::CreateHost(mousefx::IAppShellHost* shellHost, bool showTrayIcon) {
+bool Win32TrayHostWindow::CreateHost(IAppShellHost* shellHost, bool showTrayIcon) {
     if (!shellHost) {
         return false;
     }
@@ -45,7 +45,7 @@ bool CTrayHostWnd::CreateHost(mousefx::IAppShellHost* shellHost, bool showTrayIc
     return hwnd_ != nullptr;
 }
 
-void CTrayHostWnd::DestroyHost() {
+void Win32TrayHostWindow::DestroyHost() {
     if (hwnd_) {
         DestroyWindow(hwnd_);
         hwnd_ = nullptr;
@@ -54,7 +54,7 @@ void CTrayHostWnd::DestroyHost() {
     }
 }
 
-void CTrayHostWnd::RequestExit() {
+void Win32TrayHostWindow::RequestExit() {
     if (hwnd_) {
         PostMessageW(hwnd_, WM_CLOSE, 0, 0);
     } else {
@@ -62,15 +62,15 @@ void CTrayHostWnd::RequestExit() {
     }
 }
 
-HWND CTrayHostWnd::GetHostHwnd() const noexcept {
+HWND Win32TrayHostWindow::GetHostHwnd() const noexcept {
     return hwnd_;
 }
 
-LRESULT CALLBACK CTrayHostWnd::StaticWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    CTrayHostWnd* self = reinterpret_cast<CTrayHostWnd*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+LRESULT CALLBACK Win32TrayHostWindow::StaticWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    Win32TrayHostWindow* self = reinterpret_cast<Win32TrayHostWindow*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
     if (msg == WM_NCCREATE) {
         const auto* cs = reinterpret_cast<const CREATESTRUCTW*>(lParam);
-        self = reinterpret_cast<CTrayHostWnd*>(cs->lpCreateParams);
+        self = reinterpret_cast<Win32TrayHostWindow*>(cs->lpCreateParams);
         SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
     }
     if (!self) {
@@ -79,7 +79,7 @@ LRESULT CALLBACK CTrayHostWnd::StaticWndProc(HWND hwnd, UINT msg, WPARAM wParam,
     return self->WndProc(hwnd, msg, wParam, lParam);
 }
 
-LRESULT CTrayHostWnd::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+LRESULT Win32TrayHostWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (!hwnd_) {
         hwnd_ = hwnd;
     }
@@ -109,10 +109,10 @@ LRESULT CTrayHostWnd::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
-bool CTrayHostWnd::RegisterHostClass() const {
+bool Win32TrayHostWindow::RegisterHostClass() const {
     WNDCLASSEXW wc{};
     wc.cbSize = sizeof(wc);
-    wc.lpfnWndProc = &CTrayHostWnd::StaticWndProc;
+    wc.lpfnWndProc = &Win32TrayHostWindow::StaticWndProc;
     wc.hInstance = GetModuleHandleW(nullptr);
     wc.lpszClassName = kHostClassName;
     wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
@@ -122,7 +122,7 @@ bool CTrayHostWnd::RegisterHostClass() const {
     return GetLastError() == ERROR_CLASS_ALREADY_EXISTS;
 }
 
-bool CTrayHostWnd::AddTrayIcon() {
+bool Win32TrayHostWindow::AddTrayIcon() {
     if (!hwnd_) {
         return false;
     }
@@ -156,7 +156,7 @@ bool CTrayHostWnd::AddTrayIcon() {
     return true;
 }
 
-void CTrayHostWnd::RemoveTrayIcon() {
+void Win32TrayHostWindow::RemoveTrayIcon() {
     if (trayIcon_.hWnd) {
         Shell_NotifyIconW(NIM_DELETE, &trayIcon_);
         trayIcon_.hWnd = nullptr;
@@ -167,17 +167,17 @@ void CTrayHostWnd::RemoveTrayIcon() {
     }
 }
 
-void CTrayHostWnd::HandleTrayMenu() {
+void Win32TrayHostWindow::HandleTrayMenu() {
     if (!shellHost_) {
         return;
     }
 
-    mousefx::AppController* mouseFx = shellHost_->AppControllerForShell();
+    AppController* mouseFx = shellHost_->AppControllerForShell();
     HMENU menu = CreatePopupMenu();
     if (!menu) {
         return;
     }
-    TrayMenuBuilder::BuildTrayMenu(menu, mouseFx);
+    Win32TrayMenuBuilder::BuildTrayMenu(menu, mouseFx);
 
     POINT pt{};
     GetCursorPos(&pt);
@@ -199,12 +199,12 @@ void CTrayHostWnd::HandleTrayMenu() {
         ShellExecuteW(nullptr, L"open", L"https://github.com/sqmw/MFCMouseEffect", nullptr, nullptr, SW_SHOWNORMAL);
     } else if (mouseFx) {
         std::string json;
-        if (TrayMenuBuilder::TryBuildIpcJson(cmd, &json)) {
+        if (Win32TrayMenuBuilder::TryBuildIpcJson(cmd, &json)) {
             mouseFx->HandleCommand(json);
         }
 
         std::string theme;
-        if (TrayMenuBuilder::TryBuildTheme(cmd, &theme)) {
+        if (Win32TrayMenuBuilder::TryBuildTheme(cmd, &theme)) {
             mouseFx->SetTheme(theme);
         }
     }
@@ -212,3 +212,5 @@ void CTrayHostWnd::HandleTrayMenu() {
     PostMessageW(hwnd_, WM_NULL, 0, 0);
     DestroyMenu(menu);
 }
+
+} // namespace mousefx
