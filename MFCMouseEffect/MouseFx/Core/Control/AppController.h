@@ -1,16 +1,14 @@
 #pragma once
 
-#include <windows.h>
-#include <memory>
-#include <cstdint>
 #include <array>
+#include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "MouseFx/Core/Control/IDispatchMessageHandler.h"
 #include "MouseFx/Core/Control/IDispatchMessageHost.h"
 #include "MouseFx/Core/Control/IDispatchMessageCodec.h"
-#include "MouseFx/Core/System/GdiPlusSession.h"
 #include "MouseFx/Core/System/ICursorPositionService.h"
 #include "MouseFx/Core/System/IMonotonicClockService.h"
 #include "MouseFx/Core/System/IForegroundProcessService.h"
@@ -20,12 +18,13 @@
 #include "MouseFx/Core/Automation/ShortcutCaptureSession.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Core/Config/EffectConfig.h"
-#include "MouseFx/Core/System/VmForegroundDetector.h"
 
 namespace mousefx {
 
 class CommandHandler;
 class DispatchRouter;
+class GdiPlusSession;
+class VmForegroundDetector;
 namespace wasm {
 class WasmEffectHost;
 }
@@ -49,7 +48,7 @@ public:
 
     struct StartDiagnostics {
         StartStage stage{StartStage::None};
-        DWORD error{ERROR_SUCCESS};
+        uint32_t error{0};
     };
 
     bool Start();
@@ -111,7 +110,7 @@ public:
     bool ShouldFallbackToBuiltinClickWhenWasmActive() const;
     
     // --- Methods exposed for DispatchRouter delegation ---
-    void OnDispatchActivity(UINT msg, WPARAM wParam);
+    void OnDispatchActivity(uint32_t msg, uintptr_t wParam);
     bool IsVmEffectsSuppressed() const { return vmEffectsSuppressed_; }
     bool ConsumeIgnoreNextClick();
     void OnGlobalKey(const KeyEvent& ev);
@@ -119,7 +118,7 @@ public:
     InputAutomationEngine& InputAutomation() { return inputAutomationEngine_; }
     bool ConsumeLatestMove(ScreenPoint* outPt);
     uint64_t CurrentTickMs() const;
-    DWORD CurrentHoldDurationMs() const;
+    uint32_t CurrentHoldDurationMs() const;
     void BeginHoldTracking(const ScreenPoint& pt, int button);
     void EndHoldTracking();
     void ArmHoldTimer();
@@ -130,17 +129,15 @@ public:
     void MarkIgnoreNextClick();
     bool TryEnterHover(ScreenPoint* outPt);
     bool QueryCursorScreenPoint(ScreenPoint* outPt) const;
+    void KillDispatchTimer(uintptr_t timerId);
     std::string CurrentForegroundProcessBaseName();
-    HWND DispatchWindowHandle() const {
-        return reinterpret_cast<HWND>(dispatchMessageHost_ ? dispatchMessageHost_->NativeHandle() : 0);
-    }
     std::string StartShortcutCaptureSession(uint64_t timeoutMs);
     void StopShortcutCaptureSession(const std::string& sessionId);
     ShortcutCaptureSession::PollResult PollShortcutCaptureSession(const std::string& sessionId);
     wasm::WasmEffectHost* WasmHost() const { return wasmEffectHost_.get(); }
-    static constexpr UINT_PTR HoverTimerId() { return kHoverTimerId; }
-    static constexpr UINT_PTR HoldTimerId() { return kHoldTimerId; }
-    static constexpr DWORD HoldDelayMs() { return kHoldDelayMs; }
+    static constexpr uintptr_t HoverTimerId() { return kHoverTimerId; }
+    static constexpr uintptr_t HoldTimerId() { return kHoldTimerId; }
+    static constexpr uint32_t HoldDelayMs() { return kHoldDelayMs; }
 #ifdef _DEBUG
     void LogDebugClick(const ClickEvent& ev);
 #else
@@ -177,7 +174,7 @@ private:
     void SuspendEffectsForVm();
     void ResumeEffectsAfterVm();
 
-    GdiPlusSession gdiplus_{};
+    std::unique_ptr<GdiPlusSession> gdiplus_{};
     std::unique_ptr<IDispatchMessageHost> dispatchMessageHost_{};
     std::unique_ptr<IDispatchMessageCodec> dispatchMessageCodec_{};
     std::unique_ptr<ICursorPositionService> cursorPositionService_{};
@@ -195,12 +192,12 @@ private:
 
     uint64_t lastInputTime_ = 0;
     bool hovering_ = false;
-    static constexpr UINT_PTR kHoverTimerId = 2;
-    static constexpr DWORD kHoverThresholdMs = 2000;
+    static constexpr uintptr_t kHoverTimerId = 2;
+    static constexpr uint32_t kHoverThresholdMs = 2000;
 
     // Hold delay logic
-    static constexpr UINT_PTR kHoldTimerId = 5;
-    static constexpr DWORD kHoldDelayMs = 350; // Increased to 350ms to distinguish from click
+    static constexpr uintptr_t kHoldTimerId = 5;
+    static constexpr uint32_t kHoldDelayMs = 350; // Increased to 350ms to distinguish from click
     struct PendingHold {
         ScreenPoint pt{};
         int button;
@@ -217,7 +214,7 @@ private:
     InputAutomationEngine inputAutomationEngine_{};
     mutable ShortcutCaptureSession shortcutCaptureSession_{};
     std::unique_ptr<wasm::WasmEffectHost> wasmEffectHost_{};
-    VmForegroundDetector vmForegroundDetector_{};
+    std::unique_ptr<VmForegroundDetector> vmForegroundDetector_{};
     bool vmEffectsSuppressed_ = false;
 
 #ifdef _DEBUG

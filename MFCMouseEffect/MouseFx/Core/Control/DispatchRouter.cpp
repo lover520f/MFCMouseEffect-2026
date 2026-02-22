@@ -47,7 +47,7 @@ ScreenPoint MessagePoint(const DispatchMessage& message) {
     return pt;
 }
 
-bool IsKnownTimerId(UINT_PTR timerId) {
+bool IsKnownTimerId(uintptr_t timerId) {
     if (timerId == AppController::HoverTimerId()) {
         return true;
     }
@@ -55,7 +55,7 @@ bool IsKnownTimerId(UINT_PTR timerId) {
         return true;
     }
 #ifdef _DEBUG
-    static constexpr UINT_PTR kSelfTestTimerId = 0x4D46;
+    static constexpr uintptr_t kSelfTestTimerId = 0x4D46;
     if (timerId == kSelfTestTimerId) {
         return true;
     }
@@ -145,8 +145,8 @@ intptr_t DispatchRouter::Route(const DispatchMessage& message, bool* outHandled)
     }
 
     ctrl_->OnDispatchActivity(
-        static_cast<UINT>(message.nativeMsg),
-        static_cast<WPARAM>(message.nativeWParam));
+        static_cast<uint32_t>(message.nativeMsg),
+        static_cast<uintptr_t>(message.nativeWParam));
 
     if (outHandled) {
         *outHandled = true;
@@ -166,7 +166,7 @@ intptr_t DispatchRouter::Route(const DispatchMessage& message, bool* outHandled)
     case DispatchMessageKind::ButtonUp:
         return OnButtonUp(message);
     case DispatchMessageKind::Timer: {
-        const UINT_PTR timerId = static_cast<UINT_PTR>(message.timerId);
+        const uintptr_t timerId = static_cast<uintptr_t>(message.timerId);
         if (!IsKnownTimerId(timerId)) {
             if (outHandled) {
                 *outHandled = false;
@@ -402,7 +402,7 @@ intptr_t DispatchRouter::OnButtonUp(const DispatchMessage& message) {
 }
 
 intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
-    const UINT_PTR timerId = static_cast<UINT_PTR>(message.timerId);
+    const uintptr_t timerId = static_cast<uintptr_t>(message.timerId);
     if (timerId == AppController::HoverTimerId()) {
         if (ctrl_->IsVmEffectsSuppressed()) {
             return 0;
@@ -473,12 +473,9 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
     }
 
 #ifdef _DEBUG
-    static constexpr UINT_PTR kSelfTestTimerId = 0x4D46;
+    static constexpr uintptr_t kSelfTestTimerId = 0x4D46;
     if (timerId == kSelfTestTimerId) {
-        const HWND hwnd = ctrl_->DispatchWindowHandle();
-        if (hwnd) {
-            KillTimer(hwnd, kSelfTestTimerId);
-        }
+        ctrl_->KillDispatchTimer(kSelfTestTimerId);
         ClickEvent ev{};
         ScreenPoint cursor{};
         if (!ctrl_->QueryCursorScreenPoint(&cursor)) {

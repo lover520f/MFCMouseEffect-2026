@@ -14,6 +14,7 @@
 #include "MouseFx/Core/Control/NullDispatchMessageCodec.h"
 #include "MouseFx/Core/System/NullCursorPositionService.h"
 #include "MouseFx/Core/System/NullForegroundProcessService.h"
+#include "MouseFx/Core/System/GdiPlusSession.h"
 #include "MouseFx/Core/System/StdMonotonicClockService.h"
 #include "MouseFx/Core/Overlay/NullInputIndicatorOverlay.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
@@ -66,7 +67,8 @@ constexpr std::array<ActiveCategoryDescriptor, 5> kActiveCategoryDescriptors{{
 
 
 AppController::AppController()
-    : dispatchMessageHost_(platform::CreateDispatchMessageHost())
+    : gdiplus_(std::make_unique<GdiPlusSession>())
+    , dispatchMessageHost_(platform::CreateDispatchMessageHost())
     , dispatchMessageCodec_(platform::CreateDispatchMessageCodec())
     , cursorPositionService_(platform::CreateCursorPositionService())
     , monotonicClockService_(platform::CreateMonotonicClockService())
@@ -74,7 +76,8 @@ AppController::AppController()
     , hook_(platform::CreateGlobalMouseHook())
     , inputIndicatorOverlay_(platform::CreateInputIndicatorOverlay())
     , commandHandler_(std::make_unique<CommandHandler>(this))
-    , dispatchRouter_(std::make_unique<DispatchRouter>(this)) {
+    , dispatchRouter_(std::make_unique<DispatchRouter>(this))
+    , vmForegroundDetector_(std::make_unique<VmForegroundDetector>()) {
     if (!dispatchMessageHost_) {
         dispatchMessageHost_ = std::make_unique<NullDispatchMessageHost>();
     }
@@ -186,7 +189,7 @@ void AppController::SetActiveEffectType(EffectCategory category, const std::stri
     }
 }
 
-void AppController::OnDispatchActivity(UINT msg, WPARAM wParam) {
+void AppController::OnDispatchActivity(uint32_t msg, uintptr_t wParam) {
     const bool isMouseInputMsg =
         (msg == WM_MFX_CLICK || msg == WM_MFX_MOVE || msg == WM_MFX_SCROLL ||
          msg == WM_MFX_BUTTON_DOWN || msg == WM_MFX_BUTTON_UP || msg == WM_MFX_KEY);
@@ -296,14 +299,14 @@ uint64_t AppController::CurrentTickMs() const {
     return monotonicClockService_->NowMs();
 }
 
-DWORD AppController::CurrentHoldDurationMs() const {
+uint32_t AppController::CurrentHoldDurationMs() const {
     if (!holdButtonDown_ || holdDownTick_ == 0) {
         return 0;
     }
 
     const uint64_t now = CurrentTickMs();
     const uint64_t delta = (now >= holdDownTick_) ? (now - holdDownTick_) : 0;
-    return static_cast<DWORD>(std::min<uint64_t>(delta, 0xFFFFFFFFu));
+    return static_cast<uint32_t>(std::min<uint64_t>(delta, 0xFFFFFFFFu));
 }
 
 void AppController::BeginHoldTracking(const ScreenPoint& pt, int button) {
@@ -398,6 +401,13 @@ std::string AppController::CurrentForegroundProcessBaseName() {
     return foregroundProcessService_->CurrentProcessBaseName();
 }
 
+void AppController::KillDispatchTimer(uintptr_t timerId) {
+    if (!dispatchMessageHost_ || !dispatchMessageHost_->IsCreated()) {
+        return;
+    }
+    dispatchMessageHost_->KillTimer(timerId);
+}
+
 #ifdef _DEBUG
 void AppController::LogDebugClick(const ClickEvent& ev) {
     if (debugClickCount_ >= 5) {
@@ -425,7 +435,7 @@ bool AppController::Start() {
     inputAutomationEngine_.UpdateConfig(config_.automation);
 
     diag_.stage = StartStage::GdiPlusStartup;
-    if (!gdiplus_.Startup()) {
+    if (!gdiplus_ || !gdiplus_->Startup()) {
 #ifdef _DEBUG
         OutputDebugStringW(L"MouseFx: GDI+ startup failed.\n");
 #endif
@@ -461,7 +471,7 @@ bool AppController::Start() {
         wsprintfW(buf, L"MouseFx: global hook start failed. GetLastError=%lu\n", static_cast<unsigned long>(hookError));
         OutputDebugStringW(buf);
 #endif
-        diag_.error = static_cast<DWORD>(hookError);
+        diag_.error = static_cast<uint32_t>(hookError);
         Stop();
         return false;
     }
@@ -483,7 +493,9 @@ void AppController::Stop() {
     }
     OverlayHostService::Instance().Shutdown();
     DestroyDispatchWindow();
-    gdiplus_.Shutdown();
+    if (gdiplus_) {
+        gdiplus_->Shutdown();
+    }
 }
 
 // (Moved to top)
@@ -661,14 +673,14 @@ void AppController::HandleCommand(const std::string& jsonCmd) {
 
 bool AppController::CreateDispatchWindow() {
     if (!dispatchMessageHost_) {
-        diag_.error = ERROR_INVALID_HANDLE;
+        diag_.error = static_cast<uint32_t>(ERROR_INVALID_HANDLE);
         return false;
     }
     if (dispatchMessageHost_->IsCreated()) {
         return true;
     }
     if (!dispatchMessageHost_->Create(this)) {
-        diag_.error = static_cast<DWORD>(dispatchMessageHost_->LastError());
+        diag_.error = static_cast<uint32_t>(dispatchMessageHost_->LastError());
         return false;
     }
     return true;
@@ -681,8 +693,11 @@ void AppController::DestroyDispatchWindow() {
 }
 
 void AppController::UpdateVmSuppressionState() {
+    if (!vmForegroundDetector_) {
+        return;
+    }
     const uint64_t now = CurrentTickMs();
-    const bool suppress = vmForegroundDetector_.ShouldSuppress(now);
+    const bool suppress = vmForegroundDetector_->ShouldSuppress(now);
     if (suppress == vmEffectsSuppressed_) return;
     ApplyVmSuppression(suppress);
 }
