@@ -5,40 +5,10 @@
 #include "DispatchRouter.h"
 
 #include "AppController.h"
-#include "MouseFx/Core/Wasm/WasmClickCommandExecutor.h"
-#include "MouseFx/Core/Wasm/WasmEffectHost.h"
-
-#include <vector>
 
 namespace mousefx {
 
 namespace {
-
-uint8_t ToWasmButton(MouseButton button) {
-    switch (button) {
-    case MouseButton::Left:
-        return 1;
-    case MouseButton::Right:
-        return 2;
-    case MouseButton::Middle:
-        return 3;
-    default:
-        return 0;
-    }
-}
-
-uint8_t ToWasmButtonFromCode(int button) {
-    switch (button) {
-    case 1:
-        return 1;
-    case 2:
-        return 2;
-    case 3:
-        return 3;
-    default:
-        return 0;
-    }
-}
 
 ScreenPoint MessagePoint(const DispatchMessage& message) {
     ScreenPoint pt{};
@@ -67,74 +37,6 @@ bool IsKnownTimerId(uintptr_t timerId) {
 
 DispatchRouter::DispatchRouter(AppController* controller)
     : ctrl_(controller) {}
-
-bool DispatchRouter::TryInvokeAndRenderWasmEvent(
-    const wasm::EventInvokeInput& input,
-    bool* outRenderedByWasm,
-    bool* outInvokeOk) {
-    if (outRenderedByWasm) {
-        *outRenderedByWasm = false;
-    }
-    if (outInvokeOk) {
-        *outInvokeOk = false;
-    }
-    if (!ctrl_) {
-        return false;
-    }
-    auto* wasmHost = ctrl_->WasmHost();
-    if (!wasmHost || !wasmHost->Enabled() || !wasmHost->IsPluginLoaded()) {
-        return false;
-    }
-
-    std::vector<uint8_t> commandBuffer;
-    const bool wasmOk = wasmHost->InvokeEvent(input, &commandBuffer);
-    if (outInvokeOk) {
-        *outInvokeOk = wasmOk;
-    }
-
-    wasm::CommandExecutionResult execResult{};
-    bool renderedByWasm = false;
-    if (wasmOk && !commandBuffer.empty()) {
-        const std::wstring manifestPath = wasmHost->Diagnostics().activeManifestPath;
-        execResult = wasm::WasmClickCommandExecutor::Execute(
-            commandBuffer.data(),
-            commandBuffer.size(),
-            ctrl_->Config(),
-            manifestPath);
-        renderedByWasm = execResult.renderedAny;
-    }
-    wasmHost->RecordRenderExecution(
-        renderedByWasm,
-        execResult.executedTextCommands,
-        execResult.executedImageCommands,
-        execResult.droppedCommands,
-        execResult.lastError);
-
-    if (outRenderedByWasm) {
-        *outRenderedByWasm = renderedByWasm;
-    }
-
-#ifdef _DEBUG
-    const wasm::HostDiagnostics& diag = wasmHost->Diagnostics();
-    wchar_t buffer[288]{};
-    wsprintfW(
-        buffer,
-        L"MouseFx: wasm_event kind=%u ok=%d bytes=%lu commands=%lu parse=%hs err=%hs rendered=%d text=%lu image=%lu drop=%lu\n",
-        static_cast<unsigned>(input.kind),
-        wasmOk ? 1 : 0,
-        static_cast<unsigned long>(diag.lastOutputBytes),
-        static_cast<unsigned long>(diag.lastCommandCount),
-        wasm::CommandParseErrorToString(diag.lastParseError),
-        diag.lastError.c_str(),
-        renderedByWasm ? 1 : 0,
-        static_cast<unsigned long>(execResult.executedTextCommands),
-        static_cast<unsigned long>(execResult.executedImageCommands),
-        static_cast<unsigned long>(execResult.droppedCommands));
-    OutputDebugStringW(buffer);
-#endif
-
-    return true;
-}
 
 intptr_t DispatchRouter::Route(const DispatchMessage& message, bool* outHandled) {
     if (!ctrl_) {
@@ -207,22 +109,9 @@ intptr_t DispatchRouter::OnClick(const DispatchMessage& message) {
 
     if (ev) {
         bool renderedByWasm = false;
-        bool wasmRouteActive = false;
-        if (auto* wasmHost = ctrl_->WasmHost()) {
-            wasmRouteActive = wasmHost->Enabled() && wasmHost->IsPluginLoaded();
-        }
-        if (wasmRouteActive) {
-            wasm::EventInvokeInput invoke{};
-            invoke.kind = wasm::EventKind::Click;
-            invoke.x = ev->pt.x;
-            invoke.y = ev->pt.y;
-            invoke.button = ToWasmButton(ev->button);
-            invoke.eventTickMs = ctrl_->CurrentTickMs();
-            bool invokeOk = false;
-            TryInvokeAndRenderWasmEvent(invoke, &renderedByWasm, &invokeOk);
-        }
-        ctrl_->InputAutomation().OnClick(*ev);
-        ctrl_->IndicatorOverlay().OnClick(*ev);
+        const bool wasmRouteActive = wasmFeature_.RouteClick(*ctrl_, *ev, &renderedByWasm);
+        automationFeature_.OnClick(*ctrl_, *ev);
+        indicatorFeature_.OnClick(*ctrl_, *ev);
         ctrl_->LogDebugClick(*ev);
         const bool shouldFallbackToBuiltin =
             (!wasmRouteActive) || ctrl_->ShouldFallbackToBuiltinClickWhenWasmActive();
@@ -246,44 +135,17 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
         pt = MessagePoint(message);
     }
 
-    ctrl_->InputAutomation().OnMouseMove(pt);
+    automationFeature_.OnMouseMove(*ctrl_, pt);
 
     bool moveRenderedByWasm = false;
-    bool moveRouteActive = false;
-    if (auto* wasmHost = ctrl_->WasmHost()) {
-        moveRouteActive = wasmHost->Enabled() && wasmHost->IsPluginLoaded();
-    }
-    if (moveRouteActive) {
-        wasm::EventInvokeInput moveInvoke{};
-        moveInvoke.kind = wasm::EventKind::Move;
-        moveInvoke.x = pt.x;
-        moveInvoke.y = pt.y;
-        moveInvoke.eventTickMs = ctrl_->CurrentTickMs();
-        bool invokeOk = false;
-        TryInvokeAndRenderWasmEvent(moveInvoke, &moveRenderedByWasm, &invokeOk);
-    }
+    const bool moveRouteActive = wasmFeature_.RouteMove(*ctrl_, pt, &moveRenderedByWasm);
     if ((!moveRouteActive || !moveRenderedByWasm) && (ctrl_->GetEffect(EffectCategory::Trail) != nullptr)) {
         if (auto* effect = ctrl_->GetEffect(EffectCategory::Trail)) {
             effect->OnMouseMove(pt);
         }
     }
 
-    if (wasmHoldEventActive_) {
-        wasm::EventInvokeInput holdInvoke{};
-        holdInvoke.kind = wasm::EventKind::HoldUpdate;
-        holdInvoke.x = pt.x;
-        holdInvoke.y = pt.y;
-        holdInvoke.button = wasmHoldButton_;
-        holdInvoke.holdMs = static_cast<uint32_t>(ctrl_->CurrentHoldDurationMs());
-        holdInvoke.eventTickMs = ctrl_->CurrentTickMs();
-        bool renderedByWasm = false;
-        bool invokeOk = false;
-        TryInvokeAndRenderWasmEvent(holdInvoke, &renderedByWasm, &invokeOk);
-        if (!invokeOk) {
-            wasmHoldEventActive_ = false;
-            wasmHoldButton_ = 0;
-        }
-    }
+    wasmFeature_.RouteHoldUpdateIfActive(*ctrl_, pt, static_cast<uint32_t>(ctrl_->CurrentHoldDurationMs()));
     if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
         effect->OnHoldUpdate(pt, ctrl_->CurrentHoldDurationMs());
     }
@@ -306,25 +168,11 @@ intptr_t DispatchRouter::OnScroll(const DispatchMessage& message) {
     ev.delta = delta;
     ev.horizontal = false;
 
-    ctrl_->InputAutomation().OnScroll(delta);
-    ctrl_->IndicatorOverlay().OnScroll(ev);
+    automationFeature_.OnScroll(*ctrl_, delta);
+    indicatorFeature_.OnScroll(*ctrl_, ev);
 
     bool scrollRenderedByWasm = false;
-    bool scrollRouteActive = false;
-    if (auto* wasmHost = ctrl_->WasmHost()) {
-        scrollRouteActive = wasmHost->Enabled() && wasmHost->IsPluginLoaded();
-    }
-    if (scrollRouteActive) {
-        wasm::EventInvokeInput invoke{};
-        invoke.kind = wasm::EventKind::Scroll;
-        invoke.x = pt.x;
-        invoke.y = pt.y;
-        invoke.delta = static_cast<int32_t>(delta);
-        invoke.flags = ev.horizontal ? wasm::kEventFlagScrollHorizontal : 0x00u;
-        invoke.eventTickMs = ctrl_->CurrentTickMs();
-        bool invokeOk = false;
-        TryInvokeAndRenderWasmEvent(invoke, &scrollRenderedByWasm, &invokeOk);
-    }
+    const bool scrollRouteActive = wasmFeature_.RouteScroll(*ctrl_, ev, &scrollRenderedByWasm);
     if ((!scrollRouteActive || !scrollRenderedByWasm) && (ctrl_->GetEffect(EffectCategory::Scroll) != nullptr)) {
         if (auto* effect = ctrl_->GetEffect(EffectCategory::Scroll)) {
             effect->OnScroll(ev);
@@ -359,7 +207,7 @@ intptr_t DispatchRouter::OnButtonDown(const DispatchMessage& message) {
     }
 
     ctrl_->BeginHoldTracking(pt, button);
-    ctrl_->InputAutomation().OnButtonDown(pt, button);
+    automationFeature_.OnButtonDown(*ctrl_, pt, button);
     ctrl_->ArmHoldTimer();
 
     return 0;
@@ -370,7 +218,7 @@ intptr_t DispatchRouter::OnButtonUp(const DispatchMessage& message) {
     ctrl_->CancelPendingHold();
 
     if (ctrl_->IsVmEffectsSuppressed()) {
-        ctrl_->InputAutomation().Reset();
+        automationFeature_.OnSuppressed(*ctrl_);
         return 0;
     }
 
@@ -379,21 +227,8 @@ intptr_t DispatchRouter::OnButtonUp(const DispatchMessage& message) {
         pt.x = 0;
         pt.y = 0;
     }
-    ctrl_->InputAutomation().OnButtonUp(pt, static_cast<int>(message.button));
-
-    if (wasmHoldEventActive_) {
-        wasm::EventInvokeInput holdEnd{};
-        holdEnd.kind = wasm::EventKind::HoldEnd;
-        holdEnd.x = pt.x;
-        holdEnd.y = pt.y;
-        holdEnd.button = wasmHoldButton_;
-        holdEnd.eventTickMs = ctrl_->CurrentTickMs();
-        bool renderedByWasm = false;
-        bool invokeOk = false;
-        TryInvokeAndRenderWasmEvent(holdEnd, &renderedByWasm, &invokeOk);
-        wasmHoldEventActive_ = false;
-        wasmHoldButton_ = 0;
-    }
+    automationFeature_.OnButtonUp(*ctrl_, pt, static_cast<int>(message.button));
+    wasmFeature_.RouteHoldEndIfActive(*ctrl_, pt);
 
     if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
         effect->OnHoldEnd();
@@ -410,19 +245,7 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
         ScreenPoint pt{};
         if (ctrl_->TryEnterHover(&pt)) {
             bool hoverRenderedByWasm = false;
-            bool hoverRouteActive = false;
-            if (auto* wasmHost = ctrl_->WasmHost()) {
-                hoverRouteActive = wasmHost->Enabled() && wasmHost->IsPluginLoaded();
-            }
-            if (hoverRouteActive) {
-                wasm::EventInvokeInput invoke{};
-                invoke.kind = wasm::EventKind::HoverStart;
-                invoke.x = pt.x;
-                invoke.y = pt.y;
-                invoke.eventTickMs = ctrl_->CurrentTickMs();
-                bool invokeOk = false;
-                TryInvokeAndRenderWasmEvent(invoke, &hoverRenderedByWasm, &invokeOk);
-            }
+            const bool hoverRouteActive = wasmFeature_.RouteHoverStart(*ctrl_, pt, &hoverRenderedByWasm);
             if (!hoverRouteActive || !hoverRenderedByWasm) {
                 if (auto* effect = ctrl_->GetEffect(EffectCategory::Hover)) {
                     effect->OnHoverStart(pt);
@@ -442,26 +265,12 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
         int button = 0;
         if (ctrl_->ConsumePendingHold(&pt, &button)) {
             bool holdRenderedByWasm = false;
-            bool holdRouteActive = false;
-            bool holdInvokeOk = false;
-            if (auto* wasmHost = ctrl_->WasmHost()) {
-                holdRouteActive = wasmHost->Enabled() && wasmHost->IsPluginLoaded();
-            }
-            if (holdRouteActive) {
-                wasm::EventInvokeInput invoke{};
-                invoke.kind = wasm::EventKind::HoldStart;
-                invoke.x = pt.x;
-                invoke.y = pt.y;
-                invoke.button = ToWasmButtonFromCode(button);
-                invoke.holdMs = static_cast<uint32_t>(ctrl_->CurrentHoldDurationMs());
-                invoke.eventTickMs = ctrl_->CurrentTickMs();
-                TryInvokeAndRenderWasmEvent(invoke, &holdRenderedByWasm, &holdInvokeOk);
-                wasmHoldEventActive_ = holdInvokeOk;
-                wasmHoldButton_ = invoke.button;
-            } else {
-                wasmHoldEventActive_ = false;
-                wasmHoldButton_ = 0;
-            }
+            const bool holdRouteActive = wasmFeature_.RouteHoldStart(
+                *ctrl_,
+                pt,
+                button,
+                static_cast<uint32_t>(ctrl_->CurrentHoldDurationMs()),
+                &holdRenderedByWasm);
             if (!holdRouteActive || !holdRenderedByWasm) {
                 if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
                     effect->OnHoldStart(pt, button);

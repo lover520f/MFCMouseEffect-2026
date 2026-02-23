@@ -37,6 +37,7 @@
 - 问题记录：`docs/issues/dawn_native_stage40_follow_mode_and_flux_label_copy_cleanup.md`（统一长按跟随模式文案语义：将 smooth 明确为“光标优先（推荐）”，并将 FluxField GPU 标签统一为“CPU兜底”）
 - 问题记录：`docs/issues/dawn_native_stage41_text_click_font_size_configurable.md`（点击文字特效支持在 Web 设置中调整字体大小，补齐 state/apply/persist 全链路）
 - 问题记录：`docs/issues/dawn_native_stage42_quantum_halo_gpu_driver_seh_guard.md`（针对 Quantum Halo GPU 在 `nvwgf2umx.dll` 的驱动层访问冲突，增加 SEH 防护，避免进程硬崩并触发受控失败回退）
+- 问题记录：`docs/issues/mfc-shell-stage59-dispatch-feature-routing-extraction.zh-CN.md`（将 DispatchRouter 中 WASM/自动化/输入指示细节下沉为独立 feature handler，保持事件行为不变）
 - 问题记录：`docs/issues/mixed_dpi_virtual_display_normalization_gate.zh-CN.md`（修复混合 DPI 物理多屏下 Click/Trail 边界错位；输入取点统一为 cursor-first）
 - 问题记录：`docs/issues/vm_foreground_effect_suppression.md`（当前台焦点进入虚拟机窗口时自动停用宿主机鼠标特效，离开后自动恢复）
 - 问题记录：`docs/issues/scroll_twinkle_starfield_effect.md`（新增滚轮 `twinkle` 星屑粒子特效，并完成工厂/设置/托盘全链路接入）

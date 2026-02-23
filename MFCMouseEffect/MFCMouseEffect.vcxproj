@@ -221,6 +221,9 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Control\NullDispatchMessageCodec.h" />
     <ClInclude Include="MouseFx\Core\Control\NullDispatchMessageHost.h" />
     <ClInclude Include="MouseFx\Core\Control\AppController.h" />
+    <ClInclude Include="MouseFx\Core\Control\AutomationDispatchFeature.h" />
+    <ClInclude Include="MouseFx\Core\Control\InputIndicatorDispatchFeature.h" />
+    <ClInclude Include="MouseFx\Core\Control\WasmDispatchFeature.h" />
     <ClInclude Include="MouseFx\Core\Automation\InputAutomationEngine.h" />
     <ClInclude Include="MouseFx\Core\Automation\KeyChord.h" />
     <ClInclude Include="MouseFx\Core\Automation\ShortcutCaptureSession.h" />
@@ -400,6 +403,9 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Control\AppController.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.Wasm.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.ConfigUpdates.cpp" />
+    <ClCompile Include="MouseFx\Core\Control\AutomationDispatchFeature.cpp" />
+    <ClCompile Include="MouseFx\Core\Control\InputIndicatorDispatchFeature.cpp" />
+    <ClCompile Include="MouseFx\Core\Control\WasmDispatchFeature.cpp" />
     <ClCompile Include="MouseFx\Core\Automation\InputAutomationEngine.cpp" />
     <ClCompile Include="MouseFx\Core\Automation\KeyChord.cpp" />
     <ClCompile Include="MouseFx\Core\Automation\ShortcutCaptureSession.cpp" />

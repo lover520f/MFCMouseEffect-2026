@@ -2,14 +2,14 @@
 
 #include <cstdint>
 
+#include "MouseFx/Core/Control/AutomationDispatchFeature.h"
 #include "MouseFx/Core/Control/DispatchMessage.h"
+#include "MouseFx/Core/Control/InputIndicatorDispatchFeature.h"
+#include "MouseFx/Core/Control/WasmDispatchFeature.h"
 
 namespace mousefx {
 
 class AppController;
-namespace wasm {
-struct EventInvokeInput;
-}
 
 // Routes normalized dispatch messages to AppController subsystems.
 class DispatchRouter final {
@@ -21,10 +21,6 @@ public:
     intptr_t Route(const DispatchMessage& message, bool* outHandled);
 
 private:
-    bool TryInvokeAndRenderWasmEvent(
-        const wasm::EventInvokeInput& input,
-        bool* outRenderedByWasm,
-        bool* outInvokeOk);
     intptr_t OnClick(const DispatchMessage& message);
     intptr_t OnMove(const DispatchMessage& message);
     intptr_t OnScroll(const DispatchMessage& message);
@@ -34,8 +30,9 @@ private:
     intptr_t OnTimer(const DispatchMessage& message);
 
     AppController* ctrl_ = nullptr;
-    bool wasmHoldEventActive_ = false;
-    uint8_t wasmHoldButton_ = 0;
+    WasmDispatchFeature wasmFeature_{};
+    AutomationDispatchFeature automationFeature_{};
+    InputIndicatorDispatchFeature indicatorFeature_{};
 };
 
 } // namespace mousefx
