@@ -254,6 +254,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\PlatformHoldRuntimeFactory.h" />
     <ClInclude Include="Platform\PlatformSystemServicesFactory.h" />
     <ClInclude Include="Platform\PlatformShellServicesFactory.h" />
+    <ClInclude Include="Platform\IPlatformAppShell.h" />
+    <ClInclude Include="Platform\PlatformAppShellFactory.h" />
     <ClInclude Include="Platform\PlatformWasmRuntimeFactory.h" />
     <ClInclude Include="Platform\PlatformTextEncoding.h" />
     <ClInclude Include="Platform\PlatformBinaryResourceLoader.h" />
@@ -424,6 +426,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\PlatformHoldRuntimeFactory.cpp" />
     <ClCompile Include="Platform\PlatformSystemServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformShellServicesFactory.cpp" />
+    <ClCompile Include="Platform\PlatformAppShellFactory.cpp" />
     <ClCompile Include="Platform\PlatformWasmRuntimeFactory.cpp" />
     <ClCompile Include="Platform\PlatformTextEncoding.cpp" />
     <ClCompile Include="Platform\PlatformBinaryResourceLoader.cpp" />
