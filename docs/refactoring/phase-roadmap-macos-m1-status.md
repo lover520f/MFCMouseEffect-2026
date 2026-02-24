@@ -55,6 +55,10 @@
   - 53m completed (acceptance): core automation contracts + full POSIX suite remain green after core-api module split.
   - 53n completed (code): split WebSettings request gateway concerns into dedicated module (`WebSettingsServer.RequestGateway.*`) and kept routing file as pure API/static delegator.
   - 53n completed (acceptance): core automation contracts + full POSIX suite remain green after request-gateway module split.
+  - 53o completed (code): split WebSettings WebUI path-discovery logic into dedicated module (`WebSettingsServer.WebUiPathResolver.*`) and kept server bootstrap focused.
+  - 53o completed (acceptance): core automation contracts + full POSIX suite remain green after resolver-module split.
+  - 53p completed (code): split WebSettings WASM routes into runtime/catalog/util layers (`WasmRuntimeRoutes.*`, `WasmCatalogRoutes.*`, `WasmRouteUtils.*`) with delegating entry.
+  - 53p completed (acceptance): core automation contracts + full POSIX suite remain green after wasm-route deep split.
 - Phase 54 (Linux compile-level + contract-level follow): in progress, compile gate currently passing in CI-style local commands.
   - 54a completed (code): Linux compile-level gate is now scriptized as one-command workflow (`run-posix-linux-compile-gate.sh`) with modular regression packaging.
   - 54a completed (acceptance): gate command executed and passed on current host.
@@ -149,6 +153,8 @@
 - phase53l WebSettings production automation routes are now isolated in `WebSettingsServer.AutomationRoutes.*`, keeping main routing focused on shared settings and top-level dispatch.
 - phase53m WebSettings core settings APIs are now isolated in `WebSettingsServer.CoreApiRoutes.*`, and main routing is now pure delegator + request gate/static handling.
 - phase53n request-entry gate (`token/404/favicon/exception mapping`) is now isolated in `WebSettingsServer.RequestGateway.*`, further reducing route-file coupling and cross-cutting change risk.
+- phase53o WebSettings WebUI path discovery is now isolated in `WebSettingsServer.WebUiPathResolver.*`, reducing bootstrap/file-system coupling in server core.
+- phase53p WebSettings WASM route internals are now split by responsibility (`runtime` vs `catalog/transfer` vs `shared utils`), reducing single-file change risk on M2 evolution.
 - Linux compile gate now has a dedicated orchestration script, reducing manual command drift risk for cross-host follow.
 - Automation platform semantics now have script-level regression guard, reducing manual-only verification for `.app/.exe` behavior.
 - POSIX regression now has a single suite entrypoint with phase-level skip switches for faster diagnosis.
