@@ -21,6 +21,7 @@ Run this to validate core-lane automation API contracts on macOS:
    - `POST /api/automation/app-catalog` returns `200 + ok=true` for both `force=true` and `force=false`.
    - `POST /api/state` can persist selected-app scope from scanned catalog entries (roundtrip verified via `GET /api/state`).
    - `POST /api/automation/test-app-scope-match` (test-gated) verifies process-scope alias matching semantics.
+   - `POST /api/automation/test-binding-priority` (test-gated) verifies binding priority semantics (`process > all` on same chain length; `longest chain > shorter chain`).
    - `POST /api/automation/test-shortcut-from-mac-keycode` (test-gated) verifies mac keycode->shortcut mapping semantics.
    - `POST /api/automation/test-inject-shortcut` (test-gated) verifies automation injector call path under deterministic dry-run mode.
    - Startup-missing-permission path is simulated via `MFX_TEST_INPUT_CAPTURE_PERMISSION_SIM_FILE=trusted=0` and must converge to degraded `permission_denied`.
@@ -45,6 +46,7 @@ Run this to validate core-lane automation API contracts on macOS:
    - wasm import-dialog probe must return `"supported":true`.
    - wasm test-dispatch response must include `route_active=true`, `invoke_ok=true`, and `rendered_any=true`.
    - app-scope matching must treat `code` / `code.exe` / `code.app` as equivalent aliases.
+   - binding priority must keep `process` scope above `all` under same trigger chain length, while preserving longest-chain-first as top rule.
    - shortcut mapping must keep `Cmd+V` and `Cmd+Tab` distinct (`mac_key_code 9 -> Win+V`, `48 -> Win+Tab`).
 
 ## Core Options

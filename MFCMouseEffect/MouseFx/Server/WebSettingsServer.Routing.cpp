@@ -15,7 +15,9 @@
 #include <vector>
 
 #include "MouseFx/Core/Control/AppController.h"
+#include "MouseFx/Core/Automation/AutomationActionIdNormalizer.h"
 #include "MouseFx/Core/Automation/AppScopeUtils.h"
+#include "MouseFx/Core/Automation/BindingMatchUtils.h"
 #include "MouseFx/Core/Automation/ShortcutTextFormatter.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Core/Wasm/WasmEventInvokeExecutor.h"
@@ -271,6 +273,76 @@ std::string ParseShortcutKeys(const json& payload) {
         return {};
     }
     return TrimAscii(payload["keys"].get<std::string>());
+}
+
+std::string ParseStringOrDefault(const json& payload, const char* key, std::string defaultValue = {}) {
+    if (!payload.contains(key) || !payload[key].is_string()) {
+        return defaultValue;
+    }
+    return payload[key].get<std::string>();
+}
+
+std::vector<std::string> ParseActionHistory(const json& payload) {
+    std::vector<std::string> actions;
+    if (payload.contains("history") && payload["history"].is_array()) {
+        for (const auto& item : payload["history"]) {
+            if (item.is_string()) {
+                actions.push_back(item.get<std::string>());
+            }
+        }
+    }
+    if (actions.empty() && payload.contains("action") && payload["action"].is_string()) {
+        actions.push_back(payload["action"].get<std::string>());
+    }
+    return actions;
+}
+
+std::vector<AutomationKeyBinding> ParseAutomationMappings(const json& payload) {
+    std::vector<AutomationKeyBinding> mappings;
+    if (!payload.contains("mappings") || !payload["mappings"].is_array()) {
+        return mappings;
+    }
+
+    for (const auto& item : payload["mappings"]) {
+        if (!item.is_object()) {
+            continue;
+        }
+
+        AutomationKeyBinding binding{};
+        binding.enabled = ParseBooleanOrDefault(item, "enabled", true);
+        binding.trigger = TrimAscii(ParseStringOrDefault(item, "trigger"));
+        binding.keys = TrimAscii(ParseStringOrDefault(item, "keys"));
+        binding.appScopes = ParseAppScopes(item);
+        mappings.push_back(std::move(binding));
+    }
+
+    return mappings;
+}
+
+std::vector<automation_match::ActionHistoryEntry> NormalizeMouseHistoryEntries(
+    const std::vector<std::string>& actions,
+    std::vector<std::string>* normalizedOut) {
+    std::vector<automation_match::ActionHistoryEntry> history;
+    if (normalizedOut) {
+        normalizedOut->clear();
+    }
+
+    const auto baseTime = std::chrono::steady_clock::now();
+    for (size_t i = 0; i < actions.size(); ++i) {
+        std::string normalized = automation_ids::NormalizeMouseActionId(actions[i]);
+        if (normalized.empty()) {
+            continue;
+        }
+        if (normalizedOut) {
+            normalizedOut->push_back(normalized);
+        }
+        history.push_back(automation_match::ActionHistoryEntry{
+            std::move(normalized),
+            baseTime + std::chrono::milliseconds(static_cast<int64_t>(i * 10)),
+        });
+    }
+
+    return history;
 }
 
 std::wstring NormalizeManifestPathForCompare(const std::wstring& path) {
@@ -542,6 +614,61 @@ bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string
             {"app_scopes_normalized", normalizedScopes},
             {"matched", automation_scope::AppScopeMatchesProcess(rawScopes, processBaseName)},
             {"specificity", automation_scope::AppScopeSpecificity(rawScopes)},
+        }).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/automation/test-binding-priority") {
+        if (!IsAutomationScopeTestApiEnabled()) {
+            SetPlainResponse(resp, 404, "not found");
+            return true;
+        }
+
+        const json payload = ParseObjectOrEmpty(req.body);
+        const std::vector<std::string> rawHistory = ParseActionHistory(payload);
+        std::vector<std::string> normalizedHistory;
+        const std::vector<automation_match::ActionHistoryEntry> history =
+            NormalizeMouseHistoryEntries(rawHistory, &normalizedHistory);
+        const std::vector<AutomationKeyBinding> mappings = ParseAutomationMappings(payload);
+        const std::string processBaseName = ParseProcessBaseName(payload);
+        const std::string normalizedProcess = automation_scope::NormalizeProcessName(processBaseName);
+        const automation_match::BindingMatchResult match = automation_match::FindBestEnabledBinding(
+            mappings,
+            history,
+            processBaseName,
+            automation_match::ChainTimingLimit{},
+            automation_ids::NormalizeMouseActionId);
+
+        json selected = nullptr;
+        if (match.binding != nullptr) {
+            json normalizedScopes = json::array();
+            for (const auto& scope : match.binding->appScopes) {
+                normalizedScopes.push_back(automation_scope::NormalizeScopeToken(scope));
+            }
+            selected = json({
+                {"index", static_cast<uint64_t>(match.bindingIndex)},
+                {"trigger", match.binding->trigger},
+                {"keys", match.binding->keys},
+                {"app_scopes", match.binding->appScopes},
+                {"app_scopes_normalized", normalizedScopes},
+                {"chain_length", static_cast<uint64_t>(match.chainLength)},
+                {"scope_specificity", match.scopeSpecificity},
+            });
+        }
+
+        SetJsonResponse(resp, json({
+            {"ok", true},
+            {"process", processBaseName},
+            {"process_normalized", normalizedProcess},
+            {"history", rawHistory},
+            {"history_normalized", normalizedHistory},
+            {"mapping_count", static_cast<uint64_t>(mappings.size())},
+            {"matched", match.binding != nullptr},
+            {"selected_binding_index", match.binding != nullptr ? static_cast<int64_t>(match.bindingIndex) : -1},
+            {"selected_chain_length", static_cast<uint64_t>(match.chainLength)},
+            {"selected_scope_specificity", match.scopeSpecificity},
+            {"selected_keys", match.binding != nullptr ? match.binding->keys : std::string{}},
+            {"selected", selected},
         }).dump());
         return true;
     }

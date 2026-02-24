@@ -1,12 +1,12 @@
 #pragma once
 
+#include "MouseFx/Core/Automation/BindingMatchUtils.h"
 #include "MouseFx/Core/Config/EffectConfig.h"
 #include "MouseFx/Core/Protocol/InputTypes.h"
 #include "MouseFx/Core/System/IForegroundProcessService.h"
 #include "MouseFx/Core/System/IKeyboardInjector.h"
 #include "MouseFx/Core/Input/GestureRecognizer.h"
 
-#include <chrono>
 #include <string>
 #include <vector>
 
@@ -33,31 +33,14 @@ public:
     void SetKeyboardInjector(IKeyboardInjector* injector);
 
 private:
-    struct ActionHistoryItem {
-        std::string actionId;
-        std::chrono::steady_clock::time_point timestamp{};
-    };
+    using ActionHistoryItem = automation_match::ActionHistoryEntry;
+    using ChainTimingLimit = automation_match::ChainTimingLimit;
 
-    struct ChainTimingLimit {
-        std::chrono::milliseconds maxStepInterval{0};
-        std::chrono::milliseconds maxTotalInterval{0};
-    };
-
-    static std::string NormalizeId(std::string value);
-    static std::string NormalizeMouseActionId(std::string value);
-    static std::string NormalizeGestureId(std::string value);
     static std::string ClickActionId(MouseButton button);
     static std::string ClickActionIdFromButtonCode(int button);
     static std::string ScrollActionId(short delta);
     static ChainTimingLimit BuildMouseChainTimingLimit();
     static ChainTimingLimit BuildGestureChainTimingLimit();
-    static bool IsChainTimingMatched(
-        const std::vector<ActionHistoryItem>& history,
-        size_t offset,
-        size_t chainLength,
-        const ChainTimingLimit& timingLimit);
-    static bool AppScopeMatches(const std::vector<std::string>& appScopes, const std::string& processBaseName);
-    static int AppScopeSpecificity(const std::vector<std::string>& appScopes);
 
     bool TriggerMouseAction(const std::string& actionId);
     bool TriggerGesture(const std::string& gestureId);
@@ -71,9 +54,9 @@ private:
     const AutomationKeyBinding* FindEnabledBinding(
         const std::vector<AutomationKeyBinding>& mappings,
         const std::vector<ActionHistoryItem>& actionHistory,
-        bool gestureBinding,
         const ChainTimingLimit& timingLimit,
-        const std::string& processBaseName) const;
+        const std::string& processBaseName,
+        automation_match::NormalizeActionIdFn normalizeActionId) const;
 
     InputAutomationConfig config_{};
     GestureRecognizer gestureRecognizer_{};

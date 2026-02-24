@@ -20,6 +20,7 @@
   - import dialog supports `probe_only=true` for non-interactive regression checks
   - test-gated `/api/wasm/test-dispatch-click` enables non-interactive invoke/render contract checks
   - test-gated `/api/automation/test-app-scope-match` enables non-interactive app-scope alias contract checks (`code/.exe/.app`)
+  - test-gated `/api/automation/test-binding-priority` enables non-interactive priority contract checks (`process > all`, `longest chain > shorter chain`)
   - test-gated `/api/automation/test-shortcut-from-mac-keycode` enables non-interactive `Cmd+V/Cmd+Tab` mapping contract checks
   - test-gated `/api/automation/test-inject-shortcut` enables non-interactive injector call-path checks (`Cmd+C`) under dry-run mode
   - test-gated `/api/input-indicator/test-mouse-labels` enables non-interactive mac indicator label contract checks (`L/R/M`)
@@ -52,6 +53,7 @@ Use this one-command entry for WASM runtime invoke/render/fallback selfcheck:
 ```
 
 ## Current Next Slice
+- Close remaining Phase 53 manual acceptance (`left_click -> Cmd+C` real dispatch) with stable suite baseline.
 - Continue M2 with macOS-first WASM quality and contract hardening.
 - Keep platform abstraction reusable for Linux follow-up.
 - Keep Windows behavior unchanged unless explicit approved scope.

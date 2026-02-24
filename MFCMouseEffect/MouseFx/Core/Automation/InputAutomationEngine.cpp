@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "InputAutomationEngine.h"
 
-#include "MouseFx/Core/Automation/AppScopeUtils.h"
+#include "MouseFx/Core/Automation/AutomationActionIdNormalizer.h"
 #include "MouseFx/Core/Automation/TriggerChainUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
 
@@ -14,13 +14,6 @@ constexpr std::chrono::milliseconds kMouseChainMaxStepIntervalMs(900);
 constexpr std::chrono::milliseconds kMouseChainMaxTotalIntervalMs(1800);
 constexpr std::chrono::milliseconds kGestureChainMaxStepIntervalMs(2200);
 constexpr std::chrono::milliseconds kGestureChainMaxTotalIntervalMs(5000);
-
-std::string NormalizeTextId(std::string value) {
-    value = ToLowerAscii(TrimAscii(value));
-    std::replace(value.begin(), value.end(), '-', '_');
-    std::replace(value.begin(), value.end(), ' ', '_');
-    return value;
-}
 
 GestureRecognitionConfig BuildGestureConfig(const InputAutomationConfig& config) {
     GestureRecognitionConfig out;
@@ -47,8 +40,8 @@ void InputAutomationEngine::UpdateConfig(const InputAutomationConfig& config) {
             }
 
             const size_t chainLength = gestureBinding
-                ? automation_chain::NormalizedChainLength(binding.trigger, NormalizeGestureId)
-                : automation_chain::NormalizedChainLength(binding.trigger, NormalizeMouseActionId);
+                ? automation_chain::NormalizedChainLength(binding.trigger, automation_ids::NormalizeGestureId)
+                : automation_chain::NormalizedChainLength(binding.trigger, automation_ids::NormalizeMouseActionId);
             if (chainLength > maxLength) {
                 maxLength = chainLength;
             }
@@ -86,7 +79,7 @@ void InputAutomationEngine::OnButtonUp(const ScreenPoint& pt, int button) {
     const std::string gestureId = gestureRecognizer_.OnButtonUp(pt, button);
     if (!gestureId.empty()) {
         if (TriggerGesture(gestureId)) {
-            suppressNextClickActionId_ = NormalizeMouseActionId(ClickActionIdFromButtonCode(button));
+            suppressNextClickActionId_ = automation_ids::NormalizeMouseActionId(ClickActionIdFromButtonCode(button));
         }
     }
 }
@@ -94,7 +87,7 @@ void InputAutomationEngine::OnButtonUp(const ScreenPoint& pt, int button) {
 void InputAutomationEngine::OnClick(const ClickEvent& ev) {
     const std::string actionId = ClickActionId(ev.button);
     if (!suppressNextClickActionId_.empty()) {
-        const bool shouldSuppress = (NormalizeMouseActionId(actionId) == suppressNextClickActionId_);
+        const bool shouldSuppress = (automation_ids::NormalizeMouseActionId(actionId) == suppressNextClickActionId_);
         suppressNextClickActionId_.clear();
         if (shouldSuppress) {
             return;
@@ -113,24 +106,6 @@ void InputAutomationEngine::SetForegroundProcessService(IForegroundProcessServic
 
 void InputAutomationEngine::SetKeyboardInjector(IKeyboardInjector* injector) {
     keyboardInjector_ = injector;
-}
-
-std::string InputAutomationEngine::NormalizeId(std::string value) {
-    return NormalizeTextId(std::move(value));
-}
-
-std::string InputAutomationEngine::NormalizeMouseActionId(std::string value) {
-    value = NormalizeId(std::move(value));
-    if (value == "left" || value == "leftclick" || value == "lclick") return "left_click";
-    if (value == "right" || value == "rightclick" || value == "rclick") return "right_click";
-    if (value == "middle" || value == "middleclick" || value == "mclick") return "middle_click";
-    if (value == "wheel_up" || value == "scrollup") return "scroll_up";
-    if (value == "wheel_down" || value == "scrolldown") return "scroll_down";
-    return value;
-}
-
-std::string InputAutomationEngine::NormalizeGestureId(std::string value) {
-    return NormalizeId(std::move(value));
 }
 
 std::string InputAutomationEngine::ClickActionId(MouseButton button) {
@@ -170,52 +145,11 @@ InputAutomationEngine::ChainTimingLimit InputAutomationEngine::BuildGestureChain
     return limit;
 }
 
-bool InputAutomationEngine::IsChainTimingMatched(
-    const std::vector<ActionHistoryItem>& history,
-    size_t offset,
-    size_t chainLength,
-    const ChainTimingLimit& timingLimit) {
-    if (chainLength <= 1) {
-        return true;
-    }
-    if (offset + chainLength > history.size()) {
-        return false;
-    }
-    if (timingLimit.maxStepInterval.count() <= 0 || timingLimit.maxTotalInterval.count() <= 0) {
-        return true;
-    }
-
-    const auto& first = history[offset];
-    const auto& last = history[offset + chainLength - 1];
-    if (last.timestamp - first.timestamp > timingLimit.maxTotalInterval) {
-        return false;
-    }
-
-    for (size_t i = offset + 1; i < offset + chainLength; ++i) {
-        const auto& prev = history[i - 1];
-        const auto& curr = history[i];
-        if (curr.timestamp - prev.timestamp > timingLimit.maxStepInterval) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool InputAutomationEngine::AppScopeMatches(
-    const std::vector<std::string>& appScopes,
-    const std::string& processBaseName) {
-    return automation_scope::AppScopeMatchesProcess(appScopes, processBaseName);
-}
-
-int InputAutomationEngine::AppScopeSpecificity(const std::vector<std::string>& appScopes) {
-    return automation_scope::AppScopeSpecificity(appScopes);
-}
-
 bool InputAutomationEngine::TriggerMouseAction(const std::string& actionId) {
     if (!config_.enabled || actionId.empty() || !keyboardInjector_) {
         return false;
     }
-    const std::string normalizedActionId = NormalizeMouseActionId(actionId);
+    const std::string normalizedActionId = automation_ids::NormalizeMouseActionId(actionId);
     if (normalizedActionId.empty()) {
         return false;
     }
@@ -228,9 +162,9 @@ bool InputAutomationEngine::TriggerMouseAction(const std::string& actionId) {
         FindEnabledBinding(
             config_.mouseMappings,
             mouseActionHistory_,
-            false,
             mouseChainTimingLimit_,
-            processBaseName);
+            processBaseName,
+            automation_ids::NormalizeMouseActionId);
     if (!binding) {
         return false;
     }
@@ -241,7 +175,7 @@ bool InputAutomationEngine::TriggerGesture(const std::string& gestureId) {
     if (!config_.enabled || !config_.gesture.enabled || gestureId.empty() || !keyboardInjector_) {
         return false;
     }
-    const std::string normalizedGestureId = NormalizeGestureId(gestureId);
+    const std::string normalizedGestureId = automation_ids::NormalizeGestureId(gestureId);
     if (normalizedGestureId.empty()) {
         return false;
     }
@@ -254,9 +188,9 @@ bool InputAutomationEngine::TriggerGesture(const std::string& gestureId) {
         FindEnabledBinding(
             config_.gesture.mappings,
             gestureHistory_,
-            true,
             gestureChainTimingLimit_,
-            processBaseName);
+            processBaseName,
+            automation_ids::NormalizeGestureId);
     if (!binding) {
         return false;
     }
@@ -289,69 +223,16 @@ void InputAutomationEngine::AppendActionHistory(
 const AutomationKeyBinding* InputAutomationEngine::FindEnabledBinding(
     const std::vector<AutomationKeyBinding>& mappings,
     const std::vector<ActionHistoryItem>& actionHistory,
-    bool gestureBinding,
     const ChainTimingLimit& timingLimit,
-    const std::string& processBaseName) const {
-    if (actionHistory.empty()) {
-        return nullptr;
-    }
-
-    const std::string currentAction = actionHistory.back().actionId;
-    const AutomationKeyBinding* best = nullptr;
-    size_t bestLength = 0;
-    int bestScopeSpecificity = -1;
-
-    for (const AutomationKeyBinding& binding : mappings) {
-        if (!binding.enabled) {
-            continue;
-        }
-        if (!AppScopeMatches(binding.appScopes, processBaseName)) {
-            continue;
-        }
-
-        const std::vector<std::string> chain = gestureBinding
-            ? automation_chain::NormalizeChainTokens(binding.trigger, NormalizeGestureId)
-            : automation_chain::NormalizeChainTokens(binding.trigger, NormalizeMouseActionId);
-
-        if (chain.empty()) {
-            continue;
-        }
-        if (chain.back() != currentAction) {
-            continue;
-        }
-        if (chain.size() > actionHistory.size()) {
-            continue;
-        }
-
-        bool chainMatched = true;
-        const size_t offset = actionHistory.size() - chain.size();
-        for (size_t i = 0; i < chain.size(); ++i) {
-            if (actionHistory[offset + i].actionId != chain[i]) {
-                chainMatched = false;
-                break;
-            }
-        }
-        if (!chainMatched) {
-            continue;
-        }
-        if (!IsChainTimingMatched(actionHistory, offset, chain.size(), timingLimit)) {
-            continue;
-        }
-
-        if (NormalizeShortcutText(binding.keys).empty()) {
-            continue;
-        }
-
-        const int scopeSpecificity = AppScopeSpecificity(binding.appScopes);
-        if (chain.size() > bestLength ||
-            (chain.size() == bestLength && scopeSpecificity > bestScopeSpecificity)) {
-            best = &binding;
-            bestLength = chain.size();
-            bestScopeSpecificity = scopeSpecificity;
-        }
-    }
-
-    return best;
+    const std::string& processBaseName,
+    automation_match::NormalizeActionIdFn normalizeActionId) const {
+    const automation_match::BindingMatchResult match = automation_match::FindBestEnabledBinding(
+        mappings,
+        actionHistory,
+        processBaseName,
+        timingLimit,
+        normalizeActionId);
+    return match.binding;
 }
 
 } // namespace mousefx

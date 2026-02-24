@@ -41,6 +41,8 @@
   - 53f completed (acceptance): user manual test passed on macOS (`Selected Apps` semantics and picker copy no longer show `exe`).
   - 53g completed (code): added test-gated core API for app-scope matching verification and unified matcher reuse across runtime and test paths.
   - 53g completed (acceptance): macOS core automation contract regression and wasm selfcheck remain green after app-scope contract expansion.
+  - 53h completed (code): extracted shared automation action-id normalization and binding matcher utility, and added test-gated binding-priority endpoint to reuse runtime selection semantics.
+  - 53h completed (acceptance): core automation contract regression now asserts priority contracts (`process` over `all` on same chain length, and longest-chain-first over scope specificity).
 - Phase 54 (Linux compile-level + contract-level follow): in progress, compile gate currently passing in CI-style local commands.
   - 54a completed (code): Linux compile-level gate is now scriptized as one-command workflow (`run-posix-linux-compile-gate.sh`) with modular regression packaging.
   - 54a completed (acceptance): gate command executed and passed on current host.
@@ -124,6 +126,7 @@
 - phase53a service wiring is now script-closed (`process` non-empty + `keyboard_injector=true` + test-inject `accepted=true` in dry-run mode), while real key-event dispatch E2E remains manual.
 - phase53c WebUI, shell-launch, and tray `Settings` action contract is now script-closed (tokenized root + Svelte shell asset + settings-launcher URL probe + tray smoke action/launch assertions).
 - phase53e refresh/catalog/persistence path is now script-closed (`force=true/false` + selected scope roundtrip via `/api/state`).
+- phase53h scope-priority contract is now script-closed (`process > all` and `longest chain > shorter chain` under shared matcher path).
 - Linux compile gate now has a dedicated orchestration script, reducing manual command drift risk for cross-host follow.
 - Automation platform semantics now have script-level regression guard, reducing manual-only verification for `.app/.exe` behavior.
 - POSIX regression now has a single suite entrypoint with phase-level skip switches for faster diagnosis.
@@ -161,4 +164,4 @@
 - Complete Phase 52/53 acceptance closure:
   - execute 53a manual re-check (`left_click -> Cmd+C` injection path),
   - keep Phase 54 suite green via `run-posix-regression-suite.sh --platform auto`,
-  - if pass, continue Phase 53 scope-priority polish while keeping Linux compile gate green.
+  - if pass, mark Phase 53 acceptance fully closed and continue next platform capability slice with Linux compile gate unchanged.

@@ -56,6 +56,37 @@ _mfx_core_http_assert_scope_match() {
     mfx_assert_file_contains "$output_file" "\"matched\":$expected_matched" "$context matched"
 }
 
+_mfx_core_http_assert_binding_priority() {
+    local base_url="$1"
+    local token="$2"
+    local payload="$3"
+    local expected_matched="$4"
+    local expected_index="$5"
+    local expected_keys="$6"
+    local expected_scope_specificity="$7"
+    local expected_chain_length="$8"
+    local output_file="$9"
+    local context="${10}"
+
+    local code
+    code="$(mfx_http_code "$output_file" "$base_url/api/automation/test-binding-priority" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d "$payload")"
+    mfx_assert_eq "$code" "200" "$context status"
+    mfx_assert_file_contains "$output_file" "\"ok\":true" "$context ok"
+    mfx_assert_file_contains "$output_file" "\"matched\":$expected_matched" "$context matched"
+    mfx_assert_file_contains "$output_file" "\"selected_binding_index\":$expected_index" "$context selected index"
+    mfx_assert_file_contains "$output_file" "\"selected_scope_specificity\":$expected_scope_specificity" "$context selected scope specificity"
+    mfx_assert_file_contains "$output_file" "\"selected_chain_length\":$expected_chain_length" "$context selected chain length"
+    if [[ "$expected_matched" == "true" ]]; then
+        local expected_keys_escaped
+        expected_keys_escaped="$(_mfx_core_http_json_escape "$expected_keys")"
+        mfx_assert_file_contains "$output_file" "\"selected_keys\":\"$expected_keys_escaped\"" "$context selected keys"
+    fi
+}
+
 _mfx_core_http_wait_probe_file() {
     local probe_file="$1"
     local timeout_seconds="${MFX_CORE_HTTP_PROBE_TIMEOUT_SECONDS:-8}"
@@ -417,6 +448,48 @@ mfx_run_core_http_contract_checks() {
     _mfx_core_http_assert_scope_match "$base_url" "$token" "code.app" "process:code" "true" "$tmp_dir/scope-app-vs-base.out" "core app-scope app<->base"
     _mfx_core_http_assert_scope_match "$base_url" "$token" "code.exe" "process:code.app" "true" "$tmp_dir/scope-exe-vs-app.out" "core app-scope exe<->app"
     _mfx_core_http_assert_scope_match "$base_url" "$token" "safari" "process:code" "false" "$tmp_dir/scope-negative.out" "core app-scope negative"
+
+    local payload_priority_scope_specific
+    payload_priority_scope_specific='{"process":"code.app","history":["left_click"],"mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["all"],"keys":"Cmd+V"},{"enabled":true,"trigger":"left_click","app_scopes":["process:code.exe"],"keys":"Cmd+C"}]}'
+    _mfx_core_http_assert_binding_priority \
+        "$base_url" \
+        "$token" \
+        "$payload_priority_scope_specific" \
+        "true" \
+        "1" \
+        "Cmd+C" \
+        "1" \
+        "1" \
+        "$tmp_dir/scope-priority-specific.out" \
+        "core app-scope priority process-over-all"
+
+    local payload_priority_scope_fallback
+    payload_priority_scope_fallback='{"process":"safari","history":["left_click"],"mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["all"],"keys":"Cmd+V"},{"enabled":true,"trigger":"left_click","app_scopes":["process:code.exe"],"keys":"Cmd+C"}]}'
+    _mfx_core_http_assert_binding_priority \
+        "$base_url" \
+        "$token" \
+        "$payload_priority_scope_fallback" \
+        "true" \
+        "0" \
+        "Cmd+V" \
+        "0" \
+        "1" \
+        "$tmp_dir/scope-priority-fallback.out" \
+        "core app-scope priority all-fallback"
+
+    local payload_priority_long_chain
+    payload_priority_long_chain='{"process":"code","history":["left_click","left_click"],"mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["process:code.app"],"keys":"Cmd+V"},{"enabled":true,"trigger":"left_click>left_click","app_scopes":["all"],"keys":"Cmd+T"}]}'
+    _mfx_core_http_assert_binding_priority \
+        "$base_url" \
+        "$token" \
+        "$payload_priority_long_chain" \
+        "true" \
+        "1" \
+        "Cmd+T" \
+        "0" \
+        "2" \
+        "$tmp_dir/scope-priority-long-chain.out" \
+        "core app-scope priority longest-chain-first"
 
     local code_shortcut_map_cmd_v
     code_shortcut_map_cmd_v="$(mfx_http_code "$tmp_dir/shortcut-map-cmd-v.out" "$base_url/api/automation/test-shortcut-from-mac-keycode" \

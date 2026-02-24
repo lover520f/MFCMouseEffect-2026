@@ -43,7 +43,7 @@ Env tuning:
   MFX_CORE_HTTP_START_WAIT_SECONDS    wait time before startup alive check (default: 1)
   MFX_CORE_HTTP_PROBE_TIMEOUT_SECONDS wait time for websettings probe file (default: 8)
   MFX_ENABLE_WASM_TEST_DISPATCH_API   enable test dispatch endpoint during regression (default: 1 in script)
-  MFX_ENABLE_AUTOMATION_SCOPE_TEST_API enable app-scope match endpoint during regression (default: 1 in script)
+  MFX_ENABLE_AUTOMATION_SCOPE_TEST_API enable app-scope/binding-priority test endpoints during regression (default: 1 in script)
   MFX_ENABLE_AUTOMATION_SHORTCUT_TEST_API enable mac keycode->shortcut test endpoint (default: 1 in script)
   MFX_ENABLE_AUTOMATION_INJECTION_TEST_API enable shortcut injector probe endpoint (default: 1 in script)
   MFX_ENABLE_INPUT_INDICATOR_TEST_API  enable input-indicator label probe endpoint (default: 1 in script)
