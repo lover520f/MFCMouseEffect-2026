@@ -270,6 +270,7 @@ if(MFX_ENABLE_ENTRY_RUNTIME_TARGETS)
             "${MFX_PROJECT_ROOT}/MouseFx/Server/SettingsStateMapper.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.AutomationRoutes.cpp"
+            "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.CoreApiRoutes.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.Routing.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.TestApiRoutes.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.WasmRoutes.cpp"

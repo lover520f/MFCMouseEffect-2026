@@ -4,11 +4,9 @@
 #include <exception>
 #include <string>
 
-#include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Server/WebSettingsServer.AutomationRoutes.h"
+#include "MouseFx/Server/WebSettingsServer.CoreApiRoutes.h"
 #include "MouseFx/Server/HttpServer.h"
-#include "MouseFx/Server/SettingsSchemaBuilder.h"
-#include "MouseFx/Server/SettingsStateMapper.h"
 #include "MouseFx/Server/WebSettingsServer.TestApiRoutes.h"
 #include "MouseFx/Server/WebSettingsServer.WasmRoutes.h"
 #include "MouseFx/Server/WebUiAssets.h"
@@ -28,12 +26,6 @@ std::string StripQueryString(const std::string& path) {
     return path.substr(0, queryPos);
 }
 
-void SetJsonResponse(HttpResponse& resp, const std::string& body) {
-    resp.statusCode = 200;
-    resp.contentType = "application/json; charset=utf-8";
-    resp.body = body;
-}
-
 void SetPlainResponse(HttpResponse& resp, int code, const std::string& body) {
     resp.statusCode = code;
     resp.contentType = "text/plain; charset=utf-8";
@@ -43,40 +35,12 @@ void SetPlainResponse(HttpResponse& resp, int code, const std::string& body) {
 } // namespace
 
 bool WebSettingsServer::HandleApiRoute(const HttpRequest& req, const std::string& path, HttpResponse& resp) {
-    if (req.method == "GET" && path == "/api/schema") {
-        SetJsonResponse(resp, controller_ ? BuildSettingsSchemaJson(controller_->GetConfigSnapshot()) : "{}");
-        return true;
-    }
-
-    if (req.method == "GET" && path == "/api/state") {
-        SetJsonResponse(resp, controller_ ? BuildSettingsStateJson(controller_->GetConfigSnapshot(), controller_) : "{}");
-        return true;
-    }
-
-    if ((req.method == "POST" || req.method == "GET") && path == "/api/reload") {
-        if (controller_) {
-            controller_->HandleCommand("{\"cmd\":\"reload_config\"}");
-        }
-        SetJsonResponse(resp, json({{"ok", true}}).dump());
-        return true;
-    }
-
-    if (req.method == "POST" && path == "/api/stop") {
-        SetJsonResponse(resp, json({{"ok", true}}).dump());
-        StopAsync();
-        return true;
-    }
-
-    if (req.method == "POST" && path == "/api/reset") {
-        if (controller_) {
-            controller_->HandleCommand("{\"cmd\":\"reset_config\"}");
-        }
-        SetJsonResponse(resp, json({{"ok", true}}).dump());
-        return true;
-    }
-
-    if (req.method == "POST" && path == "/api/state") {
-        SetJsonResponse(resp, ApplySettingsStateJson(controller_, req.body));
+    if (HandleWebSettingsCoreApiRoute(
+            req,
+            path,
+            controller_,
+            [this]() { StopAsync(); },
+            resp)) {
         return true;
     }
 
