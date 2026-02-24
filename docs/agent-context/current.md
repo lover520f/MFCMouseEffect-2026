@@ -30,6 +30,7 @@
   - macOS tray smoke now guards tray `Settings` action callback -> settings launcher URL call-path using test-only auto-trigger and launch-capture probes
   - core automation contract now simulates startup/runtime permission transitions (`trusted=0/1`) and asserts degraded/recovery + startup notify dedup
   - core automation contract now guards app-catalog refresh (`force=true/false`) and selected-app scope state roundtrip
+  - unified POSIX suite now runs macOS WASM runtime selfcheck by default (with explicit skip flag), reducing manual acceptance drift
 
 ## Known Stable Gates
 Run these as first-line regression checks:
@@ -39,6 +40,7 @@ Run these as first-line regression checks:
 ./tools/platform/regression/run-posix-core-automation-contract-regression.sh --platform auto
 ./tools/platform/regression/run-posix-linux-compile-gate.sh --build-dir /tmp/mfx-platform-linux-build --jobs 8
 ./tools/platform/regression/run-posix-regression-suite.sh --platform auto
+./tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh --skip-build
 ```
 
 ## macOS Manual Runner

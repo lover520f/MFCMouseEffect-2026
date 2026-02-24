@@ -15,9 +15,11 @@ Run this as the default POSIX regression entry:
    - `run-posix-core-smoke.sh`
 3. Core automation HTTP contracts:
    - `run-posix-core-automation-contract-regression.sh` (macOS-only, skipped on other platforms)
-4. Linux compile gate:
+4. macOS WASM runtime selfcheck:
+   - `run-macos-wasm-runtime-selfcheck.sh --skip-build` (macOS host only, skipped on non-mac hosts)
+5. Linux compile gate:
    - `run-posix-linux-compile-gate.sh`
-5. WebUI automation platform semantic tests:
+6. WebUI automation platform semantic tests:
    - `pnpm --dir MFCMouseEffect/WebUIWorkspace run test:automation-platform`
 
 Before phases start, suite tries to terminate stale `mfx_entry_posix_host` processes to avoid single-instance/port contention from previous manual runs.
@@ -39,6 +41,7 @@ Skip phases when needed:
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-scaffold
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-core-smoke
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-core-automation
+./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-wasm-selfcheck
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-linux-gate
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-automation-test
 ```

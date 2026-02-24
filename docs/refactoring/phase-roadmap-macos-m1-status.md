@@ -61,7 +61,7 @@
   - 55a completed (acceptance): core build/smoke/contracts passed, and `/api/state` contract now asserts `runtime_backend=wasm3_static` on macOS.
   - 55b completed (code): POSIX dispatch path now invokes WASM host on click/move/scroll/hold/hover-start instead of Windows-only stubs.
   - 55b completed (acceptance): core/scaffold/linux/webui regression gates passed after dispatch change.
-  - 55b pending (manual): end-to-end plugin invoke/render/fallback acceptance on macOS core lane.
+  - 55b completed (acceptance-script): macOS WASM runtime selfcheck (`load/enable/dispatch/invalid-manifest fallback`) is now integrated into unified regression suite as dedicated phase gate.
   - 55c completed (code): schema/state now expose WASM `invoke_supported` vs `render_supported` contracts for platform-aware degrade signaling.
   - 55c completed (acceptance): core HTTP contract regression now enforces wasm capability fields (`invoke_supported`/`render_supported`) and `capabilities.wasm` presence.
   - 55d completed (code): shared `WasmEventInvokeExecutor` + `IWasmCommandRenderer` strategy landed to remove duplicate invoke/render branches from control paths.
@@ -101,6 +101,8 @@
   - 55o-c completed (code): split macOS folder-picker implementation into coordinator + AppleScript module + OpenPanel fallback module, reducing single-file coupling without behavior change.
   - 55o-c completed (acceptance): core automation contract regression and wasm selfcheck remain green after split.
   - 55o-d completed (closure): minimal closure evidence is now recorded (selfcheck pass + manual runner availability + user-confirmed folder-import UX fixes).
+  - 55p completed (code): POSIX regression suite now runs macOS WASM runtime selfcheck as a first-class phase (default enabled, explicit skip flag available).
+  - 55p completed (acceptance): full POSIX suite and standalone selfcheck remain green after suite integration.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -158,6 +160,7 @@
 - phase55o closure is complete with minimal evidence; no additional phase55o-specific manual command choreography is required.
 - Core automation HTTP contracts now include non-interactive import-dialog capability probing (`probe_only=true`) and assert macOS support automatically.
 - Core automation HTTP contracts now include non-interactive WASM dispatch invocation checks (`load-manifest -> enable -> test-dispatch-click`) under test-only endpoint gate.
+- POSIX unified regression suite now includes macOS WASM runtime selfcheck by default, reducing manual acceptance drift for invoke/render/fallback behavior.
 - Linux WASM renderer path is now explicitly defined as `degrade-only` for current M2, preserving `invoke_supported=true` and `render_supported=false` contract semantics until a separate Linux-native renderer phase is approved.
 
 ## Next slice

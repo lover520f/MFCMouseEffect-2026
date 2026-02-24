@@ -19,6 +19,7 @@ MFX_SKIP_CORE_SMOKE=0
 MFX_SKIP_CORE_AUTOMATION=0
 MFX_SKIP_LINUX_GATE=0
 MFX_SKIP_AUTOMATION_TEST=0
+MFX_SKIP_MACOS_WASM_SELFCHECK=0
 MFX_SCAFFOLD_SKIP_SMOKE=0
 MFX_SCAFFOLD_SKIP_HTTP=0
 
@@ -68,6 +69,10 @@ while [[ $# -gt 0 ]]; do
             MFX_SKIP_AUTOMATION_TEST=1
             shift
             ;;
+        --skip-macos-wasm-selfcheck)
+            MFX_SKIP_MACOS_WASM_SELFCHECK=1
+            shift
+            ;;
         --scaffold-skip-smoke)
             MFX_SCAFFOLD_SKIP_SMOKE=1
             shift
@@ -90,6 +95,7 @@ Usage: run-posix-regression-suite.sh [options]
   --skip-core-automation          skip core automation HTTP contract phase
   --skip-linux-gate               skip linux compile gate phase
   --skip-automation-test          skip webui automation platform semantic tests
+  --skip-macos-wasm-selfcheck     skip macOS wasm runtime selfcheck phase
   --scaffold-skip-smoke           forward: skip scaffold smoke checks
   --scaffold-skip-http            forward: skip scaffold HTTP checks
 USAGE
@@ -158,6 +164,24 @@ if [[ "$MFX_SKIP_CORE_AUTOMATION" -eq 0 ]]; then
     "$SCRIPT_DIR/run-posix-core-automation-contract-regression.sh" "${local_core_automation_args[@]}"
 else
     mfx_info "skip core automation contract phase"
+fi
+
+if [[ "$MFX_SKIP_MACOS_WASM_SELFCHECK" -eq 0 ]]; then
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        local_wasm_selfcheck_args=("--skip-build")
+        if [[ -n "$MFX_CORE_AUTOMATION_BUILD_DIR" ]]; then
+            local_wasm_selfcheck_args+=("--build-dir" "$MFX_CORE_AUTOMATION_BUILD_DIR")
+        elif [[ -n "$MFX_CORE_BUILD_DIR" ]]; then
+            local_wasm_selfcheck_args+=("--build-dir" "$MFX_CORE_BUILD_DIR")
+        fi
+
+        mfx_info "run macos wasm runtime selfcheck phase"
+        "$REPO_ROOT/tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh" "${local_wasm_selfcheck_args[@]}"
+    else
+        mfx_info "skip macos wasm runtime selfcheck phase (non-macos host)"
+    fi
+else
+    mfx_info "skip macos wasm runtime selfcheck phase"
 fi
 
 if [[ "$MFX_SKIP_LINUX_GATE" -eq 0 ]]; then
