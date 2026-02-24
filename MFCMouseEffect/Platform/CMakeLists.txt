@@ -271,6 +271,7 @@ if(MFX_ENABLE_ENTRY_RUNTIME_TARGETS)
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.Routing.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.TestApiRoutes.cpp"
+            "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.WasmRoutes.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.TokenMonitor.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebUiAssets.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Utils/StringUtils.cpp"
