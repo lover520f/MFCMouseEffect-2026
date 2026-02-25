@@ -167,6 +167,8 @@
   - 55r completed (acceptance): full POSIX suite (including macOS WASM selfcheck phase) remains green after classification-coverage expansion.
   - 55s completed (code): macOS WASM runtime selfcheck now also covers stage-level failures (`manifest_api_version`, `load_module`) and successful-reload failure-field reset (`last_load_failure_stage/code` cleared).
   - 55s completed (acceptance): full POSIX suite (including macOS WASM selfcheck phase) remains green after stage-coverage expansion.
+  - 55t completed (code): extracted shared WASM selfcheck helpers (`load-manifest` HTTP + stage/code assertions + JSON escaping) to dedicated manual-lib module, reducing duplication in the macOS runtime selfcheck script.
+  - 55t completed (acceptance): script syntax checks and full POSIX suite remain green after helper split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -257,6 +259,7 @@
 - WASM load failure diagnostics now provide stable stage/code pairs in `/api/state` and `/api/wasm/*` responses, reducing triage ambiguity on manifest/runtime load failures.
 - macOS WASM selfcheck now enforces full manifest-failure classification semantics, reducing silent classifier drift risk.
 - macOS WASM selfcheck now also enforces non-manifest-load stage semantics and recovery cleanup semantics after valid reload.
+- macOS WASM selfcheck internals are now helper-split, reducing future extension/change risk while preserving existing contract assertions.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:

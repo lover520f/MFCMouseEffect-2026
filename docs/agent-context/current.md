@@ -65,6 +65,7 @@
   - WASM diagnostics now expose machine-readable load-failure fields (`last_load_failure_stage`, `last_load_failure_code`) and invalid-manifest selfcheck now asserts `manifest_load/manifest_io_error`
   - macOS WASM selfcheck now covers full manifest load-failure classification (`manifest_io_error`, `manifest_json_parse_error`, `manifest_invalid`) to lock failure-code semantics in regression
   - macOS WASM selfcheck now also covers stage-level load failures (`manifest_api_version`, `load_module`) and asserts load-failure field reset after a valid reload
+  - macOS WASM selfcheck `load-manifest` request/assert logic is now helper-split (`tools/platform/manual/lib/wasm_selfcheck_common.sh`), reducing script duplication while preserving checks
 
 ## Known Stable Gates
 Run these as first-line regression checks:
@@ -117,6 +118,7 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55q-posix-wasm-load-failure-diagnostics-contract.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55r-macos-wasm-load-failure-classification-selfcheck.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55s-macos-wasm-load-stage-selfcheck-expansion.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55t-macos-wasm-selfcheck-helper-split.md`
 
 ## AI-IDE Context Loading Rule
 - Read this file first for active truth.

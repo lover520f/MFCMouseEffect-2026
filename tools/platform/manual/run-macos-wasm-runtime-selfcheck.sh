@@ -8,6 +8,7 @@ repo_root="$(cd -- "$script_dir/../../.." && pwd)"
 source "$repo_root/tools/platform/regression/lib/common.sh"
 source "$repo_root/tools/platform/regression/lib/build.sh"
 source "$repo_root/tools/platform/manual/lib/macos_core_host.sh"
+source "$repo_root/tools/platform/manual/lib/wasm_selfcheck_common.sh"
 
 usage() {
     cat <<'EOF'
@@ -26,11 +27,6 @@ Options:
   --auto-stop-seconds <num>   Auto stop host after N seconds (only used with --keep-running, default: 120)
   -h, --help                  Show this help
 EOF
-}
-
-json_escape() {
-    local value="$1"
-    printf '%s' "$value" | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
 
 build_dir="/tmp/mfx-platform-macos-core-build"
@@ -154,32 +150,28 @@ if [[ "$open_settings" -eq 1 ]]; then
     open "$MFX_MANUAL_SETTINGS_URL" >/dev/null 2>&1 || mfx_fail "failed to open settings url"
 fi
 
-token_header=("x-mfcmouseeffect-token: $MFX_MANUAL_SETTINGS_TOKEN")
+token="$MFX_MANUAL_SETTINGS_TOKEN"
+token_header="x-mfcmouseeffect-token: $token"
 
 state_file="$tmp_dir/state.out"
-code_state="$(mfx_http_code "$state_file" "$MFX_MANUAL_BASE_URL/api/state" -H "${token_header[0]}")"
+code_state="$(mfx_http_code "$state_file" "$MFX_MANUAL_BASE_URL/api/state" -H "$token_header")"
 mfx_assert_eq "$code_state" "200" "selfcheck state status"
 mfx_assert_file_contains "$state_file" "\"runtime_backend\":\"wasm3_static\"" "selfcheck runtime backend"
 mfx_assert_file_contains "$state_file" "\"render_supported\":true" "selfcheck render capability"
 
-manifest_path_escaped="$(json_escape "$manifest_path")"
-
 load_file="$tmp_dir/wasm-load-manifest.out"
-code_load="$(mfx_http_code "$load_file" "$MFX_MANUAL_BASE_URL/api/wasm/load-manifest" \
-    -X POST -H "${token_header[0]}" -H "Content-Type: application/json" \
-    -d "{\"manifest_path\":\"$manifest_path_escaped\"}")"
-mfx_assert_eq "$code_load" "200" "selfcheck wasm load-manifest status"
-mfx_assert_file_contains "$load_file" "\"ok\":true" "selfcheck wasm load-manifest ok"
+mfx_wasm_selfcheck_assert_load_manifest_ok \
+    "wasm load-manifest" "$load_file" "$MFX_MANUAL_BASE_URL" "$token" "$manifest_path"
 
 enable_file="$tmp_dir/wasm-enable.out"
 code_enable="$(mfx_http_code "$enable_file" "$MFX_MANUAL_BASE_URL/api/wasm/enable" \
-    -X POST -H "${token_header[0]}" -H "Content-Type: application/json" -d '{}')"
+    -X POST -H "$token_header" -H "Content-Type: application/json" -d '{}')"
 mfx_assert_eq "$code_enable" "200" "selfcheck wasm enable status"
 mfx_assert_file_contains "$enable_file" "\"ok\":true" "selfcheck wasm enable ok"
 
 dispatch_file="$tmp_dir/wasm-test-dispatch.out"
 code_dispatch="$(mfx_http_code "$dispatch_file" "$MFX_MANUAL_BASE_URL/api/wasm/test-dispatch-click" \
-    -X POST -H "${token_header[0]}" -H "Content-Type: application/json" \
+    -X POST -H "$token_header" -H "Content-Type: application/json" \
     -d '{"x":640,"y":360,"button":1}')"
 mfx_assert_eq "$code_dispatch" "200" "selfcheck wasm test-dispatch status"
 mfx_assert_file_contains "$dispatch_file" "\"ok\":true" "selfcheck wasm test-dispatch ok"
@@ -188,27 +180,17 @@ mfx_assert_file_contains "$dispatch_file" "\"invoke_ok\":true" "selfcheck wasm i
 mfx_assert_file_contains "$dispatch_file" "\"rendered_any\":true" "selfcheck wasm rendered"
 
 invalid_manifest_path="${manifest_path}.missing"
-invalid_manifest_escaped="$(json_escape "$invalid_manifest_path")"
 invalid_file="$tmp_dir/wasm-load-invalid.out"
-code_invalid="$(mfx_http_code "$invalid_file" "$MFX_MANUAL_BASE_URL/api/wasm/load-manifest" \
-    -X POST -H "${token_header[0]}" -H "Content-Type: application/json" \
-    -d "{\"manifest_path\":\"$invalid_manifest_escaped\"}")"
-mfx_assert_eq "$code_invalid" "200" "selfcheck invalid manifest status"
-mfx_assert_file_contains "$invalid_file" "\"ok\":false" "selfcheck invalid manifest should fail"
-mfx_assert_file_contains "$invalid_file" "\"last_load_failure_stage\":\"manifest_load\"" "selfcheck invalid manifest stage"
-mfx_assert_file_contains "$invalid_file" "\"last_load_failure_code\":\"manifest_io_error\"" "selfcheck invalid manifest code"
+mfx_wasm_selfcheck_assert_load_manifest_failure \
+    "invalid manifest" "$invalid_file" "$MFX_MANUAL_BASE_URL" "$token" "$invalid_manifest_path" \
+    "manifest_load" "manifest_io_error"
 
 invalid_json_manifest_path="$tmp_dir/manifest-invalid-json.json"
 printf '{' > "$invalid_json_manifest_path"
-invalid_json_manifest_escaped="$(json_escape "$invalid_json_manifest_path")"
 invalid_json_file="$tmp_dir/wasm-load-invalid-json.out"
-code_invalid_json="$(mfx_http_code "$invalid_json_file" "$MFX_MANUAL_BASE_URL/api/wasm/load-manifest" \
-    -X POST -H "${token_header[0]}" -H "Content-Type: application/json" \
-    -d "{\"manifest_path\":\"$invalid_json_manifest_escaped\"}")"
-mfx_assert_eq "$code_invalid_json" "200" "selfcheck invalid json manifest status"
-mfx_assert_file_contains "$invalid_json_file" "\"ok\":false" "selfcheck invalid json manifest should fail"
-mfx_assert_file_contains "$invalid_json_file" "\"last_load_failure_stage\":\"manifest_load\"" "selfcheck invalid json manifest stage"
-mfx_assert_file_contains "$invalid_json_file" "\"last_load_failure_code\":\"manifest_json_parse_error\"" "selfcheck invalid json manifest code"
+mfx_wasm_selfcheck_assert_load_manifest_failure \
+    "invalid json manifest" "$invalid_json_file" "$MFX_MANUAL_BASE_URL" "$token" "$invalid_json_manifest_path" \
+    "manifest_load" "manifest_json_parse_error"
 
 invalid_schema_manifest_path="$tmp_dir/manifest-invalid-schema.json"
 cat > "$invalid_schema_manifest_path" <<'EOF'
@@ -220,15 +202,10 @@ cat > "$invalid_schema_manifest_path" <<'EOF'
   "entry": "effect.wasm"
 }
 EOF
-invalid_schema_manifest_escaped="$(json_escape "$invalid_schema_manifest_path")"
 invalid_schema_file="$tmp_dir/wasm-load-invalid-schema.out"
-code_invalid_schema="$(mfx_http_code "$invalid_schema_file" "$MFX_MANUAL_BASE_URL/api/wasm/load-manifest" \
-    -X POST -H "${token_header[0]}" -H "Content-Type: application/json" \
-    -d "{\"manifest_path\":\"$invalid_schema_manifest_escaped\"}")"
-mfx_assert_eq "$code_invalid_schema" "200" "selfcheck invalid schema manifest status"
-mfx_assert_file_contains "$invalid_schema_file" "\"ok\":false" "selfcheck invalid schema manifest should fail"
-mfx_assert_file_contains "$invalid_schema_file" "\"last_load_failure_stage\":\"manifest_load\"" "selfcheck invalid schema manifest stage"
-mfx_assert_file_contains "$invalid_schema_file" "\"last_load_failure_code\":\"manifest_invalid\"" "selfcheck invalid schema manifest code"
+mfx_wasm_selfcheck_assert_load_manifest_failure \
+    "invalid schema manifest" "$invalid_schema_file" "$MFX_MANUAL_BASE_URL" "$token" "$invalid_schema_manifest_path" \
+    "manifest_load" "manifest_invalid"
 
 unsupported_api_manifest_path="$tmp_dir/manifest-unsupported-api.json"
 cat > "$unsupported_api_manifest_path" <<'EOF'
@@ -240,15 +217,10 @@ cat > "$unsupported_api_manifest_path" <<'EOF'
   "entry": "effect.wasm"
 }
 EOF
-unsupported_api_manifest_escaped="$(json_escape "$unsupported_api_manifest_path")"
 unsupported_api_file="$tmp_dir/wasm-load-unsupported-api.out"
-code_unsupported_api="$(mfx_http_code "$unsupported_api_file" "$MFX_MANUAL_BASE_URL/api/wasm/load-manifest" \
-    -X POST -H "${token_header[0]}" -H "Content-Type: application/json" \
-    -d "{\"manifest_path\":\"$unsupported_api_manifest_escaped\"}")"
-mfx_assert_eq "$code_unsupported_api" "200" "selfcheck unsupported api manifest status"
-mfx_assert_file_contains "$unsupported_api_file" "\"ok\":false" "selfcheck unsupported api manifest should fail"
-mfx_assert_file_contains "$unsupported_api_file" "\"last_load_failure_stage\":\"manifest_api_version\"" "selfcheck unsupported api manifest stage"
-mfx_assert_file_contains "$unsupported_api_file" "\"last_load_failure_code\":\"manifest_api_unsupported\"" "selfcheck unsupported api manifest code"
+mfx_wasm_selfcheck_assert_load_manifest_failure \
+    "unsupported api manifest" "$unsupported_api_file" "$MFX_MANUAL_BASE_URL" "$token" "$unsupported_api_manifest_path" \
+    "manifest_api_version" "manifest_api_unsupported"
 
 missing_wasm_manifest_path="$tmp_dir/manifest-missing-wasm.json"
 cat > "$missing_wasm_manifest_path" <<'EOF'
@@ -260,22 +232,14 @@ cat > "$missing_wasm_manifest_path" <<'EOF'
   "entry": "missing.wasm"
 }
 EOF
-missing_wasm_manifest_escaped="$(json_escape "$missing_wasm_manifest_path")"
 missing_wasm_file="$tmp_dir/wasm-load-missing-wasm.out"
-code_missing_wasm="$(mfx_http_code "$missing_wasm_file" "$MFX_MANUAL_BASE_URL/api/wasm/load-manifest" \
-    -X POST -H "${token_header[0]}" -H "Content-Type: application/json" \
-    -d "{\"manifest_path\":\"$missing_wasm_manifest_escaped\"}")"
-mfx_assert_eq "$code_missing_wasm" "200" "selfcheck missing wasm manifest status"
-mfx_assert_file_contains "$missing_wasm_file" "\"ok\":false" "selfcheck missing wasm manifest should fail"
-mfx_assert_file_contains "$missing_wasm_file" "\"last_load_failure_stage\":\"load_module\"" "selfcheck missing wasm manifest stage"
-mfx_assert_file_contains "$missing_wasm_file" "\"last_load_failure_code\":\"module_load_failed\"" "selfcheck missing wasm manifest code"
+mfx_wasm_selfcheck_assert_load_manifest_failure \
+    "missing wasm manifest" "$missing_wasm_file" "$MFX_MANUAL_BASE_URL" "$token" "$missing_wasm_manifest_path" \
+    "load_module" "module_load_failed"
 
 reload_file="$tmp_dir/wasm-load-manifest-reload.out"
-code_reload="$(mfx_http_code "$reload_file" "$MFX_MANUAL_BASE_URL/api/wasm/load-manifest" \
-    -X POST -H "${token_header[0]}" -H "Content-Type: application/json" \
-    -d "{\"manifest_path\":\"$manifest_path_escaped\"}")"
-mfx_assert_eq "$code_reload" "200" "selfcheck wasm reload-manifest status"
-mfx_assert_file_contains "$reload_file" "\"ok\":true" "selfcheck wasm reload-manifest ok"
+mfx_wasm_selfcheck_assert_load_manifest_ok \
+    "wasm reload-manifest" "$reload_file" "$MFX_MANUAL_BASE_URL" "$token" "$manifest_path"
 mfx_assert_file_contains "$reload_file" "\"last_load_failure_stage\":\"\"" "selfcheck wasm reload clears failure stage"
 mfx_assert_file_contains "$reload_file" "\"last_load_failure_code\":\"\"" "selfcheck wasm reload clears failure code"
 
@@ -285,7 +249,7 @@ if ! kill -0 "$MFX_MANUAL_HOST_PID" 2>/dev/null; then
 fi
 
 state_after_file="$tmp_dir/state-after-invalid.out"
-code_state_after="$(mfx_http_code "$state_after_file" "$MFX_MANUAL_BASE_URL/api/state" -H "${token_header[0]}")"
+code_state_after="$(mfx_http_code "$state_after_file" "$MFX_MANUAL_BASE_URL/api/state" -H "$token_header")"
 mfx_assert_eq "$code_state_after" "200" "selfcheck state after invalid manifest"
 
 mfx_ok "macos wasm runtime selfcheck passed"
