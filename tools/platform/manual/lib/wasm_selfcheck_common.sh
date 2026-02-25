@@ -95,6 +95,70 @@ mfx_wasm_selfcheck_test_dispatch_http_code() {
         -d '{"x":640,"y":360,"button":1}'
 }
 
+mfx_wasm_selfcheck_parse_uint_field() {
+    local input_file="$1"
+    local field_name="$2"
+    sed -n "s/.*\"${field_name}\":\\([0-9][0-9]*\\).*/\\1/p" "$input_file" | head -n 1
+}
+
+mfx_wasm_selfcheck_parse_string_field() {
+    local input_file="$1"
+    local field_name="$2"
+    sed -n "s/.*\"${field_name}\":\"\\([^\"]*\\)\".*/\\1/p" "$input_file" | head -n 1
+}
+
+mfx_wasm_selfcheck_assert_dispatch_diagnostics_consistent() {
+    local label="$1"
+    local dispatch_output_file="$2"
+    local state_output_file="$3"
+
+    local dispatch_throttled
+    local dispatch_throttled_by_capacity
+    local dispatch_throttled_by_interval
+    local dispatch_dropped
+    local dispatch_render_error
+    dispatch_throttled="$(mfx_wasm_selfcheck_parse_uint_field "$dispatch_output_file" "throttled_commands")"
+    dispatch_throttled_by_capacity="$(mfx_wasm_selfcheck_parse_uint_field "$dispatch_output_file" "throttled_by_capacity_commands")"
+    dispatch_throttled_by_interval="$(mfx_wasm_selfcheck_parse_uint_field "$dispatch_output_file" "throttled_by_interval_commands")"
+    dispatch_dropped="$(mfx_wasm_selfcheck_parse_uint_field "$dispatch_output_file" "dropped_commands")"
+    dispatch_render_error="$(mfx_wasm_selfcheck_parse_string_field "$dispatch_output_file" "render_error")"
+
+    if [[ -z "$dispatch_throttled" || -z "$dispatch_throttled_by_capacity" || -z "$dispatch_throttled_by_interval" || -z "$dispatch_dropped" ]]; then
+        mfx_fail "selfcheck $label dispatch diagnostics parse failed"
+    fi
+
+    local state_throttled
+    local state_throttled_by_capacity
+    local state_throttled_by_interval
+    local state_dropped
+    local state_render_error
+    state_throttled="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "last_throttled_render_commands")"
+    state_throttled_by_capacity="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "last_throttled_by_capacity_render_commands")"
+    state_throttled_by_interval="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "last_throttled_by_interval_render_commands")"
+    state_dropped="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "last_dropped_render_commands")"
+    state_render_error="$(mfx_wasm_selfcheck_parse_string_field "$state_output_file" "last_render_error")"
+
+    if [[ -z "$state_throttled" || -z "$state_throttled_by_capacity" || -z "$state_throttled_by_interval" || -z "$state_dropped" ]]; then
+        mfx_fail "selfcheck $label state diagnostics parse failed"
+    fi
+
+    local dispatch_sum=$((dispatch_throttled_by_capacity + dispatch_throttled_by_interval))
+    if (( dispatch_sum != dispatch_throttled )); then
+        mfx_fail "selfcheck $label dispatch throttle counters mismatch: total=$dispatch_throttled sum=$dispatch_sum"
+    fi
+
+    local state_sum=$((state_throttled_by_capacity + state_throttled_by_interval))
+    if (( state_sum != state_throttled )); then
+        mfx_fail "selfcheck $label state throttle counters mismatch: total=$state_throttled sum=$state_sum"
+    fi
+
+    mfx_assert_eq "$state_throttled" "$dispatch_throttled" "selfcheck $label throttled total"
+    mfx_assert_eq "$state_throttled_by_capacity" "$dispatch_throttled_by_capacity" "selfcheck $label throttled by capacity"
+    mfx_assert_eq "$state_throttled_by_interval" "$dispatch_throttled_by_interval" "selfcheck $label throttled by interval"
+    mfx_assert_eq "$state_dropped" "$dispatch_dropped" "selfcheck $label dropped commands"
+    mfx_assert_eq "$state_render_error" "$dispatch_render_error" "selfcheck $label render error"
+}
+
 mfx_wasm_selfcheck_assert_import_selected_ok() {
     local label="$1"
     local output_file="$2"

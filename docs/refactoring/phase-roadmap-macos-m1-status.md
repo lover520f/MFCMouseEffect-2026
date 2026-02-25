@@ -251,6 +251,8 @@
   - 55zzf completed (acceptance): full POSIX regression suite remains green after click pulse overlay internals split.
   - 55zzg completed (code): split keyboard injector key mapping tables into `MacosKeyboardInjectorKeyTables.*` and kept `MacosKeyboardInjectorKeyResolver.mm` as resolver flow/orchestration facade.
   - 55zzg completed (acceptance): full POSIX regression suite remains green after keyboard-injector key-table split.
+  - 55zzh completed (code): expanded wasm dispatch test contracts to assert diagnostics consistency between dispatch response and `/api/state` snapshots, including throttle arithmetic invariant (`total == capacity + interval`).
+  - 55zzh completed (acceptance): full POSIX regression suite remains green after wasm dispatch diagnostics consistency contract expansion.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -368,6 +370,7 @@
 - Top-level first-read doc indexes are now compacted (key-doc subsets + roadmap pointer), reducing ongoing token pressure as Phase 55 slices continue.
 - Core regression entry scripts now share one workflow-prep/lock execution path, reducing boilerplate drift in stale cleanup, build lane setup, and lock wrapping.
 - WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
+- WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:

@@ -74,6 +74,14 @@ _mfx_core_http_run_wasm_contract_checks() {
             "core wasm test-dispatch" \
             "$require_rendered_any"
 
+        local code_state_after_dispatch
+        code_state_after_dispatch="$(mfx_http_code "$tmp_dir/state-after-wasm-dispatch.out" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
+        mfx_assert_eq "$code_state_after_dispatch" "200" "core wasm state after dispatch status"
+        _mfx_core_http_assert_wasm_dispatch_diagnostics_consistent \
+            "$tmp_dir/wasm-test-dispatch.out" \
+            "$tmp_dir/state-after-wasm-dispatch.out" \
+            "core wasm dispatch diagnostics consistency"
+
         local invalid_manifest_path="${wasm_manifest_path}.missing"
         _mfx_core_http_assert_wasm_import_selected_failure \
             "$tmp_dir/wasm-import-selected-invalid.out" \

@@ -93,6 +93,7 @@
   - POSIX regression entry scripts now share helperized host-platform detection and `--platform` resolution to keep cross-host guard semantics centralized
   - core regression entry scripts now share helperized workflow preparation and lock execution (`mfx_prepare_core_entry_runtime`, `mfx_run_with_entry_lock`)
   - wasm test-dispatch assertions in regression/manual selfchecks now use bounded retries to reduce transient invoke/render readiness flakiness
+  - wasm test-dispatch checks now also assert diagnostics consistency against `/api/state` (`throttled total == capacity+interval`, and dispatch vs state counters/error snapshot match)
   - macOS global-input event mapping and permission-simulation parsing are now extracted to dedicated helper modules (`MacosInputEventUtils.*`, `MacosInputPermissionState.*`)
   - macOS `MacosGlobalInputHook` implementation is now split by responsibility (`MacosGlobalInputHook.mm`, `.EventTap.mm`, `.RunLoop.mm`) to lower file coupling without behavior changes
   - macOS input-indicator overlay path is now split into render/lifecycle (`MacosInputIndicatorOverlay.mm`), probe/event-entry (`MacosInputIndicatorOverlay.Probes.mm`), and shared internals (`MacosInputIndicatorOverlayInternals.*`)
@@ -177,10 +178,11 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zze-macos-scroll-pulse-overlay-internals-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzf-macos-click-pulse-overlay-internals-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzg-macos-keyboard-injector-key-tables-split.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzh-wasm-dispatch-diagnostics-consistency-contract.md`
 - Phase closure docs:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53ai-automation-mapping-phase-closure.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase54i-linux-follow-phase-closure.md`
-- For full Phase 55 sequence (`55h-55zzg`), read roadmap status doc above instead of loading all slice docs by default.
+- For full Phase 55 sequence (`55h-55zzh`), read roadmap status doc above instead of loading all slice docs by default.
 
 ## AI-IDE Context Loading Rule
 - Read this file first for active truth.

@@ -221,6 +221,14 @@ mfx_wasm_selfcheck_assert_test_dispatch_ok \
     "$token" \
     "true"
 
+state_after_dispatch_file="$tmp_dir/state-after-dispatch.out"
+code_state_after_dispatch="$(mfx_http_code "$state_after_dispatch_file" "$MFX_MANUAL_BASE_URL/api/state" -H "$token_header")"
+mfx_assert_eq "$code_state_after_dispatch" "200" "selfcheck state after dispatch status"
+mfx_wasm_selfcheck_assert_dispatch_diagnostics_consistent \
+    "wasm dispatch diagnostics consistency" \
+    "$dispatch_file" \
+    "$state_after_dispatch_file"
+
 invalid_manifest_path="${manifest_path}.missing"
 invalid_file="$tmp_dir/wasm-load-invalid.out"
 mfx_wasm_selfcheck_assert_load_manifest_failure \
