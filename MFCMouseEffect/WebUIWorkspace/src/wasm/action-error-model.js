@@ -1,4 +1,19 @@
 const ERROR_CODE_MESSAGES = {
+  no_controller: ['wasm_error_no_controller', 'Controller is unavailable.'],
+  wasm_host_unavailable: ['wasm_error_wasm_host_unavailable', 'WASM host is unavailable.'],
+  unknown_error: ['wasm_error_unknown_error', 'Unknown WASM error.'],
+  load_manifest_failed: ['wasm_error_load_manifest_failed', 'Failed to switch WASM manifest.'],
+  reload_failed: ['wasm_error_reload_failed', 'Failed to reload current WASM plugin.'],
+  reload_target_missing: ['wasm_error_reload_target_missing', 'No active WASM plugin target to reload.'],
+  runtime_unavailable: ['wasm_error_runtime_unavailable', 'WASM runtime is unavailable.'],
+  module_load_failed: ['wasm_error_module_load_failed', 'Failed to load WASM module from entry file.'],
+  api_version_call_failed: ['wasm_error_api_version_call_failed', 'Failed to read plugin API version from WASM module.'],
+  api_version_unsupported: ['wasm_error_api_version_unsupported', 'WASM module API version is unsupported.'],
+  manifest_io_error: ['wasm_error_manifest_io_error', 'Failed to read plugin manifest file.'],
+  manifest_json_parse_error: ['wasm_error_manifest_json_parse_error', 'Plugin manifest JSON is invalid.'],
+  manifest_invalid: ['wasm_error_manifest_invalid', 'Plugin manifest is invalid.'],
+  manifest_api_unsupported: ['wasm_error_manifest_api_unsupported', 'Manifest API version is unsupported by current host.'],
+  entry_wasm_path_invalid: ['wasm_error_entry_wasm_path_invalid', 'Manifest entry wasm path is invalid.'],
   manifest_path_required: ['wasm_error_manifest_path_required', 'Plugin manifest path is required.'],
   manifest_path_not_found: ['wasm_error_manifest_path_not_found', 'Plugin manifest path does not exist.'],
   manifest_path_not_file: ['wasm_error_manifest_path_not_file', 'Plugin manifest path is not a file.'],
@@ -36,4 +51,13 @@ export function resolveWasmActionErrorMessage(errorCode, translate) {
     return translate(key, fallback);
   }
   return fallback;
+}
+
+export function listWasmActionErrorI18nKeys() {
+  const keys = [];
+  for (const [, value] of Object.entries(ERROR_CODE_MESSAGES)) {
+    const [i18nKey] = value;
+    keys.push(i18nKey);
+  }
+  return keys;
 }
