@@ -67,6 +67,8 @@
   - 53s completed (acceptance): core automation contracts + full POSIX suite remain green after schema-builder section split.
   - 53t completed (code): split `HttpServer` into lifecycle/session/protocol layers (`HttpServer.Lifecycle.cpp`, `HttpServer.ClientSession.cpp`, `HttpServer.Protocol.cpp`) and kept `HttpServer.cpp` as thin ctor/dtor entry.
   - 53t completed (acceptance): full POSIX regression suite remains green after HTTP server layer split.
+  - 53u completed (code): split WebSettings automation test routes into `scope/injection/shortcut` modules with shared route-utils and kept `TestAutomationApiRoutes.cpp` as delegating entry.
+  - 53u completed (acceptance): full POSIX regression suite remains green after automation test-route layer split.
 - Phase 54 (Linux compile-level + contract-level follow): in progress, compile gate currently passing in CI-style local commands.
   - 54a completed (code): Linux compile-level gate is now scriptized as one-command workflow (`run-posix-linux-compile-gate.sh`) with modular regression packaging.
   - 54a completed (acceptance): gate command executed and passed on current host.
@@ -167,6 +169,7 @@
 - phase53r Settings state mapping is now split by section ownership (base config vs runtime diagnostics), reducing cross-capability coupling in WebSettings state evolution.
 - phase53s Settings schema building is now split by section ownership (options vs capabilities), reducing schema evolution coupling and review surface.
 - phase53t HttpServer transport internals are now split by responsibility (lifecycle vs client session vs protocol), reducing server-layer coupling while preserving HTTP contracts.
+- phase53u WebSettings automation test routes are now split by contract ownership (`scope` vs `injection` vs `shortcut`) with shared parse/match helpers, reducing test-route coupling while preserving endpoint contracts.
 - Linux compile gate now has a dedicated orchestration script, reducing manual command drift risk for cross-host follow.
 - Automation platform semantics now have script-level regression guard, reducing manual-only verification for `.app/.exe` behavior.
 - POSIX regression now has a single suite entrypoint with phase-level skip switches for faster diagnosis.
