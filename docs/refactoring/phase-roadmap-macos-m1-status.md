@@ -241,6 +241,8 @@
   - 55zza completed (acceptance): full POSIX regression suite remains green after dispatch-host implementation split.
   - 55zzb completed (code): split `MacosTrayService` into lifecycle facade + dedicated menu factory/runtime helper modules (`MacosTrayMenuFactory.*`, `MacosTrayRuntimeHelpers.*`) and moved Objective-C action bridge out of service file.
   - 55zzb completed (acceptance): full POSIX regression suite remains green after tray service menu-factory/runtime-helper split.
+  - 55zzc completed (code): further split app-catalog workflow by extracting scan roots (`MacosApplicationCatalogScanRoots.*`) and entry store (`MacosApplicationCatalogEntryStore.*`), keeping traversal orchestration in `MacosApplicationCatalogScanWorkflow.mm`.
+  - 55zzc completed (acceptance): full POSIX regression suite remains green after app-catalog workflow secondary split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.

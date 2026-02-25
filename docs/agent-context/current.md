@@ -103,6 +103,7 @@
   - macOS wasm transient image overlay now isolates rendering internals in `MacosWasmImageOverlayRenderer.*`, keeping `MacosWasmTransientOverlay` as API facade
   - macOS dispatch host now isolates lifecycle, messaging worker, and timer management into separate implementation units (`MacosDispatchMessageHost.cpp`, `.Messaging.cpp`, `.Timers.cpp`)
   - macOS tray service now isolates menu/action bridge creation and runtime helpers into `MacosTrayMenuFactory.*` and `MacosTrayRuntimeHelpers.*`, keeping `MacosTrayService` as lifecycle facade
+  - macOS app-catalog workflow now isolates scan roots and entry-store logic (`MacosApplicationCatalogScanRoots.*`, `MacosApplicationCatalogEntryStore.*`) with traversal orchestration retained in `MacosApplicationCatalogScanWorkflow.mm`
 
 ## Known Stable Gates
 Run these as first-line regression checks:
@@ -168,10 +169,11 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zz-macos-wasm-image-overlay-renderer-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zza-macos-dispatch-message-host-impl-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzb-macos-tray-service-menu-factory-split.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzc-macos-app-catalog-workflow-secondary-split.md`
 - Phase closure docs:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53ai-automation-mapping-phase-closure.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase54i-linux-follow-phase-closure.md`
-- For full Phase 55 sequence (`55h-55zzb`), read roadmap status doc above instead of loading all slice docs by default.
+- For full Phase 55 sequence (`55h-55zzc`), read roadmap status doc above instead of loading all slice docs by default.
 
 ## AI-IDE Context Loading Rule
 - Read this file first for active truth.

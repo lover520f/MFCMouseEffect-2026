@@ -2,6 +2,9 @@
 
 #include "Platform/macos/System/MacosApplicationCatalogScanWorkflow.h"
 
+#include "Platform/macos/System/MacosApplicationCatalogEntryStore.h"
+#include "Platform/macos/System/MacosApplicationCatalogScanRoots.h"
+
 #if defined(__APPLE__)
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
@@ -9,21 +12,13 @@
 
 #include "MouseFx/Utils/StringUtils.h"
 
-#include <algorithm>
 #include <filesystem>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
-#include <utility>
 #include <vector>
 
 namespace mousefx::platform::macos {
 namespace {
-
-struct ScanRoot final {
-    std::filesystem::path path;
-    std::string source;
-};
 
 std::string NormalizeToken(std::string value) {
     return ToLowerAscii(TrimAscii(std::move(value)));
@@ -51,40 +46,7 @@ NSString* NsStringFromUtf8(const std::string& text) {
     }
     return [NSString stringWithUTF8String:text.c_str()];
 }
-
-bool DirectoryExists(const std::filesystem::path& path) {
-    std::error_code ec;
-    return std::filesystem::exists(path, ec) && std::filesystem::is_directory(path, ec) && !ec;
-}
-
-std::vector<ScanRoot> BuildScanRoots() {
-    std::vector<ScanRoot> roots;
-    std::unordered_set<std::string> dedup;
-
-    const auto addRoot = [&](std::filesystem::path path, const char* source) {
-        if (!DirectoryExists(path)) {
-            return;
-        }
-        path = std::filesystem::weakly_canonical(path);
-        const std::string dedupKey = NormalizeToken(path.string());
-        if (dedupKey.empty() || !dedup.insert(dedupKey).second) {
-            return;
-        }
-        roots.push_back(ScanRoot{std::move(path), source ? source : ""});
-    };
-
-    addRoot("/Applications", "applications");
-    addRoot("/System/Applications", "system");
-
-    NSString* homePath = NSHomeDirectory();
-    if (homePath != nil && homePath.length > 0) {
-        const std::string homeUtf8 = NsStringToUtf8(homePath);
-        if (!homeUtf8.empty()) {
-            addRoot(std::filesystem::path(homeUtf8) / "Applications", "home");
-        }
-    }
-    return roots;
-}
+#endif
 
 std::string ResolveProcessName(NSURL* bundleUrl) {
     if (bundleUrl == nil) {
@@ -142,36 +104,8 @@ std::string ResolveDisplayName(NSURL* bundleUrl, const std::string& fallback) {
     return fallback;
 }
 
-void UpsertEntry(
-    const std::string& processName,
-    const std::string& displayName,
-    const std::string& source,
-    std::vector<ApplicationCatalogEntry>* entries,
-    std::unordered_map<std::string, size_t>* indexByProcess) {
-    if (!entries || !indexByProcess || processName.empty()) {
-        return;
-    }
-
-    auto found = indexByProcess->find(processName);
-    if (found != indexByProcess->end()) {
-        ApplicationCatalogEntry& existing = (*entries)[found->second];
-        if (existing.displayName == existing.processName && !displayName.empty()) {
-            existing.displayName = displayName;
-        }
-        return;
-    }
-
-    ApplicationCatalogEntry entry;
-    entry.processName = processName;
-    entry.displayName = displayName.empty() ? processName : displayName;
-    entry.source = source;
-
-    (*indexByProcess)[entry.processName] = entries->size();
-    entries->push_back(std::move(entry));
-}
-
 void ScanSingleRoot(
-    const ScanRoot& root,
+    const MacosApplicationCatalogScanRoot& root,
     std::vector<ApplicationCatalogEntry>* entries,
     std::unordered_map<std::string, size_t>* indexByProcess) {
     if (!entries || !indexByProcess) {
@@ -231,25 +165,9 @@ void ScanSingleRoot(
             continue;
         }
         const std::string displayName = ResolveDisplayName(candidate, processName);
-        UpsertEntry(processName, displayName, root.source, entries, indexByProcess);
+        UpsertMacosApplicationCatalogEntry(processName, displayName, root.source, entries, indexByProcess);
     }
 }
-
-void SortEntries(std::vector<ApplicationCatalogEntry>* entries) {
-    if (!entries) {
-        return;
-    }
-
-    std::sort(entries->begin(), entries->end(), [](const ApplicationCatalogEntry& lhs, const ApplicationCatalogEntry& rhs) {
-        const std::string leftLabel = ToLowerAscii(lhs.displayName);
-        const std::string rightLabel = ToLowerAscii(rhs.displayName);
-        if (leftLabel == rightLabel) {
-            return lhs.processName < rhs.processName;
-        }
-        return leftLabel < rightLabel;
-    });
-}
-#endif
 
 } // namespace
 
@@ -260,12 +178,12 @@ std::vector<ApplicationCatalogEntry> ScanMacosApplicationCatalogEntries() {
     std::vector<ApplicationCatalogEntry> entries;
     std::unordered_map<std::string, size_t> indexByProcess;
 
-    const std::vector<ScanRoot> roots = BuildScanRoots();
-    for (const ScanRoot& root : roots) {
+    const std::vector<MacosApplicationCatalogScanRoot> roots = BuildMacosApplicationCatalogScanRoots();
+    for (const MacosApplicationCatalogScanRoot& root : roots) {
         ScanSingleRoot(root, &entries, &indexByProcess);
     }
 
-    SortEntries(&entries);
+    SortMacosApplicationCatalogEntries(&entries);
     return entries;
 #endif
 }

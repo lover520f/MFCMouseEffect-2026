@@ -47,6 +47,8 @@ add_library(mfx_shell_macos STATIC
     "${MFX_MACOS_TRAY_MENU_FACTORY_SOURCE}"
     "${MFX_MACOS_TRAY_LOCALIZATION_SOURCE}"
     "${MFX_MACOS_TRAY_SOURCE}"
+    "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosApplicationCatalogEntryStore.cpp"
+    "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosApplicationCatalogScanRoots.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosCursorPositionService.cpp"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosApplicationCatalogScanWorkflow.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosForegroundProcessService.mm"
