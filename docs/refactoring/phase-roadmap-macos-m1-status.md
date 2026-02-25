@@ -209,6 +209,8 @@
   - 55zk completed (acceptance): full POSIX regression suite remains green after suite preflight lock-alignment cleanup.
   - 55zl completed (code): consolidated stale entry-host cleanup into shared helper (`mfx_terminate_stale_entry_host`) and reused it in core regression scripts plus macOS manual host launcher lib.
   - 55zl completed (acceptance): full POSIX regression suite remains green after cleanup-helper consolidation.
+  - 55zm completed (code): extracted manual entry-lock acquire boilerplate into shared helper (`mfx_manual_acquire_entry_host_lock`) and switched manual keep-running stop hint to PID-scoped command (`kill -TERM <pid>`).
+  - 55zm completed (acceptance): full POSIX regression suite remains green after manual lock-helper + stop-command hardening.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -320,6 +322,7 @@
 - Core regression entry scripts now share an explicit host-process lock (`mfx-entry-posix-host`), reducing false-negative flakiness during concurrent local runs.
 - macOS manual core-entry scripts now also share the same host-process lock, reducing mixed manual+regression local-run interference.
 - Stale entry-host cleanup is now helper-consolidated (`mfx_terminate_stale_entry_host`) across regression/manual startup paths, reducing script-level drift risk.
+- macOS manual keep-running stop hints are now PID-scoped (`kill -TERM <pid>`) instead of broad process-pattern kill, reducing cross-run interference risk.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:

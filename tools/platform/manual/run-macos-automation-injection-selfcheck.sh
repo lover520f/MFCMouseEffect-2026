@@ -173,9 +173,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-mfx_info "entry host lock: mfx-entry-posix-host"
-MFX_ENTRY_LOCK_TIMEOUT_SECONDS="${MFX_ENTRY_LOCK_TIMEOUT_SECONDS:-180}"
-mfx_acquire_lock "mfx-entry-posix-host" "$MFX_ENTRY_LOCK_TIMEOUT_SECONDS"
+mfx_manual_acquire_entry_host_lock
 
 run_with_timeout() {
     local timeout_seconds="$1"
@@ -258,5 +256,5 @@ if [[ "$keep_running" -eq 1 ]]; then
         mfx_manual_schedule_auto_stop "$MFX_MANUAL_HOST_PID" "$auto_stop_seconds"
         printf 'auto_stop_seconds=%s\n' "$auto_stop_seconds"
     fi
-    printf 'stop_cmd=pkill -f mfx_entry_posix_host\n'
+    mfx_manual_print_stop_command "$MFX_MANUAL_HOST_PID"
 fi

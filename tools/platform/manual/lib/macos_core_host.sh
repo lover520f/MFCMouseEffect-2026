@@ -93,3 +93,17 @@ mfx_manual_schedule_auto_stop() {
         kill -TERM "$pid" 2>/dev/null || true
     ) >/dev/null 2>&1 &
 }
+
+mfx_manual_acquire_entry_host_lock() {
+    local timeout_seconds="${MFX_ENTRY_LOCK_TIMEOUT_SECONDS:-180}"
+    mfx_info "entry host lock: mfx-entry-posix-host"
+    mfx_acquire_lock "mfx-entry-posix-host" "$timeout_seconds"
+}
+
+mfx_manual_print_stop_command() {
+    local pid="${1:-$MFX_MANUAL_HOST_PID}"
+    if [[ -z "$pid" ]]; then
+        return 0
+    fi
+    printf 'stop_cmd=kill -TERM %s\n' "$pid"
+}

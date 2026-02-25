@@ -106,9 +106,7 @@ if [[ "$skip_build" -eq 0 ]]; then
 fi
 
 host_bin="$build_dir/mfx_entry_posix_host"
-mfx_info "entry host lock: mfx-entry-posix-host"
-MFX_ENTRY_LOCK_TIMEOUT_SECONDS="${MFX_ENTRY_LOCK_TIMEOUT_SECONDS:-180}"
-mfx_acquire_lock "mfx-entry-posix-host" "$MFX_ENTRY_LOCK_TIMEOUT_SECONDS"
+mfx_manual_acquire_entry_host_lock
 cleanup_lock() {
     mfx_release_lock
 }
