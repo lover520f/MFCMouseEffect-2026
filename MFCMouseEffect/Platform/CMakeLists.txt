@@ -266,6 +266,8 @@ if(MFX_ENABLE_ENTRY_RUNTIME_TARGETS)
             "${MFX_PROJECT_ROOT}/MouseFx/Effects/HoldRouteCatalog.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterBackendRegistry.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.cpp"
+            "${MFX_PROJECT_ROOT}/MouseFx/Server/SettingsSchemaBuilder.CapabilitiesSections.cpp"
+            "${MFX_PROJECT_ROOT}/MouseFx/Server/SettingsSchemaBuilder.OptionsSections.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/SettingsSchemaBuilder.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/SettingsStateMapper.BaseSections.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/SettingsStateMapper.Diagnostics.cpp"

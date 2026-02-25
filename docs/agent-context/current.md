@@ -35,6 +35,7 @@
   - WebSettings WASM routes are now split into `WasmRuntimeRoutes.*`, `WasmCatalogRoutes.*`, and `WasmRouteUtils.*` with delegating entry file
   - WebSettings test routes are now split into `TestAutomationApiRoutes.*`, `TestWasmInputApiRoutes.*`, and `TestRouteCommon.*` with delegating `TestApiRoutes.cpp`
   - `SettingsStateMapper` is now split into `BaseSections.*` and `Diagnostics.*` with top-level composition kept in `SettingsStateMapper.cpp`
+  - `SettingsSchemaBuilder` is now split into `OptionsSections.*` and `CapabilitiesSections.*` with top-level composition kept in `SettingsSchemaBuilder.cpp`
   - test-gated `/api/input-indicator/test-mouse-labels` enables non-interactive mac indicator label contract checks (`L/R/M`)
   - `/api/automation/active-process` now guarantees non-empty `process` on macOS via foreground-query fallback chain
   - schema capability `capabilities.input.keyboard_injector` now reports true on macOS (aligned with runtime injector wiring)
