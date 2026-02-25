@@ -281,6 +281,8 @@
   - 55zzu completed (acceptance): concurrent wasm gate runs now serialize under `mfx-entry-posix-host` without wait-path `sed` failure, and full POSIX regression suite remains green.
   - 55zzv completed (code): split core HTTP wasm contract checks into scenario modules (catalog/path/runtime/transfer/fixture/dispatch/platform) while keeping `core_http_wasm_contract_checks.sh` as the orchestrator.
   - 55zzv completed (acceptance): wasm contract gate and full POSIX regression suite remain green after contract-check modularization.
+  - 55zzw completed (code): split core HTTP automation contract checks into scenario modules (basic/app-scope/priority/match-inject/shortcut/indicator/effects/platform) while keeping `core_http_automation_contract_checks.sh` as the orchestrator.
+  - 55zzw completed (acceptance): automation contract gate and full POSIX regression suite remain green after contract-check modularization.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -399,6 +401,7 @@
 - Core regression entry scripts now share one workflow-prep/lock execution path, reducing boilerplate drift in stale cleanup, build lane setup, and lock wrapping.
 - Core HTTP wasm regression helper stack is now modularized by concern (`parse/http/runtime-assert/transfer-assert/dispatch-assert`) while preserving the legacy loader function surface used by contract scripts.
 - Core HTTP wasm contract checks are now modularized by scenario (catalog/path/runtime/transfer/fixture/dispatch/platform), reducing monolithic script churn risk while preserving entrypoints.
+- Core HTTP automation contract checks are now modularized by scenario (basic/app-scope/priority/match-inject/shortcut/indicator/effects/platform), reducing monolithic script churn risk while preserving entrypoints.
 - Shared lock owner-pid read path now tolerates transient `owner.env` races, so concurrent gate waits degrade to normal lock waiting rather than shell parse failure.
 - WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
 - WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.
