@@ -102,6 +102,8 @@
   - 54f completed (acceptance): core automation contract command and updated suite command executed and passed on current host.
   - 54g completed (code): POSIX suite now includes macOS automation injection selfcheck (`--dry-run`) as a default phase with explicit skip control.
   - 54g completed (acceptance): full suite remains green after injection selfcheck gate integration.
+  - 54h completed (code): Linux compile gate now validates both runtime lanes by default (`MFX_ENABLE_POSIX_CORE_RUNTIME=OFF/ON`) with one command, and keeps `--skip-core-runtime` for faster local-only runs.
+  - 54h completed (acceptance): Linux gate and full POSIX suite remain green after dual-lane compile expansion.
 - Phase 55 (mac WASM runtime): in progress (M2).
   - 55a completed (code): macOS core lane now wires a native `wasm3_static` backend while keeping Windows default on `dynamic_bridge`.
   - 55a completed (acceptance): core build/smoke/contracts passed, and `/api/state` contract now asserts `runtime_backend=wasm3_static` on macOS.
@@ -197,6 +199,7 @@
 - phase53ab automation matcher/executor flow is now isolated in `InputAutomationDispatch`, reducing coupling between input orchestration and dispatch execution while preserving trigger/match contracts.
 - phase53ac keyboard indicator labels now have script-level probe coverage (`A`, `Cmd+K9`, `K6`) in addition to mouse labels, reducing manual-only regression risk in input-indicator rendering.
 - phase53ad input-capture diagnostics now expose `effects_suspended`, making effect pipeline degradation/resume transitions explicit and regression-testable under permission revoke/regrant flows.
+- phase54h Linux compile gate now covers both scaffold-lane and core-runtime-lane compile contracts by default, reducing Linux drift risk while mac-first development continues.
 - Linux compile gate now has a dedicated orchestration script, reducing manual command drift risk for cross-host follow.
 - Automation platform semantics now have script-level regression guard, reducing manual-only verification for `.app/.exe` behavior.
 - POSIX regression now has a single suite entrypoint with phase-level skip switches for faster diagnosis.

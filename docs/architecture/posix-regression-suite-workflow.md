@@ -21,6 +21,7 @@ Run this as the default POSIX regression entry:
    - `run-macos-wasm-runtime-selfcheck.sh --skip-build` (macOS host only, skipped on non-mac hosts)
 6. Linux compile gate:
    - `run-posix-linux-compile-gate.sh`
+   - default includes both `MFX_ENABLE_POSIX_CORE_RUNTIME=OFF/ON` compile lanes.
 7. WebUI automation platform semantic tests:
    - `pnpm --dir MFCMouseEffect/WebUIWorkspace run test:automation-platform`
 
@@ -46,6 +47,7 @@ Skip phases when needed:
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-automation-injection-selfcheck
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-wasm-selfcheck
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-linux-gate
+./tools/platform/regression/run-posix-regression-suite.sh --linux-skip-core-runtime
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-automation-test
 ```
 

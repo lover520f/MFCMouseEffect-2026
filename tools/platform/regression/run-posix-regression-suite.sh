@@ -19,6 +19,7 @@ MFX_SKIP_CORE_SMOKE=0
 MFX_SKIP_CORE_AUTOMATION=0
 MFX_SKIP_MACOS_AUTOMATION_INJECTION_SELFCHECK=0
 MFX_SKIP_LINUX_GATE=0
+MFX_LINUX_SKIP_CORE_RUNTIME=0
 MFX_SKIP_AUTOMATION_TEST=0
 MFX_SKIP_MACOS_WASM_SELFCHECK=0
 MFX_SCAFFOLD_SKIP_SMOKE=0
@@ -70,6 +71,10 @@ while [[ $# -gt 0 ]]; do
             MFX_SKIP_LINUX_GATE=1
             shift
             ;;
+        --linux-skip-core-runtime)
+            MFX_LINUX_SKIP_CORE_RUNTIME=1
+            shift
+            ;;
         --skip-automation-test)
             MFX_SKIP_AUTOMATION_TEST=1
             shift
@@ -100,6 +105,7 @@ Usage: run-posix-regression-suite.sh [options]
   --skip-core-automation          skip core automation HTTP contract phase
   --skip-macos-automation-injection-selfcheck skip macOS automation injection selfcheck phase
   --skip-linux-gate               skip linux compile gate phase
+  --linux-skip-core-runtime       forward: linux gate skips core-runtime lane compile
   --skip-automation-test          skip webui automation platform semantic tests
   --skip-macos-wasm-selfcheck     skip macOS wasm runtime selfcheck phase
   --scaffold-skip-smoke           forward: skip scaffold smoke checks
@@ -213,6 +219,9 @@ if [[ "$MFX_SKIP_LINUX_GATE" -eq 0 ]]; then
     local_linux_args=("--build-dir" "$MFX_LINUX_BUILD_DIR")
     if [[ -n "$MFX_BUILD_JOBS_VALUE" ]]; then
         local_linux_args+=("--jobs" "$MFX_BUILD_JOBS_VALUE")
+    fi
+    if [[ "$MFX_LINUX_SKIP_CORE_RUNTIME" -eq 1 ]]; then
+        local_linux_args+=("--skip-core-runtime")
     fi
 
     mfx_info "run linux compile gate phase"

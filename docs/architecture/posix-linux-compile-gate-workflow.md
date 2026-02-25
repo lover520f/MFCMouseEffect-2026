@@ -13,9 +13,22 @@ Optional:
 ./tools/platform/regression/run-posix-linux-compile-gate.sh --build-dir /tmp/mfx-platform-linux-build --jobs 12
 ```
 
+Default behavior builds two compile lanes:
+- default lane: `MFX_ENABLE_POSIX_CORE_RUNTIME=OFF`
+- core-runtime lane: `MFX_ENABLE_POSIX_CORE_RUNTIME=ON`
+
+Optional (faster local loop, lower coverage):
+
+```bash
+./tools/platform/regression/run-posix-linux-compile-gate.sh --skip-core-runtime
+```
+
 ## What It Verifies
 1. Linux package configure with cross-host support enabled.
-2. Linux shell/runtime targets compile successfully:
+2. Linux shell/runtime targets compile successfully on default lane:
+   - `mfx_shell_linux`
+   - `mfx_entry_posix`
+3. Linux shell/runtime targets compile successfully on core-runtime lane:
    - `mfx_shell_linux`
    - `mfx_entry_posix`
 
