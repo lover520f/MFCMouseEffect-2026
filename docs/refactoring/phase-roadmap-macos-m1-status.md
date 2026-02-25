@@ -191,6 +191,8 @@
   - 55zb completed (acceptance): core automation contract regression now asserts `import-selected` failure `error_code` contract (`manifest_path_not_found`), and full POSIX suite remains green.
   - 55zc completed (code): shared Svelte WASM settings UI now consumes transfer `error_code` responses and surfaces readable operation diagnostics (`Error code: <code>`) via dedicated error-code model mapping.
   - 55zc completed (acceptance): WebUI workspace build + automation platform tests + full POSIX suite remain green after frontend error-code surface expansion.
+  - 55zd completed (code): expanded transfer failure-code regression matrix (`required/not_file/load_failed/not_found`) and switched WebUI error rendering preference to `error_code` mapping (with EN/ZH translation keys and `error` fallback).
+  - 55zd completed (acceptance): core automation contract regression + full POSIX suite + WebUI workspace build/tests remain green after matrix+i18n expansion.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -290,6 +292,7 @@
 - Core HTTP `export-all` contract now also verifies exported manifest integrity (`plugin.json` presence/count/non-empty), further reducing false-green risk on transfer regressions.
 - WASM transfer APIs now expose stable `error_code` fields in addition to `error` text, reducing string-coupling risk in API consumers and regression checks.
 - Shared Svelte WASM UI now surfaces transfer `error_code` details on operation failures, reducing backend/frontend diagnostics contract drift.
+- Core HTTP regression now covers broader transfer failure code semantics (`manifest_path_required/not_file/load_failed/not_found`), reducing false-green risk on importer edge cases.
 - Shared WebUI diagnostics now surfaces load-failure stage/code directly, closing backend-vs-UI observability gap for WASM load failures.
 - Shared WebUI WASM state normalization now has one source of truth, reducing future diagnostics-field drift in UI adapters.
 - Core HTTP regression helper responsibilities are now split by domain (core flow vs wasm helpers), reducing future maintenance risk in script-level contract evolution.

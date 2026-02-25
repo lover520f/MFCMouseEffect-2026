@@ -206,7 +206,7 @@
     const errorCode = normalizeActionErrorCode(response?.error_code);
     const textValue = `${response?.error || ''}`.trim();
     const errorByCode = resolveWasmActionErrorMessage(errorCode, text);
-    const message = textValue || errorByCode || text('wasm_action_failed', 'WASM action failed.');
+    const message = errorByCode || textValue || text('wasm_action_failed', 'WASM action failed.');
     const label = text('label_wasm_error_code', 'Error code');
     if (!errorCode) {
       return {

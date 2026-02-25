@@ -573,6 +573,7 @@ mfx_run_core_http_contract_checks() {
     mfx_assert_file_contains "$tmp_dir/wasm-import-dialog-probe.out" "\"ok\":true" "core wasm import dialog probe ok"
     mfx_assert_file_contains "$tmp_dir/wasm-import-dialog-probe.out" "\"probe_only\":true" "core wasm import dialog probe mode"
     mfx_assert_file_contains "$tmp_dir/wasm-import-dialog-probe.out" "\"supported\":" "core wasm import dialog supported field"
+    mfx_assert_file_contains "$tmp_dir/wasm-import-dialog-probe.out" "\"error_code\":" "core wasm import dialog probe error_code field"
 
     local repo_root
     repo_root="$(_mfx_core_http_repo_root)"
@@ -623,6 +624,37 @@ mfx_run_core_http_contract_checks() {
             "manifest_path_not_found" \
             "manifest_path does not exist" \
             "core wasm import-selected invalid path"
+
+        local invalid_manifest_not_file_path="$tmp_dir/wasm-import-not-file"
+        mkdir -p "$invalid_manifest_not_file_path"
+        _mfx_core_http_assert_wasm_import_selected_failure \
+            "$tmp_dir/wasm-import-selected-not-file.out" \
+            "$base_url" \
+            "$token" \
+            "$invalid_manifest_not_file_path" \
+            "manifest_path_not_file" \
+            "manifest_path is not a file" \
+            "core wasm import-selected not file path"
+
+        local invalid_manifest_json_path="$tmp_dir/wasm-import-invalid-json.json"
+        printf '{invalid-json' >"$invalid_manifest_json_path"
+        _mfx_core_http_assert_wasm_import_selected_failure \
+            "$tmp_dir/wasm-import-selected-invalid-json.out" \
+            "$base_url" \
+            "$token" \
+            "$invalid_manifest_json_path" \
+            "manifest_load_failed" \
+            "" \
+            "core wasm import-selected invalid json"
+
+        _mfx_core_http_assert_wasm_import_selected_failure \
+            "$tmp_dir/wasm-import-selected-required.out" \
+            "$base_url" \
+            "$token" \
+            "   " \
+            "manifest_path_required" \
+            "manifest_path is required" \
+            "core wasm import-selected required path"
 
         _mfx_core_http_assert_wasm_load_manifest_failure \
             "$tmp_dir/wasm-load-invalid.out" \
