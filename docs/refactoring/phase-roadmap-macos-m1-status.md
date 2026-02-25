@@ -237,6 +237,8 @@
   - 55zy completed (acceptance): full POSIX regression suite remains green after scroll pulse renderer split.
   - 55zz completed (code): split wasm transient image-overlay path into facade (`MacosWasmTransientOverlay.mm`) and dedicated renderer module (`MacosWasmImageOverlayRenderer.*`) with composition/animation internals extracted.
   - 55zz completed (acceptance): full POSIX regression suite remains green after wasm image-overlay renderer split.
+  - 55zza completed (code): split `MacosDispatchMessageHost` implementation into lifecycle (`.cpp`), messaging worker (`.Messaging.cpp`), and timer management (`.Timers.cpp`) units with shared class-level error constants.
+  - 55zza completed (acceptance): full POSIX regression suite remains green after dispatch-host implementation split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.

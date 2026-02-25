@@ -37,6 +37,11 @@ public:
     void KillTimer(uintptr_t timerId) override;
 
 private:
+    static constexpr uint32_t kErrorSuccess = 0;
+    static constexpr uint32_t kErrorInvalidParameter = 22;
+    static constexpr uint32_t kErrorInvalidState = 125;
+
+private:
     struct PendingMessage {
         uint32_t msg = 0;
         uintptr_t wParam = 0;
