@@ -235,6 +235,8 @@
   - 55zx completed (acceptance): full POSIX regression suite remains green after wasm renderer dispatch/resolver split.
   - 55zy completed (code): split macOS scroll pulse effect into facade (`MacosScrollPulseEffect.mm`) and overlay renderer module (`MacosScrollPulseOverlayRenderer.*`) with window registry/animation internals extracted.
   - 55zy completed (acceptance): full POSIX regression suite remains green after scroll pulse renderer split.
+  - 55zz completed (code): split wasm transient image-overlay path into facade (`MacosWasmTransientOverlay.mm`) and dedicated renderer module (`MacosWasmImageOverlayRenderer.*`) with composition/animation internals extracted.
+  - 55zz completed (acceptance): full POSIX regression suite remains green after wasm image-overlay renderer split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
