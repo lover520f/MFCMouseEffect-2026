@@ -36,6 +36,7 @@
   - WebSettings test routes are now split into `TestAutomationApiRoutes.*`, `TestWasmInputApiRoutes.*`, and `TestRouteCommon.*` with delegating `TestApiRoutes.cpp`
   - WebSettings automation test routes are now further split into `scope/injection/shortcut` layers with shared `TestAutomationRouteUtils.*`, keeping `TestAutomationApiRoutes.cpp` as delegator
   - WebSettings runtime automation routes are now split into `AutomationShortcutCaptureRoutes.*` and `AutomationCatalogRoutes.*` with shared `AutomationRouteUtils.*`, keeping `AutomationRoutes.cpp` as delegator
+  - WebSettings WASM catalog routes are now split into `WasmCatalogQueryRoutes.*`, `WasmImportRoutes.*`, and `WasmExportRoutes.*`, keeping `WasmCatalogRoutes.cpp` as delegator
   - `SettingsStateMapper` is now split into `BaseSections.*` and `Diagnostics.*` with top-level composition kept in `SettingsStateMapper.cpp`
   - `SettingsSchemaBuilder` is now split into `OptionsSections.*` and `CapabilitiesSections.*` with top-level composition kept in `SettingsSchemaBuilder.cpp`
   - `HttpServer` is now split into lifecycle/session/protocol layers (`HttpServer.Lifecycle.cpp`, `HttpServer.ClientSession.cpp`, `HttpServer.Protocol.cpp`) with thin `HttpServer.cpp` entry
