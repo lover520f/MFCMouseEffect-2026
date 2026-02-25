@@ -1,92 +1,23 @@
 #include "pch.h"
 #include "WebSettingsServer.WasmRuntimeStateRoutes.h"
 
-#include <algorithm>
-#include <cstdint>
-#include <limits>
 #include <string>
 
-#include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Server/HttpServer.h"
-#include "MouseFx/Server/WebSettingsServer.WasmRouteUtils.h"
-
-using json = nlohmann::json;
+#include "MouseFx/Server/WebSettingsServer.WasmRuntimePolicyRoute.h"
+#include "MouseFx/Server/WebSettingsServer.WasmRuntimeToggleRoutes.h"
 
 namespace mousefx {
-using websettings_wasm_routes::BuildWasmResponse;
-using websettings_wasm_routes::ParseObjectOrEmpty;
-using websettings_wasm_routes::SetJsonResponse;
-
-namespace {
-
-uint32_t ParsePositiveUint32OrZero(const json& payload, const char* key) {
-    if (!payload.contains(key) || !payload[key].is_number_integer()) {
-        return 0u;
-    }
-
-    const int64_t raw = payload[key].get<int64_t>();
-    if (raw <= 0) {
-        return 0u;
-    }
-
-    return static_cast<uint32_t>(
-        std::min<int64_t>(raw, static_cast<int64_t>(std::numeric_limits<uint32_t>::max())));
-}
-
-} // namespace
 
 bool HandleWebSettingsWasmRuntimeStateApiRoute(
     const HttpRequest& req,
     const std::string& path,
     AppController* controller,
     HttpResponse& resp) {
-    if (req.method == "POST" && path == "/api/wasm/enable") {
-        if (controller) {
-            controller->HandleCommand("{\"cmd\":\"wasm_enable\"}");
-        }
-        SetJsonResponse(resp, BuildWasmResponse(controller, true).dump());
+    if (HandleWebSettingsWasmRuntimeToggleApiRoute(req, path, controller, resp)) {
         return true;
     }
-
-    if (req.method == "POST" && path == "/api/wasm/policy") {
-        bool ok = false;
-        if (controller) {
-            const json payload = ParseObjectOrEmpty(req.body);
-            json cmd;
-            cmd["cmd"] = "wasm_set_policy";
-            if (payload.contains("enabled") && payload["enabled"].is_boolean()) {
-                cmd["enabled"] = payload["enabled"].get<bool>();
-            }
-            if (payload.contains("fallback_to_builtin_click") && payload["fallback_to_builtin_click"].is_boolean()) {
-                cmd["fallback_to_builtin_click"] = payload["fallback_to_builtin_click"].get<bool>();
-            }
-            if (payload.contains("manifest_path") && payload["manifest_path"].is_string()) {
-                cmd["manifest_path"] = payload["manifest_path"].get<std::string>();
-            }
-            if (payload.contains("catalog_root_path") && payload["catalog_root_path"].is_string()) {
-                cmd["catalog_root_path"] = payload["catalog_root_path"].get<std::string>();
-            }
-            cmd["output_buffer_bytes"] = ParsePositiveUint32OrZero(payload, "output_buffer_bytes");
-            cmd["max_commands"] = ParsePositiveUint32OrZero(payload, "max_commands");
-            if (payload.contains("max_execution_ms") && payload["max_execution_ms"].is_number()) {
-                cmd["max_execution_ms"] = payload["max_execution_ms"].get<double>();
-            }
-            controller->HandleCommand(cmd.dump());
-            ok = true;
-        }
-        SetJsonResponse(resp, BuildWasmResponse(controller, ok).dump());
-        return true;
-    }
-
-    if (req.method == "POST" && path == "/api/wasm/disable") {
-        if (controller) {
-            controller->HandleCommand("{\"cmd\":\"wasm_disable\"}");
-        }
-        SetJsonResponse(resp, BuildWasmResponse(controller, true).dump());
-        return true;
-    }
-
-    return false;
+    return HandleWebSettingsWasmRuntimePolicyApiRoute(req, path, controller, resp);
 }
 
 } // namespace mousefx

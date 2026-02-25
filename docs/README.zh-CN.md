@@ -56,6 +56,7 @@
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53x-websettings-wasm-runtime-routes-layer-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53y-websettings-wasm-route-utils-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53z-websettings-wasm-import-routes-layer-split.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53aa-websettings-wasm-runtime-endpoint-routes-layer-split.md`
 - Linux 跟随门禁（54x）：
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase54c-posix-regression-suite-orchestrator.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase54f-core-automation-http-contract-regression.md`
