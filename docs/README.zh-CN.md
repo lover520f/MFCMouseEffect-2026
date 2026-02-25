@@ -97,6 +97,7 @@
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zc-webui-wasm-transfer-error-code-surface.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zd-wasm-transfer-error-code-regression-matrix-and-i18n.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55ze-webui-wasm-error-model-test-gate.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zf-wasm-focused-contract-gate-and-selfcheck-expansion.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55o-c-macos-folder-picker-implementation-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55o-macos-wasm-closure.md`
 
@@ -116,6 +117,9 @@ rg -n "permission|automation|app_scope|wasm|throttle" docs/refactoring docs/issu
 
 # macOS wasm 运行时自检（load/invoke/render/fallback）
 ./tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh --skip-build
+
+# macOS core wasm 聚焦 HTTP 合同门禁（比全量 automation 合同更快）
+./tools/platform/regression/run-posix-core-wasm-contract-regression.sh --platform auto
 
 # macOS 自动化注入自检（默认真实注入；加 --dry-run 为确定性测试模式）
 ./tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build

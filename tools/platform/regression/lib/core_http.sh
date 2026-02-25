@@ -272,7 +272,12 @@ _mfx_core_http_stop_entry() {
 mfx_run_core_http_contract_checks() {
     local platform="$1"
     local build_dir="$2"
+    local check_scope="${3:-all}"
     local entry_bin="$build_dir/mfx_entry_posix_host"
+
+    if [[ "$check_scope" != "all" && "$check_scope" != "wasm" ]]; then
+        mfx_fail "core http check scope must be one of: all, wasm (got: $check_scope)"
+    fi
 
     if [[ ! -x "$entry_bin" ]]; then
         mfx_fail "entry host executable missing: $entry_bin"
@@ -288,7 +293,11 @@ mfx_run_core_http_contract_checks() {
     local notification_capture_file="$tmp_dir/notifications-capture.log"
     trap "_mfx_core_http_stop_entry; rm -rf '$tmp_dir'" EXIT
 
-    _mfx_core_http_write_permission_sim_state "$permission_sim_file" "0"
+    local initial_permission_state="0"
+    if [[ "$check_scope" == "wasm" ]]; then
+        initial_permission_state="1"
+    fi
+    _mfx_core_http_write_permission_sim_state "$permission_sim_file" "$initial_permission_state"
     _mfx_core_http_start_entry \
         "$entry_bin" \
         "$log_file" \
@@ -312,64 +321,66 @@ mfx_run_core_http_contract_checks() {
         mfx_fail "invalid core web settings probe content: $probe_file"
     fi
 
-    _mfx_core_http_wait_input_capture_state \
-        "$base_url" \
-        "$token" \
-        "false" \
-        "permission_denied" \
-        "$tmp_dir/input-capture-startup-denied.out" \
-        "core input-capture startup denied"
-    mfx_assert_file_contains "$tmp_dir/input-capture-startup-denied.out" "\"effects_suspended\":true" "core input-capture startup denied effects suspended"
+    if [[ "$check_scope" == "all" ]]; then
+        _mfx_core_http_wait_input_capture_state \
+            "$base_url" \
+            "$token" \
+            "false" \
+            "permission_denied" \
+            "$tmp_dir/input-capture-startup-denied.out" \
+            "core input-capture startup denied"
+        mfx_assert_file_contains "$tmp_dir/input-capture-startup-denied.out" "\"effects_suspended\":true" "core input-capture startup denied effects suspended"
 
-    sleep 1.2
-    local startup_notification_count
-    startup_notification_count="$(_mfx_core_http_notification_count "$notification_capture_file")"
-    mfx_assert_eq "$startup_notification_count" "1" "core startup degraded notification dedup"
+        sleep 1.2
+        local startup_notification_count
+        startup_notification_count="$(_mfx_core_http_notification_count "$notification_capture_file")"
+        mfx_assert_eq "$startup_notification_count" "1" "core startup degraded notification dedup"
 
-    _mfx_core_http_write_permission_sim_state "$permission_sim_file" "1"
-    _mfx_core_http_wait_input_capture_state \
-        "$base_url" \
-        "$token" \
-        "true" \
-        "none" \
-        "$tmp_dir/input-capture-startup-recovered.out" \
-        "core input-capture startup recovery"
-    mfx_assert_file_contains "$tmp_dir/input-capture-startup-recovered.out" "\"effects_suspended\":false" "core input-capture startup recovery effects resumed"
+        _mfx_core_http_write_permission_sim_state "$permission_sim_file" "1"
+        _mfx_core_http_wait_input_capture_state \
+            "$base_url" \
+            "$token" \
+            "true" \
+            "none" \
+            "$tmp_dir/input-capture-startup-recovered.out" \
+            "core input-capture startup recovery"
+        mfx_assert_file_contains "$tmp_dir/input-capture-startup-recovered.out" "\"effects_suspended\":false" "core input-capture startup recovery effects resumed"
 
-    local launch_probe_url
-    local launch_probe_opened
-    launch_probe_url="$(_mfx_core_http_probe_value "url" "$launch_probe_file")"
-    launch_probe_opened="$(_mfx_core_http_probe_value "opened" "$launch_probe_file")"
-    mfx_assert_eq "$launch_probe_opened" "1" "core settings launch probe opened"
-    mfx_assert_eq "$launch_probe_url" "$settings_url" "core settings launch probe url"
+        local launch_probe_url
+        local launch_probe_opened
+        launch_probe_url="$(_mfx_core_http_probe_value "url" "$launch_probe_file")"
+        launch_probe_opened="$(_mfx_core_http_probe_value "opened" "$launch_probe_file")"
+        mfx_assert_eq "$launch_probe_opened" "1" "core settings launch probe opened"
+        mfx_assert_eq "$launch_probe_url" "$settings_url" "core settings launch probe url"
 
-    local expected_launcher_command="open"
-    if [[ "$platform" == "linux" ]]; then
-        expected_launcher_command="xdg-open"
+        local expected_launcher_command="open"
+        if [[ "$platform" == "linux" ]]; then
+            expected_launcher_command="xdg-open"
+        fi
+        mfx_assert_file_contains "$launch_capture_file" "captured=1" "core settings launcher capture flag"
+        mfx_assert_file_contains "$launch_capture_file" "command=$expected_launcher_command" "core settings launcher command"
+        mfx_assert_file_contains "$launch_capture_file" "url=$settings_url" "core settings launcher url"
+
+        _mfx_core_http_write_permission_sim_state "$permission_sim_file" "0"
+        _mfx_core_http_wait_input_capture_state \
+            "$base_url" \
+            "$token" \
+            "false" \
+            "permission_denied" \
+            "$tmp_dir/input-capture-runtime-revoke.out" \
+            "core input-capture runtime revoke"
+        mfx_assert_file_contains "$tmp_dir/input-capture-runtime-revoke.out" "\"effects_suspended\":true" "core input-capture runtime revoke effects suspended"
+
+        _mfx_core_http_write_permission_sim_state "$permission_sim_file" "1"
+        _mfx_core_http_wait_input_capture_state \
+            "$base_url" \
+            "$token" \
+            "true" \
+            "none" \
+            "$tmp_dir/input-capture-runtime-regrant.out" \
+            "core input-capture runtime regrant"
+        mfx_assert_file_contains "$tmp_dir/input-capture-runtime-regrant.out" "\"effects_suspended\":false" "core input-capture runtime regrant effects resumed"
     fi
-    mfx_assert_file_contains "$launch_capture_file" "captured=1" "core settings launcher capture flag"
-    mfx_assert_file_contains "$launch_capture_file" "command=$expected_launcher_command" "core settings launcher command"
-    mfx_assert_file_contains "$launch_capture_file" "url=$settings_url" "core settings launcher url"
-
-    _mfx_core_http_write_permission_sim_state "$permission_sim_file" "0"
-    _mfx_core_http_wait_input_capture_state \
-        "$base_url" \
-        "$token" \
-        "false" \
-        "permission_denied" \
-        "$tmp_dir/input-capture-runtime-revoke.out" \
-        "core input-capture runtime revoke"
-    mfx_assert_file_contains "$tmp_dir/input-capture-runtime-revoke.out" "\"effects_suspended\":true" "core input-capture runtime revoke effects suspended"
-
-    _mfx_core_http_write_permission_sim_state "$permission_sim_file" "1"
-    _mfx_core_http_wait_input_capture_state \
-        "$base_url" \
-        "$token" \
-        "true" \
-        "none" \
-        "$tmp_dir/input-capture-runtime-regrant.out" \
-        "core input-capture runtime regrant"
-    mfx_assert_file_contains "$tmp_dir/input-capture-runtime-regrant.out" "\"effects_suspended\":false" "core input-capture runtime regrant effects resumed"
 
     local code_root
     code_root="$(mfx_http_code "$tmp_dir/root.out" "$settings_url")"
@@ -403,162 +414,164 @@ mfx_run_core_http_contract_checks() {
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"capabilities\":" "core schema capabilities section"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"wasm\":" "core schema wasm capabilities section"
 
-    local code_active_process
-    code_active_process="$(mfx_http_code "$tmp_dir/active-process.out" "$base_url/api/automation/active-process" -X POST -H "x-mfcmouseeffect-token: $token" -H "Content-Type: application/json" -d '{}')"
-    mfx_assert_eq "$code_active_process" "200" "core active-process status"
-    mfx_assert_file_contains "$tmp_dir/active-process.out" "\"ok\":true" "core active-process ok"
-    mfx_assert_file_contains "$tmp_dir/active-process.out" "\"process\":\"" "core active-process process field"
+    if [[ "$check_scope" == "all" ]]; then
+        local code_active_process
+        code_active_process="$(mfx_http_code "$tmp_dir/active-process.out" "$base_url/api/automation/active-process" -X POST -H "x-mfcmouseeffect-token: $token" -H "Content-Type: application/json" -d '{}')"
+        mfx_assert_eq "$code_active_process" "200" "core active-process status"
+        mfx_assert_file_contains "$tmp_dir/active-process.out" "\"ok\":true" "core active-process ok"
+        mfx_assert_file_contains "$tmp_dir/active-process.out" "\"process\":\"" "core active-process process field"
 
-    local code_test_inject_shortcut
-    code_test_inject_shortcut="$(mfx_http_code "$tmp_dir/test-inject-shortcut.out" "$base_url/api/automation/test-inject-shortcut" \
-        -X POST \
-        -H "x-mfcmouseeffect-token: $token" \
-        -H "Content-Type: application/json" \
-        -d '{"keys":"Cmd+C"}')"
-    mfx_assert_eq "$code_test_inject_shortcut" "200" "core test-inject-shortcut status"
-    mfx_assert_file_contains "$tmp_dir/test-inject-shortcut.out" "\"ok\":true" "core test-inject-shortcut ok"
-    mfx_assert_file_contains "$tmp_dir/test-inject-shortcut.out" "\"keys\":\"Cmd+C\"" "core test-inject-shortcut keys echo"
-
-    local code_app_catalog
-    code_app_catalog="$(mfx_http_code "$tmp_dir/app-catalog.out" "$base_url/api/automation/app-catalog" -X POST -H "x-mfcmouseeffect-token: $token" -H "Content-Type: application/json" -d '{"force":true}')"
-    mfx_assert_eq "$code_app_catalog" "200" "core app-catalog status"
-    mfx_assert_file_contains "$tmp_dir/app-catalog.out" "\"ok\":true" "core app-catalog ok"
-    mfx_assert_file_contains "$tmp_dir/app-catalog.out" "\"count\":" "core app-catalog count field"
-
-    local code_app_catalog_cached
-    code_app_catalog_cached="$(mfx_http_code "$tmp_dir/app-catalog-cached.out" "$base_url/api/automation/app-catalog" -X POST -H "x-mfcmouseeffect-token: $token" -H "Content-Type: application/json" -d '{"force":false}')"
-    mfx_assert_eq "$code_app_catalog_cached" "200" "core app-catalog cached status"
-    mfx_assert_file_contains "$tmp_dir/app-catalog-cached.out" "\"ok\":true" "core app-catalog cached ok"
-    mfx_assert_file_contains "$tmp_dir/app-catalog-cached.out" "\"count\":" "core app-catalog cached count field"
-
-    local selected_process
-    selected_process="$(_mfx_core_http_first_catalog_process "$tmp_dir/app-catalog.out")"
-    if [[ -n "$selected_process" ]]; then
-        local selected_scope="process:$selected_process"
-        local selected_scope_escaped
-        selected_scope_escaped="$(_mfx_core_http_json_escape "$selected_scope")"
-
-        local code_state_apply_scope
-        code_state_apply_scope="$(mfx_http_code "$tmp_dir/state-apply-scope.out" "$base_url/api/state" \
+        local code_test_inject_shortcut
+        code_test_inject_shortcut="$(mfx_http_code "$tmp_dir/test-inject-shortcut.out" "$base_url/api/automation/test-inject-shortcut" \
             -X POST \
             -H "x-mfcmouseeffect-token: $token" \
             -H "Content-Type: application/json" \
-            -d "{\"automation\":{\"enabled\":true,\"mouse_mappings\":[{\"enabled\":true,\"trigger\":\"left_click\",\"app_scopes\":[\"$selected_scope_escaped\"],\"keys\":\"Cmd+C\"}]}}")"
-        mfx_assert_eq "$code_state_apply_scope" "200" "core state apply selected-scope status"
-        mfx_assert_file_contains "$tmp_dir/state-apply-scope.out" "\"ok\":true" "core state apply selected-scope ok"
+            -d '{"keys":"Cmd+C"}')"
+        mfx_assert_eq "$code_test_inject_shortcut" "200" "core test-inject-shortcut status"
+        mfx_assert_file_contains "$tmp_dir/test-inject-shortcut.out" "\"ok\":true" "core test-inject-shortcut ok"
+        mfx_assert_file_contains "$tmp_dir/test-inject-shortcut.out" "\"keys\":\"Cmd+C\"" "core test-inject-shortcut keys echo"
 
-        local code_state_after_scope
-        code_state_after_scope="$(mfx_http_code "$tmp_dir/state-after-scope.out" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
-        mfx_assert_eq "$code_state_after_scope" "200" "core state after selected-scope status"
-        mfx_assert_file_contains "$tmp_dir/state-after-scope.out" "\"app_scopes\":[\"$selected_scope\"]" "core selected-scope persistence"
+        local code_app_catalog
+        code_app_catalog="$(mfx_http_code "$tmp_dir/app-catalog.out" "$base_url/api/automation/app-catalog" -X POST -H "x-mfcmouseeffect-token: $token" -H "Content-Type: application/json" -d '{"force":true}')"
+        mfx_assert_eq "$code_app_catalog" "200" "core app-catalog status"
+        mfx_assert_file_contains "$tmp_dir/app-catalog.out" "\"ok\":true" "core app-catalog ok"
+        mfx_assert_file_contains "$tmp_dir/app-catalog.out" "\"count\":" "core app-catalog count field"
+
+        local code_app_catalog_cached
+        code_app_catalog_cached="$(mfx_http_code "$tmp_dir/app-catalog-cached.out" "$base_url/api/automation/app-catalog" -X POST -H "x-mfcmouseeffect-token: $token" -H "Content-Type: application/json" -d '{"force":false}')"
+        mfx_assert_eq "$code_app_catalog_cached" "200" "core app-catalog cached status"
+        mfx_assert_file_contains "$tmp_dir/app-catalog-cached.out" "\"ok\":true" "core app-catalog cached ok"
+        mfx_assert_file_contains "$tmp_dir/app-catalog-cached.out" "\"count\":" "core app-catalog cached count field"
+
+        local selected_process
+        selected_process="$(_mfx_core_http_first_catalog_process "$tmp_dir/app-catalog.out")"
+        if [[ -n "$selected_process" ]]; then
+            local selected_scope="process:$selected_process"
+            local selected_scope_escaped
+            selected_scope_escaped="$(_mfx_core_http_json_escape "$selected_scope")"
+
+            local code_state_apply_scope
+            code_state_apply_scope="$(mfx_http_code "$tmp_dir/state-apply-scope.out" "$base_url/api/state" \
+                -X POST \
+                -H "x-mfcmouseeffect-token: $token" \
+                -H "Content-Type: application/json" \
+                -d "{\"automation\":{\"enabled\":true,\"mouse_mappings\":[{\"enabled\":true,\"trigger\":\"left_click\",\"app_scopes\":[\"$selected_scope_escaped\"],\"keys\":\"Cmd+C\"}]}}")"
+            mfx_assert_eq "$code_state_apply_scope" "200" "core state apply selected-scope status"
+            mfx_assert_file_contains "$tmp_dir/state-apply-scope.out" "\"ok\":true" "core state apply selected-scope ok"
+
+            local code_state_after_scope
+            code_state_after_scope="$(mfx_http_code "$tmp_dir/state-after-scope.out" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
+            mfx_assert_eq "$code_state_after_scope" "200" "core state after selected-scope status"
+            mfx_assert_file_contains "$tmp_dir/state-after-scope.out" "\"app_scopes\":[\"$selected_scope\"]" "core selected-scope persistence"
+        fi
+
+        _mfx_core_http_assert_scope_match "$base_url" "$token" "code" "process:code.exe" "true" "$tmp_dir/scope-code-vs-exe.out" "core app-scope code<->exe"
+        _mfx_core_http_assert_scope_match "$base_url" "$token" "code.app" "process:code" "true" "$tmp_dir/scope-app-vs-base.out" "core app-scope app<->base"
+        _mfx_core_http_assert_scope_match "$base_url" "$token" "code.exe" "process:code.app" "true" "$tmp_dir/scope-exe-vs-app.out" "core app-scope exe<->app"
+        _mfx_core_http_assert_scope_match "$base_url" "$token" "safari" "process:code" "false" "$tmp_dir/scope-negative.out" "core app-scope negative"
+
+        local payload_priority_scope_specific
+        payload_priority_scope_specific='{"process":"code.app","history":["left_click"],"mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["all"],"keys":"Cmd+V"},{"enabled":true,"trigger":"left_click","app_scopes":["process:code.exe"],"keys":"Cmd+C"}]}'
+        _mfx_core_http_assert_binding_priority \
+            "$base_url" \
+            "$token" \
+            "$payload_priority_scope_specific" \
+            "true" \
+            "1" \
+            "Cmd+C" \
+            "1" \
+            "1" \
+            "$tmp_dir/scope-priority-specific.out" \
+            "core app-scope priority process-over-all"
+
+        local payload_priority_scope_fallback
+        payload_priority_scope_fallback='{"process":"safari","history":["left_click"],"mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["all"],"keys":"Cmd+V"},{"enabled":true,"trigger":"left_click","app_scopes":["process:code.exe"],"keys":"Cmd+C"}]}'
+        _mfx_core_http_assert_binding_priority \
+            "$base_url" \
+            "$token" \
+            "$payload_priority_scope_fallback" \
+            "true" \
+            "0" \
+            "Cmd+V" \
+            "0" \
+            "1" \
+            "$tmp_dir/scope-priority-fallback.out" \
+            "core app-scope priority all-fallback"
+
+        local payload_priority_long_chain
+        payload_priority_long_chain='{"process":"code","history":["left_click","left_click"],"mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["process:code.app"],"keys":"Cmd+V"},{"enabled":true,"trigger":"left_click>left_click","app_scopes":["all"],"keys":"Cmd+T"}]}'
+        _mfx_core_http_assert_binding_priority \
+            "$base_url" \
+            "$token" \
+            "$payload_priority_long_chain" \
+            "true" \
+            "1" \
+            "Cmd+T" \
+            "0" \
+            "2" \
+            "$tmp_dir/scope-priority-long-chain.out" \
+            "core app-scope priority longest-chain-first"
+
+        local code_match_and_inject
+        code_match_and_inject="$(mfx_http_code "$tmp_dir/match-and-inject.out" "$base_url/api/automation/test-match-and-inject" \
+            -X POST \
+            -H "x-mfcmouseeffect-token: $token" \
+            -H "Content-Type: application/json" \
+            -d '{"process":"code.app","history":["left_click"],"mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["all"],"keys":"Cmd+C"}]}')"
+        mfx_assert_eq "$code_match_and_inject" "200" "core test-match-and-inject status"
+        mfx_assert_file_contains "$tmp_dir/match-and-inject.out" "\"ok\":true" "core test-match-and-inject ok"
+        mfx_assert_file_contains "$tmp_dir/match-and-inject.out" "\"matched\":true" "core test-match-and-inject matched"
+        mfx_assert_file_contains "$tmp_dir/match-and-inject.out" "\"injected\":true" "core test-match-and-inject injected"
+        mfx_assert_file_contains "$tmp_dir/match-and-inject.out" "\"selected_keys\":\"Cmd+C\"" "core test-match-and-inject selected keys"
+
+        local code_shortcut_map_cmd_v
+        code_shortcut_map_cmd_v="$(mfx_http_code "$tmp_dir/shortcut-map-cmd-v.out" "$base_url/api/automation/test-shortcut-from-mac-keycode" \
+            -X POST \
+            -H "x-mfcmouseeffect-token: $token" \
+            -H "Content-Type: application/json" \
+            -d '{"mac_key_code":9,"cmd":true}')"
+        mfx_assert_eq "$code_shortcut_map_cmd_v" "200" "core shortcut-map cmd+v status"
+        mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"ok\":true" "core shortcut-map cmd+v ok"
+        mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"supported\":true" "core shortcut-map cmd+v supported"
+        mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"vk_code\":86" "core shortcut-map cmd+v vk"
+        mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"shortcut\":\"Win+V\"" "core shortcut-map cmd+v text"
+
+        local code_shortcut_map_cmd_tab
+        code_shortcut_map_cmd_tab="$(mfx_http_code "$tmp_dir/shortcut-map-cmd-tab.out" "$base_url/api/automation/test-shortcut-from-mac-keycode" \
+            -X POST \
+            -H "x-mfcmouseeffect-token: $token" \
+            -H "Content-Type: application/json" \
+            -d '{"mac_key_code":48,"cmd":true}')"
+        mfx_assert_eq "$code_shortcut_map_cmd_tab" "200" "core shortcut-map cmd+tab status"
+        mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"ok\":true" "core shortcut-map cmd+tab ok"
+        mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"supported\":true" "core shortcut-map cmd+tab supported"
+        mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"vk_code\":9" "core shortcut-map cmd+tab vk"
+        mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"shortcut\":\"Win+Tab\"" "core shortcut-map cmd+tab text"
+
+        local code_input_indicator_labels
+        code_input_indicator_labels="$(mfx_http_code "$tmp_dir/input-indicator-labels.out" "$base_url/api/input-indicator/test-mouse-labels" \
+            -X POST \
+            -H "x-mfcmouseeffect-token: $token" \
+            -H "Content-Type: application/json" \
+            -d '{}')"
+        mfx_assert_eq "$code_input_indicator_labels" "200" "core input-indicator labels probe status"
+        mfx_assert_file_contains "$tmp_dir/input-indicator-labels.out" "\"ok\":true" "core input-indicator labels probe ok"
+        mfx_assert_file_contains "$tmp_dir/input-indicator-labels.out" "\"supported\":true" "core input-indicator labels probe supported"
+        mfx_assert_file_contains "$tmp_dir/input-indicator-labels.out" "\"matched\":true" "core input-indicator labels probe matched"
+        mfx_assert_file_contains "$tmp_dir/input-indicator-labels.out" "\"labels\":[\"L\",\"R\",\"M\"]" "core input-indicator labels probe labels"
+
+        local code_input_indicator_keyboard_labels
+        code_input_indicator_keyboard_labels="$(mfx_http_code "$tmp_dir/input-indicator-keyboard-labels.out" "$base_url/api/input-indicator/test-keyboard-labels" \
+            -X POST \
+            -H "x-mfcmouseeffect-token: $token" \
+            -H "Content-Type: application/json" \
+            -d '{}')"
+        mfx_assert_eq "$code_input_indicator_keyboard_labels" "200" "core input-indicator keyboard labels probe status"
+        mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"ok\":true" "core input-indicator keyboard labels probe ok"
+        mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"supported\":true" "core input-indicator keyboard labels probe supported"
+        mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"matched\":true" "core input-indicator keyboard labels probe matched"
+        mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"labels\":[\"A\",\"Cmd+K9\",\"K6\"]" "core input-indicator keyboard labels probe labels"
     fi
-
-    _mfx_core_http_assert_scope_match "$base_url" "$token" "code" "process:code.exe" "true" "$tmp_dir/scope-code-vs-exe.out" "core app-scope code<->exe"
-    _mfx_core_http_assert_scope_match "$base_url" "$token" "code.app" "process:code" "true" "$tmp_dir/scope-app-vs-base.out" "core app-scope app<->base"
-    _mfx_core_http_assert_scope_match "$base_url" "$token" "code.exe" "process:code.app" "true" "$tmp_dir/scope-exe-vs-app.out" "core app-scope exe<->app"
-    _mfx_core_http_assert_scope_match "$base_url" "$token" "safari" "process:code" "false" "$tmp_dir/scope-negative.out" "core app-scope negative"
-
-    local payload_priority_scope_specific
-    payload_priority_scope_specific='{"process":"code.app","history":["left_click"],"mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["all"],"keys":"Cmd+V"},{"enabled":true,"trigger":"left_click","app_scopes":["process:code.exe"],"keys":"Cmd+C"}]}'
-    _mfx_core_http_assert_binding_priority \
-        "$base_url" \
-        "$token" \
-        "$payload_priority_scope_specific" \
-        "true" \
-        "1" \
-        "Cmd+C" \
-        "1" \
-        "1" \
-        "$tmp_dir/scope-priority-specific.out" \
-        "core app-scope priority process-over-all"
-
-    local payload_priority_scope_fallback
-    payload_priority_scope_fallback='{"process":"safari","history":["left_click"],"mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["all"],"keys":"Cmd+V"},{"enabled":true,"trigger":"left_click","app_scopes":["process:code.exe"],"keys":"Cmd+C"}]}'
-    _mfx_core_http_assert_binding_priority \
-        "$base_url" \
-        "$token" \
-        "$payload_priority_scope_fallback" \
-        "true" \
-        "0" \
-        "Cmd+V" \
-        "0" \
-        "1" \
-        "$tmp_dir/scope-priority-fallback.out" \
-        "core app-scope priority all-fallback"
-
-    local payload_priority_long_chain
-    payload_priority_long_chain='{"process":"code","history":["left_click","left_click"],"mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["process:code.app"],"keys":"Cmd+V"},{"enabled":true,"trigger":"left_click>left_click","app_scopes":["all"],"keys":"Cmd+T"}]}'
-    _mfx_core_http_assert_binding_priority \
-        "$base_url" \
-        "$token" \
-        "$payload_priority_long_chain" \
-        "true" \
-        "1" \
-        "Cmd+T" \
-        "0" \
-        "2" \
-        "$tmp_dir/scope-priority-long-chain.out" \
-        "core app-scope priority longest-chain-first"
-
-    local code_match_and_inject
-    code_match_and_inject="$(mfx_http_code "$tmp_dir/match-and-inject.out" "$base_url/api/automation/test-match-and-inject" \
-        -X POST \
-        -H "x-mfcmouseeffect-token: $token" \
-        -H "Content-Type: application/json" \
-        -d '{"process":"code.app","history":["left_click"],"mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["all"],"keys":"Cmd+C"}]}')"
-    mfx_assert_eq "$code_match_and_inject" "200" "core test-match-and-inject status"
-    mfx_assert_file_contains "$tmp_dir/match-and-inject.out" "\"ok\":true" "core test-match-and-inject ok"
-    mfx_assert_file_contains "$tmp_dir/match-and-inject.out" "\"matched\":true" "core test-match-and-inject matched"
-    mfx_assert_file_contains "$tmp_dir/match-and-inject.out" "\"injected\":true" "core test-match-and-inject injected"
-    mfx_assert_file_contains "$tmp_dir/match-and-inject.out" "\"selected_keys\":\"Cmd+C\"" "core test-match-and-inject selected keys"
-
-    local code_shortcut_map_cmd_v
-    code_shortcut_map_cmd_v="$(mfx_http_code "$tmp_dir/shortcut-map-cmd-v.out" "$base_url/api/automation/test-shortcut-from-mac-keycode" \
-        -X POST \
-        -H "x-mfcmouseeffect-token: $token" \
-        -H "Content-Type: application/json" \
-        -d '{"mac_key_code":9,"cmd":true}')"
-    mfx_assert_eq "$code_shortcut_map_cmd_v" "200" "core shortcut-map cmd+v status"
-    mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"ok\":true" "core shortcut-map cmd+v ok"
-    mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"supported\":true" "core shortcut-map cmd+v supported"
-    mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"vk_code\":86" "core shortcut-map cmd+v vk"
-    mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"shortcut\":\"Win+V\"" "core shortcut-map cmd+v text"
-
-    local code_shortcut_map_cmd_tab
-    code_shortcut_map_cmd_tab="$(mfx_http_code "$tmp_dir/shortcut-map-cmd-tab.out" "$base_url/api/automation/test-shortcut-from-mac-keycode" \
-        -X POST \
-        -H "x-mfcmouseeffect-token: $token" \
-        -H "Content-Type: application/json" \
-        -d '{"mac_key_code":48,"cmd":true}')"
-    mfx_assert_eq "$code_shortcut_map_cmd_tab" "200" "core shortcut-map cmd+tab status"
-    mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"ok\":true" "core shortcut-map cmd+tab ok"
-    mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"supported\":true" "core shortcut-map cmd+tab supported"
-    mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"vk_code\":9" "core shortcut-map cmd+tab vk"
-    mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"shortcut\":\"Win+Tab\"" "core shortcut-map cmd+tab text"
-
-    local code_input_indicator_labels
-    code_input_indicator_labels="$(mfx_http_code "$tmp_dir/input-indicator-labels.out" "$base_url/api/input-indicator/test-mouse-labels" \
-        -X POST \
-        -H "x-mfcmouseeffect-token: $token" \
-        -H "Content-Type: application/json" \
-        -d '{}')"
-    mfx_assert_eq "$code_input_indicator_labels" "200" "core input-indicator labels probe status"
-    mfx_assert_file_contains "$tmp_dir/input-indicator-labels.out" "\"ok\":true" "core input-indicator labels probe ok"
-    mfx_assert_file_contains "$tmp_dir/input-indicator-labels.out" "\"supported\":true" "core input-indicator labels probe supported"
-    mfx_assert_file_contains "$tmp_dir/input-indicator-labels.out" "\"matched\":true" "core input-indicator labels probe matched"
-    mfx_assert_file_contains "$tmp_dir/input-indicator-labels.out" "\"labels\":[\"L\",\"R\",\"M\"]" "core input-indicator labels probe labels"
-
-    local code_input_indicator_keyboard_labels
-    code_input_indicator_keyboard_labels="$(mfx_http_code "$tmp_dir/input-indicator-keyboard-labels.out" "$base_url/api/input-indicator/test-keyboard-labels" \
-        -X POST \
-        -H "x-mfcmouseeffect-token: $token" \
-        -H "Content-Type: application/json" \
-        -d '{}')"
-    mfx_assert_eq "$code_input_indicator_keyboard_labels" "200" "core input-indicator keyboard labels probe status"
-    mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"ok\":true" "core input-indicator keyboard labels probe ok"
-    mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"supported\":true" "core input-indicator keyboard labels probe supported"
-    mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"matched\":true" "core input-indicator keyboard labels probe matched"
-    mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"labels\":[\"A\",\"Cmd+K9\",\"K6\"]" "core input-indicator keyboard labels probe labels"
 
     local code_wasm_catalog
     code_wasm_catalog="$(mfx_http_code "$tmp_dir/wasm-catalog.out" "$base_url/api/wasm/catalog" -X POST -H "x-mfcmouseeffect-token: $token" -H "Content-Type: application/json" -d '{}')"
@@ -693,25 +706,27 @@ mfx_run_core_http_contract_checks() {
                 mfx_fail "core wasm test-dispatch render on macos: expected rendered_any=true"
             fi
         fi
-        if rg -q --fixed-strings "\"count\":0" "$tmp_dir/app-catalog.out"; then
-            mfx_fail "core app-catalog non-empty on macos: unexpected count=0"
-        fi
-        if ! rg -q "\"exe\":\"[^\"]+\\.app\"" "$tmp_dir/app-catalog.out"; then
-            mfx_fail "core app-catalog app suffix on macos: missing .app process entry"
-        fi
-        if ! rg -q "\"process\":\"[^\"]+\"" "$tmp_dir/active-process.out"; then
-            mfx_fail "core active-process non-empty on macos: expected non-empty process base name"
-        fi
-        if ! rg -q --fixed-strings "\"keyboard_injector\":true" "$tmp_dir/schema.out"; then
-            mfx_fail "core schema keyboard injector capability on macos: expected true"
-        fi
-        if ! rg -q --fixed-strings "\"accepted\":true" "$tmp_dir/test-inject-shortcut.out"; then
-            mfx_fail "core test-inject-shortcut on macos: expected accepted=true (dry-run injector mode)"
+        if [[ "$check_scope" == "all" ]]; then
+            if rg -q --fixed-strings "\"count\":0" "$tmp_dir/app-catalog.out"; then
+                mfx_fail "core app-catalog non-empty on macos: unexpected count=0"
+            fi
+            if ! rg -q "\"exe\":\"[^\"]+\\.app\"" "$tmp_dir/app-catalog.out"; then
+                mfx_fail "core app-catalog app suffix on macos: missing .app process entry"
+            fi
+            if ! rg -q "\"process\":\"[^\"]+\"" "$tmp_dir/active-process.out"; then
+                mfx_fail "core active-process non-empty on macos: expected non-empty process base name"
+            fi
+            if ! rg -q --fixed-strings "\"keyboard_injector\":true" "$tmp_dir/schema.out"; then
+                mfx_fail "core schema keyboard injector capability on macos: expected true"
+            fi
+            if ! rg -q --fixed-strings "\"accepted\":true" "$tmp_dir/test-inject-shortcut.out"; then
+                mfx_fail "core test-inject-shortcut on macos: expected accepted=true (dry-run injector mode)"
+            fi
         fi
     fi
 
     trap - EXIT
     _mfx_core_http_stop_entry
     rm -rf "$tmp_dir"
-    mfx_ok "core HTTP contract checks completed"
+    mfx_ok "core HTTP contract checks completed (scope=$check_scope)"
 }

@@ -195,6 +195,8 @@
   - 55zd completed (acceptance): core automation contract regression + full POSIX suite + WebUI workspace build/tests remain green after matrix+i18n expansion.
   - 55ze completed (code): added dedicated WebUI WASM error-model test script and integrated it into default POSIX suite webui semantic phase (`test:automation-platform` + `test:wasm-error-model`).
   - 55ze completed (acceptance): standalone `test:wasm-error-model` and full POSIX suite remain green after webui test-gate integration.
+  - 55zf completed (code): core HTTP contract checks now support explicit scope mode (`all`/`wasm`), and a dedicated WASM-focused regression entry (`run-posix-core-wasm-contract-regression.sh`) is added for faster M2 WASM closure iteration without changing default full-contract behavior.
+  - 55zf completed (acceptance): standalone wasm-focused regression gate, expanded macOS WASM selfcheck (with transfer/error_code coverage), and full POSIX regression suite all remain green.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -288,6 +290,7 @@
 - macOS WASM selfcheck now enforces full manifest-failure classification semantics, reducing silent classifier drift risk.
 - macOS WASM selfcheck now also enforces non-manifest-load stage semantics and recovery cleanup semantics after valid reload.
 - macOS WASM selfcheck internals are now helper-split, reducing future extension/change risk while preserving existing contract assertions.
+- macOS WASM selfcheck now also covers transfer path contracts (`catalog`, `import-selected`, `export-all`, folder-dialog probe) and transfer failure-code semantics in the same one-command flow.
 - Core HTTP contract regression now enforces the same load-failure diagnostics semantics, reducing drift between manual selfcheck and CI-style contract gates.
 - Core HTTP contract regression now also enforces WASM transfer semantics (`import-selected` success/failure and `export-all` success count), reducing CI blind spots in plugin transfer paths.
 - Core HTTP `export-all` contract now verifies filesystem materialization (`export_path` existence + directory count consistency), reducing false-green risk on transfer regressions.
@@ -299,6 +302,7 @@
 - Shared WebUI diagnostics now surfaces load-failure stage/code directly, closing backend-vs-UI observability gap for WASM load failures.
 - Shared WebUI WASM state normalization now has one source of truth, reducing future diagnostics-field drift in UI adapters.
 - Core HTTP regression helper responsibilities are now split by domain (core flow vs wasm helpers), reducing future maintenance risk in script-level contract evolution.
+- Core HTTP regression now exposes a dedicated WASM-only check scope and one-command entry (`run-posix-core-wasm-contract-regression.sh`), reducing iteration cost during Phase 55 M2 closure.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:

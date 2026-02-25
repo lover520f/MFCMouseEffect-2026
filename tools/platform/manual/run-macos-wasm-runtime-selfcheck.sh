@@ -159,6 +159,43 @@ mfx_assert_eq "$code_state" "200" "selfcheck state status"
 mfx_assert_file_contains "$state_file" "\"runtime_backend\":\"wasm3_static\"" "selfcheck runtime backend"
 mfx_assert_file_contains "$state_file" "\"render_supported\":true" "selfcheck render capability"
 
+catalog_file="$tmp_dir/wasm-catalog.out"
+code_catalog="$(mfx_http_code "$catalog_file" "$MFX_MANUAL_BASE_URL/api/wasm/catalog" \
+    -X POST -H "$token_header" -H "Content-Type: application/json" -d '{}')"
+mfx_assert_eq "$code_catalog" "200" "selfcheck wasm catalog status"
+mfx_assert_file_contains "$catalog_file" "\"ok\":true" "selfcheck wasm catalog ok"
+mfx_assert_file_contains "$catalog_file" "\"plugins\":" "selfcheck wasm catalog plugins field"
+
+import_dialog_probe_file="$tmp_dir/wasm-import-dialog-probe.out"
+mfx_wasm_selfcheck_assert_import_dialog_probe_supported \
+    "wasm import dialog probe" "$import_dialog_probe_file" "$MFX_MANUAL_BASE_URL" "$token"
+
+import_selected_file="$tmp_dir/wasm-import-selected.out"
+mfx_wasm_selfcheck_assert_import_selected_ok \
+    "wasm import-selected" "$import_selected_file" "$MFX_MANUAL_BASE_URL" "$token" "$manifest_path"
+
+missing_import_manifest_path="${manifest_path}.missing"
+missing_import_file="$tmp_dir/wasm-import-selected-missing.out"
+mfx_wasm_selfcheck_assert_import_selected_failure \
+    "wasm import-selected missing" "$missing_import_file" "$MFX_MANUAL_BASE_URL" "$token" \
+    "$missing_import_manifest_path" "manifest_path_not_found"
+
+not_file_manifest_path="$tmp_dir/manifest-path-not-file"
+mkdir -p "$not_file_manifest_path"
+not_file_import_file="$tmp_dir/wasm-import-selected-not-file.out"
+mfx_wasm_selfcheck_assert_import_selected_failure \
+    "wasm import-selected not file" "$not_file_import_file" "$MFX_MANUAL_BASE_URL" "$token" \
+    "$not_file_manifest_path" "manifest_path_not_file"
+
+required_import_file="$tmp_dir/wasm-import-selected-required.out"
+mfx_wasm_selfcheck_assert_import_selected_failure \
+    "wasm import-selected required" "$required_import_file" "$MFX_MANUAL_BASE_URL" "$token" \
+    "   " "manifest_path_required"
+
+export_all_file="$tmp_dir/wasm-export-all.out"
+mfx_wasm_selfcheck_assert_export_all_ok \
+    "wasm export-all" "$export_all_file" "$MFX_MANUAL_BASE_URL" "$token" "1"
+
 load_file="$tmp_dir/wasm-load-manifest.out"
 mfx_wasm_selfcheck_assert_load_manifest_ok \
     "wasm load-manifest" "$load_file" "$MFX_MANUAL_BASE_URL" "$token" "$manifest_path"

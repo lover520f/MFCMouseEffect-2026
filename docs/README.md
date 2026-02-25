@@ -97,6 +97,7 @@ Use it as a pointer index, not a full historical catalog.
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zc-webui-wasm-transfer-error-code-surface.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zd-wasm-transfer-error-code-regression-matrix-and-i18n.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55ze-webui-wasm-error-model-test-gate.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zf-wasm-focused-contract-gate-and-selfcheck-expansion.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55o-c-macos-folder-picker-implementation-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55o-macos-wasm-closure.md`
 
@@ -116,6 +117,9 @@ rg -n "permission|automation|app_scope|wasm|throttle" docs/refactoring docs/issu
 
 # macOS wasm runtime selfcheck (load/invoke/render/fallback)
 ./tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh --skip-build
+
+# macOS core wasm-focused HTTP contract gate (faster than full automation contract run)
+./tools/platform/regression/run-posix-core-wasm-contract-regression.sh --platform auto
 
 # macOS automation injection selfcheck (real dispatch by default; add --dry-run for deterministic mode)
 ./tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build

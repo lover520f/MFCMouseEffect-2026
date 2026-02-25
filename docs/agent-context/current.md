@@ -6,7 +6,7 @@
 - Constraints: no Windows regression; Linux follows compile + contract coverage.
 
 ## Current Program State
-- Branch baseline has completed Phase 50 -> Phase 55y code slices.
+- Branch baseline has completed Phase 50 -> Phase 55zf code slices.
 - POSIX dual-lane guardrail exists:
   - scaffold lane remains default stable lane.
   - core lane is gated and iteratively enabled.
@@ -79,6 +79,9 @@
   - shared Svelte WASM diagnostics panel now surfaces `last_load_failure_stage/code` with EN/ZH i18n labels and warning-state linkage
   - shared Svelte WASM state normalization is now deduplicated via `WebUIWorkspace/src/wasm/state-model.js`, reducing cross-file drift risk
   - core HTTP regression WASM load helpers are now split into `tools/platform/regression/lib/core_http_wasm_helpers.sh`, reducing coupling in `core_http.sh`
+  - core HTTP regression now supports scoped checks (`all` default, `wasm` focused) so WASM closure can run a dedicated gate without full automation/input contracts
+  - new dedicated WASM-focused gate `tools/platform/regression/run-posix-core-wasm-contract-regression.sh` is available for faster M2 iterations
+  - macOS WASM selfcheck now also covers transfer/error-code contracts (`catalog`, folder-dialog probe, import-selected success/failure codes, export-all consistency) in the same one-command flow
 
 ## Known Stable Gates
 Run these as first-line regression checks:
@@ -86,6 +89,7 @@ Run these as first-line regression checks:
 ./tools/platform/regression/run-posix-scaffold-regression.sh --platform auto
 ./tools/platform/regression/run-posix-core-smoke.sh --platform auto
 ./tools/platform/regression/run-posix-core-automation-contract-regression.sh --platform auto
+./tools/platform/regression/run-posix-core-wasm-contract-regression.sh --platform auto
 ./tools/platform/regression/run-posix-linux-compile-gate.sh --build-dir /tmp/mfx-platform-linux-build --jobs 8
 ./tools/platform/regression/run-posix-regression-suite.sh --platform auto
 ./tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh --skip-build
@@ -143,6 +147,7 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zc-webui-wasm-transfer-error-code-surface.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zd-wasm-transfer-error-code-regression-matrix-and-i18n.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55ze-webui-wasm-error-model-test-gate.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zf-wasm-focused-contract-gate-and-selfcheck-expansion.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53ai-automation-mapping-phase-closure.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase54i-linux-follow-phase-closure.md`
 
