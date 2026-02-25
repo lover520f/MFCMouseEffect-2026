@@ -165,6 +165,8 @@
   - 55q completed (acceptance): full POSIX suite remains green and macOS WASM selfcheck now asserts invalid-manifest response contract (`last_load_failure_stage=manifest_load`, `last_load_failure_code=manifest_io_error`).
   - 55r completed (code): macOS WASM runtime selfcheck now covers all current manifest load-failure classes (`manifest_io_error`, `manifest_json_parse_error`, `manifest_invalid`) with deterministic temp-manifest fixtures.
   - 55r completed (acceptance): full POSIX suite (including macOS WASM selfcheck phase) remains green after classification-coverage expansion.
+  - 55s completed (code): macOS WASM runtime selfcheck now also covers stage-level failures (`manifest_api_version`, `load_module`) and successful-reload failure-field reset (`last_load_failure_stage/code` cleared).
+  - 55s completed (acceptance): full POSIX suite (including macOS WASM selfcheck phase) remains green after stage-coverage expansion.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -254,6 +256,7 @@
 - Linux WASM renderer path is now explicitly defined as `degrade-only` for current M2, preserving `invoke_supported=true` and `render_supported=false` contract semantics until a separate Linux-native renderer phase is approved.
 - WASM load failure diagnostics now provide stable stage/code pairs in `/api/state` and `/api/wasm/*` responses, reducing triage ambiguity on manifest/runtime load failures.
 - macOS WASM selfcheck now enforces full manifest-failure classification semantics, reducing silent classifier drift risk.
+- macOS WASM selfcheck now also enforces non-manifest-load stage semantics and recovery cleanup semantics after valid reload.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:
