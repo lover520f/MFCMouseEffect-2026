@@ -99,7 +99,8 @@
   - 53ah completed (code): extracted dispatch-state runtime helpers (`OnGlobalKey`, shortcut-capture session lifecycle, hover/hold timers/state helpers) from `AppController.cpp` into `AppController.DispatchState.cpp` and wired both CMake + Visual Studio build ownership.
   - 53ah completed (acceptance): full POSIX regression suite remains green after dispatch-state split, and Windows build-lane wiring is preserved in `MFCMouseEffect.vcxproj`.
   - 53ai completed (closure): phase closure boundary is now explicitly documented with minimal evidence (`core-automation-contract`, unified suite, and manual injection selfcheck) in `phase53ai-automation-mapping-phase-closure.md`.
-- Phase 54 (Linux compile-level + contract-level follow): in progress, compile gate currently passing in CI-style local commands.
+- Phase 54 (Linux compile-level + contract-level follow): completed (compile-level + contract-level scope closure).
+  - Evidence: Linux dual-lane compile gate and unified POSIX suite remain green; closure boundary is documented in `phase54i`.
   - 54a completed (code): Linux compile-level gate is now scriptized as one-command workflow (`run-posix-linux-compile-gate.sh`) with modular regression packaging.
   - 54a completed (acceptance): gate command executed and passed on current host.
   - 54b completed (code): WebUI automation platform semantics now have lightweight scripted regression coverage (`test:automation-platform`).
@@ -116,6 +117,7 @@
   - 54g completed (acceptance): full suite remains green after injection selfcheck gate integration.
   - 54h completed (code): Linux compile gate now validates both runtime lanes by default (`MFX_ENABLE_POSIX_CORE_RUNTIME=OFF/ON`) with one command, and keeps `--skip-core-runtime` for faster local-only runs.
   - 54h completed (acceptance): Linux gate and full POSIX suite remain green after dual-lane compile expansion.
+  - 54i completed (closure): phase closure boundary is now explicitly documented with minimal evidence (`linux-compile-gate`, unified suite, and WebUI automation-platform semantics test) in `phase54i-linux-follow-phase-closure.md`.
 - Phase 55 (mac WASM runtime): in progress (M2).
   - 55a completed (code): macOS core lane now wires a native `wasm3_static` backend while keeping Windows default on `dynamic_bridge`.
   - 55a completed (acceptance): core build/smoke/contracts passed, and `/api/state` contract now asserts `runtime_backend=wasm3_static` on macOS.
@@ -236,6 +238,7 @@
 - phase53ah dispatch-state runtime helpers are now split into a dedicated controller unit (`AppController.DispatchState.cpp`), reducing hover/hold/session handling coupling in `AppController.cpp` while keeping POSIX/Windows build ownership aligned.
 - phase53 is now explicitly closed for current M1 automation scope, and future automation expansion will proceed as new slices without changing existing contracts by default.
 - phase54h Linux compile gate now covers both scaffold-lane and core-runtime-lane compile contracts by default, reducing Linux drift risk while mac-first development continues.
+- phase54 is now explicitly closed for current Linux follow scope (compile + contract), and Linux runtime-level expansion remains deferred.
 - Linux compile gate now has a dedicated orchestration script, reducing manual command drift risk for cross-host follow.
 - Automation platform semantics now have script-level regression guard, reducing manual-only verification for `.app/.exe` behavior.
 - POSIX regression now has a single suite entrypoint with phase-level skip switches for faster diagnosis.
