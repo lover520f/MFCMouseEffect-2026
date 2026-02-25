@@ -9,19 +9,9 @@ source "$SCRIPT_DIR/lib/common.sh"
 source "$SCRIPT_DIR/lib/build.sh"
 source "$SCRIPT_DIR/lib/core_http.sh"
 
-mfx_detect_host_platform() {
-    case "$(uname -s)" in
-        Darwin) echo "macos" ;;
-        Linux) echo "linux" ;;
-        *)
-            mfx_fail "unsupported host platform: $(uname -s). expected macOS or Linux."
-            ;;
-    esac
-}
-
 MFX_PLATFORM="auto"
 MFX_BUILD_DIR=""
-MFX_HOST_PLATFORM="$(mfx_detect_host_platform)"
+MFX_HOST_PLATFORM="$(mfx_detect_posix_host_platform)"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -62,15 +52,7 @@ USAGE
     esac
 done
 
-if [[ "$MFX_PLATFORM" == "auto" ]]; then
-    MFX_PLATFORM="$MFX_HOST_PLATFORM"
-fi
-if [[ "$MFX_PLATFORM" != "macos" && "$MFX_PLATFORM" != "linux" ]]; then
-    mfx_fail "invalid --platform value: $MFX_PLATFORM"
-fi
-if [[ "$MFX_PLATFORM" != "$MFX_HOST_PLATFORM" ]]; then
-    mfx_fail "cross-host core automation contract run is unsupported (host=$MFX_HOST_PLATFORM, requested=$MFX_PLATFORM)"
-fi
+MFX_PLATFORM="$(mfx_resolve_posix_platform "$MFX_PLATFORM" "$MFX_HOST_PLATFORM" "core automation contract run")"
 
 if [[ "$MFX_PLATFORM" != "macos" ]]; then
     mfx_info "core automation HTTP contracts are macOS-only in current roadmap; skip on platform=$MFX_PLATFORM"

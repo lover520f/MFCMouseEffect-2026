@@ -31,6 +31,37 @@ mfx_require_cmd() {
     fi
 }
 
+mfx_detect_posix_host_platform() {
+    case "$(uname -s)" in
+        Darwin) echo "macos" ;;
+        Linux) echo "linux" ;;
+        *)
+            mfx_fail "unsupported host platform: $(uname -s). expected macOS or Linux."
+            ;;
+    esac
+}
+
+mfx_resolve_posix_platform() {
+    local requested_platform="$1"
+    local host_platform="$2"
+    local cross_host_context="$3"
+
+    local resolved_platform="$requested_platform"
+    if [[ "$resolved_platform" == "auto" ]]; then
+        resolved_platform="$host_platform"
+    fi
+
+    if [[ "$resolved_platform" != "macos" && "$resolved_platform" != "linux" ]]; then
+        mfx_fail "invalid --platform value: $resolved_platform"
+    fi
+
+    if [[ "$resolved_platform" != "$host_platform" ]]; then
+        mfx_fail "cross-host $cross_host_context is unsupported (host=$host_platform, requested=$resolved_platform)"
+    fi
+
+    printf '%s' "$resolved_platform"
+}
+
 mfx_assert_eq() {
     local actual="$1"
     local expected="$2"

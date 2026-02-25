@@ -213,6 +213,8 @@
   - 55zm completed (acceptance): full POSIX regression suite remains green after manual lock-helper + stop-command hardening.
   - 55zn completed (code): added shared file-match fallback helpers (`rg` priority, `grep` fallback), replaced direct `rg` checks in core HTTP contract modules, and removed `mfx_require_cmd rg` from regression entry scripts.
   - 55zn completed (acceptance): full POSIX regression suite remains green after `rg` dependency fallback hardening.
+  - 55zo completed (code): consolidated host-platform detection and `--platform` resolution into shared helpers (`mfx_detect_posix_host_platform`, `mfx_resolve_posix_platform`) and removed duplicated validation blocks across POSIX regression entry scripts.
+  - 55zo completed (acceptance): full POSIX regression suite remains green after platform-arg helper consolidation.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -326,6 +328,7 @@
 - Stale entry-host cleanup is now helper-consolidated (`mfx_terminate_stale_entry_host`) across regression/manual startup paths, reducing script-level drift risk.
 - macOS manual keep-running stop hints are now PID-scoped (`kill -TERM <pid>`) instead of broad process-pattern kill, reducing cross-run interference risk.
 - Regression file-content matching now has shared `rg -> grep` fallback helpers, reducing environment friction on hosts without `rg`.
+- POSIX regression entry scripts now share one platform-arg resolution path, reducing script-level drift risk in host detection and cross-host guards.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:

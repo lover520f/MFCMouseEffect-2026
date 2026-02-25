@@ -90,6 +90,7 @@
   - stale entry-host cleanup now uses one shared helper (`mfx_terminate_stale_entry_host`) across core regression workflows and macOS manual host startup
   - manual entry-lock acquire path is now helperized (`mfx_manual_acquire_entry_host_lock`), and keep-running stop hints are PID-scoped (`kill -TERM <pid>`) to avoid broad process-pattern termination
   - regression file-content checks now use shared `rg`-preferred with `grep` fallback helpers, and entry scripts no longer hard-require `rg`
+  - POSIX regression entry scripts now share helperized host-platform detection and `--platform` resolution to keep cross-host guard semantics centralized
 
 ## Known Stable Gates
 Run these as first-line regression checks:
@@ -164,6 +165,7 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zl-entry-host-cleanup-helper-consolidation.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zm-macos-manual-lock-helper-and-stop-cmd.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zn-regression-rg-dependency-fallback.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zo-posix-platform-arg-helper-consolidation.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53ai-automation-mapping-phase-closure.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase54i-linux-follow-phase-closure.md`
 
