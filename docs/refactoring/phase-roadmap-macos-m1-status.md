@@ -175,6 +175,8 @@
   - 55v completed (acceptance): WebUI workspace build and full POSIX suite remain green after diagnostics-surface expansion.
   - 55w completed (code): WebUI WASM state normalization is now deduplicated into shared `state-model` module used by both `wasm-main` and `WasmPluginFields`, removing duplicate normalization branches.
   - 55w completed (acceptance): WebUI workspace build and full POSIX suite remain green after state-model dedup.
+  - 55x completed (code): split core HTTP WASM load-manifest helper logic into dedicated regression module (`core_http_wasm_helpers.sh`) and reduced coupling in `core_http.sh`.
+  - 55x completed (acceptance): shell syntax checks and full POSIX suite remain green after helper-module split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -269,6 +271,7 @@
 - Core HTTP contract regression now enforces the same load-failure diagnostics semantics, reducing drift between manual selfcheck and CI-style contract gates.
 - Shared WebUI diagnostics now surfaces load-failure stage/code directly, closing backend-vs-UI observability gap for WASM load failures.
 - Shared WebUI WASM state normalization now has one source of truth, reducing future diagnostics-field drift in UI adapters.
+- Core HTTP regression helper responsibilities are now split by domain (core flow vs wasm helpers), reducing future maintenance risk in script-level contract evolution.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:
