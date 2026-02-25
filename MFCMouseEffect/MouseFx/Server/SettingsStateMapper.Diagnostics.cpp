@@ -11,6 +11,10 @@
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Utils/StringUtils.h"
 #include "Platform/PlatformTarget.h"
+#if MFX_PLATFORM_MACOS
+#include "Platform/macos/Effects/MacosClickPulseWindowRegistry.h"
+#include "Platform/macos/Effects/MacosScrollPulseWindowRegistry.h"
+#endif
 
 using json = nlohmann::json;
 
@@ -167,6 +171,24 @@ json BuildWasmState(const EffectConfig& cfg, const AppController* controller) {
     out["last_load_failure_stage"] = diag.lastLoadFailureStage;
     out["last_load_failure_code"] = diag.lastLoadFailureCode;
     out["last_error"] = diag.lastError;
+    return out;
+}
+
+json BuildEffectsRuntimeState() {
+    size_t clickActiveOverlayWindows = 0;
+    size_t scrollActiveOverlayWindows = 0;
+#if MFX_PLATFORM_MACOS
+    clickActiveOverlayWindows = macos_click_pulse::GetActiveClickPulseWindowCount();
+    scrollActiveOverlayWindows = macos_scroll_pulse::GetActiveScrollPulseWindowCount();
+#endif
+    const size_t totalActiveOverlayWindows = clickActiveOverlayWindows + scrollActiveOverlayWindows;
+
+    json out;
+    out["click_active_overlay_windows"] = clickActiveOverlayWindows;
+    out["scroll_active_overlay_windows"] = scrollActiveOverlayWindows;
+    out["active_overlay_windows_total"] = totalActiveOverlayWindows;
+    out["total_matches_components"] =
+        (totalActiveOverlayWindows == (clickActiveOverlayWindows + scrollActiveOverlayWindows));
     return out;
 }
 

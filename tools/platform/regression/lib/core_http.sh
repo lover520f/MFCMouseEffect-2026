@@ -98,6 +98,7 @@ _mfx_core_http_start_entry() {
     MFX_ENABLE_AUTOMATION_SCOPE_TEST_API="${MFX_ENABLE_AUTOMATION_SCOPE_TEST_API:-1}" \
     MFX_ENABLE_AUTOMATION_SHORTCUT_TEST_API="${MFX_ENABLE_AUTOMATION_SHORTCUT_TEST_API:-1}" \
     MFX_ENABLE_AUTOMATION_INJECTION_TEST_API="${MFX_ENABLE_AUTOMATION_INJECTION_TEST_API:-1}" \
+    MFX_ENABLE_EFFECT_OVERLAY_TEST_API="${MFX_ENABLE_EFFECT_OVERLAY_TEST_API:-1}" \
     MFX_ENABLE_INPUT_INDICATOR_TEST_API="${MFX_ENABLE_INPUT_INDICATOR_TEST_API:-1}" \
     MFX_TEST_KEYBOARD_INJECTOR_DRY_RUN="${MFX_TEST_KEYBOARD_INJECTOR_DRY_RUN:-1}" \
     MFX_ENABLE_WASM_TEST_DISPATCH_API="${MFX_ENABLE_WASM_TEST_DISPATCH_API:-1}" \
@@ -245,6 +246,10 @@ mfx_run_core_http_contract_checks() {
     mfx_assert_file_contains "$tmp_dir/state.out" "\"automation\":" "core state automation section"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"input_capture\":" "core state input_capture section"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"wasm\":" "core state wasm section"
+    mfx_assert_file_contains "$tmp_dir/state.out" "\"effects_runtime\":" "core state effects_runtime section"
+    mfx_assert_file_contains "$tmp_dir/state.out" "\"click_active_overlay_windows\":" "core effects runtime click overlay count"
+    mfx_assert_file_contains "$tmp_dir/state.out" "\"scroll_active_overlay_windows\":" "core effects runtime scroll overlay count"
+    mfx_assert_file_contains "$tmp_dir/state.out" "\"active_overlay_windows_total\":" "core effects runtime total overlay count"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"invoke_supported\":" "core wasm invoke capability"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"render_supported\":" "core wasm render capability"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"last_throttled_render_commands\":" "core wasm throttled render diagnostics"

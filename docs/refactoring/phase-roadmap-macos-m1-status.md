@@ -253,6 +253,8 @@
   - 55zzg completed (acceptance): full POSIX regression suite remains green after keyboard-injector key-table split.
   - 55zzh completed (code): expanded wasm dispatch test contracts to assert diagnostics consistency between dispatch response and `/api/state` snapshots, including throttle arithmetic invariant (`total == capacity + interval`).
   - 55zzh completed (acceptance): full POSIX regression suite remains green after wasm dispatch diagnostics consistency contract expansion.
+  - 55zzi completed (code): added macOS effect overlay lifecycle observability (`/api/state.effects_runtime`) and test-only effect probe route (`/api/effects/test-overlay-windows`) with emit/restore contract checks.
+  - 55zzi completed (acceptance): full POSIX regression suite remains green after effect overlay lifecycle observability + contract probe expansion.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -371,6 +373,7 @@
 - Core regression entry scripts now share one workflow-prep/lock execution path, reducing boilerplate drift in stale cleanup, build lane setup, and lock wrapping.
 - WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
 - WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.
+- Effect overlay contracts now assert click/scroll overlay window lifecycle restore-to-baseline after probe emission, reducing silent overlay cleanup drift risk.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:

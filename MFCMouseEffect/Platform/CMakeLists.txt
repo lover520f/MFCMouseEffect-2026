@@ -291,6 +291,7 @@ if(MFX_ENABLE_ENTRY_RUNTIME_TARGETS)
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.TestAutomationScopeApiRoutes.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.TestAutomationShortcutApiRoutes.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.TestAutomationRouteUtils.cpp"
+            "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.TestEffectsApiRoutes.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.WebUiPathResolver.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.Routing.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/WebSettingsServer.TestApiRoutes.cpp"

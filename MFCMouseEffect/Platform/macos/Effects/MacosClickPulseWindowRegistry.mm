@@ -80,4 +80,13 @@ void CloseAllClickPulseWindowsNow() {
 #endif
 }
 
+size_t GetActiveClickPulseWindowCount() {
+#if !defined(__APPLE__)
+    return 0;
+#else
+    std::lock_guard<std::mutex> lock(ClickPulseWindowMutex());
+    return ClickPulseWindows().size();
+#endif
+}
+
 } // namespace mousefx::macos_click_pulse

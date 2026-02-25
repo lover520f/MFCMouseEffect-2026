@@ -108,6 +108,7 @@
   - macOS wasm overlay runtime now isolates state internals (`MacosWasmOverlayState.*`) while `MacosWasmOverlayRuntime.mm` remains API/main-thread facade
   - macOS scroll pulse overlay internals now isolate style and window-registry logic (`MacosScrollPulseOverlayStyle.*`, `MacosScrollPulseWindowRegistry.*`) while `MacosScrollPulseOverlayRenderer.mm` remains render/animation facade
   - macOS click pulse overlay internals now isolate style/renderer/window-registry modules (`MacosClickPulseOverlayStyle.*`, `MacosClickPulseOverlayRenderer.*`, `MacosClickPulseWindowRegistry.*`) while `MacosClickPulseEffect.mm` remains lifecycle/event-entry facade
+  - macOS effect overlay lifecycle now exposes active-window diagnostics (`/api/state.effects_runtime`) with script-level emit/restore probe coverage (`/api/effects/test-overlay-windows`)
 
 ## Known Stable Gates
 Run these as first-line regression checks:
@@ -179,10 +180,11 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzf-macos-click-pulse-overlay-internals-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzg-macos-keyboard-injector-key-tables-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzh-wasm-dispatch-diagnostics-consistency-contract.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzi-macos-effect-overlay-lifecycle-observability.md`
 - Phase closure docs:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53ai-automation-mapping-phase-closure.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase54i-linux-follow-phase-closure.md`
-- For full Phase 55 sequence (`55h-55zzh`), read roadmap status doc above instead of loading all slice docs by default.
+- For full Phase 55 sequence (`55h-55zzi`), read roadmap status doc above instead of loading all slice docs by default.
 
 ## AI-IDE Context Loading Rule
 - Read this file first for active truth.

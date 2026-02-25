@@ -79,4 +79,13 @@ void CloseAllScrollPulseWindowsNow() {
 #endif
 }
 
+size_t GetActiveScrollPulseWindowCount() {
+#if !defined(__APPLE__)
+    return 0;
+#else
+    std::lock_guard<std::mutex> lock(ScrollWindowMutex());
+    return ScrollWindows().size();
+#endif
+}
+
 } // namespace mousefx::macos_scroll_pulse

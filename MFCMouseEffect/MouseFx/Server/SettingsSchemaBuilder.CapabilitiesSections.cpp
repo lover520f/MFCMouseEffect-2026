@@ -85,6 +85,15 @@ void AppendSettingsSchemaCapabilitiesSections(const EffectConfig& /*config*/, js
         })}
     };
 
+    (*out)["effects_runtime"] = {
+        {"diagnostic_keys", json::array({
+            "click_active_overlay_windows",
+            "scroll_active_overlay_windows",
+            "active_overlay_windows_total",
+            "total_matches_components"
+        })}
+    };
+
     (*out)["capabilities"] = {
         {"platform",
 #if MFX_PLATFORM_WINDOWS

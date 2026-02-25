@@ -231,7 +231,24 @@ _mfx_core_http_run_automation_contract_checks() {
     mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"matched\":true" "core input-indicator keyboard labels probe matched"
     mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"labels\":[\"A\",\"Cmd+K9\",\"K6\"]" "core input-indicator keyboard labels probe labels"
 
+    local code_effect_overlay_probe
+    code_effect_overlay_probe="$(mfx_http_code "$tmp_dir/effect-overlay-probe.out" "$base_url/api/effects/test-overlay-windows" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{"emit_click":true,"emit_scroll":true,"wait_ms":80,"wait_for_clear_ms":1600}')"
+    mfx_assert_eq "$code_effect_overlay_probe" "200" "core effect overlay probe status"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"ok\":true" "core effect overlay probe ok"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"before\":" "core effect overlay probe before snapshot"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"after\":" "core effect overlay probe after snapshot"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"before_invariant_ok\":true" "core effect overlay probe before invariant"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"after_invariant_ok\":true" "core effect overlay probe after invariant"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"restored_to_baseline\":true" "core effect overlay probe restore baseline"
+
     if [[ "$platform" == "macos" ]]; then
+        if ! mfx_file_contains_fixed "$tmp_dir/effect-overlay-probe.out" "\"supported\":true"; then
+            mfx_fail "core effect overlay probe support on macos: expected supported=true"
+        fi
         if mfx_file_contains_fixed "$tmp_dir/app-catalog.out" "\"count\":0"; then
             mfx_fail "core app-catalog non-empty on macos: unexpected count=0"
         fi

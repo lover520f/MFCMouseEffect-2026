@@ -35,6 +35,11 @@ std::string BuildSettingsStateJson(const EffectConfig& cfg, const AppController*
         out["wasm"] = wasmState;
     }
 
+    const json effectsRuntimeState = BuildEffectsRuntimeState();
+    if (effectsRuntimeState.is_object() && !effectsRuntimeState.empty()) {
+        out["effects_runtime"] = effectsRuntimeState;
+    }
+
     const json inputCaptureState = BuildInputCaptureState(controller, effectiveLang);
     if (inputCaptureState.is_object() && !inputCaptureState.empty()) {
         out["input_capture"] = inputCaptureState;
