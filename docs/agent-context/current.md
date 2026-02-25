@@ -42,6 +42,7 @@
   - WebSettings WASM import routes are now split into `WasmImportSelectedRoute.*` and `WasmImportFolderDialogRoute.*`, keeping `WasmImportRoutes.cpp` as delegator
   - WebSettings WASM runtime state/action internals are now split into endpoint-level route modules (`WasmRuntimeToggleRoutes.*`, `WasmRuntimePolicyRoute.*`, `WasmReloadRoute.*`, `WasmLoadManifestRoute.*`), keeping state/action files as delegators
   - Automation matcher/executor flow is now isolated in `InputAutomationDispatch.*`, while `InputAutomationEngine` remains focused on input event orchestration and state
+  - test-gated `/api/input-indicator/test-keyboard-labels` now verifies keyboard indicator label rendering contract (`A`, `Cmd+K9`, `K6`) in core automation regression
   - `SettingsStateMapper` is now split into `BaseSections.*` and `Diagnostics.*` with top-level composition kept in `SettingsStateMapper.cpp`
   - `SettingsSchemaBuilder` is now split into `OptionsSections.*` and `CapabilitiesSections.*` with top-level composition kept in `SettingsSchemaBuilder.cpp`
   - `HttpServer` is now split into lifecycle/session/protocol layers (`HttpServer.Lifecycle.cpp`, `HttpServer.ClientSession.cpp`, `HttpServer.Protocol.cpp`) with thin `HttpServer.cpp` entry

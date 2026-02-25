@@ -539,6 +539,18 @@ mfx_run_core_http_contract_checks() {
     mfx_assert_file_contains "$tmp_dir/input-indicator-labels.out" "\"matched\":true" "core input-indicator labels probe matched"
     mfx_assert_file_contains "$tmp_dir/input-indicator-labels.out" "\"labels\":[\"L\",\"R\",\"M\"]" "core input-indicator labels probe labels"
 
+    local code_input_indicator_keyboard_labels
+    code_input_indicator_keyboard_labels="$(mfx_http_code "$tmp_dir/input-indicator-keyboard-labels.out" "$base_url/api/input-indicator/test-keyboard-labels" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{}')"
+    mfx_assert_eq "$code_input_indicator_keyboard_labels" "200" "core input-indicator keyboard labels probe status"
+    mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"ok\":true" "core input-indicator keyboard labels probe ok"
+    mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"supported\":true" "core input-indicator keyboard labels probe supported"
+    mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"matched\":true" "core input-indicator keyboard labels probe matched"
+    mfx_assert_file_contains "$tmp_dir/input-indicator-keyboard-labels.out" "\"labels\":[\"A\",\"Cmd+K9\",\"K6\"]" "core input-indicator keyboard labels probe labels"
+
     local code_wasm_catalog
     code_wasm_catalog="$(mfx_http_code "$tmp_dir/wasm-catalog.out" "$base_url/api/wasm/catalog" -X POST -H "x-mfcmouseeffect-token: $token" -H "Content-Type: application/json" -d '{}')"
     mfx_assert_eq "$code_wasm_catalog" "200" "core wasm catalog status"

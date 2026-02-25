@@ -27,6 +27,7 @@ public:
     void OnKey(const KeyEvent& ev) override;
     bool ReadDebugState(InputIndicatorDebugState* outState) const override;
     bool RunMouseLabelProbe(std::vector<std::string>* outAppliedLabels) override;
+    bool RunKeyboardLabelProbe(std::vector<std::string>* outAppliedLabels) override;
 
 private:
     void ShowAt(ScreenPoint pt, const std::string& label);

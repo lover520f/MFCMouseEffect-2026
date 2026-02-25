@@ -83,6 +83,8 @@
   - 53aa completed (acceptance): full POSIX regression suite remains green after WASM runtime endpoint-route layer split.
   - 53ab completed (code): introduced `InputAutomationDispatch` boundary and moved matcher/executor flow (`history -> match -> inject`) out of `InputAutomationEngine`.
   - 53ab completed (acceptance): full POSIX regression suite remains green after automation dispatch boundary split.
+  - 53ac completed (code): added keyboard label probe support for input indicator (`RunKeyboardLabelProbe` + `/api/input-indicator/test-keyboard-labels`) and integrated it into core automation contract checks.
+  - 53ac completed (acceptance): full POSIX regression suite remains green after keyboard indicator probe contract expansion.
 - Phase 54 (Linux compile-level + contract-level follow): in progress, compile gate currently passing in CI-style local commands.
   - 54a completed (code): Linux compile-level gate is now scriptized as one-command workflow (`run-posix-linux-compile-gate.sh`) with modular regression packaging.
   - 54a completed (acceptance): gate command executed and passed on current host.
@@ -191,6 +193,7 @@
 - phase53z WebSettings WASM import routes are now split by ownership (`selected manifest` vs `folder dialog`), reducing import-path coupling while preserving endpoint contracts.
 - phase53aa WebSettings WASM runtime state/action internals are now split by endpoint ownership (`enable/disable`, `policy`, `reload`, `load-manifest`), reducing runtime control-plane coupling while preserving endpoint contracts.
 - phase53ab automation matcher/executor flow is now isolated in `InputAutomationDispatch`, reducing coupling between input orchestration and dispatch execution while preserving trigger/match contracts.
+- phase53ac keyboard indicator labels now have script-level probe coverage (`A`, `Cmd+K9`, `K6`) in addition to mouse labels, reducing manual-only regression risk in input-indicator rendering.
 - Linux compile gate now has a dedicated orchestration script, reducing manual command drift risk for cross-host follow.
 - Automation platform semantics now have script-level regression guard, reducing manual-only verification for `.app/.exe` behavior.
 - POSIX regression now has a single suite entrypoint with phase-level skip switches for faster diagnosis.

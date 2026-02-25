@@ -37,6 +37,10 @@ public:
         (void)outAppliedLabels;
         return false;
     }
+    virtual bool RunKeyboardLabelProbe(std::vector<std::string>* outAppliedLabels) {
+        (void)outAppliedLabels;
+        return false;
+    }
 };
 
 } // namespace mousefx

@@ -74,6 +74,43 @@ bool HandleWebSettingsTestWasmInputApiRoute(
         return true;
     }
 
+    if (req.method == "POST" && path == "/api/input-indicator/test-keyboard-labels") {
+        if (!IsInputIndicatorTestApiEnabled()) {
+            SetPlainResponse(resp, 404, "not found");
+            return true;
+        }
+
+        if (!controller) {
+            SetJsonResponse(resp, json({
+                {"ok", false},
+                {"error", "no controller"},
+            }).dump());
+            return true;
+        }
+
+        std::vector<std::string> labels;
+        const bool supported = controller->IndicatorOverlay().RunKeyboardLabelProbe(&labels);
+        const bool matched = supported &&
+                             labels.size() == 3 &&
+                             labels[0] == "A" &&
+                             labels[1] == "Cmd+K9" &&
+                             labels[2] == "K6";
+        InputIndicatorDebugState debugState{};
+        const bool debugStateOk = controller->IndicatorOverlay().ReadDebugState(&debugState);
+
+        SetJsonResponse(resp, json({
+            {"ok", true},
+            {"supported", supported},
+            {"matched", matched},
+            {"expected", json::array({"A", "Cmd+K9", "K6"})},
+            {"labels", labels},
+            {"debug_state_available", debugStateOk},
+            {"last_applied_label", debugStateOk ? debugState.lastAppliedLabel : std::string{}},
+            {"apply_count", debugStateOk ? debugState.applyCount : 0},
+        }).dump());
+        return true;
+    }
+
     if (req.method == "POST" && path == "/api/wasm/test-dispatch-click") {
         if (!IsWasmTestDispatchApiEnabled()) {
             SetPlainResponse(resp, 404, "not found");
