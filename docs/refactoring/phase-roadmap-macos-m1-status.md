@@ -249,6 +249,8 @@
   - 55zze completed (acceptance): full POSIX regression suite remains green after scroll pulse overlay internals split.
   - 55zzf completed (code): split macOS click pulse effect internals into renderer/style/window-registry modules (`MacosClickPulseOverlayRenderer.*`, `MacosClickPulseOverlayStyle.*`, `MacosClickPulseWindowRegistry.*`) and kept `MacosClickPulseEffect.mm` as lifecycle/event-entry facade.
   - 55zzf completed (acceptance): full POSIX regression suite remains green after click pulse overlay internals split.
+  - 55zzg completed (code): split keyboard injector key mapping tables into `MacosKeyboardInjectorKeyTables.*` and kept `MacosKeyboardInjectorKeyResolver.mm` as resolver flow/orchestration facade.
+  - 55zzg completed (acceptance): full POSIX regression suite remains green after keyboard-injector key-table split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.

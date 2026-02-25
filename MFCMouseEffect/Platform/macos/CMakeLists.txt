@@ -65,6 +65,7 @@ add_library(mfx_shell_macos STATIC
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosInputPermissionState.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosKeyboardInjector.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosKeyboardInjectorKeyResolver.mm"
+    "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosKeyboardInjectorKeyTables.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosVirtualKeyMapper.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosUserNotificationService.cpp"
 )

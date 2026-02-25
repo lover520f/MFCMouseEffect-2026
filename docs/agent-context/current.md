@@ -96,7 +96,7 @@
   - macOS global-input event mapping and permission-simulation parsing are now extracted to dedicated helper modules (`MacosInputEventUtils.*`, `MacosInputPermissionState.*`)
   - macOS `MacosGlobalInputHook` implementation is now split by responsibility (`MacosGlobalInputHook.mm`, `.EventTap.mm`, `.RunLoop.mm`) to lower file coupling without behavior changes
   - macOS input-indicator overlay path is now split into render/lifecycle (`MacosInputIndicatorOverlay.mm`), probe/event-entry (`MacosInputIndicatorOverlay.Probes.mm`), and shared internals (`MacosInputIndicatorOverlayInternals.*`)
-  - macOS keyboard injection path now isolates shortcut key-resolution (`MacosKeyboardInjectorKeyResolver.*`) from event-post execution flow (`MacosKeyboardInjector.mm`)
+  - macOS keyboard injection path now isolates resolver orchestration (`MacosKeyboardInjectorKeyResolver.*`) and vk->mac key tables (`MacosKeyboardInjectorKeyTables.*`) from event-post execution flow (`MacosKeyboardInjector.mm`)
   - macOS app-catalog scanner now isolates root-scan workflow in `MacosApplicationCatalogScanWorkflow.*` and keeps `MacosApplicationCatalogScanner` as thin entry façade
   - macOS wasm renderer now isolates command dispatch and resolver utilities (`MacosWasmCommandRenderDispatch.*`, `MacosWasmCommandRenderResolvers.*`) from top-level parse/orchestration
   - macOS scroll pulse effect now isolates overlay rendering internals in `MacosScrollPulseOverlayRenderer.*`, keeping `MacosScrollPulseEffect` as lifecycle + entry façade
@@ -176,10 +176,11 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzd-macos-wasm-overlay-runtime-state-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zze-macos-scroll-pulse-overlay-internals-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzf-macos-click-pulse-overlay-internals-split.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzg-macos-keyboard-injector-key-tables-split.md`
 - Phase closure docs:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53ai-automation-mapping-phase-closure.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase54i-linux-follow-phase-closure.md`
-- For full Phase 55 sequence (`55h-55zzf`), read roadmap status doc above instead of loading all slice docs by default.
+- For full Phase 55 sequence (`55h-55zzg`), read roadmap status doc above instead of loading all slice docs by default.
 
 ## AI-IDE Context Loading Rule
 - Read this file first for active truth.
