@@ -90,6 +90,7 @@
   - core HTTP WASM regression helper stack is now modularized (`parse/http/runtime-assert/transfer-assert/dispatch-assert`) with compatibility loader entry retained in `tools/platform/regression/lib/core_http_wasm_helpers.sh`
   - core HTTP WASM contract checks are now split by scenario (catalog/path/runtime/transfer/fixture/dispatch/platform) with `core_http_wasm_contract_checks.sh` as orchestrator
   - core HTTP automation contract checks are now split by scenario (basic/app-scope/priority/match-inject/shortcut/indicator/effects/platform) with `core_http_automation_contract_checks.sh` as orchestrator
+  - core HTTP orchestrator is now helper-split (probe/entry/state checks) with `core_http.sh` as the top-level workflow
   - core HTTP regression now supports scoped checks (`all` default, `wasm` focused) so WASM closure can run a dedicated gate without full automation/input contracts
   - new dedicated WASM-focused gate `tools/platform/regression/run-posix-core-wasm-contract-regression.sh` is available for faster M2 iterations
   - macOS WASM selfcheck now also covers transfer/error-code contracts (`catalog`, folder-dialog probe, import-selected success/failure codes, export-all consistency) in the same one-command flow
@@ -207,13 +208,12 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzs-wasm-manifest-path-trim-contract-gate.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzt-wasm-selfcheck-helper-modularization.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzu-core-http-wasm-helper-modularization-and-lock-race-hardening.md`
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzv-core-http-wasm-contract-check-modularization.md`
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzw-core-http-automation-contract-check-modularization.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzv-core-http-wasm-contract-check-modularization.md`, `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzw-core-http-automation-contract-check-modularization.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzx-core-http-orchestrator-helper-split.md`
 - Phase closure docs: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53ai-automation-mapping-phase-closure.md`, `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase54i-linux-follow-phase-closure.md`
-- For full Phase 55 sequence (`55h-55zzw`), read roadmap status doc above instead of loading all slice docs by default.
+- For full Phase 55 sequence (`55h-55zzx`), read roadmap status doc above instead of loading all slice docs by default.
 ## AI-IDE Context Loading Rule
-- Read this file first for active truth; read only one targeted phase/issue doc per task.
-- Avoid loading bulk historical lists unless needed for specific traceability.
+- Read this file first; read only one targeted phase/issue doc per task; avoid bulk historical lists.
 ## Update Checklist (per capability change)
 1. Update targeted phase/issue doc.
 2. If behavior/contract changed, update this file.
