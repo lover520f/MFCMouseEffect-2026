@@ -17,7 +17,8 @@
     "build:automation": "vite build --mode automation",
     "build:wasm": "vite build --mode wasm",
     "dev": "vite",
-    "test:automation-platform": "node scripts/test-automation-platform.mjs"
+    "test:automation-platform": "node scripts/test-automation-platform.mjs",
+    "test:wasm-error-model": "node scripts/test-wasm-action-error-model.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.0",

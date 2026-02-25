@@ -232,13 +232,14 @@ fi
 
 if [[ "$MFX_SKIP_AUTOMATION_TEST" -eq 0 ]]; then
     mfx_require_cmd pnpm
-    mfx_info "run automation platform semantic test phase"
+    mfx_info "run webui semantic test phase"
     (
         cd "$REPO_ROOT"
         pnpm --dir MFCMouseEffect/WebUIWorkspace run test:automation-platform
+        pnpm --dir MFCMouseEffect/WebUIWorkspace run test:wasm-error-model
     )
 else
-    mfx_info "skip automation platform semantic test phase"
+    mfx_info "skip webui semantic test phase"
 fi
 
 mfx_ok "posix regression suite passed"

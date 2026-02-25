@@ -193,6 +193,8 @@
   - 55zc completed (acceptance): WebUI workspace build + automation platform tests + full POSIX suite remain green after frontend error-code surface expansion.
   - 55zd completed (code): expanded transfer failure-code regression matrix (`required/not_file/load_failed/not_found`) and switched WebUI error rendering preference to `error_code` mapping (with EN/ZH translation keys and `error` fallback).
   - 55zd completed (acceptance): core automation contract regression + full POSIX suite + WebUI workspace build/tests remain green after matrix+i18n expansion.
+  - 55ze completed (code): added dedicated WebUI WASM error-model test script and integrated it into default POSIX suite webui semantic phase (`test:automation-platform` + `test:wasm-error-model`).
+  - 55ze completed (acceptance): standalone `test:wasm-error-model` and full POSIX suite remain green after webui test-gate integration.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -293,6 +295,7 @@
 - WASM transfer APIs now expose stable `error_code` fields in addition to `error` text, reducing string-coupling risk in API consumers and regression checks.
 - Shared Svelte WASM UI now surfaces transfer `error_code` details on operation failures, reducing backend/frontend diagnostics contract drift.
 - Core HTTP regression now covers broader transfer failure code semantics (`manifest_path_required/not_file/load_failed/not_found`), reducing false-green risk on importer edge cases.
+- POSIX suite now includes a dedicated WebUI WASM error-model gate (`test:wasm-error-model`), reducing frontend transfer-contract drift risk.
 - Shared WebUI diagnostics now surfaces load-failure stage/code directly, closing backend-vs-UI observability gap for WASM load failures.
 - Shared WebUI WASM state normalization now has one source of truth, reducing future diagnostics-field drift in UI adapters.
 - Core HTTP regression helper responsibilities are now split by domain (core flow vs wasm helpers), reducing future maintenance risk in script-level contract evolution.
