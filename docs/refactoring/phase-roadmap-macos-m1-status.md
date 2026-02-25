@@ -225,6 +225,8 @@
   - 55zs completed (acceptance): full POSIX regression suite remains green after helper extraction and CMake wiring update.
   - 55zt completed (code): split `MacosGlobalInputHook` implementation into lifecycle (`.mm`), callback/probe (`.EventTap.mm`), and runloop (`.RunLoop.mm`) units with shared class-level constants.
   - 55zt completed (acceptance): full POSIX regression suite remains green after implementation-unit split.
+  - 55zu completed (code): split `MacosInputIndicatorOverlay` into render/lifecycle unit, probe/event-entry unit, and shared internals helper unit (`label/main-thread/string` utilities).
+  - 55zu completed (acceptance): full POSIX regression suite remains green after indicator overlay implementation split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
