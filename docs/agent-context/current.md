@@ -95,7 +95,7 @@
   - new dedicated WASM-focused gate `tools/platform/regression/run-posix-core-wasm-contract-regression.sh` is available for faster M2 iterations
   - macOS WASM selfcheck now also covers transfer/error-code contracts (`catalog`, folder-dialog probe, import-selected success/failure codes, export-all consistency) in the same one-command flow
   - core HTTP WASM contract execution is now isolated in `tools/platform/regression/lib/core_http_wasm_contract_checks.sh`, and `core_http.sh` now focuses on lifecycle + non-WASM orchestration boundaries
-  - core HTTP non-WASM contracts are now isolated in `tools/platform/regression/lib/core_http_input_contract_checks.sh` and `tools/platform/regression/lib/core_http_automation_contract_checks.sh`, further reducing cross-domain coupling in `core_http.sh`
+  - core HTTP non-WASM contracts are now isolated in `tools/platform/regression/lib/core_http_input_contract_checks.sh` and `tools/platform/regression/lib/core_http_automation_contract_checks.sh`, and input-capture helpers are split by concern (parse/permission/notification/state/steps) to reduce cross-domain coupling in `core_http.sh`
   - core regression entry scripts (`core-smoke`, `core-automation`, `core-wasm`) now share lock-guarded host resource scheduling (`mfx-entry-posix-host`) to avoid concurrent local run interference
   - shared lock owner-pid read now tolerates transient `owner.env` file races in concurrent local runs (`mfx_read_lock_owner_pid`), preventing wait-path `sed` failures
   - macOS manual core-entry scripts (`run-macos-core-websettings-manual.sh`, `run-macos-automation-injection-selfcheck.sh`, `run-macos-wasm-runtime-selfcheck.sh`) now share the same host lock guard with regression scripts

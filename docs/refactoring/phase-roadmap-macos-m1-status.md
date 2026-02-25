@@ -285,6 +285,8 @@
   - 55zzw completed (acceptance): automation contract gate and full POSIX regression suite remain green after contract-check modularization.
   - 55zzx completed (code): split core HTTP orchestrator helpers into probe/entry/state modules while keeping `core_http.sh` as the top-level workflow.
   - 55zzx completed (acceptance): automation contract gate and full POSIX regression suite remain green after core-http helper split.
+  - 55zzy completed (code): split core HTTP input-capture helper responsibilities (parse/permission/notification/state/steps) into dedicated modules while keeping `core_http_input_contract_checks.sh` as the contract entry.
+  - 55zzy completed (acceptance): automation contract gate and full POSIX regression suite remain green after input-capture helper split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -393,6 +395,7 @@
 - Core HTTP regression now exposes a dedicated WASM-only check scope and one-command entry (`run-posix-core-wasm-contract-regression.sh`), reducing iteration cost during Phase 55 M2 closure.
 - Core HTTP WASM contract execution is now isolated in `core_http_wasm_contract_checks.sh`, reducing coupling in `core_http.sh` and lowering WASM-only change risk.
 - Core HTTP non-WASM contract execution is now also isolated (`core_http_input_contract_checks.sh`, `core_http_automation_contract_checks.sh`), so `core_http.sh` remains orchestration-focused.
+- Core HTTP input-capture helpers are now split by responsibility (parse/permission/notification/state/steps), reducing maintenance risk in input-contract checks.
 - Core regression entry scripts now share an explicit host-process lock (`mfx-entry-posix-host`), reducing false-negative flakiness during concurrent local runs.
 - macOS manual core-entry scripts now also share the same host-process lock, reducing mixed manual+regression local-run interference.
 - Stale entry-host cleanup is now helper-consolidated (`mfx_terminate_stale_entry_host`) across regression/manual startup paths, reducing script-level drift risk.
