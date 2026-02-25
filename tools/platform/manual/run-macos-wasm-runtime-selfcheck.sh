@@ -132,11 +132,16 @@ fi
 tmp_dir="$(mktemp -d)"
 cleanup() {
     rm -rf "$tmp_dir" >/dev/null 2>&1 || true
+    mfx_release_lock
     if [[ "$keep_running" -eq 0 ]]; then
         mfx_manual_stop_core_host "$MFX_MANUAL_HOST_PID"
     fi
 }
 trap cleanup EXIT
+
+mfx_info "entry host lock: mfx-entry-posix-host"
+MFX_ENTRY_LOCK_TIMEOUT_SECONDS="${MFX_ENTRY_LOCK_TIMEOUT_SECONDS:-180}"
+mfx_acquire_lock "mfx-entry-posix-host" "$MFX_ENTRY_LOCK_TIMEOUT_SECONDS"
 
 mfx_manual_start_core_host "$host_bin" "$probe_file" "$log_file" "MFX_ENABLE_WASM_TEST_DISPATCH_API=1"
 

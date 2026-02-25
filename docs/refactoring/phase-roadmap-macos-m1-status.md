@@ -203,6 +203,8 @@
   - 55zh completed (acceptance): core automation contract gate, wasm-focused gate, and full POSIX suite remain green after non-WASM module split.
   - 55zi completed (code): added shared core-entry lock guard (`mfx-entry-posix-host`) in regression common lib and wired it into core smoke/core automation/core wasm entry scripts to prevent concurrent-run `pkill` interference.
   - 55zi completed (acceptance): concurrent automation+wasm contract runs now serialize on lock (observed wait path) and both complete successfully; full POSIX suite remains green.
+  - 55zj completed (code): wired the same entry lock guard into macOS manual scripts (core websettings runner, automation injection selfcheck, wasm runtime selfcheck) so manual and regression workflows share host-process scheduling semantics.
+  - 55zj completed (acceptance): concurrent manual wasm selfcheck + core automation contract run now serializes on lock and both complete successfully; full POSIX suite remains green.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -312,6 +314,7 @@
 - Core HTTP WASM contract execution is now isolated in `core_http_wasm_contract_checks.sh`, reducing coupling in `core_http.sh` and lowering WASM-only change risk.
 - Core HTTP non-WASM contract execution is now also isolated (`core_http_input_contract_checks.sh`, `core_http_automation_contract_checks.sh`), so `core_http.sh` remains orchestration-focused.
 - Core regression entry scripts now share an explicit host-process lock (`mfx-entry-posix-host`), reducing false-negative flakiness during concurrent local runs.
+- macOS manual core-entry scripts now also share the same host-process lock, reducing mixed manual+regression local-run interference.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:

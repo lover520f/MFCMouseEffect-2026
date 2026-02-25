@@ -6,7 +6,7 @@
 - Constraints: no Windows regression; Linux follows compile + contract coverage.
 
 ## Current Program State
-- Branch baseline has completed Phase 50 -> Phase 55zi code slices.
+- Branch baseline has completed Phase 50 -> Phase 55zj code slices.
 - POSIX dual-lane guardrail exists:
   - scaffold lane remains default stable lane.
   - core lane is gated and iteratively enabled.
@@ -85,6 +85,7 @@
   - core HTTP WASM contract execution is now isolated in `tools/platform/regression/lib/core_http_wasm_contract_checks.sh`, and `core_http.sh` now focuses on lifecycle + non-WASM orchestration boundaries
   - core HTTP non-WASM contracts are now isolated in `tools/platform/regression/lib/core_http_input_contract_checks.sh` and `tools/platform/regression/lib/core_http_automation_contract_checks.sh`, further reducing cross-domain coupling in `core_http.sh`
   - core regression entry scripts (`core-smoke`, `core-automation`, `core-wasm`) now share lock-guarded host resource scheduling (`mfx-entry-posix-host`) to avoid concurrent local run interference
+  - macOS manual core-entry scripts (`run-macos-core-websettings-manual.sh`, `run-macos-automation-injection-selfcheck.sh`, `run-macos-wasm-runtime-selfcheck.sh`) now share the same host lock guard with regression scripts
 
 ## Known Stable Gates
 Run these as first-line regression checks:
@@ -154,6 +155,7 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zg-core-http-wasm-contract-module-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zh-core-http-non-wasm-contract-module-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zi-core-regression-entry-lock-guard.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zj-macos-manual-entry-lock-guard.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53ai-automation-mapping-phase-closure.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase54i-linux-follow-phase-closure.md`
 
