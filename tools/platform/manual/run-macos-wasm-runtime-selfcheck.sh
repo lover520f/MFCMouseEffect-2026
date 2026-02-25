@@ -177,6 +177,14 @@ import_dialog_probe_file="$tmp_dir/wasm-import-dialog-probe.out"
 mfx_wasm_selfcheck_assert_import_dialog_probe_supported \
     "wasm import dialog probe" "$import_dialog_probe_file" "$MFX_MANUAL_BASE_URL" "$token"
 
+import_dialog_probe_trimmed_initial_path_file="$tmp_dir/wasm-import-dialog-probe-trimmed-initial-path.out"
+mfx_wasm_selfcheck_assert_import_dialog_probe_trimmed_initial_path \
+    "wasm import dialog probe trimmed initial path" \
+    "$import_dialog_probe_trimmed_initial_path_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    "$repo_root/examples"
+
 import_selected_file="$tmp_dir/wasm-import-selected.out"
 mfx_wasm_selfcheck_assert_import_selected_ok \
     "wasm import-selected" "$import_selected_file" "$MFX_MANUAL_BASE_URL" "$token" "$manifest_path"
@@ -207,6 +215,103 @@ load_file="$tmp_dir/wasm-load-manifest.out"
 mfx_wasm_selfcheck_assert_load_manifest_ok \
     "wasm load-manifest" "$load_file" "$MFX_MANUAL_BASE_URL" "$token" "$manifest_path"
 
+load_trimmed_file="$tmp_dir/wasm-load-manifest-trimmed.out"
+mfx_wasm_selfcheck_assert_load_manifest_trimmed_path_ok \
+    "wasm load-manifest trimmed path" "$load_trimmed_file" "$MFX_MANUAL_BASE_URL" "$token" "$manifest_path"
+
+reload_route_file="$tmp_dir/wasm-reload-route.out"
+mfx_wasm_selfcheck_assert_reload_ok \
+    "wasm reload route" "$reload_route_file" "$MFX_MANUAL_BASE_URL" "$token"
+
+reset_runtime_file="$tmp_dir/wasm-reset-runtime.out"
+mfx_wasm_selfcheck_assert_test_reset_runtime_ok \
+    "wasm reset runtime" "$reset_runtime_file" "$MFX_MANUAL_BASE_URL" "$token"
+
+reload_without_target_file="$tmp_dir/wasm-reload-without-target.out"
+mfx_wasm_selfcheck_reload_failure \
+    "wasm reload without target" "$reload_without_target_file" "$MFX_MANUAL_BASE_URL" "$token" \
+    "reload_target_missing"
+
+load_after_reset_file="$tmp_dir/wasm-load-manifest-after-reset.out"
+mfx_wasm_selfcheck_assert_load_manifest_ok \
+    "wasm load-manifest after reset" "$load_after_reset_file" "$MFX_MANUAL_BASE_URL" "$token" "$manifest_path"
+
+reload_failure_fixture_dir="$tmp_dir/wasm-reload-failure-fixture"
+reload_failure_manifest_path="$(mfx_wasm_fixture_manifest_copy \
+    "$manifest_path" \
+    "$reload_failure_fixture_dir" \
+    "selfcheck reload failure fixture")"
+mfx_wasm_fixture_require_entry_file "$reload_failure_manifest_path" "selfcheck reload failure fixture" >/dev/null
+
+reload_failure_fixture_load_file="$tmp_dir/wasm-load-manifest-reload-failure-fixture.out"
+mfx_wasm_selfcheck_assert_load_manifest_ok \
+    "wasm reload-failure fixture load" \
+    "$reload_failure_fixture_load_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    "$reload_failure_manifest_path"
+
+mfx_wasm_fixture_remove_entry_file "$reload_failure_manifest_path" "selfcheck reload failure fixture" >/dev/null
+
+reload_missing_module_file="$tmp_dir/wasm-reload-missing-module.out"
+mfx_wasm_selfcheck_reload_failure \
+    "wasm reload missing module" \
+    "$reload_missing_module_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    "module_load_failed" \
+    "load_module" \
+    "module_load_failed"
+
+load_after_reload_failure_restore_file="$tmp_dir/wasm-load-manifest-after-reload-failure.out"
+mfx_wasm_selfcheck_assert_load_manifest_ok \
+    "wasm load-manifest restore after reload failure" \
+    "$load_after_reload_failure_restore_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    "$manifest_path"
+
+reload_api_fixture_dir="$tmp_dir/wasm-reload-api-fixture"
+reload_api_manifest_path="$(mfx_wasm_fixture_manifest_copy \
+    "$manifest_path" \
+    "$reload_api_fixture_dir" \
+    "selfcheck reload api fixture")"
+reload_api_entry_relative="$(mfx_wasm_fixture_manifest_entry_relative \
+    "$reload_api_manifest_path" \
+    "selfcheck reload api fixture")"
+
+reload_api_fixture_load_file="$tmp_dir/wasm-load-manifest-reload-api-fixture.out"
+mfx_wasm_selfcheck_assert_load_manifest_ok \
+    "wasm reload-api fixture load" \
+    "$reload_api_fixture_load_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    "$reload_api_manifest_path"
+
+mfx_wasm_fixture_write_manifest_with_api_version \
+    "$reload_api_manifest_path" \
+    "reload-api-unsupported-plugin" \
+    "2" \
+    "$reload_api_entry_relative"
+
+reload_api_unsupported_file="$tmp_dir/wasm-reload-api-unsupported.out"
+mfx_wasm_selfcheck_reload_failure \
+    "wasm reload unsupported api" \
+    "$reload_api_unsupported_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    "manifest_api_unsupported" \
+    "manifest_api_version" \
+    "manifest_api_unsupported"
+
+load_after_api_reload_failure_restore_file="$tmp_dir/wasm-load-manifest-after-api-reload-failure.out"
+mfx_wasm_selfcheck_assert_load_manifest_ok \
+    "wasm load-manifest restore after api reload failure" \
+    "$load_after_api_reload_failure_restore_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    "$manifest_path"
+
 enable_file="$tmp_dir/wasm-enable.out"
 code_enable="$(mfx_http_code "$enable_file" "$MFX_MANUAL_BASE_URL/api/wasm/enable" \
     -X POST -H "$token_header" -H "Content-Type: application/json" -d '{}')"
@@ -234,6 +339,14 @@ invalid_file="$tmp_dir/wasm-load-invalid.out"
 mfx_wasm_selfcheck_assert_load_manifest_failure \
     "invalid manifest" "$invalid_file" "$MFX_MANUAL_BASE_URL" "$token" "$invalid_manifest_path" \
     "manifest_load" "manifest_io_error"
+
+required_manifest_file="$tmp_dir/wasm-load-required.out"
+mfx_wasm_selfcheck_assert_load_manifest_required_failure \
+    "manifest required" "$required_manifest_file" "$MFX_MANUAL_BASE_URL" "$token"
+
+required_manifest_blank_file="$tmp_dir/wasm-load-required-blank.out"
+mfx_wasm_selfcheck_assert_load_manifest_blank_path_required_failure \
+    "manifest blank required" "$required_manifest_blank_file" "$MFX_MANUAL_BASE_URL" "$token"
 
 invalid_json_manifest_path="$tmp_dir/manifest-invalid-json.json"
 printf '{' > "$invalid_json_manifest_path"
