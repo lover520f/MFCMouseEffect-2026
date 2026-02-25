@@ -205,6 +205,10 @@
   - 55zi completed (acceptance): concurrent automation+wasm contract runs now serialize on lock (observed wait path) and both complete successfully; full POSIX suite remains green.
   - 55zj completed (code): wired the same entry lock guard into macOS manual scripts (core websettings runner, automation injection selfcheck, wasm runtime selfcheck) so manual and regression workflows share host-process scheduling semantics.
   - 55zj completed (acceptance): concurrent manual wasm selfcheck + core automation contract run now serializes on lock and both complete successfully; full POSIX suite remains green.
+  - 55zk completed (code): suite preflight in `run-posix-regression-suite.sh` is now detect-only; entry-host cleanup is no longer executed at suite level and remains phase-local under `mfx-entry-posix-host` lock.
+  - 55zk completed (acceptance): full POSIX regression suite remains green after suite preflight lock-alignment cleanup.
+  - 55zl completed (code): consolidated stale entry-host cleanup into shared helper (`mfx_terminate_stale_entry_host`) and reused it in core regression scripts plus macOS manual host launcher lib.
+  - 55zl completed (acceptance): full POSIX regression suite remains green after cleanup-helper consolidation.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -264,7 +268,7 @@
 - Linux compile gate now has a dedicated orchestration script, reducing manual command drift risk for cross-host follow.
 - Automation platform semantics now have script-level regression guard, reducing manual-only verification for `.app/.exe` behavior.
 - POSIX regression now has a single suite entrypoint with phase-level skip switches for faster diagnosis.
-- Suite preflight now auto-cleans stale `mfx_entry_posix_host` processes, reducing single-instance conflict noise during HTTP checks.
+- POSIX suite preflight is now non-destructive (detect-only); stale entry-host cleanup is performed inside phase scripts under shared `mfx-entry-posix-host` lock.
 - Scaffold HTTP regression now guards scaffold-lane automation boundary contracts (`404 not found`), reducing dual-lane behavior drift risk.
 - Core lane now has an automated startup/alive/exit gate, reducing "compile-only green" risk while core runtime remains non-default.
 - Core lane automation APIs are now contract-tested in CI-style scripts (`200 + token gate + macOS .app catalog semantics`) instead of manual-only checks.
@@ -315,6 +319,7 @@
 - Core HTTP non-WASM contract execution is now also isolated (`core_http_input_contract_checks.sh`, `core_http_automation_contract_checks.sh`), so `core_http.sh` remains orchestration-focused.
 - Core regression entry scripts now share an explicit host-process lock (`mfx-entry-posix-host`), reducing false-negative flakiness during concurrent local runs.
 - macOS manual core-entry scripts now also share the same host-process lock, reducing mixed manual+regression local-run interference.
+- Stale entry-host cleanup is now helper-consolidated (`mfx_terminate_stale_entry_host`) across regression/manual startup paths, reducing script-level drift risk.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:

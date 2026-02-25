@@ -126,11 +126,9 @@ fi
 mfx_info "repo root: $REPO_ROOT"
 mfx_info "host platform: $(uname -s)"
 
-if command -v pgrep >/dev/null 2>&1 && command -v pkill >/dev/null 2>&1; then
+if command -v pgrep >/dev/null 2>&1; then
     if pgrep -f mfx_entry_posix_host >/dev/null 2>&1; then
-        mfx_info "terminate stale mfx_entry_posix_host processes before suite run"
-        pkill -f mfx_entry_posix_host >/dev/null 2>&1 || true
-        sleep 0.2
+        mfx_info "detected running mfx_entry_posix_host; phase scripts will handle cleanup under mfx-entry-posix-host lock"
     fi
 fi
 

@@ -62,6 +62,21 @@ mfx_http_code() {
     curl -sS -o "$output_file" -w '%{http_code}' "$@" "$url"
 }
 
+mfx_terminate_stale_entry_host() {
+    local context="${1:-}"
+    if command -v pgrep >/dev/null 2>&1 && command -v pkill >/dev/null 2>&1; then
+        if pgrep -f mfx_entry_posix_host >/dev/null 2>&1; then
+            local message="terminate stale mfx_entry_posix_host processes"
+            if [[ -n "$context" ]]; then
+                message="$message $context"
+            fi
+            mfx_info "$message"
+            pkill -f mfx_entry_posix_host >/dev/null 2>&1 || true
+            sleep 0.2
+        fi
+    fi
+}
+
 mfx_acquire_lock() {
     local lock_name="$1"
     local timeout_seconds="${2:-180}"

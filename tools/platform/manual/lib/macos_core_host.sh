@@ -33,8 +33,7 @@ mfx_manual_start_core_host() {
         mfx_fail "host binary missing or not executable: $host_bin"
     fi
 
-    mfx_info "terminate stale mfx_entry_posix_host processes"
-    pkill -f mfx_entry_posix_host >/dev/null 2>&1 || true
+    mfx_terminate_stale_entry_host "before manual host start"
 
     rm -f "$probe_file"
 

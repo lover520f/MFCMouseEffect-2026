@@ -84,13 +84,7 @@ mfx_info "enable core runtime lane: ON"
 mfx_info "entry host lock: mfx-entry-posix-host"
 
 mfx_run_core_wasm_contract_workflow() {
-    if command -v pgrep >/dev/null 2>&1 && command -v pkill >/dev/null 2>&1; then
-        if pgrep -f mfx_entry_posix_host >/dev/null 2>&1; then
-            mfx_info "terminate stale mfx_entry_posix_host processes before core wasm contracts"
-            pkill -f mfx_entry_posix_host >/dev/null 2>&1 || true
-            sleep 0.2
-        fi
-    fi
+    mfx_terminate_stale_entry_host "before core wasm contracts"
 
     mfx_configure_and_build_entry_host \
         "$REPO_ROOT" \
