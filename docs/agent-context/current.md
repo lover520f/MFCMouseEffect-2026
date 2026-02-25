@@ -38,6 +38,7 @@
   - WebSettings runtime automation routes are now split into `AutomationShortcutCaptureRoutes.*` and `AutomationCatalogRoutes.*` with shared `AutomationRouteUtils.*`, keeping `AutomationRoutes.cpp` as delegator
   - WebSettings WASM catalog routes are now split into `WasmCatalogQueryRoutes.*`, `WasmImportRoutes.*`, and `WasmExportRoutes.*`, keeping `WasmCatalogRoutes.cpp` as delegator
   - WebSettings WASM runtime routes are now split into `WasmRuntimeStateRoutes.*` and `WasmRuntimeActionRoutes.*`, keeping `WasmRuntimeRoutes.cpp` as delegator
+  - WebSettings WASM route utils are now split into `WasmRouteParseUtils.cpp`, `WasmRoutePathUtils.cpp`, and `WasmRouteResponseUtils.cpp`, removing monolithic utility implementation coupling
   - `SettingsStateMapper` is now split into `BaseSections.*` and `Diagnostics.*` with top-level composition kept in `SettingsStateMapper.cpp`
   - `SettingsSchemaBuilder` is now split into `OptionsSections.*` and `CapabilitiesSections.*` with top-level composition kept in `SettingsSchemaBuilder.cpp`
   - `HttpServer` is now split into lifecycle/session/protocol layers (`HttpServer.Lifecycle.cpp`, `HttpServer.ClientSession.cpp`, `HttpServer.Protocol.cpp`) with thin `HttpServer.cpp` entry

@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "WebSettingsServer.WasmRouteUtils.h"
 
-#include <filesystem>
-#include <cwctype>
 #include <string>
 
 #include "MouseFx/Core/Control/AppController.h"
@@ -12,71 +10,12 @@
 
 using json = nlohmann::json;
 
-namespace mousefx {
-namespace websettings_wasm_routes {
-namespace {
-
-std::wstring NormalizeManifestPathForCompare(const std::wstring& path) {
-    std::wstring normalized = path;
-    for (wchar_t& ch : normalized) {
-        if (ch == L'/') {
-            ch = L'\\';
-        }
-        ch = static_cast<wchar_t>(std::towlower(ch));
-    }
-    return normalized;
-}
-
-} // namespace
+namespace mousefx::websettings_wasm_routes {
 
 void SetJsonResponse(HttpResponse& resp, const std::string& body) {
     resp.statusCode = 200;
     resp.contentType = "application/json; charset=utf-8";
     resp.body = body;
-}
-
-json ParseObjectOrEmpty(const std::string& body) {
-    if (body.empty()) {
-        return json::object();
-    }
-    try {
-        json parsed = json::parse(body);
-        if (parsed.is_object()) {
-            return parsed;
-        }
-    } catch (...) {
-    }
-    return json::object();
-}
-
-std::string ParseManifestPathUtf8(const json& payload) {
-    if (!payload.contains("manifest_path") || !payload["manifest_path"].is_string()) {
-        return {};
-    }
-    return payload["manifest_path"].get<std::string>();
-}
-
-std::string ParseInitialPathUtf8(const json& payload) {
-    if (!payload.contains("initial_path") || !payload["initial_path"].is_string()) {
-        return {};
-    }
-    return payload["initial_path"].get<std::string>();
-}
-
-bool IsSameManifestPath(const std::wstring& expected, const std::wstring& actual) {
-    if (expected.empty() || actual.empty()) {
-        return false;
-    }
-
-    const std::wstring expectedCanonical =
-        NormalizeManifestPathForCompare(std::filesystem::path(expected).lexically_normal().wstring());
-    const std::wstring actualCanonical =
-        NormalizeManifestPathForCompare(std::filesystem::path(actual).lexically_normal().wstring());
-    if (!expectedCanonical.empty() && !actualCanonical.empty()) {
-        return expectedCanonical == actualCanonical;
-    }
-
-    return NormalizeManifestPathForCompare(expected) == NormalizeManifestPathForCompare(actual);
 }
 
 json BuildWasmResponse(AppController* controller, bool ok) {
@@ -141,5 +80,4 @@ json BuildWasmActionResponse(AppController* controller, bool ok, const std::stri
     return body;
 }
 
-} // namespace websettings_wasm_routes
-} // namespace mousefx
+} // namespace mousefx::websettings_wasm_routes
