@@ -55,7 +55,11 @@
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zp-doc-index-compaction-p0-p1.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zq-core-regression-workflow-helper-consolidation.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zr-wasm-dispatch-readiness-retry-hardening.md`
-  - 完整 hardening 流水（`55h-55zr`）见：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzs-wasm-manifest-path-trim-contract-gate.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzt-wasm-selfcheck-helper-modularization.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzu-core-http-wasm-helper-modularization-and-lock-race-hardening.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzv-core-http-wasm-contract-check-modularization.md`
+  - 完整 hardening 流水（`55h-55zzv`）见：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
 
 ## 定向检索命令
 ```bash
@@ -76,6 +80,9 @@ rg -n "permission|automation|app_scope|wasm|throttle" docs/refactoring docs/issu
 
 # macOS core wasm 聚焦 HTTP 合同门禁（比全量 automation 合同更快）
 ./tools/platform/regression/run-posix-core-wasm-contract-regression.sh --platform auto
+
+# macOS core wasm 路径裁剪合同门禁（快速验证路由路径语义）
+./tools/platform/regression/run-posix-core-wasm-path-contract-regression.sh --platform auto
 
 # macOS 自动化注入自检（默认真实注入；加 --dry-run 为确定性测试模式）
 ./tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build

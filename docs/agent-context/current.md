@@ -25,6 +25,14 @@
   - test-gated `/api/automation/test-match-and-inject` enables non-interactive matcher+injector integration checks (`history -> selected binding -> inject`)
   - test-gated `/api/automation/test-shortcut-from-mac-keycode` enables non-interactive `Cmd+V/Cmd+Tab` mapping contract checks
   - shortcut test API now has explicit invalid-keycode contract (`supported=false`, `vk_code=0`, empty `shortcut`, reason code) with regression guard
+  - WASM runtime action routes (`load-manifest`/`reload`) now expose structured `error_code`, and contracts now cover `manifest_path required` + `reload ok` semantics
+  - `wasm_reload` command path is now truly cross-platform (no Windows-only no-op), with deterministic `reload_target_missing` contract validated via test-gated runtime-reset probe
+  - WASM reload missing-module path is now contract-gated via deterministic fixture flow (`load -> remove entry wasm -> reload => module_load_failed/load_module`)
+  - WASM reload manifest-api mismatch path is now contract-gated via fixture mutation (`load -> api_version=2 -> reload => manifest_api_unsupported/manifest_api_version`)
+  - WASM fixture orchestration is now helperized in one shared script module used by regression and manual selfcheck, reducing fixture-flow drift
+  - WebUI WASM action error model now maps runtime load/reload error codes (`reload_target_missing`, `module_load_failed`, `manifest_api_unsupported`, etc.) to stable user-facing messages, and legacy WebUI EN/ZH i18n keys are now kept in parity for those runtime codes
+  - WebUI WASM error-model test now asserts i18n parity (`action-error-model` keys must exist in `WebUI/i18n.js` for both `en-US` and `zh-CN`), preventing future mapping-vs-dictionary drift
+  - WASM route path contracts now explicitly gate `load-manifest` `manifest_path` trim/blank semantics and folder-dialog probe `initial_path` trim semantics (`"  path  "` succeeds and roundtrips as canonical path; `"   "` keeps required-path failure where expected)
   - test-gated `/api/automation/test-inject-shortcut` enables non-interactive injector call-path checks (`Cmd+C`) under dry-run mode
   - real injection manual acceptance (`left_click -> Cmd+C`) is user-verified on macOS via one-command selfcheck
   - Phase 53 automation mapping scope is now explicitly closed for M1 in `phase53ai-automation-mapping-phase-closure.md`
@@ -68,7 +76,7 @@
   - WASM diagnostics now expose machine-readable load-failure fields (`last_load_failure_stage`, `last_load_failure_code`) and invalid-manifest selfcheck now asserts `manifest_load/manifest_io_error`
   - macOS WASM selfcheck now covers full manifest load-failure classification (`manifest_io_error`, `manifest_json_parse_error`, `manifest_invalid`) to lock failure-code semantics in regression
   - macOS WASM selfcheck now also covers stage-level load failures (`manifest_api_version`, `load_module`) and asserts load-failure field reset after a valid reload
-  - macOS WASM selfcheck `load-manifest` request/assert logic is now helper-split (`tools/platform/manual/lib/wasm_selfcheck_common.sh`), reducing script duplication while preserving checks
+  - macOS WASM selfcheck helper stack is now modularized (`parse/http/runtime-assert/transfer-assert/dispatch-assert` modules) with compatibility loader entry retained in `tools/platform/manual/lib/wasm_selfcheck_common.sh`
   - core HTTP contract regression now asserts WASM load-failure diagnostics semantics (`last_load_failure_stage/code`) for success, invalid-manifest failure, and reload-clear paths
   - core HTTP contract regression now also asserts WASM transfer semantics (`import-selected` success+failure and `export-all` success with minimum count guard)
   - core HTTP contract regression now also asserts WASM export filesystem consistency (`export_path` existence and exported directory count == response count)
@@ -79,13 +87,15 @@
   - POSIX suite webui semantic phase now also includes `test:wasm-error-model`, keeping WASM error-code mapping behavior gated by default
   - shared Svelte WASM diagnostics panel now surfaces `last_load_failure_stage/code` with EN/ZH i18n labels and warning-state linkage
   - shared Svelte WASM state normalization is now deduplicated via `WebUIWorkspace/src/wasm/state-model.js`, reducing cross-file drift risk
-  - core HTTP regression WASM load helpers are now split into `tools/platform/regression/lib/core_http_wasm_helpers.sh`, reducing coupling in `core_http.sh`
+  - core HTTP WASM regression helper stack is now modularized (`parse/http/runtime-assert/transfer-assert/dispatch-assert`) with compatibility loader entry retained in `tools/platform/regression/lib/core_http_wasm_helpers.sh`
+  - core HTTP WASM contract checks are now split by scenario (catalog/path/runtime/transfer/fixture/dispatch/platform) with `core_http_wasm_contract_checks.sh` as orchestrator
   - core HTTP regression now supports scoped checks (`all` default, `wasm` focused) so WASM closure can run a dedicated gate without full automation/input contracts
   - new dedicated WASM-focused gate `tools/platform/regression/run-posix-core-wasm-contract-regression.sh` is available for faster M2 iterations
   - macOS WASM selfcheck now also covers transfer/error-code contracts (`catalog`, folder-dialog probe, import-selected success/failure codes, export-all consistency) in the same one-command flow
   - core HTTP WASM contract execution is now isolated in `tools/platform/regression/lib/core_http_wasm_contract_checks.sh`, and `core_http.sh` now focuses on lifecycle + non-WASM orchestration boundaries
   - core HTTP non-WASM contracts are now isolated in `tools/platform/regression/lib/core_http_input_contract_checks.sh` and `tools/platform/regression/lib/core_http_automation_contract_checks.sh`, further reducing cross-domain coupling in `core_http.sh`
   - core regression entry scripts (`core-smoke`, `core-automation`, `core-wasm`) now share lock-guarded host resource scheduling (`mfx-entry-posix-host`) to avoid concurrent local run interference
+  - shared lock owner-pid read now tolerates transient `owner.env` file races in concurrent local runs (`mfx_read_lock_owner_pid`), preventing wait-path `sed` failures
   - macOS manual core-entry scripts (`run-macos-core-websettings-manual.sh`, `run-macos-automation-injection-selfcheck.sh`, `run-macos-wasm-runtime-selfcheck.sh`) now share the same host lock guard with regression scripts
   - POSIX suite preflight is now detect-only for `mfx_entry_posix_host`; cleanup stays phase-local under `mfx-entry-posix-host` lock (no suite-level force kill)
   - stale entry-host cleanup now uses one shared helper (`mfx_terminate_stale_entry_host`) across core regression workflows and macOS manual host startup
@@ -119,6 +129,7 @@ Run these as first-line regression checks:
 ./tools/platform/regression/run-posix-core-smoke.sh --platform auto
 ./tools/platform/regression/run-posix-core-automation-contract-regression.sh --platform auto
 ./tools/platform/regression/run-posix-core-wasm-contract-regression.sh --platform auto
+./tools/platform/regression/run-posix-core-wasm-path-contract-regression.sh --platform auto
 ./tools/platform/regression/run-posix-linux-compile-gate.sh --build-dir /tmp/mfx-platform-linux-build --jobs 8
 ./tools/platform/regression/run-posix-regression-suite.sh --platform auto
 ./tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh --skip-build
@@ -185,16 +196,24 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzi-macos-effect-overlay-lifecycle-observability.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzj-effect-overlay-probe-arithmetic-hardening.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzk-automation-shortcut-invalid-keycode-contract.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzl-wasm-runtime-action-error-code-contract.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzm-wasm-reload-cross-platform-and-missing-target-contract.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzn-wasm-reload-missing-module-contract.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzo-wasm-reload-manifest-api-unsupported-contract.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzp-wasm-fixture-helper-consolidation.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzq-webui-wasm-runtime-error-code-mapping.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzr-webui-wasm-error-i18n-parity-gate.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzs-wasm-manifest-path-trim-contract-gate.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzt-wasm-selfcheck-helper-modularization.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzu-core-http-wasm-helper-modularization-and-lock-race-hardening.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzv-core-http-wasm-contract-check-modularization.md`
 - Phase closure docs:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53ai-automation-mapping-phase-closure.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase54i-linux-follow-phase-closure.md`
-- For full Phase 55 sequence (`55h-55zzk`), read roadmap status doc above instead of loading all slice docs by default.
-
+- For full Phase 55 sequence (`55h-55zzv`), read roadmap status doc above instead of loading all slice docs by default.
 ## AI-IDE Context Loading Rule
-- Read this file first for active truth.
-- Read only one targeted phase/issue doc per task.
+- Read this file first for active truth; read only one targeted phase/issue doc per task.
 - Avoid loading bulk historical lists unless needed for specific traceability.
-
 ## Update Checklist (per capability change)
 1. Update targeted phase/issue doc.
 2. If behavior/contract changed, update this file.

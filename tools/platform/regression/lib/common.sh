@@ -142,6 +142,15 @@ mfx_run_with_entry_lock() {
     mfx_with_lock "mfx-entry-posix-host" "$timeout_seconds" "$workflow_fn"
 }
 
+mfx_read_lock_owner_pid() {
+    local owner_file="$1"
+    if [[ ! -r "$owner_file" ]]; then
+        return 0
+    fi
+
+    sed -n 's/^pid=//p' "$owner_file" 2>/dev/null | head -n 1 || true
+}
+
 mfx_acquire_lock() {
     local lock_name="$1"
     local timeout_seconds="${2:-180}"
@@ -177,9 +186,7 @@ mfx_acquire_lock() {
         fi
 
         local owner_pid=""
-        if [[ -f "$lock_dir/owner.env" ]]; then
-            owner_pid="$(sed -n 's/^pid=//p' "$lock_dir/owner.env" | head -n 1)"
-        fi
+        owner_pid="$(mfx_read_lock_owner_pid "$lock_dir/owner.env")"
         if [[ -n "$owner_pid" && "$owner_pid" =~ ^[0-9]+$ ]]; then
             if ! kill -0 "$owner_pid" 2>/dev/null; then
                 mfx_info "remove stale lock: $lock_name (owner pid=$owner_pid)"

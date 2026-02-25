@@ -259,6 +259,28 @@
   - 55zzj completed (acceptance): full POSIX regression suite remains green after effect overlay probe arithmetic hardening.
   - 55zzk completed (code): hardened automation shortcut test route for invalid keycode path (`supported=false`, `vk_code=0`, empty `shortcut`, reason code) and added regression assertions.
   - 55zzk completed (acceptance): full POSIX regression suite remains green after invalid-keycode shortcut contract hardening.
+  - 55zzl completed (code): unified `load-manifest/reload` runtime action responses with structured `error_code`, normalized path parsing trim semantics, and added deterministic route-level fallback codes.
+  - 55zzl completed (acceptance): full POSIX regression suite remains green after adding `reload ok` and `load-manifest required` contract assertions to regression/manual wasm checks.
+  - 55zzm completed (code): fixed `wasm_reload` command to execute on all platforms (removed Windows-only guard), added test-gated wasm runtime reset route, and hardened reload error-code precedence for missing-target path.
+  - 55zzm completed (acceptance): full POSIX regression suite remains green after adding deterministic `reset-runtime -> reload_target_missing -> load-manifest restore` wasm contract assertions.
+  - 55zzn completed (code): added deterministic fixture-based reload failure contract path (`load fixture -> remove entry wasm -> reload`) and extended helper assertions to verify reload stage/code semantics.
+  - 55zzn completed (acceptance): full POSIX regression suite remains green after enforcing `module_load_failed` + `load_module` reload failure semantics in both regression and manual selfcheck flows.
+  - 55zzo completed (code): added deterministic fixture mutation contract for reload manifest api mismatch (`load fixture -> set api_version=2 -> reload`) with explicit stage/code assertions.
+  - 55zzo completed (acceptance): full POSIX regression suite remains green after enforcing `manifest_api_unsupported` + `manifest_api_version` reload failure semantics.
+  - 55zzp completed (code): extracted shared WASM fixture helpers (`copy/entry-resolve/remove-entry/rewrite-api-version`) and rewired both regression and manual selfcheck flows to use the shared module.
+  - 55zzp completed (acceptance): full POSIX regression suite remains green after fixture helper consolidation (no contract behavior change).
+  - 55zzq completed (code): expanded shared WebUI wasm action error model to include runtime load/reload error codes, updated wasm error-model tests with runtime cases, and backfilled legacy `WebUI/i18n.js` EN/ZH runtime error-code keys to keep UI translation parity.
+  - 55zzq completed (acceptance): full POSIX regression suite remains green, `test:wasm-error-model` remains green, and `pnpm --dir MFCMouseEffect/WebUIWorkspace run build` remains green after runtime error-code mapping + i18n parity expansion.
+  - 55zzr completed (code): added script-level i18n parity gate for WASM error-model keys (`action-error-model` -> `WebUI/i18n.js` `en-US`/`zh-CN`) by exporting key list and validating key coverage in `test-wasm-action-error-model`.
+  - 55zzr completed (acceptance): `test:wasm-error-model` and full POSIX regression suite remain green after enabling mapping-vs-dictionary parity checks.
+  - 55zzs completed (code): added explicit WASM route path-trim contract helpers/assertions in both core regression and macOS wasm selfcheck, covering `load-manifest` (`"  manifest_path  "` success + `active_manifest_path` match, `"   "` -> `manifest_path_required`) and folder-dialog probe (`"  initial_path  "` -> trimmed `selected_folder_path`).
+  - 55zzs completed (acceptance): wasm-focused gate, macOS wasm selfcheck, and full POSIX regression suite remain green after manifest-path trim contract expansion.
+  - 55zzt completed (code): split macOS wasm selfcheck helper stack into dedicated modules (`parse`, `http`, `runtime_assert`, `transfer_assert`, `dispatch_assert`) and kept compatibility loaders (`wasm_selfcheck_common.sh`, `wasm_selfcheck_assert_helpers.sh`) to preserve call sites.
+  - 55zzt completed (acceptance): `run-macos-wasm-runtime-selfcheck --skip-build` and full POSIX regression suite remain green after helper modularization.
+  - 55zzu completed (code): split core HTTP wasm helper stack into dedicated modules (`parse`, `http`, `runtime_assert`, `transfer_assert`, `dispatch_assert`) with compatibility loader entry (`core_http_wasm_helpers.sh`), and hardened lock owner-pid read (`mfx_read_lock_owner_pid`) to tolerate transient `owner.env` races during concurrent waits.
+  - 55zzu completed (acceptance): concurrent wasm gate runs now serialize under `mfx-entry-posix-host` without wait-path `sed` failure, and full POSIX regression suite remains green.
+  - 55zzv completed (code): split core HTTP wasm contract checks into scenario modules (catalog/path/runtime/transfer/fixture/dispatch/platform) while keeping `core_http_wasm_contract_checks.sh` as the orchestrator.
+  - 55zzv completed (acceptance): wasm contract gate and full POSIX regression suite remain green after contract-check modularization.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -351,7 +373,7 @@
 - WASM load failure diagnostics now provide stable stage/code pairs in `/api/state` and `/api/wasm/*` responses, reducing triage ambiguity on manifest/runtime load failures.
 - macOS WASM selfcheck now enforces full manifest-failure classification semantics, reducing silent classifier drift risk.
 - macOS WASM selfcheck now also enforces non-manifest-load stage semantics and recovery cleanup semantics after valid reload.
-- macOS WASM selfcheck internals are now helper-split, reducing future extension/change risk while preserving existing contract assertions.
+- macOS WASM selfcheck internals are now modularized by concern (`parse/http/runtime-assert/transfer-assert/dispatch-assert`) with compatibility loader entry retained, reducing future extension/change risk while preserving existing contract assertions.
 - macOS WASM selfcheck now also covers transfer path contracts (`catalog`, `import-selected`, `export-all`, folder-dialog probe) and transfer failure-code semantics in the same one-command flow.
 - Core HTTP contract regression now enforces the same load-failure diagnostics semantics, reducing drift between manual selfcheck and CI-style contract gates.
 - Core HTTP contract regression now also enforces WASM transfer semantics (`import-selected` success/failure and `export-all` success count), reducing CI blind spots in plugin transfer paths.
@@ -375,6 +397,9 @@
 - POSIX regression entry scripts now share one platform-arg resolution path, reducing script-level drift risk in host detection and cross-host guards.
 - Top-level first-read doc indexes are now compacted (key-doc subsets + roadmap pointer), reducing ongoing token pressure as Phase 55 slices continue.
 - Core regression entry scripts now share one workflow-prep/lock execution path, reducing boilerplate drift in stale cleanup, build lane setup, and lock wrapping.
+- Core HTTP wasm regression helper stack is now modularized by concern (`parse/http/runtime-assert/transfer-assert/dispatch-assert`) while preserving the legacy loader function surface used by contract scripts.
+- Core HTTP wasm contract checks are now modularized by scenario (catalog/path/runtime/transfer/fixture/dispatch/platform), reducing monolithic script churn risk while preserving entrypoints.
+- Shared lock owner-pid read path now tolerates transient `owner.env` races, so concurrent gate waits degrade to normal lock waiting rather than shell parse failure.
 - WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
 - WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.
 - Effect overlay contracts now assert click/scroll overlay window lifecycle restore-to-baseline after probe emission, reducing silent overlay cleanup drift risk.

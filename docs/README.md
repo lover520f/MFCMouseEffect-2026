@@ -55,7 +55,11 @@ Use it as a pointer index, not a full historical catalog.
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zp-doc-index-compaction-p0-p1.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zq-core-regression-workflow-helper-consolidation.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zr-wasm-dispatch-readiness-retry-hardening.md`
-  - Full hardening sequence (`55h-55zr`) is summarized in `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzs-wasm-manifest-path-trim-contract-gate.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzt-wasm-selfcheck-helper-modularization.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzu-core-http-wasm-helper-modularization-and-lock-race-hardening.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzv-core-http-wasm-contract-check-modularization.md`
+  - Full hardening sequence (`55h-55zzv`) is summarized in `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
 
 ## Targeted Retrieval Commands
 ```bash
@@ -76,6 +80,9 @@ rg -n "permission|automation|app_scope|wasm|throttle" docs/refactoring docs/issu
 
 # macOS core wasm-focused HTTP contract gate (faster than full automation contract run)
 ./tools/platform/regression/run-posix-core-wasm-contract-regression.sh --platform auto
+
+# macOS core wasm path-trim contract gate (fast route path-semantics check)
+./tools/platform/regression/run-posix-core-wasm-path-contract-regression.sh --platform auto
 
 # macOS automation injection selfcheck (real dispatch by default; add --dry-run for deterministic mode)
 ./tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build
