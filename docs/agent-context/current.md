@@ -108,6 +108,7 @@
   - wasm test-dispatch assertions in regression/manual selfchecks now use bounded retries to reduce transient invoke/render readiness flakiness
   - wasm test-dispatch checks now also assert diagnostics consistency against `/api/state` (`throttled total == capacity+interval`, and dispatch vs state counters/error snapshot match)
   - scaffold HTTP entry lifecycle helpers are now split into `http_entry_helpers.sh`, keeping `http.sh` focused on route checks
+  - core smoke entry lifecycle is now helperized in `core_smoke_entry_helpers.sh`, keeping `core_smoke.sh` focused on smoke flow
   - macOS global-input event mapping and permission-simulation parsing are now extracted to dedicated helper modules (`MacosInputEventUtils.*`, `MacosInputPermissionState.*`)
   - macOS `MacosGlobalInputHook` implementation is now split by responsibility (`MacosGlobalInputHook.mm`, `.EventTap.mm`, `.RunLoop.mm`) to lower file coupling without behavior changes
   - macOS input-indicator overlay path is now split into render/lifecycle (`MacosInputIndicatorOverlay.mm`), probe/event-entry (`MacosInputIndicatorOverlay.Probes.mm`), and shared internals (`MacosInputIndicatorOverlayInternals.*`)
