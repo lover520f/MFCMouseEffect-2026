@@ -199,6 +199,8 @@
   - 55zf completed (acceptance): standalone wasm-focused regression gate, expanded macOS WASM selfcheck (with transfer/error_code coverage), and full POSIX regression suite all remain green.
   - 55zg completed (code): extracted WASM HTTP contract execution block from `core_http.sh` into dedicated module (`core_http_wasm_contract_checks.sh`) while preserving existing check scopes and assertions.
   - 55zg completed (acceptance): core automation contract gate, wasm-focused gate, and full POSIX suite remain green after module split.
+  - 55zh completed (code): extracted non-WASM HTTP contract execution blocks (input-capture and automation contracts) into dedicated modules (`core_http_input_contract_checks.sh`, `core_http_automation_contract_checks.sh`) while preserving existing check scopes and assertions.
+  - 55zh completed (acceptance): core automation contract gate, wasm-focused gate, and full POSIX suite remain green after non-WASM module split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -306,6 +308,7 @@
 - Core HTTP regression helper responsibilities are now split by domain (core flow vs wasm helpers), reducing future maintenance risk in script-level contract evolution.
 - Core HTTP regression now exposes a dedicated WASM-only check scope and one-command entry (`run-posix-core-wasm-contract-regression.sh`), reducing iteration cost during Phase 55 M2 closure.
 - Core HTTP WASM contract execution is now isolated in `core_http_wasm_contract_checks.sh`, reducing coupling in `core_http.sh` and lowering WASM-only change risk.
+- Core HTTP non-WASM contract execution is now also isolated (`core_http_input_contract_checks.sh`, `core_http_automation_contract_checks.sh`), so `core_http.sh` remains orchestration-focused.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:
