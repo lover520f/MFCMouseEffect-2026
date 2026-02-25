@@ -21,6 +21,39 @@ namespace mousefx::wasm {
 
 namespace {
 
+constexpr const char* kImportErrorManifestPathRequired = "manifest_path_required";
+constexpr const char* kImportErrorManifestPathNotFound = "manifest_path_not_found";
+constexpr const char* kImportErrorManifestPathNotFile = "manifest_path_not_file";
+constexpr const char* kImportErrorManifestLoadFailed = "manifest_load_failed";
+constexpr const char* kImportErrorSourceEntryInvalid = "source_entry_invalid";
+constexpr const char* kImportErrorPrimaryRootResolveFailed = "primary_root_resolve_failed";
+constexpr const char* kImportErrorCopyFailed = "copy_failed";
+constexpr const char* kImportErrorDestinationManifestMissing = "destination_manifest_missing";
+constexpr const char* kImportErrorDestinationEntryInvalid = "destination_entry_invalid";
+
+constexpr const char* kExportErrorNoPluginsDiscovered = "no_plugins_discovered";
+constexpr const char* kExportErrorPrimaryRootResolveFailed = "primary_root_resolve_failed";
+constexpr const char* kExportErrorExportRootResolveFailed = "export_root_resolve_failed";
+constexpr const char* kExportErrorCreateExportDirectoryFailed = "create_export_directory_failed";
+constexpr const char* kExportErrorCopyFailed = "copy_failed";
+constexpr const char* kExportErrorNoPluginCopied = "no_plugin_copied";
+
+void SetImportError(PluginImportResult* out, const char* errorCode, const std::string& errorText) {
+    if (!out) {
+        return;
+    }
+    out->errorCode = errorCode ? errorCode : "";
+    out->error = errorText;
+}
+
+void SetExportError(PluginExportResult* out, const char* errorCode, const std::string& errorText) {
+    if (!out) {
+        return;
+    }
+    out->errorCode = errorCode ? errorCode : "";
+    out->error = errorText;
+}
+
 std::filesystem::path NormalizePath(const std::filesystem::path& path) {
     std::error_code ec;
     const std::filesystem::path canonical = std::filesystem::weakly_canonical(path, ec);
@@ -218,37 +251,37 @@ PluginImportResult WasmPluginTransferService::ImportFromManifestPath(const std::
         manifestText.pop_back();
     }
     if (manifestText.empty()) {
-        out.error = "manifest_path is required";
+        SetImportError(&out, kImportErrorManifestPathRequired, "manifest_path is required");
         return out;
     }
 
     const std::filesystem::path sourceManifestPathObj(manifestText);
     std::error_code ec;
     if (!std::filesystem::exists(sourceManifestPathObj, ec) || ec) {
-        out.error = "manifest_path does not exist";
+        SetImportError(&out, kImportErrorManifestPathNotFound, "manifest_path does not exist");
         return out;
     }
     if (!std::filesystem::is_regular_file(sourceManifestPathObj, ec) || ec) {
-        out.error = "manifest_path is not a file";
+        SetImportError(&out, kImportErrorManifestPathNotFile, "manifest_path is not a file");
         return out;
     }
 
     const PluginManifestLoadResult load = WasmPluginManifest::LoadFromFile(sourceManifestPathObj.wstring());
     if (!load.ok) {
-        out.error = load.error;
+        SetImportError(&out, kImportErrorManifestLoadFailed, load.error);
         return out;
     }
 
     const std::filesystem::path sourceDir = sourceManifestPathObj.parent_path();
     std::string entryValidationError;
     if (!ValidateManifestEntryFile(load.manifest, sourceDir, &entryValidationError)) {
-        out.error = entryValidationError;
+        SetImportError(&out, kImportErrorSourceEntryInvalid, entryValidationError);
         return out;
     }
 
     const std::filesystem::path primaryRoot(WasmPluginPaths::ResolvePrimaryPluginRoot());
     if (primaryRoot.empty()) {
-        out.error = "failed to resolve primary plugin root";
+        SetImportError(&out, kImportErrorPrimaryRootResolveFailed, "failed to resolve primary plugin root");
         return out;
     }
 
@@ -260,24 +293,26 @@ PluginImportResult WasmPluginTransferService::ImportFromManifestPath(const std::
     if (ToPathKey(sourceDirNormalized) != ToPathKey(destinationDirNormalized)) {
         std::string copyError;
         if (!CopyDirectoryTree(sourceDirNormalized, destinationDirNormalized, &copyError)) {
-            out.error = copyError;
+            SetImportError(&out, kImportErrorCopyFailed, copyError);
             return out;
         }
     }
 
     const std::filesystem::path destinationManifestPathObj = destinationDirNormalized / L"plugin.json";
     if (!std::filesystem::exists(destinationManifestPathObj, ec) || ec) {
-        out.error = "destination plugin.json is missing";
+        SetImportError(&out, kImportErrorDestinationManifestMissing, "destination plugin.json is missing");
         return out;
     }
 
     std::string destinationEntryValidationError;
     if (!ValidateManifestEntryFile(load.manifest, destinationDirNormalized, &destinationEntryValidationError)) {
-        out.error = destinationEntryValidationError;
+        SetImportError(&out, kImportErrorDestinationEntryInvalid, destinationEntryValidationError);
         return out;
     }
 
     out.ok = true;
+    out.error.clear();
+    out.errorCode.clear();
     out.destinationManifestPath = destinationManifestPathObj.wstring();
     out.primaryRootPath = NormalizePath(primaryRoot).wstring();
     return out;
@@ -291,19 +326,19 @@ PluginExportResult WasmPluginTransferService::ExportAllDiscoveredPlugins(const s
         ? catalog.Discover()
         : catalog.DiscoverFromRoots(roots);
     if (discovered.plugins.empty()) {
-        out.error = "no plugins discovered";
+        SetExportError(&out, kExportErrorNoPluginsDiscovered, "no plugins discovered");
         return out;
     }
 
     const std::filesystem::path primaryRoot(WasmPluginPaths::ResolvePrimaryPluginRoot());
     if (primaryRoot.empty()) {
-        out.error = "failed to resolve primary plugin root";
+        SetExportError(&out, kExportErrorPrimaryRootResolveFailed, "failed to resolve primary plugin root");
         return out;
     }
 
     const std::filesystem::path appRoot = primaryRoot.parent_path().parent_path();
     if (appRoot.empty()) {
-        out.error = "failed to resolve export root";
+        SetExportError(&out, kExportErrorExportRootResolveFailed, "failed to resolve export root");
         return out;
     }
 
@@ -312,7 +347,7 @@ PluginExportResult WasmPluginTransferService::ExportAllDiscoveredPlugins(const s
     std::error_code ec;
     std::filesystem::create_directories(exportRoot, ec);
     if (ec) {
-        out.error = "failed to create export directory";
+        SetExportError(&out, kExportErrorCreateExportDirectoryFailed, "failed to create export directory");
         return out;
     }
 
@@ -342,7 +377,7 @@ PluginExportResult WasmPluginTransferService::ExportAllDiscoveredPlugins(const s
         const std::filesystem::path destinationDir = exportRoot / candidate;
         std::string copyError;
         if (!CopyDirectoryTree(pluginDirNormalized, destinationDir, &copyError)) {
-            out.error = copyError;
+            SetExportError(&out, kExportErrorCopyFailed, copyError);
             return out;
         }
         ++copied;
@@ -352,7 +387,10 @@ PluginExportResult WasmPluginTransferService::ExportAllDiscoveredPlugins(const s
     out.exportedPluginCount = copied;
     out.exportDirectoryPath = NormalizePath(exportRoot).wstring();
     if (!out.ok) {
-        out.error = "no plugin copied";
+        SetExportError(&out, kExportErrorNoPluginCopied, "no plugin copied");
+    } else {
+        out.error.clear();
+        out.errorCode.clear();
     }
     return out;
 }

@@ -620,6 +620,7 @@ mfx_run_core_http_contract_checks() {
             "$base_url" \
             "$token" \
             "$invalid_manifest_path" \
+            "manifest_path_not_found" \
             "manifest_path does not exist" \
             "core wasm import-selected invalid path"
 

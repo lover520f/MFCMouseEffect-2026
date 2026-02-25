@@ -32,6 +32,7 @@ bool HandleWebSettingsWasmImportSelectedRoute(
     SetJsonResponse(resp, json({
         {"ok", result.ok},
         {"error", result.error},
+        {"error_code", result.errorCode},
         {"source_manifest_path", Utf16ToUtf8(result.sourceManifestPath.c_str())},
         {"manifest_path", Utf16ToUtf8(result.destinationManifestPath.c_str())},
         {"primary_root_path", Utf16ToUtf8(result.primaryRootPath.c_str())},

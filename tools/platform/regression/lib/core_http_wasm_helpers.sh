@@ -91,6 +91,7 @@ _mfx_core_http_assert_wasm_import_selected_ok() {
     code="$(_mfx_core_http_wasm_import_selected_http_code "$output_file" "$base_url" "$token" "$manifest_path")"
     mfx_assert_eq "$code" "200" "$context status"
     mfx_assert_file_contains "$output_file" "\"ok\":true" "$context ok"
+    mfx_assert_file_contains "$output_file" "\"error_code\":\"\"" "$context error code clear"
     mfx_assert_file_contains "$output_file" "\"manifest_path\":\"" "$context manifest_path"
     mfx_assert_file_contains "$output_file" "\"primary_root_path\":\"" "$context primary_root_path"
 }
@@ -100,15 +101,19 @@ _mfx_core_http_assert_wasm_import_selected_failure() {
     local base_url="$2"
     local token="$3"
     local manifest_path="$4"
-    local expected_error="$5"
-    local context="$6"
+    local expected_error_code="$5"
+    local expected_error_text="$6"
+    local context="$7"
 
     local code
     code="$(_mfx_core_http_wasm_import_selected_http_code "$output_file" "$base_url" "$token" "$manifest_path")"
     mfx_assert_eq "$code" "200" "$context status"
     mfx_assert_file_contains "$output_file" "\"ok\":false" "$context should fail"
-    if [[ -n "$expected_error" ]]; then
-        mfx_assert_file_contains "$output_file" "\"error\":\"$expected_error\"" "$context error"
+    if [[ -n "$expected_error_code" ]]; then
+        mfx_assert_file_contains "$output_file" "\"error_code\":\"$expected_error_code\"" "$context error code"
+    fi
+    if [[ -n "$expected_error_text" ]]; then
+        mfx_assert_file_contains "$output_file" "\"error\":\"$expected_error_text\"" "$context error text"
     fi
 }
 
@@ -123,6 +128,7 @@ _mfx_core_http_assert_wasm_export_all_ok() {
     code="$(_mfx_core_http_wasm_export_all_http_code "$output_file" "$base_url" "$token")"
     mfx_assert_eq "$code" "200" "$context status"
     mfx_assert_file_contains "$output_file" "\"ok\":true" "$context ok"
+    mfx_assert_file_contains "$output_file" "\"error_code\":\"\"" "$context error code clear"
     mfx_assert_file_contains "$output_file" "\"export_path\":\"" "$context export path"
     mfx_assert_file_contains "$output_file" "\"count\":" "$context count field"
 

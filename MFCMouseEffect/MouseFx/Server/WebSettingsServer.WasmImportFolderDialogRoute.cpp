@@ -24,6 +24,7 @@ void SetFolderImportMissingManifestResponse(const std::wstring& folderPath, Http
         {"ok", false},
         {"cancelled", false},
         {"error", "plugin.json is missing in selected folder"},
+        {"error_code", "selected_folder_manifest_missing"},
         {"selected_folder_path", Utf16ToUtf8(folderPath.c_str())},
     }).dump());
 }
@@ -40,6 +41,7 @@ void SetFolderImportCancelledResponse(
         {"ok", false},
         {"cancelled", picked.cancelled},
         {"error", picked.error},
+        {"error_code", picked.cancelled ? "folder_picker_cancelled" : "folder_picker_failed"},
         {"selected_folder_path", selectedFolderPath},
     }).dump());
 }
@@ -52,6 +54,7 @@ void SetFolderImportResultResponse(
         {"ok", result.ok},
         {"cancelled", false},
         {"error", result.error},
+        {"error_code", result.errorCode},
         {"selected_folder_path", Utf16ToUtf8(folderPath.c_str())},
         {"source_manifest_path", Utf16ToUtf8(result.sourceManifestPath.c_str())},
         {"manifest_path", Utf16ToUtf8(result.destinationManifestPath.c_str())},
@@ -80,6 +83,7 @@ bool HandleWebSettingsWasmImportFolderDialogRoute(
             {"supported", supported},
             {"cancelled", false},
             {"error", supported ? "" : "native_folder_picker_not_supported"},
+            {"error_code", supported ? "" : "native_folder_picker_not_supported"},
             {"selected_folder_path", ParseInitialPathUtf8(payload)},
             {"source_manifest_path", ""},
             {"manifest_path", ""},

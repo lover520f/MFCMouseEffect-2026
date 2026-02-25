@@ -36,6 +36,7 @@ bool HandleWebSettingsWasmExportApiRoute(
     SetJsonResponse(resp, json({
         {"ok", result.ok},
         {"error", result.error},
+        {"error_code", result.errorCode},
         {"export_path", Utf16ToUtf8(result.exportDirectoryPath.c_str())},
         {"count", result.exportedPluginCount},
     }).dump());

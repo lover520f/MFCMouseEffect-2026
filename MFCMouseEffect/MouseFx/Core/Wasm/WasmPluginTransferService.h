@@ -9,6 +9,7 @@ namespace mousefx::wasm {
 struct PluginImportResult final {
     bool ok = false;
     std::string error{};
+    std::string errorCode{};
     std::wstring sourceManifestPath{};
     std::wstring destinationManifestPath{};
     std::wstring primaryRootPath{};
@@ -17,6 +18,7 @@ struct PluginImportResult final {
 struct PluginExportResult final {
     bool ok = false;
     std::string error{};
+    std::string errorCode{};
     std::wstring exportDirectoryPath{};
     uint32_t exportedPluginCount = 0;
 };

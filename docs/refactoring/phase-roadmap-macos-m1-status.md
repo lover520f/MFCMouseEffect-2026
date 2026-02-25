@@ -187,6 +187,8 @@
   - 55z completed (acceptance): core automation contract regression and full POSIX suite remain green after export filesystem-contract expansion.
   - 55za completed (code): strengthened `export-all` assertions with manifest-integrity checks (`export_path/*/plugin.json` count must match response `count`, and each exported `plugin.json` must be non-empty).
   - 55za completed (acceptance): core automation contract regression and full POSIX suite remain green after export manifest-integrity expansion.
+  - 55zb completed (code): transfer responses (`import-selected`, `export-all`, folder-dialog import) now expose stable `error_code` fields, and transfer service now maps deterministic error-code semantics while keeping legacy `error` text.
+  - 55zb completed (acceptance): core automation contract regression now asserts `import-selected` failure `error_code` contract (`manifest_path_not_found`), and full POSIX suite remains green.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -284,6 +286,7 @@
 - Core HTTP contract regression now also enforces WASM transfer semantics (`import-selected` success/failure and `export-all` success count), reducing CI blind spots in plugin transfer paths.
 - Core HTTP `export-all` contract now verifies filesystem materialization (`export_path` existence + directory count consistency), reducing false-green risk on transfer regressions.
 - Core HTTP `export-all` contract now also verifies exported manifest integrity (`plugin.json` presence/count/non-empty), further reducing false-green risk on transfer regressions.
+- WASM transfer APIs now expose stable `error_code` fields in addition to `error` text, reducing string-coupling risk in API consumers and regression checks.
 - Shared WebUI diagnostics now surfaces load-failure stage/code directly, closing backend-vs-UI observability gap for WASM load failures.
 - Shared WebUI WASM state normalization now has one source of truth, reducing future diagnostics-field drift in UI adapters.
 - Core HTTP regression helper responsibilities are now split by domain (core flow vs wasm helpers), reducing future maintenance risk in script-level contract evolution.
