@@ -3,72 +3,23 @@
 #include "Platform/macos/Wasm/MacosWasmOverlayState.h"
 
 #include "Platform/macos/Wasm/MacosWasmOverlayPolicy.h"
+#include "Platform/macos/Wasm/MacosWasmOverlayState.Internals.h"
 
 #if defined(__APPLE__)
-#import <AppKit/AppKit.h>
-#endif
-
 #include <chrono>
 #include <mutex>
-#include <unordered_set>
 #include <vector>
-
-namespace mousefx::platform::macos {
-namespace {
-
-#if defined(__APPLE__)
-using SteadyClock = std::chrono::steady_clock;
-
-std::mutex& WindowSetMutex() {
-    static std::mutex mutex;
-    return mutex;
-}
-
-std::unordered_set<void*>& WindowSet() {
-    static std::unordered_set<void*> windows;
-    return windows;
-}
-
-size_t& PendingOverlayCount() {
-    static size_t count = 0;
-    return count;
-}
-
-SteadyClock::time_point& LastImageAdmitTime() {
-    static SteadyClock::time_point last;
-    return last;
-}
-
-SteadyClock::time_point& LastTextAdmitTime() {
-    static SteadyClock::time_point last;
-    return last;
-}
-
-SteadyClock::time_point& LastAdmitTime(WasmOverlayKind kind) {
-    return (kind == WasmOverlayKind::Image) ? LastImageAdmitTime() : LastTextAdmitTime();
-}
-
-uint32_t MinIntervalMs(const MacosWasmOverlayPolicy& policy, WasmOverlayKind kind) {
-    return (kind == WasmOverlayKind::Image) ? policy.minImageIntervalMs : policy.minTextIntervalMs;
-}
-
-size_t InFlightOverlayCountLocked() {
-    return WindowSet().size() + PendingOverlayCount();
-}
-
-WasmOverlayThrottleCounters& ThrottleCounters() {
-    static WasmOverlayThrottleCounters counters;
-    return counters;
-}
 #endif
 
-} // namespace
+namespace mousefx::platform::macos {
 
 WasmOverlayAdmissionResult TryAcquireWasmOverlaySlotState(WasmOverlayKind kind) {
 #if !defined(__APPLE__)
     (void)kind;
     return WasmOverlayAdmissionResult::RejectedByCapacity;
 #else
+    using namespace wasm_overlay_state;
+    using SteadyClock = std::chrono::steady_clock;
     const MacosWasmOverlayPolicy& policy = GetMacosWasmOverlayPolicy();
     const SteadyClock::time_point now = SteadyClock::now();
     std::lock_guard<std::mutex> lock(WindowSetMutex());
@@ -103,6 +54,7 @@ void ReleaseWasmOverlaySlotState() {
 #if !defined(__APPLE__)
     return;
 #else
+    using namespace wasm_overlay_state;
     std::lock_guard<std::mutex> lock(WindowSetMutex());
     if (PendingOverlayCount() > 0) {
         PendingOverlayCount() -= 1;
@@ -114,6 +66,7 @@ size_t GetWasmOverlayInFlightCountState() {
 #if !defined(__APPLE__)
     return 0;
 #else
+    using namespace wasm_overlay_state;
     std::lock_guard<std::mutex> lock(WindowSetMutex());
     return InFlightOverlayCountLocked();
 #endif
@@ -123,6 +76,7 @@ WasmOverlayThrottleCounters GetWasmOverlayThrottleCountersState() {
 #if !defined(__APPLE__)
     return {};
 #else
+    using namespace wasm_overlay_state;
     std::lock_guard<std::mutex> lock(WindowSetMutex());
     return ThrottleCounters();
 #endif
@@ -132,6 +86,7 @@ void RegisterWasmOverlayWindowState(void* windowHandle) {
 #if !defined(__APPLE__)
     (void)windowHandle;
 #else
+    using namespace wasm_overlay_state;
     if (windowHandle == nullptr) {
         return;
     }
@@ -148,6 +103,7 @@ bool TakeWasmOverlayWindowState(void* windowHandle) {
     (void)windowHandle;
     return false;
 #else
+    using namespace wasm_overlay_state;
     if (windowHandle == nullptr) {
         return false;
     }
@@ -166,11 +122,13 @@ std::vector<void*> ResetAndTakeAllWasmOverlayWindowsState() {
 #if !defined(__APPLE__)
     return {};
 #else
+    using namespace wasm_overlay_state;
+    using SteadyClock = std::chrono::steady_clock;
     std::vector<void*> windows;
     std::lock_guard<std::mutex> lock(WindowSetMutex());
     PendingOverlayCount() = 0;
-    LastImageAdmitTime() = SteadyClock::time_point{};
-    LastTextAdmitTime() = SteadyClock::time_point{};
+    LastAdmitTime(WasmOverlayKind::Image) = SteadyClock::time_point{};
+    LastAdmitTime(WasmOverlayKind::Text) = SteadyClock::time_point{};
     ThrottleCounters() = WasmOverlayThrottleCounters{};
     windows.reserve(WindowSet().size());
     for (void* window : WindowSet()) {

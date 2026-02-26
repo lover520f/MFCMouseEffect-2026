@@ -441,6 +441,7 @@
 - macOS hover renderer and effect creator registry are now fully split by responsibility (`MacosHoverPulseOverlayRendererCore.*`, `MacosEffectCreatorRegistry.Table.cpp` + internal contract header), reducing renderer/registry coupling while preserving effect creation/render behavior contracts.
 - `CommandHandler` apply-settings path is now split by responsibility (`entry orchestration` vs `visual/effects` vs `automation/wasm`), reducing cross-domain coupling while preserving settings payload contracts.
 - macOS WASM image overlay renderer is now split into wrapper/core units (`MacosWasmImageOverlayRenderer.mm` + `MacosWasmImageOverlayRendererCore.*`), reducing render-path coupling while preserving WASM image overlay runtime behavior contracts.
+- macOS WASM overlay state is now split into state operations vs storage internals (`MacosWasmOverlayState.mm` + `MacosWasmOverlayState.Internals.*`), reducing state-path coupling while preserving overlay admission/throttle behavior contracts.
 - Shared lock owner-pid read path now tolerates transient `owner.env` races, so concurrent gate waits degrade to normal lock waiting rather than shell parse failure.
 - WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
 - WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.
