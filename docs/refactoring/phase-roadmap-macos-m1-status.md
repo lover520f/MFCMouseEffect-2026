@@ -297,6 +297,8 @@
   - 55zzzc completed (acceptance): core automation contract gate and full POSIX regression suite remain green after effects-runtime probe expansion.
   - 55zzzd completed (code): added macOS effect probe per-category type args and explicit hold style mapping (including GPU-route aliases) with hover alias normalization (`suspension` -> `tubes`).
   - 55zzzd completed (acceptance): core automation contract gate and full POSIX regression suite remain green after non-default type probe matrix expansion.
+  - 55zzzza completed (code): consolidated duplicated macOS WASM overlay render math (`clamp/scale/life/color`) into shared module (`MacosWasmOverlayRenderMath.*`) and rewired image/text overlay renderers to use the shared boundary.
+  - 55zzzza completed (acceptance): full POSIX regression suite remains green after shared render-math consolidation.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.

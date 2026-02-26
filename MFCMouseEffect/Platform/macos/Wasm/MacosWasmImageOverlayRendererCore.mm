@@ -3,6 +3,7 @@
 #include "Platform/macos/Wasm/MacosWasmImageOverlayRendererCore.h"
 
 #include "Platform/macos/Wasm/MacosWasmOverlayRuntime.h"
+#include "Platform/macos/Wasm/MacosWasmOverlayRenderMath.h"
 
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/StringUtils.h"
@@ -13,7 +14,6 @@
 #import <dispatch/dispatch.h>
 #endif
 
-#include <algorithm>
 #include <cmath>
 
 namespace mousefx::platform::macos {
@@ -21,40 +21,8 @@ namespace mousefx::platform::macos {
 namespace {
 
 #if defined(__APPLE__)
-uint8_t ArgbA(uint32_t argb) {
-    return static_cast<uint8_t>((argb >> 24) & 0xFFu);
-}
-
-uint8_t ArgbR(uint32_t argb) {
-    return static_cast<uint8_t>((argb >> 16) & 0xFFu);
-}
-
-uint8_t ArgbG(uint32_t argb) {
-    return static_cast<uint8_t>((argb >> 8) & 0xFFu);
-}
-
-uint8_t ArgbB(uint32_t argb) {
-    return static_cast<uint8_t>(argb & 0xFFu);
-}
-
-CGFloat ClampFloat(CGFloat value, CGFloat lo, CGFloat hi) {
-    return std::max(lo, std::min(value, hi));
-}
-
-CGFloat ClampScale(float scale) {
-    const CGFloat raw = (scale > 0.0f) ? static_cast<CGFloat>(scale) : 1.0;
-    return ClampFloat(raw, 0.25, 6.0);
-}
-
 CGFloat ClampAlpha(float alpha) {
-    return ClampFloat((alpha > 0.0f) ? static_cast<CGFloat>(alpha) : 1.0, 0.15, 1.0);
-}
-
-uint32_t ClampLifeMs(uint32_t lifeMs) {
-    if (lifeMs == 0u) {
-        return 300u;
-    }
-    return std::clamp<uint32_t>(lifeMs, 80u, 6000u);
+    return wasm_overlay_render_math::ClampFloat((alpha > 0.0f) ? static_cast<CGFloat>(alpha) : 1.0, 0.15, 1.0);
 }
 
 uint32_t ClampDelayMs(uint32_t delayMs) {
@@ -66,14 +34,6 @@ bool HasMotion(const WasmImageOverlayRequest& request) {
            std::abs(request.velocityY) > 0.001f ||
            std::abs(request.accelerationX) > 0.001f ||
            std::abs(request.accelerationY) > 0.001f;
-}
-
-NSColor* ColorFromArgb(uint32_t argb, CGFloat alphaScale) {
-    const CGFloat a = ClampFloat((static_cast<CGFloat>(ArgbA(argb)) / 255.0) * alphaScale, 0.0, 1.0);
-    const CGFloat r = static_cast<CGFloat>(ArgbR(argb)) / 255.0;
-    const CGFloat g = static_cast<CGFloat>(ArgbG(argb)) / 255.0;
-    const CGFloat b = static_cast<CGFloat>(ArgbB(argb)) / 255.0;
-    return [NSColor colorWithCalibratedRed:r green:g blue:b alpha:a];
 }
 
 NSString* NsPathFromWide(const std::wstring& path) {
@@ -103,9 +63,9 @@ WasmOverlayRenderResult RenderWasmImageOverlayCore(const WasmImageOverlayRequest
     }
 
     const ScreenPoint overlayPt = ScreenToOverlayPoint(request.screenPt);
-    const CGFloat pulseScale = ClampScale(request.scale);
-    const CGFloat size = ClampFloat(120.0 * pulseScale, 52.0, 420.0);
-    const uint32_t durationMs = ClampLifeMs(request.lifeMs);
+    const CGFloat pulseScale = wasm_overlay_render_math::ClampScale(request.scale);
+    const CGFloat size = wasm_overlay_render_math::ClampFloat(120.0 * pulseScale, 52.0, 420.0);
+    const uint32_t durationMs = wasm_overlay_render_math::ClampLifeMs(request.lifeMs);
     const uint32_t delayMs = ClampDelayMs(request.delayMs);
     const CGFloat alphaScale = ClampAlpha(request.alpha);
     const WasmImageOverlayRequest req = request;
@@ -141,7 +101,7 @@ WasmOverlayRenderResult RenderWasmImageOverlayCore(const WasmImageOverlayRequest
               if (imagePath != nil) {
                   NSImage* image = [[NSImage alloc] initWithContentsOfFile:imagePath];
                   if (image != nil) {
-                      const CGFloat imageInset = ClampFloat(size * 0.16, 8.0, 60.0);
+                      const CGFloat imageInset = wasm_overlay_render_math::ClampFloat(size * 0.16, 8.0, 60.0);
                       NSImageView* imageView = [[NSImageView alloc] initWithFrame:NSMakeRect(
                           imageInset,
                           imageInset,
@@ -159,7 +119,7 @@ WasmOverlayRenderResult RenderWasmImageOverlayCore(const WasmImageOverlayRequest
               }
           }
 
-          const CGFloat ringInset = ClampFloat(size * 0.13, 8.0, 36.0);
+          const CGFloat ringInset = wasm_overlay_render_math::ClampFloat(size * 0.13, 8.0, 36.0);
           CAShapeLayer* ring = [CAShapeLayer layer];
           ring.frame = content.bounds;
           CGPathRef ringPath = CGPathCreateWithEllipseInRect(
@@ -167,9 +127,9 @@ WasmOverlayRenderResult RenderWasmImageOverlayCore(const WasmImageOverlayRequest
               nullptr);
           ring.path = ringPath;
           CGPathRelease(ringPath);
-          ring.fillColor = [ColorFromArgb(req.tintArgb, renderedImage ? 0.08 * alphaScale : 0.22 * alphaScale) CGColor];
-          ring.strokeColor = [ColorFromArgb(req.tintArgb, 0.95 * alphaScale) CGColor];
-          ring.lineWidth = ClampFloat(size * 0.022, 1.5, 5.0);
+          ring.fillColor = [wasm_overlay_render_math::ColorFromArgb(req.tintArgb, renderedImage ? 0.08 * alphaScale : 0.22 * alphaScale) CGColor];
+          ring.strokeColor = [wasm_overlay_render_math::ColorFromArgb(req.tintArgb, 0.95 * alphaScale) CGColor];
+          ring.lineWidth = wasm_overlay_render_math::ClampFloat(size * 0.022, 1.5, 5.0);
           ring.opacity = 0.98;
           [content.layer addSublayer:ring];
 
