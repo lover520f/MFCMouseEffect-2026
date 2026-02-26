@@ -9,6 +9,11 @@
 
 namespace mousefx::platform::macos::application_catalog_scan_detail {
 
+bool ResolveMacosApplicationCatalogEntryFromPath(
+    const std::string& bundlePath,
+    std::string* processName,
+    std::string* displayName);
+
 void ScanMacosApplicationCatalogRoot(
     const MacosApplicationCatalogScanRoot& root,
     std::vector<ApplicationCatalogEntry>* entries,

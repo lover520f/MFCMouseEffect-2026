@@ -311,6 +311,8 @@
   - 55zzzzf completed (acceptance): full POSIX regression suite remains green after input-indicator overlay style split.
   - 55zzzzg completed (code): split WASM image overlay utility responsibilities (`alpha/delay clamp`, motion check, path conversion) into dedicated support module (`MacosWasmImageOverlayRendererSupport.*`) and kept renderer core focused on render flow.
   - 55zzzzg completed (acceptance): full POSIX regression suite remains green after image-overlay support split.
+  - 55zzzzh completed (code): split macOS app-catalog scan helper responsibilities into bundle-resolution and root-traversal modules (`MacosApplicationCatalogScanWorkflow.BundleResolve.mm`, `MacosApplicationCatalogScanWorkflow.RootScan.mm`) and removed the mixed helper file.
+  - 55zzzzh completed (acceptance): full POSIX regression suite remains green after app-catalog scan helper split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
