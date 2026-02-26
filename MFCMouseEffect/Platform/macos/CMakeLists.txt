@@ -77,6 +77,7 @@ add_library(mfx_shell_macos STATIC
     "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmImageOverlayRendererSupport.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayRenderMath.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayPolicy.cpp"
+    "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayState.Admission.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayState.Internals.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayState.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayRuntime.mm"

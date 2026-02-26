@@ -2,11 +2,10 @@
 
 #include "Platform/macos/Wasm/MacosWasmOverlayState.h"
 
-#include "Platform/macos/Wasm/MacosWasmOverlayPolicy.h"
+#include "Platform/macos/Wasm/MacosWasmOverlayState.InternalHelpers.h"
 #include "Platform/macos/Wasm/MacosWasmOverlayState.Internals.h"
 
 #if defined(__APPLE__)
-#include <chrono>
 #include <mutex>
 #include <vector>
 #endif
@@ -19,34 +18,8 @@ WasmOverlayAdmissionResult TryAcquireWasmOverlaySlotState(WasmOverlayKind kind) 
     return WasmOverlayAdmissionResult::RejectedByCapacity;
 #else
     using namespace wasm_overlay_state;
-    using SteadyClock = std::chrono::steady_clock;
-    const MacosWasmOverlayPolicy& policy = GetMacosWasmOverlayPolicy();
-    const SteadyClock::time_point now = SteadyClock::now();
     std::lock_guard<std::mutex> lock(WindowSetMutex());
-    if (InFlightOverlayCountLocked() >= policy.maxInFlightOverlays) {
-        ThrottleCounters().rejectedByCapacity += 1;
-        return WasmOverlayAdmissionResult::RejectedByCapacity;
-    }
-
-    const uint32_t minIntervalMs = MinIntervalMs(policy, kind);
-    if (minIntervalMs > 0) {
-        SteadyClock::time_point& last = LastAdmitTime(kind);
-        if (last.time_since_epoch().count() != 0) {
-            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - last);
-            if (elapsed < std::chrono::milliseconds(minIntervalMs)) {
-                if (kind == WasmOverlayKind::Image) {
-                    ThrottleCounters().rejectedByImageInterval += 1;
-                } else {
-                    ThrottleCounters().rejectedByTextInterval += 1;
-                }
-                return WasmOverlayAdmissionResult::RejectedByInterval;
-            }
-        }
-        last = now;
-    }
-
-    PendingOverlayCount() += 1;
-    return WasmOverlayAdmissionResult::Accepted;
+    return wasm_overlay_state_detail::TryAcquireWasmOverlaySlotLocked(kind);
 #endif
 }
 
@@ -123,13 +96,9 @@ std::vector<void*> ResetAndTakeAllWasmOverlayWindowsState() {
     return {};
 #else
     using namespace wasm_overlay_state;
-    using SteadyClock = std::chrono::steady_clock;
     std::vector<void*> windows;
     std::lock_guard<std::mutex> lock(WindowSetMutex());
-    PendingOverlayCount() = 0;
-    LastAdmitTime(WasmOverlayKind::Image) = SteadyClock::time_point{};
-    LastAdmitTime(WasmOverlayKind::Text) = SteadyClock::time_point{};
-    ThrottleCounters() = WasmOverlayThrottleCounters{};
+    wasm_overlay_state_detail::ResetWasmOverlayStateLocked();
     windows.reserve(WindowSet().size());
     for (void* window : WindowSet()) {
         windows.push_back(window);

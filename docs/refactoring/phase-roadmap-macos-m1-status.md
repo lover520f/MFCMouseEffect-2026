@@ -351,6 +351,8 @@
   - 55zzzzz completed (acceptance): full POSIX regression suite remains green after input-indicator show-plan split.
   - 55zzzzaa completed (code): split keyboard-injector dry-run/event-post internals into dedicated module (`MacosKeyboardInjector.EventPost.mm`) and kept injector file focused on chord orchestration.
   - 55zzzzaa completed (acceptance): full POSIX regression suite remains green after keyboard-injector event-post split.
+  - 55zzzzab completed (code): split WASM overlay admission/reset internals into dedicated module (`MacosWasmOverlayState.Admission.mm`) and kept overlay-state file focused on API wrappers.
+  - 55zzzzab completed (acceptance): full POSIX regression suite remains green after WASM overlay admission helper split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
