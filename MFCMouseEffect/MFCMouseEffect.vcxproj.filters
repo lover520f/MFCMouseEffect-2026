@@ -770,6 +770,9 @@
     <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.Direction.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\WasmBinaryCodec.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>

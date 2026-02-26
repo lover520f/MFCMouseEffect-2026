@@ -52,7 +52,7 @@
   - WebSettings WASM route utils are now split into `WasmRouteParseUtils.cpp`, `WasmRoutePathUtils.cpp`, and `WasmRouteResponseUtils.cpp`, removing monolithic utility implementation coupling
   - WebSettings WASM import routes are now split into `WasmImportSelectedRoute.*` and `WasmImportFolderDialogRoute.*`, keeping `WasmImportRoutes.cpp` as delegator
   - WebSettings WASM runtime state/action internals are now split into endpoint-level route modules (`WasmRuntimeToggleRoutes.*`, `WasmRuntimePolicyRoute.*`, `WasmReloadRoute.*`, `WasmLoadManifestRoute.*`), keeping state/action files as delegators
-  - Automation matcher/executor flow is now isolated in `InputAutomationDispatch.*`, while `InputAutomationEngine` remains focused on input event orchestration and state
+  - Automation matcher/executor flow is now isolated in `InputAutomationDispatch.*`, while `InputAutomationEngine` remains focused on input event orchestration and state; gesture direction quantization/serialization is further split into `GestureRecognizer.Direction.cpp` to keep recognizer session flow and direction algorithm boundaries separate
   - test-gated `/api/input-indicator/test-keyboard-labels` now verifies keyboard indicator label rendering contract (`A`, `Cmd+K9`, `K6`) in core automation regression
   - `/api/state` `input_capture` now exposes `effects_suspended`, and core automation contracts assert suspension/resume transitions during permission revoke/regrant
   - AppController input-capture runtime/state orchestration is now isolated in `AppController.InputCapture.cpp`, with both CMake and Visual Studio build wiring updated to keep POSIX/Windows lanes aligned

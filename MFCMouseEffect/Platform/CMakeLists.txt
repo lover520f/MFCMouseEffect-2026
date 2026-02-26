@@ -238,6 +238,7 @@ if(MFX_ENABLE_ENTRY_RUNTIME_TARGETS)
             "${MFX_PROJECT_ROOT}/MouseFx/Core/Automation/KeyChord.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Core/Automation/ShortcutCaptureSession.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Core/Input/GestureRecognizer.cpp"
+            "${MFX_PROJECT_ROOT}/MouseFx/Core/Input/GestureRecognizer.Direction.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Core/Config/ConfigPathResolver.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Core/Config/EffectConfig.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Core/Config/EffectConfig.Internal.cpp"

@@ -533,6 +533,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\\Core\\Config\\EffectConfig.cpp" />
     <ClCompile Include="Platform\windows\Graphics\Win32D2DFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.cpp" />
+    <ClCompile Include="MouseFx\Core\Input\GestureRecognizer.Direction.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmBinaryCodec.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmCommandBufferParser.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmExecutionBudgetGuard.cpp" />
