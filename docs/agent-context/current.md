@@ -139,10 +139,10 @@
   - macOS global-input-hook runloop path now splits init/simulation/mask helpers into dedicated module (`MacosGlobalInputHook.RunLoopHelpers.mm`), reducing runloop core coupling while preserving input-hook runtime behavior contracts
   - macOS keyboard-injector resolver now splits non-modifier fallback chain into dedicated helper module (`MacosKeyboardInjectorKeyResolver.NonModifier.mm`), reducing resolver branching coupling while preserving key-resolution contracts
   - macOS virtual-key mapper now splits key-pair table ownership into dedicated module (`MacosVirtualKeyMapper.KeyPairs.mm`), reducing table-vs-entry coupling while preserving keycode normalization contracts
+  - macOS global-input event-tap dispatch now splits tap-disabled recovery and mouse/key event dispatch into dedicated modules (`MacosGlobalInputHook.EventTapDispatch*.mm`), reducing input-ingress coupling while preserving dispatch semantics
   - `WasmEffectHost` invoke path is now isolated in `WasmEffectHost.Invoke.cpp`, reducing lifecycle-vs-invoke coupling while preserving host execution contracts
   - `AppController` VM suppression path is now isolated in `AppController.VmSuppression.cpp`, reducing suppression-vs-effects coupling while preserving suppression behavior contracts
   - macOS click pulse overlay internals now isolate style/renderer/window-registry modules (`MacosClickPulseOverlayStyle.*`, `MacosClickPulseOverlayRenderer.*`, `MacosClickPulseWindowRegistry.*`) while `MacosClickPulseEffect.mm` remains lifecycle/event-entry facade
-  - macOS hold overlay renderer now uses explicit type->style mapping (`charge/lightning/hex/tech/neon/hologram/quantum_halo/flux_field`) for differentiated visuals, and hover alias `suspension` is normalized to `tubes`
   - macOS effect overlay lifecycle now exposes 5-category active-window diagnostics (`click/trail/scroll/hold/hover`) in `/api/state.effects_runtime`, and probe coverage (`/api/effects/test-overlay-windows`) now exercises all 5 categories with persistent-overlay close control
   - effect overlay probe contracts now assert counter arithmetic from raw fields (`before/after total == click + scroll`), not only route-local invariant booleans
 

@@ -327,6 +327,8 @@
   - 55zzzzn completed (acceptance): full POSIX regression suite remains green after key-resolver non-modifier split.
   - 55zzzzo completed (code): split mac virtual-key mapper table/lookup ownership into dedicated module (`MacosVirtualKeyMapper.KeyPairs.mm`) and kept mapper main file focused on entry routing.
   - 55zzzzo completed (acceptance): full POSIX regression suite remains green after virtual-key mapper table split.
+  - 55zzzzp completed (code): split global-input event-tap dispatch by event domain (`tap-disable` / `mouse` / `key`) into dedicated modules (`MacosGlobalInputHook.EventTapDispatch*.mm`) and kept each file focused on one ingress concern.
+  - 55zzzzp completed (acceptance): full POSIX regression suite remains green after event-tap dispatch domain split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
