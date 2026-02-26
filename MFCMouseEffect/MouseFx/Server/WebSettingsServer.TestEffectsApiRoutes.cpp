@@ -114,6 +114,11 @@ bool HandleWebSettingsTestEffectsApiRoute(
         const int32_t y = ParseInt32OrDefault(payload, "y", 360);
         const uint8_t button = ParseButtonOrDefault(payload, "button", 1);
         const int32_t scrollDelta = ParseInt32OrDefault(payload, "scroll_delta", 120);
+        const std::string clickType = payload.value("click_type", std::string("ripple"));
+        const std::string trailType = payload.value("trail_type", std::string("line"));
+        const std::string scrollType = payload.value("scroll_type", std::string("arrow"));
+        const std::string holdType = payload.value("hold_type", std::string("charge"));
+        const std::string hoverType = payload.value("hover_type", std::string("glow"));
         const int32_t waitMs = std::clamp(ParseInt32OrDefault(payload, "wait_ms", 0), 0, 3000);
         const int32_t waitForClearMs = std::clamp(ParseInt32OrDefault(payload, "wait_for_clear_ms", 0), 0, 3000);
 
@@ -125,20 +130,20 @@ bool HandleWebSettingsTestEffectsApiRoute(
             y,
         };
         if (emitClick) {
-            macos_click_pulse::ShowClickPulseOverlay(overlayPoint, ParseMouseButton(button), "ripple", "");
+            macos_click_pulse::ShowClickPulseOverlay(overlayPoint, ParseMouseButton(button), clickType, "");
         }
         if (emitTrail) {
-            macos_trail_pulse::ShowTrailPulseOverlay(overlayPoint, 20.0, 10.0, "line", "");
+            macos_trail_pulse::ShowTrailPulseOverlay(overlayPoint, 20.0, 10.0, trailType, "");
         }
         if (emitScroll) {
-            macos_scroll_pulse::ShowScrollPulseOverlay(overlayPoint, scrollHorizontal, scrollDelta, "arrow", "");
+            macos_scroll_pulse::ShowScrollPulseOverlay(overlayPoint, scrollHorizontal, scrollDelta, scrollType, "");
         }
         if (emitHold) {
-            macos_hold_pulse::StartHoldPulseOverlay(overlayPoint, ParseMouseButton(button), "charge", "");
+            macos_hold_pulse::StartHoldPulseOverlay(overlayPoint, ParseMouseButton(button), holdType, "");
             macos_hold_pulse::UpdateHoldPulseOverlay(overlayPoint, 280);
         }
         if (emitHover) {
-            macos_hover_pulse::ShowHoverPulseOverlay(overlayPoint, "glow", "");
+            macos_hover_pulse::ShowHoverPulseOverlay(overlayPoint, hoverType, "");
         }
 #endif
 
@@ -177,6 +182,11 @@ bool HandleWebSettingsTestEffectsApiRoute(
             {"emit_scroll", emitScroll},
             {"emit_hold", emitHold},
             {"emit_hover", emitHover},
+            {"click_type", clickType},
+            {"trail_type", trailType},
+            {"scroll_type", scrollType},
+            {"hold_type", holdType},
+            {"hover_type", hoverType},
             {"close_persistent", closePersistent},
             {"wait_ms", waitMs},
             {"wait_for_clear_ms", waitForClearMs},

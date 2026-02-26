@@ -13,7 +13,7 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         -X POST \
         -H "x-mfcmouseeffect-token: $token" \
         -H "Content-Type: application/json" \
-        -d '{"emit_click":true,"emit_trail":true,"emit_scroll":true,"emit_hold":true,"emit_hover":true,"close_persistent":true,"wait_ms":80,"wait_for_clear_ms":1600}')"
+        -d '{"emit_click":true,"emit_trail":true,"emit_scroll":true,"emit_hold":true,"emit_hover":true,"click_type":"text","trail_type":"electric","scroll_type":"helix","hold_type":"hold_quantum_halo_gpu_v2","hover_type":"tubes","close_persistent":true,"wait_ms":80,"wait_for_clear_ms":1600}')"
     mfx_assert_eq "$code_effect_overlay_probe" "200" "core effect overlay probe status"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"ok\":true" "core effect overlay probe ok"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"before\":" "core effect overlay probe before snapshot"
@@ -21,6 +21,11 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"before_total_matches_components\":true" "core effect overlay probe before invariant"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"after_total_matches_components\":true" "core effect overlay probe after invariant"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"restored_to_baseline\":true" "core effect overlay probe restore baseline"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"click_type\":\"text\"" "core effect overlay probe click type"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"trail_type\":\"electric\"" "core effect overlay probe trail type"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"scroll_type\":\"helix\"" "core effect overlay probe scroll type"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"hold_type\":\"hold_quantum_halo_gpu_v2\"" "core effect overlay probe hold type"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"hover_type\":\"tubes\"" "core effect overlay probe hover type"
 
     local before_click_count
     local before_trail_count

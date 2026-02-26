@@ -39,8 +39,8 @@ void RunOnMainThreadAsync(dispatch_block_t block) {
 
 std::string NormalizeHoverType(const std::string& effectType) {
     const std::string value = ToLowerAscii(effectType);
-    if (value == "tubes") {
-        return value;
+    if (value == "tubes" || value == "suspension") {
+        return "tubes";
     }
     return "glow";
 }

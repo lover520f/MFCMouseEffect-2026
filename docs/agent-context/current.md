@@ -60,6 +60,7 @@
   - AppController effect orchestration + VM suppression runtime (`SetEffect/ApplyConfiguredEffects/SetTheme/UpdateVmSuppressionState` etc.) is now isolated in `AppController.Effects.cpp`, with both CMake and Visual Studio build wiring updated to keep POSIX/Windows lanes aligned
   - AppController dispatch-state runtime helpers (`OnGlobalKey`, shortcut session lifecycle, hover/hold timers/state) are now isolated in `AppController.DispatchState.cpp`, with both CMake and Visual Studio build wiring updated to keep POSIX/Windows lanes aligned
   - macOS effect routing now covers click/trail/scroll/hold/hover categories (GPU hold routes remain excluded), and settings schema reports `capabilities.effects.trail/scroll/hold/hover=true` on macOS
+  - macOS effect probe route now accepts per-category type arguments (`click/trail/scroll/hold/hover`), and core automation contracts exercise non-default type matrix (`text/electric/helix/hold_quantum_halo_gpu_v2/tubes`)
   - Linux compile gate now validates both default lane and core-runtime lane by default (`MFX_ENABLE_POSIX_CORE_RUNTIME=OFF/ON`) with optional fast-path skip flag
   - Phase 54 Linux follow scope is now explicitly closed for compile+contract boundary in `phase54i-linux-follow-phase-closure.md`
   - `SettingsStateMapper` is now split into `BaseSections.*` and `Diagnostics.*` with top-level composition kept in `SettingsStateMapper.cpp`
@@ -115,12 +116,11 @@
   - macOS keyboard injection path now isolates resolver orchestration (`MacosKeyboardInjectorKeyResolver.*`) and vk->mac key tables (`MacosKeyboardInjectorKeyTables.*`) from event-post execution flow (`MacosKeyboardInjector.mm`)
   - macOS wasm renderer now isolates command dispatch and resolver utilities (`MacosWasmCommandRenderDispatch.*`, `MacosWasmCommandRenderResolvers.*`) from top-level parse/orchestration
   - macOS scroll pulse effect now isolates overlay rendering internals in `MacosScrollPulseOverlayRenderer.*`, keeping `MacosScrollPulseEffect` as lifecycle + entry façade
-  - macOS wasm transient image overlay now isolates rendering internals in `MacosWasmImageOverlayRenderer.*`, keeping `MacosWasmTransientOverlay` as API facade
   - macOS dispatch host now isolates lifecycle, messaging worker, and timer management into separate implementation units (`MacosDispatchMessageHost.cpp`, `.Messaging.cpp`, `.Timers.cpp`)
   - macOS tray service now isolates menu/action bridge creation and runtime helpers into `MacosTrayMenuFactory.*` and `MacosTrayRuntimeHelpers.*`, keeping `MacosTrayService` as lifecycle facade
-  - macOS wasm overlay runtime now isolates state internals (`MacosWasmOverlayState.*`) while `MacosWasmOverlayRuntime.mm` remains API/main-thread facade
   - macOS scroll pulse overlay internals now isolate style and window-registry logic (`MacosScrollPulseOverlayStyle.*`, `MacosScrollPulseWindowRegistry.*`) while `MacosScrollPulseOverlayRenderer.mm` remains render/animation facade
   - macOS click pulse overlay internals now isolate style/renderer/window-registry modules (`MacosClickPulseOverlayStyle.*`, `MacosClickPulseOverlayRenderer.*`, `MacosClickPulseWindowRegistry.*`) while `MacosClickPulseEffect.mm` remains lifecycle/event-entry facade
+  - macOS hold overlay renderer now uses explicit type->style mapping (`charge/lightning/hex/tech/neon/hologram/quantum_halo/flux_field`) for differentiated visuals, and hover alias `suspension` is normalized to `tubes`
   - macOS effect overlay lifecycle now exposes 5-category active-window diagnostics (`click/trail/scroll/hold/hover`) in `/api/state.effects_runtime`, and probe coverage (`/api/effects/test-overlay-windows`) now exercises all 5 categories with persistent-overlay close control
   - effect overlay probe contracts now assert counter arithmetic from raw fields (`before/after total == click + scroll`), not only route-local invariant booleans
 
