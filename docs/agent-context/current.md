@@ -124,8 +124,8 @@
   - macOS `MacosGlobalInputHook` implementation is now split by responsibility (`MacosGlobalInputHook.mm`, `.EventTap.mm`, `.RunLoop.mm`) to lower file coupling without behavior changes
   - macOS input-indicator overlay path is now split into render/lifecycle (`MacosInputIndicatorOverlay.mm`), probe/event-entry (`MacosInputIndicatorOverlay.Probes.mm`), and shared internals (`MacosInputIndicatorOverlayInternals.*`)
   - `DispatchRouter` is now split by responsibility (`DispatchRouter.cpp` + `DispatchRouter.Pointer.cpp` + shared helper boundary), reducing pointer/timer-vs-entry coupling while preserving dispatch behavior contracts
-  - macOS wasm renderer now isolates command dispatch and resolver utilities (`MacosWasmCommandRenderDispatch.*`, `MacosWasmCommandRenderResolvers.*`) from top-level parse/orchestration
   - macOS wasm text/image overlays now share render math boundary (`MacosWasmOverlayRenderMath.*`) for clamp/color/lifetime rules, reducing duplicated tuning logic while preserving overlay behavior contracts
+  - macOS wasm command dispatch is now split into entry + text + image/affine handlers (`MacosWasmCommandRenderDispatch.mm`, `.Text.mm`, `.Image.mm`) with shared internal contract, reducing single-file command-path coupling while preserving runtime behavior contracts
   - `WasmEffectHost` invoke path is now isolated in `WasmEffectHost.Invoke.cpp`, reducing lifecycle-vs-invoke coupling while preserving host execution contracts
   - `AppController` VM suppression path is now isolated in `AppController.VmSuppression.cpp`, reducing suppression-vs-effects coupling while preserving suppression behavior contracts
   - macOS app-catalog scan and AppleScript folder-picker are now split into workflow entry and helper/script units (`MacosApplicationCatalogScanWorkflow.*`, `MacosAppleScriptFolderPicker.*`), reducing system-workflow coupling while preserving scan/pick contracts
