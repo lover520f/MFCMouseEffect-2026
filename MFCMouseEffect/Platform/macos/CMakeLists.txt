@@ -42,6 +42,8 @@ add_library(mfx_shell_macos STATIC
     "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseEffect.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayStyle.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayRenderer.mm"
+    "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayRendererCore.Layers.mm"
+    "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayRendererCore.Plan.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayRendererCore.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseWindowRegistry.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosScrollPulseEffect.mm"
