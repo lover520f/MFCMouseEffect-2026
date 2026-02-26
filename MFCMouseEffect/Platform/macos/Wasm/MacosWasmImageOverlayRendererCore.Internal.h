@@ -16,3 +16,10 @@ struct ImageOverlayRenderPlan final {
 ImageOverlayRenderPlan BuildImageOverlayRenderPlan(const WasmImageOverlayRequest& request);
 
 } // namespace mousefx::platform::macos::wasm_image_overlay_core_detail
+
+namespace mousefx::platform::macos {
+
+void RenderWasmImageOverlayWindowOnMain(
+    const wasm_image_overlay_core_detail::ImageOverlayRenderPlan& plan);
+
+} // namespace mousefx::platform::macos
