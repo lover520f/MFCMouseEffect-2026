@@ -16,7 +16,7 @@ bool HandleWebSettingsTestApiRoute(
         return true;
     }
 
-    if (HandleWebSettingsTestEffectsApiRoute(req, path, resp)) {
+    if (HandleWebSettingsTestEffectsApiRoute(req, path, controller, resp)) {
         return true;
     }
 

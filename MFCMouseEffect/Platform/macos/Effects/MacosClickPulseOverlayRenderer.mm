@@ -12,6 +12,7 @@
 #import <dispatch/dispatch.h>
 #endif
 
+#include <algorithm>
 #include <cmath>
 
 namespace mousefx::macos_click_pulse {
@@ -55,14 +56,15 @@ void ShowClickPulseOverlayOnMain(
     const ScreenPoint& overlayPt,
     MouseButton button,
     const std::string& effectType,
-    const std::string& themeName) {
+    const std::string& themeName,
+    const macos_effect_profile::ClickRenderProfile& profile) {
     (void)themeName;
 
     const std::string normalizedType = NormalizeClickType(effectType);
     const bool textMode = (normalizedType == "text");
     const bool starMode = (normalizedType == "star");
 
-    const CGFloat size = textMode ? 152.0 : 138.0;
+    const CGFloat size = textMode ? static_cast<CGFloat>(profile.textSizePx) : static_cast<CGFloat>(profile.normalSizePx);
     const NSRect frame = NSMakeRect(overlayPt.x - size * 0.5, overlayPt.y - size * 0.5, size, size);
     NSWindow* window = macos_overlay_support::CreateOverlayWindow(frame);
     if (window == nil) {
@@ -83,7 +85,7 @@ void ShowClickPulseOverlayOnMain(
     base.fillColor = [ClickPulseFillColor(button) CGColor];
     base.strokeColor = [ClickPulseStrokeColor(button) CGColor];
     base.lineWidth = textMode ? 2.1 : 2.4;
-    base.opacity = 0.95;
+    base.opacity = static_cast<float>(profile.baseOpacity);
     [content.layer addSublayer:base];
 
     if (starMode) {
@@ -120,25 +122,26 @@ void ShowClickPulseOverlayOnMain(
             text.string = @"LEFT";
             break;
         }
-        text.opacity = 0.98;
+        text.opacity = static_cast<float>(std::min(1.0, profile.baseOpacity + 0.03));
         [content.layer addSublayer:text];
     }
 
+    const CFTimeInterval animationDuration = textMode ? profile.textDurationSec : profile.normalDurationSec;
     CABasicAnimation* scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
     scale.fromValue = textMode ? @0.75 : @0.15;
     scale.toValue = @1.0;
-    scale.duration = textMode ? 0.36 : 0.32;
+    scale.duration = animationDuration;
     scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
 
     CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    fade.fromValue = @0.95;
+    fade.fromValue = @(profile.baseOpacity);
     fade.toValue = @0.0;
-    fade.duration = textMode ? 0.36 : 0.32;
+    fade.duration = animationDuration;
     fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
 
     CAAnimationGroup* group = [CAAnimationGroup animation];
     group.animations = @[scale, fade];
-    group.duration = textMode ? 0.36 : 0.32;
+    group.duration = animationDuration;
     group.fillMode = kCAFillModeForwards;
     group.removedOnCompletion = NO;
     [base addAnimation:group forKey:@"mfx_click_pulse"];
@@ -147,7 +150,9 @@ void ShowClickPulseOverlayOnMain(
     [window orderFrontRegardless];
 
     dispatch_after(
-        dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(380) * NSEC_PER_MSEC),
+        dispatch_time(
+            DISPATCH_TIME_NOW,
+            static_cast<int64_t>(static_cast<int>(animationDuration * 1000.0) + profile.closePaddingMs) * NSEC_PER_MSEC),
         dispatch_get_main_queue(),
         ^{
           if (!TakeClickPulseWindow(reinterpret_cast<void*>(window))) {
@@ -175,22 +180,33 @@ void ShowClickPulseOverlay(
     const ScreenPoint& overlayPt,
     MouseButton button,
     const std::string& effectType,
-    const std::string& themeName) {
+    const std::string& themeName,
+    const macos_effect_profile::ClickRenderProfile& profile) {
 #if !defined(__APPLE__)
     (void)overlayPt;
     (void)button;
     (void)effectType;
     (void)themeName;
+    (void)profile;
     return;
 #else
     const ScreenPoint ptCopy = overlayPt;
     const MouseButton buttonCopy = button;
     const std::string typeCopy = effectType;
     const std::string themeCopy = themeName;
+    const macos_effect_profile::ClickRenderProfile profileCopy = profile;
     macos_overlay_support::RunOnMainThreadAsync(^{
-      ShowClickPulseOverlayOnMain(ptCopy, buttonCopy, typeCopy, themeCopy);
+      ShowClickPulseOverlayOnMain(ptCopy, buttonCopy, typeCopy, themeCopy, profileCopy);
     });
 #endif
+}
+
+void ShowClickPulseOverlay(
+    const ScreenPoint& overlayPt,
+    MouseButton button,
+    const std::string& effectType,
+    const std::string& themeName) {
+    ShowClickPulseOverlay(overlayPt, button, effectType, themeName, macos_effect_profile::DefaultClickRenderProfile());
 }
 
 } // namespace mousefx::macos_click_pulse

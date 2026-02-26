@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
+#include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 
 #include <string>
 
@@ -8,7 +9,7 @@ namespace mousefx {
 
 class MacosHoverPulseEffect final : public IMouseEffect {
 public:
-    MacosHoverPulseEffect(std::string effectType, std::string themeName);
+    MacosHoverPulseEffect(std::string effectType, std::string themeName, macos_effect_profile::HoverRenderProfile renderProfile);
     ~MacosHoverPulseEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Hover; }
@@ -22,6 +23,7 @@ public:
 private:
     std::string effectType_{};
     std::string themeName_{};
+    macos_effect_profile::HoverRenderProfile renderProfile_{};
     bool initialized_ = false;
 };
 

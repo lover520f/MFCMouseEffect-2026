@@ -12,6 +12,7 @@
 #import <dispatch/dispatch.h>
 #endif
 
+#include <algorithm>
 #include <cmath>
 
 namespace mousefx::macos_scroll_pulse {
@@ -32,7 +33,8 @@ void ShowScrollPulseOverlayOnMain(
     bool horizontal,
     int delta,
     const std::string& effectType,
-    const std::string& themeName) {
+    const std::string& themeName,
+    const macos_effect_profile::ScrollRenderProfile& profile) {
     if (delta == 0) {
         return;
     }
@@ -50,7 +52,7 @@ void ShowScrollPulseOverlayOnMain(
         strengthLevel = 6;
     }
 
-    const CGFloat size = horizontal ? 148.0 : 138.0;
+    const CGFloat size = horizontal ? static_cast<CGFloat>(profile.horizontalSizePx) : static_cast<CGFloat>(profile.verticalSizePx);
     const NSRect frame = NSMakeRect(overlayPt.x - size * 0.5, overlayPt.y - size * 0.5, size, size);
     NSWindow* window = macos_overlay_support::CreateOverlayWindow(frame);
     if (window == nil) {
@@ -74,7 +76,7 @@ void ShowScrollPulseOverlayOnMain(
     body.fillColor = [ScrollPulseFillColor(horizontal, delta) CGColor];
     body.strokeColor = [ScrollPulseStrokeColor(horizontal, delta) CGColor];
     body.lineWidth = 2.0;
-    body.opacity = 0.96;
+    body.opacity = static_cast<float>(profile.baseOpacity);
     [content.layer addSublayer:body];
 
     CAShapeLayer* arrow = [CAShapeLayer layer];
@@ -83,7 +85,7 @@ void ShowScrollPulseOverlayOnMain(
     arrow.path = arrowPath;
     CGPathRelease(arrowPath);
     arrow.fillColor = [ScrollPulseStrokeColor(horizontal, delta) CGColor];
-    arrow.opacity = 0.98;
+    arrow.opacity = static_cast<float>(std::min(1.0, profile.baseOpacity + 0.02));
     [content.layer addSublayer:arrow];
 
     if (helixMode) {
@@ -121,7 +123,7 @@ void ShowScrollPulseOverlayOnMain(
         [content.layer addSublayer:twinkle];
     }
 
-    const CFTimeInterval duration = 0.28 + static_cast<CFTimeInterval>(strengthLevel) * 0.018;
+    const CFTimeInterval duration = profile.baseDurationSec + static_cast<CFTimeInterval>(strengthLevel) * profile.perStrengthStepSec;
     CABasicAnimation* scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
     scale.fromValue = @0.72;
     scale.toValue = @1.04;
@@ -129,7 +131,7 @@ void ShowScrollPulseOverlayOnMain(
     scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
 
     CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    fade.fromValue = @0.98;
+    fade.fromValue = @(std::min(1.0, profile.baseOpacity + 0.02));
     fade.toValue = @0.0;
     fade.duration = duration;
     fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
@@ -145,7 +147,7 @@ void ShowScrollPulseOverlayOnMain(
     RegisterScrollPulseWindow(reinterpret_cast<void*>(window));
     [window orderFrontRegardless];
 
-    const int closeAfterMs = static_cast<int>(duration * 1000.0) + 90;
+    const int closeAfterMs = static_cast<int>(duration * 1000.0) + profile.closePaddingMs;
     dispatch_after(
         dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(closeAfterMs) * NSEC_PER_MSEC),
         dispatch_get_main_queue(),
@@ -176,13 +178,15 @@ void ShowScrollPulseOverlay(
     bool horizontal,
     int delta,
     const std::string& effectType,
-    const std::string& themeName) {
+    const std::string& themeName,
+    const macos_effect_profile::ScrollRenderProfile& profile) {
 #if !defined(__APPLE__)
     (void)overlayPt;
     (void)horizontal;
     (void)delta;
     (void)effectType;
     (void)themeName;
+    (void)profile;
     return;
 #else
     if (delta == 0) {
@@ -194,10 +198,20 @@ void ShowScrollPulseOverlay(
     const int deltaCopy = delta;
     const std::string typeCopy = effectType;
     const std::string themeCopy = themeName;
+    const macos_effect_profile::ScrollRenderProfile profileCopy = profile;
     macos_overlay_support::RunOnMainThreadAsync(^{
-      ShowScrollPulseOverlayOnMain(ptCopy, horizontalCopy, deltaCopy, typeCopy, themeCopy);
+      ShowScrollPulseOverlayOnMain(ptCopy, horizontalCopy, deltaCopy, typeCopy, themeCopy, profileCopy);
     });
 #endif
+}
+
+void ShowScrollPulseOverlay(
+    const ScreenPoint& overlayPt,
+    bool horizontal,
+    int delta,
+    const std::string& effectType,
+    const std::string& themeName) {
+    ShowScrollPulseOverlay(overlayPt, horizontal, delta, effectType, themeName, macos_effect_profile::DefaultScrollRenderProfile());
 }
 
 } // namespace mousefx::macos_scroll_pulse

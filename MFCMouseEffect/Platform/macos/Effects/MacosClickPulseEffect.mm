@@ -8,9 +8,13 @@
 
 namespace mousefx {
 
-MacosClickPulseEffect::MacosClickPulseEffect(std::string effectType, std::string themeName)
+MacosClickPulseEffect::MacosClickPulseEffect(
+    std::string effectType,
+    std::string themeName,
+    macos_effect_profile::ClickRenderProfile renderProfile)
     : effectType_(std::move(effectType)),
-      themeName_(std::move(themeName)) {
+      themeName_(std::move(themeName)),
+      renderProfile_(renderProfile) {
     if (effectType_.empty()) {
         effectType_ = "ripple";
     }
@@ -35,7 +39,7 @@ void MacosClickPulseEffect::OnClick(const ClickEvent& event) {
         return;
     }
     const ScreenPoint overlayPt = ScreenToOverlayPoint(event.pt);
-    macos_click_pulse::ShowClickPulseOverlay(overlayPt, event.button, effectType_, themeName_);
+    macos_click_pulse::ShowClickPulseOverlay(overlayPt, event.button, effectType_, themeName_, renderProfile_);
 }
 
 } // namespace mousefx

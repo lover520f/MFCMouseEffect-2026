@@ -5,6 +5,7 @@
 #include "Platform/macos/Effects/MacosClickPulseEffect.h"
 #include "Platform/macos/Effects/MacosHoldPulseEffect.h"
 #include "Platform/macos/Effects/MacosHoverPulseEffect.h"
+#include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 #include "Platform/macos/Effects/MacosScrollPulseEffect.h"
 #include "Platform/macos/Effects/MacosTrailPulseEffect.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"
@@ -27,26 +28,40 @@ constexpr size_t CategoryIndex(EffectCategory category) {
 }
 
 std::unique_ptr<IMouseEffect> CreateClick(const std::string& type, const EffectConfig& config) {
-    return std::make_unique<MacosClickPulseEffect>(type, config.theme);
+    return std::make_unique<MacosClickPulseEffect>(
+        type,
+        config.theme,
+        macos_effect_profile::ResolveClickRenderProfile(config));
 }
 
 std::unique_ptr<IMouseEffect> CreateTrail(const std::string& type, const EffectConfig& config) {
-    return std::make_unique<MacosTrailPulseEffect>(type, config.theme);
+    return std::make_unique<MacosTrailPulseEffect>(
+        type,
+        config.theme,
+        macos_effect_profile::ResolveTrailRenderProfile(config, type),
+        macos_effect_profile::ResolveTrailThrottleProfile(config, type));
 }
 
 std::unique_ptr<IMouseEffect> CreateScroll(const std::string& type, const EffectConfig& config) {
-    return std::make_unique<MacosScrollPulseEffect>(type, config.theme);
+    return std::make_unique<MacosScrollPulseEffect>(
+        type,
+        config.theme,
+        macos_effect_profile::ResolveScrollRenderProfile(config));
 }
 
 std::unique_ptr<IMouseEffect> CreateHold(const std::string& type, const EffectConfig& config) {
     return std::make_unique<MacosHoldPulseEffect>(
         hold_route::NormalizeHoldEffectTypeAlias(type),
         config.theme,
-        config.holdFollowMode);
+        config.holdFollowMode,
+        macos_effect_profile::ResolveHoldRenderProfile(config));
 }
 
 std::unique_ptr<IMouseEffect> CreateHover(const std::string& type, const EffectConfig& config) {
-    return std::make_unique<MacosHoverPulseEffect>(type, config.theme);
+    return std::make_unique<MacosHoverPulseEffect>(
+        type,
+        config.theme,
+        macos_effect_profile::ResolveHoverRenderProfile(config));
 }
 
 const std::array<CategoryRegistryEntry, CategoryIndex(EffectCategory::Count)>& RegistryTable() {

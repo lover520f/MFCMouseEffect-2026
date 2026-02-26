@@ -70,4 +70,30 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
             mfx_fail "core effect overlay probe support on macos: expected supported=true"
         fi
     fi
+
+    local code_effect_profile_probe
+    code_effect_profile_probe="$(mfx_http_code "$tmp_dir/effect-render-profile-probe.out" "$base_url/api/effects/test-render-profiles" \
+        -X GET \
+        -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_effect_profile_probe" "200" "core effect render profile probe status"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"ok\":true" "core effect render profile probe ok"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"profiles\":" "core effect render profile probe profiles"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"click\":" "core effect render profile click section"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail\":" "core effect render profile trail section"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail_throttle\":" "core effect render profile trail throttle section"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"scroll\":" "core effect render profile scroll section"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"hold\":" "core effect render profile hold section"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"hover\":" "core effect render profile hover section"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"normal_duration_sec\":" "core effect render profile click duration field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"duration_sec\":" "core effect render profile trail duration field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"base_duration_sec\":" "core effect render profile scroll duration field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"min_interval_ms\":" "core effect render profile throttle interval field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"progress_full_ms\":" "core effect render profile hold progress field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"spin_duration_sec\":" "core effect render profile hover spin field"
+
+    if [[ "$platform" == "macos" ]]; then
+        if ! mfx_file_contains_fixed "$tmp_dir/effect-render-profile-probe.out" "\"supported\":true"; then
+            mfx_fail "core effect render profile probe support on macos: expected supported=true"
+        fi
+    fi
 }

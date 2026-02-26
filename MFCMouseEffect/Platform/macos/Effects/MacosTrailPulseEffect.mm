@@ -3,7 +3,6 @@
 #include "Platform/macos/Effects/MacosTrailPulseEffect.h"
 
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
-#include "MouseFx/Utils/StringUtils.h"
 #include "Platform/macos/Effects/MacosTrailPulseOverlayRenderer.h"
 
 #include <chrono>
@@ -11,38 +10,16 @@
 #include <utility>
 
 namespace mousefx {
-namespace {
 
-struct TrailThrottleProfile {
-    uint64_t minIntervalMs = 18;
-    double minDistancePx = 8.0;
-};
-
-TrailThrottleProfile ResolveTrailProfile(const std::string& trailType) {
-    const std::string type = ToLowerAscii(trailType);
-    if (type == "particle") {
-        return {10, 3.0};
-    }
-    if (type == "meteor") {
-        return {14, 5.0};
-    }
-    if (type == "streamer") {
-        return {12, 4.0};
-    }
-    if (type == "electric") {
-        return {15, 6.0};
-    }
-    if (type == "tubes") {
-        return {18, 8.0};
-    }
-    return {};
-}
-
-} // namespace
-
-MacosTrailPulseEffect::MacosTrailPulseEffect(std::string effectType, std::string themeName)
+MacosTrailPulseEffect::MacosTrailPulseEffect(
+    std::string effectType,
+    std::string themeName,
+    macos_effect_profile::TrailRenderProfile renderProfile,
+    macos_effect_profile::TrailThrottleProfile throttleProfile)
     : effectType_(std::move(effectType)),
-      themeName_(std::move(themeName)) {
+      themeName_(std::move(themeName)),
+      renderProfile_(renderProfile),
+      throttleProfile_(throttleProfile) {
     if (effectType_.empty()) {
         effectType_ = "line";
     }
@@ -80,13 +57,12 @@ void MacosTrailPulseEffect::OnMouseMove(const ScreenPoint& pt) {
     const double dx = static_cast<double>(pt.x - lastPoint_.x);
     const double dy = static_cast<double>(pt.y - lastPoint_.y);
     const double distance = std::sqrt(dx * dx + dy * dy);
-    const TrailThrottleProfile profile = ResolveTrailProfile(effectType_);
 
     const uint64_t now = CurrentTickMs();
-    if (distance < profile.minDistancePx) {
+    if (distance < throttleProfile_.minDistancePx) {
         return;
     }
-    if (lastEmitTickMs_ != 0 && now - lastEmitTickMs_ < profile.minIntervalMs) {
+    if (lastEmitTickMs_ != 0 && now - lastEmitTickMs_ < throttleProfile_.minIntervalMs) {
         return;
     }
 
@@ -94,7 +70,7 @@ void MacosTrailPulseEffect::OnMouseMove(const ScreenPoint& pt) {
     lastPoint_ = pt;
 
     const ScreenPoint overlayPt = ScreenToOverlayPoint(pt);
-    macos_trail_pulse::ShowTrailPulseOverlay(overlayPt, dx, dy, effectType_, themeName_);
+    macos_trail_pulse::ShowTrailPulseOverlay(overlayPt, dx, dy, effectType_, themeName_, renderProfile_);
 }
 
 uint64_t MacosTrailPulseEffect::CurrentTickMs() {

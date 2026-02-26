@@ -15,9 +15,11 @@ namespace mousefx {
 MacosHoldPulseEffect::MacosHoldPulseEffect(
     std::string effectType,
     std::string themeName,
-    std::string followMode)
+    std::string followMode,
+    macos_effect_profile::HoldRenderProfile renderProfile)
     : effectType_(std::move(effectType)),
       themeName_(std::move(themeName)),
+      renderProfile_(renderProfile),
       followMode_(ParseFollowMode(followMode)) {
     if (effectType_.empty()) {
         effectType_ = "charge";
@@ -58,7 +60,7 @@ void MacosHoldPulseEffect::OnHoldStart(const ScreenPoint& pt, int button) {
     }
 
     const ScreenPoint overlayPt = ScreenToOverlayPoint(pt);
-    macos_hold_pulse::StartHoldPulseOverlay(overlayPt, holdButton_, effectType_, themeName_);
+    macos_hold_pulse::StartHoldPulseOverlay(overlayPt, holdButton_, effectType_, themeName_, renderProfile_);
     running_ = true;
     hasSmoothedPoint_ = false;
     lastEfficientTickMs_ = 0;
@@ -96,7 +98,7 @@ void MacosHoldPulseEffect::OnHoldUpdate(const ScreenPoint& pt, uint32_t duration
         break;
     }
 
-    macos_hold_pulse::UpdateHoldPulseOverlay(ScreenToOverlayPoint(updatePoint), durationMs);
+    macos_hold_pulse::UpdateHoldPulseOverlay(ScreenToOverlayPoint(updatePoint), durationMs, renderProfile_);
 }
 
 void MacosHoldPulseEffect::OnHoldEnd() {

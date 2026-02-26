@@ -10,6 +10,8 @@
 #import <dispatch/dispatch.h>
 #endif
 
+#include <algorithm>
+
 namespace mousefx::macos_hover_pulse {
 
 #if defined(__APPLE__)
@@ -41,12 +43,13 @@ void CloseHoverPulseOverlayOnMain() {
 void ShowHoverPulseOverlayOnMain(
     const ScreenPoint& overlayPt,
     const std::string& effectType,
-    const std::string& themeName) {
+    const std::string& themeName,
+    const macos_effect_profile::HoverRenderProfile& profile) {
     (void)themeName;
     CloseHoverPulseOverlayOnMain();
 
     const std::string hoverType = NormalizeHoverType(effectType);
-    const CGFloat size = 172.0;
+    const CGFloat size = static_cast<CGFloat>(profile.sizePx);
     const NSRect frame = NSMakeRect(overlayPt.x - size * 0.5, overlayPt.y - size * 0.5, size, size);
 
     NSWindow* window = macos_overlay_support::CreateOverlayWindow(frame);
@@ -65,13 +68,13 @@ void ShowHoverPulseOverlayOnMain(
     ring.fillColor = [NSColor colorWithCalibratedRed:0.25 green:0.70 blue:1.0 alpha:0.10].CGColor;
     ring.strokeColor = [NSColor colorWithCalibratedRed:0.25 green:0.70 blue:1.0 alpha:0.95].CGColor;
     ring.lineWidth = 2.0;
-    ring.opacity = 0.9;
+    ring.opacity = static_cast<float>(profile.baseOpacity);
     [content.layer addSublayer:ring];
 
     CABasicAnimation* breathe = [CABasicAnimation animationWithKeyPath:@"opacity"];
     breathe.fromValue = @0.25;
-    breathe.toValue = @0.95;
-    breathe.duration = 0.85;
+    breathe.toValue = @(std::min(1.0, profile.baseOpacity + 0.05));
+    breathe.duration = profile.breatheDurationSec;
     breathe.autoreverses = YES;
     breathe.repeatCount = HUGE_VALF;
     [ring addAnimation:breathe forKey:@"mfx_hover_breathe"];
@@ -85,13 +88,13 @@ void ShowHoverPulseOverlayOnMain(
         ring2.fillColor = [NSColor clearColor].CGColor;
         ring2.strokeColor = [NSColor colorWithCalibratedRed:0.47 green:0.90 blue:0.63 alpha:0.95].CGColor;
         ring2.lineWidth = 1.8;
-        ring2.opacity = 0.85;
+        ring2.opacity = static_cast<float>(std::max(0.1, profile.baseOpacity - 0.05));
         [content.layer addSublayer:ring2];
 
         CABasicAnimation* spin = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
         spin.fromValue = @0.0;
         spin.toValue = @(M_PI * 2.0);
-        spin.duration = 1.6;
+        spin.duration = profile.spinDurationSec;
         spin.repeatCount = HUGE_VALF;
         [ring2 addAnimation:spin forKey:@"mfx_hover_spin"];
     }
@@ -106,20 +109,30 @@ void ShowHoverPulseOverlayOnMain(
 void ShowHoverPulseOverlay(
     const ScreenPoint& overlayPt,
     const std::string& effectType,
-    const std::string& themeName) {
+    const std::string& themeName,
+    const macos_effect_profile::HoverRenderProfile& profile) {
 #if !defined(__APPLE__)
     (void)overlayPt;
     (void)effectType;
     (void)themeName;
+    (void)profile;
     return;
 #else
     const ScreenPoint ptCopy = overlayPt;
     const std::string typeCopy = effectType;
     const std::string themeCopy = themeName;
+    const macos_effect_profile::HoverRenderProfile profileCopy = profile;
     macos_overlay_support::RunOnMainThreadAsync(^{
-      ShowHoverPulseOverlayOnMain(ptCopy, typeCopy, themeCopy);
+      ShowHoverPulseOverlayOnMain(ptCopy, typeCopy, themeCopy, profileCopy);
     });
 #endif
+}
+
+void ShowHoverPulseOverlay(
+    const ScreenPoint& overlayPt,
+    const std::string& effectType,
+    const std::string& themeName) {
+    ShowHoverPulseOverlay(overlayPt, effectType, themeName, macos_effect_profile::DefaultHoverRenderProfile());
 }
 
 void CloseHoverPulseOverlay() {

@@ -87,11 +87,14 @@ void ShowTrailPulseOverlayOnMain(
     double deltaX,
     double deltaY,
     const std::string& effectType,
-    const std::string& themeName) {
+    const std::string& themeName,
+    const macos_effect_profile::TrailRenderProfile& profile) {
     (void)themeName;
     const std::string trailType = NormalizeTrailType(effectType);
 
-    const CGFloat size = (trailType == "particle") ? 48.0 : 64.0;
+    const CGFloat size = (trailType == "particle")
+        ? static_cast<CGFloat>(profile.particleSizePx)
+        : static_cast<CGFloat>(profile.normalSizePx);
     const NSRect frame = NSMakeRect(overlayPt.x - size * 0.5, overlayPt.y - size * 0.5, size, size);
     NSWindow* window = macos_overlay_support::CreateOverlayWindow(frame);
     if (window == nil) {
@@ -129,7 +132,7 @@ void ShowTrailPulseOverlayOnMain(
         core.lineWidth = (trailType == "meteor") ? 4.0 : 3.0;
     }
 
-    core.opacity = 0.95;
+    core.opacity = static_cast<float>(profile.baseOpacity);
     [content.layer addSublayer:core];
 
     if (trailType == "meteor" || trailType == "streamer") {
@@ -147,18 +150,18 @@ void ShowTrailPulseOverlayOnMain(
     CABasicAnimation* scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
     scale.fromValue = @0.65;
     scale.toValue = @1.0;
-    scale.duration = 0.22;
+    scale.duration = profile.durationSec;
     scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
 
     CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    fade.fromValue = @0.95;
+    fade.fromValue = @(profile.baseOpacity);
     fade.toValue = @0.0;
-    fade.duration = 0.22;
+    fade.duration = profile.durationSec;
     fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
 
     CAAnimationGroup* group = [CAAnimationGroup animation];
     group.animations = @[scale, fade];
-    group.duration = 0.22;
+    group.duration = profile.durationSec;
     group.fillMode = kCAFillModeForwards;
     group.removedOnCompletion = NO;
     [core addAnimation:group forKey:@"mfx_trail_pulse"];
@@ -167,7 +170,9 @@ void ShowTrailPulseOverlayOnMain(
     [window orderFrontRegardless];
 
     dispatch_after(
-        dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(260) * NSEC_PER_MSEC),
+        dispatch_time(
+            DISPATCH_TIME_NOW,
+            static_cast<int64_t>(static_cast<int>(profile.durationSec * 1000.0) + profile.closePaddingMs) * NSEC_PER_MSEC),
         dispatch_get_main_queue(),
         ^{
           if (!TakeTrailPulseWindow(reinterpret_cast<void*>(window))) {
@@ -196,13 +201,15 @@ void ShowTrailPulseOverlay(
     double deltaX,
     double deltaY,
     const std::string& effectType,
-    const std::string& themeName) {
+    const std::string& themeName,
+    const macos_effect_profile::TrailRenderProfile& profile) {
 #if !defined(__APPLE__)
     (void)overlayPt;
     (void)deltaX;
     (void)deltaY;
     (void)effectType;
     (void)themeName;
+    (void)profile;
     return;
 #else
     const ScreenPoint ptCopy = overlayPt;
@@ -210,10 +217,20 @@ void ShowTrailPulseOverlay(
     const double dyCopy = deltaY;
     const std::string typeCopy = effectType;
     const std::string themeCopy = themeName;
+    const macos_effect_profile::TrailRenderProfile profileCopy = profile;
     macos_overlay_support::RunOnMainThreadAsync(^{
-      ShowTrailPulseOverlayOnMain(ptCopy, dxCopy, dyCopy, typeCopy, themeCopy);
+      ShowTrailPulseOverlayOnMain(ptCopy, dxCopy, dyCopy, typeCopy, themeCopy, profileCopy);
     });
 #endif
+}
+
+void ShowTrailPulseOverlay(
+    const ScreenPoint& overlayPt,
+    double deltaX,
+    double deltaY,
+    const std::string& effectType,
+    const std::string& themeName) {
+    ShowTrailPulseOverlay(overlayPt, deltaX, deltaY, effectType, themeName, macos_effect_profile::DefaultTrailRenderProfile(effectType));
 }
 
 } // namespace mousefx::macos_trail_pulse
