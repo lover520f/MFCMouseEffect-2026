@@ -428,6 +428,7 @@
 - core automation contracts now also probe `/api/effects/test-render-profiles`, locking click/trail/scroll/hold/hover resolved profile fields (`duration/size/throttle/progress`) as machine-checkable regression contracts.
 - `/api/state` now also includes `effects_profile` diagnostics (non-test route, including `config_basis`), effects settings UI renders this profile snapshot read-only (with dedicated profile normalization model and one-click JSON copy), and core state checks assert those fields, reducing hidden drift risk between runtime state and test-only probes.
 - `SettingsStateMapper` effects diagnostics responsibilities are now split to `SettingsStateMapper.EffectsDiagnostics.cpp` (effects_runtime + effects_profile), reducing diagnostics-file coupling while preserving `/api/state` schema contracts.
+- WebSettings test-only effects routes are now split into profile/overlay modules with delegating entry (`WebSettingsServer.TestEffectsApiRoutes.cpp`), reducing route coupling while preserving test-route contracts.
 - Shared lock owner-pid read path now tolerates transient `owner.env` races, so concurrent gate waits degrade to normal lock waiting rather than shell parse failure.
 - WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
 - WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.

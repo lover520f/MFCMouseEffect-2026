@@ -62,6 +62,7 @@
   - macOS effect routing now covers click/trail/scroll/hold/hover categories (GPU hold routes remain excluded), with pluggable creator registry + shared overlay render support (`main-thread dispatch`/`window setup`) and config-driven render profile mapping (`EffectConfig -> mac click/trail/scroll/hold/hover profile`) to reduce renderer duplication and magic constants drift; test-gated `/api/effects/test-render-profiles` now exposes resolved profile contracts for regression; settings schema reports `capabilities.effects.trail/scroll/hold/hover=true` on macOS
   - `/api/state` now exposes non-test diagnostics `effects_profile` (`active` + `config_basis` + resolved click/trail/scroll/hold/hover profile fields), effects settings UI now renders that snapshot in a read-only diagnostics card with one-click JSON copy, and core state regression asserts those fields to guard profile-mapping drift
   - `SettingsStateMapper` effects diagnostics are now isolated in `SettingsStateMapper.EffectsDiagnostics.cpp` (runtime overlay counters + profile snapshot), keeping `SettingsStateMapper.Diagnostics.cpp` focused on GPU/WASM/input-capture diagnostics while preserving `/api/state.effects_runtime` and `/api/state.effects_profile` contracts
+  - test-only effects routes are now split by capability (`WebSettingsServer.TestEffectsProfileApiRoute.*` + `WebSettingsServer.TestEffectsOverlayApiRoute.*`) with `WebSettingsServer.TestEffectsApiRoutes.cpp` as delegator, reducing route-level coupling while preserving `/api/effects/test-render-profiles` and `/api/effects/test-overlay-windows` contracts
   - macOS effect probe route now accepts per-category type arguments (`click/trail/scroll/hold/hover`), and core automation contracts exercise non-default type matrix (`text/electric/helix/hold_quantum_halo_gpu_v2/tubes`)
   - Linux compile gate now validates both default lane and core-runtime lane by default (`MFX_ENABLE_POSIX_CORE_RUNTIME=OFF/ON`) with optional fast-path skip flag
   - Phase 54 Linux follow scope is now explicitly closed for compile+contract boundary in `phase54i-linux-follow-phase-closure.md`
@@ -202,7 +203,6 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzl-wasm-runtime-action-error-code-contract.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzm-wasm-reload-cross-platform-and-missing-target-contract.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzn-wasm-reload-missing-module-contract.md`
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzo-wasm-reload-manifest-api-unsupported-contract.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzp-wasm-fixture-helper-consolidation.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzq-webui-wasm-runtime-error-code-mapping.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzr-webui-wasm-error-i18n-parity-gate.md`
