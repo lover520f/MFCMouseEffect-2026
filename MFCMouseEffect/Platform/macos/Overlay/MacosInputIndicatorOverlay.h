@@ -3,6 +3,7 @@
 #include "MouseFx/Core/Overlay/IInputIndicatorOverlay.h"
 
 #include <atomic>
+#include <functional>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -32,6 +33,12 @@ public:
 private:
     void ShowAt(ScreenPoint pt, const std::string& label);
     bool ShouldShowKeyboard() const;
+    bool BeginProbeConfig(bool keyboardEnabled, InputIndicatorConfig* oldConfig);
+    void RestoreProbeConfig(const InputIndicatorConfig& oldConfig);
+    bool CaptureExpectedLabel(
+        const std::string& expectedLabel,
+        std::vector<std::string>* outAppliedLabels,
+        const std::function<void()>& emit);
 
 private:
     mutable std::mutex mutex_{};
