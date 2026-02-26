@@ -8,6 +8,7 @@
   export let hoverOptions = [];
   export let effectCapabilities = {};
   export let active = {};
+  export let effectsProfile = {};
 
   const dispatch = createEventDispatcher();
 
@@ -40,6 +41,8 @@
 
   const effectKeys = ['click', 'trail', 'scroll', 'hold', 'hover'];
   $: unsupportedEffects = effectKeys.filter((key) => !isSupported(key));
+  $: hasEffectsProfile = !!effectsProfile && typeof effectsProfile === 'object' && Object.keys(effectsProfile).length > 0;
+  $: effectsProfileText = hasEffectsProfile ? JSON.stringify(effectsProfile, null, 2) : '';
 
   let form = normalizeActive(active);
   let lastActiveRef = active;
@@ -94,3 +97,38 @@
     </div>
   {/if}
 </div>
+
+{#if hasEffectsProfile}
+  <div class="hint span2 effects-profile-box">
+    <div class="effects-profile-title" data-i18n="label_effects_runtime_profile">Effects Runtime Profile</div>
+    <pre class="effects-profile-content">{effectsProfileText}</pre>
+  </div>
+{/if}
+
+<style>
+  .effects-profile-box {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px dashed rgba(80, 120, 180, 0.35);
+    border-radius: 10px;
+    background: rgba(120, 150, 190, 0.06);
+  }
+
+  .effects-profile-title {
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(20, 40, 66, 0.88);
+  }
+
+  .effects-profile-content {
+    margin: 0;
+    max-height: 240px;
+    overflow: auto;
+    font-size: 11px;
+    line-height: 1.45;
+    color: rgba(22, 36, 56, 0.88);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+</style>

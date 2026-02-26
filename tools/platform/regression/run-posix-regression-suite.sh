@@ -234,6 +234,7 @@ if [[ "$MFX_SKIP_AUTOMATION_TEST" -eq 0 ]]; then
     (
         cd "$REPO_ROOT"
         pnpm --dir MFCMouseEffect/WebUIWorkspace run test:automation-platform
+        pnpm --dir MFCMouseEffect/WebUIWorkspace run test:effects-profile-model
         pnpm --dir MFCMouseEffect/WebUIWorkspace run test:wasm-error-model
     )
 else

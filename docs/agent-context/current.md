@@ -60,7 +60,7 @@
   - AppController effect orchestration + VM suppression runtime (`SetEffect/ApplyConfiguredEffects/SetTheme/UpdateVmSuppressionState` etc.) is now isolated in `AppController.Effects.cpp`, with both CMake and Visual Studio build wiring updated to keep POSIX/Windows lanes aligned
   - AppController dispatch-state runtime helpers (`OnGlobalKey`, shortcut session lifecycle, hover/hold timers/state) are now isolated in `AppController.DispatchState.cpp`, with both CMake and Visual Studio build wiring updated to keep POSIX/Windows lanes aligned
   - macOS effect routing now covers click/trail/scroll/hold/hover categories (GPU hold routes remain excluded), with pluggable creator registry + shared overlay render support (`main-thread dispatch`/`window setup`) and config-driven render profile mapping (`EffectConfig -> mac click/trail/scroll/hold/hover profile`) to reduce renderer duplication and magic constants drift; test-gated `/api/effects/test-render-profiles` now exposes resolved profile contracts for regression; settings schema reports `capabilities.effects.trail/scroll/hold/hover=true` on macOS
-  - `/api/state` now exposes non-test diagnostics `effects_profile` (`active` + resolved click/trail/scroll/hold/hover profile fields), and core state regression asserts those fields to guard profile-mapping drift
+  - `/api/state` now exposes non-test diagnostics `effects_profile` (`active` + resolved click/trail/scroll/hold/hover profile fields), effects settings UI now renders that snapshot in a read-only diagnostics card, and core state regression asserts those fields to guard profile-mapping drift
   - macOS effect probe route now accepts per-category type arguments (`click/trail/scroll/hold/hover`), and core automation contracts exercise non-default type matrix (`text/electric/helix/hold_quantum_halo_gpu_v2/tubes`)
   - Linux compile gate now validates both default lane and core-runtime lane by default (`MFX_ENABLE_POSIX_CORE_RUNTIME=OFF/ON`) with optional fast-path skip flag
   - Phase 54 Linux follow scope is now explicitly closed for compile+contract boundary in `phase54i-linux-follow-phase-closure.md`
@@ -86,7 +86,7 @@
   - WASM transfer APIs now expose stable `error_code` fields (`import-selected`, `export-all`, folder-dialog import), and regression asserts import failure code semantics
   - shared Svelte WASM UI now surfaces transfer `error_code` in operation feedback, backed by dedicated error-code mapping module
   - transfer failure-code regression matrix now covers `manifest_path_required/not_file/load_failed/not_found`, and WebUI prefers translated error-code mapping before raw backend error text
-  - POSIX suite webui semantic phase now also includes `test:wasm-error-model`, keeping WASM error-code mapping behavior gated by default
+  - POSIX suite webui semantic phase now includes `test:automation-platform` + `test:effects-profile-model` + `test:wasm-error-model`, keeping platform semantics, effects profile mapping, and WASM error-code behavior gated by default
   - shared Svelte WASM diagnostics panel now surfaces `last_load_failure_stage/code` with EN/ZH i18n labels and warning-state linkage
   - shared Svelte WASM state normalization is now deduplicated via `WebUIWorkspace/src/wasm/state-model.js`, reducing cross-file drift risk
   - core HTTP WASM regression helper stack is now modularized (`parse/http/runtime-assert/transfer-assert/dispatch-assert`) with compatibility loader entry retained in `tools/platform/regression/lib/core_http_wasm_helpers.sh`

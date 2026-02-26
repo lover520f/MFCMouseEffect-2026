@@ -398,7 +398,7 @@
 - WASM transfer APIs now expose stable `error_code` fields in addition to `error` text, reducing string-coupling risk in API consumers and regression checks.
 - Shared Svelte WASM UI now surfaces transfer `error_code` details on operation failures, reducing backend/frontend diagnostics contract drift.
 - Core HTTP regression now covers broader transfer failure code semantics (`manifest_path_required/not_file/load_failed/not_found`), reducing false-green risk on importer edge cases.
-- POSIX suite now includes a dedicated WebUI WASM error-model gate (`test:wasm-error-model`), reducing frontend transfer-contract drift risk.
+- POSIX suite webui semantic phase now gates `test:automation-platform` + `test:effects-profile-model` + `test:wasm-error-model`, reducing frontend platform/effects-profile/error-model drift risk.
 - Shared WebUI diagnostics now surfaces load-failure stage/code directly, closing backend-vs-UI observability gap for WASM load failures.
 - Shared WebUI WASM state normalization now has one source of truth, reducing future diagnostics-field drift in UI adapters.
 - Core HTTP regression helper responsibilities are now split by domain (core flow vs wasm helpers), reducing future maintenance risk in script-level contract evolution.
@@ -426,7 +426,7 @@
 - macOS effect creation is now registry-based (replacing hardcoded `switch` wiring) and overlay renderer infrastructure now shares common main-thread/window helpers, reducing coupling and enabling plug-style effect extension without touching core factory branches.
 - macOS click/trail/scroll/hold/hover effects now consume config-driven render profiles (`EffectConfig -> MacosEffectRenderProfile`) and trail throttle mapping, reducing hardcoded timing/size drift and making cross-platform parameter alignment explicit.
 - core automation contracts now also probe `/api/effects/test-render-profiles`, locking click/trail/scroll/hold/hover resolved profile fields (`duration/size/throttle/progress`) as machine-checkable regression contracts.
-- `/api/state` now also includes `effects_profile` diagnostics (non-test route) and core state checks assert those profile fields, reducing hidden drift risk between runtime state and test-only probes.
+- `/api/state` now also includes `effects_profile` diagnostics (non-test route), effects settings UI renders this profile snapshot read-only (with dedicated profile normalization model), and core state checks assert those fields, reducing hidden drift risk between runtime state and test-only probes.
 - Shared lock owner-pid read path now tolerates transient `owner.env` races, so concurrent gate waits degrade to normal lock waiting rather than shell parse failure.
 - WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
 - WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.

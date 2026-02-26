@@ -1,4 +1,5 @@
 import ActiveEffectsFields from '../effects/ActiveEffectsFields.svelte';
+import { normalizeEffectsProfile } from '../effects/profile-model.js';
 import { createLazyMountBridge } from './lazy-mount.js';
 
 let currentState = {
@@ -16,6 +17,7 @@ let currentCapabilities = {
   hold: true,
   hover: true,
 };
+let currentEffectsProfile = {};
 
 function normalizeActive(input) {
   const value = input || {};
@@ -49,6 +51,7 @@ const bridge = createLazyMountBridge({
     hoverOptions: [],
     effectCapabilities: currentCapabilities,
     active: currentState,
+    effectsProfile: currentEffectsProfile,
   },
   createComponent: (mountNode, props) => {
     const instance = new ActiveEffectsFields({
@@ -68,8 +71,10 @@ function render(payload) {
   const appState = payload?.state || {};
   const active = normalizeActive(appState.active || {});
   const effectCapabilities = normalizeEffectCapabilities(schema.capabilities?.effects || {});
+  const effectsProfile = normalizeEffectsProfile(appState.effects_profile || {});
   currentState = active;
   currentCapabilities = effectCapabilities;
+  currentEffectsProfile = effectsProfile;
   bridge.updateProps({
     clickOptions: schema.effects?.click || [],
     trailOptions: schema.effects?.trail || [],
@@ -78,6 +83,7 @@ function render(payload) {
     hoverOptions: schema.effects?.hover || [],
     effectCapabilities,
     active,
+    effectsProfile,
   });
 }
 
