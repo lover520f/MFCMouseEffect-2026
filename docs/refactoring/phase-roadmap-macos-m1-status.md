@@ -347,6 +347,8 @@
   - 55zzzzx completed (acceptance): full POSIX regression suite remains green after OpenPanel path helper split.
   - 55zzzzy completed (code): split notification AppleScript escaping/exec and test-capture helpers into dedicated module (`MacosUserNotificationService.AppleScript.cpp`) and kept notification service file focused on warn entry semantics.
   - 55zzzzy completed (acceptance): full POSIX regression suite remains green after notification AppleScript helper split.
+  - 55zzzzz completed (code): split input-indicator show-plan computation into dedicated module (`MacosInputIndicatorOverlay.ShowPlan.*`) and kept overlay file focused on lifecycle and presentation dispatch.
+  - 55zzzzz completed (acceptance): full POSIX regression suite remains green after input-indicator show-plan split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.

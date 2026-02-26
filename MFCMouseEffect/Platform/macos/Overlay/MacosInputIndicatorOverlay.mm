@@ -2,8 +2,7 @@
 
 #include "Platform/macos/Overlay/MacosInputIndicatorOverlay.h"
 
-#include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
-#include "MouseFx/Utils/StringUtils.h"
+#include "Platform/macos/Overlay/MacosInputIndicatorOverlay.ShowPlan.h"
 #include "Platform/macos/Overlay/MacosInputIndicatorOverlay.Style.h"
 #include "Platform/macos/Overlay/MacosInputIndicatorOverlayInternals.h"
 
@@ -111,12 +110,8 @@ void MacosInputIndicatorOverlay::ShowAt(ScreenPoint pt, const std::string& label
         cfg = config_;
     }
 
-    const int sizePx = macos_input_indicator::ClampInt(cfg.sizePx, 28, 220);
-    const int durationMs = macos_input_indicator::ClampInt(cfg.durationMs, 80, 5000);
-    const bool absolute = (ToLowerAscii(TrimAscii(cfg.positionMode)) == "absolute");
-    const ScreenPoint overlayPt = absolute ? pt : ScreenToOverlayPoint(pt);
-    const int x = absolute ? cfg.absoluteX : (overlayPt.x + cfg.offsetX);
-    const int y = absolute ? cfg.absoluteY : (overlayPt.y + cfg.offsetY);
+    const macos_input_indicator_detail::IndicatorShowPlan plan =
+        macos_input_indicator_detail::BuildIndicatorShowPlan(cfg, pt);
     const uint64_t generation = displayGeneration_.fetch_add(1, std::memory_order_acq_rel) + 1;
     const std::string labelCopy = label;
 
@@ -127,7 +122,8 @@ void MacosInputIndicatorOverlay::ShowAt(ScreenPoint pt, const std::string& label
       if (panel == nil || text == nil) {
           return;
       }
-      macos_input_indicator_style::ApplyPanelPresentation(panel, text, x, y, sizePx, labelCopy);
+      macos_input_indicator_style::ApplyPanelPresentation(
+          panel, text, plan.x, plan.y, plan.sizePx, labelCopy);
       {
           std::lock_guard<std::mutex> debugLock(debugMutex_);
           lastAppliedLabel_ = labelCopy;
@@ -135,7 +131,7 @@ void MacosInputIndicatorOverlay::ShowAt(ScreenPoint pt, const std::string& label
       }
 
       dispatch_after(
-          dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(durationMs) * NSEC_PER_MSEC),
+          dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(plan.durationMs) * NSEC_PER_MSEC),
           dispatch_get_main_queue(),
           ^{
             if (displayGeneration_.load(std::memory_order_acquire) != generation) {
@@ -145,7 +141,6 @@ void MacosInputIndicatorOverlay::ShowAt(ScreenPoint pt, const std::string& label
           });
     });
 #else
-    (void)durationMs;
     (void)generation;
 #endif
 }
