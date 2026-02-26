@@ -14,12 +14,7 @@
 #include "MouseFx/Effects/TextEffect.h"
 #include "MouseFx/Effects/TrailEffect.h"
 #elif MFX_PLATFORM_MACOS
-#include "Platform/macos/Effects/MacosClickPulseEffect.h"
-#include "Platform/macos/Effects/MacosHoldPulseEffect.h"
-#include "Platform/macos/Effects/MacosHoverPulseEffect.h"
-#include "Platform/macos/Effects/MacosScrollPulseEffect.h"
-#include "Platform/macos/Effects/MacosTrailPulseEffect.h"
-#include "MouseFx/Effects/HoldRouteCatalog.h"
+#include "Platform/macos/Effects/MacosEffectCreatorRegistry.h"
 #endif
 
 #if MFX_PLATFORM_WINDOWS
@@ -137,23 +132,7 @@ std::unique_ptr<IMouseEffect> EffectFactory::Create(EffectCategory category, con
 #endif
     return nullptr;
 #elif MFX_PLATFORM_MACOS
-    switch (category) {
-    case EffectCategory::Click:
-        return std::make_unique<MacosClickPulseEffect>(type, config.theme);
-    case EffectCategory::Trail:
-        return std::make_unique<MacosTrailPulseEffect>(type, config.theme);
-    case EffectCategory::Scroll:
-        return std::make_unique<MacosScrollPulseEffect>(type, config.theme);
-    case EffectCategory::Hold:
-        return std::make_unique<MacosHoldPulseEffect>(
-            hold_route::NormalizeHoldEffectTypeAlias(type),
-            config.theme,
-            config.holdFollowMode);
-    case EffectCategory::Hover:
-        return std::make_unique<MacosHoverPulseEffect>(type, config.theme);
-    default:
-        return nullptr;
-    }
+    return macos_effect_registry::Create(category, type, config);
 #else
     (void)category;
     (void)type;

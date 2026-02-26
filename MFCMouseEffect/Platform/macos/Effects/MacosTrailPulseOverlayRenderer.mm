@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Platform/macos/Effects/MacosTrailPulseOverlayRenderer.h"
+#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "Platform/macos/Effects/MacosTrailPulseWindowRegistry.h"
 #include "MouseFx/Utils/StringUtils.h"
 
@@ -16,24 +17,6 @@ namespace mousefx::macos_trail_pulse {
 
 #if defined(__APPLE__)
 namespace {
-
-void RunOnMainThreadSync(dispatch_block_t block) {
-    if (!block) {
-        return;
-    }
-    if ([NSThread isMainThread]) {
-        block();
-        return;
-    }
-    dispatch_sync(dispatch_get_main_queue(), block);
-}
-
-void RunOnMainThreadAsync(dispatch_block_t block) {
-    if (!block) {
-        return;
-    }
-    dispatch_async(dispatch_get_main_queue(), block);
-}
 
 std::string NormalizeTrailType(const std::string& effectType) {
     const std::string value = ToLowerAscii(effectType);
@@ -110,21 +93,10 @@ void ShowTrailPulseOverlayOnMain(
 
     const CGFloat size = (trailType == "particle") ? 48.0 : 64.0;
     const NSRect frame = NSMakeRect(overlayPt.x - size * 0.5, overlayPt.y - size * 0.5, size, size);
-    NSWindow* window = [[NSWindow alloc] initWithContentRect:frame
-                                                    styleMask:NSWindowStyleMaskBorderless
-                                                      backing:NSBackingStoreBuffered
-                                                        defer:NO];
+    NSWindow* window = macos_overlay_support::CreateOverlayWindow(frame);
     if (window == nil) {
         return;
     }
-
-    [window setOpaque:NO];
-    [window setBackgroundColor:[NSColor clearColor]];
-    [window setHasShadow:NO];
-    [window setIgnoresMouseEvents:YES];
-    [window setLevel:NSStatusWindowLevel];
-    [window setCollectionBehavior:(NSWindowCollectionBehaviorCanJoinAllSpaces |
-                                   NSWindowCollectionBehaviorTransient)];
 
     NSView* content = [window contentView];
     [content setWantsLayer:YES];
@@ -213,7 +185,7 @@ void CloseAllTrailPulseWindows() {
 #if !defined(__APPLE__)
     return;
 #else
-    RunOnMainThreadSync(^{
+    macos_overlay_support::RunOnMainThreadSync(^{
       CloseAllTrailPulseWindowsNow();
     });
 #endif
@@ -238,7 +210,7 @@ void ShowTrailPulseOverlay(
     const double dyCopy = deltaY;
     const std::string typeCopy = effectType;
     const std::string themeCopy = themeName;
-    RunOnMainThreadAsync(^{
+    macos_overlay_support::RunOnMainThreadAsync(^{
       ShowTrailPulseOverlayOnMain(ptCopy, dxCopy, dyCopy, typeCopy, themeCopy);
     });
 #endif

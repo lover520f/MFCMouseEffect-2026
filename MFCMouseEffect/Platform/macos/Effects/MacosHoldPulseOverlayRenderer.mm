@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Platform/macos/Effects/MacosHoldPulseOverlayRenderer.h"
+#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "MouseFx/Utils/StringUtils.h"
 
 #if defined(__APPLE__)
@@ -39,24 +40,6 @@ struct HoldOverlayState {
 HoldOverlayState& State() {
     static HoldOverlayState state;
     return state;
-}
-
-void RunOnMainThreadSync(dispatch_block_t block) {
-    if (!block) {
-        return;
-    }
-    if ([NSThread isMainThread]) {
-        block();
-        return;
-    }
-    dispatch_sync(dispatch_get_main_queue(), block);
-}
-
-void RunOnMainThreadAsync(dispatch_block_t block) {
-    if (!block) {
-        return;
-    }
-    dispatch_async(dispatch_get_main_queue(), block);
 }
 
 std::string NormalizeHoldType(const std::string& effectType) {
@@ -191,21 +174,10 @@ void StartHoldPulseOverlayOnMain(
     const HoldStyle holdStyle = ResolveHoldStyle(holdType);
     const CGFloat size = 188.0;
     const NSRect frame = NSMakeRect(overlayPt.x - size * 0.5, overlayPt.y - size * 0.5, size, size);
-    NSWindow* window = [[NSWindow alloc] initWithContentRect:frame
-                                                    styleMask:NSWindowStyleMaskBorderless
-                                                      backing:NSBackingStoreBuffered
-                                                        defer:NO];
+    NSWindow* window = macos_overlay_support::CreateOverlayWindow(frame);
     if (window == nil) {
         return;
     }
-
-    [window setOpaque:NO];
-    [window setBackgroundColor:[NSColor clearColor]];
-    [window setHasShadow:NO];
-    [window setIgnoresMouseEvents:YES];
-    [window setLevel:NSStatusWindowLevel];
-    [window setCollectionBehavior:(NSWindowCollectionBehaviorCanJoinAllSpaces |
-                                   NSWindowCollectionBehaviorTransient)];
 
     NSView* content = [window contentView];
     [content setWantsLayer:YES];
@@ -332,7 +304,7 @@ void StartHoldPulseOverlay(
     const MouseButton buttonCopy = button;
     const std::string typeCopy = effectType;
     const std::string themeCopy = themeName;
-    RunOnMainThreadAsync(^{
+    macos_overlay_support::RunOnMainThreadAsync(^{
       StartHoldPulseOverlayOnMain(ptCopy, buttonCopy, typeCopy, themeCopy);
     });
 #endif
@@ -345,7 +317,7 @@ void UpdateHoldPulseOverlay(const ScreenPoint& overlayPt, uint32_t holdMs) {
     return;
 #else
     const ScreenPoint ptCopy = overlayPt;
-    RunOnMainThreadAsync(^{
+    macos_overlay_support::RunOnMainThreadAsync(^{
       UpdateHoldPulseOverlayOnMain(ptCopy, holdMs);
     });
 #endif
@@ -355,7 +327,7 @@ void StopHoldPulseOverlay() {
 #if !defined(__APPLE__)
     return;
 #else
-    RunOnMainThreadSync(^{
+    macos_overlay_support::RunOnMainThreadSync(^{
       CloseHoldPulseOverlayOnMain();
     });
 #endif
@@ -366,7 +338,7 @@ size_t GetActiveHoldPulseWindowCount() {
     return 0;
 #else
     __block size_t count = 0;
-    RunOnMainThreadSync(^{
+    macos_overlay_support::RunOnMainThreadSync(^{
       count = (State().window == nil) ? 0 : 1;
     });
     return count;

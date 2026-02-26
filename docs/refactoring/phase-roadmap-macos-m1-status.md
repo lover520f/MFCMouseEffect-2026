@@ -423,6 +423,7 @@
 - macOS effect runtime now covers click/trail/scroll/hold/hover categories with macOS-native visible implementations (GPU hold routes still excluded by scope), reducing platform capability drift against Windows baseline.
 - macOS effects runtime diagnostics and probe route now cover all 5 effect categories (`click/trail/scroll/hold/hover`) with shared counter arithmetic invariants, reducing blind spots in category-level overlay lifecycle regressions.
 - macOS effects probe now supports per-category type injection and regression runs exercise non-default type matrix, reducing false-green risk where only default visuals are validated.
+- macOS effect creation is now registry-based (replacing hardcoded `switch` wiring) and overlay renderer infrastructure now shares common main-thread/window helpers, reducing coupling and enabling plug-style effect extension without touching core factory branches.
 - Shared lock owner-pid read path now tolerates transient `owner.env` races, so concurrent gate waits degrade to normal lock waiting rather than shell parse failure.
 - WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
 - WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.
