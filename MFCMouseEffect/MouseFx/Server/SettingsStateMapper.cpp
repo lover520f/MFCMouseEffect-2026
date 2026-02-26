@@ -39,6 +39,10 @@ std::string BuildSettingsStateJson(const EffectConfig& cfg, const AppController*
     if (effectsRuntimeState.is_object() && !effectsRuntimeState.empty()) {
         out["effects_runtime"] = effectsRuntimeState;
     }
+    const json effectsProfileState = BuildEffectsProfileState(cfg);
+    if (effectsProfileState.is_object() && !effectsProfileState.empty()) {
+        out["effects_profile"] = effectsProfileState;
+    }
 
     const json inputCaptureState = BuildInputCaptureState(controller, effectiveLang);
     if (inputCaptureState.is_object() && !inputCaptureState.empty()) {

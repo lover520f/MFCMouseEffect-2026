@@ -60,6 +60,7 @@
   - AppController effect orchestration + VM suppression runtime (`SetEffect/ApplyConfiguredEffects/SetTheme/UpdateVmSuppressionState` etc.) is now isolated in `AppController.Effects.cpp`, with both CMake and Visual Studio build wiring updated to keep POSIX/Windows lanes aligned
   - AppController dispatch-state runtime helpers (`OnGlobalKey`, shortcut session lifecycle, hover/hold timers/state) are now isolated in `AppController.DispatchState.cpp`, with both CMake and Visual Studio build wiring updated to keep POSIX/Windows lanes aligned
   - macOS effect routing now covers click/trail/scroll/hold/hover categories (GPU hold routes remain excluded), with pluggable creator registry + shared overlay render support (`main-thread dispatch`/`window setup`) and config-driven render profile mapping (`EffectConfig -> mac click/trail/scroll/hold/hover profile`) to reduce renderer duplication and magic constants drift; test-gated `/api/effects/test-render-profiles` now exposes resolved profile contracts for regression; settings schema reports `capabilities.effects.trail/scroll/hold/hover=true` on macOS
+  - `/api/state` now exposes non-test diagnostics `effects_profile` (`active` + resolved click/trail/scroll/hold/hover profile fields), and core state regression asserts those fields to guard profile-mapping drift
   - macOS effect probe route now accepts per-category type arguments (`click/trail/scroll/hold/hover`), and core automation contracts exercise non-default type matrix (`text/electric/helix/hold_quantum_halo_gpu_v2/tubes`)
   - Linux compile gate now validates both default lane and core-runtime lane by default (`MFX_ENABLE_POSIX_CORE_RUNTIME=OFF/ON`) with optional fast-path skip flag
   - Phase 54 Linux follow scope is now explicitly closed for compile+contract boundary in `phase54i-linux-follow-phase-closure.md`
@@ -108,7 +109,6 @@
   - core regression entry scripts now share helperized workflow preparation and lock execution (`mfx_prepare_core_entry_runtime`, `mfx_run_with_entry_lock`)
   - wasm test-dispatch assertions in regression/manual selfchecks now use bounded retries to reduce transient invoke/render readiness flakiness
   - wasm test-dispatch checks now also assert diagnostics consistency against `/api/state` (`throttled total == capacity+interval`, and dispatch vs state counters/error snapshot match)
-  - scaffold HTTP entry lifecycle helpers are now split into `http_entry_helpers.sh`, keeping `http.sh` focused on route checks
   - core smoke entry lifecycle is now helperized in `core_smoke_entry_helpers.sh`, keeping `core_smoke.sh` focused on smoke flow
   - macOS global-input event mapping and permission-simulation parsing are now extracted to dedicated helper modules (`MacosInputEventUtils.*`, `MacosInputPermissionState.*`)
   - macOS `MacosGlobalInputHook` implementation is now split by responsibility (`MacosGlobalInputHook.mm`, `.EventTap.mm`, `.RunLoop.mm`) to lower file coupling without behavior changes

@@ -87,6 +87,7 @@ mfx_run_core_http_contract_checks() {
     fi
 
     _mfx_core_http_run_state_checks \
+        "$platform" \
         "$tmp_dir" \
         "$settings_url" \
         "$base_url" \

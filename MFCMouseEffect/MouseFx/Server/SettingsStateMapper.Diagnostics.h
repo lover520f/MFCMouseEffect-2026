@@ -16,6 +16,7 @@ nlohmann::json BuildGpuRouteNotice(
     const std::string& activeHoldType);
 nlohmann::json BuildWasmState(const EffectConfig& cfg, const AppController* controller);
 nlohmann::json BuildEffectsRuntimeState();
+nlohmann::json BuildEffectsProfileState(const EffectConfig& cfg);
 nlohmann::json BuildInputCaptureState(const AppController* controller, const std::string& lang);
 
 } // namespace mousefx

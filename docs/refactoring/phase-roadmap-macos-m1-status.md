@@ -426,6 +426,7 @@
 - macOS effect creation is now registry-based (replacing hardcoded `switch` wiring) and overlay renderer infrastructure now shares common main-thread/window helpers, reducing coupling and enabling plug-style effect extension without touching core factory branches.
 - macOS click/trail/scroll/hold/hover effects now consume config-driven render profiles (`EffectConfig -> MacosEffectRenderProfile`) and trail throttle mapping, reducing hardcoded timing/size drift and making cross-platform parameter alignment explicit.
 - core automation contracts now also probe `/api/effects/test-render-profiles`, locking click/trail/scroll/hold/hover resolved profile fields (`duration/size/throttle/progress`) as machine-checkable regression contracts.
+- `/api/state` now also includes `effects_profile` diagnostics (non-test route) and core state checks assert those profile fields, reducing hidden drift risk between runtime state and test-only probes.
 - Shared lock owner-pid read path now tolerates transient `owner.env` races, so concurrent gate waits degrade to normal lock waiting rather than shell parse failure.
 - WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
 - WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.
