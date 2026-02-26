@@ -140,7 +140,7 @@
   - macOS keyboard-injector resolver now splits non-modifier fallback chain into dedicated helper module (`MacosKeyboardInjectorKeyResolver.NonModifier.mm`), reducing resolver branching coupling while preserving key-resolution contracts
   - macOS virtual-key mapper now splits key-pair table ownership into dedicated module (`MacosVirtualKeyMapper.KeyPairs.mm`), reducing table-vs-entry coupling while preserving keycode normalization contracts
   - macOS global-input event-tap dispatch now splits tap-disabled recovery and mouse/key event dispatch into dedicated modules (`MacosGlobalInputHook.EventTapDispatch*.mm`), reducing input-ingress coupling while preserving dispatch semantics
-  - macOS foreground process service now splits process-name resolution helpers into dedicated module (`MacosForegroundProcessService.Resolve.mm`), reducing cache-policy vs resolve-path coupling while preserving app-scope matching contracts
+  - macOS OpenPanel folder picker now splits path/string helpers into dedicated module (`MacosOpenPanelFolderPicker.Paths.mm`), reducing picker-flow vs conversion/path coupling while preserving folder-pick contracts
   - macOS event-loop service now splits runloop resource lifecycle into dedicated module (`MacosEventLoopService.RunLoop.cpp`), reducing service-flow vs runloop-resource coupling while preserving shell event-loop contracts
   - `WasmEffectHost` invoke path is now isolated in `WasmEffectHost.Invoke.cpp`, reducing lifecycle-vs-invoke coupling while preserving host execution contracts
   - `AppController` VM suppression path is now isolated in `AppController.VmSuppression.cpp`, reducing suppression-vs-effects coupling while preserving suppression behavior contracts

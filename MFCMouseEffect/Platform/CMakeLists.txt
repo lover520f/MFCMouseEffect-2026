@@ -212,6 +212,7 @@ if(MFX_ENABLE_ENTRY_RUNTIME_TARGETS)
             "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosAppleScriptFolderPicker.Script.mm"
             "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosAppleScriptFolderPicker.StringUtils.mm"
             "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosNativeFolderPicker.mm"
+            "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosOpenPanelFolderPicker.Paths.mm"
             "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosOpenPanelFolderPicker.mm"
             "${MFX_PROJECT_ROOT}/Platform/PlatformBinaryResourceLoader.cpp"
             "${MFX_PROJECT_ROOT}/Platform/PlatformDisplayTopology.cpp"

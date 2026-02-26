@@ -343,6 +343,8 @@
   - 55zzzzv completed (acceptance): full POSIX regression suite remains green after foreground process resolve split.
   - 55zzzzw completed (code): split app-catalog bundle resolve helpers into dedicated module (`MacosApplicationCatalogScanWorkflow.BundleResolve.Helpers.mm`) and kept bundle-resolve file focused on entry orchestration.
   - 55zzzzw completed (acceptance): full POSIX regression suite remains green after app-catalog bundle resolve helper split.
+  - 55zzzzx completed (code): split OpenPanel folder-picker path/string helpers into dedicated module (`MacosOpenPanelFolderPicker.Paths.mm`) and kept picker file focused on modal interaction/result flow.
+  - 55zzzzx completed (acceptance): full POSIX regression suite remains green after OpenPanel path helper split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.

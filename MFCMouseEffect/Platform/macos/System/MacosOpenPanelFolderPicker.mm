@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "Platform/macos/System/MacosOpenPanelFolderPicker.Internal.h"
 #include "Platform/macos/System/MacosOpenPanelFolderPicker.h"
 
 #if defined(__APPLE__)
@@ -7,8 +8,6 @@
 #import <Foundation/Foundation.h>
 #import <dispatch/dispatch.h>
 #endif
-
-#include "MouseFx/Utils/StringUtils.h"
 
 #include <string>
 
@@ -27,28 +26,6 @@ public:
     ~ScopedModalDialogActivation() = default;
 };
 
-NSString* WideToNSString(const std::wstring& text) {
-    if (text.empty()) {
-        return nil;
-    }
-    const std::string utf8 = Utf16ToUtf8(text.c_str());
-    if (utf8.empty()) {
-        return nil;
-    }
-    return [NSString stringWithUTF8String:utf8.c_str()];
-}
-
-std::wstring NSStringToWide(NSString* text) {
-    if (text == nil || text.length == 0) {
-        return {};
-    }
-    const char* raw = [text UTF8String];
-    if (raw == nullptr || raw[0] == '\0') {
-        return {};
-    }
-    return Utf8ToWString(raw);
-}
-
 NativeFolderPickResult ExecuteOpenPanelOnMainThread(
     const std::wstring& title,
     const std::wstring& initialPath) {
@@ -66,17 +43,14 @@ NativeFolderPickResult ExecuteOpenPanelOnMainThread(
     panel.allowsMultipleSelection = NO;
     panel.resolvesAliases = YES;
 
-    NSString* titleText = WideToNSString(title);
+    NSString* titleText = open_panel_picker_detail::WideToNSString(title);
     if (titleText != nil && titleText.length > 0) {
         panel.message = titleText;
     }
 
-    NSString* initialPathText = WideToNSString(initialPath);
-    if (initialPathText != nil && initialPathText.length > 0) {
-        BOOL isDirectory = NO;
-        if ([[NSFileManager defaultManager] fileExistsAtPath:initialPathText isDirectory:&isDirectory] && isDirectory) {
-            panel.directoryURL = [NSURL fileURLWithPath:initialPathText isDirectory:YES];
-        }
+    NSURL* initialDirectoryUrl = open_panel_picker_detail::ResolveDirectoryUrlFromInitialPath(initialPath);
+    if (initialDirectoryUrl != nil) {
+        panel.directoryURL = initialDirectoryUrl;
     }
 
     const NSInteger resultCode = [panel runModal];
@@ -87,7 +61,7 @@ NativeFolderPickResult ExecuteOpenPanelOnMainThread(
             return out;
         }
         out.ok = true;
-        out.folderPath = NSStringToWide(selectedUrl.path);
+        out.folderPath = open_panel_picker_detail::NSStringToWide(selectedUrl.path);
         if (out.folderPath.empty()) {
             out.ok = false;
             out.error = "selected folder path missing";
