@@ -4,7 +4,6 @@
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "Platform/macos/Effects/MacosScrollPulseOverlayStyle.h"
 #include "Platform/macos/Effects/MacosScrollPulseWindowRegistry.h"
-#include "MouseFx/Utils/StringUtils.h"
 
 #if defined(__APPLE__)
 #import <AppKit/AppKit.h>
@@ -19,14 +18,6 @@ namespace mousefx::macos_scroll_pulse {
 
 #if defined(__APPLE__)
 namespace {
-
-std::string NormalizeScrollType(const std::string& effectType) {
-    const std::string value = ToLowerAscii(effectType);
-    if (value == "helix" || value == "twinkle") {
-        return value;
-    }
-    return "arrow";
-}
 
 void ShowScrollPulseOverlayOnMain(
     const ScreenPoint& overlayPt,

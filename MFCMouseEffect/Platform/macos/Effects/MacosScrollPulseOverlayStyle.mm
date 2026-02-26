@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Platform/macos/Effects/MacosScrollPulseOverlayStyle.h"
+#include "MouseFx/Utils/StringUtils.h"
 
 #if defined(__APPLE__)
 #import <AppKit/AppKit.h>
@@ -9,6 +10,14 @@
 namespace mousefx::macos_scroll_pulse {
 
 #if defined(__APPLE__)
+std::string NormalizeScrollType(const std::string& effectType) {
+    const std::string value = ToLowerAscii(effectType);
+    if (value == "helix" || value == "twinkle") {
+        return value;
+    }
+    return "arrow";
+}
+
 NSColor* ScrollPulseStrokeColor(bool horizontal, int delta) {
     if (horizontal) {
         return (delta >= 0)
