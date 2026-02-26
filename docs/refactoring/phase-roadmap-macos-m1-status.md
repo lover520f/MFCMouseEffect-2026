@@ -345,6 +345,8 @@
   - 55zzzzw completed (acceptance): full POSIX regression suite remains green after app-catalog bundle resolve helper split.
   - 55zzzzx completed (code): split OpenPanel folder-picker path/string helpers into dedicated module (`MacosOpenPanelFolderPicker.Paths.mm`) and kept picker file focused on modal interaction/result flow.
   - 55zzzzx completed (acceptance): full POSIX regression suite remains green after OpenPanel path helper split.
+  - 55zzzzy completed (code): split notification AppleScript escaping/exec and test-capture helpers into dedicated module (`MacosUserNotificationService.AppleScript.cpp`) and kept notification service file focused on warn entry semantics.
+  - 55zzzzy completed (acceptance): full POSIX regression suite remains green after notification AppleScript helper split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
