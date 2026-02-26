@@ -435,6 +435,7 @@
 - macOS scroll overlay renderer now delegates scroll-type normalization to `MacosScrollPulseOverlayStyle.*`, reducing renderer-file coupling while preserving scroll overlay runtime semantics.
 - macOS hover overlay renderer now delegates hover-type normalization and glow/tubes palette constants to `MacosHoverPulseOverlayStyle.*`, reducing renderer-file coupling while preserving hover overlay runtime semantics.
 - effects profile diagnostics assembly is now split into `SettingsStateMapper.EffectsProfileStateBuilder.*`, reducing diagnostics-file coupling while preserving `/api/state.effects_profile` schema semantics.
+- macOS effect profile resolution and state diagnostics are now multi-split by concern (`ClickTrail` + `ScrollHoldHover` + shared profile helper, plus dedicated wasm/input-capture diagnostics units), reducing monolithic-file change risk while preserving profile/diagnostics contracts.
 - Shared lock owner-pid read path now tolerates transient `owner.env` races, so concurrent gate waits degrade to normal lock waiting rather than shell parse failure.
 - WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
 - WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.

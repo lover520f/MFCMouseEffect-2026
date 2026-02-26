@@ -69,6 +69,7 @@
   - macOS scroll overlay renderer now delegates scroll-type normalization to `MacosScrollPulseOverlayStyle.*`, keeping `MacosScrollPulseOverlayRenderer.mm` lifecycle/animation-focused without changing public scroll overlay API contracts
   - macOS hover overlay renderer now delegates hover-type normalization and glow/tubes palette constants to `MacosHoverPulseOverlayStyle.*`, keeping `MacosHoverPulseOverlayRenderer.mm` lifecycle/animation-focused without changing public hover overlay API contracts
   - effects profile diagnostics assembly is now isolated in `SettingsStateMapper.EffectsProfileStateBuilder.*`, keeping `SettingsStateMapper.EffectsDiagnostics.cpp` focused on runtime counters and delegation while preserving `/api/state.effects_profile` contracts
+  - macOS effect profile resolution is now split by category (`MacosEffectRenderProfile.ClickTrail.cpp` + `MacosEffectRenderProfile.ScrollHoldHover.cpp` + shared helper header), and state diagnostics are now split by concern (`SettingsStateMapper.WasmDiagnostics.cpp` + `SettingsStateMapper.InputCaptureDiagnostics.cpp`), keeping contracts unchanged while reducing single-file coupling
   - macOS effect probe route now accepts per-category type arguments (`click/trail/scroll/hold/hover`), and core automation contracts exercise non-default type matrix (`text/electric/helix/hold_quantum_halo_gpu_v2/tubes`)
   - Linux compile gate now validates both default lane and core-runtime lane by default (`MFX_ENABLE_POSIX_CORE_RUNTIME=OFF/ON`) with optional fast-path skip flag
   - Phase 54 Linux follow scope is now explicitly closed for compile+contract boundary in `phase54i-linux-follow-phase-closure.md`
@@ -202,7 +203,6 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zze-macos-scroll-pulse-overlay-internals-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzf-macos-click-pulse-overlay-internals-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzg-macos-keyboard-injector-key-tables-split.md`
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzi-macos-effect-overlay-lifecycle-observability.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzp-wasm-fixture-helper-consolidation.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzq-webui-wasm-runtime-error-code-mapping.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzr-webui-wasm-error-i18n-parity-gate.md`
