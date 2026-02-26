@@ -227,6 +227,13 @@ json BuildEffectsProfileState(const EffectConfig& cfg) {
     const auto hoverProfile = macos_effect_profile::ResolveHoverRenderProfile(cfg);
 
     out["platform"] = "macos";
+    out["config_basis"] = {
+        {"ripple_duration_ms", cfg.ripple.durationMs},
+        {"ripple_window_size", cfg.ripple.windowSize},
+        {"text_duration_ms", cfg.textClick.durationMs},
+        {"trail_profile_duration_ms", cfg.GetTrailHistoryProfile(cfg.active.trail).durationMs},
+        {"trail_profile_max_points", cfg.GetTrailHistoryProfile(cfg.active.trail).maxPoints},
+    };
     out["click"] = {
         {"normal_size_px", clickProfile.normalSizePx},
         {"text_size_px", clickProfile.textSizePx},

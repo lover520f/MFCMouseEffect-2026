@@ -34,6 +34,9 @@ _mfx_core_http_run_state_checks() {
     mfx_assert_file_contains "$tmp_dir/state.out" "\"active\":{\"click\":" "core effects profile active selections"
     if [[ "$platform" == "macos" ]]; then
         mfx_assert_file_contains "$tmp_dir/state.out" "\"platform\":\"macos\"" "core effects profile platform macos"
+        mfx_assert_file_contains "$tmp_dir/state.out" "\"config_basis\":{" "core effects profile config basis section"
+        mfx_assert_file_contains "$tmp_dir/state.out" "\"ripple_duration_ms\":" "core effects profile config basis ripple duration"
+        mfx_assert_file_contains "$tmp_dir/state.out" "\"trail_profile_max_points\":" "core effects profile config basis trail max points"
         mfx_assert_file_contains "$tmp_dir/state.out" "\"click\":{" "core effects profile click section"
         mfx_assert_file_contains "$tmp_dir/state.out" "\"normal_size_px\":" "core effects profile click size field"
         mfx_assert_file_contains "$tmp_dir/state.out" "\"trail\":{" "core effects profile trail section"
