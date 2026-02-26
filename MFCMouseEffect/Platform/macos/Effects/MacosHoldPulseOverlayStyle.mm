@@ -19,7 +19,25 @@ std::string NormalizeHoldType(const std::string& effectType) {
     return value;
 }
 
+bool ContainsHoldToken(const std::string& holdType, const char* token) {
+    return holdType.find(token) != std::string::npos;
+}
+
 HoldStyle ResolveHoldStyle(const std::string& holdType) {
+    if (ContainsHoldToken(holdType, "hold_quantum_halo_gpu_v2") ||
+        ContainsHoldToken(holdType, "hold_neon3d_gpu_v2") ||
+        ContainsHoldToken(holdType, "quantum_halo")) {
+        return HoldStyle::QuantumHalo;
+    }
+    if (ContainsHoldToken(holdType, "hold_fluxfield_gpu_v2") ||
+        ContainsHoldToken(holdType, "hold_fluxfield_cpu") ||
+        ContainsHoldToken(holdType, "fluxfield") ||
+        ContainsHoldToken(holdType, "flux_field")) {
+        return HoldStyle::FluxField;
+    }
+    if (ContainsHoldToken(holdType, "scifi3d")) {
+        return HoldStyle::Hologram;
+    }
     if (holdType.find("lightning") != std::string::npos) {
         return HoldStyle::Lightning;
     }
@@ -34,12 +52,6 @@ HoldStyle ResolveHoldStyle(const std::string& holdType) {
     }
     if (holdType.find("neon") != std::string::npos) {
         return HoldStyle::Neon;
-    }
-    if (holdType.find("quantum_halo") != std::string::npos) {
-        return HoldStyle::QuantumHalo;
-    }
-    if (holdType.find("flux_field") != std::string::npos) {
-        return HoldStyle::FluxField;
     }
     return HoldStyle::Charge;
 }
