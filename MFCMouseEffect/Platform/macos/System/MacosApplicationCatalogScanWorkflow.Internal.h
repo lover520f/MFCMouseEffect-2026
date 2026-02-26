@@ -19,4 +19,8 @@ void ScanMacosApplicationCatalogRoot(
     std::vector<ApplicationCatalogEntry>* entries,
     std::unordered_map<std::string, size_t>* indexByProcess);
 
+void CollectMacosApplicationBundlePaths(
+    const MacosApplicationCatalogScanRoot& root,
+    std::vector<std::string>* bundlePaths);
+
 } // namespace mousefx::platform::macos::application_catalog_scan_detail

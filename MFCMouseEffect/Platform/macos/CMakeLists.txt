@@ -98,6 +98,7 @@ add_library(mfx_shell_macos STATIC
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosApplicationCatalogScanRoots.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosCursorPositionService.cpp"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosApplicationCatalogScanWorkflow.BundleResolve.mm"
+    "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosApplicationCatalogScanWorkflow.RootScan.Enumerate.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosApplicationCatalogScanWorkflow.RootScan.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosApplicationCatalogScanWorkflow.mm"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosForegroundProcessService.mm"
