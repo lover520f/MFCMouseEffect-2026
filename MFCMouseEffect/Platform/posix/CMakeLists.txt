@@ -4,6 +4,7 @@ endif()
 
 add_library(mfx_shell_posix_common STATIC
     "${MFX_PROJECT_ROOT}/Platform/posix/Shell/PosixBlockingEventLoop.cpp"
+    "${MFX_PROJECT_ROOT}/Platform/posix/Shell/PosixKeyValueCaptureFile.cpp"
     "${MFX_PROJECT_ROOT}/Platform/posix/Shell/PosixSettingsLauncher.Capture.cpp"
     "${MFX_PROJECT_ROOT}/Platform/posix/Shell/PosixSettingsLauncher.cpp"
     "${MFX_PROJECT_ROOT}/Platform/posix/Shell/PosixSettingsLauncher.Spawn.cpp"
