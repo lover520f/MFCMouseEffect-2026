@@ -333,6 +333,8 @@
   - 55zzzzq completed (acceptance): full POSIX regression suite remains green after input-permission parse split.
   - 55zzzzr completed (code): split event-loop runloop resource lifecycle into dedicated module (`MacosEventLoopService.RunLoop.cpp`) and kept main service file focused on high-level run/task flow.
   - 55zzzzr completed (acceptance): full POSIX regression suite remains green after event-loop runloop resource split.
+  - 55zzzzs completed (code): split tray menu factory internals into action-bridge and menu-item helper modules (`MacosTrayMenuFactory.ActionBridge.mm`, `MacosTrayMenuFactory.Items.mm`) and kept factory file focused on menu object assembly/release flow.
+  - 55zzzzs completed (acceptance): full POSIX regression suite remains green after tray menu factory split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.

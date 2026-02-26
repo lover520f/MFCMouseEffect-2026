@@ -10,11 +10,15 @@ set(MFX_MACOS_TRAY_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTraySer
 set(MFX_MACOS_TRAY_LOCALIZATION_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayMenuLocalization.cpp")
 set(MFX_MACOS_TRAY_RUNTIME_HELPERS_SOURCE "")
 set(MFX_MACOS_TRAY_MENU_FACTORY_SOURCE "")
+set(MFX_MACOS_TRAY_MENU_FACTORY_ACTION_BRIDGE_SOURCE "")
+set(MFX_MACOS_TRAY_MENU_FACTORY_ITEMS_SOURCE "")
 if(APPLE)
     set(MFX_MACOS_TRAY_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayService.mm")
     set(MFX_MACOS_TRAY_LOCALIZATION_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayMenuLocalization.mm")
     set(MFX_MACOS_TRAY_RUNTIME_HELPERS_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayRuntimeHelpers.mm")
     set(MFX_MACOS_TRAY_MENU_FACTORY_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayMenuFactory.mm")
+    set(MFX_MACOS_TRAY_MENU_FACTORY_ACTION_BRIDGE_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayMenuFactory.ActionBridge.mm")
+    set(MFX_MACOS_TRAY_MENU_FACTORY_ITEMS_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayMenuFactory.Items.mm")
 endif()
 
 add_library(mfx_shell_macos STATIC
@@ -85,6 +89,8 @@ add_library(mfx_shell_macos STATIC
     "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosSingleInstanceGuard.cpp"
     "${MFX_MACOS_TRAY_RUNTIME_HELPERS_SOURCE}"
     "${MFX_MACOS_TRAY_MENU_FACTORY_SOURCE}"
+    "${MFX_MACOS_TRAY_MENU_FACTORY_ACTION_BRIDGE_SOURCE}"
+    "${MFX_MACOS_TRAY_MENU_FACTORY_ITEMS_SOURCE}"
     "${MFX_MACOS_TRAY_LOCALIZATION_SOURCE}"
     "${MFX_MACOS_TRAY_SOURCE}"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosApplicationCatalogEntryStore.cpp"

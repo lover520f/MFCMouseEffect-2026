@@ -1,45 +1,9 @@
 #include "pch.h"
 
+#include "Platform/macos/Shell/MacosTrayMenuFactory.Internal.h"
 #include "Platform/macos/Shell/MacosTrayMenuFactory.h"
 
 #include "Platform/macos/Shell/MacosTrayRuntimeHelpers.h"
-
-@interface MfxMacTrayActionBridge : NSObject {
-@private
-    mousefx::IAppShellHost* host_;
-}
-
-- (instancetype)initWithHost:(mousefx::IAppShellHost*)host;
-- (void)onOpenSettings:(id)sender;
-- (void)onExit:(id)sender;
-
-@end
-
-@implementation MfxMacTrayActionBridge
-
-- (instancetype)initWithHost:(mousefx::IAppShellHost*)host {
-    self = [super init];
-    if (self != nil) {
-        host_ = host;
-    }
-    return self;
-}
-
-- (void)onOpenSettings:(id)sender {
-    (void)sender;
-    if (host_ != nullptr) {
-        host_->OpenSettingsFromShell();
-    }
-}
-
-- (void)onExit:(id)sender {
-    (void)sender;
-    if (host_ != nullptr) {
-        host_->RequestExitFromShell();
-    }
-}
-
-@end
 
 namespace mousefx::macos_tray {
 
@@ -60,7 +24,7 @@ bool BuildMacosTrayMenu(
     [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
 
     NSStatusItem* statusItem = [[[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength] retain];
-    MfxMacTrayActionBridge* actionBridge = [[MfxMacTrayActionBridge alloc] initWithHost:host];
+    id actionBridge = menu_factory_detail::CreateTrayActionBridge(host);
     NSMenu* menu = [[NSMenu alloc] initWithTitle:@"MFCMouseEffect"];
     if (statusItem == nil || actionBridge == nil || menu == nil) {
         if (menu != nil) {
@@ -76,30 +40,32 @@ bool BuildMacosTrayMenu(
         return false;
     }
 
-    NSMenuItem* settingsItem = [[NSMenuItem alloc] initWithTitle:settingsTitle
-                                                           action:@selector(onOpenSettings:)
-                                                    keyEquivalent:@","];
-    [settingsItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
-    [settingsItem setTarget:actionBridge];
+    NSMenuItem* settingsItem = menu_factory_detail::CreateSettingsMenuItem(actionBridge, settingsTitle);
+    if (settingsItem == nil) {
+        [menu release];
+        [actionBridge release];
+        [[NSStatusBar systemStatusBar] removeStatusItem:statusItem];
+        [statusItem release];
+        return false;
+    }
     [menu addItem:settingsItem];
     [settingsItem release];
 
     [menu addItem:[NSMenuItem separatorItem]];
 
-    NSMenuItem* exitItem = [[NSMenuItem alloc] initWithTitle:exitTitle
-                                                       action:@selector(onExit:)
-                                                keyEquivalent:@"q"];
-    [exitItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
-    [exitItem setTarget:actionBridge];
+    NSMenuItem* exitItem = menu_factory_detail::CreateExitMenuItem(actionBridge, exitTitle);
+    if (exitItem == nil) {
+        [menu release];
+        [actionBridge release];
+        [[NSStatusBar systemStatusBar] removeStatusItem:statusItem];
+        [statusItem release];
+        return false;
+    }
     [menu addItem:exitItem];
     [exitItem release];
 
     [statusItem setMenu:menu];
-    NSStatusBarButton* button = [statusItem button];
-    if (button != nil) {
-        [button setTitle:@"MFX"];
-        [button setToolTip:tooltip];
-    }
+    menu_factory_detail::ConfigureStatusButton(statusItem, tooltip);
 
     outObjects->statusItem = statusItem;
     outObjects->menu = menu;
