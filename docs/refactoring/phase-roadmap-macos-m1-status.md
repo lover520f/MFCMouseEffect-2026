@@ -375,6 +375,8 @@
   - 55zzzzam completed (acceptance): full POSIX regression suite remains green after macOS click overlay core split.
   - 55zzzzan completed (code): split `MacosScrollPulseOverlayRendererCore` into plan + layers/animation helper modules with orchestration-only entry, reducing scroll-effect render coupling without behavior changes.
   - 55zzzzan completed (acceptance): full POSIX regression suite remains green after macOS scroll overlay core split.
+  - 55zzzzao completed (code): split `MacosHoverPulseOverlayRendererCore` into plan + layers/animation helper modules with orchestration-only entry, reducing hover-effect render coupling without behavior changes.
+  - 55zzzzao completed (acceptance): full POSIX regression suite remains green after macOS hover overlay core split.
   - 55zzzzac completed (code): split WASM image overlay render-plan computation into dedicated module (`MacosWasmImageOverlayRendererCore.Plan.mm`) and kept core renderer file focused on rendering orchestration.
   - 55zzzzac completed (acceptance): full POSIX regression suite remains green after WASM image render-plan split.
 

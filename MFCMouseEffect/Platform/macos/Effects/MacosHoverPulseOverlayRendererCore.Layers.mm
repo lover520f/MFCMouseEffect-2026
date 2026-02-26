@@ -1,0 +1,40 @@
+#include "pch.h"
+
+#include "Platform/macos/Effects/MacosHoverPulseOverlayRendererCore.Internal.h"
+#include "Platform/macos/Effects/MacosHoverPulseOverlayStyle.h"
+
+#include <algorithm>
+
+namespace mousefx::macos_hover_pulse {
+
+#if defined(__APPLE__)
+void AddHoverExtraLayersAndAnimations(
+    NSView* content,
+    const HoverPulseRenderPlan& plan,
+    const macos_effect_profile::HoverRenderProfile& profile) {
+    if (!plan.tubesMode) {
+        return;
+    }
+
+    CAShapeLayer* ring2 = [CAShapeLayer layer];
+    ring2.frame = content.bounds;
+    CGPathRef ring2Path = CGPathCreateWithEllipseInRect(CGRectInset(content.bounds, 34.0, 34.0), nullptr);
+    ring2.path = ring2Path;
+    CGPathRelease(ring2Path);
+    ring2.fillColor = [NSColor clearColor].CGColor;
+    ring2.strokeColor = HoverTubesStrokeColor().CGColor;
+    ring2.lineWidth = 1.8;
+    ring2.opacity = static_cast<float>(std::max(0.1, profile.baseOpacity - 0.05));
+    [content.layer addSublayer:ring2];
+
+    CABasicAnimation* spin = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
+    spin.fromValue = @0.0;
+    spin.toValue = @(M_PI * 2.0);
+    spin.duration = profile.spinDurationSec;
+    spin.repeatCount = HUGE_VALF;
+    [ring2 addAnimation:spin forKey:@"mfx_hover_spin"];
+}
+
+#endif
+
+} // namespace mousefx::macos_hover_pulse

@@ -88,7 +88,7 @@ Use it as a pointer index, not a full historical catalog.
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzzal-macos-wasm-text-overlay-layout-style-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzzae-posix-shell-exit-command-and-scaffold-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzzaf-scaffold-settings-api-and-routecodec-split.md`
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzzag-scaffold-request-handler-routing-split.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzzao-macos-hover-overlay-core-plan-layers-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzza-macos-wasm-overlay-render-math-consolidation.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzzb-macos-wasm-command-render-dispatch-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzzc-macos-keyboard-injector-keytables-responsibility-split.md`
