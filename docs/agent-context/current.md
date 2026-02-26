@@ -121,7 +121,7 @@
   - macOS wasm overlay runtime now isolates state internals (`MacosWasmOverlayState.*`) while `MacosWasmOverlayRuntime.mm` remains API/main-thread facade
   - macOS scroll pulse overlay internals now isolate style and window-registry logic (`MacosScrollPulseOverlayStyle.*`, `MacosScrollPulseWindowRegistry.*`) while `MacosScrollPulseOverlayRenderer.mm` remains render/animation facade
   - macOS click pulse overlay internals now isolate style/renderer/window-registry modules (`MacosClickPulseOverlayStyle.*`, `MacosClickPulseOverlayRenderer.*`, `MacosClickPulseWindowRegistry.*`) while `MacosClickPulseEffect.mm` remains lifecycle/event-entry facade
-  - macOS effect overlay lifecycle now exposes active-window diagnostics (`/api/state.effects_runtime`) with script-level emit/restore probe coverage (`/api/effects/test-overlay-windows`)
+  - macOS effect overlay lifecycle now exposes 5-category active-window diagnostics (`click/trail/scroll/hold/hover`) in `/api/state.effects_runtime`, and probe coverage (`/api/effects/test-overlay-windows`) now exercises all 5 categories with persistent-overlay close control
   - effect overlay probe contracts now assert counter arithmetic from raw fields (`before/after total == click + scroll`), not only route-local invariant booleans
 
 ## Known Stable Gates

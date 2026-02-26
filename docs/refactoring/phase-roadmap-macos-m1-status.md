@@ -293,6 +293,8 @@
   - 55zzza completed (acceptance): full POSIX regression suite remains green after core smoke helper split.
   - 55zzzb completed (code): expanded macOS effect routing to click/trail/scroll/hold/hover and added macOS-native trail/hover/hold effect implementations with type-aware click/scroll rendering.
   - 55zzzb completed (acceptance): full POSIX regression suite remains green after macOS effects category-parity baseline expansion.
+  - 55zzzc completed (code): expanded macOS effects runtime diagnostics and effect-overlay test probe to include trail/hold/hover counters and emit paths, while preserving click/scroll compatibility fields.
+  - 55zzzc completed (acceptance): core automation contract gate and full POSIX regression suite remain green after effects-runtime probe expansion.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
@@ -417,6 +419,7 @@
 - Scaffold HTTP entry lifecycle helpers are now split into `http_entry_helpers.sh`, keeping route checks in `http.sh` focused and easier to extend.
 - Core smoke entry lifecycle helpers are now split into `core_smoke_entry_helpers.sh`, keeping smoke flow in `core_smoke.sh` focused and easier to extend.
 - macOS effect runtime now covers click/trail/scroll/hold/hover categories with macOS-native visible implementations (GPU hold routes still excluded by scope), reducing platform capability drift against Windows baseline.
+- macOS effects runtime diagnostics and probe route now cover all 5 effect categories (`click/trail/scroll/hold/hover`) with shared counter arithmetic invariants, reducing blind spots in category-level overlay lifecycle regressions.
 - Shared lock owner-pid read path now tolerates transient `owner.env` races, so concurrent gate waits degrade to normal lock waiting rather than shell parse failure.
 - WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
 - WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.

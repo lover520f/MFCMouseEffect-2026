@@ -88,7 +88,10 @@ void AppendSettingsSchemaCapabilitiesSections(const EffectConfig& /*config*/, js
     (*out)["effects_runtime"] = {
         {"diagnostic_keys", json::array({
             "click_active_overlay_windows",
+            "trail_active_overlay_windows",
             "scroll_active_overlay_windows",
+            "hold_active_overlay_windows",
+            "hover_active_overlay_windows",
             "active_overlay_windows_total"
         })}
     };

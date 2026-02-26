@@ -13,7 +13,7 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         -X POST \
         -H "x-mfcmouseeffect-token: $token" \
         -H "Content-Type: application/json" \
-        -d '{"emit_click":true,"emit_scroll":true,"wait_ms":80,"wait_for_clear_ms":1600}')"
+        -d '{"emit_click":true,"emit_trail":true,"emit_scroll":true,"emit_hold":true,"emit_hover":true,"close_persistent":true,"wait_ms":80,"wait_for_clear_ms":1600}')"
     mfx_assert_eq "$code_effect_overlay_probe" "200" "core effect overlay probe status"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"ok\":true" "core effect overlay probe ok"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"before\":" "core effect overlay probe before snapshot"
@@ -23,24 +23,36 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"restored_to_baseline\":true" "core effect overlay probe restore baseline"
 
     local before_click_count
+    local before_trail_count
     local before_scroll_count
+    local before_hold_count
+    local before_hover_count
     local before_total_count
     local after_click_count
+    local after_trail_count
     local after_scroll_count
+    local after_hold_count
+    local after_hover_count
     local after_total_count
     before_click_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-probe.out" "before_click_active_overlay_windows")"
+    before_trail_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-probe.out" "before_trail_active_overlay_windows")"
     before_scroll_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-probe.out" "before_scroll_active_overlay_windows")"
+    before_hold_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-probe.out" "before_hold_active_overlay_windows")"
+    before_hover_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-probe.out" "before_hover_active_overlay_windows")"
     before_total_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-probe.out" "before_active_overlay_windows_total")"
     after_click_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-probe.out" "after_click_active_overlay_windows")"
+    after_trail_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-probe.out" "after_trail_active_overlay_windows")"
     after_scroll_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-probe.out" "after_scroll_active_overlay_windows")"
+    after_hold_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-probe.out" "after_hold_active_overlay_windows")"
+    after_hover_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-probe.out" "after_hover_active_overlay_windows")"
     after_total_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-probe.out" "after_active_overlay_windows_total")"
 
-    if [[ -z "$before_click_count" || -z "$before_scroll_count" || -z "$before_total_count" || -z "$after_click_count" || -z "$after_scroll_count" || -z "$after_total_count" ]]; then
+    if [[ -z "$before_click_count" || -z "$before_trail_count" || -z "$before_scroll_count" || -z "$before_hold_count" || -z "$before_hover_count" || -z "$before_total_count" || -z "$after_click_count" || -z "$after_trail_count" || -z "$after_scroll_count" || -z "$after_hold_count" || -z "$after_hover_count" || -z "$after_total_count" ]]; then
         mfx_fail "core effect overlay probe count parse failed"
     fi
 
-    local before_sum=$((before_click_count + before_scroll_count))
-    local after_sum=$((after_click_count + after_scroll_count))
+    local before_sum=$((before_click_count + before_trail_count + before_scroll_count + before_hold_count + before_hover_count))
+    local after_sum=$((after_click_count + after_trail_count + after_scroll_count + after_hold_count + after_hover_count))
     if (( before_sum != before_total_count )); then
         mfx_fail "core effect overlay probe before count mismatch: total=$before_total_count sum=$before_sum"
     fi

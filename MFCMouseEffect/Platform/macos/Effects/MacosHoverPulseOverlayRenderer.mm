@@ -159,4 +159,16 @@ void CloseHoverPulseOverlay() {
 #endif
 }
 
+size_t GetActiveHoverPulseWindowCount() {
+#if !defined(__APPLE__)
+    return 0;
+#else
+    __block size_t count = 0;
+    RunOnMainThreadSync(^{
+      count = (ActiveHoverWindow() == nil) ? 0 : 1;
+    });
+    return count;
+#endif
+}
+
 } // namespace mousefx::macos_hover_pulse

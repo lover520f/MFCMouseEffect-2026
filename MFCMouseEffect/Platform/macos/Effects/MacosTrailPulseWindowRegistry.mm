@@ -79,4 +79,13 @@ void CloseAllTrailPulseWindowsNow() {
 #endif
 }
 
+size_t GetActiveTrailPulseWindowCount() {
+#if !defined(__APPLE__)
+    return 0;
+#else
+    std::lock_guard<std::mutex> lock(TrailWindowMutex());
+    return TrailWindows().size();
+#endif
+}
+
 } // namespace mousefx::macos_trail_pulse

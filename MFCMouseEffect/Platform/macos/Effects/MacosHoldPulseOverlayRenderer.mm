@@ -290,4 +290,16 @@ void StopHoldPulseOverlay() {
 #endif
 }
 
+size_t GetActiveHoldPulseWindowCount() {
+#if !defined(__APPLE__)
+    return 0;
+#else
+    __block size_t count = 0;
+    RunOnMainThreadSync(^{
+      count = (State().window == nil) ? 0 : 1;
+    });
+    return count;
+#endif
+}
+
 } // namespace mousefx::macos_hold_pulse

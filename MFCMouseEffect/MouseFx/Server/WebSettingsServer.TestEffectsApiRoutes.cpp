@@ -14,8 +14,12 @@
 #if MFX_PLATFORM_MACOS
 #include "Platform/macos/Effects/MacosClickPulseOverlayRenderer.h"
 #include "Platform/macos/Effects/MacosClickPulseWindowRegistry.h"
+#include "Platform/macos/Effects/MacosHoldPulseOverlayRenderer.h"
+#include "Platform/macos/Effects/MacosHoverPulseOverlayRenderer.h"
 #include "Platform/macos/Effects/MacosScrollPulseOverlayRenderer.h"
 #include "Platform/macos/Effects/MacosScrollPulseWindowRegistry.h"
+#include "Platform/macos/Effects/MacosTrailPulseOverlayRenderer.h"
+#include "Platform/macos/Effects/MacosTrailPulseWindowRegistry.h"
 #endif
 
 using json = nlohmann::json;
@@ -37,20 +41,26 @@ bool IsEffectOverlayTestApiEnabled() {
 
 struct OverlayWindowCounts final {
     size_t click = 0;
+    size_t trail = 0;
     size_t scroll = 0;
+    size_t hold = 0;
+    size_t hover = 0;
 
     size_t Total() const {
-        return click + scroll;
+        return click + trail + scroll + hold + hover;
     }
 
     bool InvariantOk() const {
-        return Total() == (click + scroll);
+        return Total() == (click + trail + scroll + hold + hover);
     }
 
     json ToJson() const {
         return json{
             {"click_active_overlay_windows", click},
+            {"trail_active_overlay_windows", trail},
             {"scroll_active_overlay_windows", scroll},
+            {"hold_active_overlay_windows", hold},
+            {"hover_active_overlay_windows", hover},
             {"active_overlay_windows_total", Total()},
         };
     }
@@ -60,7 +70,10 @@ OverlayWindowCounts ReadOverlayWindowCounts() {
     OverlayWindowCounts out{};
 #if MFX_PLATFORM_MACOS
     out.click = macos_click_pulse::GetActiveClickPulseWindowCount();
+    out.trail = macos_trail_pulse::GetActiveTrailPulseWindowCount();
     out.scroll = macos_scroll_pulse::GetActiveScrollPulseWindowCount();
+    out.hold = macos_hold_pulse::GetActiveHoldPulseWindowCount();
+    out.hover = macos_hover_pulse::GetActiveHoverPulseWindowCount();
 #endif
     return out;
 }
@@ -91,7 +104,11 @@ bool HandleWebSettingsTestEffectsApiRoute(
 
         const json payload = ParseObjectOrEmpty(req.body);
         const bool emitClick = ParseBooleanOrDefault(payload, "emit_click", false);
+        const bool emitTrail = ParseBooleanOrDefault(payload, "emit_trail", false);
         const bool emitScroll = ParseBooleanOrDefault(payload, "emit_scroll", false);
+        const bool emitHold = ParseBooleanOrDefault(payload, "emit_hold", false);
+        const bool emitHover = ParseBooleanOrDefault(payload, "emit_hover", false);
+        const bool closePersistent = ParseBooleanOrDefault(payload, "close_persistent", true);
         const bool scrollHorizontal = ParseBooleanOrDefault(payload, "scroll_horizontal", false);
         const int32_t x = ParseInt32OrDefault(payload, "x", 640);
         const int32_t y = ParseInt32OrDefault(payload, "y", 360);
@@ -110,14 +127,35 @@ bool HandleWebSettingsTestEffectsApiRoute(
         if (emitClick) {
             macos_click_pulse::ShowClickPulseOverlay(overlayPoint, ParseMouseButton(button), "ripple", "");
         }
+        if (emitTrail) {
+            macos_trail_pulse::ShowTrailPulseOverlay(overlayPoint, 20.0, 10.0, "line", "");
+        }
         if (emitScroll) {
             macos_scroll_pulse::ShowScrollPulseOverlay(overlayPoint, scrollHorizontal, scrollDelta, "arrow", "");
+        }
+        if (emitHold) {
+            macos_hold_pulse::StartHoldPulseOverlay(overlayPoint, ParseMouseButton(button), "charge", "");
+            macos_hold_pulse::UpdateHoldPulseOverlay(overlayPoint, 280);
+        }
+        if (emitHover) {
+            macos_hover_pulse::ShowHoverPulseOverlay(overlayPoint, "glow", "");
         }
 #endif
 
         if (waitMs > 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(waitMs));
         }
+
+#if MFX_PLATFORM_MACOS
+        if (closePersistent) {
+            if (emitHold) {
+                macos_hold_pulse::StopHoldPulseOverlay();
+            }
+            if (emitHover) {
+                macos_hover_pulse::CloseHoverPulseOverlay();
+            }
+        }
+#endif
 
         OverlayWindowCounts after = ReadOverlayWindowCounts();
         if (waitForClearMs > 0) {
@@ -135,16 +173,26 @@ bool HandleWebSettingsTestEffectsApiRoute(
             {"ok", true},
             {"supported", MFX_PLATFORM_MACOS ? true : false},
             {"emit_click", emitClick},
+            {"emit_trail", emitTrail},
             {"emit_scroll", emitScroll},
+            {"emit_hold", emitHold},
+            {"emit_hover", emitHover},
+            {"close_persistent", closePersistent},
             {"wait_ms", waitMs},
             {"wait_for_clear_ms", waitForClearMs},
             {"before", before.ToJson()},
             {"after", after.ToJson()},
             {"before_click_active_overlay_windows", before.click},
+            {"before_trail_active_overlay_windows", before.trail},
             {"before_scroll_active_overlay_windows", before.scroll},
+            {"before_hold_active_overlay_windows", before.hold},
+            {"before_hover_active_overlay_windows", before.hover},
             {"before_active_overlay_windows_total", before.Total()},
             {"after_click_active_overlay_windows", after.click},
+            {"after_trail_active_overlay_windows", after.trail},
             {"after_scroll_active_overlay_windows", after.scroll},
+            {"after_hold_active_overlay_windows", after.hold},
+            {"after_hover_active_overlay_windows", after.hover},
             {"after_active_overlay_windows_total", after.Total()},
             {"before_total_matches_components", before.InvariantOk()},
             {"after_total_matches_components", after.InvariantOk()},
