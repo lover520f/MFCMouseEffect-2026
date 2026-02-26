@@ -105,7 +105,7 @@
   - core HTTP automation contract checks are now split by scenario (basic/app-scope/priority/match-inject/shortcut/indicator/effects/platform) with `core_http_automation_contract_checks.sh` as orchestrator
   - core HTTP orchestrator is now helper-split (probe/entry/state checks) with `core_http.sh` as the top-level workflow
   - core HTTP regression now supports scoped checks (`all` default, `wasm` focused) so WASM closure can run a dedicated gate without full automation/input contracts
-  - `CommandHandler` apply-settings path is now split by responsibility (`entry` vs `visual/effects` vs `automation/wasm`), reducing cross-domain coupling while preserving settings payload behavior contracts
+  - WASM plugin transfer service is now split by responsibility (`Common` helpers + `Import` flow + `Export` flow + thin delegator entry), reducing transfer-path coupling while preserving import/export error-code contracts
   - macOS WASM selfcheck now also covers transfer/error-code contracts (`catalog`, folder-dialog probe, import-selected success/failure codes, export-all consistency) in the same one-command flow
   - core HTTP WASM contract execution is now isolated in `tools/platform/regression/lib/core_http_wasm_contract_checks.sh`, and `core_http.sh` now focuses on lifecycle + non-WASM orchestration boundaries
   - core HTTP non-WASM contracts are now isolated in `tools/platform/regression/lib/core_http_input_contract_checks.sh` and `tools/platform/regression/lib/core_http_automation_contract_checks.sh`, and input-capture helpers are split by concern (parse/permission/notification/state/steps) to reduce cross-domain coupling in `core_http.sh`
