@@ -158,6 +158,8 @@ if(MFX_ENABLE_ENTRY_RUNTIME_TARGETS)
         "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsRequestHandler.Static.cpp"
         "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsRouteCodec.cpp"
         "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsRouteConfig.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsRouteConfig.Loopback.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsRouteConfig.PathQuery.cpp"
         "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsRuntime.cpp"
         "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsRuntime.Start.cpp"
         "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsWebUiAssets.ContentType.cpp"

@@ -365,6 +365,8 @@
   - 55zzzzah completed (acceptance): full POSIX regression suite remains green after launcher/runtime split.
   - 55zzzzai completed (code): split `ScaffoldSettingsWebUiAssets` into dedicated path/content-type helper modules and kept loader flow in entry module, reducing static-asset coupling.
   - 55zzzzai completed (acceptance): full POSIX regression suite remains green after scaffold WebUI assets split.
+  - 55zzzzaj completed (code): split `ScaffoldSettingsRouteConfig` into route-bootstrap entry + loopback parser + path/query helper modules, reducing settings-route parsing coupling.
+  - 55zzzzaj completed (acceptance): full POSIX regression suite remains green after route-config split.
   - 55zzzzac completed (code): split WASM image overlay render-plan computation into dedicated module (`MacosWasmImageOverlayRendererCore.Plan.mm`) and kept core renderer file focused on rendering orchestration.
   - 55zzzzac completed (acceptance): full POSIX regression suite remains green after WASM image render-plan split.
 
