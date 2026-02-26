@@ -160,6 +160,8 @@ if(MFX_ENABLE_ENTRY_RUNTIME_TARGETS)
         "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsRouteConfig.cpp"
         "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsRuntime.cpp"
         "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsRuntime.Start.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsWebUiAssets.ContentType.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsWebUiAssets.Path.cpp"
         "${MFX_PROJECT_ROOT}/Platform/posix/Shell/ScaffoldSettingsWebUiAssets.cpp"
         "${MFX_PROJECT_ROOT}/MouseFx/Server/HttpServer.cpp"
         "${MFX_PROJECT_ROOT}/MouseFx/Server/HttpServer.ClientSession.cpp"

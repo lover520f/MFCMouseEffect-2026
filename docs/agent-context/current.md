@@ -123,7 +123,7 @@
   - WASM plugin manifest path is now split into `Load` and `Validate` units (`WasmPluginManifest.Load.cpp`, `WasmPluginManifest.Validate.cpp`), reducing parse-vs-rule coupling while preserving manifest contracts
   - macOS `MacosGlobalInputHook` implementation is now split by responsibility (`MacosGlobalInputHook.mm`, `.EventTap.mm`, `.RunLoop.mm`) to lower file coupling without behavior changes
   - macOS input-indicator overlay path is now split into render/lifecycle (`MacosInputIndicatorOverlay.mm`), probe/event-entry (`MacosInputIndicatorOverlay.Probes.mm`), and shared internals (`MacosInputIndicatorOverlayInternals.*`)
-  - `SettingsRequestHandler` is now split by concern (`entry/auth` + `API routes` + `static routes`), reducing scaffold settings route coupling while preserving token/auth and route semantics
+  - `ScaffoldSettingsWebUiAssets` is now split by concern (`path normalization/safety` + `content-type` + loader flow), reducing static-resource coupling while preserving WebUI route behavior
   - macOS wasm text/image overlays now share render math boundary (`MacosWasmOverlayRenderMath.*`) for clamp/color/lifetime rules, reducing duplicated tuning logic while preserving overlay behavior contracts
   - macOS wasm command dispatch is now split into entry + text + image/affine handlers (`MacosWasmCommandRenderDispatch.mm`, `.Text.mm`, `.Image.mm`) with shared internal contract, reducing single-file command-path coupling while preserving runtime behavior contracts
   - macOS keyboard injector key tables are now split by mapping domain (`Printable`, `Function`, `Special`, `Modifier`) and no longer share one monolithic implementation file, reducing shortcut-mapping change blast radius
