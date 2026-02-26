@@ -319,6 +319,8 @@
   - 55zzzzj completed (acceptance): full POSIX regression suite remains green after scroll-overlay support split.
   - 55zzzzk completed (code): split input-indicator probe helper responsibilities into dedicated probe-helper module (`MacosInputIndicatorOverlay.ProbeHelpers.mm`) and kept probe entry file focused on scenario orchestration.
   - 55zzzzk completed (acceptance): full POSIX regression suite remains green after input-indicator probe helper split.
+  - 55zzzzl completed (code): split overlay coordinate conversion internals into dedicated module (`MacosOverlayCoordSpaceConversion.*`) and kept `MacosOverlayCoordSpaceService` focused on origin state/service API.
+  - 55zzzzl completed (acceptance): full POSIX regression suite remains green after overlay-coordinate conversion split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
