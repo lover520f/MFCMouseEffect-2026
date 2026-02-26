@@ -274,6 +274,8 @@ if(MFX_ENABLE_ENTRY_RUNTIME_TARGETS)
             "${MFX_PROJECT_ROOT}/MouseFx/Core/Wasm/WasmPluginTransferService.Export.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Core/Wasm/WasmPluginTransferService.Import.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Core/Wasm/WasmPluginTransferService.cpp"
+            "${MFX_PROJECT_ROOT}/MouseFx/Core/Wasm/Wasm3Runtime.Calls.cpp"
+            "${MFX_PROJECT_ROOT}/MouseFx/Core/Wasm/Wasm3Runtime.Linking.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Core/Wasm/Wasm3Runtime.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Core/Wasm/WasmRuntimeFactory.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Effects/HoldRouteCatalog.cpp"

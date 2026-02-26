@@ -84,6 +84,7 @@
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzs-macos-wasm-overlay-state-internals-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzt-wasm-plugin-transfer-service-responsibility-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzu-wasm-plugin-manifest-load-validate-split.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzv-wasm3-runtime-responsibility-split.md`
   - 完整 hardening 流水（`55h-55zzx`）见：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
 
 ## 定向检索命令

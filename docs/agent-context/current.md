@@ -121,7 +121,7 @@
   - wasm test-dispatch assertions in regression/manual selfchecks now use bounded retries to reduce transient invoke/render readiness flakiness
   - wasm test-dispatch checks now also assert diagnostics consistency against `/api/state` (`throttled total == capacity+interval`, and dispatch vs state counters/error snapshot match)
   - WASM plugin manifest path is now split into `Load` and `Validate` units (`WasmPluginManifest.Load.cpp`, `WasmPluginManifest.Validate.cpp`), reducing parse-vs-rule coupling while preserving manifest contracts
-  - macOS WASM overlay state is now split into state operations and storage internals (`MacosWasmOverlayState.mm` + `MacosWasmOverlayState.Internals.*`), reducing state-path coupling while preserving admission/throttle behavior contracts
+  - `Wasm3Runtime` is now split by responsibility (`Wasm3Runtime.cpp`, `Wasm3Runtime.Calls.cpp`, `Wasm3Runtime.Linking.cpp`) with shared internal helper boundary, reducing runtime-path coupling while preserving load/call/link contracts
   - macOS `MacosGlobalInputHook` implementation is now split by responsibility (`MacosGlobalInputHook.mm`, `.EventTap.mm`, `.RunLoop.mm`) to lower file coupling without behavior changes
   - macOS input-indicator overlay path is now split into render/lifecycle (`MacosInputIndicatorOverlay.mm`), probe/event-entry (`MacosInputIndicatorOverlay.Probes.mm`), and shared internals (`MacosInputIndicatorOverlayInternals.*`)
   - macOS keyboard injection path now isolates resolver orchestration (`MacosKeyboardInjectorKeyResolver.*`) and vk->mac key tables (`MacosKeyboardInjectorKeyTables.*`) from event-post execution flow (`MacosKeyboardInjector.mm`)
