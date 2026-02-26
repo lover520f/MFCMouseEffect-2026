@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Platform/posix/Shell/PosixCoreAppShell.h"
+#include "Platform/posix/Shell/PosixScaffoldAppShell.h"
 
 #if MFX_PLATFORM_MACOS || MFX_PLATFORM_LINUX
 
@@ -12,7 +12,7 @@
 
 namespace mousefx::platform {
 
-void PosixCoreAppShell::StartStdinExitMonitor() {
+void PosixScaffoldAppShell::StartStdinExitMonitor() {
     if (stdinMonitorStarted_) {
         return;
     }
