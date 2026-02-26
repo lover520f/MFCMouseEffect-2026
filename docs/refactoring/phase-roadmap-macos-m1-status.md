@@ -353,6 +353,8 @@
   - 55zzzzaa completed (acceptance): full POSIX regression suite remains green after keyboard-injector event-post split.
   - 55zzzzab completed (code): split WASM overlay admission/reset internals into dedicated module (`MacosWasmOverlayState.Admission.mm`) and kept overlay-state file focused on API wrappers.
   - 55zzzzab completed (acceptance): full POSIX regression suite remains green after WASM overlay admission helper split.
+  - 55zzzzad completed (code): split `PosixCoreAppShell` into `Actions`/`Probe`/`Stdin` modules and kept lifecycle/startup in entry file, reducing shell orchestration coupling without behavior changes.
+  - 55zzzzad completed (acceptance): full POSIX regression suite remains green after shell responsibility split (macOS scaffold/core/automation/wasm + Linux compile gate + WebUI semantic tests).
   - 55zzzzac completed (code): split WASM image overlay render-plan computation into dedicated module (`MacosWasmImageOverlayRendererCore.Plan.mm`) and kept core renderer file focused on rendering orchestration.
   - 55zzzzac completed (acceptance): full POSIX regression suite remains green after WASM image render-plan split.
 
