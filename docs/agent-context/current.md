@@ -65,6 +65,7 @@
   - test-only effects routes are now split by capability (`WebSettingsServer.TestEffectsProfileApiRoute.*` + `WebSettingsServer.TestEffectsOverlayApiRoute.*`) with `WebSettingsServer.TestEffectsApiRoutes.cpp` as delegator, reducing route-level coupling while preserving `/api/effects/test-render-profiles` and `/api/effects/test-overlay-windows` contracts
   - macOS hold overlay renderer now delegates hold-style normalization/color/path-accent construction to `MacosHoldPulseOverlayStyle.*`, keeping `MacosHoldPulseOverlayRenderer.mm` lifecycle/state-focused without changing public hold overlay API contracts
   - macOS trail overlay renderer now delegates trail-style normalization/color/path construction to `MacosTrailPulseOverlayStyle.*`, keeping `MacosTrailPulseOverlayRenderer.mm` lifecycle/animation-focused without changing public trail overlay API contracts
+  - macOS click overlay renderer now delegates click-type normalization/star-path construction to `MacosClickPulseOverlayStyle.*`, keeping `MacosClickPulseOverlayRenderer.mm` lifecycle/animation-focused without changing public click overlay API contracts
   - macOS effect probe route now accepts per-category type arguments (`click/trail/scroll/hold/hover`), and core automation contracts exercise non-default type matrix (`text/electric/helix/hold_quantum_halo_gpu_v2/tubes`)
   - Linux compile gate now validates both default lane and core-runtime lane by default (`MFX_ENABLE_POSIX_CORE_RUNTIME=OFF/ON`) with optional fast-path skip flag
   - Phase 54 Linux follow scope is now explicitly closed for compile+contract boundary in `phase54i-linux-follow-phase-closure.md`
@@ -202,7 +203,6 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzi-macos-effect-overlay-lifecycle-observability.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzj-effect-overlay-probe-arithmetic-hardening.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzk-automation-shortcut-invalid-keycode-contract.md`
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzl-wasm-runtime-action-error-code-contract.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzp-wasm-fixture-helper-consolidation.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzq-webui-wasm-runtime-error-code-mapping.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzr-webui-wasm-error-i18n-parity-gate.md`

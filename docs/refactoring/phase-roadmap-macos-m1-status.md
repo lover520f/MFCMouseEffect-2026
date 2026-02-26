@@ -431,6 +431,7 @@
 - WebSettings test-only effects routes are now split into profile/overlay modules with delegating entry (`WebSettingsServer.TestEffectsApiRoutes.cpp`), reducing route coupling while preserving test-route contracts.
 - macOS hold overlay renderer now splits style parsing/color/path-accent construction into `MacosHoldPulseOverlayStyle.*`, reducing renderer-file coupling while preserving hold overlay runtime semantics.
 - macOS trail overlay renderer now splits trail-style normalization/color/path construction into `MacosTrailPulseOverlayStyle.*`, reducing renderer-file coupling while preserving trail overlay runtime semantics.
+- macOS click overlay renderer now delegates click-type normalization/star-path construction to `MacosClickPulseOverlayStyle.*`, reducing renderer-file coupling while preserving click overlay runtime semantics.
 - Shared lock owner-pid read path now tolerates transient `owner.env` races, so concurrent gate waits degrade to normal lock waiting rather than shell parse failure.
 - WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
 - WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.

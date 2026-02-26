@@ -71,6 +71,7 @@
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzf-websettings-test-effects-route-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzg-macos-hold-overlay-style-split.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzh-macos-trail-overlay-style-split.md`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzi-macos-click-overlay-style-expansion.md`
   - 完整 hardening 流水（`55h-55zzx`）见：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
 
 ## 定向检索命令
