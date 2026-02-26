@@ -339,6 +339,8 @@
   - 55zzzzt completed (acceptance): full POSIX regression suite remains green after hold style accent helper split.
   - 55zzzzu completed (code): split app-catalog root traversal/filtering into dedicated module (`MacosApplicationCatalogScanWorkflow.RootScan.Enumerate.mm`) and kept root-scan file focused on bundle resolve/upsert orchestration.
   - 55zzzzu completed (acceptance): full POSIX regression suite remains green after app-catalog root enumerate split.
+  - 55zzzzv completed (code): split foreground process-service resolution helpers into dedicated module (`MacosForegroundProcessService.Resolve.mm`) and kept service file focused on cache-window policy.
+  - 55zzzzv completed (acceptance): full POSIX regression suite remains green after foreground process resolve split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
