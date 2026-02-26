@@ -56,56 +56,15 @@ WasmOverlayThrottleCounters GetWasmOverlayThrottleCountersState() {
 }
 
 void RegisterWasmOverlayWindowState(void* windowHandle) {
-#if !defined(__APPLE__)
-    (void)windowHandle;
-#else
-    using namespace wasm_overlay_state;
-    if (windowHandle == nullptr) {
-        return;
-    }
-    std::lock_guard<std::mutex> lock(WindowSetMutex());
-    if (PendingOverlayCount() > 0) {
-        PendingOverlayCount() -= 1;
-    }
-    WindowSet().insert(windowHandle);
-#endif
+    wasm_overlay_state::RegisterWasmOverlayWindowStateInternal(windowHandle);
 }
 
 bool TakeWasmOverlayWindowState(void* windowHandle) {
-#if !defined(__APPLE__)
-    (void)windowHandle;
-    return false;
-#else
-    using namespace wasm_overlay_state;
-    if (windowHandle == nullptr) {
-        return false;
-    }
-    std::lock_guard<std::mutex> lock(WindowSetMutex());
-    auto& windows = WindowSet();
-    const auto it = windows.find(windowHandle);
-    if (it == windows.end()) {
-        return false;
-    }
-    windows.erase(it);
-    return true;
-#endif
+    return wasm_overlay_state::TakeWasmOverlayWindowStateInternal(windowHandle);
 }
 
 std::vector<void*> ResetAndTakeAllWasmOverlayWindowsState() {
-#if !defined(__APPLE__)
-    return {};
-#else
-    using namespace wasm_overlay_state;
-    std::vector<void*> windows;
-    std::lock_guard<std::mutex> lock(WindowSetMutex());
-    wasm_overlay_state_detail::ResetWasmOverlayStateLocked();
-    windows.reserve(WindowSet().size());
-    for (void* window : WindowSet()) {
-        windows.push_back(window);
-    }
-    WindowSet().clear();
-    return windows;
-#endif
+    return wasm_overlay_state::ResetAndTakeAllWasmOverlayWindowsStateInternal();
 }
 
 } // namespace mousefx::platform::macos
