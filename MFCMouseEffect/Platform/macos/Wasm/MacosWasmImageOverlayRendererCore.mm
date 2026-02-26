@@ -1,12 +1,11 @@
 #include "pch.h"
 
+#include "Platform/macos/Wasm/MacosWasmImageOverlayRendererCore.Internal.h"
 #include "Platform/macos/Wasm/MacosWasmImageOverlayRendererCore.h"
 #include "Platform/macos/Wasm/MacosWasmImageOverlayRendererSupport.h"
 
 #include "Platform/macos/Wasm/MacosWasmOverlayRuntime.h"
 #include "Platform/macos/Wasm/MacosWasmOverlayRenderMath.h"
-
-#include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 
 #if defined(__APPLE__)
 #import <AppKit/AppKit.h>
@@ -30,19 +29,19 @@ WasmOverlayRenderResult RenderWasmImageOverlayCore(const WasmImageOverlayRequest
             : WasmOverlayRenderResult::ThrottledByInterval;
     }
 
-    const ScreenPoint overlayPt = ScreenToOverlayPoint(request.screenPt);
-    const CGFloat pulseScale = wasm_overlay_render_math::ClampScale(request.scale);
-    const CGFloat size = wasm_overlay_render_math::ClampFloat(120.0 * pulseScale, 52.0, 420.0);
-    const uint32_t durationMs = wasm_overlay_render_math::ClampLifeMs(request.lifeMs);
-    const uint32_t delayMs = wasm_image_overlay_support::ClampDelayMs(request.delayMs);
-    const CGFloat alphaScale = wasm_image_overlay_support::ClampAlpha(request.alpha);
-    const WasmImageOverlayRequest req = request;
+    const wasm_image_overlay_core_detail::ImageOverlayRenderPlan plan =
+        wasm_image_overlay_core_detail::BuildImageOverlayRenderPlan(request);
+    const WasmImageOverlayRequest req = plan.request;
 
     dispatch_after(
-        dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(delayMs) * NSEC_PER_MSEC),
+        dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(plan.delayMs) * NSEC_PER_MSEC),
         dispatch_get_main_queue(),
         ^{
-          NSRect frame = NSMakeRect(overlayPt.x - size * 0.5, overlayPt.y - size * 0.5, size, size);
+          NSRect frame = NSMakeRect(
+              plan.overlayPoint.x - plan.size * 0.5,
+              plan.overlayPoint.y - plan.size * 0.5,
+              plan.size,
+              plan.size);
           NSWindow* window = [[NSWindow alloc] initWithContentRect:frame
                                                           styleMask:NSWindowStyleMaskBorderless
                                                             backing:NSBackingStoreBuffered
@@ -69,15 +68,16 @@ WasmOverlayRenderResult RenderWasmImageOverlayCore(const WasmImageOverlayRequest
               if (imagePath != nil) {
                   NSImage* image = [[NSImage alloc] initWithContentsOfFile:imagePath];
                   if (image != nil) {
-                      const CGFloat imageInset = wasm_overlay_render_math::ClampFloat(size * 0.16, 8.0, 60.0);
+                      const CGFloat imageInset =
+                          wasm_overlay_render_math::ClampFloat(plan.size * 0.16, 8.0, 60.0);
                       NSImageView* imageView = [[NSImageView alloc] initWithFrame:NSMakeRect(
                           imageInset,
                           imageInset,
-                          size - imageInset * 2.0,
-                          size - imageInset * 2.0)];
+                          plan.size - imageInset * 2.0,
+                          plan.size - imageInset * 2.0)];
                       [imageView setImage:image];
                       [imageView setImageScaling:NSImageScaleProportionallyUpOrDown];
-                      [imageView setAlphaValue:alphaScale];
+                      [imageView setAlphaValue:plan.alphaScale];
                       [content addSubview:imageView];
 
                       [imageView release];
@@ -87,35 +87,37 @@ WasmOverlayRenderResult RenderWasmImageOverlayCore(const WasmImageOverlayRequest
               }
           }
 
-          const CGFloat ringInset = wasm_overlay_render_math::ClampFloat(size * 0.13, 8.0, 36.0);
+          const CGFloat ringInset = wasm_overlay_render_math::ClampFloat(plan.size * 0.13, 8.0, 36.0);
           CAShapeLayer* ring = [CAShapeLayer layer];
           ring.frame = content.bounds;
           CGPathRef ringPath = CGPathCreateWithEllipseInRect(
-              CGRectMake(ringInset, ringInset, size - ringInset * 2.0, size - ringInset * 2.0),
+              CGRectMake(ringInset, ringInset, plan.size - ringInset * 2.0, plan.size - ringInset * 2.0),
               nullptr);
           ring.path = ringPath;
           CGPathRelease(ringPath);
-          ring.fillColor = [wasm_overlay_render_math::ColorFromArgb(req.tintArgb, renderedImage ? 0.08 * alphaScale : 0.22 * alphaScale) CGColor];
-          ring.strokeColor = [wasm_overlay_render_math::ColorFromArgb(req.tintArgb, 0.95 * alphaScale) CGColor];
-          ring.lineWidth = wasm_overlay_render_math::ClampFloat(size * 0.022, 1.5, 5.0);
+          ring.fillColor = [wasm_overlay_render_math::ColorFromArgb(
+              req.tintArgb,
+              renderedImage ? 0.08 * plan.alphaScale : 0.22 * plan.alphaScale) CGColor];
+          ring.strokeColor = [wasm_overlay_render_math::ColorFromArgb(req.tintArgb, 0.95 * plan.alphaScale) CGColor];
+          ring.lineWidth = wasm_overlay_render_math::ClampFloat(plan.size * 0.022, 1.5, 5.0);
           ring.opacity = 0.98;
           [content.layer addSublayer:ring];
 
           CABasicAnimation* animScale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
           animScale.fromValue = @0.15;
           animScale.toValue = @1.0;
-          animScale.duration = static_cast<CFTimeInterval>(durationMs) / 1000.0;
+          animScale.duration = static_cast<CFTimeInterval>(plan.durationMs) / 1000.0;
           animScale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
 
           CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
           fade.fromValue = @0.98;
           fade.toValue = @0.0;
-          fade.duration = static_cast<CFTimeInterval>(durationMs) / 1000.0;
+          fade.duration = static_cast<CFTimeInterval>(plan.durationMs) / 1000.0;
           fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
 
           CAAnimationGroup* group = [CAAnimationGroup animation];
           group.animations = @[animScale, fade];
-          group.duration = static_cast<CFTimeInterval>(durationMs) / 1000.0;
+          group.duration = static_cast<CFTimeInterval>(plan.durationMs) / 1000.0;
           group.fillMode = kCAFillModeForwards;
           group.removedOnCompletion = NO;
           [ring addAnimation:group forKey:@"mfx_wasm_image_overlay"];
@@ -124,7 +126,7 @@ WasmOverlayRenderResult RenderWasmImageOverlayCore(const WasmImageOverlayRequest
               CABasicAnimation* rotate = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
               rotate.fromValue = @0.0;
               rotate.toValue = [NSNumber numberWithDouble:static_cast<double>(req.rotationRad)];
-              rotate.duration = static_cast<CFTimeInterval>(durationMs) / 1000.0;
+              rotate.duration = static_cast<CFTimeInterval>(plan.durationMs) / 1000.0;
               rotate.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
               rotate.fillMode = kCAFillModeForwards;
               rotate.removedOnCompletion = NO;
@@ -135,7 +137,7 @@ WasmOverlayRenderResult RenderWasmImageOverlayCore(const WasmImageOverlayRequest
           [window orderFrontRegardless];
 
           if (wasm_image_overlay_support::HasMotion(req)) {
-              const double t = static_cast<double>(durationMs) / 1000.0;
+              const double t = static_cast<double>(plan.durationMs) / 1000.0;
               const CGFloat dx = static_cast<CGFloat>((req.velocityX * t) + (0.5 * req.accelerationX * t * t));
               const CGFloat dy = static_cast<CGFloat>((req.velocityY * t) + (0.5 * req.accelerationY * t * t));
               NSRect endFrame = frame;
@@ -143,14 +145,14 @@ WasmOverlayRenderResult RenderWasmImageOverlayCore(const WasmImageOverlayRequest
               endFrame.origin.y += dy;
 
               [NSAnimationContext runAnimationGroup:^(NSAnimationContext* context) {
-                context.duration = static_cast<CFTimeInterval>(durationMs) / 1000.0;
+                context.duration = static_cast<CFTimeInterval>(plan.durationMs) / 1000.0;
                 context.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
                 [[window animator] setFrame:endFrame display:NO];
               } completionHandler:nil];
           }
 
           dispatch_after(
-              dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(durationMs + 60u) * NSEC_PER_MSEC),
+              dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(plan.durationMs + 60u) * NSEC_PER_MSEC),
               dispatch_get_main_queue(),
               ^{
             if (!TakeWasmOverlayWindow(reinterpret_cast<void*>(window))) {

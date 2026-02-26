@@ -353,6 +353,8 @@
   - 55zzzzaa completed (acceptance): full POSIX regression suite remains green after keyboard-injector event-post split.
   - 55zzzzab completed (code): split WASM overlay admission/reset internals into dedicated module (`MacosWasmOverlayState.Admission.mm`) and kept overlay-state file focused on API wrappers.
   - 55zzzzab completed (acceptance): full POSIX regression suite remains green after WASM overlay admission helper split.
+  - 55zzzzac completed (code): split WASM image overlay render-plan computation into dedicated module (`MacosWasmImageOverlayRendererCore.Plan.mm`) and kept core renderer file focused on rendering orchestration.
+  - 55zzzzac completed (acceptance): full POSIX regression suite remains green after WASM image render-plan split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
