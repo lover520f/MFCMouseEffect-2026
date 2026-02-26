@@ -44,6 +44,19 @@
   $: hasEffectsProfile = !!effectsProfile && typeof effectsProfile === 'object' && Object.keys(effectsProfile).length > 0;
   $: effectsProfileText = hasEffectsProfile ? JSON.stringify(effectsProfile, null, 2) : '';
 
+  async function copyEffectsProfile() {
+    if (!effectsProfileText) {
+      return;
+    }
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(effectsProfileText);
+      }
+    } catch (_) {
+      // best effort copy only
+    }
+  }
+
   let form = normalizeActive(active);
   let lastActiveRef = active;
 
@@ -100,7 +113,14 @@
 
 {#if hasEffectsProfile}
   <div class="hint span2 effects-profile-box">
-    <div class="effects-profile-title" data-i18n="label_effects_runtime_profile">Effects Runtime Profile</div>
+    <div class="effects-profile-header">
+      <div class="effects-profile-title" data-i18n="label_effects_runtime_profile">Effects Runtime Profile</div>
+      <button
+        type="button"
+        class="effects-profile-copy-btn"
+        data-i18n="btn_copy_effects_profile"
+        on:click={copyEffectsProfile}>Copy JSON</button>
+    </div>
     <pre class="effects-profile-content">{effectsProfileText}</pre>
   </div>
 {/if}
@@ -115,10 +135,28 @@
   }
 
   .effects-profile-title {
-    margin-bottom: 8px;
     font-size: 12px;
     font-weight: 700;
     color: rgba(20, 40, 66, 0.88);
+  }
+
+  .effects-profile-header {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .effects-profile-copy-btn {
+    border: 1px solid rgba(70, 108, 160, 0.35);
+    border-radius: 8px;
+    padding: 2px 8px;
+    background: rgba(82, 126, 184, 0.1);
+    color: rgba(27, 58, 101, 0.9);
+    font-size: 11px;
+    line-height: 1.5;
+    cursor: pointer;
   }
 
   .effects-profile-content {
