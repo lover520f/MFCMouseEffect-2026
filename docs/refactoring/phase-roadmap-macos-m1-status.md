@@ -349,6 +349,8 @@
   - 55zzzzy completed (acceptance): full POSIX regression suite remains green after notification AppleScript helper split.
   - 55zzzzz completed (code): split input-indicator show-plan computation into dedicated module (`MacosInputIndicatorOverlay.ShowPlan.*`) and kept overlay file focused on lifecycle and presentation dispatch.
   - 55zzzzz completed (acceptance): full POSIX regression suite remains green after input-indicator show-plan split.
+  - 55zzzzaa completed (code): split keyboard-injector dry-run/event-post internals into dedicated module (`MacosKeyboardInjector.EventPost.mm`) and kept injector file focused on chord orchestration.
+  - 55zzzzaa completed (acceptance): full POSIX regression suite remains green after keyboard-injector event-post split.
 
 ## Current truth (important)
 - `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.

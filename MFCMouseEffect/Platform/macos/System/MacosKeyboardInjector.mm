@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "Platform/macos/System/MacosKeyboardInjector.Internal.h"
 #include "Platform/macos/System/MacosKeyboardInjector.h"
 
 #include "MouseFx/Core/Automation/KeyChord.h"
@@ -9,40 +10,9 @@
 #import <ApplicationServices/ApplicationServices.h>
 #endif
 
-#include <cstdlib>
 #include <vector>
 
 namespace mousefx {
-namespace {
-
-bool IsKeyboardInjectorDryRunEnabled() {
-    const char* raw = std::getenv("MFX_TEST_KEYBOARD_INJECTOR_DRY_RUN");
-    if (raw == nullptr || raw[0] == '\0') {
-        return false;
-    }
-    return raw[0] == '1' || raw[0] == 'y' || raw[0] == 'Y' || raw[0] == 't' || raw[0] == 'T';
-}
-
-bool PostKeyEvent(uint16_t keyCode, bool keyDown, uint64_t flags) {
-#if !defined(__APPLE__)
-    (void)keyCode;
-    (void)keyDown;
-    (void)flags;
-    return false;
-#else
-    CGEventRef event = CGEventCreateKeyboardEvent(nullptr, static_cast<CGKeyCode>(keyCode), keyDown ? true : false);
-    if (event == nullptr) {
-        return false;
-    }
-
-    CGEventSetFlags(event, static_cast<CGEventFlags>(flags));
-    CGEventPost(kCGHIDEventTap, event);
-    CFRelease(event);
-    return true;
-#endif
-}
-
-} // namespace
 
 bool MacosKeyboardInjector::SendChord(const std::string& chordText) {
 #if !defined(__APPLE__)
@@ -70,7 +40,7 @@ bool MacosKeyboardInjector::SendChord(const std::string& chordText) {
         return false;
     }
 
-    if (IsKeyboardInjectorDryRunEnabled()) {
+    if (macos_keyboard_injector::inject_detail::IsKeyboardInjectorDryRunEnabled()) {
         return true;
     }
     if (!AXIsProcessTrusted()) {
@@ -80,21 +50,21 @@ bool MacosKeyboardInjector::SendChord(const std::string& chordText) {
     uint64_t currentFlags = 0;
     for (const macos_keyboard_injector::ModifierMapping& modifier : modifiers) {
         currentFlags |= modifier.flag;
-        if (!PostKeyEvent(modifier.macKeyCode, true, currentFlags)) {
+        if (!macos_keyboard_injector::inject_detail::PostKeyEvent(modifier.macKeyCode, true, currentFlags)) {
             return false;
         }
     }
 
-    if (!PostKeyEvent(keyCode, true, currentFlags | keyModifierFlag)) {
+    if (!macos_keyboard_injector::inject_detail::PostKeyEvent(keyCode, true, currentFlags | keyModifierFlag)) {
         return false;
     }
-    if (!PostKeyEvent(keyCode, false, currentFlags)) {
+    if (!macos_keyboard_injector::inject_detail::PostKeyEvent(keyCode, false, currentFlags)) {
         return false;
     }
 
     for (auto it = modifiers.rbegin(); it != modifiers.rend(); ++it) {
         const uint64_t nextFlags = (currentFlags & ~(it->flag));
-        if (!PostKeyEvent(it->macKeyCode, false, nextFlags)) {
+        if (!macos_keyboard_injector::inject_detail::PostKeyEvent(it->macKeyCode, false, nextFlags)) {
             return false;
         }
         currentFlags = nextFlags;
