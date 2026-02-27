@@ -2,69 +2,51 @@
 
 #include "Platform/macos/Effects/MacosHoverPulseOverlayRendererCore.Internal.h"
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
-#include "Platform/macos/Effects/MacosHoverPulseOverlayStyle.h"
-
-#include <algorithm>
 
 namespace mousefx::macos_hover_pulse {
 
 #if defined(__APPLE__)
 namespace {
 
-double ResolveHoverSizeScale(bool tubesMode, const macos_effect_profile::HoverRenderProfile& profile) {
-    return tubesMode ? profile.tubesSizeScale : profile.glowSizeScale;
-}
-
-double ResolveHoverBreatheScale(bool tubesMode, const macos_effect_profile::HoverRenderProfile& profile) {
-    return tubesMode ? profile.tubesBreatheScale : profile.glowBreatheScale;
-}
-
-double ResolveHoverSpinScale(bool tubesMode, const macos_effect_profile::HoverRenderProfile& profile) {
-    return tubesMode ? profile.tubesSpinScale : 1.0;
+NSColor* ArgbToNsColor(uint32_t argb) {
+    const CGFloat alpha = static_cast<CGFloat>((argb >> 24) & 0xFFu) / 255.0;
+    const CGFloat red = static_cast<CGFloat>((argb >> 16) & 0xFFu) / 255.0;
+    const CGFloat green = static_cast<CGFloat>((argb >> 8) & 0xFFu) / 255.0;
+    const CGFloat blue = static_cast<CGFloat>(argb & 0xFFu) / 255.0;
+    return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
 }
 
 } // namespace
 
-HoverPulseRenderPlan BuildHoverPulseRenderPlan(
-    const ScreenPoint& overlayPt,
-    const std::string& effectType,
-    const macos_effect_profile::HoverRenderProfile& profile) {
+HoverPulseRenderPlan BuildHoverPulseRenderPlan(const HoverEffectRenderCommand& command) {
     HoverPulseRenderPlan plan{};
-    plan.hoverType = NormalizeHoverType(effectType);
-    plan.tubesMode = (plan.hoverType == "tubes");
-    plan.size = static_cast<CGFloat>(
-        std::clamp<double>(profile.sizePx * ResolveHoverSizeScale(plan.tubesMode, profile), 96.0, 260.0));
-    plan.breatheDurationSec = std::clamp<CFTimeInterval>(
-        profile.breatheDurationSec * ResolveHoverBreatheScale(plan.tubesMode, profile),
-        0.35,
-        4.2);
-    plan.tubesSpinDurationSec = std::clamp<CFTimeInterval>(
-        profile.spinDurationSec * ResolveHoverSpinScale(plan.tubesMode, profile),
-        0.65,
-        5.2);
+    plan.command = command;
+    plan.size = static_cast<CGFloat>(plan.command.sizePx);
+    plan.breatheDurationSec = plan.command.breatheDurationSec;
+    plan.tubesSpinDurationSec = plan.command.tubesSpinDurationSec;
     const NSRect rawFrame = NSMakeRect(
-        overlayPt.x - plan.size * 0.5,
-        overlayPt.y - plan.size * 0.5,
+        plan.command.overlayPoint.x - plan.size * 0.5,
+        plan.command.overlayPoint.y - plan.size * 0.5,
         plan.size,
         plan.size);
-    plan.frame = macos_overlay_support::ClampOverlayFrameToScreenBounds(rawFrame, overlayPt);
+    plan.frame = macos_overlay_support::ClampOverlayFrameToScreenBounds(rawFrame, plan.command.overlayPoint);
     return plan;
 }
 
 void ConfigureHoverRingLayer(
     CAShapeLayer* ring,
     NSView* content,
-    const HoverPulseRenderPlan& plan,
-    const macos_effect_profile::HoverRenderProfile& profile) {
+    const HoverPulseRenderPlan& plan) {
     ring.frame = content.bounds;
     const CGFloat ringInset = macos_overlay_support::ScaleOverlayMetric(plan.size, 20.0, 160.0, 10.0, 40.0);
     CGPathRef ringPath = CGPathCreateWithEllipseInRect(CGRectInset(content.bounds, ringInset, ringInset), nullptr);
     ring.path = ringPath;
     CGPathRelease(ringPath);
-    ring.fillColor = HoverGlowFillColor(profile).CGColor;
-    ring.strokeColor = HoverGlowStrokeColor(profile).CGColor;
+    ring.fillColor = [ArgbToNsColor(plan.command.glowFillArgb) CGColor];
+    ring.strokeColor = [ArgbToNsColor(plan.command.glowStrokeArgb) CGColor];
     ring.lineWidth = macos_overlay_support::ScaleOverlayMetric(plan.size, 2.0, 160.0, 1.0, 4.2);
-    ring.opacity = static_cast<float>(macos_overlay_support::ResolveOverlayOpacity(profile.baseOpacity, 0.0, 0.0));
+    ring.opacity = static_cast<float>(
+        macos_overlay_support::ResolveOverlayOpacity(plan.command.baseOpacity, 0.0, 0.0));
 }
 
 #endif

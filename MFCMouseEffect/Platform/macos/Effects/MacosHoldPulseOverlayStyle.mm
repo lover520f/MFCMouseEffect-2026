@@ -2,6 +2,7 @@
 
 #include "Platform/macos/Effects/MacosHoldPulseOverlayStyle.Internal.h"
 #include "Platform/macos/Effects/MacosHoldPulseOverlayStyle.h"
+#include "MouseFx/Effects/HoldRouteCatalog.h"
 #include "MouseFx/Utils/StringUtils.h"
 
 #if defined(__APPLE__)
@@ -30,8 +31,8 @@ HoldStyle ResolveHoldStyle(const std::string& holdType) {
         ContainsHoldToken(holdType, "quantum_halo")) {
         return HoldStyle::QuantumHalo;
     }
-    if (ContainsHoldToken(holdType, "hold_fluxfield_gpu_v2") ||
-        ContainsHoldToken(holdType, "hold_fluxfield_cpu") ||
+    if (ContainsHoldToken(holdType, mousefx::hold_route::kTypeFluxFieldGpuV2) ||
+        ContainsHoldToken(holdType, mousefx::hold_route::kTypeFluxFieldCpu) ||
         ContainsHoldToken(holdType, "fluxfield") ||
         ContainsHoldToken(holdType, "flux_field")) {
         return HoldStyle::FluxField;

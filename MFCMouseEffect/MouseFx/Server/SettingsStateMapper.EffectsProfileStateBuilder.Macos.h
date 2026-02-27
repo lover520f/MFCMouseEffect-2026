@@ -7,5 +7,6 @@ namespace mousefx {
 struct EffectConfig;
 
 nlohmann::json BuildMacosEffectsProfileStateJson(const EffectConfig& cfg);
+nlohmann::json BuildMacosEffectRenderCommandSamplesJson(const EffectConfig& cfg);
 
 } // namespace mousefx

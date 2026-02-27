@@ -38,6 +38,46 @@ void CloseHoverPulseOverlayOnMain() {
 }
 
 void ShowHoverPulseOverlayOnMain(
+    const HoverEffectRenderCommand& command,
+    const std::string& themeName) {
+#if !defined(__APPLE__)
+    (void)command;
+    (void)themeName;
+    return;
+#else
+    (void)themeName;
+    CloseHoverPulseOverlayOnMain();
+
+    const HoverPulseRenderPlan plan = BuildHoverPulseRenderPlan(command);
+
+    NSWindow* window = macos_overlay_support::CreateOverlayWindow(plan.frame);
+    if (window == nil) {
+        return;
+    }
+
+    NSView* content = [window contentView];
+    macos_overlay_support::ApplyOverlayContentScale(content, command.overlayPoint);
+
+    CAShapeLayer* ring = [CAShapeLayer layer];
+    ConfigureHoverRingLayer(ring, content, plan);
+    [content.layer addSublayer:ring];
+
+    CABasicAnimation* breathe = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    breathe.fromValue = @0.25;
+    breathe.toValue = @(macos_overlay_support::ResolveOverlayOpacity(command.baseOpacity, 0.05, 0.0));
+    breathe.duration = plan.breatheDurationSec;
+    breathe.autoreverses = YES;
+    breathe.repeatCount = HUGE_VALF;
+    [ring addAnimation:breathe forKey:@"mfx_hover_breathe"];
+
+    AddHoverExtraLayersAndAnimations(content, plan);
+
+    [window orderFrontRegardless];
+    ActiveHoverWindow() = window;
+#endif
+}
+
+void ShowHoverPulseOverlayOnMain(
     const ScreenPoint& overlayPt,
     const std::string& effectType,
     const std::string& themeName,
@@ -49,35 +89,20 @@ void ShowHoverPulseOverlayOnMain(
     (void)profile;
     return;
 #else
-    (void)themeName;
-    CloseHoverPulseOverlayOnMain();
-
-    const HoverPulseRenderPlan plan = BuildHoverPulseRenderPlan(overlayPt, effectType, profile);
-
-    NSWindow* window = macos_overlay_support::CreateOverlayWindow(plan.frame);
-    if (window == nil) {
-        return;
-    }
-
-    NSView* content = [window contentView];
-    macos_overlay_support::ApplyOverlayContentScale(content, overlayPt);
-
-    CAShapeLayer* ring = [CAShapeLayer layer];
-    ConfigureHoverRingLayer(ring, content, plan, profile);
-    [content.layer addSublayer:ring];
-
-    CABasicAnimation* breathe = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    breathe.fromValue = @0.25;
-    breathe.toValue = @(macos_overlay_support::ResolveOverlayOpacity(profile.baseOpacity, 0.05, 0.0));
-    breathe.duration = plan.breatheDurationSec;
-    breathe.autoreverses = YES;
-    breathe.repeatCount = HUGE_VALF;
-    [ring addAnimation:breathe forKey:@"mfx_hover_breathe"];
-
-    AddHoverExtraLayersAndAnimations(content, plan, profile);
-
-    [window orderFrontRegardless];
-    ActiveHoverWindow() = window;
+    const HoverEffectProfile computeProfile{
+        profile.sizePx,
+        profile.breatheDurationSec,
+        profile.spinDurationSec,
+        profile.baseOpacity,
+        profile.glowSizeScale,
+        profile.tubesSizeScale,
+        profile.glowBreatheScale,
+        profile.tubesBreatheScale,
+        profile.tubesSpinScale,
+        {profile.colors.glowFillArgb, profile.colors.glowStrokeArgb, profile.colors.tubesStrokeArgb},
+    };
+    const HoverEffectRenderCommand command = ComputeHoverEffectRenderCommand(overlayPt, effectType, computeProfile);
+    ShowHoverPulseOverlayOnMain(command, themeName);
 #endif
 }
 

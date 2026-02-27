@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "MouseFx/Core/Effects/HoverEffectCompute.h"
 #include "Platform/macos/Effects/MacosHoverPulseEffect.h"
 
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
@@ -8,6 +9,24 @@
 #include <utility>
 
 namespace mousefx {
+namespace {
+
+HoverEffectProfile BuildComputeProfile(const macos_effect_profile::HoverRenderProfile& profile) {
+    HoverEffectProfile out{};
+    out.sizePx = profile.sizePx;
+    out.breatheDurationSec = profile.breatheDurationSec;
+    out.spinDurationSec = profile.spinDurationSec;
+    out.baseOpacity = profile.baseOpacity;
+    out.glowSizeScale = profile.glowSizeScale;
+    out.tubesSizeScale = profile.tubesSizeScale;
+    out.glowBreatheScale = profile.glowBreatheScale;
+    out.tubesBreatheScale = profile.tubesBreatheScale;
+    out.tubesSpinScale = profile.tubesSpinScale;
+    out.colors = {profile.colors.glowFillArgb, profile.colors.glowStrokeArgb, profile.colors.tubesStrokeArgb};
+    return out;
+}
+
+} // namespace
 
 MacosHoverPulseEffect::MacosHoverPulseEffect(
     std::string effectType,
@@ -39,7 +58,9 @@ void MacosHoverPulseEffect::OnHoverStart(const ScreenPoint& pt) {
     if (!initialized_) {
         return;
     }
-    macos_hover_pulse::ShowHoverPulseOverlay(ScreenToOverlayPoint(pt), effectType_, themeName_, renderProfile_);
+    const HoverEffectRenderCommand command =
+        ComputeHoverEffectRenderCommand(ScreenToOverlayPoint(pt), effectType_, BuildComputeProfile(renderProfile_));
+    macos_hover_pulse::ShowHoverPulseOverlay(command, themeName_);
 }
 
 void MacosHoverPulseEffect::OnHoverEnd() {

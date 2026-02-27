@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MouseFx/Core/Effects/ClickEffectCompute.h"
 #include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 #include "MouseFx/Core/Protocol/InputTypes.h"
 
@@ -15,9 +16,7 @@ namespace mousefx::macos_click_pulse {
 
 #if defined(__APPLE__)
 struct ClickPulseRenderPlan {
-    std::string normalizedType{};
-    bool textMode = false;
-    bool starMode = false;
+    ClickEffectRenderCommand command{};
     CGFloat size = 0;
     CGFloat inset = 0;
     NSRect frame = NSZeroRect;
@@ -25,31 +24,22 @@ struct ClickPulseRenderPlan {
 };
 
 ClickPulseRenderPlan BuildClickPulseRenderPlan(
-    const ScreenPoint& overlayPt,
-    const std::string& effectType,
-    const macos_effect_profile::ClickRenderProfile& profile);
+    const ClickEffectRenderCommand& command);
 
 void ConfigureClickPulseBaseLayer(
     CAShapeLayer* base,
     NSView* content,
-    MouseButton button,
-    const ClickPulseRenderPlan& plan,
-    const macos_effect_profile::ClickRenderProfile& profile);
+    const ClickPulseRenderPlan& plan);
 
 void AddClickPulseExtraLayers(
     NSView* content,
-    MouseButton button,
-    const ClickPulseRenderPlan& plan,
-    const macos_effect_profile::ClickRenderProfile& profile);
+    const ClickPulseRenderPlan& plan);
 
 void StartClickPulseAnimation(
     CAShapeLayer* base,
-    const ClickPulseRenderPlan& plan,
-    const macos_effect_profile::ClickRenderProfile& profile);
+    const ClickPulseRenderPlan& plan);
 
-int64_t ComputeClickPulseCloseDelayNs(
-    const ClickPulseRenderPlan& plan,
-    const macos_effect_profile::ClickRenderProfile& profile);
+int64_t ComputeClickPulseCloseDelayNs(const ClickPulseRenderPlan& plan);
 #endif
 
 } // namespace mousefx::macos_click_pulse

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MouseFx/Core/Effects/HoldEffectCompute.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 
@@ -27,27 +28,17 @@ public:
     void OnHoldEnd() override;
 
 private:
-    enum class FollowMode {
-        Precise,
-        Smooth,
-        Efficient,
-    };
-
-    static FollowMode ParseFollowMode(const std::string& mode);
     static uint64_t CurrentTickMs();
 
     std::string effectType_{};
     std::string themeName_{};
     macos_effect_profile::HoldRenderProfile renderProfile_{};
-    FollowMode followMode_ = FollowMode::Smooth;
+    HoldEffectFollowMode followMode_ = HoldEffectFollowMode::Smooth;
     bool initialized_ = false;
     bool running_ = false;
 
     MouseButton holdButton_ = MouseButton::Left;
-    bool hasSmoothedPoint_ = false;
-    float smoothedX_ = 0.0f;
-    float smoothedY_ = 0.0f;
-    uint64_t lastEfficientTickMs_ = 0;
+    HoldEffectFollowState followState_{};
 };
 
 } // namespace mousefx

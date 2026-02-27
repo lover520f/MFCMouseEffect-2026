@@ -2,33 +2,25 @@
 
 #include "Platform/macos/Effects/MacosClickPulseOverlayRendererCore.Internal.h"
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
-#include "Platform/macos/Effects/MacosClickPulseOverlayStyle.h"
 
 namespace mousefx::macos_click_pulse {
 
 #if defined(__APPLE__)
-ClickPulseRenderPlan BuildClickPulseRenderPlan(
-    const ScreenPoint& overlayPt,
-    const std::string& effectType,
-    const macos_effect_profile::ClickRenderProfile& profile) {
+ClickPulseRenderPlan BuildClickPulseRenderPlan(const ClickEffectRenderCommand& command) {
     ClickPulseRenderPlan plan{};
-    plan.normalizedType = NormalizeClickType(effectType);
-    plan.textMode = (plan.normalizedType == "text");
-    plan.starMode = (plan.normalizedType == "star");
+    plan.command = command;
+    const bool textMode = (plan.command.normalizedType == "text");
 
-    plan.size = plan.textMode
-        ? static_cast<CGFloat>(profile.textSizePx)
-        : static_cast<CGFloat>(profile.normalSizePx);
-    plan.inset = plan.textMode ? 12.0 : 18.0;
+    plan.size = static_cast<CGFloat>(plan.command.sizePx);
+    plan.inset = textMode ? 12.0 : 18.0;
     const NSRect rawFrame = NSMakeRect(
-        overlayPt.x - plan.size * 0.5,
-        overlayPt.y - plan.size * 0.5,
+        plan.command.overlayPoint.x - plan.size * 0.5,
+        plan.command.overlayPoint.y - plan.size * 0.5,
         plan.size,
         plan.size);
-    plan.frame = macos_overlay_support::ClampOverlayFrameToScreenBounds(rawFrame, overlayPt);
-    const CFTimeInterval baseDuration = plan.textMode ? profile.textDurationSec : profile.normalDurationSec;
+    plan.frame = macos_overlay_support::ClampOverlayFrameToScreenBounds(rawFrame, plan.command.overlayPoint);
     plan.animationDuration = macos_overlay_support::ScaleOverlayDurationBySize(
-        baseDuration,
+        plan.command.animationDurationSec,
         plan.size,
         160.0,
         0.16,
@@ -36,11 +28,9 @@ ClickPulseRenderPlan BuildClickPulseRenderPlan(
     return plan;
 }
 
-int64_t ComputeClickPulseCloseDelayNs(
-    const ClickPulseRenderPlan& plan,
-    const macos_effect_profile::ClickRenderProfile& profile) {
+int64_t ComputeClickPulseCloseDelayNs(const ClickPulseRenderPlan& plan) {
     return static_cast<int64_t>(
-               static_cast<int>(plan.animationDuration * 1000.0) + profile.closePaddingMs) *
+               static_cast<int>(plan.animationDuration * 1000.0) + plan.command.closePaddingMs) *
            NSEC_PER_MSEC;
 }
 

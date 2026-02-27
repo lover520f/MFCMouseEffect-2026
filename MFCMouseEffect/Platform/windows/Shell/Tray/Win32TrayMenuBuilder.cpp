@@ -60,7 +60,7 @@ static std::wstring FallbackOptionLabel(UINT cmd, bool zh) {
     case kCmdHoldHologram: return PickLabel(L"\u516E\u606F\u6295\u5F71 (3D)", L"Hologram (3D)", zh);
     case kCmdHoldNeon3D: return PickLabel(L"\u9713\u8679 HUD (3D)", L"Neon HUD (3D)", zh);
     case kCmdHoldQuantumHaloGpuV2: return PickLabel(L"\u91CF\u5B50\u5149\u73AF GPU", L"Quantum Halo GPU", zh);
-    case kCmdHoldFluxFieldCpu: return PickLabel(L"\u78C1\u901A\u573A HUD\uff08CPU\u4EC5\uff09", L"FluxField HUD (CPU Only)", zh);
+    case kCmdHoldFluxFieldCpu: return PickLabel(L"\u78C1\u901A\u573A HUD CPU", L"FluxField HUD CPU", zh);
     case kCmdHoldFluxFieldGpuV2: return PickLabel(L"\u78C1\u901A\u573A HUD GPU", L"FluxField HUD GPU", zh);
     case kCmdHoldNone: return PickLabel(L"\u65E0", L"None", zh);
 
@@ -109,8 +109,8 @@ static bool IsCurrentTypeMatchByCommand(const std::string& currentType, UINT cmd
     case kCmdHoldNeon3D: return currentType == "hold_neon3d" || currentType == "neon3d";
     case kCmdHoldQuantumHaloGpuV2:
         return currentType == "hold_quantum_halo_gpu_v2" || currentType == "hold_neon3d_gpu_v2";
-    case kCmdHoldFluxFieldCpu: return currentType == "hold_fluxfield_cpu";
-    case kCmdHoldFluxFieldGpuV2: return currentType == "hold_fluxfield_gpu_v2";
+    case kCmdHoldFluxFieldCpu: return currentType == mousefx::hold_route::kTypeFluxFieldCpu;
+    case kCmdHoldFluxFieldGpuV2: return currentType == mousefx::hold_route::kTypeFluxFieldGpuV2;
     case kCmdHoldNone: return currentType == "none";
 
     case kCmdHoverGlow: return currentType == "glow";
@@ -244,8 +244,8 @@ static bool TryBuildEffectJsonByCommand(UINT cmd, std::string* outJson) {
     case kCmdHoldHologram: setEffect("hold", "hologram"); return true;
     case kCmdHoldNeon3D: setEffect("hold", "hold_neon3d"); return true;
     case kCmdHoldQuantumHaloGpuV2: setEffect("hold", "hold_quantum_halo_gpu_v2"); return true;
-    case kCmdHoldFluxFieldCpu: setEffect("hold", "hold_fluxfield_cpu"); return true;
-    case kCmdHoldFluxFieldGpuV2: setEffect("hold", "hold_fluxfield_gpu_v2"); return true;
+    case kCmdHoldFluxFieldCpu: setEffect("hold", mousefx::hold_route::kTypeFluxFieldCpu); return true;
+    case kCmdHoldFluxFieldGpuV2: setEffect("hold", mousefx::hold_route::kTypeFluxFieldGpuV2); return true;
     case kCmdHoldNone: clearEffect("hold"); return true;
 
     case kCmdHoverGlow: setEffect("hover", "glow"); return true;

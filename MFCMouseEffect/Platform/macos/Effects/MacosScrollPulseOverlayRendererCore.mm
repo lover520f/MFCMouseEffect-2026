@@ -14,6 +14,82 @@
 #endif
 
 namespace mousefx::macos_scroll_pulse {
+#if defined(__APPLE__)
+namespace {
+
+NSColor* ArgbToNsColor(uint32_t argb) {
+    const CGFloat alpha = static_cast<CGFloat>((argb >> 24) & 0xFFu) / 255.0;
+    const CGFloat red = static_cast<CGFloat>((argb >> 16) & 0xFFu) / 255.0;
+    const CGFloat green = static_cast<CGFloat>((argb >> 8) & 0xFFu) / 255.0;
+    const CGFloat blue = static_cast<CGFloat>(argb & 0xFFu) / 255.0;
+    return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
+}
+
+} // namespace
+#endif
+
+void ShowScrollPulseOverlayOnMain(
+    const ScrollEffectRenderCommand& command,
+    const std::string& themeName) {
+#if !defined(__APPLE__)
+    (void)command;
+    (void)themeName;
+    return;
+#else
+    if (!command.emit) {
+        return;
+    }
+    (void)themeName;
+    const ScrollPulseRenderPlan plan = BuildScrollPulseRenderPlan(command);
+    NSWindow* window = macos_overlay_support::CreateOverlayWindow(plan.frame);
+    if (window == nil) {
+        return;
+    }
+
+    NSView* content = [window contentView];
+    macos_overlay_support::ApplyOverlayContentScale(content, command.overlayPoint);
+
+    const macos_effect_profile::ScrollRenderProfile profileForGeometry{};
+    CAShapeLayer* body = support::CreateBodyLayer(
+        content.bounds,
+        plan.bodyRect,
+        command.horizontal,
+        command.delta,
+        command.baseOpacity,
+        profileForGeometry);
+    body.fillColor = [ArgbToNsColor(command.fillArgb) CGColor];
+    body.strokeColor = [ArgbToNsColor(command.strokeArgb) CGColor];
+    [content.layer addSublayer:body];
+
+    CAShapeLayer* arrow = support::CreateArrowLayer(
+        content.bounds,
+        plan.bodyRect,
+        command.horizontal,
+        command.delta,
+        command.baseOpacity,
+        profileForGeometry);
+    arrow.fillColor = body.strokeColor;
+    arrow.strokeColor = body.strokeColor;
+    [content.layer addSublayer:arrow];
+
+    AddScrollPulseDecorations(content, plan);
+    StartScrollPulseAnimation(body, arrow, plan);
+
+    RegisterScrollPulseWindow(reinterpret_cast<void*>(window));
+    [window orderFrontRegardless];
+
+    dispatch_after(
+        dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(plan.closeAfterMs) * NSEC_PER_MSEC),
+        dispatch_get_main_queue(),
+        ^{
+          if (!TakeScrollPulseWindow(reinterpret_cast<void*>(window))) {
+              return;
+          }
+          [window orderOut:nil];
+          [window release];
+        });
+#endif
+}
 
 void ShowScrollPulseOverlayOnMain(
     const ScreenPoint& overlayPt,
@@ -31,54 +107,27 @@ void ShowScrollPulseOverlayOnMain(
     (void)profile;
     return;
 #else
-    if (delta == 0) {
-        return;
-    }
-    (void)themeName;
-
-    const ScrollPulseRenderPlan plan = BuildScrollPulseRenderPlan(overlayPt, horizontal, delta, effectType, profile);
-    NSWindow* window = macos_overlay_support::CreateOverlayWindow(plan.frame);
-    if (window == nil) {
-        return;
-    }
-
-    NSView* content = [window contentView];
-    macos_overlay_support::ApplyOverlayContentScale(content, overlayPt);
-
-    CAShapeLayer* body = support::CreateBodyLayer(
-        content.bounds,
-        plan.bodyRect,
-        horizontal,
-        delta,
+    const ScrollEffectProfile computeProfile{
+        profile.verticalSizePx,
+        profile.horizontalSizePx,
+        profile.baseDurationSec,
+        profile.perStrengthStepSec,
+        profile.closePaddingMs,
         profile.baseOpacity,
-        profile);
-    [content.layer addSublayer:body];
-
-    CAShapeLayer* arrow = support::CreateArrowLayer(
-        content.bounds,
-        plan.bodyRect,
-        horizontal,
-        delta,
-        profile.baseOpacity,
-        profile);
-    [content.layer addSublayer:arrow];
-
-    AddScrollPulseDecorations(content, plan, horizontal, delta, profile);
-    StartScrollPulseAnimation(body, arrow, plan, profile);
-
-    RegisterScrollPulseWindow(reinterpret_cast<void*>(window));
-    [window orderFrontRegardless];
-
-    dispatch_after(
-        dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(plan.closeAfterMs) * NSEC_PER_MSEC),
-        dispatch_get_main_queue(),
-        ^{
-          if (!TakeScrollPulseWindow(reinterpret_cast<void*>(window))) {
-              return;
-          }
-          [window orderOut:nil];
-          [window release];
-        });
+        profile.defaultDurationScale,
+        profile.helixDurationScale,
+        profile.twinkleDurationScale,
+        profile.defaultSizeScale,
+        profile.helixSizeScale,
+        profile.twinkleSizeScale,
+        {profile.horizontalPositive.fillArgb, profile.horizontalPositive.strokeArgb},
+        {profile.horizontalNegative.fillArgb, profile.horizontalNegative.strokeArgb},
+        {profile.verticalPositive.fillArgb, profile.verticalPositive.strokeArgb},
+        {profile.verticalNegative.fillArgb, profile.verticalNegative.strokeArgb},
+    };
+    const ScrollEffectRenderCommand command =
+        ComputeScrollEffectRenderCommand(overlayPt, horizontal, delta, effectType, computeProfile);
+    ShowScrollPulseOverlayOnMain(command, themeName);
 #endif
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MouseFx/Core/Effects/ScrollEffectCompute.h"
 #include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 #include "MouseFx/Core/Protocol/InputTypes.h"
 
@@ -15,37 +16,24 @@ namespace mousefx::macos_scroll_pulse {
 
 #if defined(__APPLE__)
 struct ScrollPulseRenderPlan {
-    std::string normalizedType{};
-    bool helixMode = false;
-    bool twinkleMode = false;
-    int strengthLevel = 0;
+    ScrollEffectRenderCommand command{};
     CGFloat size = 0;
     CGRect bodyRect = CGRectZero;
     NSRect frame = NSZeroRect;
     CFTimeInterval duration = 0;
     int closeAfterMs = 0;
-    double durationScale = 1.0;
 };
 
-ScrollPulseRenderPlan BuildScrollPulseRenderPlan(
-    const ScreenPoint& overlayPt,
-    bool horizontal,
-    int delta,
-    const std::string& effectType,
-    const macos_effect_profile::ScrollRenderProfile& profile);
+ScrollPulseRenderPlan BuildScrollPulseRenderPlan(const ScrollEffectRenderCommand& command);
 
 void AddScrollPulseDecorations(
     NSView* content,
-    const ScrollPulseRenderPlan& plan,
-    bool horizontal,
-    int delta,
-    const macos_effect_profile::ScrollRenderProfile& profile);
+    const ScrollPulseRenderPlan& plan);
 
 void StartScrollPulseAnimation(
     CAShapeLayer* body,
     CAShapeLayer* arrow,
-    const ScrollPulseRenderPlan& plan,
-    const macos_effect_profile::ScrollRenderProfile& profile);
+    const ScrollPulseRenderPlan& plan);
 #endif
 
 } // namespace mousefx::macos_scroll_pulse

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MouseFx/Core/Effects/HoldEffectCompute.h"
 #include "MouseFx/Core/Protocol/InputTypes.h"
 #include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 
@@ -9,6 +10,8 @@
 
 namespace mousefx::macos_hold_pulse {
 
+void StartHoldPulseOverlay(const HoldEffectStartCommand& command, const std::string& themeName);
+void UpdateHoldPulseOverlay(const HoldEffectUpdateCommand& command, const macos_effect_profile::HoldRenderProfile& profile);
 void StartHoldPulseOverlay(
     const ScreenPoint& overlayPt,
     MouseButton button,

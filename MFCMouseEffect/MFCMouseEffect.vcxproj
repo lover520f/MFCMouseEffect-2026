@@ -380,6 +380,11 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Wasm\WasmClickCommandExecutor.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmRenderResourceResolver.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmImageFileRenderer.h" />
+    <ClInclude Include="MouseFx\Core\Effects\ClickEffectCompute.h" />
+    <ClInclude Include="MouseFx\Core\Effects\TrailEffectCompute.h" />
+    <ClInclude Include="MouseFx\Core\Effects\ScrollEffectCompute.h" />
+    <ClInclude Include="MouseFx\Core\Effects\HoverEffectCompute.h" />
+    <ClInclude Include="MouseFx\Core\Effects\HoldEffectCompute.h" />
     <ClInclude Include="Settings\SettingsOptions.h" />
     <ClInclude Include="Settings\EmojiUtils.h" />
     <ClInclude Include="pch.h" />
@@ -423,6 +428,11 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Automation\ShortcutCaptureSession.cpp" />
     <ClCompile Include="MouseFx\Core\Config\ConfigPathResolver.cpp" />
     <ClCompile Include="MouseFx\Core\Control\EffectFactory.cpp" />
+    <ClCompile Include="MouseFx\Core\Effects\ClickEffectCompute.cpp" />
+    <ClCompile Include="MouseFx\Core\Effects\TrailEffectCompute.cpp" />
+    <ClCompile Include="MouseFx\Core\Effects\ScrollEffectCompute.cpp" />
+    <ClCompile Include="MouseFx\Core\Effects\HoverEffectCompute.cpp" />
+    <ClCompile Include="MouseFx\Core\Effects\HoldEffectCompute.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayHostService.cpp" />
     <ClCompile Include="MouseFx\Core\System\GdiPlusSession.cpp" />

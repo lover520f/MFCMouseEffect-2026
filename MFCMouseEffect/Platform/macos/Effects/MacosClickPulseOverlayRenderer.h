@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MouseFx/Core/Effects/ClickEffectCompute.h"
 #include "MouseFx/Core/Protocol/InputTypes.h"
 #include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 
@@ -8,6 +9,7 @@
 namespace mousefx::macos_click_pulse {
 
 void CloseAllClickPulseWindows();
+void ShowClickPulseOverlay(const ClickEffectRenderCommand& command, const std::string& themeName);
 void ShowClickPulseOverlay(
     const ScreenPoint& overlayPt,
     MouseButton button,

@@ -94,6 +94,11 @@ if(APPLE)
 endif()
 
 add_library(mfx_shell_macos STATIC
+    "${MFX_PROJECT_ROOT}/MouseFx/Core/Effects/ClickEffectCompute.cpp"
+    "${MFX_PROJECT_ROOT}/MouseFx/Core/Effects/TrailEffectCompute.cpp"
+    "${MFX_PROJECT_ROOT}/MouseFx/Core/Effects/ScrollEffectCompute.cpp"
+    "${MFX_PROJECT_ROOT}/MouseFx/Core/Effects/HoverEffectCompute.cpp"
+    "${MFX_PROJECT_ROOT}/MouseFx/Core/Effects/HoldEffectCompute.cpp"
     "${MFX_PROJECT_ROOT}/Platform/macos/Control/MacosDispatchMessageCodec.cpp"
     "${MFX_PROJECT_ROOT}/Platform/macos/Control/MacosDispatchMessageHost.cpp"
     "${MFX_PROJECT_ROOT}/Platform/macos/Control/MacosDispatchMessageHost.Messaging.cpp"

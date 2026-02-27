@@ -6,6 +6,9 @@
 #include "MouseFx/Server/SettingsStateMapper.EffectsProfileStateBuilder.h"
 #include "MouseFx/Server/WebSettingsServer.TestRouteCommon.h"
 #include "Platform/PlatformTarget.h"
+#if MFX_PLATFORM_MACOS
+#include "MouseFx/Server/SettingsStateMapper.EffectsProfileStateBuilder.Macos.h"
+#endif
 
 using json = nlohmann::json;
 
@@ -46,12 +49,18 @@ bool HandleWebSettingsTestEffectsProfileApiRoute(
 
     const EffectConfig cfg = controller->GetConfigSnapshot();
     const json effectsProfileState = BuildEffectsProfileStateJson(cfg);
+#if MFX_PLATFORM_MACOS
+    const json commandSamples = BuildMacosEffectRenderCommandSamplesJson(cfg);
+#else
+    const json commandSamples = json::object();
+#endif
 
     SetJsonResponse(resp, json({
         {"ok", true},
         {"supported", MFX_PLATFORM_MACOS ? true : false},
         {"active", effectsProfileState.value("active", json::object())},
         {"config_basis", effectsProfileState.value("config_basis", json::object())},
+        {"command_samples", commandSamples},
         {"profiles", {
             {"click", effectsProfileState.value("click", json::object())},
             {"trail", effectsProfileState.value("trail", json::object())},

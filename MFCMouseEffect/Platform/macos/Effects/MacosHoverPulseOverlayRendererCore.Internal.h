@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MouseFx/Core/Effects/HoverEffectCompute.h"
 #include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 #include "MouseFx/Core/Protocol/InputTypes.h"
 
@@ -14,29 +15,23 @@ namespace mousefx::macos_hover_pulse {
 
 #if defined(__APPLE__)
 struct HoverPulseRenderPlan {
-    std::string hoverType{};
-    bool tubesMode = false;
+    HoverEffectRenderCommand command{};
     CGFloat size = 0;
     NSRect frame = NSZeroRect;
     CFTimeInterval breatheDurationSec = 0;
     CFTimeInterval tubesSpinDurationSec = 0;
 };
 
-HoverPulseRenderPlan BuildHoverPulseRenderPlan(
-    const ScreenPoint& overlayPt,
-    const std::string& effectType,
-    const macos_effect_profile::HoverRenderProfile& profile);
+HoverPulseRenderPlan BuildHoverPulseRenderPlan(const HoverEffectRenderCommand& command);
 
 void ConfigureHoverRingLayer(
     CAShapeLayer* ring,
     NSView* content,
-    const HoverPulseRenderPlan& plan,
-    const macos_effect_profile::HoverRenderProfile& profile);
+    const HoverPulseRenderPlan& plan);
 
 void AddHoverExtraLayersAndAnimations(
     NSView* content,
-    const HoverPulseRenderPlan& plan,
-    const macos_effect_profile::HoverRenderProfile& profile);
+    const HoverPulseRenderPlan& plan);
 #endif
 
 } // namespace mousefx::macos_hover_pulse

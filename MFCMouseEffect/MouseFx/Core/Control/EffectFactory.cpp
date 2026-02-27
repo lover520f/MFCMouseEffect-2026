@@ -5,6 +5,10 @@
 #include "Platform/PlatformTarget.h"
 
 #if MFX_PLATFORM_WINDOWS
+#include "MouseFx/Core/Effects/HoldEffectCompute.h"
+#include "MouseFx/Core/Effects/HoverEffectCompute.h"
+#include "MouseFx/Core/Effects/ScrollEffectCompute.h"
+#include "MouseFx/Core/Effects/TrailEffectCompute.h"
 #include "MouseFx/Effects/HoldEffect.h"
 #include "MouseFx/Effects/HoverEffect.h"
 #include "MouseFx/Effects/IconEffect.h"
@@ -55,25 +59,30 @@ std::unique_ptr<IMouseEffect> CreateTrailParticle(const std::string&, const Effe
 }
 
 std::unique_ptr<IMouseEffect> CreateTrailGeneric(const std::string& type, const EffectConfig& config) {
-    const auto profile = config.GetTrailHistoryProfile(type);
+    const std::string normalizedType = NormalizeTrailEffectType(type);
+    const auto profile = config.GetTrailHistoryProfile(normalizedType);
     return std::make_unique<TrailEffect>(
         config.theme,
-        type,
+        normalizedType,
         profile.durationMs,
         profile.maxPoints,
         config.trailParams);
 }
 
 std::unique_ptr<IMouseEffect> CreateScroll(const std::string& type, const EffectConfig& config) {
-    return std::make_unique<ScrollEffect>(config.theme, type);
+    return std::make_unique<ScrollEffect>(config.theme, NormalizeScrollEffectType(type));
 }
 
 std::unique_ptr<IMouseEffect> CreateHold(const std::string& type, const EffectConfig& config) {
-    return std::make_unique<HoldEffect>(config.theme, type, config.holdFollowMode, config.holdPresenterBackend);
+    return std::make_unique<HoldEffect>(
+        config.theme,
+        NormalizeHoldEffectType(type),
+        config.holdFollowMode,
+        config.holdPresenterBackend);
 }
 
 std::unique_ptr<IMouseEffect> CreateHover(const std::string& type, const EffectConfig& config) {
-    return std::make_unique<HoverEffect>(config.theme, type);
+    return std::make_unique<HoverEffect>(config.theme, NormalizeHoverEffectType(type));
 }
 
 const std::array<CategoryRegistryEntry, CategoryIndex(EffectCategory::Count)>& RegistryTable() {

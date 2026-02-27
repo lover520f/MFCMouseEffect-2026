@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "MouseFx/Core/Effects/HoldEffectCompute.h"
 #include "Platform/macos/Effects/MacosHoldPulseEffect.h"
 
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
@@ -11,6 +12,29 @@
 #include <utility>
 
 namespace mousefx {
+namespace {
+
+HoldEffectProfile BuildComputeProfile(const macos_effect_profile::HoldRenderProfile& profile) {
+    HoldEffectProfile out{};
+    out.sizePx = profile.sizePx;
+    out.progressFullMs = profile.progressFullMs;
+    out.breatheDurationSec = profile.breatheDurationSec;
+    out.rotateDurationSec = profile.rotateDurationSec;
+    out.rotateDurationFastSec = profile.rotateDurationFastSec;
+    out.baseOpacity = profile.baseOpacity;
+    out.colors.leftBaseStrokeArgb = profile.colors.leftBaseStrokeArgb;
+    out.colors.rightBaseStrokeArgb = profile.colors.rightBaseStrokeArgb;
+    out.colors.middleBaseStrokeArgb = profile.colors.middleBaseStrokeArgb;
+    out.colors.lightningStrokeArgb = profile.colors.lightningStrokeArgb;
+    out.colors.hexStrokeArgb = profile.colors.hexStrokeArgb;
+    out.colors.hologramStrokeArgb = profile.colors.hologramStrokeArgb;
+    out.colors.quantumHaloStrokeArgb = profile.colors.quantumHaloStrokeArgb;
+    out.colors.fluxFieldStrokeArgb = profile.colors.fluxFieldStrokeArgb;
+    out.colors.techNeonStrokeArgb = profile.colors.techNeonStrokeArgb;
+    return out;
+}
+
+} // namespace
 
 MacosHoldPulseEffect::MacosHoldPulseEffect(
     std::string effectType,
@@ -20,7 +44,7 @@ MacosHoldPulseEffect::MacosHoldPulseEffect(
     : effectType_(std::move(effectType)),
       themeName_(std::move(themeName)),
       renderProfile_(renderProfile),
-      followMode_(ParseFollowMode(followMode)) {
+      followMode_(ParseHoldEffectFollowMode(followMode)) {
     if (effectType_.empty()) {
         effectType_ = "charge";
     }
@@ -33,16 +57,14 @@ MacosHoldPulseEffect::~MacosHoldPulseEffect() {
 bool MacosHoldPulseEffect::Initialize() {
     initialized_ = true;
     running_ = false;
-    hasSmoothedPoint_ = false;
-    lastEfficientTickMs_ = 0;
+    followState_ = HoldEffectFollowState{};
     return true;
 }
 
 void MacosHoldPulseEffect::Shutdown() {
     initialized_ = false;
     running_ = false;
-    hasSmoothedPoint_ = false;
-    lastEfficientTickMs_ = 0;
+    followState_ = HoldEffectFollowState{};
     macos_hold_pulse::StopHoldPulseOverlay();
 }
 
@@ -59,64 +81,36 @@ void MacosHoldPulseEffect::OnHoldStart(const ScreenPoint& pt, int button) {
         holdButton_ = MouseButton::Left;
     }
 
-    const ScreenPoint overlayPt = ScreenToOverlayPoint(pt);
-    macos_hold_pulse::StartHoldPulseOverlay(overlayPt, holdButton_, effectType_, themeName_, renderProfile_);
+    const HoldEffectStartCommand command = ComputeHoldEffectStartCommand(
+        ScreenToOverlayPoint(pt),
+        holdButton_,
+        effectType_,
+        BuildComputeProfile(renderProfile_));
+    macos_hold_pulse::StartHoldPulseOverlay(command, themeName_);
     running_ = true;
-    hasSmoothedPoint_ = false;
-    lastEfficientTickMs_ = 0;
+    followState_ = HoldEffectFollowState{};
 }
 
 void MacosHoldPulseEffect::OnHoldUpdate(const ScreenPoint& pt, uint32_t durationMs) {
     if (!initialized_ || !running_) {
         return;
     }
-
-    ScreenPoint updatePoint = pt;
-    const uint64_t nowMs = CurrentTickMs();
-
-    switch (followMode_) {
-    case FollowMode::Precise:
-        break;
-    case FollowMode::Smooth:
-        if (!hasSmoothedPoint_) {
-            smoothedX_ = static_cast<float>(pt.x);
-            smoothedY_ = static_cast<float>(pt.y);
-            hasSmoothedPoint_ = true;
-        } else {
-            constexpr float kAlpha = 0.35f;
-            smoothedX_ += (static_cast<float>(pt.x) - smoothedX_) * kAlpha;
-            smoothedY_ += (static_cast<float>(pt.y) - smoothedY_) * kAlpha;
-        }
-        updatePoint.x = static_cast<int32_t>(std::lround(smoothedX_));
-        updatePoint.y = static_cast<int32_t>(std::lround(smoothedY_));
-        break;
-    case FollowMode::Efficient:
-        if (lastEfficientTickMs_ != 0 && (nowMs - lastEfficientTickMs_) < 20) {
-            return;
-        }
-        lastEfficientTickMs_ = nowMs;
-        break;
+    const HoldEffectUpdateCommand command = ComputeHoldEffectUpdateCommand(
+        ScreenToOverlayPoint(pt),
+        durationMs,
+        CurrentTickMs(),
+        followMode_,
+        &followState_);
+    if (!command.emit) {
+        return;
     }
-
-    macos_hold_pulse::UpdateHoldPulseOverlay(ScreenToOverlayPoint(updatePoint), durationMs, renderProfile_);
+    macos_hold_pulse::UpdateHoldPulseOverlay(command, renderProfile_);
 }
 
 void MacosHoldPulseEffect::OnHoldEnd() {
     running_ = false;
-    hasSmoothedPoint_ = false;
-    lastEfficientTickMs_ = 0;
+    followState_ = HoldEffectFollowState{};
     macos_hold_pulse::StopHoldPulseOverlay();
-}
-
-MacosHoldPulseEffect::FollowMode MacosHoldPulseEffect::ParseFollowMode(const std::string& mode) {
-    const std::string normalized = ToLowerAscii(mode);
-    if (normalized == "precise") {
-        return FollowMode::Precise;
-    }
-    if (normalized == "efficient") {
-        return FollowMode::Efficient;
-    }
-    return FollowMode::Smooth;
 }
 
 uint64_t MacosHoldPulseEffect::CurrentTickMs() {

@@ -2,18 +2,26 @@
 
 #include "Platform/macos/Effects/MacosHoverPulseOverlayRendererCore.Internal.h"
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
-#include "Platform/macos/Effects/MacosHoverPulseOverlayStyle.h"
-
-#include <algorithm>
 
 namespace mousefx::macos_hover_pulse {
 
 #if defined(__APPLE__)
+namespace {
+
+NSColor* ArgbToNsColor(uint32_t argb) {
+    const CGFloat alpha = static_cast<CGFloat>((argb >> 24) & 0xFFu) / 255.0;
+    const CGFloat red = static_cast<CGFloat>((argb >> 16) & 0xFFu) / 255.0;
+    const CGFloat green = static_cast<CGFloat>((argb >> 8) & 0xFFu) / 255.0;
+    const CGFloat blue = static_cast<CGFloat>(argb & 0xFFu) / 255.0;
+    return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
+}
+
+} // namespace
+
 void AddHoverExtraLayersAndAnimations(
     NSView* content,
-    const HoverPulseRenderPlan& plan,
-    const macos_effect_profile::HoverRenderProfile& profile) {
-    if (!plan.tubesMode) {
+    const HoverPulseRenderPlan& plan) {
+    if (!plan.command.tubesMode) {
         return;
     }
 
@@ -25,9 +33,10 @@ void AddHoverExtraLayersAndAnimations(
     ring2.path = ring2Path;
     CGPathRelease(ring2Path);
     ring2.fillColor = [NSColor clearColor].CGColor;
-    ring2.strokeColor = HoverTubesStrokeColor(profile).CGColor;
+    ring2.strokeColor = [ArgbToNsColor(plan.command.tubesStrokeArgb) CGColor];
     ring2.lineWidth = macos_overlay_support::ScaleOverlayMetric(size, 1.8, 160.0, 0.9, 3.8);
-    ring2.opacity = static_cast<float>(macos_overlay_support::ResolveOverlayOpacity(profile.baseOpacity, -0.05, 0.1));
+    ring2.opacity = static_cast<float>(
+        macos_overlay_support::ResolveOverlayOpacity(plan.command.baseOpacity, -0.05, 0.1));
     [content.layer addSublayer:ring2];
 
     CABasicAnimation* spin = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];

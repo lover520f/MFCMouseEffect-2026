@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MouseFx/Core/Effects/ScrollEffectCompute.h"
 #include "MouseFx/Core/Protocol/InputTypes.h"
 #include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 
@@ -8,6 +9,7 @@
 namespace mousefx::macos_scroll_pulse {
 
 void CloseAllScrollPulseWindows();
+void ShowScrollPulseOverlay(const ScrollEffectRenderCommand& command, const std::string& themeName);
 void ShowScrollPulseOverlay(
     const ScreenPoint& overlayPt,
     bool horizontal,
