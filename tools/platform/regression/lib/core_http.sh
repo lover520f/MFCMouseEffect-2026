@@ -20,6 +20,7 @@ _mfx_core_http_launch_capture_file=""
 _mfx_core_http_permission_sim_file=""
 _mfx_core_http_notification_capture_file=""
 _mfx_core_http_probe_diagnostics_file=""
+_mfx_core_http_startup_skip_reason=""
 
 
 mfx_run_core_http_contract_checks() {
@@ -53,6 +54,7 @@ mfx_run_core_http_contract_checks() {
         initial_permission_state="1"
     fi
     _mfx_core_http_input_write_permission_sim_state "$permission_sim_file" "$initial_permission_state"
+    local start_status=0
     _mfx_core_http_start_entry \
         "$entry_bin" \
         "$log_file" \
@@ -62,7 +64,23 @@ mfx_run_core_http_contract_checks() {
         "$permission_sim_file" \
         "$notification_capture_file" \
         "$require_launch_probe" \
-        "$probe_diagnostics_file"
+        "$probe_diagnostics_file" || start_status=$?
+    if [[ "$start_status" -ne 0 ]]; then
+        if [[ "$start_status" -eq 2 && -n "$_mfx_core_http_startup_skip_reason" ]]; then
+            trap - EXIT
+            _mfx_core_http_stop_entry
+            rm -rf "$tmp_dir"
+            mfx_ok "core HTTP contract checks skipped: $_mfx_core_http_startup_skip_reason"
+            return 0
+        fi
+        if [[ ! -s "$probe_file" ]]; then
+            mfx_fail "core web settings probe file not ready: $probe_file"
+        fi
+        if [[ "$require_launch_probe" == "1" && ! -s "$launch_probe_file" ]]; then
+            mfx_fail "core web settings launch probe file not ready: $launch_probe_file"
+        fi
+        mfx_fail "core web settings probe file not ready after startup retries: $probe_file"
+    fi
 
     local settings_url
     local token

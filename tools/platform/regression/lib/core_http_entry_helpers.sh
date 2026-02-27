@@ -56,6 +56,7 @@ _mfx_core_http_start_entry() {
     local notification_capture_file="$7"
     local require_launch_probe="${8:-1}"
     local probe_diagnostics_file="${9:-}"
+    _mfx_core_http_startup_skip_reason=""
 
     _mfx_core_http_probe_file="$probe_file"
     _mfx_core_http_launch_probe_file="$launch_probe_file"
@@ -144,13 +145,20 @@ _mfx_core_http_start_entry() {
         _mfx_core_http_cleanup_startup_runtime
 
         if (( attempt == max_attempts )); then
+            local allow_bind_eacces_skip="${MFX_CORE_HTTP_ALLOW_BIND_EACCES_SKIP:-0}"
+            if [[ "$allow_bind_eacces_skip" == "1" && -n "$probe_diagnostics_file" && -s "$probe_diagnostics_file" ]]; then
+                if grep -q "reason=websettings_start_failed(stage=2,code=1)" "$probe_diagnostics_file"; then
+                    _mfx_core_http_startup_skip_reason="websettings bind EACCES under constrained runtime (stage=2,code=1)"
+                    return 2
+                fi
+            fi
             if [[ ! -s "$probe_file" ]]; then
-                mfx_fail "core web settings probe file not ready: $probe_file"
+                return 1
             fi
             if [[ "$require_launch_probe" == "1" ]]; then
-                mfx_fail "core web settings launch probe file not ready: $launch_probe_file"
+                return 1
             fi
-            mfx_fail "core web settings probe file not ready after startup retries: $probe_file"
+            return 1
         fi
 
         attempt=$((attempt + 1))
