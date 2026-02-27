@@ -98,6 +98,41 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"tubes_spin_scale\":" "core effect render profile hover tempo scale field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"tubes_stroke_argb\":" "core effect render profile hover tubes stroke color field"
 
+    local code_effect_profile_state
+    code_effect_profile_state="$(mfx_http_code "$tmp_dir/effect-profile-state.out" "$base_url/api/state" \
+        -X GET \
+        -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_effect_profile_state" "200" "core effect profile state status"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"effects_profile\":" "core effect profile state section"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"meteor_duration_scale\":" "core effect profile state trail tempo field"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"helix_duration_scale\":" "core effect profile state scroll tempo field"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"tubes_spin_scale\":" "core effect profile state hover tempo field"
+
+    local probe_meteor_scale
+    local state_meteor_scale
+    local probe_helix_scale
+    local state_helix_scale
+    local probe_tubes_spin_scale
+    local state_tubes_spin_scale
+    local probe_line_stroke
+    local state_line_stroke
+    probe_meteor_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "meteor_duration_scale")"
+    state_meteor_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-profile-state.out" "meteor_duration_scale")"
+    probe_helix_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "helix_duration_scale")"
+    state_helix_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-profile-state.out" "helix_duration_scale")"
+    probe_tubes_spin_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "tubes_spin_scale")"
+    state_tubes_spin_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-profile-state.out" "tubes_spin_scale")"
+    probe_line_stroke="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "line_stroke_argb")"
+    state_line_stroke="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-profile-state.out" "line_stroke_argb")"
+
+    if [[ -z "$probe_meteor_scale" || -z "$state_meteor_scale" || -z "$probe_helix_scale" || -z "$state_helix_scale" || -z "$probe_tubes_spin_scale" || -z "$state_tubes_spin_scale" || -z "$probe_line_stroke" || -z "$state_line_stroke" ]]; then
+        mfx_fail "core effect profile parity parse failed"
+    fi
+    mfx_assert_eq "$probe_meteor_scale" "$state_meteor_scale" "core effect profile parity meteor duration scale"
+    mfx_assert_eq "$probe_helix_scale" "$state_helix_scale" "core effect profile parity helix duration scale"
+    mfx_assert_eq "$probe_tubes_spin_scale" "$state_tubes_spin_scale" "core effect profile parity tubes spin scale"
+    mfx_assert_eq "$probe_line_stroke" "$state_line_stroke" "core effect profile parity trail line stroke argb"
+
     if [[ "$platform" == "macos" ]]; then
         if ! mfx_file_contains_fixed "$tmp_dir/effect-render-profile-probe.out" "\"supported\":true"; then
             mfx_fail "core effect render profile probe support on macos: expected supported=true"

@@ -17,3 +17,9 @@ _mfx_core_http_automation_parse_uint_field() {
     local field_name="$2"
     sed -n "s/.*\"${field_name}\":\\([0-9][0-9]*\\).*/\\1/p" "$input_file" | head -n 1
 }
+
+_mfx_core_http_automation_parse_scalar_field() {
+    local input_file="$1"
+    local field_name="$2"
+    sed -n "s/.*\"${field_name}\":[[:space:]]*\\([^,}]*\\).*/\\1/p" "$input_file" | head -n 1 | tr -d '[:space:]'
+}
