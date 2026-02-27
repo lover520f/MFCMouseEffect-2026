@@ -48,8 +48,14 @@ struct ScrollEffectRenderCommand {
     uint32_t strokeArgb = 0;
 };
 
+struct ScrollEffectInputShaperProfile {
+    uint64_t emitIntervalMs = 10;
+    uint32_t maxDurationMs = 320;
+};
+
 std::string NormalizeScrollEffectType(const std::string& effectType);
 int ResolveScrollStrengthLevel(int delta);
+ScrollEffectInputShaperProfile ResolveScrollInputShaperProfile(const std::string& effectType);
 ScrollEffectRenderCommand ComputeScrollEffectRenderCommand(
     const ScreenPoint& overlayPoint,
     bool horizontal,

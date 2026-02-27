@@ -126,6 +126,8 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"click_duration_sec\":" "core effect render profile probe effective click duration"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail_duration_sec\":" "core effect render profile probe effective trail duration"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"scroll_duration_sec\":" "core effect render profile probe effective scroll duration"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"scroll_emit_interval_ms\":" "core effect render profile probe effective scroll emit interval"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"scroll_max_duration_ms\":" "core effect render profile probe effective scroll max duration"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"hold_progress_full_ms\":" "core effect render profile probe effective hold progress"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"input\":\"stream\",\"normalized\":\"streamer\"" "core effect render profile probe trail stream alias"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"input\":\"stardust\",\"normalized\":\"twinkle\"" "core effect render profile probe scroll stardust alias"

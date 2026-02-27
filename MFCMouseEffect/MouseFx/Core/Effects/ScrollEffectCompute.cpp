@@ -55,6 +55,22 @@ int ResolveScrollStrengthLevel(int delta) {
     return 0;
 }
 
+ScrollEffectInputShaperProfile ResolveScrollInputShaperProfile(const std::string& effectType) {
+    ScrollEffectInputShaperProfile profile{};
+    const std::string normalizedType = NormalizeScrollEffectType(effectType);
+    if (normalizedType == "helix") {
+        profile.emitIntervalMs = 14;
+        profile.maxDurationMs = 240;
+        return profile;
+    }
+    if (normalizedType == "twinkle") {
+        profile.emitIntervalMs = 30;
+        profile.maxDurationMs = 220;
+        return profile;
+    }
+    return profile;
+}
+
 ScrollEffectRenderCommand ComputeScrollEffectRenderCommand(
     const ScreenPoint& overlayPoint,
     bool horizontal,
@@ -81,6 +97,9 @@ ScrollEffectRenderCommand ComputeScrollEffectRenderCommand(
     const double baseDuration =
         profile.baseDurationSec + profile.perStrengthStepSec * static_cast<double>(command.strengthLevel);
     command.durationSec = std::clamp(baseDuration * ResolveDurationScale(command, profile), 0.08, 3.0);
+    const ScrollEffectInputShaperProfile shaper = ResolveScrollInputShaperProfile(command.normalizedType);
+    const double maxDurationSec = static_cast<double>(shaper.maxDurationMs) / 1000.0;
+    command.durationSec = std::min(command.durationSec, maxDurationSec);
     command.closeAfterMs = static_cast<int>(command.durationSec * 1000.0) + profile.closePaddingMs;
     command.baseOpacity = std::clamp(profile.baseOpacity, 0.05, 1.0);
 

@@ -315,6 +315,7 @@ nlohmann::json BuildMacosEffectRenderCommandSamplesJson(const EffectConfig& cfg)
         kSampleScrollDelta,
         cfg.active.scroll,
         macos_effect_compute_profile::BuildScrollProfile(scrollProfile));
+    const ScrollEffectInputShaperProfile scrollShaper = ResolveScrollInputShaperProfile(cfg.active.scroll);
     const HoverEffectRenderCommand hoverCommand = ComputeHoverEffectRenderCommand(
         kSamplePoint,
         cfg.active.hover,
@@ -361,6 +362,8 @@ nlohmann::json BuildMacosEffectRenderCommandSamplesJson(const EffectConfig& cfg)
         {"click_duration_sec", clickCommand.animationDurationSec},
         {"trail_duration_sec", trailCommand.durationSec},
         {"scroll_duration_sec", scrollCommand.durationSec},
+        {"scroll_emit_interval_ms", scrollShaper.emitIntervalMs},
+        {"scroll_max_duration_ms", scrollShaper.maxDurationMs},
         {"hover_breathe_duration_sec", hoverCommand.breatheDurationSec},
         {"hover_spin_duration_sec", hoverCommand.tubesSpinDurationSec},
         {"hold_progress_full_ms", holdStartCommand.progressFullMs},

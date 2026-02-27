@@ -3,6 +3,7 @@
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 
+#include <cstdint>
 #include <string>
 
 namespace mousefx {
@@ -20,10 +21,13 @@ public:
     void OnScroll(const ScrollEvent& event) override;
 
 private:
+    static uint64_t CurrentTickMs();
     std::string effectType_{};
     std::string themeName_{};
     macos_effect_profile::ScrollRenderProfile renderProfile_{};
     bool initialized_ = false;
+    uint64_t lastEmitTickMs_ = 0;
+    int pendingDelta_ = 0;
 };
 
 } // namespace mousefx
