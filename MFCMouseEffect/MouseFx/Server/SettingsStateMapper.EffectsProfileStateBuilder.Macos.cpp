@@ -27,9 +27,11 @@ nlohmann::json BuildMacosEffectsProfileStateJson(const EffectConfig& cfg) {
         {"test_tuning", {
             {"duration_scale", testTuning.durationScale},
             {"size_scale", testTuning.sizeScale},
+            {"opacity_scale", testTuning.opacityScale},
             {"trail_throttle_scale", testTuning.trailThrottleScale},
             {"duration_overridden", testTuning.durationOverridden},
             {"size_overridden", testTuning.sizeOverridden},
+            {"opacity_overridden", testTuning.opacityOverridden},
             {"trail_throttle_overridden", testTuning.trailThrottleOverridden},
         }},
     };

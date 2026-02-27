@@ -91,6 +91,7 @@ inline bool TryParseEnvDouble(const char* key, double* outValue) {
 inline TestProfileTuning ResolveTestProfileTuningFromEnv() {
     constexpr const char* kDurationScaleEnv = "MFX_TEST_EFFECTS_DURATION_SCALE";
     constexpr const char* kSizeScaleEnv = "MFX_TEST_EFFECTS_SIZE_SCALE";
+    constexpr const char* kOpacityScaleEnv = "MFX_TEST_EFFECTS_OPACITY_SCALE";
     constexpr const char* kTrailThrottleScaleEnv = "MFX_TEST_EFFECTS_TRAIL_THROTTLE_SCALE";
 
     TestProfileTuning tuning{};
@@ -102,6 +103,10 @@ inline TestProfileTuning ResolveTestProfileTuningFromEnv() {
     if (TryParseEnvDouble(kSizeScaleEnv, &parsed)) {
         tuning.sizeScale = ClampDouble(parsed, 0.5, 2.0);
         tuning.sizeOverridden = true;
+    }
+    if (TryParseEnvDouble(kOpacityScaleEnv, &parsed)) {
+        tuning.opacityScale = ClampDouble(parsed, 0.25, 1.5);
+        tuning.opacityOverridden = true;
     }
     if (TryParseEnvDouble(kTrailThrottleScaleEnv, &parsed)) {
         tuning.trailThrottleScale = ClampDouble(parsed, 0.25, 4.0);

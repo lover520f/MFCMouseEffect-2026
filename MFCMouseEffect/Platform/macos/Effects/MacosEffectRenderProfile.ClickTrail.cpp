@@ -48,6 +48,10 @@ uint32_t BlendArgb(uint32_t lhsArgb, uint32_t rhsArgb, double rhsWeight) {
            static_cast<uint32_t>(blue);
 }
 
+double ScaleOpacity(double baseOpacity, double opacityScale) {
+    return detail::ScaleDouble(baseOpacity, opacityScale, 0.05, 1.0);
+}
+
 } // namespace
 
 ClickRenderProfile ResolveClickRenderProfile(const EffectConfig& config) {
@@ -69,7 +73,7 @@ ClickRenderProfile ResolveClickRenderProfile(const EffectConfig& config) {
         0.16,
         2.4);
     profile.closePaddingMs = 60;
-    profile.baseOpacity = 0.95;
+    profile.baseOpacity = ScaleOpacity(0.95, tuning.opacityScale);
     profile.leftButton.fillArgb = config.ripple.leftClick.fill.value;
     profile.leftButton.strokeArgb = config.ripple.leftClick.stroke.value;
     profile.leftButton.glowArgb = config.ripple.leftClick.glow.value;
@@ -95,7 +99,7 @@ TrailRenderProfile ResolveTrailRenderProfile(const EffectConfig& config, const s
     profile.particleSizePx =
         detail::ScaleInt(ClampInt(40 + history.maxPoints / 6, 40, 72), tuning.sizeScale, 28, 160);
     profile.closePaddingMs = 40;
-    profile.baseOpacity = 0.95;
+    profile.baseOpacity = ScaleOpacity(0.95, tuning.opacityScale);
     const uint32_t trailBaseStroke = config.trail.color.value;
     const uint32_t trailBaseFill = WithAlpha(trailBaseStroke, 0x3Du);
     profile.line.strokeArgb = trailBaseStroke;

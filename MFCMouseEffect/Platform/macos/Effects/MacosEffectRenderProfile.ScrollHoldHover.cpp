@@ -44,6 +44,10 @@ uint32_t BlendArgb(uint32_t lhsArgb, uint32_t rhsArgb, double rhsWeight) {
            static_cast<uint32_t>(blue);
 }
 
+double ScaleOpacity(double baseOpacity, double opacityScale) {
+    return detail::ScaleDouble(baseOpacity, opacityScale, 0.05, 1.0);
+}
+
 } // namespace
 
 ScrollRenderProfile ResolveScrollRenderProfile(const EffectConfig& config) {
@@ -68,7 +72,7 @@ ScrollRenderProfile ResolveScrollRenderProfile(const EffectConfig& config) {
     profile.verticalSizePx =
         detail::ScaleInt(ClampInt(config.ripple.windowSize + 24, 108, 224), tuning.sizeScale, 72, 400);
     profile.closePaddingMs = 90;
-    profile.baseOpacity = 0.96;
+    profile.baseOpacity = ScaleOpacity(0.96, tuning.opacityScale);
 
     profile.horizontalPositive.fillArgb = config.ripple.leftClick.fill.value;
     profile.horizontalPositive.strokeArgb = config.ripple.leftClick.stroke.value;
@@ -110,7 +114,7 @@ HoldRenderProfile ResolveHoldRenderProfile(const EffectConfig& config) {
         tuning.durationScale,
         0.2,
         6.0);
-    profile.baseOpacity = 0.92;
+    profile.baseOpacity = ScaleOpacity(0.92, tuning.opacityScale);
 
     profile.colors.leftBaseStrokeArgb = config.ripple.leftClick.stroke.value;
     profile.colors.rightBaseStrokeArgb = config.ripple.rightClick.stroke.value;
@@ -146,7 +150,7 @@ HoverRenderProfile ResolveHoverRenderProfile(const EffectConfig& config) {
         tuning.durationScale,
         0.35,
         8.0);
-    profile.baseOpacity = 0.9;
+    profile.baseOpacity = ScaleOpacity(0.9, tuning.opacityScale);
 
     profile.colors.glowFillArgb = ScaleArgbBrightness(config.ripple.leftClick.fill.value, 0.92);
     profile.colors.glowStrokeArgb = config.ripple.leftClick.stroke.value;

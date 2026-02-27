@@ -128,9 +128,11 @@ struct HoverRenderProfile {
 struct TestProfileTuning {
     double durationScale = 1.0;
     double sizeScale = 1.0;
+    double opacityScale = 1.0;
     double trailThrottleScale = 1.0;
     bool durationOverridden = false;
     bool sizeOverridden = false;
+    bool opacityOverridden = false;
     bool trailThrottleOverridden = false;
 };
 

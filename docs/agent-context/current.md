@@ -153,7 +153,7 @@
   - `PosixSettingsLauncher` and `ScaffoldSettingsRuntime` are now split by concern (`capture/spawn` and `runtime-start orchestration` modules), reducing shell runtime coupling while preserving URL launch and scaffold server contracts
   - `AppController` VM suppression path is now isolated in `AppController.VmSuppression.cpp`, reducing suppression-vs-effects coupling while preserving suppression behavior contracts
   - macOS effect overlay lifecycle now exposes 5-category active-window diagnostics (`click/trail/scroll/hold/hover`) in `/api/state.effects_runtime`, and probe coverage (`/api/effects/test-overlay-windows`) now exercises all 5 categories with persistent-overlay close control
-  - macOS effects profile resolution now supports explicit test-only tuning overrides (`MFX_TEST_EFFECTS_DURATION_SCALE`, `MFX_TEST_EFFECTS_SIZE_SCALE`, `MFX_TEST_EFFECTS_TRAIL_THROTTLE_SCALE`) with bounded clamps and cross-API diagnostics parity (`/api/effects/test-render-profiles` + `/api/state.effects_profile`); automation contracts can assert non-default override values via `MFX_EXPECT_EFFECTS_*`
+  - macOS effects profile resolution now supports explicit test-only tuning overrides (`MFX_TEST_EFFECTS_DURATION_SCALE`, `MFX_TEST_EFFECTS_SIZE_SCALE`, `MFX_TEST_EFFECTS_OPACITY_SCALE`, `MFX_TEST_EFFECTS_TRAIL_THROTTLE_SCALE`) with bounded clamps and cross-API diagnostics parity (`/api/effects/test-render-profiles` + `/api/state.effects_profile`); automation contracts can assert non-default override values via `MFX_EXPECT_EFFECTS_*`
   - posix regression suite now includes macOS effects tuning selfcheck phase by default (`run-macos-effects-profile-tuning-selfcheck.sh`), with skip switch `--skip-macos-effects-tuning-selfcheck`
   - core HTTP automation regression now supports effects-only scope (`--check-scope effects`) and dedicated fast entry (`run-posix-core-effects-contract-regression.sh`) for effects overlay/profile contract checks
   - posix suite now forwards core automation check scope via `--core-automation-check-scope <all|wasm|effects>`, enabling effects-focused suite passes without switching entry scripts
@@ -210,7 +210,7 @@ Use this one-command entry for automation injection selfcheck (`left_click -> Cm
 ./tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build
 ```
 
-Use this one-command entry for effects profile tuning selfcheck (test-only `duration/size/trail-throttle` overrides):
+Use this one-command entry for effects profile tuning selfcheck (test-only `duration/size/opacity/trail-throttle` overrides):
 ```bash
 ./tools/platform/manual/run-macos-effects-profile-tuning-selfcheck.sh --skip-build
 ```
