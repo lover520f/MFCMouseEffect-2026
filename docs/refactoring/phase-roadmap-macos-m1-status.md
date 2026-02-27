@@ -554,6 +554,7 @@
 - macOS non-GPU effect overlays now also share geometry metric scaling helper (`ScaleOverlayMetric`) across click/trail/scroll/hold/hover, reducing fixed-pixel ratio drift on small/large overlay sizes while preserving style semantics.
 - macOS non-GPU one-shot effect durations now also share bounded size normalization (`ScaleOverlayDurationBySize`), with scroll keeping existing strength mapping and applying size normalization on top.
 - macOS non-GPU effect alpha computation now also shares one policy helper (`ResolveOverlayOpacity`) across click/trail/scroll/hold/hover, reducing category-level clamp/floor drift while preserving per-style deltas.
+- POSIX regression suite now supports explicit ObjC++ edit policy gate (`--enforce-no-objcxx-edits` / `MFX_ENFORCE_NO_OBJCXX_EDITS=1`) to fail fast when closure iterations contain `.mm/.m` edits.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:

@@ -24,6 +24,7 @@ MFX_SKIP_AUTOMATION_TEST=0
 MFX_SKIP_MACOS_WASM_SELFCHECK=0
 MFX_SCAFFOLD_SKIP_SMOKE=0
 MFX_SCAFFOLD_SKIP_HTTP=0
+MFX_ENFORCE_NO_OBJCXX_EDITS="${MFX_ENFORCE_NO_OBJCXX_EDITS:-0}"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -91,6 +92,10 @@ while [[ $# -gt 0 ]]; do
             MFX_SCAFFOLD_SKIP_HTTP=1
             shift
             ;;
+        --enforce-no-objcxx-edits)
+            MFX_ENFORCE_NO_OBJCXX_EDITS=1
+            shift
+            ;;
         -h|--help)
             cat <<'USAGE'
 Usage: run-posix-regression-suite.sh [options]
@@ -110,6 +115,7 @@ Usage: run-posix-regression-suite.sh [options]
   --skip-macos-wasm-selfcheck     skip macOS wasm runtime selfcheck phase
   --scaffold-skip-smoke           forward: skip scaffold smoke checks
   --scaffold-skip-http            forward: skip scaffold HTTP checks
+  --enforce-no-objcxx-edits       fail when workspace edits contain .mm/.m (policy gate)
 USAGE
             exit 0
             ;;
@@ -125,6 +131,13 @@ fi
 
 mfx_info "repo root: $REPO_ROOT"
 mfx_info "host platform: $(uname -s)"
+
+if [[ "$MFX_ENFORCE_NO_OBJCXX_EDITS" -eq 1 ]]; then
+    mfx_info "run objcxx edit policy gate phase"
+    "$REPO_ROOT/tools/policy/check-no-objcxx-edits.sh" --repo-root "$REPO_ROOT"
+else
+    mfx_info "skip objcxx edit policy gate phase"
+fi
 
 if command -v pgrep >/dev/null 2>&1; then
     if pgrep -f mfx_entry_posix_host >/dev/null 2>&1; then
