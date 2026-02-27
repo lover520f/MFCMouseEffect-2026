@@ -54,18 +54,19 @@ void StartHoldPulseOverlayOnMain(
     ring.fillColor = [[baseColor colorWithAlphaComponent:0.16] CGColor];
     ring.strokeColor = [baseColor CGColor];
     ring.lineWidth = 2.4;
-    ring.opacity = static_cast<float>(profile.baseOpacity);
+    ring.opacity = static_cast<float>(macos_overlay_support::ClampOverlayOpacity(profile.baseOpacity));
     [content.layer addSublayer:ring];
 
     CAShapeLayer* accent = [CAShapeLayer layer];
     accent.frame = content.bounds;
     detail::ConfigureHoldAccentLayer(accent, content.bounds, holdStyle, baseColor);
-    accent.opacity = static_cast<float>(std::max(0.1, profile.baseOpacity - 0.06));
+    accent.opacity = static_cast<float>(
+        std::max<CGFloat>(0.1, macos_overlay_support::ClampOverlayOpacity(profile.baseOpacity - 0.06)));
     [content.layer addSublayer:accent];
 
     CABasicAnimation* breathe = [CABasicAnimation animationWithKeyPath:@"opacity"];
     breathe.fromValue = @0.35;
-    breathe.toValue = @(std::min(1.0, profile.baseOpacity + 0.03));
+    breathe.toValue = @(macos_overlay_support::ClampOverlayOpacity(profile.baseOpacity + 0.03));
     breathe.duration = profile.breatheDurationSec;
     breathe.autoreverses = YES;
     breathe.repeatCount = HUGE_VALF;

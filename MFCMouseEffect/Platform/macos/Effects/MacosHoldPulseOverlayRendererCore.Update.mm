@@ -39,10 +39,14 @@ void UpdateHoldPulseOverlayOnMain(const ScreenPoint& overlayPt, uint32_t holdMs)
     state.ring.transform = CATransform3DMakeScale(scale, scale, 1.0);
     state.ring.lineWidth = 2.4 + progress * 1.4;
     const CGFloat baseOpacity = static_cast<CGFloat>(state.profile.baseOpacity);
-    state.ring.opacity = std::max<CGFloat>(0.2, baseOpacity - 0.18f + progress * 0.20f);
+    state.ring.opacity = std::max<CGFloat>(
+        0.2,
+        macos_overlay_support::ClampOverlayOpacity(baseOpacity - 0.18f + progress * 0.20f));
 
     if (state.accent != nil) {
-        state.accent.opacity = std::max<CGFloat>(0.15, baseOpacity - 0.35f + progress * 0.35f);
+        state.accent.opacity = std::max<CGFloat>(
+            0.15,
+            macos_overlay_support::ClampOverlayOpacity(baseOpacity - 0.35f + progress * 0.35f));
     }
 #endif
 }

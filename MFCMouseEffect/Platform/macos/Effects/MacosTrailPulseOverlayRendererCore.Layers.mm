@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Platform/macos/Effects/MacosTrailPulseOverlayRendererCore.Internal.h"
+#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "Platform/macos/Effects/MacosTrailPulseOverlayStyle.h"
 
 namespace mousefx::macos_trail_pulse {
@@ -40,10 +41,13 @@ void ConfigureTrailCoreLayer(
         core.lineWidth = (plan.trailType == "meteor") ? 4.0 : 3.0;
     }
 
-    core.opacity = static_cast<float>(profile.baseOpacity);
+    core.opacity = static_cast<float>(macos_overlay_support::ClampOverlayOpacity(profile.baseOpacity));
 }
 
-void AddTrailGlowLayer(NSView* content, const TrailPulseRenderPlan& plan) {
+void AddTrailGlowLayer(
+    NSView* content,
+    const TrailPulseRenderPlan& plan,
+    const macos_effect_profile::TrailRenderProfile& profile) {
     if (!plan.glowMode) {
         return;
     }
@@ -55,7 +59,7 @@ void AddTrailGlowLayer(NSView* content, const TrailPulseRenderPlan& plan) {
     CGPathRelease(glowPath);
     glow.fillColor = [detail::TrailFillColor(plan.trailType) CGColor];
     glow.strokeColor = [NSColor clearColor].CGColor;
-    glow.opacity = 0.85;
+    glow.opacity = static_cast<float>(macos_overlay_support::ClampOverlayOpacity(profile.baseOpacity - 0.08));
     [content.layer addSublayer:glow];
 }
 
@@ -63,23 +67,11 @@ void StartTrailPulseAnimation(
     CAShapeLayer* core,
     const TrailPulseRenderPlan& plan,
     const macos_effect_profile::TrailRenderProfile& profile) {
-    CABasicAnimation* scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-    scale.fromValue = @0.65;
-    scale.toValue = @1.0;
-    scale.duration = plan.durationSec;
-    scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-
-    CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    fade.fromValue = @(profile.baseOpacity);
-    fade.toValue = @0.0;
-    fade.duration = plan.durationSec;
-    fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
-
-    CAAnimationGroup* group = [CAAnimationGroup animation];
-    group.animations = @[scale, fade];
-    group.duration = plan.durationSec;
-    group.fillMode = kCAFillModeForwards;
-    group.removedOnCompletion = NO;
+    CAAnimationGroup* group = macos_overlay_support::CreateScaleFadeAnimationGroup(
+        0.65,
+        1.0,
+        static_cast<CGFloat>(profile.baseOpacity),
+        plan.durationSec);
     [core addAnimation:group forKey:@"mfx_trail_pulse"];
 }
 

@@ -37,7 +37,8 @@ void AddScrollPulseDecorations(
     NSView* content,
     const ScrollPulseRenderPlan& plan,
     bool horizontal,
-    int delta);
+    int delta,
+    const macos_effect_profile::ScrollRenderProfile& profile);
 
 void StartScrollPulseAnimation(
     CAShapeLayer* body,

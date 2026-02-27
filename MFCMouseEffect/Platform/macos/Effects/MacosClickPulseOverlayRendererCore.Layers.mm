@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Platform/macos/Effects/MacosClickPulseOverlayRendererCore.Internal.h"
+#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "Platform/macos/Effects/MacosClickPulseOverlayStyle.h"
 
 #include <algorithm>
@@ -23,7 +24,7 @@ void ConfigureClickPulseBaseLayer(
     base.fillColor = [ClickPulseFillColor(button) CGColor];
     base.strokeColor = [ClickPulseStrokeColor(button) CGColor];
     base.lineWidth = plan.textMode ? 2.1 : 2.4;
-    base.opacity = static_cast<float>(profile.baseOpacity);
+    base.opacity = static_cast<float>(macos_overlay_support::ClampOverlayOpacity(profile.baseOpacity));
 }
 
 void AddClickPulseExtraLayers(
@@ -41,7 +42,7 @@ void AddClickPulseExtraLayers(
         star.fillColor = [ClickPulseStrokeColor(button) CGColor];
         star.strokeColor = [ClickPulseStrokeColor(button) CGColor];
         star.lineWidth = 1.0;
-        star.opacity = 0.98;
+        star.opacity = static_cast<float>(macos_overlay_support::ClampOverlayOpacity(profile.baseOpacity + 0.03));
         [content.layer addSublayer:star];
     }
 
@@ -65,7 +66,7 @@ void AddClickPulseExtraLayers(
             text.string = @"LEFT";
             break;
         }
-        text.opacity = static_cast<float>(std::min(1.0, profile.baseOpacity + 0.03));
+        text.opacity = static_cast<float>(macos_overlay_support::ClampOverlayOpacity(profile.baseOpacity + 0.03));
         [content.layer addSublayer:text];
     }
 }
@@ -74,23 +75,11 @@ void StartClickPulseAnimation(
     CAShapeLayer* base,
     const ClickPulseRenderPlan& plan,
     const macos_effect_profile::ClickRenderProfile& profile) {
-    CABasicAnimation* scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-    scale.fromValue = plan.textMode ? @0.75 : @0.15;
-    scale.toValue = @1.0;
-    scale.duration = plan.animationDuration;
-    scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-
-    CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    fade.fromValue = @(profile.baseOpacity);
-    fade.toValue = @0.0;
-    fade.duration = plan.animationDuration;
-    fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
-
-    CAAnimationGroup* group = [CAAnimationGroup animation];
-    group.animations = @[scale, fade];
-    group.duration = plan.animationDuration;
-    group.fillMode = kCAFillModeForwards;
-    group.removedOnCompletion = NO;
+    CAAnimationGroup* group = macos_overlay_support::CreateScaleFadeAnimationGroup(
+        plan.textMode ? 0.75 : 0.15,
+        1.0,
+        static_cast<CGFloat>(profile.baseOpacity),
+        plan.animationDuration);
     [base addAnimation:group forKey:@"mfx_click_pulse"];
 }
 

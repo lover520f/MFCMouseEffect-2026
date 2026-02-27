@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Platform/macos/Effects/MacosHoverPulseOverlayRendererCore.Internal.h"
+#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "Platform/macos/Effects/MacosHoverPulseOverlayStyle.h"
 
 #include <algorithm>
@@ -24,7 +25,8 @@ void AddHoverExtraLayersAndAnimations(
     ring2.fillColor = [NSColor clearColor].CGColor;
     ring2.strokeColor = HoverTubesStrokeColor().CGColor;
     ring2.lineWidth = 1.8;
-    ring2.opacity = static_cast<float>(std::max(0.1, profile.baseOpacity - 0.05));
+    ring2.opacity = static_cast<float>(
+        std::max<CGFloat>(0.1, macos_overlay_support::ClampOverlayOpacity(profile.baseOpacity - 0.05)));
     [content.layer addSublayer:ring2];
 
     CABasicAnimation* spin = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];

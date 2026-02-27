@@ -550,6 +550,7 @@
 - Automation shortcut test contracts now explicitly guard invalid/unmapped keycode semantics, reducing edge-path mapping drift risk.
 - macOS non-GPU effect overlays now share one frame clamp policy (`ClampOverlayFrameToScreenBounds`) across click/trail/scroll/hold/hover, reducing edge-of-screen and multi-screen placement drift without changing effect API/schema contracts.
 - macOS non-GPU effect overlays now also share one per-screen contents-scale policy (`ResolveOverlayContentsScale` / `ApplyOverlayContentScale`) across click/trail/scroll/hold/hover, reducing mixed-DPI rendering drift and removing click-text `mainScreen` coupling.
+- macOS non-GPU effect overlays now also share animation/opacity policy helpers (`CreateScaleFadeAnimationGroup` / `ClampOverlayOpacity`) across click/trail/scroll/hold/hover, reducing cross-category curve/alpha drift while keeping per-effect style parameters.
 
 ## Next slice
 - Continue Phase 55+ hardening with macOS-first and Linux compile follow:

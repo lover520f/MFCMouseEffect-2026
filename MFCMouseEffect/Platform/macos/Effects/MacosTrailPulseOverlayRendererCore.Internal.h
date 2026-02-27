@@ -37,7 +37,10 @@ void ConfigureTrailCoreLayer(
     double deltaY,
     const macos_effect_profile::TrailRenderProfile& profile);
 
-void AddTrailGlowLayer(NSView* content, const TrailPulseRenderPlan& plan);
+void AddTrailGlowLayer(
+    NSView* content,
+    const TrailPulseRenderPlan& plan,
+    const macos_effect_profile::TrailRenderProfile& profile);
 void StartTrailPulseAnimation(CAShapeLayer* core, const TrailPulseRenderPlan& plan, const macos_effect_profile::TrailRenderProfile& profile);
 #endif
 

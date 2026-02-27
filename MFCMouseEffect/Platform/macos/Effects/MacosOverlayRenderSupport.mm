@@ -131,6 +131,36 @@ void ApplyOverlayContentScale(NSView* content, const ScreenPoint& overlayPt) {
         layer.contentsScale = scale;
     }
 }
+
+CGFloat ClampOverlayOpacity(CGFloat value) {
+    return ClampCoordinate(value, 0.0, 1.0);
+}
+
+CAAnimationGroup* CreateScaleFadeAnimationGroup(
+    CGFloat fromScale,
+    CGFloat toScale,
+    CGFloat fromOpacity,
+    CFTimeInterval duration) {
+    const CFTimeInterval clampedDuration = std::max<CFTimeInterval>(0.05, duration);
+    CABasicAnimation* scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+    scale.fromValue = @(fromScale);
+    scale.toValue = @(toScale);
+    scale.duration = clampedDuration;
+    scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+
+    CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    fade.fromValue = @(ClampOverlayOpacity(fromOpacity));
+    fade.toValue = @0.0;
+    fade.duration = clampedDuration;
+    fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+
+    CAAnimationGroup* group = [CAAnimationGroup animation];
+    group.animations = @[scale, fade];
+    group.duration = clampedDuration;
+    group.fillMode = kCAFillModeForwards;
+    group.removedOnCompletion = NO;
+    return group;
+}
 #endif
 
 } // namespace mousefx::macos_overlay_support

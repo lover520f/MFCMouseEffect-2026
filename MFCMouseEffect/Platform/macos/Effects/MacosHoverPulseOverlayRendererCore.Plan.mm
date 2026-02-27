@@ -38,7 +38,7 @@ void ConfigureHoverRingLayer(
     ring.fillColor = HoverGlowFillColor().CGColor;
     ring.strokeColor = HoverGlowStrokeColor().CGColor;
     ring.lineWidth = 2.0;
-    ring.opacity = static_cast<float>(profile.baseOpacity);
+    ring.opacity = static_cast<float>(macos_overlay_support::ClampOverlayOpacity(profile.baseOpacity));
 }
 
 #endif

@@ -43,7 +43,7 @@ void ShowTrailPulseOverlayOnMain(
     CAShapeLayer* core = [CAShapeLayer layer];
     ConfigureTrailCoreLayer(core, content, plan, deltaX, deltaY, profile);
     [content.layer addSublayer:core];
-    AddTrailGlowLayer(content, plan);
+    AddTrailGlowLayer(content, plan, profile);
     StartTrailPulseAnimation(core, plan, profile);
 
     RegisterTrailPulseWindow(reinterpret_cast<void*>(window));

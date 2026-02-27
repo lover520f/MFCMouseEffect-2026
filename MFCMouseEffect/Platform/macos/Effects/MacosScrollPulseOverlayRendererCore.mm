@@ -51,7 +51,7 @@ void ShowScrollPulseOverlayOnMain(
     CAShapeLayer* arrow = support::CreateArrowLayer(content.bounds, plan.bodyRect, horizontal, delta, profile.baseOpacity);
     [content.layer addSublayer:arrow];
 
-    AddScrollPulseDecorations(content, plan, horizontal, delta);
+    AddScrollPulseDecorations(content, plan, horizontal, delta, profile);
     StartScrollPulseAnimation(body, arrow, plan, profile);
 
     RegisterScrollPulseWindow(reinterpret_cast<void*>(window));

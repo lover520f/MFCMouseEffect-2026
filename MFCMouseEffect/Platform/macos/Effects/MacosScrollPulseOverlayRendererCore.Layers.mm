@@ -2,6 +2,7 @@
 
 #include "Platform/macos/Effects/MacosScrollPulseOverlayRendererCore.Internal.h"
 
+#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "Platform/macos/Effects/MacosScrollPulseOverlayStyle.h"
 
 #include <algorithm>
@@ -14,7 +15,8 @@ void AddScrollPulseDecorations(
     NSView* content,
     const ScrollPulseRenderPlan& plan,
     bool horizontal,
-    int delta) {
+    int delta,
+    const macos_effect_profile::ScrollRenderProfile& profile) {
     if (plan.helixMode) {
         CAShapeLayer* helix = [CAShapeLayer layer];
         helix.frame = content.bounds;
@@ -25,7 +27,7 @@ void AddScrollPulseDecorations(
         helix.fillColor = [NSColor clearColor].CGColor;
         helix.strokeColor = [ScrollPulseStrokeColor(horizontal, -delta) CGColor];
         helix.lineWidth = 1.6;
-        helix.opacity = 0.82;
+        helix.opacity = static_cast<float>(macos_overlay_support::ClampOverlayOpacity(profile.baseOpacity - 0.14));
         [content.layer addSublayer:helix];
 
         CABasicAnimation* spin = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
@@ -46,7 +48,7 @@ void AddScrollPulseDecorations(
         twinkle.fillColor = [NSColor clearColor].CGColor;
         twinkle.strokeColor = [ScrollPulseStrokeColor(horizontal, delta) CGColor];
         twinkle.lineWidth = 1.0;
-        twinkle.opacity = 0.55;
+        twinkle.opacity = static_cast<float>(macos_overlay_support::ClampOverlayOpacity(profile.baseOpacity - 0.38));
         [content.layer addSublayer:twinkle];
     }
 }
@@ -56,23 +58,11 @@ void StartScrollPulseAnimation(
     CAShapeLayer* arrow,
     const ScrollPulseRenderPlan& plan,
     const macos_effect_profile::ScrollRenderProfile& profile) {
-    CABasicAnimation* scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-    scale.fromValue = @0.72;
-    scale.toValue = @1.04;
-    scale.duration = plan.duration;
-    scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-
-    CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    fade.fromValue = @(std::min(1.0, profile.baseOpacity + 0.02));
-    fade.toValue = @0.0;
-    fade.duration = plan.duration;
-    fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
-
-    CAAnimationGroup* group = [CAAnimationGroup animation];
-    group.animations = @[scale, fade];
-    group.duration = plan.duration;
-    group.fillMode = kCAFillModeForwards;
-    group.removedOnCompletion = NO;
+    CAAnimationGroup* group = macos_overlay_support::CreateScaleFadeAnimationGroup(
+        0.72,
+        1.04,
+        static_cast<CGFloat>(profile.baseOpacity + 0.02),
+        plan.duration);
     [body addAnimation:group forKey:@"mfx_scroll_body_pulse"];
     [arrow addAnimation:group forKey:@"mfx_scroll_arrow_pulse"];
 }
