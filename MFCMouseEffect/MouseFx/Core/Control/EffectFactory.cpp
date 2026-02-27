@@ -4,12 +4,12 @@
 
 #include "Platform/PlatformTarget.h"
 
-#if MFX_PLATFORM_WINDOWS
 #include "MouseFx/Core/Effects/ClickEffectCompute.h"
 #include "MouseFx/Core/Effects/HoldEffectCompute.h"
 #include "MouseFx/Core/Effects/HoverEffectCompute.h"
 #include "MouseFx/Core/Effects/ScrollEffectCompute.h"
 #include "MouseFx/Core/Effects/TrailEffectCompute.h"
+#if MFX_PLATFORM_WINDOWS
 #include "MouseFx/Effects/HoldEffect.h"
 #include "MouseFx/Effects/HoverEffect.h"
 #include "MouseFx/Effects/IconEffect.h"
@@ -41,23 +41,6 @@ struct CategoryRegistryEntry {
 
 constexpr size_t CategoryIndex(EffectCategory category) {
     return static_cast<size_t>(category);
-}
-
-std::string NormalizeRequestedEffectType(EffectCategory category, const std::string& type) {
-    switch (category) {
-    case EffectCategory::Click:
-        return NormalizeClickEffectType(type);
-    case EffectCategory::Trail:
-        return NormalizeTrailEffectType(type);
-    case EffectCategory::Scroll:
-        return NormalizeScrollEffectType(type);
-    case EffectCategory::Hold:
-        return NormalizeHoldEffectType(type);
-    case EffectCategory::Hover:
-        return NormalizeHoverEffectType(type);
-    default:
-        return type;
-    }
 }
 
 std::unique_ptr<IMouseEffect> CreateClickRipple(const std::string&, const EffectConfig& config) {
@@ -132,17 +115,30 @@ const std::array<CategoryRegistryEntry, CategoryIndex(EffectCategory::Count)>& R
 }
 #endif
 
+std::string NormalizeRequestedEffectType(EffectCategory category, const std::string& type) {
+    switch (category) {
+    case EffectCategory::Click:
+        return NormalizeClickEffectType(type);
+    case EffectCategory::Trail:
+        return NormalizeTrailEffectType(type);
+    case EffectCategory::Scroll:
+        return NormalizeScrollEffectType(type);
+    case EffectCategory::Hold:
+        return NormalizeHoldEffectType(type);
+    case EffectCategory::Hover:
+        return NormalizeHoverEffectType(type);
+    default:
+        return type;
+    }
+}
+
 } // namespace
 
 std::unique_ptr<IMouseEffect> EffectFactory::Create(EffectCategory category, const std::string& type, const EffectConfig& config) {
     if (type == "none" || type.empty()) {
         return nullptr;
     }
-#if MFX_PLATFORM_WINDOWS
     const std::string normalizedType = NormalizeRequestedEffectType(category, type);
-#else
-    const std::string normalizedType = type;
-#endif
     if (normalizedType == "none" || normalizedType.empty()) {
         return nullptr;
     }
@@ -166,7 +162,7 @@ std::unique_ptr<IMouseEffect> EffectFactory::Create(EffectCategory category, con
 #endif
     return nullptr;
 #elif MFX_PLATFORM_MACOS
-    return macos_effect_registry::Create(category, type, config);
+    return macos_effect_registry::Create(category, normalizedType, config);
 #else
     (void)category;
     (void)type;

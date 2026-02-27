@@ -42,6 +42,9 @@ std::string NormalizeTrailEffectType(const std::string& effectType) {
     if (lowered.empty() || lowered == "none") {
         return "line";
     }
+    if (lowered == "scifi" || lowered == "sci-fi" || lowered == "sci_fi") {
+        return "tubes";
+    }
     if (ContainsToken(lowered, "meteor")) return "meteor";
     if (ContainsToken(lowered, "streamer") || ContainsToken(lowered, "stream") || ContainsToken(lowered, "neon")) {
         return "streamer";

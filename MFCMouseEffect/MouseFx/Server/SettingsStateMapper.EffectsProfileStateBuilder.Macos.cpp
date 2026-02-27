@@ -114,26 +114,31 @@ nlohmann::json BuildAliasMatrixJson() {
         {{"input", "TEXT"}, {"normalized", NormalizeClickEffectType("TEXT")}},
         {{"input", "icon"}, {"normalized", NormalizeClickEffectType("icon")}},
         {{"input", "textclick"}, {"normalized", NormalizeClickEffectType("textclick")}},
+        {{"input", "none"}, {"normalized", NormalizeClickEffectType("none")}},
         {{"input", "star"}, {"normalized", NormalizeClickEffectType("star")}},
         {{"input", "ripple_custom"}, {"normalized", NormalizeClickEffectType("ripple_custom")}},
     });
 
     const nlohmann::json trail = nlohmann::json::array({
+        {{"input", "scifi"}, {"normalized", NormalizeTrailEffectType("scifi")}},
         {{"input", "stream"}, {"normalized", NormalizeTrailEffectType("stream")}},
         {{"input", "neon"}, {"normalized", NormalizeTrailEffectType("neon")}},
         {{"input", "suspension"}, {"normalized", NormalizeTrailEffectType("suspension")}},
+        {{"input", "default"}, {"normalized", NormalizeTrailEffectType("default")}},
         {{"input", "spark"}, {"normalized", NormalizeTrailEffectType("spark")}},
     });
 
     const nlohmann::json scroll = nlohmann::json::array({
         {{"input", "stardust"}, {"normalized", NormalizeScrollEffectType("stardust")}},
         {{"input", "helix"}, {"normalized", NormalizeScrollEffectType("helix")}},
+        {{"input", "none"}, {"normalized", NormalizeScrollEffectType("none")}},
         {{"input", "arrow"}, {"normalized", NormalizeScrollEffectType("arrow")}},
     });
 
     const nlohmann::json hover = nlohmann::json::array({
         {{"input", "suspension"}, {"normalized", NormalizeHoverEffectType("suspension")}},
         {{"input", "helix"}, {"normalized", NormalizeHoverEffectType("helix")}},
+        {{"input", "none"}, {"normalized", NormalizeHoverEffectType("none")}},
         {{"input", "glow"}, {"normalized", NormalizeHoverEffectType("glow")}},
     });
 
@@ -356,6 +361,20 @@ nlohmann::json BuildMacosEffectRenderCommandSamplesJson(const EffectConfig& cfg)
         {"scroll_delta", kSampleScrollDelta},
         {"hold_duration_ms", kSampleHoldDurationMs},
         {"hold_follow_mode", cfg.holdFollowMode},
+        {"active_raw", {
+            {"click", cfg.active.click},
+            {"trail", cfg.active.trail},
+            {"scroll", cfg.active.scroll},
+            {"hold", cfg.active.hold},
+            {"hover", cfg.active.hover},
+        }},
+        {"active_normalized", {
+            {"click", NormalizeClickEffectType(cfg.active.click)},
+            {"trail", NormalizeTrailEffectType(cfg.active.trail)},
+            {"scroll", NormalizeScrollEffectType(cfg.active.scroll)},
+            {"hold", NormalizeHoldEffectType(cfg.active.hold)},
+            {"hover", NormalizeHoverEffectType(cfg.active.hover)},
+        }},
     };
     out["click"] = BuildClickCommandJson(clickCommand);
     out["trail"] = BuildTrailCommandJson(trailCommand);

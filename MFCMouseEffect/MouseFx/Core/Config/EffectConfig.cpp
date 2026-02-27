@@ -2,40 +2,11 @@
 #include "EffectConfig.h"
 #include "EffectConfigInternal.h"
 
+#include "MouseFx/Core/Effects/TrailEffectCompute.h"
 #include "MouseFx/Utils/StringUtils.h"
 
 namespace mousefx {
 namespace {
-
-bool ContainsTrailToken(const std::string& value, const char* token) {
-    return value.find(token) != std::string::npos;
-}
-
-std::string NormalizeTrailTypeAlias(std::string type) {
-    type = ToLowerAscii(type);
-    if (type == "scifi" || type == "sci-fi" || type == "sci_fi") {
-        return "tubes";
-    }
-    if (ContainsTrailToken(type, "meteor")) {
-        return "meteor";
-    }
-    if (ContainsTrailToken(type, "streamer") || ContainsTrailToken(type, "stream") || ContainsTrailToken(type, "neon")) {
-        return "streamer";
-    }
-    if (ContainsTrailToken(type, "electric") || ContainsTrailToken(type, "arc")) {
-        return "electric";
-    }
-    if (ContainsTrailToken(type, "tube") || ContainsTrailToken(type, "suspension")) {
-        return "tubes";
-    }
-    if (ContainsTrailToken(type, "line") || ContainsTrailToken(type, "default")) {
-        return "line";
-    }
-    if (type == "particle" || ContainsTrailToken(type, "spark")) {
-        return "particle";
-    }
-    return type;
-}
 
 } // namespace
 
@@ -65,7 +36,7 @@ EffectConfig EffectConfig::GetDefault() {
 }
 
 TrailHistoryProfile EffectConfig::GetTrailHistoryProfile(const std::string& type) const {
-    const std::string normalized = NormalizeTrailTypeAlias(type);
+    const std::string normalized = NormalizeTrailEffectType(type);
 
     if (normalized == "electric") {
         return config_internal::SanitizeTrailHistoryProfile(trailProfiles.electric);

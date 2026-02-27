@@ -16,6 +16,11 @@
 #include "MouseFx/Core/System/StdMonotonicClockService.h"
 #include "MouseFx/Core/Overlay/NullInputIndicatorOverlay.h"
 #include "MouseFx/Core/Protocol/JsonLite.h"
+#include "MouseFx/Core/Effects/ClickEffectCompute.h"
+#include "MouseFx/Core/Effects/HoldEffectCompute.h"
+#include "MouseFx/Core/Effects/HoverEffectCompute.h"
+#include "MouseFx/Core/Effects/ScrollEffectCompute.h"
+#include "MouseFx/Core/Effects/TrailEffectCompute.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Core/Wasm/WasmEventInvokeExecutor.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"
@@ -108,15 +113,27 @@ std::string AppController::ResolveRuntimeEffectType(
     const std::string& requestedType,
     std::string* outReason) const {
     if (outReason) outReason->clear();
-    if (category != EffectCategory::Hold) {
+
+    switch (category) {
+    case EffectCategory::Click:
+        return NormalizeClickEffectType(requestedType);
+    case EffectCategory::Trail:
+        return NormalizeTrailEffectType(requestedType);
+    case EffectCategory::Scroll:
+        return NormalizeScrollEffectType(requestedType);
+    case EffectCategory::Hover:
+        return NormalizeHoverEffectType(requestedType);
+    case EffectCategory::Hold: {
+        const std::string normalizedType = NormalizeHoldEffectType(requestedType);
+        const char* reason = hold_route::RouteReasonForType(normalizedType);
+        if (outReason && reason && reason[0] != '\0') {
+            *outReason = reason;
+        }
+        return normalizedType;
+    }
+    default:
         return requestedType;
     }
-    const std::string normalizedType = hold_route::NormalizeHoldEffectTypeAlias(requestedType);
-    const char* reason = hold_route::RouteReasonForType(normalizedType);
-    if (outReason && reason && reason[0] != '\0') {
-        *outReason = reason;
-    }
-    return normalizedType;
 }
 
 void AppController::OnDispatchActivity(DispatchMessageKind kind, uint32_t timerId) {

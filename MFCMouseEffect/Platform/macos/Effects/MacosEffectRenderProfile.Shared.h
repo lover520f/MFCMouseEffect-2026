@@ -2,6 +2,7 @@
 
 #include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 
+#include "MouseFx/Core/Effects/TrailEffectCompute.h"
 #include "MouseFx/Utils/StringUtils.h"
 
 #include <algorithm>
@@ -21,34 +22,8 @@ inline double ClampDouble(double value, double lo, double hi) {
     return value;
 }
 
-inline bool ContainsTrailToken(const std::string& value, const char* token) {
-    return value.find(token) != std::string::npos;
-}
-
 inline std::string NormalizeTrailTypeAlias(std::string type) {
-    type = ToLowerAscii(type);
-    if (type == "scifi" || type == "sci-fi" || type == "sci_fi") {
-        return "tubes";
-    }
-    if (ContainsTrailToken(type, "meteor")) {
-        return "meteor";
-    }
-    if (ContainsTrailToken(type, "streamer") || ContainsTrailToken(type, "stream") || ContainsTrailToken(type, "neon")) {
-        return "streamer";
-    }
-    if (ContainsTrailToken(type, "electric") || ContainsTrailToken(type, "arc")) {
-        return "electric";
-    }
-    if (ContainsTrailToken(type, "tube") || ContainsTrailToken(type, "suspension")) {
-        return "tubes";
-    }
-    if (ContainsTrailToken(type, "line") || ContainsTrailToken(type, "default")) {
-        return "line";
-    }
-    if (type == "particle" || ContainsTrailToken(type, "spark")) {
-        return "particle";
-    }
-    return type;
+    return NormalizeTrailEffectType(type);
 }
 
 inline TrailThrottleProfile ResolveTrailThrottleProfileByType(const std::string& trailType) {
