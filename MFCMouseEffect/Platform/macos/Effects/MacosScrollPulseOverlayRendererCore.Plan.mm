@@ -20,7 +20,11 @@ ScrollPulseRenderPlan BuildScrollPulseRenderPlan(const ScrollEffectRenderCommand
         plan.size,
         plan.size);
     plan.frame = macos_overlay_support::ClampOverlayFrameToScreenBounds(rawFrame, plan.command.overlayPoint);
-    plan.bodyRect = support::BuildBodyRect(plan.size, plan.command.horizontal, plan.command.strengthLevel);
+    plan.bodyRect = support::BuildBodyRect(
+        plan.size,
+        plan.command.horizontal,
+        plan.command.strengthLevel,
+        plan.command.intensity);
     plan.duration = macos_overlay_support::ScaleOverlayDurationBySize(
         plan.command.durationSec,
         plan.size,

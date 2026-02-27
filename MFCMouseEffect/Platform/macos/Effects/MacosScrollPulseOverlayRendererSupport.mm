@@ -25,9 +25,12 @@ int ResolveStrengthLevel(int delta) {
     return strengthLevel;
 }
 
-CGRect BuildBodyRect(CGFloat size, bool horizontal, int strengthLevel) {
+CGRect BuildBodyRect(CGFloat size, bool horizontal, int strengthLevel, double intensity) {
     const CGFloat bodyThickness = 18.0;
-    const CGFloat bodyLength = 56.0 + static_cast<CGFloat>(strengthLevel) * 8.0;
+    const CGFloat intensityScale = static_cast<CGFloat>(std::clamp(intensity, 0.0, 1.0));
+    const CGFloat levelLength = 56.0 + static_cast<CGFloat>(strengthLevel) * 8.0;
+    const CGFloat smoothLength = 54.0 + intensityScale * 50.0;
+    const CGFloat bodyLength = std::max(levelLength, smoothLength);
     return horizontal
         ? CGRectMake((size - bodyLength) * 0.5, (size - bodyThickness) * 0.5, bodyLength, bodyThickness)
         : CGRectMake((size - bodyThickness) * 0.5, (size - bodyLength) * 0.5, bodyThickness, bodyLength);

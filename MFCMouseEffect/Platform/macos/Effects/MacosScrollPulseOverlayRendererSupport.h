@@ -11,7 +11,7 @@
 namespace mousefx::macos_scroll_pulse::support {
 
 int ResolveStrengthLevel(int delta);
-CGRect BuildBodyRect(CGFloat size, bool horizontal, int strengthLevel);
+CGRect BuildBodyRect(CGFloat size, bool horizontal, int strengthLevel, double intensity);
 CFTimeInterval BuildPulseDuration(
     const macos_effect_profile::ScrollRenderProfile& profile,
     int strengthLevel,

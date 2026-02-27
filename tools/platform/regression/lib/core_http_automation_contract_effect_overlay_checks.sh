@@ -136,6 +136,8 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"input\":\"TEXT\",\"normalized\":\"text\"" "core effect render profile probe click uppercase alias"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"normalized_type\":\"" "core effect render profile probe normalized type sample field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"strength_level\":" "core effect render profile probe scroll strength sample field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"strength_scalar\":" "core effect render profile probe scroll strength scalar sample field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"intensity\":" "core effect render profile probe scroll intensity sample field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"tubes_spin_duration_sec\":" "core effect render profile probe hover spin sample field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"progress_full_ms\":" "core effect render profile probe hold progress sample field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"overlay_x\":" "core effect render profile probe hold update sample field"

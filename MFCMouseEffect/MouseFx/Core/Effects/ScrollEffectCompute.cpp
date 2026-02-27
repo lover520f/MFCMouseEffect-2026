@@ -13,6 +13,10 @@ bool ContainsToken(const std::string& value, const char* token) {
     return value.find(token) != std::string::npos;
 }
 
+double Clamp01(double value) {
+    return std::clamp(value, 0.0, 1.0);
+}
+
 double ResolveDurationScale(const ScrollEffectRenderCommand& command, const ScrollEffectProfile& profile) {
     if (command.helixMode) return profile.helixDurationScale;
     if (command.twinkleMode) return profile.twinkleDurationScale;
@@ -85,6 +89,8 @@ ScrollEffectRenderCommand ComputeScrollEffectRenderCommand(
         return command;
     }
     command.emit = true;
+    command.strengthScalar = static_cast<double>(std::abs(delta)) / 120.0;
+    command.intensity = Clamp01(0.6 + command.strengthScalar * 0.6);
     command.strengthLevel = ResolveScrollStrengthLevel(delta);
     command.normalizedType = NormalizeScrollEffectType(effectType);
     command.helixMode = (command.normalizedType == "helix");

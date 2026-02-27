@@ -53,6 +53,8 @@ nlohmann::json BuildScrollCommandJson(const ScrollEffectRenderCommand& command) 
         {"horizontal", command.horizontal},
         {"delta", command.delta},
         {"strength_level", command.strengthLevel},
+        {"strength_scalar", command.strengthScalar},
+        {"intensity", command.intensity},
         {"size_px", command.sizePx},
         {"duration_sec", command.durationSec},
         {"close_after_ms", command.closeAfterMs},

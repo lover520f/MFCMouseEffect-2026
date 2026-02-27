@@ -37,6 +37,8 @@ struct ScrollEffectRenderCommand {
     bool horizontal = false;
     int delta = 0;
     int strengthLevel = 0;
+    double strengthScalar = 0.0;
+    double intensity = 0.0;
     std::string normalizedType = "arrow";
     bool helixMode = false;
     bool twinkleMode = false;
