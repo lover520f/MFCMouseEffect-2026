@@ -19,6 +19,7 @@ _mfx_core_http_launch_probe_file=""
 _mfx_core_http_launch_capture_file=""
 _mfx_core_http_permission_sim_file=""
 _mfx_core_http_notification_capture_file=""
+_mfx_core_http_probe_diagnostics_file=""
 
 
 mfx_run_core_http_contract_checks() {
@@ -40,6 +41,7 @@ mfx_run_core_http_contract_checks() {
     local launch_capture_file="$tmp_dir/settings-launch-capture.env"
     local permission_sim_file="$tmp_dir/input-capture-permission.env"
     local notification_capture_file="$tmp_dir/notifications-capture.log"
+    local probe_diagnostics_file="$tmp_dir/core-websettings-probe-diagnostics.env"
     local require_launch_probe="0"
     if [[ "$check_scope" == "all" ]]; then
         require_launch_probe="1"
@@ -59,7 +61,8 @@ mfx_run_core_http_contract_checks() {
         "$launch_capture_file" \
         "$permission_sim_file" \
         "$notification_capture_file" \
-        "$require_launch_probe"
+        "$require_launch_probe" \
+        "$probe_diagnostics_file"
 
     local settings_url
     local token

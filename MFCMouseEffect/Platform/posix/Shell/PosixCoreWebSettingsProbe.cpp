@@ -14,6 +14,7 @@ namespace {
 
 constexpr std::string_view kProbeFileEnv = "MFX_CORE_WEB_SETTINGS_PROBE_FILE";
 constexpr std::string_view kLaunchProbeFileEnv = "MFX_CORE_WEB_SETTINGS_LAUNCH_PROBE_FILE";
+constexpr std::string_view kProbeDiagnosticsFileEnv = "MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE";
 
 std::string ReadProbeFilePathFromEnv(std::string_view envKey) {
     const char* filePath = std::getenv(envKey.data());
@@ -56,6 +57,20 @@ bool WriteCoreWebSettingsLaunchProbeFile(
     return WriteProbeFile(filePath, {
                                    {"url", settingsUrl},
                                    {"opened", opened ? "1" : "0"},
+                               });
+}
+
+std::string ReadCoreWebSettingsProbeDiagnosticsFilePath() {
+    return ReadProbeFilePathFromEnv(kProbeDiagnosticsFileEnv);
+}
+
+bool WriteCoreWebSettingsProbeDiagnosticsFile(
+    const std::string& filePath,
+    const std::string& status,
+    const std::string& reason) {
+    return WriteProbeFile(filePath, {
+                                   {"status", status},
+                                   {"reason", reason},
                                });
 }
 

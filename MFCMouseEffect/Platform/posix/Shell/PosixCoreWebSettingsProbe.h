@@ -15,5 +15,10 @@ bool WriteCoreWebSettingsLaunchProbeFile(
     const std::string& filePath,
     const std::string& settingsUrl,
     bool opened);
+std::string ReadCoreWebSettingsProbeDiagnosticsFilePath();
+bool WriteCoreWebSettingsProbeDiagnosticsFile(
+    const std::string& filePath,
+    const std::string& status,
+    const std::string& reason);
 
 } // namespace mousefx::platform

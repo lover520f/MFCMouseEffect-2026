@@ -31,6 +31,8 @@ public:
     std::string Token() const;
     std::string Url() const;
     void RotateToken();
+    int LastStartErrorStage() const;
+    int LastStartErrorCode() const;
 
 private:
     void HandleRequest(const HttpRequest& req, HttpResponse& resp);

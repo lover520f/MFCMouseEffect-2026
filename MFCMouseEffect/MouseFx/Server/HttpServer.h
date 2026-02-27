@@ -42,6 +42,8 @@ public:
 
     bool IsRunning() const { return running_.load(); }
     uint16_t Port() const { return port_.load(); }
+    int LastStartErrorStage() const { return lastStartErrorStage_.load(); }
+    int LastStartErrorCode() const { return lastStartErrorCode_.load(); }
 
 private:
     void Run();
@@ -52,6 +54,8 @@ private:
     Handler handler_{};
     std::atomic<bool> running_{false};
     std::atomic<uint16_t> port_{0};
+    std::atomic<int> lastStartErrorStage_{0};
+    std::atomic<int> lastStartErrorCode_{0};
     SocketHandle listenSock_ = -1;
     std::thread thread_{};
 };

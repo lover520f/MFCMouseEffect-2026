@@ -55,16 +55,21 @@ _mfx_core_http_start_entry() {
     local permission_sim_file="$6"
     local notification_capture_file="$7"
     local require_launch_probe="${8:-1}"
+    local probe_diagnostics_file="${9:-}"
 
     _mfx_core_http_probe_file="$probe_file"
     _mfx_core_http_launch_probe_file="$launch_probe_file"
     _mfx_core_http_launch_capture_file="$launch_capture_file"
     _mfx_core_http_permission_sim_file="$permission_sim_file"
     _mfx_core_http_notification_capture_file="$notification_capture_file"
+    _mfx_core_http_probe_diagnostics_file="$probe_diagnostics_file"
     rm -f "$probe_file" "${probe_file}.tmp" || true
     rm -f "$launch_probe_file" "${launch_probe_file}.tmp" || true
     rm -f "$launch_capture_file" "${launch_capture_file}.tmp" || true
     rm -f "$notification_capture_file" "${notification_capture_file}.tmp" || true
+    if [[ -n "$probe_diagnostics_file" ]]; then
+        rm -f "$probe_diagnostics_file" "${probe_diagnostics_file}.tmp" || true
+    fi
     local retry_count
     retry_count="$(mfx_parse_non_negative_integer_or_default "${MFX_CORE_HTTP_ENTRY_START_RETRIES:-1}" "1")"
     local max_attempts=$((retry_count + 1))
@@ -91,6 +96,7 @@ _mfx_core_http_start_entry() {
             MFX_ENABLE_INPUT_INDICATOR_TEST_API="${MFX_ENABLE_INPUT_INDICATOR_TEST_API:-1}" \
             MFX_TEST_KEYBOARD_INJECTOR_DRY_RUN="${MFX_TEST_KEYBOARD_INJECTOR_DRY_RUN:-1}" \
             MFX_ENABLE_WASM_TEST_DISPATCH_API="${MFX_ENABLE_WASM_TEST_DISPATCH_API:-1}" \
+            MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE="$probe_diagnostics_file" \
                 "$entry_bin" -mode=background <"$_mfx_core_http_fifo_path" >"$log_file" 2>&1 &
         else
             MFX_CORE_WEB_SETTINGS_PROBE_FILE="$probe_file" \
@@ -103,6 +109,7 @@ _mfx_core_http_start_entry() {
             MFX_ENABLE_INPUT_INDICATOR_TEST_API="${MFX_ENABLE_INPUT_INDICATOR_TEST_API:-1}" \
             MFX_TEST_KEYBOARD_INJECTOR_DRY_RUN="${MFX_TEST_KEYBOARD_INJECTOR_DRY_RUN:-1}" \
             MFX_ENABLE_WASM_TEST_DISPATCH_API="${MFX_ENABLE_WASM_TEST_DISPATCH_API:-1}" \
+            MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE="$probe_diagnostics_file" \
                 "$entry_bin" -mode=background <"$_mfx_core_http_fifo_path" >"$log_file" 2>&1 &
         fi
         _mfx_core_http_entry_pid="$!"
@@ -127,6 +134,13 @@ _mfx_core_http_start_entry() {
         mfx_info "core http startup attempt $attempt/$max_attempts failed"
         mfx_info "core http startup log:"
         cat "$log_file" || true
+        if [[ -n "$probe_diagnostics_file" && -s "$probe_diagnostics_file" ]]; then
+            mfx_info "core http probe diagnostics:"
+            cat "$probe_diagnostics_file" || true
+            if grep -q "reason=websettings_start_failed(stage=2,code=1)" "$probe_diagnostics_file"; then
+                mfx_info "hint: websettings bind failed with EACCES (stage=2,code=1); check runtime sandbox/network permissions."
+            fi
+        fi
         _mfx_core_http_cleanup_startup_runtime
 
         if (( attempt == max_attempts )); then
@@ -207,6 +221,9 @@ _mfx_core_http_stop_entry() {
     if [[ -n "$_mfx_core_http_notification_capture_file" ]]; then
         rm -f "$_mfx_core_http_notification_capture_file" "${_mfx_core_http_notification_capture_file}.tmp" || true
     fi
+    if [[ -n "$_mfx_core_http_probe_diagnostics_file" ]]; then
+        rm -f "$_mfx_core_http_probe_diagnostics_file" "${_mfx_core_http_probe_diagnostics_file}.tmp" || true
+    fi
 
     _mfx_core_http_entry_pid=""
     _mfx_core_http_fifo_path=""
@@ -216,4 +233,5 @@ _mfx_core_http_stop_entry() {
     _mfx_core_http_launch_capture_file=""
     _mfx_core_http_permission_sim_file=""
     _mfx_core_http_notification_capture_file=""
+    _mfx_core_http_probe_diagnostics_file=""
 }

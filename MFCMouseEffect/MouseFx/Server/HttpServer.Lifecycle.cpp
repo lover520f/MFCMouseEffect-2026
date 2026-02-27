@@ -13,6 +13,7 @@
 #endif
 
 #include <chrono>
+#include <cerrno>
 
 namespace mousefx {
 namespace {
@@ -50,6 +51,14 @@ void CloseSocketHandle(SocketHandle socketHandle) {
 #endif
 }
 
+int LastSocketErrorCode() {
+#if defined(_WIN32)
+    return WSAGetLastError();
+#else
+    return errno;
+#endif
+}
+
 } // namespace
 
 bool HttpServer::StartLoopback(Handler handler) {
@@ -61,10 +70,14 @@ bool HttpServer::StartLoopbackOnPort(uint16_t port, Handler handler) {
         return true;
     }
     handler_ = std::move(handler);
+    lastStartErrorStage_.store(0);
+    lastStartErrorCode_.store(0);
 
 #if defined(_WIN32)
     WSADATA wsa{};
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
+        lastStartErrorStage_.store(5);
+        lastStartErrorCode_.store(WSAGetLastError());
         running_.store(false);
         return false;
     }
@@ -75,6 +88,8 @@ bool HttpServer::StartLoopbackOnPort(uint16_t port, Handler handler) {
     for (int attempt = 0; attempt < maxAttempts && !ok; ++attempt) {
         listenSock_ = static_cast<SocketHandle>(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP));
         if (listenSock_ == kInvalidSocketHandle) {
+            lastStartErrorStage_.store(1);
+            lastStartErrorCode_.store(LastSocketErrorCode());
             break;
         }
 
@@ -91,6 +106,8 @@ bool HttpServer::StartLoopbackOnPort(uint16_t port, Handler handler) {
 #endif
 
         if (bind(ToNativeSocket(listenSock_), (sockaddr*)&addr, sizeof(addr)) != 0) {
+            lastStartErrorStage_.store(2);
+            lastStartErrorCode_.store(LastSocketErrorCode());
             CloseSocketHandle(listenSock_);
             listenSock_ = kInvalidSocketHandle;
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -108,6 +125,8 @@ bool HttpServer::StartLoopbackOnPort(uint16_t port, Handler handler) {
         }
 
         if (listen(ToNativeSocket(listenSock_), 8) != 0) {
+            lastStartErrorStage_.store(3);
+            lastStartErrorCode_.store(LastSocketErrorCode());
             CloseSocketHandle(listenSock_);
             listenSock_ = kInvalidSocketHandle;
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -132,6 +151,8 @@ bool HttpServer::StartLoopbackOnPort(uint16_t port, Handler handler) {
     try {
         thread_ = std::thread(&HttpServer::Run, this);
     } catch (...) {
+        lastStartErrorStage_.store(4);
+        lastStartErrorCode_.store(0);
         if (listenSock_ != kInvalidSocketHandle) {
             CloseSocketHandle(listenSock_);
             listenSock_ = kInvalidSocketHandle;
@@ -143,6 +164,8 @@ bool HttpServer::StartLoopbackOnPort(uint16_t port, Handler handler) {
         running_.store(false);
         return false;
     }
+    lastStartErrorStage_.store(0);
+    lastStartErrorCode_.store(0);
     return true;
 }
 

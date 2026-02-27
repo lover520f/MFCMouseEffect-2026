@@ -75,4 +75,12 @@ std::string WebSettingsServer::TokenCopy() const {
     return token_;
 }
 
+int WebSettingsServer::LastStartErrorStage() const {
+    return http_ ? http_->LastStartErrorStage() : 0;
+}
+
+int WebSettingsServer::LastStartErrorCode() const {
+    return http_ ? http_->LastStartErrorCode() : 0;
+}
+
 } // namespace mousefx
