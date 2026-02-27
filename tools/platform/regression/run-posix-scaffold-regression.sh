@@ -43,6 +43,9 @@ Usage: run-posix-scaffold-regression.sh [options]
   --build-dir <path>              build directory override
   --skip-smoke                    skip smoke checks
   --skip-http                     skip scaffold HTTP checks
+
+Env tuning:
+  MFX_HTTP_ENTRY_START_RETRIES     scaffold HTTP entry startup retries on early exit (default: 1)
 USAGE
             exit 0
             ;;
@@ -64,19 +67,24 @@ mfx_require_cmd curl
 mfx_info "repo root: $REPO_ROOT"
 mfx_info "platform: $MFX_PLATFORM"
 mfx_info "build dir: $MFX_BUILD_DIR"
+mfx_info "entry host lock: mfx-entry-posix-host"
 
-mfx_configure_and_build "$REPO_ROOT" "$MFX_BUILD_DIR" "$MFX_PLATFORM"
+mfx_run_scaffold_regression_checks() {
+    mfx_configure_and_build "$REPO_ROOT" "$MFX_BUILD_DIR" "$MFX_PLATFORM"
 
-if [[ "$MFX_SKIP_SMOKE" -eq 0 ]]; then
-    mfx_run_smoke_checks "$MFX_PLATFORM" "$MFX_BUILD_DIR"
-else
-    mfx_info "skip smoke checks"
-fi
+    if [[ "$MFX_SKIP_SMOKE" -eq 0 ]]; then
+        mfx_run_smoke_checks "$MFX_PLATFORM" "$MFX_BUILD_DIR"
+    else
+        mfx_info "skip smoke checks"
+    fi
 
-if [[ "$MFX_SKIP_HTTP" -eq 0 ]]; then
-    mfx_run_http_checks "$MFX_PLATFORM" "$MFX_BUILD_DIR"
-else
-    mfx_info "skip HTTP checks"
-fi
+    if [[ "$MFX_SKIP_HTTP" -eq 0 ]]; then
+        mfx_run_http_checks "$MFX_PLATFORM" "$MFX_BUILD_DIR"
+    else
+        mfx_info "skip HTTP checks"
+    fi
+}
+
+mfx_run_with_entry_lock mfx_run_scaffold_regression_checks
 
 mfx_ok "posix scaffold regression passed"

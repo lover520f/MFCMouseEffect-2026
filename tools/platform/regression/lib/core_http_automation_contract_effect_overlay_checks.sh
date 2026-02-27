@@ -7,6 +7,22 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     local tmp_dir="$2"
     local base_url="$3"
     local token="$4"
+    local expected_duration_scale="${MFX_EXPECT_EFFECTS_DURATION_SCALE:-1.0}"
+    local expected_size_scale="${MFX_EXPECT_EFFECTS_SIZE_SCALE:-1.0}"
+    local expected_trail_throttle_scale="${MFX_EXPECT_EFFECTS_TRAIL_THROTTLE_SCALE:-1.0}"
+    local expected_duration_overridden="false"
+    local expected_size_overridden="false"
+    local expected_trail_throttle_overridden="false"
+
+    if [[ -n "${MFX_TEST_EFFECTS_DURATION_SCALE:-}" ]]; then
+        expected_duration_overridden="true"
+    fi
+    if [[ -n "${MFX_TEST_EFFECTS_SIZE_SCALE:-}" ]]; then
+        expected_size_overridden="true"
+    fi
+    if [[ -n "${MFX_TEST_EFFECTS_TRAIL_THROTTLE_SCALE:-}" ]]; then
+        expected_trail_throttle_overridden="true"
+    fi
 
     local code_effect_overlay_probe
     code_effect_overlay_probe="$(mfx_http_code "$tmp_dir/effect-overlay-probe.out" "$base_url/api/effects/test-overlay-windows" \
@@ -77,6 +93,9 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         -H "x-mfcmouseeffect-token: $token")"
     mfx_assert_eq "$code_effect_profile_probe" "200" "core effect render profile probe status"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"ok\":true" "core effect render profile probe ok"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"active\":" "core effect render profile probe active section"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"hold\":\"" "core effect render profile probe active hold field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"hover\":\"" "core effect render profile probe active hover field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"profiles\":" "core effect render profile probe profiles"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"click\":" "core effect render profile click section"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail\":" "core effect render profile trail section"
@@ -92,6 +111,13 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"spin_duration_sec\":" "core effect render profile hover spin field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"line_stroke_argb\":" "core effect render profile trail line stroke color field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"meteor_duration_scale\":" "core effect render profile trail tempo scale field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"test_tuning\":" "core effect render profile test tuning section"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"duration_scale\":$expected_duration_scale" "core effect render profile expected duration test tuning"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"size_scale\":$expected_size_scale" "core effect render profile expected size test tuning"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail_throttle_scale\":$expected_trail_throttle_scale" "core effect render profile expected trail throttle test tuning"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"duration_overridden\":$expected_duration_overridden" "core effect render profile expected duration override marker"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"size_overridden\":$expected_size_overridden" "core effect render profile expected size override marker"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail_throttle_overridden\":$expected_trail_throttle_overridden" "core effect render profile expected trail throttle override marker"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"horizontal_positive_stroke_argb\":" "core effect render profile scroll direction stroke color field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"helix_duration_scale\":" "core effect render profile scroll tempo scale field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"left_base_stroke_argb\":" "core effect render profile hold base stroke color field"
@@ -107,6 +133,9 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"meteor_duration_scale\":" "core effect profile state trail tempo field"
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"helix_duration_scale\":" "core effect profile state scroll tempo field"
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"tubes_spin_scale\":" "core effect profile state hover tempo field"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"duration_scale\":$expected_duration_scale" "core effect profile state expected duration test tuning"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"size_scale\":$expected_size_scale" "core effect profile state expected size test tuning"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"trail_throttle_scale\":$expected_trail_throttle_scale" "core effect profile state expected trail throttle test tuning"
 
     local probe_meteor_scale
     local state_meteor_scale
@@ -116,6 +145,22 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     local state_tubes_spin_scale
     local probe_line_stroke
     local state_line_stroke
+    local probe_duration_scale
+    local state_duration_scale
+    local probe_size_scale
+    local state_size_scale
+    local probe_trail_throttle_scale
+    local state_trail_throttle_scale
+    local probe_active_click
+    local state_active_click
+    local probe_active_trail
+    local state_active_trail
+    local probe_active_scroll
+    local state_active_scroll
+    local probe_active_hold
+    local state_active_hold
+    local probe_active_hover
+    local state_active_hover
     probe_meteor_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "meteor_duration_scale")"
     state_meteor_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-profile-state.out" "meteor_duration_scale")"
     probe_helix_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "helix_duration_scale")"
@@ -124,14 +169,38 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     state_tubes_spin_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-profile-state.out" "tubes_spin_scale")"
     probe_line_stroke="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "line_stroke_argb")"
     state_line_stroke="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-profile-state.out" "line_stroke_argb")"
+    probe_duration_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "duration_scale")"
+    state_duration_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-profile-state.out" "duration_scale")"
+    probe_size_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "size_scale")"
+    state_size_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-profile-state.out" "size_scale")"
+    probe_trail_throttle_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail_throttle_scale")"
+    state_trail_throttle_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-profile-state.out" "trail_throttle_scale")"
+    probe_active_click="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe.out" "click")"
+    state_active_click="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-profile-state.out" "click")"
+    probe_active_trail="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe.out" "trail")"
+    state_active_trail="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-profile-state.out" "trail")"
+    probe_active_scroll="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe.out" "scroll")"
+    state_active_scroll="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-profile-state.out" "scroll")"
+    probe_active_hold="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe.out" "hold")"
+    state_active_hold="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-profile-state.out" "hold")"
+    probe_active_hover="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe.out" "hover")"
+    state_active_hover="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-profile-state.out" "hover")"
 
-    if [[ -z "$probe_meteor_scale" || -z "$state_meteor_scale" || -z "$probe_helix_scale" || -z "$state_helix_scale" || -z "$probe_tubes_spin_scale" || -z "$state_tubes_spin_scale" || -z "$probe_line_stroke" || -z "$state_line_stroke" ]]; then
+    if [[ -z "$probe_meteor_scale" || -z "$state_meteor_scale" || -z "$probe_helix_scale" || -z "$state_helix_scale" || -z "$probe_tubes_spin_scale" || -z "$state_tubes_spin_scale" || -z "$probe_line_stroke" || -z "$state_line_stroke" || -z "$probe_duration_scale" || -z "$state_duration_scale" || -z "$probe_size_scale" || -z "$state_size_scale" || -z "$probe_trail_throttle_scale" || -z "$state_trail_throttle_scale" || -z "$probe_active_click" || -z "$state_active_click" || -z "$probe_active_trail" || -z "$state_active_trail" || -z "$probe_active_scroll" || -z "$state_active_scroll" || -z "$probe_active_hold" || -z "$state_active_hold" || -z "$probe_active_hover" || -z "$state_active_hover" ]]; then
         mfx_fail "core effect profile parity parse failed"
     fi
     mfx_assert_eq "$probe_meteor_scale" "$state_meteor_scale" "core effect profile parity meteor duration scale"
     mfx_assert_eq "$probe_helix_scale" "$state_helix_scale" "core effect profile parity helix duration scale"
     mfx_assert_eq "$probe_tubes_spin_scale" "$state_tubes_spin_scale" "core effect profile parity tubes spin scale"
     mfx_assert_eq "$probe_line_stroke" "$state_line_stroke" "core effect profile parity trail line stroke argb"
+    mfx_assert_eq "$probe_duration_scale" "$state_duration_scale" "core effect profile parity duration test tuning scale"
+    mfx_assert_eq "$probe_size_scale" "$state_size_scale" "core effect profile parity size test tuning scale"
+    mfx_assert_eq "$probe_trail_throttle_scale" "$state_trail_throttle_scale" "core effect profile parity trail throttle test tuning scale"
+    mfx_assert_eq "$probe_active_click" "$state_active_click" "core effect profile parity active click"
+    mfx_assert_eq "$probe_active_trail" "$state_active_trail" "core effect profile parity active trail"
+    mfx_assert_eq "$probe_active_scroll" "$state_active_scroll" "core effect profile parity active scroll"
+    mfx_assert_eq "$probe_active_hold" "$state_active_hold" "core effect profile parity active hold"
+    mfx_assert_eq "$probe_active_hover" "$state_active_hover" "core effect profile parity active hover"
 
     if [[ "$platform" == "macos" ]]; then
         if ! mfx_file_contains_fixed "$tmp_dir/effect-render-profile-probe.out" "\"supported\":true"; then

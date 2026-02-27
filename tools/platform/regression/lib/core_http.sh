@@ -26,10 +26,7 @@ mfx_run_core_http_contract_checks() {
     local build_dir="$2"
     local check_scope="${3:-all}"
     local entry_bin="$build_dir/mfx_entry_posix_host"
-
-    if [[ "$check_scope" != "all" && "$check_scope" != "wasm" ]]; then
-        mfx_fail "core http check scope must be one of: all, wasm (got: $check_scope)"
-    fi
+    check_scope="$(mfx_normalize_core_automation_check_scope "$check_scope" "--check-scope")"
 
     if [[ ! -x "$entry_bin" ]]; then
         mfx_fail "entry host executable missing: $entry_bin"
@@ -99,16 +96,24 @@ mfx_run_core_http_contract_checks() {
             "$tmp_dir" \
             "$base_url" \
             "$token"
+    elif [[ "$check_scope" == "effects" ]]; then
+        _mfx_core_http_run_automation_effect_overlay_contract_checks \
+            "$platform" \
+            "$tmp_dir" \
+            "$base_url" \
+            "$token"
     fi
 
-    local repo_root
-    repo_root="$(_mfx_core_http_repo_root)"
-    _mfx_core_http_run_wasm_contract_checks \
-        "$platform" \
-        "$tmp_dir" \
-        "$base_url" \
-        "$token" \
-        "$repo_root"
+    if [[ "$check_scope" != "effects" ]]; then
+        local repo_root
+        repo_root="$(_mfx_core_http_repo_root)"
+        _mfx_core_http_run_wasm_contract_checks \
+            "$platform" \
+            "$tmp_dir" \
+            "$base_url" \
+            "$token" \
+            "$repo_root"
+    fi
 
     trap - EXIT
     _mfx_core_http_stop_entry

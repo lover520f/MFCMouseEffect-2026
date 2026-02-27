@@ -20,11 +20,13 @@ mfx_posix_suite_init_defaults() {
     MFX_CORE_AUTOMATION_BUILD_DIR=""
     MFX_LINUX_BUILD_DIR="/tmp/mfx-platform-linux-build"
     MFX_BUILD_JOBS_VALUE=""
+    MFX_CORE_AUTOMATION_CHECK_SCOPE="all"
 
     MFX_SKIP_SCAFFOLD=0
     MFX_SKIP_CORE_SMOKE=0
     MFX_SKIP_CORE_AUTOMATION=0
     MFX_SKIP_MACOS_AUTOMATION_INJECTION_SELFCHECK=0
+    MFX_SKIP_MACOS_EFFECTS_TUNING_SELFCHECK=0
     MFX_SKIP_LINUX_GATE=0
     MFX_LINUX_SKIP_CORE_RUNTIME=0
     MFX_SKIP_AUTOMATION_TEST=0
@@ -41,12 +43,14 @@ Usage: run-posix-regression-suite.sh [options]
   --scaffold-build-dir <path>     scaffold regression build dir override
   --core-build-dir <path>         core-lane smoke build dir override
   --core-automation-build-dir <path> core automation HTTP contract build dir override
+  --core-automation-check-scope <all|wasm|effects> core automation check scope (default: all)
   --linux-build-dir <path>        linux compile gate build dir (default: /tmp/mfx-platform-linux-build)
   --jobs <n>                      build jobs override (default: env MFX_BUILD_JOBS or 8)
   --skip-scaffold                 skip scaffold regression phase
   --skip-core-smoke               skip core-lane smoke phase
   --skip-core-automation          skip core automation HTTP contract phase
   --skip-macos-automation-injection-selfcheck skip macOS automation injection selfcheck phase
+  --skip-macos-effects-tuning-selfcheck skip macOS effects tuning selfcheck phase
   --skip-linux-gate               skip linux compile gate phase
   --linux-skip-core-runtime       forward: linux gate skips core-runtime lane compile
   --skip-automation-test          skip webui automation platform semantic tests
@@ -80,6 +84,15 @@ mfx_posix_suite_parse_args() {
                 MFX_CORE_AUTOMATION_BUILD_DIR="$2"
                 shift 2
                 ;;
+            --core-automation-check-scope)
+                mfx_require_option_value "$1" "${2:-}"
+                MFX_CORE_AUTOMATION_CHECK_SCOPE="$2"
+                shift 2
+                ;;
+            --core-automation-check-scope=*)
+                MFX_CORE_AUTOMATION_CHECK_SCOPE="${1#*=}"
+                shift
+                ;;
             --linux-build-dir)
                 mfx_require_option_value "$1" "${2:-}"
                 MFX_LINUX_BUILD_DIR="$2"
@@ -104,6 +117,10 @@ mfx_posix_suite_parse_args() {
                 ;;
             --skip-macos-automation-injection-selfcheck)
                 MFX_SKIP_MACOS_AUTOMATION_INJECTION_SELFCHECK=1
+                shift
+                ;;
+            --skip-macos-effects-tuning-selfcheck)
+                MFX_SKIP_MACOS_EFFECTS_TUNING_SELFCHECK=1
                 shift
                 ;;
             --skip-linux-gate)
@@ -143,6 +160,10 @@ mfx_posix_suite_parse_args() {
                 ;;
         esac
     done
+
+    MFX_CORE_AUTOMATION_CHECK_SCOPE="$(mfx_normalize_core_automation_check_scope \
+        "$MFX_CORE_AUTOMATION_CHECK_SCOPE" \
+        "--core-automation-check-scope")"
 }
 
 mfx_posix_suite_export_build_jobs() {

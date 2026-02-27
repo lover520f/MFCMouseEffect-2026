@@ -51,16 +51,23 @@ uint32_t BlendArgb(uint32_t lhsArgb, uint32_t rhsArgb, double rhsWeight) {
 } // namespace
 
 ClickRenderProfile ResolveClickRenderProfile(const EffectConfig& config) {
+    const TestProfileTuning tuning = ResolveTestProfileTuning();
     ClickRenderProfile profile{};
     const int rippleDurationMs = ClampInt(config.ripple.durationMs, 180, 1200);
     const int textDurationMs = ClampInt(config.textClick.durationMs, 220, 1800);
     const int baseWindowSize = ClampInt(config.ripple.windowSize, 80, 220);
-    profile.normalSizePx = baseWindowSize + 22;
-    profile.textSizePx = baseWindowSize + 38;
-    profile.normalDurationSec =
-        detail::ClampDouble(static_cast<double>(rippleDurationMs) / 1000.0 * 1.06, 0.20, 1.30);
-    profile.textDurationSec =
-        detail::ClampDouble(static_cast<double>(textDurationMs) / 1000.0 * 0.50, 0.28, 1.35);
+    profile.normalSizePx = detail::ScaleInt(baseWindowSize + 22, tuning.sizeScale, 80, 320);
+    profile.textSizePx = detail::ScaleInt(baseWindowSize + 38, tuning.sizeScale, 92, 360);
+    profile.normalDurationSec = detail::ScaleDouble(
+        detail::ClampDouble(static_cast<double>(rippleDurationMs) / 1000.0 * 1.06, 0.20, 1.30),
+        tuning.durationScale,
+        0.12,
+        2.2);
+    profile.textDurationSec = detail::ScaleDouble(
+        detail::ClampDouble(static_cast<double>(textDurationMs) / 1000.0 * 0.50, 0.28, 1.35),
+        tuning.durationScale,
+        0.16,
+        2.4);
     profile.closePaddingMs = 60;
     profile.baseOpacity = 0.95;
     profile.leftButton.fillArgb = config.ripple.leftClick.fill.value;
@@ -76,13 +83,17 @@ ClickRenderProfile ResolveClickRenderProfile(const EffectConfig& config) {
 }
 
 TrailRenderProfile ResolveTrailRenderProfile(const EffectConfig& config, const std::string& trailType) {
+    const TestProfileTuning tuning = ResolveTestProfileTuning();
     TrailRenderProfile profile{};
     const std::string normalizedTrailType = detail::NormalizeTrailTypeAlias(trailType);
     const TrailHistoryProfile history = config.GetTrailHistoryProfile(normalizedTrailType);
     const int durationMs = ClampInt(static_cast<int>(std::lround(history.durationMs * 0.73)), 180, 1000);
-    profile.durationSec = static_cast<double>(durationMs) / 1000.0;
-    profile.normalSizePx = ClampInt(56 + history.maxPoints / 3, 56, 112);
-    profile.particleSizePx = ClampInt(40 + history.maxPoints / 6, 40, 72);
+    profile.durationSec =
+        detail::ScaleDouble(static_cast<double>(durationMs) / 1000.0, tuning.durationScale, 0.12, 2.0);
+    profile.normalSizePx =
+        detail::ScaleInt(ClampInt(56 + history.maxPoints / 3, 56, 112), tuning.sizeScale, 40, 224);
+    profile.particleSizePx =
+        detail::ScaleInt(ClampInt(40 + history.maxPoints / 6, 40, 72), tuning.sizeScale, 28, 160);
     profile.closePaddingMs = 40;
     profile.baseOpacity = 0.95;
     const uint32_t trailBaseStroke = config.trail.color.value;
@@ -108,6 +119,7 @@ TrailRenderProfile ResolveTrailRenderProfile(const EffectConfig& config, const s
 }
 
 TrailThrottleProfile ResolveTrailThrottleProfile(const EffectConfig& config, const std::string& trailType) {
+    const TestProfileTuning tuning = ResolveTestProfileTuning();
     const std::string normalizedTrailType = detail::NormalizeTrailTypeAlias(trailType);
     const TrailThrottleProfile base = detail::ResolveTrailThrottleProfileByType(normalizedTrailType);
     const TrailHistoryProfile history = config.GetTrailHistoryProfile(normalizedTrailType);
@@ -117,11 +129,18 @@ TrailThrottleProfile ResolveTrailThrottleProfile(const EffectConfig& config, con
     const double pointsBias =
         detail::ClampDouble((32.0 - static_cast<double>(history.maxPoints)) / 64.0, -0.5, 0.8);
 
-    result.minIntervalMs = static_cast<uint64_t>(ClampInt(
+    result.minIntervalMs = static_cast<uint64_t>(detail::ScaleInt(ClampInt(
         static_cast<int>(std::lround(static_cast<double>(base.minIntervalMs) * std::pow(durationScale, 0.35))),
         8,
-        40));
-    result.minDistancePx = detail::ClampDouble(base.minDistancePx * (1.0 + pointsBias), 2.0, 12.0);
+        40),
+        tuning.trailThrottleScale,
+        2,
+        80));
+    result.minDistancePx = detail::ScaleDouble(
+        detail::ClampDouble(base.minDistancePx * (1.0 + pointsBias), 2.0, 12.0),
+        tuning.trailThrottleScale,
+        1.0,
+        30.0);
     return result;
 }
 

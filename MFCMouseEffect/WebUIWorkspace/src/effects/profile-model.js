@@ -4,15 +4,18 @@ export function normalizeEffectsProfile(input) {
     return {};
   }
 
+  const normalizeSection = (section) => (section && typeof section === 'object' ? section : undefined);
+
   const profile = {
     platform: `${value.platform || ''}`.trim(),
     active: value.active && typeof value.active === 'object' ? value.active : {},
   };
 
-  const keys = ['click', 'trail', 'trail_throttle', 'scroll', 'hold', 'hover'];
+  const keys = ['config_basis', 'click', 'trail', 'trail_throttle', 'scroll', 'hold', 'hover'];
   for (const key of keys) {
-    if (value[key] && typeof value[key] === 'object') {
-      profile[key] = value[key];
+    const section = normalizeSection(value[key]);
+    if (section) {
+      profile[key] = section;
     }
   }
   return profile;

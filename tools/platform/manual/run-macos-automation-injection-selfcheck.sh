@@ -126,21 +126,12 @@ if [[ "$OSTYPE" != darwin* ]]; then
     mfx_fail "this script is macOS-only"
 fi
 
-if [[ -n "$build_jobs" ]]; then
-    if ! [[ "$build_jobs" =~ ^[0-9]+$ ]]; then
-        mfx_fail "--jobs must be a positive integer"
-    fi
-    export MFX_BUILD_JOBS="$build_jobs"
-fi
-
-if ! [[ "$auto_stop_seconds" =~ ^[0-9]+$ ]]; then
-    mfx_fail "--auto-stop-seconds must be a non-negative integer"
-fi
+mfx_manual_apply_build_jobs_env "$build_jobs" "--jobs"
+mfx_manual_validate_non_negative_integer "$auto_stop_seconds" "--auto-stop-seconds"
 if ! [[ "$osascript_timeout_seconds" =~ ^[0-9]+$ ]] || [[ "$osascript_timeout_seconds" -le 0 ]]; then
     mfx_fail "--osascript-timeout-seconds must be a positive integer"
 fi
 
-mfx_require_cmd cmake
 mfx_require_cmd curl
 mfx_require_cmd sed
 
@@ -148,19 +139,6 @@ if [[ "$dry_run" -eq 0 ]]; then
     mfx_require_cmd osascript
     mfx_require_cmd pbcopy
     mfx_require_cmd pbpaste
-fi
-
-if [[ "$skip_build" -eq 0 ]]; then
-    mfx_configure_platform_build_dir "$repo_root" "$build_dir" "macos" \
-        -DMFX_ENABLE_CROSS_HOST_PACKAGES=ON \
-        -DMFX_ENABLE_ENTRY_RUNTIME_TARGETS=ON \
-        -DMFX_ENABLE_POSIX_CORE_RUNTIME=ON
-    mfx_build_targets "$build_dir" "mfx_entry_posix_host"
-fi
-
-host_bin="$build_dir/mfx_entry_posix_host"
-if [[ ! -x "$host_bin" ]]; then
-    mfx_fail "host binary missing or not executable: $host_bin"
 fi
 
 tmp_dir="$(mktemp -d)"
@@ -174,6 +152,9 @@ cleanup() {
 trap cleanup EXIT
 
 mfx_manual_acquire_entry_host_lock
+
+mfx_manual_prepare_core_host_binary "$repo_root" "$build_dir" "$skip_build"
+host_bin="$MFX_MANUAL_HOST_BIN"
 
 run_with_timeout() {
     local timeout_seconds="$1"

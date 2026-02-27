@@ -47,12 +47,26 @@ uint32_t BlendArgb(uint32_t lhsArgb, uint32_t rhsArgb, double rhsWeight) {
 } // namespace
 
 ScrollRenderProfile ResolveScrollRenderProfile(const EffectConfig& config) {
+    const TestProfileTuning tuning = ResolveTestProfileTuning();
     ScrollRenderProfile profile{};
     const int rippleDurationMs = ClampInt(config.ripple.durationMs, 180, 1200);
-    profile.baseDurationSec = detail::ClampDouble(static_cast<double>(rippleDurationMs) / 1000.0 * 0.92, 0.24, 1.12);
-    profile.perStrengthStepSec = detail::ClampDouble(profile.baseDurationSec * 0.072, 0.012, 0.065);
-    profile.horizontalSizePx = ClampInt(config.ripple.windowSize + 34, 116, 236);
-    profile.verticalSizePx = ClampInt(config.ripple.windowSize + 24, 108, 224);
+    const double rawBaseDurationSec =
+        detail::ClampDouble(static_cast<double>(rippleDurationMs) / 1000.0 * 0.92, 0.24, 1.12);
+    const double rawPerStrengthStepSec = detail::ClampDouble(rawBaseDurationSec * 0.072, 0.012, 0.065);
+    profile.baseDurationSec = detail::ScaleDouble(
+        rawBaseDurationSec,
+        tuning.durationScale,
+        0.12,
+        2.0);
+    profile.perStrengthStepSec = detail::ScaleDouble(
+        rawPerStrengthStepSec,
+        tuning.durationScale,
+        0.004,
+        0.18);
+    profile.horizontalSizePx =
+        detail::ScaleInt(ClampInt(config.ripple.windowSize + 34, 116, 236), tuning.sizeScale, 80, 420);
+    profile.verticalSizePx =
+        detail::ScaleInt(ClampInt(config.ripple.windowSize + 24, 108, 224), tuning.sizeScale, 72, 400);
     profile.closePaddingMs = 90;
     profile.baseOpacity = 0.96;
 
@@ -71,14 +85,31 @@ ScrollRenderProfile ResolveScrollRenderProfile(const EffectConfig& config) {
 }
 
 HoldRenderProfile ResolveHoldRenderProfile(const EffectConfig& config) {
+    const TestProfileTuning tuning = ResolveTestProfileTuning();
     HoldRenderProfile profile{};
     const int rippleDurationMs = ClampInt(config.ripple.durationMs, 180, 1200);
-    profile.sizePx = ClampInt(config.ripple.windowSize + 68, 140, 260);
-    profile.progressFullMs = ClampInt(static_cast<int>(std::lround(rippleDurationMs * 4.0)), 800, 3000);
-    profile.breatheDurationSec =
+    const double rawBreatheDurationSec =
         detail::ClampDouble(static_cast<double>(rippleDurationMs) / 1000.0 * 2.57, 0.55, 2.8);
-    profile.rotateDurationSec = detail::ClampDouble(profile.breatheDurationSec * 2.44, 1.2, 4.0);
-    profile.rotateDurationFastSec = detail::ClampDouble(profile.rotateDurationSec * 0.68, 0.7, 2.4);
+    const double rawRotateDurationSec = detail::ClampDouble(rawBreatheDurationSec * 2.44, 1.2, 4.0);
+    const double rawRotateDurationFastSec = detail::ClampDouble(rawRotateDurationSec * 0.68, 0.7, 2.4);
+    profile.sizePx =
+        detail::ScaleInt(ClampInt(config.ripple.windowSize + 68, 140, 260), tuning.sizeScale, 96, 520);
+    profile.progressFullMs = detail::ScaleInt(
+        ClampInt(static_cast<int>(std::lround(rippleDurationMs * 4.0)), 800, 3000),
+        tuning.durationScale,
+        300,
+        8000);
+    profile.breatheDurationSec = detail::ScaleDouble(
+        rawBreatheDurationSec,
+        tuning.durationScale,
+        0.18,
+        6.0);
+    profile.rotateDurationSec = detail::ScaleDouble(rawRotateDurationSec, tuning.durationScale, 0.4, 9.0);
+    profile.rotateDurationFastSec = detail::ScaleDouble(
+        rawRotateDurationFastSec,
+        tuning.durationScale,
+        0.2,
+        6.0);
     profile.baseOpacity = 0.92;
 
     profile.colors.leftBaseStrokeArgb = config.ripple.leftClick.stroke.value;
@@ -97,12 +128,24 @@ HoldRenderProfile ResolveHoldRenderProfile(const EffectConfig& config) {
 }
 
 HoverRenderProfile ResolveHoverRenderProfile(const EffectConfig& config) {
+    const TestProfileTuning tuning = ResolveTestProfileTuning();
     HoverRenderProfile profile{};
     const int rippleDurationMs = ClampInt(config.ripple.durationMs, 180, 1200);
-    profile.sizePx = ClampInt(config.ripple.windowSize + 52, 120, 240);
-    profile.breatheDurationSec =
+    const double rawBreatheDurationSec =
         detail::ClampDouble(static_cast<double>(rippleDurationMs) / 1000.0 * 2.43, 0.55, 2.6);
-    profile.spinDurationSec = detail::ClampDouble(profile.breatheDurationSec * 1.88, 1.0, 3.8);
+    const double rawSpinDurationSec = detail::ClampDouble(rawBreatheDurationSec * 1.88, 1.0, 3.8);
+    profile.sizePx =
+        detail::ScaleInt(ClampInt(config.ripple.windowSize + 52, 120, 240), tuning.sizeScale, 84, 460);
+    profile.breatheDurationSec = detail::ScaleDouble(
+        rawBreatheDurationSec,
+        tuning.durationScale,
+        0.18,
+        6.0);
+    profile.spinDurationSec = detail::ScaleDouble(
+        rawSpinDurationSec,
+        tuning.durationScale,
+        0.35,
+        8.0);
     profile.baseOpacity = 0.9;
 
     profile.colors.glowFillArgb = ScaleArgbBrightness(config.ripple.leftClick.fill.value, 0.92);

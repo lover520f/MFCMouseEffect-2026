@@ -153,6 +153,32 @@
   - `PosixSettingsLauncher` and `ScaffoldSettingsRuntime` are now split by concern (`capture/spawn` and `runtime-start orchestration` modules), reducing shell runtime coupling while preserving URL launch and scaffold server contracts
   - `AppController` VM suppression path is now isolated in `AppController.VmSuppression.cpp`, reducing suppression-vs-effects coupling while preserving suppression behavior contracts
   - macOS effect overlay lifecycle now exposes 5-category active-window diagnostics (`click/trail/scroll/hold/hover`) in `/api/state.effects_runtime`, and probe coverage (`/api/effects/test-overlay-windows`) now exercises all 5 categories with persistent-overlay close control
+  - macOS effects profile resolution now supports explicit test-only tuning overrides (`MFX_TEST_EFFECTS_DURATION_SCALE`, `MFX_TEST_EFFECTS_SIZE_SCALE`, `MFX_TEST_EFFECTS_TRAIL_THROTTLE_SCALE`) with bounded clamps and cross-API diagnostics parity (`/api/effects/test-render-profiles` + `/api/state.effects_profile`); automation contracts can assert non-default override values via `MFX_EXPECT_EFFECTS_*`
+  - posix regression suite now includes macOS effects tuning selfcheck phase by default (`run-macos-effects-profile-tuning-selfcheck.sh`), with skip switch `--skip-macos-effects-tuning-selfcheck`
+  - core HTTP automation regression now supports effects-only scope (`--check-scope effects`) and dedicated fast entry (`run-posix-core-effects-contract-regression.sh`) for effects overlay/profile contract checks
+  - posix suite now forwards core automation check scope via `--core-automation-check-scope <all|wasm|effects>`, enabling effects-focused suite passes without switching entry scripts
+  - effects-focused suite shortcut entry is now available: `tools/platform/regression/run-posix-effects-regression-suite.sh` (pins `--core-automation-check-scope effects` and skips macOS wasm selfcheck by default)
+  - wasm-focused suite shortcut entry is now available: `tools/platform/regression/run-posix-wasm-regression-suite.sh` (pins `--core-automation-check-scope wasm` and skips non-wasm mac selfchecks)
+  - scope-pinned shortcut entries now reject conflicting scope arguments (`run-posix-core-effects-contract-regression.sh`, `run-posix-effects-regression-suite.sh`, `run-posix-wasm-regression-suite.sh`) for both `--arg value` and `--arg=value` forms, preventing accidental scope override drift
+  - conflicting-scope rejection in shortcut entries is now implemented via shared helper (`mfx_reject_option_in_args`), reducing duplicate shell logic and keeping failure semantics consistent
+  - manual macOS core-host selfcheck teardown now uses bounded staged stop (`TERM` with timeout, then `KILL` fallback via `MFX_MANUAL_STOP_TIMEOUT_SECONDS`) to reduce leftover host-process interference between repeated selfchecks
+  - macOS manual selfcheck scripts now acquire `mfx-entry-posix-host` lock before optional build phase (not only before host startup), reducing build/start races under concurrent manual/suite execution
+  - macOS manual selfcheck scripts now reuse a single host-binary prepare helper (`mfx_manual_prepare_core_host_binary`), unifying core-build flags and executable validation across automation/effects/wasm/websettings checks
+  - macOS manual selfcheck scripts now also share common numeric option validation helpers (`mfx_manual_apply_build_jobs_env`, `mfx_manual_validate_non_negative_integer`) for consistent `--jobs` / `--auto-stop-seconds` contracts
+  - `cmake` dependency checks for macOS manual selfchecks are now centralized in host-binary prepare helper and only enforced when build is requested (`--skip-build=0`), avoiding unnecessary dependency gating in skip-build flows
+  - `/api/effects/test-render-profiles` now reuses `BuildEffectsProfileStateJson` as the single profile/config-basis assembly source, reducing duplicate resolver logic and test-route/state-route drift risk
+  - effects test-profile route now also reuses `effects_profile.active` payload (including `hold`/`hover`), and effects contract checks assert active hold/hover visibility to guard route/state shape parity
+  - effects contract parity now includes value-level active matching (`click/trail/scroll/hold/hover`) between `/api/effects/test-render-profiles` and `state.effects_profile`, not only section existence checks
+  - macOS effects-profile JSON assembly is split into dedicated builder module (`SettingsStateMapper.EffectsProfileStateBuilder.Macos.cpp`), while `SettingsStateMapper.EffectsProfileStateBuilder.cpp` keeps platform-neutral envelope logic only
+  - regression startup/stop numeric env tuning is now tolerant to invalid inputs (falls back to defaults in `http_entry_helpers`/`core_http_entry_helpers`), reducing accidental shell-env misconfiguration failures during local loops
+  - core automation scope values are now normalized by shared helper (`mfx_normalize_core_automation_check_scope`) across suite/core-http/core-automation entry points, keeping scope contract parsing consistent (supports mixed-case inputs like `EFFECTS`)
+  - regression `mfx_fail` output now writes to stderr, so invalid-option diagnostics remain visible even when failures occur inside command-substitution call paths
+  - core HTTP regression stop/HTTP helpers are now timeout-hardened (`MFX_CORE_HTTP_STOP_TIMEOUT_SECONDS`, `MFX_HTTP_CONNECT_TIMEOUT_SECONDS`, `MFX_HTTP_MAX_TIME_SECONDS`) to avoid indefinite hangs in wasm/effects/all scopes
+  - core HTTP regression stop path now uses staged shutdown (`stdin-exit -> TERM -> KILL`) with dedicated waits (`MFX_CORE_HTTP_GRACEFUL_STOP_WAIT_SECONDS`, `MFX_CORE_HTTP_TERM_WAIT_SECONDS`) to reduce unnecessary tail-latency in repeated wasm/effects loops
+  - scaffold HTTP entry startup now includes bounded early-exit retry (`MFX_HTTP_ENTRY_START_RETRIES`, default `1`) with per-attempt fifo cleanup to reduce transient false-negative regressions
+  - scaffold regression (`run-posix-scaffold-regression.sh`) now runs smoke/HTTP checks under shared entry-host lock (`mfx-entry-posix-host`) to prevent concurrent suite runs from causing startup false negatives
+  - posix full suite (`run-posix-regression-suite.sh`) now runs under suite-level lock (`mfx-posix-regression-suite`, timeout via `MFX_POSIX_SUITE_LOCK_TIMEOUT_SECONDS`) so concurrent invocations serialize instead of cross-interfering
+  - shared WebUI effects profile model now preserves backend `config_basis` diagnostics (including `test_tuning`) instead of dropping it during normalization
 
 ## Known Stable Gates
 Run these as first-line regression checks:
@@ -160,6 +186,7 @@ Run these as first-line regression checks:
 ./tools/platform/regression/run-posix-scaffold-regression.sh --platform auto
 ./tools/platform/regression/run-posix-core-smoke.sh --platform auto
 ./tools/platform/regression/run-posix-core-automation-contract-regression.sh --platform auto
+./tools/platform/regression/run-posix-core-effects-contract-regression.sh --platform auto
 ./tools/platform/regression/run-posix-core-wasm-contract-regression.sh --platform auto
 ./tools/platform/regression/run-posix-core-wasm-path-contract-regression.sh --platform auto
 ./tools/platform/regression/run-posix-linux-compile-gate.sh --build-dir /tmp/mfx-platform-linux-build --jobs 8
@@ -181,6 +208,11 @@ Use this one-command entry for WASM runtime invoke/render/fallback selfcheck:
 Use this one-command entry for automation injection selfcheck (`left_click -> Cmd+C` path):
 ```bash
 ./tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build
+```
+
+Use this one-command entry for effects profile tuning selfcheck (test-only `duration/size/trail-throttle` overrides):
+```bash
+./tools/platform/manual/run-macos-effects-profile-tuning-selfcheck.sh --skip-build
 ```
 
 ## Current Next Slice

@@ -20,7 +20,7 @@ mfx_ok() {
 }
 
 mfx_fail() {
-    mfx_log "fail" "$@"
+    printf '[mfx:fail] %s\n' "$*" >&2
     exit 1
 }
 
@@ -47,6 +47,57 @@ mfx_require_positive_integer() {
     if ! [[ "$raw_value" =~ ^[0-9]+$ ]] || [[ "$raw_value" -le 0 ]]; then
         mfx_fail "invalid $context_name value: $raw_value (expected positive integer)"
     fi
+}
+
+mfx_parse_non_negative_integer_or_default() {
+    local raw_value="$1"
+    local default_value="$2"
+    if [[ "$raw_value" =~ ^[0-9]+$ ]]; then
+        printf '%s' "$raw_value"
+        return 0
+    fi
+    printf '%s' "$default_value"
+}
+
+mfx_parse_positive_integer_or_default() {
+    local raw_value="$1"
+    local default_value="$2"
+    if [[ "$raw_value" =~ ^[0-9]+$ ]] && [[ "$raw_value" -gt 0 ]]; then
+        printf '%s' "$raw_value"
+        return 0
+    fi
+    printf '%s' "$default_value"
+}
+
+mfx_reject_option_in_args() {
+    local option_name="$1"
+    local failure_message="$2"
+    shift 2
+
+    local arg=""
+    for arg in "$@"; do
+        case "$arg" in
+            "$option_name"|"$option_name"=*)
+                mfx_fail "$failure_message"
+                ;;
+        esac
+    done
+}
+
+mfx_normalize_core_automation_check_scope() {
+    local raw_scope="$1"
+    local option_name="${2:---check-scope}"
+    local normalized_scope
+    normalized_scope="$(printf '%s' "$raw_scope" | tr '[:upper:]' '[:lower:]')"
+
+    case "$normalized_scope" in
+        all|wasm|effects)
+            printf '%s' "$normalized_scope"
+            ;;
+        *)
+            mfx_fail "invalid $option_name value: $raw_scope (expected: all|wasm|effects)"
+            ;;
+    esac
 }
 
 mfx_detect_posix_host_platform() {
@@ -122,7 +173,15 @@ mfx_http_code() {
     local output_file="$1"
     local url="$2"
     shift 2
-    curl -sS -o "$output_file" -w '%{http_code}' "$@" "$url"
+    local connect_timeout="${MFX_HTTP_CONNECT_TIMEOUT_SECONDS:-3}"
+    local max_time="${MFX_HTTP_MAX_TIME_SECONDS:-20}"
+    curl -sS \
+        --connect-timeout "$connect_timeout" \
+        --max-time "$max_time" \
+        -o "$output_file" \
+        -w '%{http_code}' \
+        "$@" \
+        "$url"
 }
 
 mfx_terminate_stale_entry_host() {

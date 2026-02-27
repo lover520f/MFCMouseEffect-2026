@@ -33,6 +33,7 @@ runTest('normalizes platform and active fields', () => {
 runTest('keeps known profile sections only', () => {
   const profile = normalizeEffectsProfile({
     platform: 'macos',
+    config_basis: { ripple_duration_ms: 300, test_tuning: { duration_scale: 0.5 } },
     click: { normal_size_px: 100 },
     trail: { duration_sec: 0.2 },
     trail_throttle: { min_interval_ms: 10 },
@@ -45,6 +46,7 @@ runTest('keeps known profile sections only', () => {
   assert.deepEqual(Object.keys(profile).sort(), [
     'active',
     'click',
+    'config_basis',
     'hold',
     'hover',
     'platform',
@@ -52,6 +54,31 @@ runTest('keeps known profile sections only', () => {
     'trail',
     'trail_throttle',
   ]);
+});
+
+runTest('preserves config basis test tuning diagnostics', () => {
+  const profile = normalizeEffectsProfile({
+    platform: 'macos',
+    config_basis: {
+      ripple_duration_ms: 300,
+      test_tuning: {
+        duration_scale: 0.5,
+        size_scale: 1.2,
+        trail_throttle_scale: 0.6,
+        duration_overridden: true,
+        size_overridden: true,
+        trail_throttle_overridden: true,
+      },
+    },
+  });
+
+  assert.equal(profile.config_basis?.ripple_duration_ms, 300);
+  assert.equal(profile.config_basis?.test_tuning?.duration_scale, 0.5);
+  assert.equal(profile.config_basis?.test_tuning?.size_scale, 1.2);
+  assert.equal(profile.config_basis?.test_tuning?.trail_throttle_scale, 0.6);
+  assert.equal(profile.config_basis?.test_tuning?.duration_overridden, true);
+  assert.equal(profile.config_basis?.test_tuning?.size_overridden, true);
+  assert.equal(profile.config_basis?.test_tuning?.trail_throttle_overridden, true);
 });
 
 if (failed > 0) {

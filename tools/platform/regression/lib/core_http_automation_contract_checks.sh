@@ -60,3 +60,16 @@ _mfx_core_http_run_automation_contract_checks() {
         "$platform" \
         "$tmp_dir"
 }
+
+_mfx_core_http_run_automation_effect_overlay_contract_checks() {
+    local platform="$1"
+    local tmp_dir="$2"
+    local base_url="$3"
+    local token="$4"
+
+    _mfx_core_http_automation_contract_effect_overlay_checks \
+        "$platform" \
+        "$tmp_dir" \
+        "$base_url" \
+        "$token"
+}

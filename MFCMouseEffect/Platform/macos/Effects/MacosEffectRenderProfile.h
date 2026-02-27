@@ -125,12 +125,22 @@ struct HoverRenderProfile {
     ColorProfile colors{};
 };
 
+struct TestProfileTuning {
+    double durationScale = 1.0;
+    double sizeScale = 1.0;
+    double trailThrottleScale = 1.0;
+    bool durationOverridden = false;
+    bool sizeOverridden = false;
+    bool trailThrottleOverridden = false;
+};
+
 ClickRenderProfile ResolveClickRenderProfile(const EffectConfig& config);
 TrailRenderProfile ResolveTrailRenderProfile(const EffectConfig& config, const std::string& trailType);
 TrailThrottleProfile ResolveTrailThrottleProfile(const EffectConfig& config, const std::string& trailType);
 ScrollRenderProfile ResolveScrollRenderProfile(const EffectConfig& config);
 HoldRenderProfile ResolveHoldRenderProfile(const EffectConfig& config);
 HoverRenderProfile ResolveHoverRenderProfile(const EffectConfig& config);
+TestProfileTuning ResolveTestProfileTuning();
 
 ClickRenderProfile DefaultClickRenderProfile();
 TrailRenderProfile DefaultTrailRenderProfile(const std::string& trailType);

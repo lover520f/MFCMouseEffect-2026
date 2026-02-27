@@ -23,3 +23,11 @@ _mfx_core_http_automation_parse_scalar_field() {
     local field_name="$2"
     sed -n "s/.*\"${field_name}\":[[:space:]]*\\([^,}]*\\).*/\\1/p" "$input_file" | head -n 1 | tr -d '[:space:]'
 }
+
+_mfx_core_http_automation_parse_active_field() {
+    local input_file="$1"
+    local field_name="$2"
+    tr -d '\n\r' <"$input_file" | \
+        sed -n "s/.*\"active\":{[^}]*\"${field_name}\":\"\\([^\"]*\\)\"[^}]*}.*/\\1/p" | \
+        head -n 1
+}

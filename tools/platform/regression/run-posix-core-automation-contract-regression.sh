@@ -12,6 +12,7 @@ source "$SCRIPT_DIR/lib/core_http.sh"
 MFX_PLATFORM="auto"
 MFX_BUILD_DIR=""
 MFX_HOST_PLATFORM="$(mfx_detect_posix_host_platform)"
+MFX_CHECK_SCOPE="all"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -25,11 +26,21 @@ while [[ $# -gt 0 ]]; do
             MFX_BUILD_DIR="${2:-}"
             shift 2
             ;;
+        --check-scope)
+            mfx_require_option_value "$1" "${2:-}"
+            MFX_CHECK_SCOPE="${2:-}"
+            shift 2
+            ;;
+        --check-scope=*)
+            MFX_CHECK_SCOPE="${1#*=}"
+            shift
+            ;;
         -h|--help)
             cat <<'USAGE'
 Usage: run-posix-core-automation-contract-regression.sh [options]
   --platform <auto|macos|linux>   target platform package (default: auto)
   --build-dir <path>              build directory override
+  --check-scope <all|wasm|effects> check scope (default: all)
 
 Env tuning:
   MFX_CORE_HTTP_START_WAIT_SECONDS    wait time before startup alive check (default: 1)
@@ -57,6 +68,7 @@ USAGE
 done
 
 MFX_PLATFORM="$(mfx_resolve_posix_platform "$MFX_PLATFORM" "$MFX_HOST_PLATFORM" "core automation contract run")"
+MFX_CHECK_SCOPE="$(mfx_normalize_core_automation_check_scope "$MFX_CHECK_SCOPE" "--check-scope")"
 
 if [[ "$MFX_PLATFORM" != "macos" ]]; then
     mfx_info "core automation HTTP contracts are macOS-only in current roadmap; skip on platform=$MFX_PLATFORM"
@@ -75,11 +87,12 @@ mfx_info "platform: $MFX_PLATFORM"
 mfx_info "build dir: $MFX_BUILD_DIR"
 mfx_info "enable core runtime lane: ON"
 mfx_info "entry host lock: mfx-entry-posix-host"
+mfx_info "check scope: $MFX_CHECK_SCOPE"
 
 mfx_run_core_automation_contract_workflow() {
     mfx_prepare_core_entry_runtime "core automation contracts" "$REPO_ROOT" "$MFX_BUILD_DIR" "$MFX_PLATFORM"
 
-    mfx_run_core_http_contract_checks "$MFX_PLATFORM" "$MFX_BUILD_DIR"
+    mfx_run_core_http_contract_checks "$MFX_PLATFORM" "$MFX_BUILD_DIR" "$MFX_CHECK_SCOPE"
     mfx_ok "posix core automation contract regression passed"
 }
 
