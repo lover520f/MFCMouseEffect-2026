@@ -29,6 +29,12 @@ CGFloat ScaleOverlayMetric(
     CGFloat baseReference,
     CGFloat minValue,
     CGFloat maxValue);
+CFTimeInterval ScaleOverlayDurationBySize(
+    CFTimeInterval baseDuration,
+    CGFloat overlaySize,
+    CGFloat baseReference,
+    CFTimeInterval minDuration,
+    CFTimeInterval maxDuration);
 #endif
 
 } // namespace mousefx::macos_overlay_support

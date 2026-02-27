@@ -26,8 +26,13 @@ TrailPulseRenderPlan BuildTrailPulseRenderPlan(
         plan.size,
         plan.size);
     plan.frame = macos_overlay_support::ClampOverlayFrameToScreenBounds(rawFrame, overlayPt);
-    plan.durationSec = profile.durationSec;
-    plan.closeAfterMs = static_cast<int>(profile.durationSec * 1000.0) + profile.closePaddingMs;
+    plan.durationSec = macos_overlay_support::ScaleOverlayDurationBySize(
+        profile.durationSec,
+        plan.size,
+        160.0,
+        0.14,
+        1.60);
+    plan.closeAfterMs = static_cast<int>(plan.durationSec * 1000.0) + profile.closePaddingMs;
     return plan;
 }
 

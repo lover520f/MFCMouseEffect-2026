@@ -35,7 +35,7 @@ void AddScrollPulseDecorations(
         CABasicAnimation* spin = [CABasicAnimation animationWithKeyPath:@"transform.rotation"];
         spin.fromValue = @0.0;
         spin.toValue = @(M_PI * 1.5);
-        spin.duration = 0.45;
+        spin.duration = std::clamp<CFTimeInterval>(plan.duration * 0.55, 0.22, 0.82);
         spin.repeatCount = 1;
         [helix addAnimation:spin forKey:@"mfx_scroll_helix_spin"];
     }

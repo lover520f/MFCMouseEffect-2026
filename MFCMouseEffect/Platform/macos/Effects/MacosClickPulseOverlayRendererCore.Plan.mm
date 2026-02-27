@@ -26,7 +26,13 @@ ClickPulseRenderPlan BuildClickPulseRenderPlan(
         plan.size,
         plan.size);
     plan.frame = macos_overlay_support::ClampOverlayFrameToScreenBounds(rawFrame, overlayPt);
-    plan.animationDuration = plan.textMode ? profile.textDurationSec : profile.normalDurationSec;
+    const CFTimeInterval baseDuration = plan.textMode ? profile.textDurationSec : profile.normalDurationSec;
+    plan.animationDuration = macos_overlay_support::ScaleOverlayDurationBySize(
+        baseDuration,
+        plan.size,
+        160.0,
+        0.16,
+        1.60);
     return plan;
 }
 

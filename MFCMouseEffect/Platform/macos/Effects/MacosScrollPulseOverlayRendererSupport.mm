@@ -2,6 +2,7 @@
 
 #include "Platform/macos/Effects/MacosScrollPulseOverlayRendererSupport.h"
 
+#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "Platform/macos/Effects/MacosScrollPulseOverlayStyle.h"
 
 #if defined(__APPLE__)
@@ -34,8 +35,16 @@ CGRect BuildBodyRect(CGFloat size, bool horizontal, int strengthLevel) {
 
 CFTimeInterval BuildPulseDuration(
     const macos_effect_profile::ScrollRenderProfile& profile,
-    int strengthLevel) {
-    return profile.baseDurationSec + static_cast<CFTimeInterval>(strengthLevel) * profile.perStrengthStepSec;
+    int strengthLevel,
+    CGFloat overlaySize) {
+    const CFTimeInterval strengthDuration =
+        profile.baseDurationSec + static_cast<CFTimeInterval>(strengthLevel) * profile.perStrengthStepSec;
+    return macos_overlay_support::ScaleOverlayDurationBySize(
+        strengthDuration,
+        overlaySize,
+        160.0,
+        0.16,
+        1.60);
 }
 
 int BuildCloseAfterMs(

@@ -14,7 +14,8 @@ int ResolveStrengthLevel(int delta);
 CGRect BuildBodyRect(CGFloat size, bool horizontal, int strengthLevel);
 CFTimeInterval BuildPulseDuration(
     const macos_effect_profile::ScrollRenderProfile& profile,
-    int strengthLevel);
+    int strengthLevel,
+    CGFloat overlaySize);
 int BuildCloseAfterMs(
     const macos_effect_profile::ScrollRenderProfile& profile,
     CFTimeInterval duration);

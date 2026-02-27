@@ -173,6 +173,17 @@ CGFloat ScaleOverlayMetric(
     const CGFloat scaled = baseValue * (safeSize / safeReference);
     return ClampCoordinate(scaled, minValue, maxValue);
 }
+
+CFTimeInterval ScaleOverlayDurationBySize(
+    CFTimeInterval baseDuration,
+    CGFloat overlaySize,
+    CGFloat baseReference,
+    CFTimeInterval minDuration,
+    CFTimeInterval maxDuration) {
+    const CGFloat factor = ScaleOverlayMetric(overlaySize, 1.0, baseReference, 0.88, 1.16);
+    const CFTimeInterval scaled = std::max<CFTimeInterval>(0.04, baseDuration * static_cast<CFTimeInterval>(factor));
+    return std::clamp<CFTimeInterval>(scaled, minDuration, maxDuration);
+}
 #endif
 
 } // namespace mousefx::macos_overlay_support

@@ -31,7 +31,7 @@ ScrollPulseRenderPlan BuildScrollPulseRenderPlan(
         plan.size);
     plan.frame = macos_overlay_support::ClampOverlayFrameToScreenBounds(rawFrame, overlayPt);
     plan.bodyRect = support::BuildBodyRect(plan.size, horizontal, plan.strengthLevel);
-    plan.duration = support::BuildPulseDuration(profile, plan.strengthLevel);
+    plan.duration = support::BuildPulseDuration(profile, plan.strengthLevel, plan.size);
     plan.closeAfterMs = support::BuildCloseAfterMs(profile, plan.duration);
     return plan;
 }
