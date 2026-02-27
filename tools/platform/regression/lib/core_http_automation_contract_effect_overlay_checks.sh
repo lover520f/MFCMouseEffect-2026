@@ -90,6 +90,10 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"min_interval_ms\":" "core effect render profile throttle interval field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"progress_full_ms\":" "core effect render profile hold progress field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"spin_duration_sec\":" "core effect render profile hover spin field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"line_stroke_argb\":" "core effect render profile trail line stroke color field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"horizontal_positive_stroke_argb\":" "core effect render profile scroll direction stroke color field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"left_base_stroke_argb\":" "core effect render profile hold base stroke color field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"tubes_stroke_argb\":" "core effect render profile hover tubes stroke color field"
 
     if [[ "$platform" == "macos" ]]; then
         if ! mfx_file_contains_fixed "$tmp_dir/effect-render-profile-probe.out" "\"supported\":true"; then
