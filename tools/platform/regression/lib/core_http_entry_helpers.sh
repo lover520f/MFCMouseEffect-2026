@@ -2,6 +2,33 @@
 
 set -euo pipefail
 
+_mfx_core_http_try_recover_probe_file_from_launch_probe() {
+    local probe_file="$1"
+    local launch_probe_file="$2"
+    if [[ -s "$probe_file" || ! -s "$launch_probe_file" ]]; then
+        return 1
+    fi
+
+    local launch_url
+    local token
+    launch_url="$(_mfx_core_http_probe_value "url" "$launch_probe_file")"
+    if [[ -z "$launch_url" ]]; then
+        return 1
+    fi
+    token="$(printf '%s' "$launch_url" | sed -n 's/.*[?&]token=\([^&]*\).*/\1/p')"
+    if [[ -z "$token" ]]; then
+        return 1
+    fi
+
+    {
+        printf 'url=%s\n' "$launch_url"
+        printf 'token=%s\n' "$token"
+    } > "${probe_file}.tmp"
+    mv "${probe_file}.tmp" "$probe_file"
+    mfx_info "core http recovered probe file from launch probe url"
+    return 0
+}
+
 _mfx_core_http_cleanup_startup_runtime() {
     if [[ -n "${_mfx_core_http_entry_pid:-}" ]]; then
         kill -TERM "$_mfx_core_http_entry_pid" >/dev/null 2>&1 || true
@@ -67,9 +94,11 @@ _mfx_core_http_start_entry() {
 
         sleep "$start_wait_seconds"
         if kill -0 "$_mfx_core_http_entry_pid" >/dev/null 2>&1 && \
-           _mfx_core_http_wait_probe_file "$probe_file" && \
            _mfx_core_http_wait_launch_probe_file "$launch_probe_file"; then
-            return 0
+            if _mfx_core_http_wait_probe_file "$probe_file" || \
+               _mfx_core_http_try_recover_probe_file_from_launch_probe "$probe_file" "$launch_probe_file"; then
+                return 0
+            fi
         fi
 
         mfx_info "core http startup attempt $attempt/$max_attempts failed"
