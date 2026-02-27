@@ -53,10 +53,17 @@ std::string NormalizeScrollEffectType(const std::string& effectType) {
 
 int ResolveScrollStrengthLevel(int delta) {
     const int magnitude = std::abs(delta);
-    if (magnitude >= 480) return 3;
-    if (magnitude >= 240) return 2;
-    if (magnitude >= 120) return 1;
-    return 0;
+    if (magnitude <= 0) {
+        return 0;
+    }
+    int level = magnitude / 120;
+    if (level < 1) {
+        level = 1;
+    }
+    if (level > 6) {
+        level = 6;
+    }
+    return level;
 }
 
 ScrollEffectInputShaperProfile ResolveScrollInputShaperProfile(const std::string& effectType) {
