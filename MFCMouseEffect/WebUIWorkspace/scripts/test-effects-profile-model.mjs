@@ -64,21 +64,35 @@ runTest('preserves config basis test tuning diagnostics', () => {
       test_tuning: {
         duration_scale: 0.5,
         size_scale: 1.2,
+        opacity_scale: 0.78,
         trail_throttle_scale: 0.6,
         duration_overridden: true,
         size_overridden: true,
+        opacity_overridden: true,
         trail_throttle_overridden: true,
       },
     },
+    click: { base_opacity: 0.74 },
+    trail: { base_opacity: 0.74 },
+    scroll: { base_opacity: 0.75 },
+    hold: { base_opacity: 0.72 },
+    hover: { base_opacity: 0.7 },
   });
 
   assert.equal(profile.config_basis?.ripple_duration_ms, 300);
   assert.equal(profile.config_basis?.test_tuning?.duration_scale, 0.5);
   assert.equal(profile.config_basis?.test_tuning?.size_scale, 1.2);
+  assert.equal(profile.config_basis?.test_tuning?.opacity_scale, 0.78);
   assert.equal(profile.config_basis?.test_tuning?.trail_throttle_scale, 0.6);
   assert.equal(profile.config_basis?.test_tuning?.duration_overridden, true);
   assert.equal(profile.config_basis?.test_tuning?.size_overridden, true);
+  assert.equal(profile.config_basis?.test_tuning?.opacity_overridden, true);
   assert.equal(profile.config_basis?.test_tuning?.trail_throttle_overridden, true);
+  assert.equal(profile.click?.base_opacity, 0.74);
+  assert.equal(profile.trail?.base_opacity, 0.74);
+  assert.equal(profile.scroll?.base_opacity, 0.75);
+  assert.equal(profile.hold?.base_opacity, 0.72);
+  assert.equal(profile.hover?.base_opacity, 0.7);
 });
 
 if (failed > 0) {
