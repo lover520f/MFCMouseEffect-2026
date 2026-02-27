@@ -170,6 +170,7 @@
   - effects test-profile route now also reuses `effects_profile.active` payload (including `hold`/`hover`), and effects contract checks assert active hold/hover visibility to guard route/state shape parity
   - effects contract parity now includes value-level active matching (`click/trail/scroll/hold/hover`) between `/api/effects/test-render-profiles` and `state.effects_profile`, not only section existence checks
   - effects contract/profile-tuning selfchecks now use float-tolerance assertions for test tuning scales (`duration/size/opacity/trail_throttle`), avoiding false negatives caused by JSON float string formatting differences
+  - effects contract parity now also validates per-section base-opacity consistency (`click/trail/scroll/hold/hover`) between `/api/effects/test-render-profiles` and `state.effects_profile`
   - macOS effects-profile JSON assembly is split into dedicated builder module (`SettingsStateMapper.EffectsProfileStateBuilder.Macos.cpp`), while `SettingsStateMapper.EffectsProfileStateBuilder.cpp` keeps platform-neutral envelope logic only
   - regression startup/stop numeric env tuning is now tolerant to invalid inputs (falls back to defaults in `http_entry_helpers`/`core_http_entry_helpers`), reducing accidental shell-env misconfiguration failures during local loops
   - core automation scope values are now normalized by shared helper (`mfx_normalize_core_automation_check_scope`) across suite/core-http/core-automation entry points, keeping scope contract parsing consistent (supports mixed-case inputs like `EFFECTS`)

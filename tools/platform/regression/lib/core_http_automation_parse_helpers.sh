@@ -31,3 +31,12 @@ _mfx_core_http_automation_parse_active_field() {
         sed -n "s/.*\"active\":{[^}]*\"${field_name}\":\"\\([^\"]*\\)\"[^}]*}.*/\\1/p" | \
         head -n 1
 }
+
+_mfx_core_http_automation_parse_section_scalar_field() {
+    local input_file="$1"
+    local section_name="$2"
+    local field_name="$3"
+    tr -d '\n\r' <"$input_file" | \
+        sed -n "s/.*\"${section_name}\":{[^}]*\"${field_name}\":[[:space:]]*\\([^,}]*\\).*/\\1/p" | \
+        head -n 1 | tr -d '[:space:]'
+}

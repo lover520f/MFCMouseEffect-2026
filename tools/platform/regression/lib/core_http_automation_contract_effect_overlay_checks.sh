@@ -190,6 +190,16 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     local state_active_hold
     local probe_active_hover
     local state_active_hover
+    local probe_click_base_opacity
+    local state_click_base_opacity
+    local probe_trail_base_opacity
+    local state_trail_base_opacity
+    local probe_scroll_base_opacity
+    local state_scroll_base_opacity
+    local probe_hold_base_opacity
+    local state_hold_base_opacity
+    local probe_hover_base_opacity
+    local state_hover_base_opacity
     probe_meteor_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "meteor_duration_scale")"
     state_meteor_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-profile-state.out" "meteor_duration_scale")"
     probe_helix_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "helix_duration_scale")"
@@ -216,8 +226,18 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     state_active_hold="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-profile-state.out" "hold")"
     probe_active_hover="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe.out" "hover")"
     state_active_hover="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-profile-state.out" "hover")"
+    probe_click_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-render-profile-probe.out" "click" "base_opacity")"
+    state_click_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-profile-state.out" "click" "base_opacity")"
+    probe_trail_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail" "base_opacity")"
+    state_trail_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-profile-state.out" "trail" "base_opacity")"
+    probe_scroll_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-render-profile-probe.out" "scroll" "base_opacity")"
+    state_scroll_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-profile-state.out" "scroll" "base_opacity")"
+    probe_hold_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-render-profile-probe.out" "hold" "base_opacity")"
+    state_hold_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-profile-state.out" "hold" "base_opacity")"
+    probe_hover_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-render-profile-probe.out" "hover" "base_opacity")"
+    state_hover_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-profile-state.out" "hover" "base_opacity")"
 
-    if [[ -z "$probe_meteor_scale" || -z "$state_meteor_scale" || -z "$probe_helix_scale" || -z "$state_helix_scale" || -z "$probe_tubes_spin_scale" || -z "$state_tubes_spin_scale" || -z "$probe_line_stroke" || -z "$state_line_stroke" || -z "$probe_duration_scale" || -z "$state_duration_scale" || -z "$probe_size_scale" || -z "$state_size_scale" || -z "$probe_opacity_scale" || -z "$state_opacity_scale" || -z "$probe_trail_throttle_scale" || -z "$state_trail_throttle_scale" || -z "$probe_active_click" || -z "$state_active_click" || -z "$probe_active_trail" || -z "$state_active_trail" || -z "$probe_active_scroll" || -z "$state_active_scroll" || -z "$probe_active_hold" || -z "$state_active_hold" || -z "$probe_active_hover" || -z "$state_active_hover" ]]; then
+    if [[ -z "$probe_meteor_scale" || -z "$state_meteor_scale" || -z "$probe_helix_scale" || -z "$state_helix_scale" || -z "$probe_tubes_spin_scale" || -z "$state_tubes_spin_scale" || -z "$probe_line_stroke" || -z "$state_line_stroke" || -z "$probe_duration_scale" || -z "$state_duration_scale" || -z "$probe_size_scale" || -z "$state_size_scale" || -z "$probe_opacity_scale" || -z "$state_opacity_scale" || -z "$probe_trail_throttle_scale" || -z "$state_trail_throttle_scale" || -z "$probe_active_click" || -z "$state_active_click" || -z "$probe_active_trail" || -z "$state_active_trail" || -z "$probe_active_scroll" || -z "$state_active_scroll" || -z "$probe_active_hold" || -z "$state_active_hold" || -z "$probe_active_hover" || -z "$state_active_hover" || -z "$probe_click_base_opacity" || -z "$state_click_base_opacity" || -z "$probe_trail_base_opacity" || -z "$state_trail_base_opacity" || -z "$probe_scroll_base_opacity" || -z "$state_scroll_base_opacity" || -z "$probe_hold_base_opacity" || -z "$state_hold_base_opacity" || -z "$probe_hover_base_opacity" || -z "$state_hover_base_opacity" ]]; then
         mfx_fail "core effect profile parity parse failed"
     fi
     _mfx_core_http_automation_assert_float_within_tolerance "$probe_duration_scale" "$expected_duration_scale" "0.0001" "core effect render profile expected duration test tuning"
@@ -241,6 +261,11 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_eq "$probe_active_scroll" "$state_active_scroll" "core effect profile parity active scroll"
     mfx_assert_eq "$probe_active_hold" "$state_active_hold" "core effect profile parity active hold"
     mfx_assert_eq "$probe_active_hover" "$state_active_hover" "core effect profile parity active hover"
+    _mfx_core_http_automation_assert_float_within_tolerance "$probe_click_base_opacity" "$state_click_base_opacity" "0.0001" "core effect profile parity click base opacity"
+    _mfx_core_http_automation_assert_float_within_tolerance "$probe_trail_base_opacity" "$state_trail_base_opacity" "0.0001" "core effect profile parity trail base opacity"
+    _mfx_core_http_automation_assert_float_within_tolerance "$probe_scroll_base_opacity" "$state_scroll_base_opacity" "0.0001" "core effect profile parity scroll base opacity"
+    _mfx_core_http_automation_assert_float_within_tolerance "$probe_hold_base_opacity" "$state_hold_base_opacity" "0.0001" "core effect profile parity hold base opacity"
+    _mfx_core_http_automation_assert_float_within_tolerance "$probe_hover_base_opacity" "$state_hover_base_opacity" "0.0001" "core effect profile parity hover base opacity"
 
     if [[ "$platform" == "macos" ]]; then
         if ! mfx_file_contains_fixed "$tmp_dir/effect-render-profile-probe.out" "\"supported\":true"; then
