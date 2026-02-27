@@ -27,7 +27,7 @@ void AddScrollPulseDecorations(
         helix.path = helixPath;
         CGPathRelease(helixPath);
         helix.fillColor = [NSColor clearColor].CGColor;
-        helix.strokeColor = [ScrollPulseStrokeColor(horizontal, -delta) CGColor];
+        helix.strokeColor = [ScrollPulseStrokeColor(horizontal, -delta, profile) CGColor];
         helix.lineWidth = macos_overlay_support::ScaleOverlayMetric(size, 1.6, 160.0, 0.8, 3.2);
         helix.opacity = static_cast<float>(macos_overlay_support::ResolveOverlayOpacity(profile.baseOpacity, -0.14, 0.0));
         [content.layer addSublayer:helix];
@@ -49,7 +49,7 @@ void AddScrollPulseDecorations(
         twinkle.path = twinklePath;
         CGPathRelease(twinklePath);
         twinkle.fillColor = [NSColor clearColor].CGColor;
-        twinkle.strokeColor = [ScrollPulseStrokeColor(horizontal, delta) CGColor];
+        twinkle.strokeColor = [ScrollPulseStrokeColor(horizontal, delta, profile) CGColor];
         twinkle.lineWidth = macos_overlay_support::ScaleOverlayMetric(size, 1.0, 160.0, 0.8, 2.4);
         twinkle.opacity = static_cast<float>(macos_overlay_support::ResolveOverlayOpacity(profile.baseOpacity, -0.38, 0.0));
         [content.layer addSublayer:twinkle];

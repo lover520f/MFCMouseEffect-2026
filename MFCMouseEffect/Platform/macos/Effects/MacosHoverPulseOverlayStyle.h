@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Platform/macos/Effects/MacosEffectRenderProfile.h"
+
 #include <string>
 
 #if defined(__APPLE__)
@@ -10,9 +12,9 @@ namespace mousefx::macos_hover_pulse {
 
 #if defined(__APPLE__)
 std::string NormalizeHoverType(const std::string& effectType);
-NSColor* HoverGlowFillColor();
-NSColor* HoverGlowStrokeColor();
-NSColor* HoverTubesStrokeColor();
+NSColor* HoverGlowFillColor(const macos_effect_profile::HoverRenderProfile& profile);
+NSColor* HoverGlowStrokeColor(const macos_effect_profile::HoverRenderProfile& profile);
+NSColor* HoverTubesStrokeColor(const macos_effect_profile::HoverRenderProfile& profile);
 #endif
 
 } // namespace mousefx::macos_hover_pulse

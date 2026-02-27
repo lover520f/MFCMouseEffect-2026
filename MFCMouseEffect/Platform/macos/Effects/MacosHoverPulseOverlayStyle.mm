@@ -16,6 +16,14 @@ bool ContainsHoverToken(const std::string& value, const char* token) {
     return value.find(token) != std::string::npos;
 }
 
+NSColor* ArgbToNsColor(uint32_t argb) {
+    const CGFloat alpha = static_cast<CGFloat>((argb >> 24) & 0xFFu) / 255.0;
+    const CGFloat red = static_cast<CGFloat>((argb >> 16) & 0xFFu) / 255.0;
+    const CGFloat green = static_cast<CGFloat>((argb >> 8) & 0xFFu) / 255.0;
+    const CGFloat blue = static_cast<CGFloat>(argb & 0xFFu) / 255.0;
+    return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
+}
+
 } // namespace
 
 std::string NormalizeHoverType(const std::string& effectType) {
@@ -34,16 +42,16 @@ std::string NormalizeHoverType(const std::string& effectType) {
     return "glow";
 }
 
-NSColor* HoverGlowFillColor() {
-    return [NSColor colorWithCalibratedRed:0.25 green:0.70 blue:1.0 alpha:0.10];
+NSColor* HoverGlowFillColor(const macos_effect_profile::HoverRenderProfile& profile) {
+    return ArgbToNsColor(profile.colors.glowFillArgb);
 }
 
-NSColor* HoverGlowStrokeColor() {
-    return [NSColor colorWithCalibratedRed:0.25 green:0.70 blue:1.0 alpha:0.95];
+NSColor* HoverGlowStrokeColor(const macos_effect_profile::HoverRenderProfile& profile) {
+    return ArgbToNsColor(profile.colors.glowStrokeArgb);
 }
 
-NSColor* HoverTubesStrokeColor() {
-    return [NSColor colorWithCalibratedRed:0.47 green:0.90 blue:0.63 alpha:0.95];
+NSColor* HoverTubesStrokeColor(const macos_effect_profile::HoverRenderProfile& profile) {
+    return ArgbToNsColor(profile.colors.tubesStrokeArgb);
 }
 #endif
 

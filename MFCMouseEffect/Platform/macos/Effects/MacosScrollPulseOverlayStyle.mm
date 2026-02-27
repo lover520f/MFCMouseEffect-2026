@@ -16,6 +16,24 @@ bool ContainsScrollToken(const std::string& value, const char* token) {
     return value.find(token) != std::string::npos;
 }
 
+NSColor* ArgbToNsColor(uint32_t argb) {
+    const CGFloat alpha = static_cast<CGFloat>((argb >> 24) & 0xFFu) / 255.0;
+    const CGFloat red = static_cast<CGFloat>((argb >> 16) & 0xFFu) / 255.0;
+    const CGFloat green = static_cast<CGFloat>((argb >> 8) & 0xFFu) / 255.0;
+    const CGFloat blue = static_cast<CGFloat>(argb & 0xFFu) / 255.0;
+    return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
+}
+
+const macos_effect_profile::ScrollRenderProfile::DirectionColor& ResolveDirectionColor(
+    bool horizontal,
+    int delta,
+    const macos_effect_profile::ScrollRenderProfile& profile) {
+    if (horizontal) {
+        return (delta >= 0) ? profile.horizontalPositive : profile.horizontalNegative;
+    }
+    return (delta >= 0) ? profile.verticalPositive : profile.verticalNegative;
+}
+
 } // namespace
 
 std::string NormalizeScrollType(const std::string& effectType) {
@@ -37,26 +55,18 @@ std::string NormalizeScrollType(const std::string& effectType) {
     return "arrow";
 }
 
-NSColor* ScrollPulseStrokeColor(bool horizontal, int delta) {
-    if (horizontal) {
-        return (delta >= 0)
-            ? [NSColor colorWithCalibratedRed:0.35 green:0.88 blue:0.95 alpha:0.96]
-            : [NSColor colorWithCalibratedRed:0.62 green:0.80 blue:1 alpha:0.96];
-    }
-    return (delta >= 0)
-        ? [NSColor colorWithCalibratedRed:0.42 green:0.92 blue:0.56 alpha:0.96]
-        : [NSColor colorWithCalibratedRed:1.0 green:0.57 blue:0.34 alpha:0.96];
+NSColor* ScrollPulseStrokeColor(
+    bool horizontal,
+    int delta,
+    const macos_effect_profile::ScrollRenderProfile& profile) {
+    return ArgbToNsColor(ResolveDirectionColor(horizontal, delta, profile).strokeArgb);
 }
 
-NSColor* ScrollPulseFillColor(bool horizontal, int delta) {
-    if (horizontal) {
-        return (delta >= 0)
-            ? [NSColor colorWithCalibratedRed:0.35 green:0.88 blue:0.95 alpha:0.24]
-            : [NSColor colorWithCalibratedRed:0.62 green:0.80 blue:1 alpha:0.24];
-    }
-    return (delta >= 0)
-        ? [NSColor colorWithCalibratedRed:0.42 green:0.92 blue:0.56 alpha:0.24]
-        : [NSColor colorWithCalibratedRed:1.0 green:0.57 blue:0.34 alpha:0.24];
+NSColor* ScrollPulseFillColor(
+    bool horizontal,
+    int delta,
+    const macos_effect_profile::ScrollRenderProfile& profile) {
+    return ArgbToNsColor(ResolveDirectionColor(horizontal, delta, profile).fillArgb);
 }
 
 CGPathRef CreateScrollPulseDirectionArrowPath(CGRect bodyRect, bool horizontal, int delta) {

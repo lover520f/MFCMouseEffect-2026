@@ -25,7 +25,7 @@ void AddHoverExtraLayersAndAnimations(
     ring2.path = ring2Path;
     CGPathRelease(ring2Path);
     ring2.fillColor = [NSColor clearColor].CGColor;
-    ring2.strokeColor = HoverTubesStrokeColor().CGColor;
+    ring2.strokeColor = HoverTubesStrokeColor(profile).CGColor;
     ring2.lineWidth = macos_overlay_support::ScaleOverlayMetric(size, 1.8, 160.0, 0.9, 3.8);
     ring2.opacity = static_cast<float>(macos_overlay_support::ResolveOverlayOpacity(profile.baseOpacity, -0.05, 0.1));
     [content.layer addSublayer:ring2];

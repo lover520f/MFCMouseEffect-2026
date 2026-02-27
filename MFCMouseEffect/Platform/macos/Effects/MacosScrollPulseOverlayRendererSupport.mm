@@ -59,14 +59,15 @@ CAShapeLayer* CreateBodyLayer(
     CGRect bodyRect,
     bool horizontal,
     int delta,
-    double baseOpacity) {
+    double baseOpacity,
+    const macos_effect_profile::ScrollRenderProfile& profile) {
     CAShapeLayer* body = [CAShapeLayer layer];
     body.frame = bounds;
     CGPathRef bodyPath = CGPathCreateWithRoundedRect(bodyRect, 9.0, 9.0, nullptr);
     body.path = bodyPath;
     CGPathRelease(bodyPath);
-    body.fillColor = [ScrollPulseFillColor(horizontal, delta) CGColor];
-    body.strokeColor = [ScrollPulseStrokeColor(horizontal, delta) CGColor];
+    body.fillColor = [ScrollPulseFillColor(horizontal, delta, profile) CGColor];
+    body.strokeColor = [ScrollPulseStrokeColor(horizontal, delta, profile) CGColor];
     body.lineWidth = 2.0;
     body.opacity = static_cast<float>(macos_overlay_support::ResolveOverlayOpacity(baseOpacity, 0.0, 0.0));
     return body;
@@ -77,13 +78,14 @@ CAShapeLayer* CreateArrowLayer(
     CGRect bodyRect,
     bool horizontal,
     int delta,
-    double baseOpacity) {
+    double baseOpacity,
+    const macos_effect_profile::ScrollRenderProfile& profile) {
     CAShapeLayer* arrow = [CAShapeLayer layer];
     arrow.frame = bounds;
     CGPathRef arrowPath = CreateScrollPulseDirectionArrowPath(bodyRect, horizontal, delta);
     arrow.path = arrowPath;
     CGPathRelease(arrowPath);
-    arrow.fillColor = [ScrollPulseStrokeColor(horizontal, delta) CGColor];
+    arrow.fillColor = [ScrollPulseStrokeColor(horizontal, delta, profile) CGColor];
     arrow.opacity = static_cast<float>(macos_overlay_support::ResolveOverlayOpacity(baseOpacity, 0.02, 0.0));
     return arrow;
 }

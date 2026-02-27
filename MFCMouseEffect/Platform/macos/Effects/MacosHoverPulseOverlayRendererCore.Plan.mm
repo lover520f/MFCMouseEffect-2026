@@ -36,8 +36,8 @@ void ConfigureHoverRingLayer(
     CGPathRef ringPath = CGPathCreateWithEllipseInRect(CGRectInset(content.bounds, ringInset, ringInset), nullptr);
     ring.path = ringPath;
     CGPathRelease(ringPath);
-    ring.fillColor = HoverGlowFillColor().CGColor;
-    ring.strokeColor = HoverGlowStrokeColor().CGColor;
+    ring.fillColor = HoverGlowFillColor(profile).CGColor;
+    ring.strokeColor = HoverGlowStrokeColor(profile).CGColor;
     ring.lineWidth = macos_overlay_support::ScaleOverlayMetric(plan.size, 2.0, 160.0, 1.0, 4.2);
     ring.opacity = static_cast<float>(macos_overlay_support::ResolveOverlayOpacity(profile.baseOpacity, 0.0, 0.0));
 }

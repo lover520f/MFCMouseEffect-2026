@@ -26,14 +26,16 @@ CAShapeLayer* CreateBodyLayer(
     CGRect bodyRect,
     bool horizontal,
     int delta,
-    double baseOpacity);
+    double baseOpacity,
+    const macos_effect_profile::ScrollRenderProfile& profile);
 
 CAShapeLayer* CreateArrowLayer(
     CGRect bounds,
     CGRect bodyRect,
     bool horizontal,
     int delta,
-    double baseOpacity);
+    double baseOpacity,
+    const macos_effect_profile::ScrollRenderProfile& profile);
 #endif
 
 } // namespace mousefx::macos_scroll_pulse::support

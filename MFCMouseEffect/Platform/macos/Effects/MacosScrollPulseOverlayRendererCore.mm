@@ -45,10 +45,22 @@ void ShowScrollPulseOverlayOnMain(
     NSView* content = [window contentView];
     macos_overlay_support::ApplyOverlayContentScale(content, overlayPt);
 
-    CAShapeLayer* body = support::CreateBodyLayer(content.bounds, plan.bodyRect, horizontal, delta, profile.baseOpacity);
+    CAShapeLayer* body = support::CreateBodyLayer(
+        content.bounds,
+        plan.bodyRect,
+        horizontal,
+        delta,
+        profile.baseOpacity,
+        profile);
     [content.layer addSublayer:body];
 
-    CAShapeLayer* arrow = support::CreateArrowLayer(content.bounds, plan.bodyRect, horizontal, delta, profile.baseOpacity);
+    CAShapeLayer* arrow = support::CreateArrowLayer(
+        content.bounds,
+        plan.bodyRect,
+        horizontal,
+        delta,
+        profile.baseOpacity,
+        profile);
     [content.layer addSublayer:arrow];
 
     AddScrollPulseDecorations(content, plan, horizontal, delta, profile);
