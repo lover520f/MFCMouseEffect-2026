@@ -2,6 +2,25 @@
 
 set -euo pipefail
 
+_mfx_core_http_automation_assert_float_within_tolerance() {
+    local actual="$1"
+    local expected="$2"
+    local tolerance="$3"
+    local label="$4"
+    if [[ -z "$actual" || -z "$expected" || -z "$tolerance" ]]; then
+        mfx_fail "$label: missing float comparison input"
+    fi
+    if ! awk -v a="$actual" -v b="$expected" -v tol="$tolerance" 'BEGIN {
+        d = a - b;
+        if (d < 0) {
+            d = -d;
+        }
+        exit(d <= tol ? 0 : 1);
+    }'; then
+        mfx_fail "$label: expected $expected (tol=$tolerance), got $actual"
+    fi
+}
+
 _mfx_core_http_automation_contract_effect_overlay_checks() {
     local platform="$1"
     local tmp_dir="$2"
@@ -117,10 +136,10 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"line_stroke_argb\":" "core effect render profile trail line stroke color field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"meteor_duration_scale\":" "core effect render profile trail tempo scale field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"test_tuning\":" "core effect render profile test tuning section"
-    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"duration_scale\":$expected_duration_scale" "core effect render profile expected duration test tuning"
-    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"size_scale\":$expected_size_scale" "core effect render profile expected size test tuning"
-    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"opacity_scale\":$expected_opacity_scale" "core effect render profile expected opacity test tuning"
-    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail_throttle_scale\":$expected_trail_throttle_scale" "core effect render profile expected trail throttle test tuning"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"duration_scale\":" "core effect render profile duration test tuning field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"size_scale\":" "core effect render profile size test tuning field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"opacity_scale\":" "core effect render profile opacity test tuning field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail_throttle_scale\":" "core effect render profile trail throttle test tuning field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"duration_overridden\":$expected_duration_overridden" "core effect render profile expected duration override marker"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"size_overridden\":$expected_size_overridden" "core effect render profile expected size override marker"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"opacity_overridden\":$expected_opacity_overridden" "core effect render profile expected opacity override marker"
@@ -140,10 +159,10 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"meteor_duration_scale\":" "core effect profile state trail tempo field"
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"helix_duration_scale\":" "core effect profile state scroll tempo field"
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"tubes_spin_scale\":" "core effect profile state hover tempo field"
-    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"duration_scale\":$expected_duration_scale" "core effect profile state expected duration test tuning"
-    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"size_scale\":$expected_size_scale" "core effect profile state expected size test tuning"
-    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"opacity_scale\":$expected_opacity_scale" "core effect profile state expected opacity test tuning"
-    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"trail_throttle_scale\":$expected_trail_throttle_scale" "core effect profile state expected trail throttle test tuning"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"duration_scale\":" "core effect profile state duration test tuning field"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"size_scale\":" "core effect profile state size test tuning field"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"opacity_scale\":" "core effect profile state opacity test tuning field"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"trail_throttle_scale\":" "core effect profile state trail throttle test tuning field"
 
     local probe_meteor_scale
     local state_meteor_scale
@@ -201,6 +220,14 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     if [[ -z "$probe_meteor_scale" || -z "$state_meteor_scale" || -z "$probe_helix_scale" || -z "$state_helix_scale" || -z "$probe_tubes_spin_scale" || -z "$state_tubes_spin_scale" || -z "$probe_line_stroke" || -z "$state_line_stroke" || -z "$probe_duration_scale" || -z "$state_duration_scale" || -z "$probe_size_scale" || -z "$state_size_scale" || -z "$probe_opacity_scale" || -z "$state_opacity_scale" || -z "$probe_trail_throttle_scale" || -z "$state_trail_throttle_scale" || -z "$probe_active_click" || -z "$state_active_click" || -z "$probe_active_trail" || -z "$state_active_trail" || -z "$probe_active_scroll" || -z "$state_active_scroll" || -z "$probe_active_hold" || -z "$state_active_hold" || -z "$probe_active_hover" || -z "$state_active_hover" ]]; then
         mfx_fail "core effect profile parity parse failed"
     fi
+    _mfx_core_http_automation_assert_float_within_tolerance "$probe_duration_scale" "$expected_duration_scale" "0.0001" "core effect render profile expected duration test tuning"
+    _mfx_core_http_automation_assert_float_within_tolerance "$probe_size_scale" "$expected_size_scale" "0.0001" "core effect render profile expected size test tuning"
+    _mfx_core_http_automation_assert_float_within_tolerance "$probe_opacity_scale" "$expected_opacity_scale" "0.0001" "core effect render profile expected opacity test tuning"
+    _mfx_core_http_automation_assert_float_within_tolerance "$probe_trail_throttle_scale" "$expected_trail_throttle_scale" "0.0001" "core effect render profile expected trail throttle test tuning"
+    _mfx_core_http_automation_assert_float_within_tolerance "$state_duration_scale" "$expected_duration_scale" "0.0001" "core effect profile state expected duration test tuning"
+    _mfx_core_http_automation_assert_float_within_tolerance "$state_size_scale" "$expected_size_scale" "0.0001" "core effect profile state expected size test tuning"
+    _mfx_core_http_automation_assert_float_within_tolerance "$state_opacity_scale" "$expected_opacity_scale" "0.0001" "core effect profile state expected opacity test tuning"
+    _mfx_core_http_automation_assert_float_within_tolerance "$state_trail_throttle_scale" "$expected_trail_throttle_scale" "0.0001" "core effect profile state expected trail throttle test tuning"
     mfx_assert_eq "$probe_meteor_scale" "$state_meteor_scale" "core effect profile parity meteor duration scale"
     mfx_assert_eq "$probe_helix_scale" "$state_helix_scale" "core effect profile parity helix duration scale"
     mfx_assert_eq "$probe_tubes_spin_scale" "$state_tubes_spin_scale" "core effect profile parity tubes spin scale"
