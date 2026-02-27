@@ -52,3 +52,7 @@
 - Capability: `键鼠指示/手势映射/特效/WASM 的公共壳层通知能力`
 - User-visible behavior is unchanged (same warning semantics and fallback).
 - Windows/Linux behavior is unchanged.
+
+## Follow-up
+- Native-center-first delivery refinement is tracked in:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzzbm-macos-user-notification-native-center.md`
