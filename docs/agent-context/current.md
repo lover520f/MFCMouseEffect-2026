@@ -179,6 +179,7 @@
   - core HTTP startup now captures probe diagnostics file (`MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE`) and prints `status/reason` on startup failure, improving root-cause visibility for probe emission failures
   - WebSettings startup diagnostics now include HTTP server start stage/code (`websettings_start_failed(stage=<n>,code=<err>)`) from `HttpServer`, so probe-start failures can be triaged by socket/bind/listen/thread stage
   - core HTTP startup failure logging now adds explicit hint for `websettings_start_failed(stage=2,code=1)` (bind `EACCES`) to distinguish environment/sandbox permission blocks from product regressions
+  - effects contract shortcut entry now has dedicated `--help` output with its injected default test tuning values and forwarded options, reducing wrapper-vs-core usage ambiguity
   - macOS effects-profile JSON assembly is split into dedicated builder module (`SettingsStateMapper.EffectsProfileStateBuilder.Macos.cpp`), while `SettingsStateMapper.EffectsProfileStateBuilder.cpp` keeps platform-neutral envelope logic only
   - regression startup/stop numeric env tuning is now tolerant to invalid inputs (falls back to defaults in `http_entry_helpers`/`core_http_entry_helpers`), reducing accidental shell-env misconfiguration failures during local loops
   - core automation scope values are now normalized by shared helper (`mfx_normalize_core_automation_check_scope`) across suite/core-http/core-automation entry points, keeping scope contract parsing consistent (supports mixed-case inputs like `EFFECTS`)
