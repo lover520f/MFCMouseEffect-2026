@@ -104,6 +104,47 @@ nlohmann::json BuildHoldUpdateCommandJson(const HoldEffectUpdateCommand& command
     };
 }
 
+nlohmann::json BuildAliasMatrixJson() {
+    const nlohmann::json click = nlohmann::json::array({
+        {{"input", "TEXT"}, {"normalized", NormalizeClickEffectType("TEXT")}},
+        {{"input", "star"}, {"normalized", NormalizeClickEffectType("star")}},
+        {{"input", "ripple_custom"}, {"normalized", NormalizeClickEffectType("ripple_custom")}},
+    });
+
+    const nlohmann::json trail = nlohmann::json::array({
+        {{"input", "stream"}, {"normalized", NormalizeTrailEffectType("stream")}},
+        {{"input", "neon"}, {"normalized", NormalizeTrailEffectType("neon")}},
+        {{"input", "suspension"}, {"normalized", NormalizeTrailEffectType("suspension")}},
+        {{"input", "spark"}, {"normalized", NormalizeTrailEffectType("spark")}},
+    });
+
+    const nlohmann::json scroll = nlohmann::json::array({
+        {{"input", "stardust"}, {"normalized", NormalizeScrollEffectType("stardust")}},
+        {{"input", "helix"}, {"normalized", NormalizeScrollEffectType("helix")}},
+        {{"input", "arrow"}, {"normalized", NormalizeScrollEffectType("arrow")}},
+    });
+
+    const nlohmann::json hover = nlohmann::json::array({
+        {{"input", "suspension"}, {"normalized", NormalizeHoverEffectType("suspension")}},
+        {{"input", "helix"}, {"normalized", NormalizeHoverEffectType("helix")}},
+        {{"input", "glow"}, {"normalized", NormalizeHoverEffectType("glow")}},
+    });
+
+    const nlohmann::json hold = nlohmann::json::array({
+        {{"input", "hold_neon3d_gpu_v2"}, {"normalized", NormalizeHoldEffectType("hold_neon3d_gpu_v2")}},
+        {{"input", "hold_fluxfield_gpu_v2"}, {"normalized", NormalizeHoldEffectType("hold_fluxfield_gpu_v2")}},
+        {{"input", "charge"}, {"normalized", NormalizeHoldEffectType("charge")}},
+    });
+
+    return {
+        {"click", click},
+        {"trail", trail},
+        {"scroll", scroll},
+        {"hover", hover},
+        {"hold", hold},
+    };
+}
+
 } // namespace
 
 nlohmann::json BuildMacosEffectsProfileStateJson(const EffectConfig& cfg) {
@@ -315,6 +356,7 @@ nlohmann::json BuildMacosEffectRenderCommandSamplesJson(const EffectConfig& cfg)
         {"start", BuildHoldStartCommandJson(holdStartCommand)},
         {"update", BuildHoldUpdateCommandJson(holdUpdateCommand)},
     };
+    out["alias_matrix"] = BuildAliasMatrixJson();
     return out;
 }
 
