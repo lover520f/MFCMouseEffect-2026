@@ -50,7 +50,7 @@ void AddClickPulseExtraLayers(
         text.frame = CGRectMake(0.0, plan.size * 0.30, plan.size, 36.0);
         text.alignmentMode = kCAAlignmentCenter;
         text.foregroundColor = [ClickPulseStrokeColor(button) CGColor];
-        text.contentsScale = [NSScreen mainScreen].backingScaleFactor;
+        text.contentsScale = std::max<CGFloat>(1.0, content.layer.contentsScale);
         text.fontSize = 24.0;
         text.font = (__bridge CFTypeRef)[NSFont boldSystemFontOfSize:24.0];
         switch (button) {

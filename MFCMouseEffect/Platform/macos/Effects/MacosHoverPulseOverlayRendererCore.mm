@@ -60,7 +60,7 @@ void ShowHoverPulseOverlayOnMain(
     }
 
     NSView* content = [window contentView];
-    [content setWantsLayer:YES];
+    macos_overlay_support::ApplyOverlayContentScale(content, overlayPt);
 
     CAShapeLayer* ring = [CAShapeLayer layer];
     ConfigureHoverRingLayer(ring, content, plan, profile);

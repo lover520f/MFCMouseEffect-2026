@@ -30,6 +30,7 @@ void UpdateHoldPulseOverlayOnMain(const ScreenPoint& overlayPt, uint32_t holdMs)
     const NSRect rawFrame = NSMakeRect(overlayPt.x - w * 0.5, overlayPt.y - h * 0.5, w, h);
     const NSRect clampedFrame = macos_overlay_support::ClampOverlayFrameToScreenBounds(rawFrame, overlayPt);
     [state.window setFrameOrigin:clampedFrame.origin];
+    macos_overlay_support::ApplyOverlayContentScale([state.window contentView], overlayPt);
 
     const CGFloat progress = std::min<CGFloat>(
         1.0,

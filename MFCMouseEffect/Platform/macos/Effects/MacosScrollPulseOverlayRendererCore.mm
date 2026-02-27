@@ -43,7 +43,7 @@ void ShowScrollPulseOverlayOnMain(
     }
 
     NSView* content = [window contentView];
-    [content setWantsLayer:YES];
+    macos_overlay_support::ApplyOverlayContentScale(content, overlayPt);
 
     CAShapeLayer* body = support::CreateBodyLayer(content.bounds, plan.bodyRect, horizontal, delta, profile.baseOpacity);
     [content.layer addSublayer:body];

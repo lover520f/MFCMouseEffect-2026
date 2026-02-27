@@ -14,6 +14,8 @@ void RunOnMainThreadSync(dispatch_block_t block);
 void RunOnMainThreadAsync(dispatch_block_t block);
 NSWindow* CreateOverlayWindow(const NSRect& frame);
 NSRect ClampOverlayFrameToScreenBounds(const NSRect& desiredFrame, const ScreenPoint& overlayPt);
+CGFloat ResolveOverlayContentsScale(const ScreenPoint& overlayPt);
+void ApplyOverlayContentScale(NSView* content, const ScreenPoint& overlayPt);
 #endif
 
 } // namespace mousefx::macos_overlay_support

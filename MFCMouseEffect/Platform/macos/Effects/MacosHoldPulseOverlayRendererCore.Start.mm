@@ -42,7 +42,7 @@ void StartHoldPulseOverlayOnMain(
     }
 
     NSView* content = [window contentView];
-    [content setWantsLayer:YES];
+    macos_overlay_support::ApplyOverlayContentScale(content, overlayPt);
 
     NSColor* baseColor = detail::HoldBaseColor(button, holdStyle);
 

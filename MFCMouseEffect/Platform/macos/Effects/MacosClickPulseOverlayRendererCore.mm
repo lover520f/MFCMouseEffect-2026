@@ -37,7 +37,7 @@ void ShowClickPulseOverlayOnMain(
     }
 
     NSView* content = [window contentView];
-    [content setWantsLayer:YES];
+    macos_overlay_support::ApplyOverlayContentScale(content, overlayPt);
 
     CAShapeLayer* base = [CAShapeLayer layer];
     base.frame = content.bounds;

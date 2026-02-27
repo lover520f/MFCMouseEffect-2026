@@ -4,6 +4,7 @@
 
 #if defined(__APPLE__)
 #import <AppKit/AppKit.h>
+#import <QuartzCore/QuartzCore.h>
 #import <dispatch/dispatch.h>
 #endif
 
@@ -105,6 +106,30 @@ NSRect ClampOverlayFrameToScreenBounds(const NSRect& desiredFrame, const ScreenP
     clamped.origin.x = ClampCoordinate(clamped.origin.x, minX, maxX);
     clamped.origin.y = ClampCoordinate(clamped.origin.y, minY, maxY);
     return clamped;
+}
+
+CGFloat ResolveOverlayContentsScale(const ScreenPoint& overlayPt) {
+    NSScreen* screen = ResolveTargetScreen(overlayPt);
+    if (screen == nil) {
+        return 1.0;
+    }
+    return ClampCoordinate([screen backingScaleFactor], 1.0, 4.0);
+}
+
+void ApplyOverlayContentScale(NSView* content, const ScreenPoint& overlayPt) {
+    if (content == nil) {
+        return;
+    }
+    [content setWantsLayer:YES];
+    CALayer* root = [content layer];
+    if (root == nil) {
+        return;
+    }
+    const CGFloat scale = ResolveOverlayContentsScale(overlayPt);
+    root.contentsScale = scale;
+    for (CALayer* layer in [root sublayers]) {
+        layer.contentsScale = scale;
+    }
 }
 #endif
 

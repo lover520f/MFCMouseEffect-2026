@@ -38,7 +38,7 @@ void ShowTrailPulseOverlayOnMain(
     }
 
     NSView* content = [window contentView];
-    [content setWantsLayer:YES];
+    macos_overlay_support::ApplyOverlayContentScale(content, overlayPt);
 
     CAShapeLayer* core = [CAShapeLayer layer];
     ConfigureTrailCoreLayer(core, content, plan, deltaX, deltaY, profile);
