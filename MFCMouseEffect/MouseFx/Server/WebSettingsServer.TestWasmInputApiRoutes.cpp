@@ -158,6 +158,14 @@ bool HandleWebSettingsTestWasmInputApiRoute(
             {"last_render_error", diag.lastRenderError},
             {"last_output_bytes", diag.lastOutputBytes},
             {"last_command_count", diag.lastCommandCount},
+            {"lifetime_invoke_calls", diag.lifetimeInvokeCalls},
+            {"lifetime_invoke_success_calls", diag.lifetimeInvokeSuccessCalls},
+            {"lifetime_invoke_failed_calls", diag.lifetimeInvokeFailedCalls},
+            {"lifetime_render_dispatches", diag.lifetimeRenderDispatches},
+            {"lifetime_executed_text_commands", diag.lifetimeExecutedTextCommands},
+            {"lifetime_executed_image_commands", diag.lifetimeExecutedImageCommands},
+            {"lifetime_throttled_render_commands", diag.lifetimeThrottledRenderCommands},
+            {"lifetime_dropped_render_commands", diag.lifetimeDroppedRenderCommands},
         }).dump());
         return true;
     }

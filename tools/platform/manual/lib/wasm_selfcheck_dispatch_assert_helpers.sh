@@ -11,14 +11,18 @@ mfx_wasm_selfcheck_assert_dispatch_diagnostics_consistent() {
     local dispatch_throttled_by_capacity
     local dispatch_throttled_by_interval
     local dispatch_dropped
+    local dispatch_executed_text
+    local dispatch_executed_image
     local dispatch_render_error
     dispatch_throttled="$(mfx_wasm_selfcheck_parse_uint_field "$dispatch_output_file" "throttled_commands")"
     dispatch_throttled_by_capacity="$(mfx_wasm_selfcheck_parse_uint_field "$dispatch_output_file" "throttled_by_capacity_commands")"
     dispatch_throttled_by_interval="$(mfx_wasm_selfcheck_parse_uint_field "$dispatch_output_file" "throttled_by_interval_commands")"
     dispatch_dropped="$(mfx_wasm_selfcheck_parse_uint_field "$dispatch_output_file" "dropped_commands")"
+    dispatch_executed_text="$(mfx_wasm_selfcheck_parse_uint_field "$dispatch_output_file" "executed_text_commands")"
+    dispatch_executed_image="$(mfx_wasm_selfcheck_parse_uint_field "$dispatch_output_file" "executed_image_commands")"
     dispatch_render_error="$(mfx_wasm_selfcheck_parse_string_field "$dispatch_output_file" "render_error")"
 
-    if [[ -z "$dispatch_throttled" || -z "$dispatch_throttled_by_capacity" || -z "$dispatch_throttled_by_interval" || -z "$dispatch_dropped" ]]; then
+    if [[ -z "$dispatch_throttled" || -z "$dispatch_throttled_by_capacity" || -z "$dispatch_throttled_by_interval" || -z "$dispatch_dropped" || -z "$dispatch_executed_text" || -z "$dispatch_executed_image" ]]; then
         mfx_fail "selfcheck $label dispatch diagnostics parse failed"
     fi
 
@@ -27,13 +31,35 @@ mfx_wasm_selfcheck_assert_dispatch_diagnostics_consistent() {
     local state_throttled_by_interval
     local state_dropped
     local state_render_error
+    local state_lifetime_invoke_calls
+    local state_lifetime_invoke_success_calls
+    local state_lifetime_invoke_failed_calls
+    local state_lifetime_render_dispatches
+    local state_lifetime_rendered_by_wasm_dispatches
+    local state_lifetime_executed_text
+    local state_lifetime_executed_image
+    local state_lifetime_throttled
+    local state_lifetime_throttled_by_capacity
+    local state_lifetime_throttled_by_interval
+    local state_lifetime_dropped
     state_throttled="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "last_throttled_render_commands")"
     state_throttled_by_capacity="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "last_throttled_by_capacity_render_commands")"
     state_throttled_by_interval="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "last_throttled_by_interval_render_commands")"
     state_dropped="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "last_dropped_render_commands")"
     state_render_error="$(mfx_wasm_selfcheck_parse_string_field "$state_output_file" "last_render_error")"
+    state_lifetime_invoke_calls="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "lifetime_invoke_calls")"
+    state_lifetime_invoke_success_calls="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "lifetime_invoke_success_calls")"
+    state_lifetime_invoke_failed_calls="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "lifetime_invoke_failed_calls")"
+    state_lifetime_render_dispatches="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "lifetime_render_dispatches")"
+    state_lifetime_rendered_by_wasm_dispatches="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "lifetime_rendered_by_wasm_dispatches")"
+    state_lifetime_executed_text="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "lifetime_executed_text_commands")"
+    state_lifetime_executed_image="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "lifetime_executed_image_commands")"
+    state_lifetime_throttled="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "lifetime_throttled_render_commands")"
+    state_lifetime_throttled_by_capacity="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "lifetime_throttled_by_capacity_render_commands")"
+    state_lifetime_throttled_by_interval="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "lifetime_throttled_by_interval_render_commands")"
+    state_lifetime_dropped="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "lifetime_dropped_render_commands")"
 
-    if [[ -z "$state_throttled" || -z "$state_throttled_by_capacity" || -z "$state_throttled_by_interval" || -z "$state_dropped" ]]; then
+    if [[ -z "$state_throttled" || -z "$state_throttled_by_capacity" || -z "$state_throttled_by_interval" || -z "$state_dropped" || -z "$state_lifetime_invoke_calls" || -z "$state_lifetime_invoke_success_calls" || -z "$state_lifetime_invoke_failed_calls" || -z "$state_lifetime_render_dispatches" || -z "$state_lifetime_rendered_by_wasm_dispatches" || -z "$state_lifetime_executed_text" || -z "$state_lifetime_executed_image" || -z "$state_lifetime_throttled" || -z "$state_lifetime_throttled_by_capacity" || -z "$state_lifetime_throttled_by_interval" || -z "$state_lifetime_dropped" ]]; then
         mfx_fail "selfcheck $label state diagnostics parse failed"
     fi
 
@@ -45,6 +71,40 @@ mfx_wasm_selfcheck_assert_dispatch_diagnostics_consistent() {
     local state_sum=$((state_throttled_by_capacity + state_throttled_by_interval))
     if (( state_sum != state_throttled )); then
         mfx_fail "selfcheck $label state throttle counters mismatch: total=$state_throttled sum=$state_sum"
+    fi
+
+    local state_lifetime_sum=$((state_lifetime_throttled_by_capacity + state_lifetime_throttled_by_interval))
+    if (( state_lifetime_sum != state_lifetime_throttled )); then
+        mfx_fail "selfcheck $label state lifetime throttle counters mismatch: total=$state_lifetime_throttled sum=$state_lifetime_sum"
+    fi
+
+    local state_lifetime_invoke_total=$((state_lifetime_invoke_success_calls + state_lifetime_invoke_failed_calls))
+    if (( state_lifetime_invoke_total != state_lifetime_invoke_calls )); then
+        mfx_fail "selfcheck $label state lifetime invoke counters mismatch: calls=$state_lifetime_invoke_calls success+failed=$state_lifetime_invoke_total"
+    fi
+
+    if (( state_lifetime_rendered_by_wasm_dispatches > state_lifetime_render_dispatches )); then
+        mfx_fail "selfcheck $label state lifetime rendered dispatch overflow: rendered=$state_lifetime_rendered_by_wasm_dispatches total=$state_lifetime_render_dispatches"
+    fi
+
+    if (( state_lifetime_invoke_success_calls < 1 || state_lifetime_invoke_calls < 1 )); then
+        mfx_fail "selfcheck $label state lifetime invoke counters unexpectedly zero: calls=$state_lifetime_invoke_calls success=$state_lifetime_invoke_success_calls"
+    fi
+
+    if (( state_lifetime_executed_text < dispatch_executed_text )); then
+        mfx_fail "selfcheck $label state lifetime text commands smaller than dispatch snapshot: lifetime=$state_lifetime_executed_text dispatch=$dispatch_executed_text"
+    fi
+
+    if (( state_lifetime_executed_image < dispatch_executed_image )); then
+        mfx_fail "selfcheck $label state lifetime image commands smaller than dispatch snapshot: lifetime=$state_lifetime_executed_image dispatch=$dispatch_executed_image"
+    fi
+
+    if (( state_lifetime_throttled < dispatch_throttled )); then
+        mfx_fail "selfcheck $label state lifetime throttled commands smaller than dispatch snapshot: lifetime=$state_lifetime_throttled dispatch=$dispatch_throttled"
+    fi
+
+    if (( state_lifetime_dropped < dispatch_dropped )); then
+        mfx_fail "selfcheck $label state lifetime dropped commands smaller than dispatch snapshot: lifetime=$state_lifetime_dropped dispatch=$dispatch_dropped"
     fi
 
     mfx_assert_eq "$state_throttled" "$dispatch_throttled" "selfcheck $label throttled total"

@@ -34,22 +34,30 @@ void ResetInvokeDiagnostics(HostDiagnostics* diagnostics) {
 } // namespace
 
 bool WasmEffectHost::InvokeEvent(const EventInvokeInput& input, std::vector<uint8_t>* outCommandBuffer) {
+    diagnostics_.lifetimeInvokeCalls += 1;
+    auto markInvokeFailure = [this]() {
+        diagnostics_.lifetimeInvokeFailedCalls += 1;
+    };
     if (!outCommandBuffer) {
         SetError("Output command buffer pointer is null.");
+        markInvokeFailure();
         return false;
     }
     outCommandBuffer->clear();
     ResetInvokeDiagnostics(&diagnostics_);
 
     if (!enabled_) {
+        markInvokeFailure();
         return false;
     }
     if (!diagnostics_.pluginLoaded || !runtime_) {
         SetError("WASM plugin is not loaded.");
+        markInvokeFailure();
         return false;
     }
     if (budget_.outputBufferBytes == 0) {
         SetError("WASM output budget is zero.");
+        markInvokeFailure();
         return false;
     }
 
@@ -71,12 +79,17 @@ bool WasmEffectHost::InvokeEvent(const EventInvokeInput& input, std::vector<uint
     const auto end = std::chrono::steady_clock::now();
     diagnostics_.lastCallDurationMicros = static_cast<uint64_t>(
         std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
+    diagnostics_.lifetimeInvokeDurationMicros += diagnostics_.lastCallDurationMicros;
 
     const double elapsedMs = static_cast<double>(diagnostics_.lastCallDurationMicros) / 1000.0;
     diagnostics_.lastCallExceededBudget = elapsedMs > budget_.maxEventExecutionMs;
+    if (diagnostics_.lastCallExceededBudget) {
+        diagnostics_.lifetimeInvokeExceededBudgetCalls += 1;
+    }
 
     if (!ok) {
         SetError(error.empty() ? "WASM plugin call failed." : error);
+        markInvokeFailure();
         return false;
     }
 
@@ -94,6 +107,7 @@ bool WasmEffectHost::InvokeEvent(const EventInvokeInput& input, std::vector<uint
         output.clear();
         diagnostics_.lastOutputBytes = 0;
         SetError(std::string("WASM command buffer parse failed: ") + CommandParseErrorToString(parseResult.error));
+        markInvokeFailure();
         return false;
     }
 
@@ -112,13 +126,16 @@ bool WasmEffectHost::InvokeEvent(const EventInvokeInput& input, std::vector<uint
     diagnostics_.lastCommandTruncatedByBudget = budgetResult.commandTruncated;
     diagnostics_.lastBudgetReason = budgetResult.reason;
     if (!budgetResult.accepted) {
+        diagnostics_.lifetimeInvokeRejectedByBudgetCalls += 1;
         output.clear();
         diagnostics_.lastOutputBytes = 0;
         SetError(std::string("WASM budget rejected event: ") + budgetResult.reason);
+        markInvokeFailure();
         return false;
     }
 
     outCommandBuffer->swap(output);
+    diagnostics_.lifetimeInvokeSuccessCalls += 1;
     ClearError();
     return true;
 }

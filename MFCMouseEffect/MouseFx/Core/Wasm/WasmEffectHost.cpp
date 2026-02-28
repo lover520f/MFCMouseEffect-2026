@@ -208,6 +208,16 @@ void WasmEffectHost::RecordRenderExecution(
     diagnostics_.lastThrottledByIntervalRenderCommands = throttledByIntervalRenderCommands;
     diagnostics_.lastDroppedRenderCommands = droppedRenderCommands;
     diagnostics_.lastRenderError = renderError;
+    diagnostics_.lifetimeRenderDispatches += 1;
+    if (renderedByWasm) {
+        diagnostics_.lifetimeRenderedByWasmDispatches += 1;
+    }
+    diagnostics_.lifetimeExecutedTextCommands += executedTextCommands;
+    diagnostics_.lifetimeExecutedImageCommands += executedImageCommands;
+    diagnostics_.lifetimeThrottledRenderCommands += throttledRenderCommands;
+    diagnostics_.lifetimeThrottledByCapacityRenderCommands += throttledByCapacityRenderCommands;
+    diagnostics_.lifetimeThrottledByIntervalRenderCommands += throttledByIntervalRenderCommands;
+    diagnostics_.lifetimeDroppedRenderCommands += droppedRenderCommands;
 }
 
 void WasmEffectHost::ResetPluginState() {
