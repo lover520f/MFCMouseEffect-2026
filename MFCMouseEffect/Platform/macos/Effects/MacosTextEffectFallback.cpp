@@ -2,10 +2,11 @@
 
 #include "Platform/macos/Effects/MacosTextEffectFallback.h"
 
-#include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Core/Diagnostics/TextEffectRuntimeDiagnostics.h"
-#include "Platform/macos/Overlay/MacosOverlayCoordSpaceConversion.h"
+#include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/StringUtils.h"
+#include "Platform/macos/Effects/MacosTextEffectFallbackSwiftBridge.h"
+#include "Platform/macos/Overlay/MacosOverlayCoordSpaceConversion.h"
 #include "Settings/EmojiUtils.h"
 
 #include <algorithm>
@@ -20,9 +21,8 @@
 #include <vector>
 
 #if defined(__APPLE__)
-#import <AppKit/AppKit.h>
-#import <QuartzCore/QuartzCore.h>
 #import <dispatch/dispatch.h>
+#include <pthread.h>
 #endif
 
 namespace mousefx {
@@ -37,7 +37,7 @@ double ResolvePanelSize(double fontSize) {
 }
 
 struct ActivePanel final {
-    NSPanel* panel = nil;
+    void* handle = nullptr;
 };
 
 struct TextAnimationSpec final {
@@ -59,8 +59,8 @@ std::mutex& ActivePanelsMutex() {
 }
 
 std::vector<ActivePanel>& ActivePanels() {
-    static std::vector<ActivePanel> windows;
-    return windows;
+    static std::vector<ActivePanel> panels;
+    return panels;
 }
 
 std::atomic<uint64_t>& AnimationGeneration() {
@@ -85,7 +85,7 @@ void RunOnMainThreadSync(dispatch_block_t block) {
     if (block == nullptr) {
         return;
     }
-    if ([NSThread isMainThread]) {
+    if (pthread_main_np() != 0) {
         block();
         return;
     }
@@ -101,56 +101,20 @@ double EaseOutCubic(double t) {
     return 1.0 - (u * u * u);
 }
 
-NSColor* ColorFromArgb(uint32_t argb, double alphaScale) {
-    const CGFloat baseAlpha = static_cast<CGFloat>((argb >> 24) & 0xFFu) / 255.0;
-    const CGFloat alpha = static_cast<CGFloat>(Clamp01(baseAlpha * alphaScale));
-    const CGFloat red = static_cast<CGFloat>((argb >> 16) & 0xFFu) / 255.0;
-    const CGFloat green = static_cast<CGFloat>((argb >> 8) & 0xFFu) / 255.0;
-    const CGFloat blue = static_cast<CGFloat>(argb & 0xFFu) / 255.0;
-    return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
-}
-
-NSString* NsStringFromUtf8(const std::string& value) {
-    if (value.empty()) {
-        return nil;
-    }
-    return [NSString stringWithUTF8String:value.c_str()];
-}
-
-NSFont* ResolveLabelFont(const TextAnimationSpec& spec, double fontSize) {
-    const CGFloat size = static_cast<CGFloat>(std::max(6.0, fontSize));
-    if (spec.emojiText) {
-        NSFont* emoji = [NSFont fontWithName:@"Apple Color Emoji" size:size];
-        if (emoji != nil) {
-            return emoji;
-        }
-        return [NSFont systemFontOfSize:size weight:NSFontWeightRegular];
-    }
-
-    NSString* preferred = NsStringFromUtf8(spec.fontFamilyUtf8);
-    if (preferred != nil) {
-        NSFont* custom = [NSFont fontWithName:preferred size:size];
-        if (custom != nil) {
-            return custom;
-        }
-    }
-    return [NSFont boldSystemFontOfSize:size];
-}
-
-bool IsPanelTrackedLocked(NSPanel* panel) {
+bool IsPanelTrackedLocked(void* panelHandle) {
     const auto& panels = ActivePanels();
     return std::any_of(
         panels.begin(),
         panels.end(),
-        [panel](const ActivePanel& item) { return item.panel == panel; });
+        [panelHandle](const ActivePanel& item) { return item.handle == panelHandle; });
 }
 
-bool RemoveTrackedPanelLocked(NSPanel* panel) {
+bool RemoveTrackedPanelLocked(void* panelHandle) {
     auto& panels = ActivePanels();
     const auto it = std::find_if(
         panels.begin(),
         panels.end(),
-        [panel](const ActivePanel& item) { return item.panel == panel; });
+        [panelHandle](const ActivePanel& item) { return item.handle == panelHandle; });
     if (it == panels.end()) {
         return false;
     }
@@ -158,8 +122,8 @@ bool RemoveTrackedPanelLocked(NSPanel* panel) {
     return true;
 }
 
-void CloseTrackedPanel(NSPanel* panel) {
-    if (panel == nil) {
+void CloseTrackedPanel(void* panelHandle) {
+    if (panelHandle == nullptr) {
         return;
     }
 
@@ -167,7 +131,7 @@ void CloseTrackedPanel(NSPanel* panel) {
     size_t remaining = 0;
     {
         std::lock_guard<std::mutex> lock(ActivePanelsMutex());
-        removed = RemoveTrackedPanelLocked(panel);
+        removed = RemoveTrackedPanelLocked(panelHandle);
         if (removed) {
             remaining = ActivePanels().size();
         }
@@ -176,8 +140,7 @@ void CloseTrackedPanel(NSPanel* panel) {
         return;
     }
     diagnostics::SetTextEffectFallbackActivePanels(remaining);
-    [panel orderOut:nil];
-    [panel release];
+    mfx_macos_text_panel_release_v1(panelHandle);
 }
 
 void EnforceWindowCap(size_t maxConcurrentWindows) {
@@ -185,14 +148,14 @@ void EnforceWindowCap(size_t maxConcurrentWindows) {
         maxConcurrentWindows = 1;
     }
 
-    std::vector<NSPanel*> toClose;
+    std::vector<void*> toClose;
     size_t remaining = 0;
     {
         std::lock_guard<std::mutex> lock(ActivePanelsMutex());
         auto& panels = ActivePanels();
         while (panels.size() > maxConcurrentWindows) {
-            if (panels.front().panel != nil) {
-                toClose.push_back(panels.front().panel);
+            if (panels.front().handle != nullptr) {
+                toClose.push_back(panels.front().handle);
             }
             panels.erase(panels.begin());
         }
@@ -200,14 +163,13 @@ void EnforceWindowCap(size_t maxConcurrentWindows) {
     }
     diagnostics::SetTextEffectFallbackActivePanels(remaining);
 
-    for (NSPanel* panel : toClose) {
-        [panel orderOut:nil];
-        [panel release];
+    for (void* panelHandle : toClose) {
+        mfx_macos_text_panel_release_v1(panelHandle);
     }
 }
 
-void ApplyTextFrame(NSPanel* panel, CATextLayer* label, const TextAnimationSpec& spec, double t) {
-    if (panel == nil || label == nil) {
+void ApplyTextFrame(void* panelHandle, const TextAnimationSpec& spec, double t) {
+    if (panelHandle == nullptr) {
         return;
     }
 
@@ -229,30 +191,25 @@ void ApplyTextFrame(NSPanel* panel, CATextLayer* label, const TextAnimationSpec&
         alphaFactor = 1.0 - (t - 0.6) / 0.4;
     }
     alphaFactor = Clamp01(alphaFactor);
-    const double panelSize = ResolvePanelSize(spec.baseFontSize);
-    const CGFloat x = static_cast<CGFloat>(spec.startPoint.x + xOffset - panelSize * 0.5);
-    const CGFloat y = static_cast<CGFloat>(spec.startPoint.y + yOffset - panelSize * 0.5);
-    [panel setFrame:NSMakeRect(x, y, panelSize, panelSize) display:NO];
 
-    const double fontSize = spec.baseFontSize * scale;
-    NSFont* font = ResolveLabelFont(spec, fontSize);
-    const CGFloat clampedFontSize = static_cast<CGFloat>(std::max(6.0, fontSize));
-    label.fontSize = clampedFontSize;
-    if (font != nil) {
-        NSString* fontName = [font fontName];
-        if (fontName != nil) {
-            label.font = (__bridge CFTypeRef)fontName;
-        } else {
-            label.font = (__bridge CFTypeRef)@"Helvetica-Bold";
-        }
-    } else {
-        label.font = (__bridge CFTypeRef)@"Helvetica-Bold";
-    }
-    label.foregroundColor = [ColorFromArgb(spec.argb, alphaFactor) CGColor];
+    const double panelSize = ResolvePanelSize(spec.baseFontSize);
+    const double x = static_cast<double>(spec.startPoint.x) + xOffset - panelSize * 0.5;
+    const double y = static_cast<double>(spec.startPoint.y) + yOffset - panelSize * 0.5;
+    mfx_macos_text_panel_set_frame_v1(panelHandle, x, y, panelSize);
+
+    const double fontSize = std::max(6.0, spec.baseFontSize * scale);
+    const char* fontFamilyUtf8 = spec.fontFamilyUtf8.empty() ? "" : spec.fontFamilyUtf8.c_str();
+    mfx_macos_text_panel_apply_style_v1(
+        panelHandle,
+        fontSize,
+        spec.argb,
+        alphaFactor,
+        fontFamilyUtf8,
+        spec.emojiText ? 1 : 0);
 }
 
-void StartTextAnimation(NSPanel* panel, CATextLayer* label, TextAnimationSpec spec) {
-    if (panel == nil || label == nil) {
+void StartTextAnimation(void* panelHandle, TextAnimationSpec spec) {
+    if (panelHandle == nullptr) {
         return;
     }
 
@@ -260,15 +217,15 @@ void StartTextAnimation(NSPanel* panel, CATextLayer* label, TextAnimationSpec sp
     const uint64_t generation = AnimationGeneration().load(std::memory_order_acquire);
 
     auto step = std::make_shared<std::function<void()>>();
-    *step = [panel, label, spec, startTickMs, generation, step]() {
+    *step = [panelHandle, spec, startTickMs, generation, step]() {
         if (generation != AnimationGeneration().load(std::memory_order_acquire)) {
-            CloseTrackedPanel(panel);
+            CloseTrackedPanel(panelHandle);
             return;
         }
 
         {
             std::lock_guard<std::mutex> lock(ActivePanelsMutex());
-            if (!IsPanelTrackedLocked(panel)) {
+            if (!IsPanelTrackedLocked(panelHandle)) {
                 return;
             }
         }
@@ -276,15 +233,13 @@ void StartTextAnimation(NSPanel* panel, CATextLayer* label, TextAnimationSpec sp
         const uint64_t nowMs = MonotonicNowMs();
         const uint64_t elapsedMs = (nowMs >= startTickMs) ? (nowMs - startTickMs) : 0;
         const double t = Clamp01(static_cast<double>(elapsedMs) / std::max(1.0, spec.durationMs));
-        ApplyTextFrame(panel, label, spec, t);
+        ApplyTextFrame(panelHandle, spec, t);
 
         if (t >= 1.0) {
-            CloseTrackedPanel(panel);
+            CloseTrackedPanel(panelHandle);
             return;
         }
 
-        // Capture `step` (strong ref) to keep the animation chain alive.
-        // The cycle breaks when t >= 1.0 or generation mismatch.
         dispatch_after(
             dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(16) * NSEC_PER_MSEC),
             dispatch_get_main_queue(),
@@ -312,22 +267,21 @@ void MacosTextEffectFallback::Shutdown() {
 #else
     AnimationGeneration().fetch_add(1, std::memory_order_acq_rel);
     RunOnMainThreadSync(^{
-      std::vector<NSPanel*> toClose;
+      std::vector<void*> toClose;
       {
           std::lock_guard<std::mutex> lock(ActivePanelsMutex());
           auto& panels = ActivePanels();
           toClose.reserve(panels.size());
           for (const auto& item : panels) {
-              if (item.panel != nil) {
-                  toClose.push_back(item.panel);
+              if (item.handle != nullptr) {
+                  toClose.push_back(item.handle);
               }
           }
           panels.clear();
       }
       diagnostics::SetTextEffectFallbackActivePanels(0);
-      for (NSPanel* panel : toClose) {
-          [panel orderOut:nil];
-          [panel release];
+      for (void* panelHandle : toClose) {
+          mfx_macos_text_panel_release_v1(panelHandle);
       }
     });
 #endif
@@ -353,9 +307,6 @@ void MacosTextEffectFallback::ShowText(
         maxConcurrentWindows_ = 8;
     }
 
-    NSLog(@"[MFX-TextFallback] ShowText called: pt=(%d,%d) color=0x%08X fontSize=%.1f",
-          pt.x, pt.y, color.value, config.fontSize);
-
     diagnostics::RecordTextEffectFallbackShow(pt, text);
 
     const std::string utf8Text = Utf16ToUtf8(text.c_str());
@@ -363,12 +314,6 @@ void MacosTextEffectFallback::ShowText(
         diagnostics::RecordTextEffectFallbackError("utf8_empty");
         return;
     }
-    NSString* nsText = [[NSString alloc] initWithUTF8String:utf8Text.c_str()];
-    if (nsText == nil) {
-        diagnostics::RecordTextEffectFallbackError("ns_text_nil");
-        return;
-    }
-
 
     static thread_local std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<int> driftXDist(-50, 49);
@@ -382,74 +327,43 @@ void MacosTextEffectFallback::ShowText(
         overlayPt = cocoaPt;
     }
     spec.startPoint = overlayPt;
-
     spec.durationMs = static_cast<double>(std::max(config.durationMs, 1));
     spec.floatDistance = static_cast<double>(std::max(config.floatDistance, 0));
     spec.driftX = static_cast<double>(driftXDist(rng));
     spec.swayFreq = 1.0 + static_cast<double>(swayFreqDist(rng)) / 100.0;
     spec.swayAmp = 5.0 + static_cast<double>(swayAmpDist(rng)) / 10.0;
-    // Match Windows: fontSize(pt) -> px via 96/72 scaling.
-    // No hardcoded minimum — let the user's configured size control rendering.
     const double baseFontPx = static_cast<double>(config.fontSize) * (96.0 / 72.0);
     spec.baseFontSize = std::max(baseFontPx, 6.0);
     spec.argb = color.value;
     spec.fontFamilyUtf8 = Utf16ToUtf8(config.fontFamily.c_str());
     spec.emojiText = settings::HasEmojiStarter(text);
 
+    const size_t cap = maxConcurrentWindows_;
     RunOnMainThreadAsync(^{
-      NSString* textCopy = nsText;
-
       const double panelSize = ResolvePanelSize(spec.baseFontSize);
-
-      NSPanel* panel = [[NSPanel alloc] initWithContentRect:NSMakeRect(0.0, 0.0, panelSize, panelSize)
-                                                   styleMask:NSWindowStyleMaskBorderless
-                                                     backing:NSBackingStoreBuffered
-                                                       defer:NO];
-      if (panel == nil) {
+      const char* fontFamilyUtf8 = spec.fontFamilyUtf8.empty() ? "" : spec.fontFamilyUtf8.c_str();
+      void* panelHandle = mfx_macos_text_panel_create_v1(
+          utf8Text.c_str(),
+          panelSize,
+          spec.baseFontSize,
+          spec.argb,
+          fontFamilyUtf8,
+          spec.emojiText ? 1 : 0);
+      if (panelHandle == nullptr) {
           diagnostics::RecordTextEffectFallbackError("panel_nil");
-          [textCopy release];
           return;
       }
 
-      [panel setOpaque:NO];
-      [panel setBackgroundColor:[NSColor clearColor]];
-      [panel setHasShadow:NO];
-      [panel setIgnoresMouseEvents:YES];
-      [panel setHidesOnDeactivate:NO];
-      [panel setLevel:NSStatusWindowLevel];
-      [panel setCollectionBehavior:(NSWindowCollectionBehaviorCanJoinAllSpaces |
-                                    NSWindowCollectionBehaviorTransient)];
-
-      NSView* content = [panel contentView];
-      [content setWantsLayer:YES];
-      content.layer.backgroundColor = [[NSColor clearColor] CGColor];
-
-      // Vertically center text: place the label in the middle of the panel.
-      // CATextLayer renders from the top of its frame, so offset the origin
-      // to vertically center a single line of text.
-      const CGFloat labelHeight = static_cast<CGFloat>(spec.baseFontSize * 2.0);
-      const CGFloat labelY = (static_cast<CGFloat>(panelSize) - labelHeight) * 0.5;
-      CATextLayer* label = [CATextLayer layer];
-      label.frame = CGRectMake(0.0, labelY, static_cast<CGFloat>(panelSize), labelHeight);
-      label.alignmentMode = kCAAlignmentCenter;
-      label.wrapped = YES;
-      label.truncationMode = kCATruncationEnd;
-      label.contentsScale = std::max<CGFloat>(1.0, [panel backingScaleFactor]);
-      label.string = textCopy;
-      label.foregroundColor = [ColorFromArgb(spec.argb, 1.0) CGColor];
-      [content.layer addSublayer:label];
-
       {
           std::lock_guard<std::mutex> lock(ActivePanelsMutex());
-          ActivePanels().push_back(ActivePanel{panel});
+          ActivePanels().push_back(ActivePanel{panelHandle});
           diagnostics::SetTextEffectFallbackActivePanels(ActivePanels().size());
       }
-      EnforceWindowCap(maxConcurrentWindows_);
+      EnforceWindowCap(cap);
 
-      [panel orderFrontRegardless];
+      mfx_macos_text_panel_show_v1(panelHandle);
       diagnostics::RecordTextEffectFallbackPanelCreated();
-      StartTextAnimation(panel, label, spec);
-      [textCopy release];
+      StartTextAnimation(panelHandle, spec);
     });
 #endif
 }
