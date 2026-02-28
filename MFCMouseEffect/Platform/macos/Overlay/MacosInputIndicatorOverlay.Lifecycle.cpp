@@ -17,30 +17,10 @@ bool MacosInputIndicatorOverlay::Initialize() {
     }
 
     macos_input_indicator::RunOnMainThreadSync(^{
-      NSPanel* panel = [[NSPanel alloc] initWithContentRect:NSMakeRect(0, 0, 72, 72)
-                                                   styleMask:NSWindowStyleMaskBorderless
-                                                     backing:NSBackingStoreBuffered
-                                                       defer:NO];
-      if (panel == nil) {
-          return;
-      }
-      macos_input_indicator_style::ConfigurePanel(panel);
-
-      NSView* content = [panel contentView];
-      macos_input_indicator_style::ConfigureContent(content);
-
-      NSTextField* label = macos_input_indicator_style::CreateLabel(72);
-      if (label == nil) {
-          [panel release];
-          return;
-      }
-      [content addSubview:label];
-
-      panel_ = panel;
-      labelField_ = label;
+      panel_ = macos_input_indicator_style::CreatePanel(72);
     });
 
-    initialized_ = (panel_ != nullptr && labelField_ != nullptr);
+    initialized_ = (panel_ != nullptr);
     return initialized_;
 #endif
 }
@@ -56,20 +36,8 @@ void MacosInputIndicatorOverlay::Shutdown() {
     }
 
     macos_input_indicator::RunOnMainThreadSync(^{
-      NSPanel* panel = (NSPanel*)panel_;
-      NSTextField* label = (NSTextField*)labelField_;
-      if (panel != nil) {
-          [panel orderOut:nil];
-      }
-      if (label != nil) {
-          [label removeFromSuperview];
-          [label release];
-      }
-      if (panel != nil) {
-          [panel release];
-      }
+      macos_input_indicator_style::ReleasePanel(panel_);
       panel_ = nullptr;
-      labelField_ = nullptr;
     });
 
     initialized_ = false;

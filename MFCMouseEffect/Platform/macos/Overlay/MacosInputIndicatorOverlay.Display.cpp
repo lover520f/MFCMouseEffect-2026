@@ -14,10 +14,7 @@ void MacosInputIndicatorOverlay::Hide() {
 #else
     displayGeneration_.fetch_add(1, std::memory_order_acq_rel);
     macos_input_indicator::RunOnMainThreadAsync(^{
-      NSPanel* panel = (NSPanel*)panel_;
-      if (panel != nil) {
-          [panel orderOut:nil];
-      }
+      macos_input_indicator_style::HidePanel(panel_);
     });
 #endif
 }
@@ -39,13 +36,11 @@ void MacosInputIndicatorOverlay::ShowAt(ScreenPoint pt, const std::string& label
 
 #if defined(__APPLE__)
     macos_input_indicator::RunOnMainThreadAsync(^{
-      NSPanel* panel = (NSPanel*)panel_;
-      NSTextField* text = (NSTextField*)labelField_;
-      if (panel == nil || text == nil) {
+      if (panel_ == nullptr) {
           return;
       }
       macos_input_indicator_style::ApplyPanelPresentation(
-          panel, text, plan.x, plan.y, plan.sizePx, labelCopy);
+          panel_, plan.x, plan.y, plan.sizePx, labelCopy);
       {
           std::lock_guard<std::mutex> debugLock(debugMutex_);
           lastAppliedLabel_ = labelCopy;
@@ -59,7 +54,7 @@ void MacosInputIndicatorOverlay::ShowAt(ScreenPoint pt, const std::string& label
             if (displayGeneration_.load(std::memory_order_acquire) != generation) {
                 return;
             }
-            [panel orderOut:nil];
+            macos_input_indicator_style::HidePanel(panel_);
           });
     });
 #else

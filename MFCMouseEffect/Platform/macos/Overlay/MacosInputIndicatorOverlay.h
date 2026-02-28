@@ -50,7 +50,6 @@ private:
     uint64_t applyCount_ = 0;
 
     void* panel_ = nullptr;
-    void* labelField_ = nullptr;
 };
 
 } // namespace mousefx
