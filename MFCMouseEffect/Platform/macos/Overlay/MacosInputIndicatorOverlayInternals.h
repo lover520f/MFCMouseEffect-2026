@@ -5,7 +5,6 @@
 #include <string>
 
 #if defined(__APPLE__)
-#import <AppKit/AppKit.h>
 #import <dispatch/dispatch.h>
 #endif
 
@@ -20,7 +19,6 @@ std::string KeyLabel(const KeyEvent& ev);
 void RunOnMainThreadSync(dispatch_block_t block);
 void RunOnMainThreadAsync(dispatch_block_t block);
 void FlushMainThreadQueueSync();
-NSString* NsStringFromUtf8(const std::string& text);
 #endif
 
 } // namespace mousefx::macos_input_indicator

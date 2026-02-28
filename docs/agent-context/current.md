@@ -32,7 +32,7 @@
 - WebUI semantic phase now includes `pnpm --dir MFCMouseEffect/WebUIWorkspace run test:wasm-state-model` to gate `normalizeWasmState` passthrough for lifetime WASM diagnostics.
 - WebUI WASM diagnostics panel now renders both `last_*` and `lifetime_*` summaries (invoke/render), and WebUI semantic phase now includes `pnpm --dir MFCMouseEffect/WebUIWorkspace run test:wasm-diagnostics-model` to gate label coverage and formatting contracts.
 - POSIX regression suite now enforces `no objcxx edits` by default (`MFX_ENFORCE_NO_OBJCXX_EDITS=1`), with explicit per-run override `--allow-objcxx-edits` for approval-only exceptions; this keeps macOS mainline aligned with `Swift-first / no new .mm surface` policy.
-- macOS input-indicator panel lifecycle/style is now Swift-owned (`MacosInputIndicatorBridge.swift` + `MacosInputIndicatorSwiftBridge.h`), and C++ overlay files now call opaque bridge APIs (`CreatePanel/ReleasePanel/HidePanel/ApplyPanelPresentation`) instead of direct `NSPanel/NSTextField` message sends.
+- macOS input-indicator panel lifecycle/style is now Swift-owned (`MacosInputIndicatorBridge.swift` + `MacosInputIndicatorSwiftBridge.h`), and C++ overlay files now call opaque bridge APIs (`CreatePanel/ReleasePanel/HidePanel/ApplyPanelPresentation`) instead of direct `NSPanel/NSTextField` message sends; overlay internals also removed `NSString` helper dependency and now use `pthread_main_np` for main-thread checks.
 - Validation passed:
   - `cmake -S MFCMouseEffect/Platform -B /tmp/mfx-platform-macos-legacy-mm-build -DMFX_PACKAGE_PLATFORM=macos -DMFX_ENABLE_POSIX_CORE_RUNTIME=ON -DMFX_ENABLE_ENTRY_RUNTIME_TARGETS=ON`
   - `cmake --build /tmp/mfx-platform-macos-legacy-mm-build --target mfx_shell_macos mfx_entry_posix_host -j8`

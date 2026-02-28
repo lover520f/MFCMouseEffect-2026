@@ -5,6 +5,9 @@
 #include "MouseFx/Utils/StringUtils.h"
 
 #include <algorithm>
+#if defined(__APPLE__)
+#include <pthread.h>
+#endif
 #include <sstream>
 
 namespace mousefx::macos_input_indicator {
@@ -56,7 +59,7 @@ void RunOnMainThreadSync(dispatch_block_t block) {
     if (!block) {
         return;
     }
-    if ([NSThread isMainThread]) {
+    if (pthread_main_np() != 0) {
         block();
         return;
     }
@@ -71,18 +74,10 @@ void RunOnMainThreadAsync(dispatch_block_t block) {
 }
 
 void FlushMainThreadQueueSync() {
-    if ([NSThread isMainThread]) {
+    if (pthread_main_np() != 0) {
         return;
     }
     dispatch_sync(dispatch_get_main_queue(), ^{});
-}
-
-NSString* NsStringFromUtf8(const std::string& text) {
-    if (text.empty()) {
-        return @"";
-    }
-    NSString* ns = [NSString stringWithUTF8String:text.c_str()];
-    return ns ? ns : @"";
 }
 #endif
 
