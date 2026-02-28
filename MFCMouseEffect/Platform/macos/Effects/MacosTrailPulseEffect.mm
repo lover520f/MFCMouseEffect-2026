@@ -63,18 +63,38 @@ void MacosTrailPulseEffect::OnMouseMove(const ScreenPoint& pt) {
 
     const uint64_t now = CurrentTickMs();
     const std::string normalizedType = NormalizeTrailEffectType(effectType_);
+    if (normalizedType == "none") {
+        return;
+    }
     const bool lineTrail = (normalizedType == "line");
 
     if (lineTrail) {
         macos_line_trail::LineTrailConfig config{};
+        // Use a longer duration for continuous line trail than the pulse trail.
+        // The pulse durationSec is scaled down by 0.73 which is too short for
+        // a persistent trail. Use at least 500ms for good visibility.
         config.durationMs = std::clamp(
-            static_cast<int>(std::lround(renderProfile_.durationSec * 1000.0)),
-            120,
+            static_cast<int>(std::lround(renderProfile_.durationSec * 1000.0 * 2.5)),
+            500,
             2000);
-        config.lineWidth = std::clamp(lineWidth_, 1.0f, 18.0f);
+        config.lineWidth = std::clamp(lineWidth_, 2.0f, 18.0f);
         config.strokeArgb = renderProfile_.line.strokeArgb;
-        config.idleFade = idleFade_;
-        macos_line_trail::UpdateLineTrail(pt, config);
+        // Use gentler idle fade for continuous line trail
+        config.idleFade.startMs = std::max(idleFade_.startMs, 300);
+        config.idleFade.endMs = std::max(idleFade_.endMs, 600);
+        const double dx = static_cast<double>(pt.x - lastPoint_.x);
+        const double dy = static_cast<double>(pt.y - lastPoint_.y);
+        const double distance = std::sqrt(dx * dx + dy * dy);
+        const int segmentCount = static_cast<int>(std::clamp(std::ceil(distance / 4.0), 1.0, 48.0));
+        for (int i = 1; i <= segmentCount; ++i) {
+            const double t = static_cast<double>(i) / static_cast<double>(segmentCount);
+            ScreenPoint segPt{};
+            segPt.x = static_cast<int32_t>(std::lround(static_cast<double>(lastPoint_.x) +
+                                                       (static_cast<double>(pt.x - lastPoint_.x) * t)));
+            segPt.y = static_cast<int32_t>(std::lround(static_cast<double>(lastPoint_.y) +
+                                                       (static_cast<double>(pt.y - lastPoint_.y) * t)));
+            macos_line_trail::UpdateLineTrail(segPt, config);
+        }
         lastPoint_ = pt;
         return;
     }
@@ -87,8 +107,9 @@ void MacosTrailPulseEffect::OnMouseMove(const ScreenPoint& pt) {
         lastEmitTickMs_,
         throttleProfile);
     if (!emission.shouldEmit) {
-        const double forceDistance =
-            std::max(12.0, throttleProfile.minDistancePx * 2.0);
+        const double forceDistance = (normalizedType == "streamer")
+            ? std::max(6.0, throttleProfile.minDistancePx * 1.4)
+            : std::max(12.0, throttleProfile.minDistancePx * 2.0);
         if (emission.distancePx < forceDistance) {
             return;
         }
@@ -99,8 +120,11 @@ void MacosTrailPulseEffect::OnMouseMove(const ScreenPoint& pt) {
     const TrailEffectProfile profile =
         macos_effect_compute_profile::BuildTrailProfile(renderProfile_);
     const double distance = std::max(0.0, emission.distancePx);
-    const double segmentStep = std::max(8.0, throttleProfile.minDistancePx);
-    const int segmentCount = static_cast<int>(std::clamp(std::ceil(distance / segmentStep), 1.0, 12.0));
+    const double minStep = (normalizedType == "streamer")
+        ? 3.5
+        : ((normalizedType == "meteor") ? 6.0 : ((normalizedType == "electric") ? 5.0 : 8.0));
+    const double segmentStep = std::max(minStep, throttleProfile.minDistancePx * 0.9);
+    const int segmentCount = static_cast<int>(std::clamp(std::ceil(distance / segmentStep), 1.0, 48.0));
     ScreenPoint prev = lastPoint_;
     for (int i = 1; i <= segmentCount; ++i) {
         const double t = static_cast<double>(i) / static_cast<double>(segmentCount);

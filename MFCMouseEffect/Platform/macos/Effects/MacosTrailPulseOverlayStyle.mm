@@ -87,8 +87,10 @@ CGPathRef CreateTrailLinePath(CGRect bounds, double deltaX, double deltaY, const
     const bool lineTrail = (trailType == "line");
     const bool electricTrail = (trailType == "electric");
     const bool meteorTrail = (trailType == "meteor");
-    const CGFloat minSegment = lineTrail ? 1.0 : (meteorTrail ? 20.0 : 12.0);
-    const CGFloat maxSegment = lineTrail ? std::numeric_limits<CGFloat>::max() : (meteorTrail ? 260.0 : 220.0);
+    const bool streamerTrail = (trailType == "streamer");
+    const CGFloat minSegment = lineTrail ? 1.0 : (meteorTrail ? 18.0 : (streamerTrail ? 4.0 : 10.0));
+    const CGFloat maxSegment =
+        lineTrail ? std::numeric_limits<CGFloat>::max() : (meteorTrail ? 240.0 : (streamerTrail ? 90.0 : 160.0));
 
     if (distance < 0.0001) {
         dx = minSegment;

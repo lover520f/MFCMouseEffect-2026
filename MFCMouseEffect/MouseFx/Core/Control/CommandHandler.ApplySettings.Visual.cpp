@@ -5,6 +5,7 @@
 #include "AppController.h"
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
+#include "Settings/SettingsOptions.h"
 
 #include <array>
 
@@ -28,6 +29,64 @@ std::vector<std::wstring> ParseCsvUtf8TextList(const std::string& raw) {
         texts.push_back(Utf8ToWString(last));
     }
     return texts;
+}
+
+const EffectOption* ResolveEffectOptionByInput(EffectCategory category, const std::string& raw) {
+    const std::string trimmed = TrimAscii(raw);
+    if (trimmed.empty()) {
+        return nullptr;
+    }
+
+    size_t count = 0;
+    const EffectOption* options = nullptr;
+    switch (category) {
+    case EffectCategory::Click:
+        options = mousefx::ClickMetadata(count);
+        break;
+    case EffectCategory::Trail:
+        options = mousefx::TrailMetadata(count);
+        break;
+    case EffectCategory::Scroll:
+        options = mousefx::ScrollMetadata(count);
+        break;
+    case EffectCategory::Hold:
+        options = mousefx::HoldMetadata(count);
+        break;
+    case EffectCategory::Hover:
+        options = mousefx::HoverMetadata(count);
+        break;
+    default:
+        break;
+    }
+    if (!options || count == 0) {
+        return nullptr;
+    }
+
+    const std::string lowered = ToLowerAscii(trimmed);
+    for (size_t i = 0; i < count; ++i) {
+        const EffectOption& opt = options[i];
+        if (trimmed == opt.value) {
+            return &opt;
+        }
+        if (opt.secondType && trimmed == opt.secondType) {
+            return &opt;
+        }
+        if (lowered == ToLowerAscii(opt.value)) {
+            return &opt;
+        }
+        if (opt.secondType && lowered == ToLowerAscii(opt.secondType)) {
+            return &opt;
+        }
+        const std::string zh = Utf16ToUtf8(opt.displayZh ? opt.displayZh : L"");
+        if (!zh.empty() && trimmed == zh) {
+            return &opt;
+        }
+        const std::string en = Utf16ToUtf8(opt.displayEn ? opt.displayEn : L"");
+        if (!en.empty() && trimmed == en) {
+            return &opt;
+        }
+    }
+    return nullptr;
 }
 
 void ApplyInputIndicatorFields(const json& source, InputIndicatorConfig* dst, bool includeAdvancedFields) {
@@ -115,9 +174,14 @@ void ApplyActiveSettings(const json& payload, AppController* controller) {
             continue;
         }
 
-        const std::string type = active[route.key].get<std::string>();
+        std::string type = TrimAscii(active[route.key].get<std::string>());
         if (type.empty()) {
             continue;
+        }
+        if (const EffectOption* resolved = ResolveEffectOptionByInput(route.category, type)) {
+            if (resolved->value && resolved->value[0] != '\0') {
+                type = resolved->value;
+            }
         }
 
         std::string reason;

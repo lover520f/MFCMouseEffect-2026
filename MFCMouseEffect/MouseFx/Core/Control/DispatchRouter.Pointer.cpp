@@ -19,6 +19,14 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
     if (!ctrl_->ConsumeLatestMove(&pt)) {
         pt = dispatch_router_detail::MessagePoint(message);
     }
+#if MFX_PLATFORM_MACOS
+    if (pt.x == 0 && pt.y == 0) {
+        ScreenPoint cursor{};
+        if (ctrl_->QueryCursorScreenPoint(&cursor)) {
+            pt = cursor;
+        }
+    }
+#endif
 
     automationFeature_.OnMouseMove(*ctrl_, pt);
 

@@ -91,6 +91,10 @@
 - macOS line trail now clears historical points when the screen-sized overlay window is recreated (avoids stray long lines), uses config-driven line width for thickness, and non-line trail pulses now interpolate large deltas into multiple emissions to reduce matchstick gaps
 - Trail 调参页新增 `line_width` 调节（通过 WebUI 直接设置并持久化），无需手改 config.json
 - trail 类型 `none` 现在不会再被归一化为 `line`（真正关闭拖尾），并提升非 line 拖尾在快速移动时的分段密度以进一步降低“火柴棍”间隙
+- apply_settings 现在会按元数据解析 effect 选项输入（value/alias/中英文 label + Trim），避免“无/None”被误判为未知并回落到 `line`
+- macOS `line` 拖尾坐标链路已统一到 `ScreenToOverlayPoint`，并在单点采样时绘制最小可见点；`streamer` 分段长度/插值密度已调优，降低“火柴棍”断续感
+- macOS `line` 拖尾分支已增加稀疏 move 事件插值补点（按轨迹分段写入 line overlay），避免输入合并时仅出现零散点/几乎无拖尾
+- macOS move 路由在收到 (0,0) 事件坐标时改用光标查询结果兜底，避免偶发“左上角到鼠标”的直线；macOS trail 在 `none` 时直接返回防止误渲染
   - click routing now forces built-in path when active click type normalizes to `text` (skip wasm click render interception for that type), preventing `click=text` from becoming no-op when WASM route is enabled
   - macOS overlay frame clamp policy now preserves real input anchor (no origin retreat to keep full frame in screen); near-edge effects may clip partially but no longer drift inward
   - `TextEffect` click text path now has macOS-first fallback execution (`MacosTextEffectFallback`) plus empty-text-pool default-label guard (`LEFT/RIGHT/MIDDLE`), and text settings hot-reapply now uses normalized click type check (`NormalizeClickEffectType(config_.active.click) == text`)

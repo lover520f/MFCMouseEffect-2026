@@ -56,6 +56,38 @@ void ConfigureTrailCoreLayer(
             160.0,
             0.8,
             3.0);
+    } else if (trailType == "meteor") {
+        // Meteor: large filled ellipse that blends smoothly with the glow layers.
+        // Use fillArgb (warm color, same family as glow) for seamless blending.
+        const CGFloat cx = CGRectGetMidX(content.bounds);
+        const CGFloat cy = CGRectGetMidY(content.bounds);
+        const CGFloat speed = static_cast<CGFloat>(std::sqrt(deltaX * deltaX + deltaY * deltaY));
+
+        // Core radius should be comparable to the inner glow (glowInset=12→5)
+        // so the bright center fills the glow rather than appearing as a dark spot.
+        const CGFloat coreRadius = macos_overlay_support::ScaleOverlayMetric(
+            size, 14.0 + static_cast<CGFloat>(plan.command.intensity) * 4.0, 160.0, 8.0, 28.0);
+        // Mild directional stretch
+        const CGFloat stretch = std::clamp<CGFloat>(1.0 + speed * 0.02, 1.0, 1.8);
+        const CGFloat semiMajor = coreRadius * stretch;
+        const CGFloat semiMinor = coreRadius;
+
+        // Rotation angle from movement direction
+        const CGFloat angle = (speed > 0.5) ? static_cast<CGFloat>(std::atan2(deltaY, deltaX)) : 0.0;
+
+        CGMutablePathRef meteorPath = CGPathCreateMutable();
+        CGAffineTransform transform = CGAffineTransformIdentity;
+        transform = CGAffineTransformTranslate(transform, cx, cy);
+        transform = CGAffineTransformRotate(transform, angle);
+        CGPathAddEllipseInRect(meteorPath, &transform,
+            CGRectMake(-semiMajor, -semiMinor, semiMajor * 2.0, semiMinor * 2.0));
+
+        core.path = meteorPath;
+        CGPathRelease(meteorPath);
+        // Use fillArgb (warm glow color) so core blends INTO the glow, not contrasts against it
+        core.fillColor = [ArgbToNsColor(plan.command.fillArgb) CGColor];
+        core.strokeColor = [[NSColor clearColor] CGColor];
+        core.lineWidth = 0;
     } else {
         CGPathRef line = detail::CreateTrailLinePath(content.bounds, deltaX, deltaY, trailType);
         core.path = line;
@@ -66,7 +98,7 @@ void ConfigureTrailCoreLayer(
         core.lineJoin = kCALineJoinRound;
         core.lineWidth = macos_overlay_support::ScaleOverlayMetric(
             size,
-            ((trailType == "meteor") ? 4.0 : 3.0) + static_cast<CGFloat>(plan.command.intensity) * 1.6,
+            3.0 + static_cast<CGFloat>(plan.command.intensity) * 1.6,
             160.0,
             1.2,
             8.6);
@@ -84,10 +116,14 @@ void AddTrailGlowLayer(NSView* content, const TrailPulseRenderPlan& plan) {
         return;
     }
 
+    const CGFloat size = static_cast<CGFloat>(std::max(plan.command.sizePx, 1));
+    const bool isMeteor = (plan.command.normalizedType == "meteor");
+
+    // Inner glow layer
     CAShapeLayer* glow = [CAShapeLayer layer];
     glow.frame = content.bounds;
-    const CGFloat size = static_cast<CGFloat>(std::max(plan.command.sizePx, 1));
-    const CGFloat glowInset = macos_overlay_support::ScaleOverlayMetric(size, 18.0, 160.0, 8.0, 36.0);
+    const CGFloat glowInset = macos_overlay_support::ScaleOverlayMetric(
+        size, isMeteor ? 12.0 : 18.0, 160.0, isMeteor ? 5.0 : 8.0, isMeteor ? 28.0 : 36.0);
     CGPathRef glowPath = CGPathCreateWithEllipseInRect(CGRectInset(content.bounds, glowInset, glowInset), nullptr);
     glow.path = glowPath;
     CGPathRelease(glowPath);
@@ -99,6 +135,22 @@ void AddTrailGlowLayer(NSView* content, const TrailPulseRenderPlan& plan) {
             -0.08 + static_cast<double>(plan.command.intensity) * 0.05,
             0.0));
     [content.layer addSublayer:glow];
+
+    // Meteor: additional outer warm glow halo
+    if (isMeteor) {
+        CAShapeLayer* outerGlow = [CAShapeLayer layer];
+        outerGlow.frame = content.bounds;
+        const CGFloat outerInset = macos_overlay_support::ScaleOverlayMetric(size, 6.0, 160.0, 2.0, 16.0);
+        CGPathRef outerPath = CGPathCreateWithEllipseInRect(CGRectInset(content.bounds, outerInset, outerInset), nullptr);
+        outerGlow.path = outerPath;
+        CGPathRelease(outerPath);
+        // Warm semi-transparent fill: ARGB(0x18, 0xFF, 0xDC, 0xA0)
+        outerGlow.fillColor = [ArgbToNsColor(0x18FFDCA0u) CGColor];
+        outerGlow.strokeColor = [NSColor clearColor].CGColor;
+        outerGlow.opacity = static_cast<float>(std::clamp(
+            plan.command.baseOpacity * 0.6 + plan.command.intensity * 0.15, 0.1, 0.7));
+        [content.layer insertSublayer:outerGlow below:glow];
+    }
 }
 
 void StartTrailPulseAnimation(CAShapeLayer* core, const TrailPulseRenderPlan& plan) {

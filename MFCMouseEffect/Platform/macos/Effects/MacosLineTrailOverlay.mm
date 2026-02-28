@@ -2,8 +2,8 @@
 
 #include "Platform/macos/Effects/MacosLineTrailOverlay.h"
 
+#include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
-#include "Platform/macos/Overlay/MacosOverlayCoordSpaceConversion.h"
 
 #include <algorithm>
 #include <chrono>
@@ -29,7 +29,7 @@ struct TrailPoint final {
 
 struct LineTrailState final {
     NSWindow* window = nil;
-    CAShapeLayer* pathLayer = nil;
+    CALayer* containerLayer = nil;
     ScreenPoint windowOrigin{};
     std::deque<TrailPoint> points;
     LineTrailConfig config{};
@@ -74,7 +74,18 @@ void CloseWindow(LineTrailState& state) {
     [state.window orderOut:nil];
     [state.window release];
     state.window = nil;
-    state.pathLayer = nil;
+    state.containerLayer = nil;
+}
+
+void ClearSegmentSublayers(LineTrailState& state) {
+    if (state.containerLayer == nil) {
+        return;
+    }
+    NSArray<CALayer*>* sublayers = [[state.containerLayer sublayers] copy];
+    for (CALayer* sub in sublayers) {
+        [sub removeFromSuperlayer];
+    }
+    [sublayers release];
 }
 
 void ResetState(LineTrailState& state) {
@@ -83,10 +94,7 @@ void ResetState(LineTrailState& state) {
     state.points.clear();
     state.lastInputMs = 0;
     state.lastTickMs = 0;
-    state.points.clear();
     state.running = false;
-    state.lastTickMs = 0;
-    state.lastInputMs = 0;
 }
 
 NSScreen* ResolveScreenForPoint(const ScreenPoint& overlayPt) {
@@ -137,15 +145,12 @@ bool EnsureWindowForPoint(LineTrailState& state, const ScreenPoint& overlayPt) {
     [content setWantsLayer:YES];
     macos_overlay_support::ApplyOverlayContentScale(content, overlayPt);
 
-    CAShapeLayer* pathLayer = [CAShapeLayer layer];
-    pathLayer.frame = content.bounds;
-    pathLayer.fillColor = [[NSColor clearColor] CGColor];
-    pathLayer.lineCap = kCALineCapRound;
-    pathLayer.lineJoin = kCALineJoinRound;
-    [content.layer addSublayer:pathLayer];
+    CALayer* containerLayer = [CALayer layer];
+    containerLayer.frame = content.bounds;
+    [content.layer addSublayer:containerLayer];
 
     state.window = window;
-    state.pathLayer = pathLayer;
+    state.containerLayer = containerLayer;
     state.windowOrigin.x = static_cast<int32_t>(std::lround(frame.origin.x));
     state.windowOrigin.y = static_cast<int32_t>(std::lround(frame.origin.y));
 
@@ -171,44 +176,95 @@ float IdleFadeFactor(uint64_t now, uint64_t lastPointMs, const IdleFadeParams& i
 }
 
 ScreenPoint ResolveOverlayPoint(const ScreenPoint& screenPt) {
-    ScreenPoint overlayPt = screenPt;
-    ScreenPoint cocoaPt{};
-    if (macos_overlay_coord_conversion::TryConvertQuartzToCocoa(screenPt, &cocoaPt)) {
-        overlayPt = cocoaPt;
-    }
-    return overlayPt;
+    return ScreenToOverlayPoint(screenPt);
 }
 
 void RebuildPath(LineTrailState& state, uint64_t nowMs) {
-    if (state.pathLayer == nil) {
+    if (state.containerLayer == nil) {
         return;
     }
-    if (state.points.size() < 2) {
-        state.pathLayer.path = nullptr;
+
+    ClearSegmentSublayers(state);
+
+    if (state.points.empty()) {
         return;
     }
+
+    const float idleFactor = IdleFadeFactor(nowMs, state.points.back().timeMs, state.config.idleFade);
+    const int durationMs = std::max(1, state.config.durationMs);
+    const CGFloat lineWidth = state.config.lineWidth;
+
+    [CATransaction begin];
+    [CATransaction setDisableActions:YES];
+
+    // Use full-alpha stroke color for maximum visibility
+    const uint32_t argb = state.config.strokeArgb | 0xFF000000u;
+
+    // Single-point: draw a small dot
+    if (state.points.size() == 1) {
+        const auto& p = state.points.front();
+        const CGFloat x = static_cast<CGFloat>(p.pt.x - state.windowOrigin.x);
+        const CGFloat y = static_cast<CGFloat>(p.pt.y - state.windowOrigin.y);
+        const CGFloat radius = std::max<CGFloat>(lineWidth * 0.6, 2.0);
+
+        const float age = static_cast<float>(nowMs - p.timeMs);
+        const float life = std::max(0.0f, 1.0f - age / static_cast<float>(durationMs));
+        const double opacity = std::clamp(static_cast<double>(life) * idleFactor, 0.0, 1.0);
+
+        CAShapeLayer* dot = [CAShapeLayer layer];
+        dot.frame = state.containerLayer.bounds;
+        CGPathRef dotPath = CGPathCreateWithEllipseInRect(
+            CGRectMake(x - radius, y - radius, radius * 2.0, radius * 2.0), nullptr);
+        dot.path = dotPath;
+        CGPathRelease(dotPath);
+        dot.fillColor = [ArgbToNsColor(argb, 1.0) CGColor];
+        dot.strokeColor = [[NSColor clearColor] CGColor];
+        dot.opacity = static_cast<float>(opacity);
+        [state.containerLayer addSublayer:dot];
+
+        [CATransaction commit];
+        return;
+    }
+
+    // Build one continuous path through all points
+    CAShapeLayer* pathLayer = [CAShapeLayer layer];
+    pathLayer.frame = state.containerLayer.bounds;
 
     CGMutablePathRef path = CGPathCreateMutable();
-    for (size_t i = 0; i + 1 < state.points.size(); ++i) {
-        const auto& p1 = state.points[i];
-        const auto& p2 = state.points[i + 1];
-        const CGFloat x1 = static_cast<CGFloat>(p1.pt.x - state.windowOrigin.x);
-        const CGFloat y1 = static_cast<CGFloat>(p1.pt.y - state.windowOrigin.y);
-        const CGFloat x2 = static_cast<CGFloat>(p2.pt.x - state.windowOrigin.x);
-        const CGFloat y2 = static_cast<CGFloat>(p2.pt.y - state.windowOrigin.y);
-        CGPathMoveToPoint(path, nullptr, x1, y1);
-        CGPathAddLineToPoint(path, nullptr, x2, y2);
+    bool started = false;
+    for (size_t i = 0; i < state.points.size(); ++i) {
+        const auto& p = state.points[i];
+        const CGFloat x = static_cast<CGFloat>(p.pt.x - state.windowOrigin.x);
+        const CGFloat y = static_cast<CGFloat>(p.pt.y - state.windowOrigin.y);
+        if (!started) {
+            CGPathMoveToPoint(path, nullptr, x, y);
+            started = true;
+        } else {
+            CGPathAddLineToPoint(path, nullptr, x, y);
+        }
     }
-
-    const uint64_t oldest = state.points.front().timeMs;
-    const float life = std::max(0.0f, 1.0f - static_cast<float>((nowMs - oldest)) / std::max(1, state.config.durationMs));
-    const float idleFactor = IdleFadeFactor(nowMs, state.points.back().timeMs, state.config.idleFade);
-    const double alphaScale = std::clamp(static_cast<double>(life * idleFactor), 0.0, 1.0);
-
-    state.pathLayer.path = path;
+    pathLayer.path = path;
     CGPathRelease(path);
-    state.pathLayer.strokeColor = [ArgbToNsColor(state.config.strokeArgb, alphaScale) CGColor];
-    state.pathLayer.lineWidth = state.config.lineWidth;
+
+    pathLayer.strokeColor = [ArgbToNsColor(argb, 1.0) CGColor];
+    pathLayer.fillColor = [[NSColor clearColor] CGColor];
+    pathLayer.lineWidth = lineWidth;
+    pathLayer.lineCap = kCALineCapRound;
+    pathLayer.lineJoin = kCALineJoinRound;
+
+    // Overall trail opacity: based on the newest point's life + idle factor
+    const float newestAge = static_cast<float>(nowMs - state.points.back().timeMs);
+    const float newestLife = std::max(0.0f, 1.0f - newestAge / static_cast<float>(durationMs));
+    pathLayer.opacity = static_cast<float>(
+        std::clamp(static_cast<double>(newestLife) * idleFactor, 0.0, 1.0));
+
+    // Use strokeEnd to show proportional trail length (old points fade via point expiry)
+    pathLayer.strokeStart = 0.0;
+    pathLayer.strokeEnd = 1.0;
+
+    [state.containerLayer addSublayer:pathLayer];
+
+    [CATransaction commit];
 }
 
 void Tick(LineTrailState& state) {
@@ -221,10 +277,10 @@ void Tick(LineTrailState& state) {
         }
         state.points.pop_front();
     }
-    if (state.points.size() < 2) {
-        state.pathLayer.path = nullptr;
-    } else {
+    if (!state.points.empty()) {
         RebuildPath(state, nowMs);
+    } else {
+        ClearSegmentSublayers(state);
     }
     if (state.points.size() < 2) {
         if (state.lastInputMs == 0 || (nowMs - state.lastInputMs) > duration) {
@@ -293,8 +349,14 @@ void UpdateLineTrail(const ScreenPoint& screenPt, const LineTrailConfig& config)
     (void)config;
     return;
 #else
+    // CRITICAL: Must copy values before async dispatch.
+    // The block captures by reference in ObjC++, and the original stack
+    // variables (segPt in OnMouseMove's for loop) are destroyed before
+    // the block executes on the main thread.
+    const ScreenPoint ptCopy = screenPt;
+    const LineTrailConfig configCopy = config;
     macos_overlay_support::RunOnMainThreadAsync(^{
-      UpdateLineTrailOnMain(screenPt, config);
+      UpdateLineTrailOnMain(ptCopy, configCopy);
     });
 #endif
 }
