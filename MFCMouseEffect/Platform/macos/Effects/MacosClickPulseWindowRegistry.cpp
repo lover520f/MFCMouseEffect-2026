@@ -1,10 +1,7 @@
 #include "pch.h"
 
 #include "Platform/macos/Effects/MacosClickPulseWindowRegistry.h"
-
-#if defined(__APPLE__)
-#import <AppKit/AppKit.h>
-#endif
+#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 
 #include <mutex>
 #include <unordered_set>
@@ -70,12 +67,7 @@ void CloseAllClickPulseWindowsNow() {
         windows.swap(ClickPulseWindows());
     }
     for (void* handle : windows) {
-        NSWindow* window = reinterpret_cast<NSWindow*>(handle);
-        if (window == nil) {
-            continue;
-        }
-        [window orderOut:nil];
-        [window release];
+        macos_overlay_support::ReleaseOverlayWindow(handle);
     }
 #endif
 }

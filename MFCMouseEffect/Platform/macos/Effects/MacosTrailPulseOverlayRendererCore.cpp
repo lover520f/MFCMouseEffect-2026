@@ -53,8 +53,7 @@ void ShowTrailPulseOverlayOnMain(
           if (!TakeTrailPulseWindow(reinterpret_cast<void*>(window))) {
               return;
           }
-          [window orderOut:nil];
-          [window release];
+          macos_overlay_support::ReleaseOverlayWindow(reinterpret_cast<void*>(window));
         });
 #endif
 }

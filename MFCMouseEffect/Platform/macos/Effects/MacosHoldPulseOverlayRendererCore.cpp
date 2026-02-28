@@ -3,6 +3,7 @@
 #include "Platform/macos/Effects/MacosHoldPulseOverlayRendererCore.h"
 
 #include "Platform/macos/Effects/MacosHoldPulseOverlayRendererCore.Internal.h"
+#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 
 namespace mousefx::macos_hold_pulse {
 
@@ -14,8 +15,7 @@ void CloseHoldPulseOverlayOnMain() {
     if (state.window == nil) {
         return;
     }
-    [state.window orderOut:nil];
-    [state.window release];
+    macos_overlay_support::ReleaseOverlayWindow(reinterpret_cast<void*>(state.window));
     state.window = nil;
     state.ring = nil;
     state.accent = nil;

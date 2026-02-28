@@ -58,6 +58,18 @@ private func mfxResolveContentScaleOnMainThread(_ x: Int32, _ y: Int32) -> Doubl
 }
 
 @MainActor
+private func mfxReleaseOverlayWindowOnMainThread(_ windowHandleBits: UInt) {
+    guard windowHandleBits != 0 else {
+        return
+    }
+    guard let ptr = UnsafeMutableRawPointer(bitPattern: windowHandleBits) else {
+        return
+    }
+    let window = Unmanaged<NSWindow>.fromOpaque(ptr).takeRetainedValue()
+    window.orderOut(nil)
+}
+
+@MainActor
 private func mfxApplyContentScaleOnMainThread(_ contentHandleBits: UInt, _ x: Int32, _ y: Int32) {
     guard contentHandleBits != 0 else {
         return
@@ -98,6 +110,27 @@ public func mfx_macos_overlay_create_window_v1(
         }
     }
     return UnsafeMutableRawPointer(bitPattern: bits)
+}
+
+@_cdecl("mfx_macos_overlay_release_window_v1")
+public func mfx_macos_overlay_release_window_v1(_ windowHandle: UnsafeMutableRawPointer?) {
+    let windowHandleBits = UInt(bitPattern: windowHandle)
+    if windowHandleBits == 0 {
+        return
+    }
+
+    if Thread.isMainThread {
+        MainActor.assumeIsolated {
+            mfxReleaseOverlayWindowOnMainThread(windowHandleBits)
+        }
+        return
+    }
+
+    DispatchQueue.main.sync {
+        MainActor.assumeIsolated {
+            mfxReleaseOverlayWindowOnMainThread(windowHandleBits)
+        }
+    }
 }
 
 @_cdecl("mfx_macos_overlay_resolve_content_scale_v1")
@@ -141,4 +174,3 @@ public func mfx_macos_overlay_apply_content_scale_v1(
         }
     }
 }
-

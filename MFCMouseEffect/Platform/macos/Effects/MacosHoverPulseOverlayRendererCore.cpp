@@ -32,8 +32,7 @@ void CloseHoverPulseOverlayOnMain() {
     if (window == nil) {
         return;
     }
-    [window orderOut:nil];
-    [window release];
+    macos_overlay_support::ReleaseOverlayWindow(reinterpret_cast<void*>(window));
 #endif
 }
 

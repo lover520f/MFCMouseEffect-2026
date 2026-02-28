@@ -52,6 +52,13 @@ NSWindow* CreateOverlayWindow(const NSRect& frame) {
     return reinterpret_cast<NSWindow*>(handle);
 }
 
+void ReleaseOverlayWindow(void* windowHandle) {
+    if (windowHandle == nullptr) {
+        return;
+    }
+    mfx_macos_overlay_release_window_v1(windowHandle);
+}
+
 NSRect ClampOverlayFrameToScreenBounds(const NSRect& desiredFrame, const ScreenPoint& overlayPt) {
     (void)overlayPt;
     if (desiredFrame.size.width <= 0.0 || desiredFrame.size.height <= 0.0) {

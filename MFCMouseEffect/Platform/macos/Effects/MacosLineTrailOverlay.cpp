@@ -71,8 +71,7 @@ void CloseWindow(LineTrailState& state) {
     if (state.window == nil) {
         return;
     }
-    [state.window orderOut:nil];
-    [state.window release];
+    macos_overlay_support::ReleaseOverlayWindow(reinterpret_cast<void*>(state.window));
     state.window = nil;
     state.containerLayer = nil;
 }

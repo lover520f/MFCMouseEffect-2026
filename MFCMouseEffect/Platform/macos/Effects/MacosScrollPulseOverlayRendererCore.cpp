@@ -85,8 +85,7 @@ void ShowScrollPulseOverlayOnMain(
           if (!TakeScrollPulseWindow(reinterpret_cast<void*>(window))) {
               return;
           }
-          [window orderOut:nil];
-          [window release];
+          macos_overlay_support::ReleaseOverlayWindow(reinterpret_cast<void*>(window));
         });
 #endif
 }
