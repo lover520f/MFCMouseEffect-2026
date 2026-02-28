@@ -43,6 +43,7 @@ Include short evidence (code path/config/runtime behavior). If user-visible beha
 - Do not expand `.mm` surface area for new feature modules by default.
 - Existing Objective-C++ files are maintained with SRP refactors and bug fixes only; avoid large new `.mm` subsystems.
 - New macOS capabilities (new UI panels, new system integrations) should prefer Swift-first modules.
+- Swift build mode must use latest stable language semantics by default (`MFX_SWIFT_LANGUAGE_MODE=auto`, currently resolves to Swift 6 on Swift 6 toolchains, otherwise Swift 5).
 - Adopt strangler migration: keep old `.mm` paths stable, route new capability entrypoints to Swift incrementally.
 - Prefer Swift <-> C++ interop path for new modules; keep Objective-C++ as thin bridge only where legacy AppKit glue is unavoidable.
 
