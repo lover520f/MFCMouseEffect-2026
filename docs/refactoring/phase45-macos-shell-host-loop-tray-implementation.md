@@ -17,7 +17,7 @@
 3. Added macOS shell package support units:
    - `MacosDpiAwarenessService.*` (no-op host adapter)
    - `MacosShellSmokeMain.cpp`
-   - `MacosTraySmokeMain.mm`
+   - `MacosTraySmokeMain.cpp`
 
 ## Compatibility
 - No Windows path changes.

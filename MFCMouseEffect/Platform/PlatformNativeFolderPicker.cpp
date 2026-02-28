@@ -5,7 +5,6 @@
 #if defined(_WIN32)
 #include "Platform/windows/System/Win32NativeFolderPicker.h"
 #elif defined(__APPLE__)
-#include "Platform/macos/System/MacosNativeFolderPicker.h"
 #include "Platform/macos/System/MacosNativeFolderPickerSwiftBridge.h"
 #endif
 
@@ -64,19 +63,7 @@ NativeFolderPickResult PickFolder(const std::wstring& title, const std::wstring&
 #if defined(_WIN32)
     return windows::Win32NativeFolderPicker::PickFolder(title, initialPath);
 #elif defined(__APPLE__)
-    NativeFolderPickResult swiftResult = PickFolderViaSwiftBridge(title, initialPath);
-    if (swiftResult.ok || swiftResult.cancelled) {
-        return swiftResult;
-    }
-
-    NativeFolderPickResult fallbackResult = macos::MacosNativeFolderPicker::PickFolder(title, initialPath);
-    if (!swiftResult.error.empty() && !fallbackResult.ok && !fallbackResult.cancelled) {
-        if (!fallbackResult.error.empty()) {
-            fallbackResult.error += "; ";
-        }
-        fallbackResult.error += "fallback_from_swift_bridge: " + swiftResult.error;
-    }
-    return fallbackResult;
+    return PickFolderViaSwiftBridge(title, initialPath);
 #else
     NativeFolderPickResult result{};
     result.ok = false;

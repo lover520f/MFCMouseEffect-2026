@@ -1,11 +1,8 @@
 #include "pch.h"
 
-#include "Platform/macos/System/MacosInputPermissionState.Internal.h"
 #include "Platform/macos/System/MacosInputPermissionState.h"
-
-#if defined(__APPLE__)
-#import <ApplicationServices/ApplicationServices.h>
-#endif
+#include "Platform/macos/System/MacosInputPermissionState.Internal.h"
+#include "Platform/macos/System/MacosInputPermissionSwiftBridge.h"
 
 #include <cstdlib>
 #include <string_view>
@@ -32,7 +29,7 @@ bool IsRuntimeInputTrusted(const std::string& simulationFilePath) {
         return permission_detail::ReadPermissionSimulationTrusted(simulationFilePath, true);
     }
 #if defined(__APPLE__)
-    return AXIsProcessTrusted();
+    return mfx_macos_is_process_trusted_v1() > 0;
 #else
     return false;
 #endif

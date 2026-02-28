@@ -7,12 +7,13 @@ Implemented in this stage:
 - `SettingsLauncher` (shared POSIX spawn runner + macOS `open` command)
 - `SingleInstanceGuard` (POSIX file lock in `/tmp`; cross-host scaffolding build uses process-local stub)
 - `EventLoopService` (`CFRunLoopSource` + task queue dispatch on Apple host; non-Apple cross-host scaffolding build falls back to POSIX blocking loop)
-- `TrayService` (Apple host: native `NSStatusBar` + menu actions `Settings` / `Exit`, shortcuts `Cmd+,` and `Cmd+Q`; non-Apple cross-host scaffolding build keeps stub)
-- `Tray menu localization` (auto-select Chinese labels when macOS preferred language is `zh*`)
+- `TrayService` (Apple host: Swift bridge `NSStatusBar` + menu actions `Settings` / `Exit`, shortcuts `Cmd+,` and `Cmd+Q`; non-Apple cross-host scaffolding build keeps stub)
+- `Tray menu localization` (Swift bridge; auto-select Chinese labels when macOS preferred language is `zh*`)
+- `Event loop bridge` (Swift bridge owns `NSApplication` lifecycle operations)
 - `UserNotificationService` (Swift bridge dispatch via `osascript` + stderr fallback)
 - smoke executables for host validation:
   - `MacosShellSmokeMain.cpp` (event-loop/task/exit chain)
-  - `MacosTraySmokeMain.mm` (tray bootstrap + host exit callback)
+  - `MacosTraySmokeMain.cpp` (tray bootstrap + host exit callback)
 
 Planned next:
 - Tray icon asset/theme adaptation (currently text button `MFX`)
@@ -32,8 +33,9 @@ Package source wiring:
 - `Platform/macos/Shell/MacosShellServicesFactory.*`
 - `Platform/macos/Shell/MacosDpiAwarenessService.*`
 - `Platform/macos/Shell/MacosEventLoopService.*`
-- `Platform/macos/Shell/MacosTrayService.mm` (Apple host implementation)
-- `Platform/macos/Shell/MacosTrayService.cpp` (cross-host fallback implementation)
+- `Platform/macos/Shell/MacosTrayService.cpp` (Apple host thin adapter + cross-host fallback)
+- `Platform/macos/Shell/MacosTrayMenuFactory.cpp` + `MacosTrayMenuBridge.swift` (Swift-owned tray menu create/release/actions)
+- `Platform/macos/Shell/MacosEventLoopBridge.cpp` + `MacosEventLoopBridge.swift` (Swift-owned app lifecycle bridge)
 - `Platform/macos/Shell/MacosTrayMenuLocalization.*` (tray menu text localization policy)
 - shared scaffold settings modules for macOS/Linux entry host:
   - `Platform/posix/Shell/PosixScaffoldAppShell.*` (scaffold shell lifecycle + stdin exit monitor)

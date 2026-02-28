@@ -5,6 +5,36 @@
 - Primary target: macOS usable loop first.
 - Constraints: no Windows regression; Linux follows compile + contract coverage.
 
+## Latest Delta (2026-02-28)
+- macOS active source ownership is now fully promoted to main paths under `Platform/macos/{Effects,Overlay,Shell,System,Wasm}`; `Platform/macos/legacy` no longer contains active source files.
+- Build wiring is updated to compile from `legacy` paths while keeping existing headers/contracts in place (`Platform/macos/CMakeLists.txt`, `Platform/CMakeLists.txt`).
+- macOS Swift bridge build now uses explicit latest-stable language mode policy via `MFX_SWIFT_LANGUAGE_MODE` (`auto|5|6`, default `auto`; auto resolves to Swift 6 on Swift 6 toolchains, else Swift 5).
+- macOS native folder picker is now Swift-owned end-to-end (`OpenPanel -> AppleScript fallback`) via `MacosNativeFolderPickerBridge.swift`; `PlatformNativeFolderPicker` no longer calls Objective-C++ fallback, and `mfx_entry_runtime_common` no longer links legacy folder-picker `.mm` sources.
+- macOS automation app-catalog scan path is now Swift-owned (`MacosApplicationCatalogBridge.swift` + callback bridge), and legacy Objective-C++ scan workflow files are removed from main `mfx_shell_macos` build wiring.
+- macOS foreground-process resolver is now Swift-owned (`MacosForegroundProcessBridge.swift` + `MacosForegroundProcessService.cpp`), and legacy `MacosForegroundProcessService*.mm` is removed from main `mfx_shell_macos` build wiring.
+- macOS input-permission resolver is now Swift-owned (`MacosInputPermissionBridge.swift` + `MacosInputPermissionState.cpp`), and legacy `MacosInputPermissionState*.mm` is removed from main `mfx_shell_macos` build wiring.
+- macOS Objective-C++ dependent `.cpp` sources now compile with ObjC++ mode (`-x objective-c++`) in `Platform/macos/CMakeLists.txt` for `Platform/macos/legacy/*`, `Platform/macos/Overlay/*`, and `Platform/macos/Wasm/*`, so ongoing `.mm -> .cpp` migration and main-path promotions do not break Cocoa/AppKit symbols.
+- macOS tray menu localization is now Swift-owned (`MacosTrayMenuLocalizationBridge.swift` + `MacosTrayMenuLocalization.cpp`), and mac build wiring no longer requires legacy `MacosTrayMenuLocalization.mm`.
+- macOS legacy tree now has `0` `.mm` files under `Platform/macos/legacy` (all renamed to `.cpp`); build wiring was updated accordingly and continues to compile these sources in ObjC++ mode via CMake file-level flags.
+- macOS tray menu creation/release/auto-trigger/terminate path is now Swift-owned (`MacosTrayMenuBridge.swift` + `MacosTrayMenuSwiftBridge.h` + `MacosTrayMenuFactory.cpp` thin C++ adapter); `MacosTrayService.cpp` is now pure C++ call-through and main build wiring no longer depends on legacy `MacosTrayMenuFactory.ActionBridge.cpp`, `MacosTrayMenuFactory.Items.cpp`, or `MacosTrayRuntimeHelpers.cpp`.
+- Obsolete tray legacy files were removed from repository to keep single-source ownership clear: `legacy/Shell/MacosTrayMenuFactory.ActionBridge.cpp`, `legacy/Shell/MacosTrayMenuFactory.Items.cpp`, `legacy/Shell/MacosTrayRuntimeHelpers.cpp`, `legacy/Shell/MacosTrayMenuLocalization.cpp`, and unused headers `Shell/MacosTrayMenuFactory.Internal.h`, `Shell/MacosTrayRuntimeHelpers.h`.
+- macOS event-loop AppKit bridge is now Swift-owned (`MacosEventLoopBridge.swift` + `MacosEventLoopSwiftBridge.h`), and C++ side calls through a thin wrapper (`Shell/MacosEventLoopBridge.cpp`).
+- Stable Shell adapters are now promoted from `legacy/Shell` to `Shell` main path (`MacosTrayService.cpp`, `MacosTrayMenuFactory.cpp`, `MacosEventLoopBridge.cpp`, `MacosTraySmokeMain.cpp`); `legacy/Shell` no longer owns active build sources.
+- Input pipeline adapters are now promoted from `legacy/System` to `System` main path (global input hook, keyboard injector, key resolver/tables, virtual-key mapper, input-event utils), with `Platform/macos/CMakeLists.txt` updated to consume main-path sources.
+- Obsolete legacy System fallback implementations were removed after Swift bridge cutover (app-catalog scan workflow, foreground-process resolver, input-permission resolver, native-folder-picker fallback chain), and unused legacy-only headers in `Platform/macos/System` were deleted to keep single-source ownership.
+- Overlay runtime implementation is now promoted from `legacy/Overlay` to `Overlay` main path (`MacosInputIndicatorOverlay*`, `MacosOverlayCoordSpace*`), with source wiring switched to main-path files.
+- WASM overlay/runtime implementation is now promoted from `legacy/Wasm` to `Wasm` main path (`MacosWasmCommandRenderer*`, `MacosWasmOverlayState*`, `MacosWasmTextOverlay*`, `MacosWasmImageOverlayRenderer*`), with source wiring switched to main-path files.
+- Effects runtime implementation is now promoted from `legacy/Effects` to `Effects` main path (`MacosClick/Trail/Scroll/Hover/Hold*`, `MacosOverlayRenderSupport*`, `MacosTextEffectFallback*`), with source wiring switched to main-path files.
+- Validation passed:
+  - `cmake -S MFCMouseEffect/Platform -B /tmp/mfx-platform-macos-legacy-mm-build -DMFX_PACKAGE_PLATFORM=macos -DMFX_ENABLE_POSIX_CORE_RUNTIME=ON -DMFX_ENABLE_ENTRY_RUNTIME_TARGETS=ON`
+  - `cmake --build /tmp/mfx-platform-macos-legacy-mm-build --target mfx_shell_macos mfx_entry_posix_host -j8`
+  - `./tools/platform/regression/run-posix-scaffold-regression.sh --platform auto`
+  - `./tools/platform/regression/run-posix-core-effects-contract-regression.sh --platform auto`
+  - `./tools/platform/regression/run-posix-wasm-regression-suite.sh --platform auto`
+  - `./tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh --skip-build`
+  - `./tools/platform/regression/run-posix-core-automation-contract-regression.sh --platform auto`
+  - Runtime API spot check: `POST /api/automation/app-catalog` returns `ok=true` with non-zero `count` (manual host session probe)
+
 ## Current Program State
 - Branch baseline has completed Phase 50 -> Phase 55zj code slices.
 - POSIX dual-lane guardrail exists:
@@ -94,6 +124,7 @@
 - apply_settings 现在会按元数据解析 effect 选项输入（value/alias/中英文 label + Trim），避免“无/None”被误判为未知并回落到 `line`
 - macOS `line` 拖尾坐标链路已统一到 `ScreenToOverlayPoint`，并在单点采样时绘制最小可见点；`streamer` 分段长度/插值密度已调优，降低“火柴棍”断续感
 - macOS `line` 拖尾分支已增加稀疏 move 事件插值补点（按轨迹分段写入 line overlay），避免输入合并时仅出现零散点/几乎无拖尾
+- WebUI “Effects Runtime Profile” 区块改为默认隐藏；仅当 URL 包含 `effects_profile_debug=1`（或 `debug=1`）时显示，避免污染常规设置界面
 - macOS move 路由在收到 (0,0) 事件坐标时改用光标查询结果兜底，避免偶发“左上角到鼠标”的直线；macOS trail 在 `none` 时直接返回防止误渲染
   - click routing now forces built-in path when active click type normalizes to `text` (skip wasm click render interception for that type), preventing `click=text` from becoming no-op when WASM route is enabled
   - macOS overlay frame clamp policy now preserves real input anchor (no origin retreat to keep full frame in screen); near-edge effects may clip partially but no longer drift inward

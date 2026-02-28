@@ -39,7 +39,11 @@ private func mfxResolveInitialDirectory(_ initialPathUtf8: String) -> URL? {
     return nil
 }
 
-private func mfxPickFolderOnMainThread(titleUtf8: String, initialPathUtf8: String) -> (code: Int32, path: String, error: String) {
+@MainActor
+private func mfxPickFolderViaOpenPanelOnMainThread(
+    titleUtf8: String,
+    initialPathUtf8: String
+) -> (code: Int32, path: String, error: String) {
     NSApplication.shared.activate(ignoringOtherApps: true)
 
     let panel = NSOpenPanel()
@@ -67,6 +71,130 @@ private func mfxPickFolderOnMainThread(titleUtf8: String, initialPathUtf8: Strin
     return (-1, "", "failed to show folder dialog")
 }
 
+private func mfxTrimAsciiWhitespace(_ value: String) -> String {
+    value.trimmingCharacters(in: .whitespacesAndNewlines)
+}
+
+private func mfxEscapeForAppleScriptString(_ value: String) -> String {
+    var escaped = ""
+    escaped.reserveCapacity(value.count)
+    for scalar in value.unicodeScalars {
+        switch scalar {
+        case "\\":
+            escaped.append("\\\\")
+        case "\"":
+            escaped.append("\\\"")
+        case "\n", "\r":
+            escaped.append(" ")
+        default:
+            escaped.append(String(scalar))
+        }
+    }
+    return escaped
+}
+
+private func mfxBuildAppleScriptChooseFolderSource(
+    titleUtf8: String,
+    initialPathUtf8: String
+) -> String {
+    let prompt = mfxEscapeForAppleScriptString(
+        titleUtf8.isEmpty ? "Select WASM plugin folder" : titleUtf8
+    )
+    let initialDirectory = mfxResolveInitialDirectory(initialPathUtf8)?.path ?? ""
+    let safeInitialDirectory = mfxEscapeForAppleScriptString(initialDirectory)
+
+    var source = "try\n"
+    var chooseLine = "set pickedFolder to choose folder with prompt \"\(prompt)\""
+    if !safeInitialDirectory.isEmpty {
+        chooseLine += " default location ((POSIX file \"\(safeInitialDirectory)\") as alias)"
+    }
+    source += chooseLine
+    source += "\nreturn POSIX path of pickedFolder\n"
+    source += "on error number -128\n"
+    source += "return \"__MFX_CANCELLED__\"\n"
+    source += "on error errMsg number errNum\n"
+    source += "return \"__MFX_ERROR__\" & errNum & \":\" & errMsg\n"
+    source += "end try\n"
+    return source
+}
+
+private func mfxReadAppleScriptError(_ errorInfo: NSDictionary?) -> String {
+    guard let errorInfo = errorInfo as? [String: Any], !errorInfo.isEmpty else {
+        return "apple_script_execute_failed"
+    }
+
+    var out = ""
+    if let number = errorInfo["NSAppleScriptErrorNumber"] as? NSNumber {
+        out += "code=\(number.intValue)"
+    }
+    if let message = errorInfo["NSAppleScriptErrorMessage"] as? String, !message.isEmpty {
+        if !out.isEmpty {
+            out += ","
+        }
+        out += message
+    }
+    return out.isEmpty ? "apple_script_execute_failed" : out
+}
+
+@MainActor
+private func mfxPickFolderViaAppleScriptOnMainThread(
+    titleUtf8: String,
+    initialPathUtf8: String
+) -> (code: Int32, path: String, error: String) {
+    let source = mfxBuildAppleScriptChooseFolderSource(
+        titleUtf8: titleUtf8,
+        initialPathUtf8: initialPathUtf8
+    )
+    guard !source.isEmpty else {
+        return (-1, "", "apple_script_source_invalid")
+    }
+
+    guard let script = NSAppleScript(source: source) else {
+        return (-1, "", "apple_script_compile_failed")
+    }
+
+    var errorInfo: NSDictionary?
+    let result = script.executeAndReturnError(&errorInfo)
+    if errorInfo != nil && result.stringValue == nil {
+        return (-1, "", mfxReadAppleScriptError(errorInfo))
+    }
+
+    let trimmed = mfxTrimAsciiWhitespace(result.stringValue ?? "")
+    if trimmed == "__MFX_CANCELLED__" {
+        return (0, "", "cancelled")
+    }
+    if trimmed.hasPrefix("__MFX_ERROR__") {
+        return (-1, "", trimmed.isEmpty ? "apple_script_choose_folder_failed" : trimmed)
+    }
+    if trimmed.isEmpty {
+        return (-1, "", "selected folder path missing")
+    }
+    return (1, trimmed, "")
+}
+
+@MainActor
+private func mfxPickFolderOnMainThread(titleUtf8: String, initialPathUtf8: String) -> (code: Int32, path: String, error: String) {
+    let openPanelResult = mfxPickFolderViaOpenPanelOnMainThread(
+        titleUtf8: titleUtf8,
+        initialPathUtf8: initialPathUtf8
+    )
+    if openPanelResult.code >= 0 {
+        return openPanelResult
+    }
+
+    var appleScriptResult = mfxPickFolderViaAppleScriptOnMainThread(
+        titleUtf8: titleUtf8,
+        initialPathUtf8: initialPathUtf8
+    )
+    if appleScriptResult.code < 0 && !openPanelResult.error.isEmpty {
+        if !appleScriptResult.error.isEmpty {
+            appleScriptResult.error += "; "
+        }
+        appleScriptResult.error += "fallback_from_open_panel: \(openPanelResult.error)"
+    }
+    return appleScriptResult
+}
+
 @_cdecl("mfx_macos_pick_folder_v1")
 public func mfx_macos_pick_folder_v1(
     _ titleUtf8: UnsafePointer<CChar>?,
@@ -84,11 +212,15 @@ public func mfx_macos_pick_folder_v1(
 
     let outcome: (code: Int32, path: String, error: String)
     if Thread.isMainThread {
-        outcome = mfxPickFolderOnMainThread(titleUtf8: title, initialPathUtf8: initialPath)
+        outcome = MainActor.assumeIsolated {
+            mfxPickFolderOnMainThread(titleUtf8: title, initialPathUtf8: initialPath)
+        }
     } else {
         var captured: (code: Int32, path: String, error: String) = (-1, "", "failed to dispatch picker to main thread")
         DispatchQueue.main.sync {
-            captured = mfxPickFolderOnMainThread(titleUtf8: title, initialPathUtf8: initialPath)
+            captured = MainActor.assumeIsolated {
+                mfxPickFolderOnMainThread(titleUtf8: title, initialPathUtf8: initialPath)
+            }
         }
         outcome = captured
     }
