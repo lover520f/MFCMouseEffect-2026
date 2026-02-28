@@ -9,6 +9,7 @@
   export let effectCapabilities = {};
   export let active = {};
   export let effectsProfile = {};
+  export let showEffectsProfile = false;
 
   const dispatch = createEventDispatcher();
 
@@ -111,7 +112,7 @@
   {/if}
 </div>
 
-{#if hasEffectsProfile}
+{#if showEffectsProfile && hasEffectsProfile}
   <div class="hint span2 effects-profile-box">
     <div class="effects-profile-header">
       <div class="effects-profile-title" data-i18n="label_effects_runtime_profile">Effects Runtime Profile</div>

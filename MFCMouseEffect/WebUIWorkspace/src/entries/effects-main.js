@@ -18,6 +18,26 @@ let currentCapabilities = {
   hover: true,
 };
 let currentEffectsProfile = {};
+let showEffectsProfile = false;
+
+function normalizeDebugFlag(value) {
+  const text = `${value || ''}`.trim().toLowerCase();
+  return text === '1' || text === 'true' || text === 'yes' || text === 'on';
+}
+
+function resolveEffectsProfileDebugFlag() {
+  if (typeof window === 'undefined' || !window.location) {
+    return false;
+  }
+  const query = new URLSearchParams(window.location.search || '');
+  if (query.has('effects_profile_debug')) {
+    return normalizeDebugFlag(query.get('effects_profile_debug'));
+  }
+  if (query.has('debug')) {
+    return normalizeDebugFlag(query.get('debug'));
+  }
+  return false;
+}
 
 function normalizeActive(input) {
   const value = input || {};
@@ -52,6 +72,7 @@ const bridge = createLazyMountBridge({
     effectCapabilities: currentCapabilities,
     active: currentState,
     effectsProfile: currentEffectsProfile,
+    showEffectsProfile,
   },
   createComponent: (mountNode, props) => {
     const instance = new ActiveEffectsFields({
@@ -72,6 +93,7 @@ function render(payload) {
   const active = normalizeActive(appState.active || {});
   const effectCapabilities = normalizeEffectCapabilities(schema.capabilities?.effects || {});
   const effectsProfile = normalizeEffectsProfile(appState.effects_profile || {});
+  showEffectsProfile = resolveEffectsProfileDebugFlag();
   currentState = active;
   currentCapabilities = effectCapabilities;
   currentEffectsProfile = effectsProfile;
@@ -84,6 +106,7 @@ function render(payload) {
     effectCapabilities,
     active,
     effectsProfile,
+    showEffectsProfile,
   });
 }
 
