@@ -5,72 +5,136 @@
 </p>
 
 <p align="center">
-  <a href="../../releases/latest"><img src="https://img.shields.io/badge/release-latest-blue" alt="release"></a>
-  <img src="https://img.shields.io/badge/status-beta-green" alt="status">
+  <a href="https://github.com/sqmw/MFCMouseEffect/releases/latest"><img src="https://img.shields.io/badge/release-latest-blue" alt="release"></a>
+  <img src="https://img.shields.io/badge/status-active%20development-green" alt="status">
   <img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="license">
-  <img src="https://img.shields.io/badge/platform-Windows%2010%2B-lightgrey" alt="platform">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20core%20lane%20%7C%20Linux%20gate-lightgrey" alt="platform">
 </p>
 
 **[🇨🇳 中文](README.md)** | **🇬🇧 English**
 
 ---
 
-A lightweight, high-performance Windows desktop effect tool that adds real-time visual feedback (ripples, particle trails, text effects, etc.) to mouse clicks, trails, wheel, hold, and hover.
+`MFCMouseEffect` is a desktop input-visualization and interaction-feedback engine:
+- Mouse effects (`click / trail / scroll / hold / hover`)
+- Input indicator (mouse + keyboard labels)
+- Automation mapping (mouse actions + drag gestures -> keyboard shortcut injection)
+- WASM effect plugin runtime (load/reload/diagnostics/import/export)
+- Shared Web settings UI (Svelte, cross-platform)
 
-## ✨ Highlights
-- Global `WH_MOUSE_LL` hook + GDI+ layered windows; smooth, low CPU/memory.
-- Themes (neon / minimal / game feel) and per-effect toggles with persistence.
-- Tray mode for day-to-day use; background mode driven by parent process via stdin; `config.json` stored beside the exe.
-- Settings (browser UI): opened from tray; served by an embedded loopback server; bilingual and supports advanced tuning (saved to `config.json`).
+## Preview
 
-## 📸 Showcase
 | | |
 | :---: | :---: |
-| <img src="./docs/images/setting_en.png" width="340"><br>Settings window (legacy) | <img src="./docs/images/ripple_concept.png" width="340"><br>Click ripple |
-| <img src="./docs/images/trail_concept.png" width="340"><br>Particle trail | <img src="./docs/images/scroll_concept.png" width="340"><br>Scroll indicator |
-| <img src="./docs/images/hold_concept.png" width="340"><br>Hold charge | <img src="./docs/images/hover_concept.png" width="340"><br>Hover glow |
+| <img src="./docs/images/setting_en.png" width="340"><br>Settings page | <img src="./docs/images/ripple_concept.png" width="340"><br>Click ripple |
+| <img src="./docs/images/trail_concept.png" width="340"><br>Trail effect | <img src="./docs/images/scroll_concept.png" width="340"><br>Scroll feedback |
+| <img src="./docs/images/hold_concept.png" width="340"><br>Hold feedback | <img src="./docs/images/hover_concept.png" width="340"><br>Hover feedback |
 
-## 🆕 Recent fixes/improvements
-- Settings window now centers by default, drags without flicker; reverted to native control styling (no extra background fill).
-- Virtual/tablet secondary display offset: coordinate normalization fallback is enabled (Jan 2026), fixing most virtual display offsets. See `docs/issues/virtual-display-coordinates.md`.
+## Platform Status
 
-## ⬇️ Download
-- Latest release: [Releases](../../releases/latest)
-- All releases: [All releases](../../releases)
+| Platform | Status | Notes |
+| :--- | :--- | :--- |
+| Windows 10+ | Stable mainline | Full capability set, regression compatibility preserved |
+| macOS | Active mainline (core lane) | Effects + indicator + automation/gesture + WASM contracts are continuously hardened |
+| Linux | Follow lane | Compile gate + contract coverage focused, not the primary full-experience lane |
 
-## 📦 Build & Run
-1. Open `MFCMouseEffect.slnx` with Visual Studio 2026.
-2. Select `Release | x64`, then “Rebuild Solution”.
-3. Run `x64/Release/MFCMouseEffect.exe`. Tray mode offers an exit menu; in non-background mode the tray “Settings...” opens the browser settings page.
+> Current iteration priority is `macOS mainline first`, while keeping Windows behavior regression-free.
 
-## 🖥️ Usage
-- Language/theme/effects: configure in the browser settings page; saved to `config.json`.
-- Admin windows: run the app as Administrator if you need effects inside elevated apps.
-- Background mode: no tray/UI, fully controlled via stdin JSON by the parent process.
+## Capability Overview
 
-## 📑 Docs & media
-- Full docs: `./docs/README.md`
-- Virtual display offset notes: `./docs/issues/virtual-display-coordinates.md`
-- Screenshots: `./docs/images/setting_en.png`, ripple/trail concept shots in `./docs/images/`.
+### 1) Effects System
+- Five interaction channels: `click / trail / scroll / hold / hover`
+- Cross-platform type normalization and config mapping (Win/mac parity)
+- Ongoing macOS improvements (including `trail line` continuity and `click=text` fallback semantics)
+- WebSettings exposes effect switching, tuning, and diagnostics
 
-## 🧭 Repo hygiene & community (suggested)
-- Fill repository About: Description + Topics (e.g., mouse-effect, ripple, tray, mfc, windows, overlay).
-- Add Social Preview and keep badges/screenshots visible in the README.
-- Enable Discussions and seed 3–5 “good first issues”:
-  - Make the normalization threshold configurable and add debug logging.
-  - Add a sci‑fi neon theme preset.
-  - Provide a lightweight portable ZIP build alongside the installer.
-  - Benchmark CPU usage across DPI/refresh scenarios.
-  - Expand Troubleshooting/FAQ (EN).
+### 2) Input Indicator
+- Visual feedback for mouse click, wheel, and keyboard labels
+- Relative/absolute positioning, monitor targeting, and multi-screen overrides
+- Test probes and regression hooks for observability
 
-## 💖 Sponsorship and Support
-If you find this project helpful, feel free to support the developer's further work through the following methods. Your support is the driving force for continuous improvement!
+### 3) Automation + Gesture Recognition
+- Mouse action mappings: left/right/middle click and wheel up/down -> shortcuts
+- Gesture mappings: drag direction chains (for example `up_right`, `down_left_up`) -> shortcuts
+- Configurable gesture trigger button, minimum stroke distance, sample step, and max direction segments
+- App scopes (`all/selected`) and deterministic binding priority rules
 
-| Alipay | WeChat Pay |
-| :---: | :---: |
-| <img src="./docs/images/alipay_qr.png" width="240"><br>Buy me a snack | <img src="./docs/images/wechat_qr.png" width="240"><br>Buy me a coffee |
+### 4) WASM Effect Plugins
+- Manifest load/reload, folder import, and bulk export flows
+- Stable `error_code` model surfaced to WebUI
+- Runtime diagnostics for budget/parse/render/load-failure (`stage/code`)
+- Test-gated APIs and regression scripts for non-interactive verification
 
-## ⚖️ License
+### 5) Shared WebSettings Modules
+The current settings page is split into focused modules:
+- `General`
+- `Active Effects`
+- `Input Indicator`
+- `Text Content (Click/Text)`
+- `Automation Mapping`
+- `Effect Plugins (WASM)`
+- `Trail Tuning`
+
+## Quick Start
+
+### Windows (Visual Studio)
+1. Open `MFCMouseEffect.slnx` with Visual Studio 2026
+2. Select `Release | x64` and rebuild
+3. Run `x64/Release/MFCMouseEffect.exe`
+
+### macOS (Daily Dev Shortcuts)
+```bash
+# Build + run core host (default auto-stop: 30 minutes)
+./mfx start
+
+# Run without rebuild
+./mfx fast
+
+# Effects type parity selfcheck
+./mfx effects
+```
+
+## Regression and Selfcheck Entries
+
+```bash
+# Full POSIX suite (scaffold + core + linux gate)
+./tools/platform/regression/run-posix-regression-suite.sh --platform auto
+
+# Effects-focused suite
+./tools/platform/regression/run-posix-effects-regression-suite.sh --platform auto
+
+# WASM-focused suite
+./tools/platform/regression/run-posix-wasm-regression-suite.sh --platform auto
+```
+
+```bash
+# macOS WebSettings manual runner
+./tools/platform/manual/run-macos-core-websettings-manual.sh --auto-stop-seconds 60
+
+# macOS WASM runtime selfcheck
+./tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh --skip-build
+
+# macOS automation injection selfcheck
+./tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build
+```
+
+## Repository Map
+
+- `MFCMouseEffect/MouseFx`: core engine (effects, input, automation, WASM, WebSettings server)
+- `MFCMouseEffect/Platform`: platform implementations (Windows/macOS/Linux)
+- `MFCMouseEffect/WebUIWorkspace`: Svelte settings UI source
+- `tools/platform/regression`: cross-platform regression scripts
+- `tools/platform/manual`: macOS manual/selfcheck scripts
+- `docs`: architecture, refactoring, issues, and regression docs
+
+## Docs Entry
+
+- Documentation index (EN): `./docs/README.md`
+- Agent active context: `./docs/agent-context/current.md`
+- Roadmap snapshot: `./docs/refactoring/phase-roadmap-macos-m1-status.md`
+
+## License
+
 [MIT License](./LICENSE)
 
 ---

@@ -5,82 +5,136 @@
 </p>
 
 <p align="center">
-  <a href="../../releases/latest"><img src="https://img.shields.io/badge/release-latest-blue" alt="release"></a>
-  <img src="https://img.shields.io/badge/status-beta-green" alt="status">
+  <a href="https://github.com/sqmw/MFCMouseEffect/releases/latest"><img src="https://img.shields.io/badge/release-latest-blue" alt="release"></a>
+  <img src="https://img.shields.io/badge/status-active%20development-green" alt="status">
   <img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="license">
-  <img src="https://img.shields.io/badge/platform-Windows%2010%2B-lightgrey" alt="platform">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20core%20lane%20%7C%20Linux%20gate-lightgrey" alt="platform">
 </p>
 
 **🇨🇳 中文** | **[🇬🇧 English](README.en.md)**
 
 ---
 
-一款轻量、高性能的 Windows 桌面特效工具，为点击、拖尾、滚轮、长按、悬停提供实时视觉反馈（波纹、粒子、文字等）。
+`MFCMouseEffect` 是一个桌面输入可视化与交互反馈引擎：
+- 鼠标特效（点击/拖尾/滚轮/长按/悬停）
+- 键鼠输入指示器（鼠标 + 键盘）
+- 自动化映射（鼠标动作 + 鼠标手势 -> 快捷键注入）
+- WASM 特效插件运行时（加载、重载、诊断、导入导出）
+- 统一 Web 设置界面（Svelte，跨平台共享）
 
-## ✨ 特色
-- 全局低级鼠标钩子 + GDI+ 分层窗口，跟手流畅，资源占用低。
-- 主题可选（霓虹 / 极简 / 游戏感等），各特效独立切换与持久化。
-- 托盘模式常驻、后台模式（由父进程 stdin 控制），配置文件与 exe 同目录。
-- 设置页（浏览器）：托盘菜单打开，内置本地 loopback server，支持中英切换与高级参数调节（配置写回 `config.json`）。
+## 效果预览
 
-## 📸 效果预览
 | | |
 | :---: | :---: |
-| <img src="./docs/images/setting_cn.png" width="340"><br>设置窗口（Legacy） | <img src="./docs/images/ripple_concept.png" width="340"><br>点击波纹 |
-| <img src="./docs/images/trail_concept.png" width="340"><br>粒子拖尾 | <img src="./docs/images/scroll_concept.png" width="340"><br>滚轮指引 |
-| <img src="./docs/images/hold_concept.png" width="340"><br>长按蓄力 | <img src="./docs/images/hover_concept.png" width="340"><br>悬停发光 |
+| <img src="./docs/images/setting_cn.png" width="340"><br>设置页示意 | <img src="./docs/images/ripple_concept.png" width="340"><br>点击波纹 |
+| <img src="./docs/images/trail_concept.png" width="340"><br>拖尾效果 | <img src="./docs/images/scroll_concept.png" width="340"><br>滚轮反馈 |
+| <img src="./docs/images/hold_concept.png" width="340"><br>长按反馈 | <img src="./docs/images/hover_concept.png" width="340"><br>悬停反馈 |
 
-## 🆕 最近修复/改进
-- 设置窗口默认居中、拖动不闪烁；内部控件改回原生样式，去除冗余底色。
-- 虚拟/平板副屏坐标偏移：已启用坐标归一化兜底（2026-01），大多数虚拟副屏场景已对齐。详见 `docs/issues/virtual-display-coordinates.zh-CN.md`。
+## 当前平台状态
 
-## ⬇️ 下载
-- 直接下载（最新版本）：[Releases](../../releases/latest)
-- 历史版本：[All releases](../../releases)
+| 平台 | 状态 | 说明 |
+| :--- | :--- | :--- |
+| Windows 10+ | 稳定主线 | 完整能力集，继续保持回归兼容 |
+| macOS | 主开发线（core lane） | 特效 + 输入指示 + 自动化/手势 + WASM 合同持续增强 |
+| Linux | 跟随线 | 以编译门禁 + 合同回归为主，不作为当前完整体验主线 |
 
-## 📦 安装与运行
-1. 使用 Visual Studio 2026 打开 `MFCMouseEffect.slnx`。
-2. 选择 `Release | x64`，执行“重新生成解决方案”。
-3. 运行 `x64/Release/MFCMouseEffect.exe`。托盘模式下右键可退出，非 background 模式右键菜单“设置...”会打开浏览器设置页。
+> 备注：当前迭代优先级是 `macOS mainline first`，同时要求不破坏 Windows 行为。
 
-## 🖥️ 使用说明
-- 语言/主题/各特效切换：通过浏览器设置页；配置写入同目录 `config.json`。
-- 管理员窗口捕获：如需对管理员窗口生效，请以管理员身份运行本程序。
-- 背景模式：无托盘/界面，完全由父进程通过 stdin JSON 控制。
+## 能力总览
 
-## 🧪 POSIX 回归（macOS/Linux 开发）
-- macOS 一键入口（仓库根目录执行）：
-  - `./mfx start`（编译+运行，默认 30 分钟自动退出）
-  - `./mfx fast`（不编译直接运行）
-  - `./mfx effects`（特效类型等价自检）
-- 一键命令（仓库根目录执行）：
-  - `./tools/platform/regression/run-posix-scaffold-regression.sh --platform auto`
-- 用于校验：平台包构建、background 退出兼容、scaffold HTTP 路由行为（macOS 会额外跑 smoke 可执行）。
-- 详细说明：`docs/architecture/posix-scaffold-regression-workflow.md`
+### 1) 特效系统（Effects）
+- 五类交互通道：`click / trail / scroll / hold / hover`
+- 类型归一化与配置映射在 Win/mac 之间对齐，降低语义漂移
+- macOS 侧覆盖持续增强（含 `trail line` 连续性、`click=text` 回退语义等）
+- WebSettings 提供类型切换、参数调节、诊断快照
 
-## 📑 文档与演示
-- 详细文档：`./docs/README.zh-CN.md`
-- 虚拟副屏坐标问题：`./docs/issues/virtual-display-coordinates.zh-CN.md`
-- 示例截图：`./docs/images/setting_cn.png` 等
+### 2) 键鼠输入指示（Input Indicator）
+- 支持鼠标点击、滚轮、键盘标签显示
+- 支持相对/绝对定位、多屏目标屏选择和自定义偏移
+- 提供平台能力探针与回归接口，保证可观测性
 
-## 🧭 社区与推广（仓库维护建议）
-- 在仓库 About 中填写 Description 与 Topics（如：mouse-effect, ripple, tray, mfc, windows, overlay）。
-- 设置 Social Preview，并在 README 顶部保留徽章与示例图。
-- 开启 Discussions，准备 3~5 个 “good first issue”：
-  - 调整阈值/日志：为坐标归一化增加可配置阈值与调试输出。
-  - 新主题配色：添加一套科幻霓虹主题。
-  - 轻量化安装包：精简 Inno Setup 选项并新增便携版 ZIP。
-  - 性能对比：提供不同 DPI/帧率下的 CPU 占用基准。
-  - 文档补充：英文版 Troubleshooting 与 FAQ。
+### 3) 自动化与手势识别（Automation + Gesture）
+- 鼠标动作映射：左/右/中键、滚轮上下 -> 快捷键
+- 手势映射：拖拽方向链（如 `up_right`、`down_left_up`）-> 快捷键
+- 可配置手势触发键、最小轨迹距离、采样步长、最大方向段数
+- 支持应用作用域（all/selected）与优先级匹配策略
 
-## 💖 赞助与支持
-如果您觉得这个项目对您有所帮助，欢迎通过以下方式支持作者的后续开发。您的支持是我持续改进的动力！
+### 4) WASM 特效插件（WASM Runtime）
+- 插件清单加载、重载、目录导入、批量导出
+- 支持 `error_code` 级别错误模型与 UI 映射
+- 提供运行时诊断（budget、parse、render、load-failure stage/code）
+- 具备 test-gated API 与回归脚本，便于非交互验证
 
-| 支付宝 (Alipay) | 微信支付 (WeChat Pay) |
-| :---: | :---: |
-| <img src="./docs/images/alipay_qr.png" width="240"><br>扫码加鸡腿 | <img src="./docs/images/wechat_qr.png" width="240"><br>请作者喝咖啡 |
+### 5) Web 设置界面（Shared WebSettings）
+当前设置页按能力拆分为独立模块：
+- `General`
+- `Active Effects`
+- `Input Indicator`
+- `Text Content (Click/Text)`
+- `Automation Mapping`
+- `Effect Plugins (WASM)`
+- `Trail Tuning`
 
-## ⚖️ 许可
+## 快速开始
+
+### Windows（Visual Studio）
+1. 用 Visual Studio 2026 打开 `MFCMouseEffect.slnx`
+2. 选择 `Release | x64` 并重建
+3. 运行 `x64/Release/MFCMouseEffect.exe`
+
+### macOS（日常开发快捷入口）
+```bash
+# 编译 + 启动 core host（默认 30 分钟自动退出）
+./mfx start
+
+# 直接启动（跳过编译）
+./mfx fast
+
+# 特效类型等价自检
+./mfx effects
+```
+
+## 回归与自检入口
+
+```bash
+# 全量 POSIX 套件（scaffold + core + linux gate）
+./tools/platform/regression/run-posix-regression-suite.sh --platform auto
+
+# 特效聚焦套件
+./tools/platform/regression/run-posix-effects-regression-suite.sh --platform auto
+
+# WASM 聚焦套件
+./tools/platform/regression/run-posix-wasm-regression-suite.sh --platform auto
+```
+
+```bash
+# macOS WebSettings 手测入口
+./tools/platform/manual/run-macos-core-websettings-manual.sh --auto-stop-seconds 60
+
+# macOS WASM 运行时自检
+./tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh --skip-build
+
+# macOS 自动化注入自检
+./tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build
+```
+
+## 目录概览
+
+- `MFCMouseEffect/MouseFx`：核心引擎（特效、输入、自动化、WASM、WebSettings Server）
+- `MFCMouseEffect/Platform`：平台实现（Windows/macOS/Linux）
+- `MFCMouseEffect/WebUIWorkspace`：Svelte 设置页源码
+- `tools/platform/regression`：跨平台回归脚本
+- `tools/platform/manual`：macOS 手测/自检脚本
+- `docs`：架构、重构、问题与回归文档
+
+## 文档入口
+
+- 文档索引（中文）：`./docs/README.zh-CN.md`
+- Agent 当前上下文：`./docs/agent-context/current.md`
+- 路线图状态快照：`./docs/refactoring/phase-roadmap-macos-m1-status.md`
+
+## 许可证
+
 [MIT License](./LICENSE)
 
 ---
