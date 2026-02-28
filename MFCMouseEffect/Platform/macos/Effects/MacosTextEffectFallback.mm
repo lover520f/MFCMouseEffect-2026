@@ -30,8 +30,11 @@ namespace mousefx {
 #if defined(__APPLE__)
 namespace {
 
-constexpr double kPanelWidth = 240.0;
-constexpr double kPanelHeight = 120.0;
+constexpr double kMinPanelSize = 200.0;
+
+double ResolvePanelSize(double fontSize) {
+    return std::max(kMinPanelSize, fontSize * 8.0);
+}
 
 struct ActivePanel final {
     NSPanel* panel = nil;
@@ -220,16 +223,16 @@ void ApplyTextFrame(NSPanel* panel, CATextLayer* label, const TextAnimationSpec&
     }
 
     double alphaFactor = 1.0;
-    if (t < 0.15) {
-        alphaFactor = t / 0.15;
+    if (t < 0.08) {
+        alphaFactor = 0.5 + (t / 0.08) * 0.5;
     } else if (t > 0.6) {
         alphaFactor = 1.0 - (t - 0.6) / 0.4;
     }
     alphaFactor = Clamp01(alphaFactor);
-
-    const CGFloat x = static_cast<CGFloat>(spec.startPoint.x + xOffset - kPanelWidth * 0.5);
-    const CGFloat y = static_cast<CGFloat>(spec.startPoint.y + yOffset - kPanelHeight * 0.5);
-    [panel setFrame:NSMakeRect(x, y, kPanelWidth, kPanelHeight) display:NO];
+    const double panelSize = ResolvePanelSize(spec.baseFontSize);
+    const CGFloat x = static_cast<CGFloat>(spec.startPoint.x + xOffset - panelSize * 0.5);
+    const CGFloat y = static_cast<CGFloat>(spec.startPoint.y + yOffset - panelSize * 0.5);
+    [panel setFrame:NSMakeRect(x, y, panelSize, panelSize) display:NO];
 
     const double fontSize = spec.baseFontSize * scale;
     NSFont* font = ResolveLabelFont(spec, fontSize);
@@ -257,8 +260,7 @@ void StartTextAnimation(NSPanel* panel, CATextLayer* label, TextAnimationSpec sp
     const uint64_t generation = AnimationGeneration().load(std::memory_order_acquire);
 
     auto step = std::make_shared<std::function<void()>>();
-    std::weak_ptr<std::function<void()>> weakStep(step);
-    *step = [panel, label, spec, startTickMs, generation, weakStep]() {
+    *step = [panel, label, spec, startTickMs, generation, step]() {
         if (generation != AnimationGeneration().load(std::memory_order_acquire)) {
             CloseTrackedPanel(panel);
             return;
@@ -281,12 +283,14 @@ void StartTextAnimation(NSPanel* panel, CATextLayer* label, TextAnimationSpec sp
             return;
         }
 
+        // Capture `step` (strong ref) to keep the animation chain alive.
+        // The cycle breaks when t >= 1.0 or generation mismatch.
         dispatch_after(
             dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(16) * NSEC_PER_MSEC),
             dispatch_get_main_queue(),
             ^{
-              if (auto next = weakStep.lock()) {
-                  (*next)();
+              if (step) {
+                  (*step)();
               }
             });
     };
@@ -349,6 +353,9 @@ void MacosTextEffectFallback::ShowText(
         maxConcurrentWindows_ = 8;
     }
 
+    NSLog(@"[MFX-TextFallback] ShowText called: pt=(%d,%d) color=0x%08X fontSize=%.1f",
+          pt.x, pt.y, color.value, config.fontSize);
+
     diagnostics::RecordTextEffectFallbackShow(pt, text);
 
     const std::string utf8Text = Utf16ToUtf8(text.c_str());
@@ -362,6 +369,7 @@ void MacosTextEffectFallback::ShowText(
         return;
     }
 
+
     static thread_local std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<int> driftXDist(-50, 49);
     std::uniform_int_distribution<int> swayFreqDist(0, 199);
@@ -374,14 +382,16 @@ void MacosTextEffectFallback::ShowText(
         overlayPt = cocoaPt;
     }
     spec.startPoint = overlayPt;
+
     spec.durationMs = static_cast<double>(std::max(config.durationMs, 1));
     spec.floatDistance = static_cast<double>(std::max(config.floatDistance, 0));
     spec.driftX = static_cast<double>(driftXDist(rng));
     spec.swayFreq = 1.0 + static_cast<double>(swayFreqDist(rng)) / 100.0;
     spec.swayAmp = 5.0 + static_cast<double>(swayAmpDist(rng)) / 10.0;
-    // Keep point-size semantics aligned with Windows text fallback (pt -> px).
+    // Match Windows: fontSize(pt) -> px via 96/72 scaling.
+    // No hardcoded minimum — let the user's configured size control rendering.
     const double baseFontPx = static_cast<double>(config.fontSize) * (96.0 / 72.0);
-    spec.baseFontSize = std::max(baseFontPx, 10.0);
+    spec.baseFontSize = std::max(baseFontPx, 6.0);
     spec.argb = color.value;
     spec.fontFamilyUtf8 = Utf16ToUtf8(config.fontFamily.c_str());
     spec.emojiText = settings::HasEmojiStarter(text);
@@ -389,7 +399,9 @@ void MacosTextEffectFallback::ShowText(
     RunOnMainThreadAsync(^{
       NSString* textCopy = nsText;
 
-      NSPanel* panel = [[NSPanel alloc] initWithContentRect:NSMakeRect(0.0, 0.0, kPanelWidth, kPanelHeight)
+      const double panelSize = ResolvePanelSize(spec.baseFontSize);
+
+      NSPanel* panel = [[NSPanel alloc] initWithContentRect:NSMakeRect(0.0, 0.0, panelSize, panelSize)
                                                    styleMask:NSWindowStyleMaskBorderless
                                                      backing:NSBackingStoreBuffered
                                                        defer:NO];
@@ -412,8 +424,13 @@ void MacosTextEffectFallback::ShowText(
       [content setWantsLayer:YES];
       content.layer.backgroundColor = [[NSColor clearColor] CGColor];
 
+      // Vertically center text: place the label in the middle of the panel.
+      // CATextLayer renders from the top of its frame, so offset the origin
+      // to vertically center a single line of text.
+      const CGFloat labelHeight = static_cast<CGFloat>(spec.baseFontSize * 2.0);
+      const CGFloat labelY = (static_cast<CGFloat>(panelSize) - labelHeight) * 0.5;
       CATextLayer* label = [CATextLayer layer];
-      label.frame = CGRectMake(0.0, 0.0, kPanelWidth, kPanelHeight);
+      label.frame = CGRectMake(0.0, labelY, static_cast<CGFloat>(panelSize), labelHeight);
       label.alignmentMode = kCAAlignmentCenter;
       label.wrapped = YES;
       label.truncationMode = kCATruncationEnd;
