@@ -182,6 +182,7 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"progress_full_ms\":" "core effect render profile hold progress field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"spin_duration_sec\":" "core effect render profile hover spin field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"line_stroke_argb\":" "core effect render profile trail line stroke color field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"line_width_px\":" "core effect render profile trail line width field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"meteor_duration_scale\":" "core effect render profile trail tempo scale field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"test_tuning\":" "core effect render profile test tuning section"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"duration_scale\":" "core effect render profile duration test tuning field"
@@ -211,6 +212,7 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"size_scale\":" "core effect profile state size test tuning field"
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"opacity_scale\":" "core effect profile state opacity test tuning field"
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"trail_throttle_scale\":" "core effect profile state trail throttle test tuning field"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"line_width_px\":" "core effect profile state trail line width field"
 
     local probe_meteor_scale
     local state_meteor_scale

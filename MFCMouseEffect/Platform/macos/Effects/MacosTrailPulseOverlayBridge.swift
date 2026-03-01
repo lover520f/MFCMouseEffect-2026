@@ -171,6 +171,7 @@ private func mfxCreateTrailPulseOverlayOnMainThread(
     deltaY: Double,
     intensity: Double,
     sizePx: Int32,
+    lineWidthPx: Double,
     durationSec: Double,
     baseOpacity: Double,
     fillArgb: UInt32,
@@ -254,7 +255,11 @@ private func mfxCreateTrailPulseOverlayOnMainThread(
         core.strokeColor = mfxColorFromArgb(strokeArgb).cgColor
         core.lineCap = .round
         core.lineJoin = .round
-        core.lineWidth = mfxScaleMetric(size, 3.0 + intensityValue * 1.6, 160.0, 1.2, 8.6)
+        if normalizedType == "line", lineWidthPx > 0.0 {
+            core.lineWidth = CGFloat(mfxClamp(lineWidthPx, min: 1.0, max: 18.0))
+        } else {
+            core.lineWidth = mfxScaleMetric(size, 3.0 + intensityValue * 1.6, 160.0, 1.2, 8.6)
+        }
     }
     core.opacity = Float(mfxResolveOpacity(baseOpacityValue, intensityValue * 0.05, 0.0))
     contentLayer.addSublayer(core)
@@ -314,6 +319,7 @@ public func mfx_macos_trail_pulse_overlay_create_v1(
     _ deltaY: Double,
     _ intensity: Double,
     _ sizePx: Int32,
+    _ lineWidthPx: Double,
     _ durationSec: Double,
     _ baseOpacity: Double,
     _ fillArgb: UInt32,
@@ -342,6 +348,7 @@ public func mfx_macos_trail_pulse_overlay_create_v1(
                     deltaY: deltaY,
                     intensity: intensity,
                     sizePx: sizePx,
+                    lineWidthPx: lineWidthPx,
                     durationSec: durationSec,
                     baseOpacity: baseOpacity,
                     fillArgb: fillArgb,
@@ -371,6 +378,7 @@ public func mfx_macos_trail_pulse_overlay_create_v1(
                     deltaY: deltaY,
                     intensity: intensity,
                     sizePx: sizePx,
+                    lineWidthPx: lineWidthPx,
                     durationSec: durationSec,
                     baseOpacity: baseOpacity,
                     fillArgb: fillArgb,

@@ -22,6 +22,7 @@ TrailEffectProfile BuildTrailProfile(const macos_effect_profile::TrailRenderProf
     TrailEffectProfile out{};
     out.normalSizePx = profile.normalSizePx;
     out.particleSizePx = profile.particleSizePx;
+    out.lineWidthPx = profile.lineWidthPx;
     out.durationSec = profile.durationSec;
     out.closePaddingMs = profile.closePaddingMs;
     out.baseOpacity = profile.baseOpacity;

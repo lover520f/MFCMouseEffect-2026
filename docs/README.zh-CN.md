@@ -53,6 +53,7 @@
 - macOS Hold 叠层 Swift bridge 切换 + ObjC++ 白名单清零：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzh-macos-hold-overlay-swift-bridge-and-empty-objcxx-allowlist.md`
 - macOS ObjC++ 编译模式机制移除：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzi-macos-objcxx-compile-mode-mechanism-removal.md`
 - macOS 拖尾 none 强禁用 + 合同门禁：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzj-macos-trail-none-hard-disable-and-contract-gate.md`
+- macOS 拖尾线宽共享命令链路接入：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzk-macos-trail-line-width-shared-command-wiring.md`
 
 ## 当前 macOS 主线（Phase 50-55）
 - 双车道护栏：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`

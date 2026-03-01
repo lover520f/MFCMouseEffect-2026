@@ -19,6 +19,7 @@ void* mfx_macos_trail_pulse_overlay_create_v1(
     double deltaY,
     double intensity,
     int sizePx,
+    double lineWidthPx,
     double durationSec,
     double baseOpacity,
     unsigned int fillArgb,
@@ -27,4 +28,3 @@ void* mfx_macos_trail_pulse_overlay_create_v1(
 #ifdef __cplusplus
 }
 #endif
-

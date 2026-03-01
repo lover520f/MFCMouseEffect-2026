@@ -38,6 +38,7 @@ struct TrailRenderProfile {
 
     int normalSizePx = 64;
     int particleSizePx = 48;
+    double lineWidthPx = 4.0;
     double durationSec = 0.22;
     int closePaddingMs = 40;
     double baseOpacity = 0.95;

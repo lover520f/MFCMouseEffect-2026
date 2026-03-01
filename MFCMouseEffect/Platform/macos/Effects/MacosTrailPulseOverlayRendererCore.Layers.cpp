@@ -65,6 +65,7 @@ void ShowTrailPulseOverlayOnMain(
         command.deltaY,
         command.intensity,
         command.sizePx,
+        command.lineWidthPx,
         plan.durationSec,
         command.baseOpacity,
         command.fillArgb,

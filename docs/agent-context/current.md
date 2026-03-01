@@ -15,6 +15,7 @@
 - macOS input-permission resolver is now Swift-owned (`MacosInputPermissionBridge.swift` + `MacosInputPermissionState.cpp`), and legacy `MacosInputPermissionState*.mm` is removed from main `mfx_shell_macos` build wiring.
 - macOS target sources now compile as C++/Swift only; Objective-C++ compile-mode routing (`OBJCXX allowlist` + `-x objective-c++`) has been removed from active build wiring.
 - macOS trail effect now treats `none` as hard disable across compute/render/Swift bridge (no fallback to `line`), and effects contract now asserts alias `trail input=none -> normalized=none`.
+- macOS trail line-width is now shared-command driven (`trail.lineWidth -> TrailEffectRenderCommand.lineWidthPx -> Swift bridge execute`) and is exposed as `line_width_px` in effect profile diagnostics.
 - macOS tray menu localization is now Swift-owned (`MacosTrayMenuLocalizationBridge.swift` + `MacosTrayMenuLocalization.cpp`), and mac build wiring no longer requires legacy `MacosTrayMenuLocalization.mm`.
 - macOS legacy tree now has `0` source files under `Platform/macos/legacy`; migration policy is "no new legacy-source resurrection" and no compile wiring depends on that tree.
 - macOS tray menu creation/release/auto-trigger/terminate path is now Swift-owned (`MacosTrayMenuBridge.swift` + `MacosTrayMenuSwiftBridge.h` + `MacosTrayMenuFactory.cpp` thin C++ adapter); `MacosTrayService.cpp` is now pure C++ call-through and main build wiring no longer depends on legacy `MacosTrayMenuFactory.ActionBridge.cpp`, `MacosTrayMenuFactory.Items.cpp`, or `MacosTrayRuntimeHelpers.cpp`.

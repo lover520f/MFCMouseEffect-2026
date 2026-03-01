@@ -110,6 +110,9 @@ TrailEffectRenderCommand ComputeTrailEffectRenderCommand(
     command.durationSec = std::clamp(profile.durationSec * tempo.durationScale * speedDurationScale, 0.08, 3.0);
     command.closeAfterMs = static_cast<int>(command.durationSec * 1000.0) + profile.closePaddingMs;
     command.baseOpacity = std::clamp(profile.baseOpacity, 0.05, 1.0);
+    if (command.normalizedType == "line") {
+        command.lineWidthPx = std::clamp(profile.lineWidthPx, 1.0, 18.0);
+    }
     command.fillArgb = color.fillArgb;
     command.strokeArgb = color.strokeArgb;
     return command;

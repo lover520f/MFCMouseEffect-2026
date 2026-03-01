@@ -98,6 +98,7 @@ TrailRenderProfile ResolveTrailRenderProfile(const EffectConfig& config, const s
         detail::ScaleInt(ClampInt(56 + history.maxPoints / 3, 56, 112), tuning.sizeScale, 40, 224);
     profile.particleSizePx =
         detail::ScaleInt(ClampInt(40 + history.maxPoints / 6, 40, 72), tuning.sizeScale, 28, 160);
+    profile.lineWidthPx = detail::ClampDouble(static_cast<double>(config.trail.lineWidth), 1.0, 18.0);
     profile.closePaddingMs = 40;
     profile.baseOpacity = ScaleOpacity(0.95, tuning.opacityScale);
     const uint32_t trailBaseStroke = config.trail.color.value;

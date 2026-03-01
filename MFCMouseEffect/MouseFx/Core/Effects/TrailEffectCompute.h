@@ -20,6 +20,7 @@ struct TrailEffectTypeColorProfile {
 struct TrailEffectProfile {
     int normalSizePx = 64;
     int particleSizePx = 48;
+    double lineWidthPx = 4.0;
     double durationSec = 0.22;
     int closePaddingMs = 40;
     double baseOpacity = 0.95;
@@ -54,6 +55,7 @@ struct TrailEffectRenderCommand {
     double speedPx = 0.0;
     double intensity = 0.0;
     int sizePx = 64;
+    double lineWidthPx = 0.0;
     double durationSec = 0.22;
     int closeAfterMs = 40;
     double baseOpacity = 0.95;

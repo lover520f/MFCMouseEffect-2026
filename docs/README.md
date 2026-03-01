@@ -53,6 +53,7 @@ Use it as a pointer index, not a full historical catalog.
 - macOS hold overlay Swift bridge + empty ObjC++ allowlist: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzh-macos-hold-overlay-swift-bridge-and-empty-objcxx-allowlist.md`
 - macOS ObjC++ compile-mode mechanism removal: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzi-macos-objcxx-compile-mode-mechanism-removal.md`
 - macOS trail none hard-disable + contract gate: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzj-macos-trail-none-hard-disable-and-contract-gate.md`
+- macOS trail line-width shared command wiring: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzk-macos-trail-line-width-shared-command-wiring.md`
 
 ## Current macOS Mainline (Phases 50-55)
 - Dual-lane guardrails: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`

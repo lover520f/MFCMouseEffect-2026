@@ -34,6 +34,7 @@ nlohmann::json BuildTrailCommandJson(const TrailEffectRenderCommand& command) {
         {"emit", command.emit},
         {"normalized_type", command.normalizedType},
         {"size_px", command.sizePx},
+        {"line_width_px", command.lineWidthPx},
         {"duration_sec", command.durationSec},
         {"close_after_ms", command.closeAfterMs},
         {"base_opacity", command.baseOpacity},
@@ -208,6 +209,7 @@ nlohmann::json BuildMacosEffectsProfileStateJson(const EffectConfig& cfg) {
     out["trail"] = {
         {"normal_size_px", trailProfile.normalSizePx},
         {"particle_size_px", trailProfile.particleSizePx},
+        {"line_width_px", trailProfile.lineWidthPx},
         {"duration_sec", trailProfile.durationSec},
         {"close_padding_ms", trailProfile.closePaddingMs},
         {"base_opacity", trailProfile.baseOpacity},

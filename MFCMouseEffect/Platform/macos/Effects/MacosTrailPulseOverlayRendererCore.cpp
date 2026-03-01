@@ -20,25 +20,25 @@ void ShowTrailPulseOverlayOnMain(
     (void)profile;
     return;
 #else
-    const TrailEffectProfile computeProfile{
-        profile.normalSizePx,
-        profile.particleSizePx,
-        profile.durationSec,
-        profile.closePaddingMs,
-        profile.baseOpacity,
-        {profile.line.fillArgb, profile.line.strokeArgb},
-        {profile.streamer.fillArgb, profile.streamer.strokeArgb},
-        {profile.electric.fillArgb, profile.electric.strokeArgb},
-        {profile.meteor.fillArgb, profile.meteor.strokeArgb},
-        {profile.tubes.fillArgb, profile.tubes.strokeArgb},
-        {profile.particle.fillArgb, profile.particle.strokeArgb},
-        {profile.lineTempo.durationScale, profile.lineTempo.sizeScale},
-        {profile.streamerTempo.durationScale, profile.streamerTempo.sizeScale},
-        {profile.electricTempo.durationScale, profile.electricTempo.sizeScale},
-        {profile.meteorTempo.durationScale, profile.meteorTempo.sizeScale},
-        {profile.tubesTempo.durationScale, profile.tubesTempo.sizeScale},
-        {profile.particleTempo.durationScale, profile.particleTempo.sizeScale},
-    };
+    TrailEffectProfile computeProfile{};
+    computeProfile.normalSizePx = profile.normalSizePx;
+    computeProfile.particleSizePx = profile.particleSizePx;
+    computeProfile.lineWidthPx = profile.lineWidthPx;
+    computeProfile.durationSec = profile.durationSec;
+    computeProfile.closePaddingMs = profile.closePaddingMs;
+    computeProfile.baseOpacity = profile.baseOpacity;
+    computeProfile.line = {profile.line.fillArgb, profile.line.strokeArgb};
+    computeProfile.streamer = {profile.streamer.fillArgb, profile.streamer.strokeArgb};
+    computeProfile.electric = {profile.electric.fillArgb, profile.electric.strokeArgb};
+    computeProfile.meteor = {profile.meteor.fillArgb, profile.meteor.strokeArgb};
+    computeProfile.tubes = {profile.tubes.fillArgb, profile.tubes.strokeArgb};
+    computeProfile.particle = {profile.particle.fillArgb, profile.particle.strokeArgb};
+    computeProfile.lineTempo = {profile.lineTempo.durationScale, profile.lineTempo.sizeScale};
+    computeProfile.streamerTempo = {profile.streamerTempo.durationScale, profile.streamerTempo.sizeScale};
+    computeProfile.electricTempo = {profile.electricTempo.durationScale, profile.electricTempo.sizeScale};
+    computeProfile.meteorTempo = {profile.meteorTempo.durationScale, profile.meteorTempo.sizeScale};
+    computeProfile.tubesTempo = {profile.tubesTempo.durationScale, profile.tubesTempo.sizeScale};
+    computeProfile.particleTempo = {profile.particleTempo.durationScale, profile.particleTempo.sizeScale};
     const TrailEffectRenderCommand command =
         ComputeTrailEffectRenderCommand(overlayPt, deltaX, deltaY, effectType, computeProfile);
     ShowTrailPulseOverlayOnMain(command, themeName);
