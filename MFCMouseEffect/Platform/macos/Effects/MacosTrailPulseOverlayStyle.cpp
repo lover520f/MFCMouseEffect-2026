@@ -22,8 +22,11 @@ bool ContainsTrailToken(const std::string& value, const char* token) {
 
 std::string NormalizeTrailType(const std::string& effectType) {
     const std::string value = ToLowerAscii(effectType);
-    if (value.empty() || value == "none") {
+    if (value.empty()) {
         return "line";
+    }
+    if (value == "none") {
+        return "none";
     }
     if (ContainsTrailToken(value, "meteor")) {
         return "meteor";
@@ -47,6 +50,9 @@ std::string NormalizeTrailType(const std::string& effectType) {
 }
 
 CGPathRef CreateTrailLinePath(CGRect bounds, double deltaX, double deltaY, const std::string& trailType) {
+    if (trailType == "none") {
+        return CGPathCreateMutable();
+    }
     const CGFloat cx = CGRectGetMidX(bounds);
     const CGFloat cy = CGRectGetMidY(bounds);
     CGFloat dx = static_cast<CGFloat>(deltaX);

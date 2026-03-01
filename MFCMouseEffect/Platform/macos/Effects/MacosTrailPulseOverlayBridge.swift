@@ -90,8 +90,11 @@ private func mfxNormalizeTrailType(_ normalizedTypeUtf8: UnsafePointer<CChar>?) 
         return "line"
     }
     let lowered = value.lowercased()
-    if lowered.isEmpty || lowered == "none" {
+    if lowered.isEmpty {
         return "line"
+    }
+    if lowered == "none" {
+        return "none"
     }
     return lowered
 }
@@ -102,6 +105,9 @@ private func mfxCreateTrailLinePath(
     deltaY: CGFloat,
     trailType: String
 ) -> CGPath {
+    if trailType == "none" {
+        return CGMutablePath()
+    }
     let cx = bounds.midX
     let cy = bounds.midY
     var dx = deltaX
@@ -170,6 +176,9 @@ private func mfxCreateTrailPulseOverlayOnMainThread(
     fillArgb: UInt32,
     strokeArgb: UInt32
 ) -> UnsafeMutableRawPointer? {
+    if normalizedType == "none" {
+        return nil
+    }
     let width = max(1.0, frameWidth)
     let height = max(1.0, frameHeight)
     let windowHandle = mfx_macos_overlay_create_window_v1(frameX, frameY, width, height)
@@ -372,4 +381,3 @@ public func mfx_macos_trail_pulse_overlay_create_v1(
     }
     return UnsafeMutableRawPointer(bitPattern: bits)
 }
-

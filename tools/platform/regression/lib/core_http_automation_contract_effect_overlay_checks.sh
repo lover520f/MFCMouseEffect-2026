@@ -147,6 +147,7 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"input\":\"neon3d\",\"normalized\":\"hold_neon3d\"" "core effect render profile probe hold neon3d alias"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"hold_follow_mode\":" "core effect render profile probe hold follow mode alias matrix section"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"input\":\"none\",\"normalized\":\"ripple\"" "core effect render profile probe click none alias"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"input\":\"none\",\"normalized\":\"none\"" "core effect render profile probe trail none alias"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"input\":\"default\",\"normalized\":\"line\"" "core effect render profile probe trail default alias"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"input\":\"cursor_priority\",\"normalized\":\"smooth\"" "core effect render profile probe hold follow cursor_priority alias"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"input\":\"performance_first\",\"normalized\":\"efficient\"" "core effect render profile probe hold follow performance_first alias"

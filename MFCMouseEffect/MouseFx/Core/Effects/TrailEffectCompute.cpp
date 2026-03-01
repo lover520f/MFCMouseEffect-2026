@@ -88,6 +88,10 @@ TrailEffectRenderCommand ComputeTrailEffectRenderCommand(
     command.emit = true;
     command.overlayPoint = overlayPoint;
     command.normalizedType = NormalizeTrailEffectType(effectType);
+    if (command.normalizedType == "none") {
+        command.emit = false;
+        return command;
+    }
     command.tubesMode = (command.normalizedType == "tubes");
     command.particleMode = (command.normalizedType == "particle");
     command.glowMode = (command.normalizedType == "meteor" || command.normalizedType == "streamer");

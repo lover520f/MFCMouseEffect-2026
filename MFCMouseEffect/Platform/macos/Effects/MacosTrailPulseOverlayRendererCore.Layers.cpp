@@ -43,6 +43,9 @@ void ShowTrailPulseOverlayOnMain(
     if (!command.emit) {
         return;
     }
+    if (command.normalizedType == "none") {
+        return;
+    }
     const TrailPulseRenderPlan plan = BuildTrailPulseRenderPlan(command);
     const char* normalizedTypeUtf8 = plan.command.normalizedType.empty()
                                          ? ""

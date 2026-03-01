@@ -124,6 +124,7 @@ nlohmann::json BuildAliasMatrixJson() {
         {{"input", "stream"}, {"normalized", NormalizeTrailEffectType("stream")}},
         {{"input", "neon"}, {"normalized", NormalizeTrailEffectType("neon")}},
         {{"input", "suspension"}, {"normalized", NormalizeTrailEffectType("suspension")}},
+        {{"input", "none"}, {"normalized", NormalizeTrailEffectType("none")}},
         {{"input", "default"}, {"normalized", NormalizeTrailEffectType("default")}},
         {{"input", "spark"}, {"normalized", NormalizeTrailEffectType("spark")}},
     });
