@@ -2,6 +2,7 @@
 #include "WebSettingsServer.TestRouteCommon.h"
 
 #include <cstdlib>
+#include <cmath>
 #include <limits>
 
 #include "MouseFx/Server/HttpServer.h"
@@ -109,6 +110,17 @@ uint8_t ParseButtonOrDefault(const nlohmann::json& payload, const char* key, uin
         return std::numeric_limits<uint8_t>::max();
     }
     return static_cast<uint8_t>(raw);
+}
+
+float ParseFloatOrDefault(const nlohmann::json& payload, const char* key, float defaultValue) {
+    if (!payload.contains(key) || !payload[key].is_number()) {
+        return defaultValue;
+    }
+    const double raw = payload[key].get<double>();
+    if (!std::isfinite(raw)) {
+        return defaultValue;
+    }
+    return static_cast<float>(raw);
 }
 
 } // namespace websettings_test_routes

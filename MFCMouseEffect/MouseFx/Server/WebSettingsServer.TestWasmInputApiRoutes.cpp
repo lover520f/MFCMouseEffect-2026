@@ -1,12 +1,15 @@
 #include "pch.h"
 #include "WebSettingsServer.TestWasmInputApiRoutes.h"
 
+#include <cmath>
 #include <string>
 #include <vector>
 
 #include "MouseFx/Core/Control/AppController.h"
+#include "MouseFx/Core/Wasm/WasmImageCommandConfig.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Core/Wasm/WasmEventInvokeExecutor.h"
+#include "MouseFx/Core/Wasm/WasmPluginAbi.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/WebSettingsServer.TestRouteCommon.h"
 
@@ -16,7 +19,9 @@ namespace mousefx {
 namespace {
 
 using websettings_test_routes::IsEnabledByEnv;
+using websettings_test_routes::ParseBooleanOrDefault;
 using websettings_test_routes::ParseButtonOrDefault;
+using websettings_test_routes::ParseFloatOrDefault;
 using websettings_test_routes::ParseInt32OrDefault;
 using websettings_test_routes::ParseObjectOrEmpty;
 using websettings_test_routes::SetJsonResponse;
@@ -166,6 +171,54 @@ bool HandleWebSettingsTestWasmInputApiRoute(
             {"lifetime_executed_image_commands", diag.lifetimeExecutedImageCommands},
             {"lifetime_throttled_render_commands", diag.lifetimeThrottledRenderCommands},
             {"lifetime_dropped_render_commands", diag.lifetimeDroppedRenderCommands},
+        }).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/test-resolve-image-affine") {
+        if (!IsWasmTestDispatchApiEnabled()) {
+            SetPlainResponse(resp, 404, "not found");
+            return true;
+        }
+
+        const json payload = ParseObjectOrEmpty(req.body);
+        wasm::SpawnImageAffineCommandV1 cmd{};
+        cmd.base.x = ParseFloatOrDefault(payload, "x", 100.0f);
+        cmd.base.y = ParseFloatOrDefault(payload, "y", 200.0f);
+        cmd.base.vx = ParseFloatOrDefault(payload, "vx", 0.0f);
+        cmd.base.vy = ParseFloatOrDefault(payload, "vy", 0.0f);
+        cmd.base.ax = ParseFloatOrDefault(payload, "ax", 0.0f);
+        cmd.base.ay = ParseFloatOrDefault(payload, "ay", 0.0f);
+        cmd.base.scale = ParseFloatOrDefault(payload, "scale", 1.0f);
+        cmd.base.rotation = ParseFloatOrDefault(payload, "rotation", 0.0f);
+        cmd.base.alpha = ParseFloatOrDefault(payload, "alpha", 1.0f);
+        cmd.base.tintRgba = static_cast<uint32_t>(ParseInt32OrDefault(payload, "tint_rgba", 0xFFFFFFFFu));
+        cmd.base.delayMs = static_cast<uint32_t>(ParseInt32OrDefault(payload, "delay_ms", 0));
+        cmd.base.lifeMs = static_cast<uint32_t>(ParseInt32OrDefault(payload, "life_ms", 0));
+        cmd.base.imageId = static_cast<uint32_t>(ParseInt32OrDefault(payload, "image_id", 0));
+
+        cmd.affineM11 = ParseFloatOrDefault(payload, "affine_m11", 1.0f);
+        cmd.affineM12 = ParseFloatOrDefault(payload, "affine_m12", 0.0f);
+        cmd.affineM21 = ParseFloatOrDefault(payload, "affine_m21", 0.0f);
+        cmd.affineM22 = ParseFloatOrDefault(payload, "affine_m22", 1.0f);
+        cmd.affineDx = ParseFloatOrDefault(payload, "affine_dx", 0.0f);
+        cmd.affineDy = ParseFloatOrDefault(payload, "affine_dy", 0.0f);
+        cmd.affineAnchorMode = static_cast<uint32_t>(ParseInt32OrDefault(payload, "affine_anchor_mode", 0));
+        cmd.affineEnabled = ParseBooleanOrDefault(payload, "affine_enabled", false) ? 1u : 0u;
+
+        const wasm::SpawnImageCommandV1 resolved = wasm::ResolveSpawnImageCommand(cmd);
+        SetJsonResponse(resp, json({
+            {"ok", true},
+            {"affine_enabled", cmd.affineEnabled != 0u},
+            {"resolved_x", resolved.x},
+            {"resolved_y", resolved.y},
+            {"resolved_scale", resolved.scale},
+            {"resolved_rotation", resolved.rotation},
+            {"resolved_alpha", resolved.alpha},
+            {"resolved_x_int", static_cast<int32_t>(std::lround(resolved.x))},
+            {"resolved_y_int", static_cast<int32_t>(std::lround(resolved.y))},
+            {"resolved_scale_milli", static_cast<int32_t>(std::lround(resolved.scale * 1000.0f))},
+            {"resolved_rotation_millirad", static_cast<int32_t>(std::lround(resolved.rotation * 1000.0f))}
         }).dump());
         return true;
     }

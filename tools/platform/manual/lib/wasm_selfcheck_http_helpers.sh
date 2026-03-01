@@ -109,3 +109,14 @@ mfx_wasm_selfcheck_test_dispatch_http_code() {
         -X POST -H "x-mfcmouseeffect-token: $token" -H "Content-Type: application/json" \
         -d '{"x":640,"y":360,"button":1}'
 }
+
+mfx_wasm_selfcheck_test_resolve_image_affine_http_code() {
+    local output_file="$1"
+    local base_url="$2"
+    local token="$3"
+    local payload_json="$4"
+
+    mfx_http_code "$output_file" "$base_url/api/wasm/test-resolve-image-affine" \
+        -X POST -H "x-mfcmouseeffect-token: $token" -H "Content-Type: application/json" \
+        -d "$payload_json"
+}

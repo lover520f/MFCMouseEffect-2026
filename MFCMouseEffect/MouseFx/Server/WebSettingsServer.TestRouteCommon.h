@@ -20,6 +20,7 @@ bool IsEnabledByEnv(const char* name);
 bool ParseBooleanOrDefault(const nlohmann::json& payload, const char* key, bool defaultValue);
 int32_t ParseInt32OrDefault(const nlohmann::json& payload, const char* key, int32_t defaultValue);
 uint8_t ParseButtonOrDefault(const nlohmann::json& payload, const char* key, uint8_t defaultValue);
+float ParseFloatOrDefault(const nlohmann::json& payload, const char* key, float defaultValue);
 
 } // namespace websettings_test_routes
 } // namespace mousefx

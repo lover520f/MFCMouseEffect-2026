@@ -321,6 +321,43 @@ mfx_wasm_selfcheck_assert_dispatch_diagnostics_consistent \
     "$state_before_dispatch_file" \
     "macos"
 
+affine_translate_file="$tmp_dir/wasm-affine-translate.out"
+code_affine_translate="$(mfx_wasm_selfcheck_test_resolve_image_affine_http_code \
+    "$affine_translate_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    '{"x":100,"y":200,"scale":2.0,"rotation":0.5,"affine_enabled":false,"affine_dx":12,"affine_dy":-7}')"
+mfx_assert_eq "$code_affine_translate" "200" "selfcheck wasm affine resolve translate status"
+mfx_assert_file_contains "$affine_translate_file" "\"ok\":true" "selfcheck wasm affine resolve translate ok"
+mfx_assert_file_contains "$affine_translate_file" "\"resolved_x_int\":112" "selfcheck wasm affine resolve translate x"
+mfx_assert_file_contains "$affine_translate_file" "\"resolved_y_int\":193" "selfcheck wasm affine resolve translate y"
+mfx_assert_file_contains "$affine_translate_file" "\"resolved_scale_milli\":2000" "selfcheck wasm affine resolve translate scale"
+mfx_assert_file_contains "$affine_translate_file" "\"resolved_rotation_millirad\":500" "selfcheck wasm affine resolve translate rotation"
+
+affine_scale_file="$tmp_dir/wasm-affine-scale.out"
+code_affine_scale="$(mfx_wasm_selfcheck_test_resolve_image_affine_http_code \
+    "$affine_scale_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    '{"x":100,"y":200,"scale":2.0,"rotation":0.5,"affine_enabled":true,"affine_dx":12,"affine_dy":-7,"affine_m11":2.0,"affine_m12":0.0,"affine_m21":0.0,"affine_m22":2.0}')"
+mfx_assert_eq "$code_affine_scale" "200" "selfcheck wasm affine resolve scale status"
+mfx_assert_file_contains "$affine_scale_file" "\"ok\":true" "selfcheck wasm affine resolve scale ok"
+mfx_assert_file_contains "$affine_scale_file" "\"resolved_x_int\":112" "selfcheck wasm affine resolve scale x"
+mfx_assert_file_contains "$affine_scale_file" "\"resolved_y_int\":193" "selfcheck wasm affine resolve scale y"
+mfx_assert_file_contains "$affine_scale_file" "\"resolved_scale_milli\":4000" "selfcheck wasm affine resolve scale scale"
+mfx_assert_file_contains "$affine_scale_file" "\"resolved_rotation_millirad\":500" "selfcheck wasm affine resolve scale rotation"
+
+affine_rotate_file="$tmp_dir/wasm-affine-rotate.out"
+code_affine_rotate="$(mfx_wasm_selfcheck_test_resolve_image_affine_http_code \
+    "$affine_rotate_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    '{"x":100,"y":200,"scale":1.0,"rotation":0.0,"affine_enabled":true,"affine_dx":0,"affine_dy":0,"affine_m11":0.0,"affine_m12":-1.0,"affine_m21":1.0,"affine_m22":0.0}')"
+mfx_assert_eq "$code_affine_rotate" "200" "selfcheck wasm affine resolve rotate status"
+mfx_assert_file_contains "$affine_rotate_file" "\"ok\":true" "selfcheck wasm affine resolve rotate ok"
+mfx_assert_file_contains "$affine_rotate_file" "\"resolved_scale_milli\":1000" "selfcheck wasm affine resolve rotate scale"
+mfx_assert_file_contains "$affine_rotate_file" "\"resolved_rotation_millirad\":1571" "selfcheck wasm affine resolve rotate rotation"
+
 invalid_manifest_path="${manifest_path}.missing"
 invalid_file="$tmp_dir/wasm-load-invalid.out"
 mfx_wasm_selfcheck_assert_load_manifest_failure \
