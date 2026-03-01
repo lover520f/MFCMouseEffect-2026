@@ -46,6 +46,50 @@ _mfx_core_http_cleanup_startup_runtime() {
     _mfx_core_http_fifo_writer_pid=""
 }
 
+_mfx_core_http_try_stop_entry_via_http() {
+    local probe_file="$1"
+    if [[ -z "$probe_file" || ! -s "$probe_file" ]]; then
+        return 1
+    fi
+
+    local settings_url
+    local token
+    local base_url
+    settings_url="$(_mfx_core_http_probe_value "url" "$probe_file")"
+    token="$(_mfx_core_http_probe_value "token" "$probe_file")"
+    if [[ -z "$settings_url" || -z "$token" ]]; then
+        return 1
+    fi
+
+    base_url="${settings_url%%\?*}"
+    while [[ "$base_url" == */ ]]; do
+        base_url="${base_url%/}"
+    done
+    if [[ -z "$base_url" ]]; then
+        return 1
+    fi
+
+    local stop_url="$base_url/api/stop"
+    local tmp_file
+    tmp_file="$(mktemp)"
+    local http_code=""
+    http_code="$(
+        curl -sS -m 2 \
+            -o "$tmp_file" \
+            -w "%{http_code}" \
+            -X POST \
+            -H "x-mfcmouseeffect-token: $token" \
+            "$stop_url" 2>/dev/null || true
+    )"
+    rm -f "$tmp_file" || true
+
+    if [[ "$http_code" == "200" || "$http_code" == "204" ]]; then
+        mfx_info "core entry stop requested via /api/stop"
+        return 0
+    fi
+    return 1
+}
+
 _mfx_core_http_start_entry() {
     local entry_bin="$1"
     local log_file="$2"
@@ -174,11 +218,18 @@ _mfx_core_http_stop_entry() {
     local term_wait_seconds
     term_wait_seconds="$(mfx_parse_non_negative_integer_or_default "${MFX_CORE_HTTP_TERM_WAIT_SECONDS:-3}" "3")"
 
+    local stop_requested_via_http=0
+    if _mfx_core_http_try_stop_entry_via_http "${_mfx_core_http_probe_file:-}"; then
+        stop_requested_via_http=1
+    fi
     if [[ -n "$_mfx_core_http_fifo_path" && -p "$_mfx_core_http_fifo_path" ]]; then
         printf 'exit\n' >"$_mfx_core_http_fifo_path" || true
     fi
 
     if [[ -n "$_mfx_core_http_entry_pid" ]]; then
+        if [[ "$stop_requested_via_http" -eq 1 && "$graceful_wait_seconds" -lt 3 ]]; then
+            graceful_wait_seconds=3
+        fi
         local deadline=$((SECONDS + stop_timeout_seconds))
         local graceful_deadline=$((SECONDS + graceful_wait_seconds))
         local term_sent=0
