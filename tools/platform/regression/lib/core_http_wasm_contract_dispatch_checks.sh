@@ -43,37 +43,50 @@ _mfx_core_http_wasm_contract_dispatch_checks() {
         "$tmp_dir/wasm-affine-translate.out" \
         "$base_url" \
         "$token" \
-        '{"x":100,"y":200,"scale":2.0,"rotation":0.5,"affine_enabled":false,"affine_dx":12,"affine_dy":-7}')"
+        '{"x":100,"y":200,"scale":2.0,"rotation":0.5,"alpha":0.5,"life_ms":500,"delay_ms":17,"tint_rgba":16777215,"affine_enabled":false,"affine_dx":12,"affine_dy":-7}')"
     mfx_assert_eq "$code_affine_translate" "200" "core wasm affine resolve translate status"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-translate.out" "\"ok\":true" "core wasm affine resolve translate ok"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-translate.out" "\"resolved_x_int\":112" "core wasm affine resolve translate x"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-translate.out" "\"resolved_y_int\":193" "core wasm affine resolve translate y"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-translate.out" "\"resolved_scale_milli\":2000" "core wasm affine resolve translate scale"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-translate.out" "\"resolved_rotation_millirad\":500" "core wasm affine resolve translate rotation"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-translate.out" "\"runtime_scale_milli\":2000" "core wasm affine resolve translate runtime scale"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-translate.out" "\"runtime_alpha_milli\":500" "core wasm affine resolve translate runtime alpha"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-translate.out" "\"runtime_delay_ms\":17" "core wasm affine resolve translate runtime delay"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-translate.out" "\"runtime_life_ms\":500" "core wasm affine resolve translate runtime life"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-translate.out" "\"runtime_apply_tint\":false" "core wasm affine resolve translate runtime tint"
 
     local code_affine_scale
     code_affine_scale="$(_mfx_core_http_wasm_test_resolve_image_affine_http_code \
         "$tmp_dir/wasm-affine-scale.out" \
         "$base_url" \
         "$token" \
-        '{"x":100,"y":200,"scale":2.0,"rotation":0.5,"affine_enabled":true,"affine_dx":12,"affine_dy":-7,"affine_m11":2.0,"affine_m12":0.0,"affine_m21":0.0,"affine_m22":2.0}')"
+        '{"x":100,"y":200,"scale":2.0,"rotation":0.5,"alpha":0.8,"life_ms":700,"delay_ms":9,"tint_rgba":4281550003,"affine_enabled":true,"affine_dx":12,"affine_dy":-7,"affine_m11":2.0,"affine_m12":0.0,"affine_m21":0.0,"affine_m22":2.0}')"
     mfx_assert_eq "$code_affine_scale" "200" "core wasm affine resolve scale status"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-scale.out" "\"ok\":true" "core wasm affine resolve scale ok"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-scale.out" "\"resolved_x_int\":112" "core wasm affine resolve scale x"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-scale.out" "\"resolved_y_int\":193" "core wasm affine resolve scale y"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-scale.out" "\"resolved_scale_milli\":4000" "core wasm affine resolve scale scale"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-scale.out" "\"resolved_rotation_millirad\":500" "core wasm affine resolve scale rotation"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-scale.out" "\"runtime_scale_milli\":4000" "core wasm affine resolve scale runtime scale"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-scale.out" "\"runtime_alpha_milli\":800" "core wasm affine resolve scale runtime alpha"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-scale.out" "\"runtime_delay_ms\":9" "core wasm affine resolve scale runtime delay"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-scale.out" "\"runtime_life_ms\":700" "core wasm affine resolve scale runtime life"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-scale.out" "\"runtime_apply_tint\":true" "core wasm affine resolve scale runtime tint"
 
     local code_affine_rotate
     code_affine_rotate="$(_mfx_core_http_wasm_test_resolve_image_affine_http_code \
         "$tmp_dir/wasm-affine-rotate.out" \
         "$base_url" \
         "$token" \
-        '{"x":100,"y":200,"scale":1.0,"rotation":0.0,"affine_enabled":true,"affine_dx":0,"affine_dy":0,"affine_m11":0.0,"affine_m12":-1.0,"affine_m21":1.0,"affine_m22":0.0}')"
+        '{"x":100,"y":200,"scale":1.0,"rotation":0.0,"alpha":-1.0,"life_ms":120,"delay_ms":22,"affine_enabled":true,"affine_dx":0,"affine_dy":0,"affine_m11":0.0,"affine_m12":-1.0,"affine_m21":1.0,"affine_m22":0.0}')"
     mfx_assert_eq "$code_affine_rotate" "200" "core wasm affine resolve rotate status"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-rotate.out" "\"ok\":true" "core wasm affine resolve rotate ok"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-rotate.out" "\"resolved_scale_milli\":1000" "core wasm affine resolve rotate scale"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-rotate.out" "\"resolved_rotation_millirad\":1571" "core wasm affine resolve rotate rotation"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-rotate.out" "\"runtime_alpha_milli\":1000" "core wasm affine resolve rotate runtime alpha fallback"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-rotate.out" "\"runtime_delay_ms\":22" "core wasm affine resolve rotate runtime delay"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-rotate.out" "\"runtime_life_ms\":120" "core wasm affine resolve rotate runtime life"
 
     local code_affine_unsigned_max
     code_affine_unsigned_max="$(_mfx_core_http_wasm_test_resolve_image_affine_http_code \
@@ -88,6 +101,9 @@ _mfx_core_http_wasm_contract_dispatch_checks() {
     mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-max.out" "\"resolved_life_ms\":4294967295" "core wasm affine resolve unsigned-max life"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-max.out" "\"resolved_image_id\":4294967295" "core wasm affine resolve unsigned-max image id"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-max.out" "\"resolved_affine_anchor_mode\":4294967295" "core wasm affine resolve unsigned-max anchor"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-max.out" "\"runtime_delay_ms\":60000" "core wasm affine resolve unsigned-max runtime delay clamp"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-max.out" "\"runtime_life_ms\":10000" "core wasm affine resolve unsigned-max runtime life clamp"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-max.out" "\"runtime_apply_tint\":true" "core wasm affine resolve unsigned-max runtime tint"
 
     local code_affine_unsigned_negative
     code_affine_unsigned_negative="$(_mfx_core_http_wasm_test_resolve_image_affine_http_code \
@@ -102,6 +118,8 @@ _mfx_core_http_wasm_contract_dispatch_checks() {
     mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"resolved_life_ms\":0" "core wasm affine resolve unsigned-negative life"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"resolved_image_id\":0" "core wasm affine resolve unsigned-negative image id"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"resolved_affine_anchor_mode\":0" "core wasm affine resolve unsigned-negative anchor"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"runtime_delay_ms\":0" "core wasm affine resolve unsigned-negative runtime delay"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"runtime_apply_tint\":false" "core wasm affine resolve unsigned-negative runtime tint"
 
     local code_text_cfg_motion
     code_text_cfg_motion="$(_mfx_core_http_wasm_test_resolve_text_config_http_code \

@@ -5,6 +5,7 @@
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "WasmCommandBufferParser.h"
 #include "WasmImageCommandConfig.h"
+#include "WasmImageRuntimeConfig.h"
 #include "WasmPluginAbi.h"
 #include "WasmRenderResourceResolver.h"
 #include "WasmTextCommandConfig.h"
@@ -43,10 +44,8 @@ void ExecuteSpawnText(
 
 RippleStyle BuildImageStyle(const EffectConfig& config, const SpawnImageCommandV1& cmd) {
     RippleStyle style{};
-    style.durationMs = (cmd.lifeMs > 0) ? std::clamp<uint32_t>(cmd.lifeMs, 60u, 10000u)
-                                        : static_cast<uint32_t>(std::max(60, config.icon.durationMs));
-
-    const float scale = (cmd.scale > 0.0f) ? cmd.scale : 1.0f;
+    style.durationMs = ResolveSpawnImageLifeMs(cmd.lifeMs, config.icon.durationMs);
+    const float scale = ResolveSpawnImageScale(cmd.scale);
     style.startRadius = std::max(2.0f, config.icon.startRadius * scale);
     style.endRadius = std::max(style.startRadius + 2.0f, config.icon.endRadius * scale);
     style.strokeWidth = std::max(0.8f, config.icon.strokeWidth);
@@ -77,7 +76,7 @@ void ExecuteSpawnImage(
 
     RenderParams renderParams{};
     renderParams.loop = false;
-    renderParams.intensity = (cmd.alpha > 0.0f) ? std::clamp(cmd.alpha, 0.0f, 1.0f) : 1.0f;
+    renderParams.intensity = ResolveSpawnImageAlpha(cmd.alpha);
     renderParams.directionRad = cmd.rotation;
     renderParams.velocityX = cmd.vx;
     renderParams.velocityY = cmd.vy;
@@ -85,10 +84,10 @@ void ExecuteSpawnImage(
     renderParams.accelerationY = cmd.ay;
     renderParams.useKinematics = (std::abs(cmd.vx) > 0.001f) || (std::abs(cmd.vy) > 0.001f) ||
                                  (std::abs(cmd.ax) > 0.001f) || (std::abs(cmd.ay) > 0.001f);
-    renderParams.startDelayMs = std::clamp<uint32_t>(cmd.delayMs, 0u, 60000u);
+    renderParams.startDelayMs = ResolveSpawnImageDelayMs(cmd.delayMs);
 
     const RippleStyle style = BuildImageStyle(config, cmd);
-    const bool applyTint = ((cmd.tintRgba >> 24) & 0xFFu) != 0;
+    const bool applyTint = ResolveSpawnImageApplyTint(cmd.tintRgba);
     std::string rendererKey;
     std::unique_ptr<IRippleRenderer> renderer =
         WasmRenderResourceResolver::CreateImageRendererById(

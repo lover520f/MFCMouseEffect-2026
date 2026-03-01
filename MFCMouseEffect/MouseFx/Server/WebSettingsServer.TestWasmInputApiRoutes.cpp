@@ -10,6 +10,7 @@
 
 #include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Core/Wasm/WasmImageCommandConfig.h"
+#include "MouseFx/Core/Wasm/WasmImageRuntimeConfig.h"
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Core/Wasm/WasmEventInvokeExecutor.h"
 #include "MouseFx/Core/Wasm/WasmPluginAbi.h"
@@ -213,6 +214,13 @@ bool HandleWebSettingsTestWasmInputApiRoute(
             SetPlainResponse(resp, 404, "not found");
             return true;
         }
+        if (!controller) {
+            SetJsonResponse(resp, json({
+                {"ok", false},
+                {"error", "no controller"},
+            }).dump());
+            return true;
+        }
 
         const json payload = ParseObjectOrEmpty(req.body);
         wasm::SpawnImageAffineCommandV1 cmd{};
@@ -240,6 +248,11 @@ bool HandleWebSettingsTestWasmInputApiRoute(
         cmd.affineEnabled = ParseBooleanOrDefault(payload, "affine_enabled", false) ? 1u : 0u;
 
         const wasm::SpawnImageCommandV1 resolved = wasm::ResolveSpawnImageCommand(cmd);
+        const float runtimeScale = wasm::ResolveSpawnImageScale(resolved.scale);
+        const float runtimeAlpha = wasm::ResolveSpawnImageAlpha(resolved.alpha);
+        const uint32_t runtimeDelayMs = wasm::ResolveSpawnImageDelayMs(resolved.delayMs);
+        const uint32_t runtimeLifeMs = wasm::ResolveSpawnImageLifeMs(resolved.lifeMs, controller->Config().icon.durationMs);
+        const bool runtimeApplyTint = wasm::ResolveSpawnImageApplyTint(resolved.tintRgba);
         SetJsonResponse(resp, json({
             {"ok", true},
             {"affine_enabled", cmd.affineEnabled != 0u},
@@ -254,6 +267,11 @@ bool HandleWebSettingsTestWasmInputApiRoute(
             {"resolved_life_ms", resolved.lifeMs},
             {"resolved_image_id", resolved.imageId},
             {"resolved_affine_anchor_mode", cmd.affineAnchorMode},
+            {"runtime_scale_milli", static_cast<int32_t>(std::lround(runtimeScale * 1000.0f))},
+            {"runtime_alpha_milli", static_cast<int32_t>(std::lround(runtimeAlpha * 1000.0f))},
+            {"runtime_delay_ms", runtimeDelayMs},
+            {"runtime_life_ms", runtimeLifeMs},
+            {"runtime_apply_tint", runtimeApplyTint},
             {"resolved_x_int", static_cast<int32_t>(std::lround(resolved.x))},
             {"resolved_y_int", static_cast<int32_t>(std::lround(resolved.y))},
             {"resolved_scale_milli", static_cast<int32_t>(std::lround(resolved.scale * 1000.0f))},
