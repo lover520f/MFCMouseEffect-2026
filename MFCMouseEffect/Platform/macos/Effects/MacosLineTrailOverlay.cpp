@@ -50,6 +50,17 @@ public:
         mfx_macos_line_trail_reset_v1(handle_);
     }
 
+    LineTrailRuntimeSnapshot Snapshot() {
+        std::lock_guard<std::mutex> lock(mutex_);
+        LineTrailRuntimeSnapshot snapshot{};
+        if (handle_ == nullptr) {
+            return snapshot;
+        }
+        snapshot.active = (mfx_macos_line_trail_is_active_v1(handle_) != 0);
+        snapshot.pointCount = std::max(0, mfx_macos_line_trail_point_count_v1(handle_));
+        return snapshot;
+    }
+
 private:
     void EnsureHandleLocked() {
         if (handle_ != nullptr) {
@@ -93,6 +104,14 @@ void ResetLineTrail() {
 #if defined(__APPLE__)
     BridgeState().Reset();
 #endif
+}
+
+LineTrailRuntimeSnapshot ReadLineTrailRuntimeSnapshot() {
+    LineTrailRuntimeSnapshot snapshot{};
+#if defined(__APPLE__)
+    snapshot = BridgeState().Snapshot();
+#endif
+    return snapshot;
 }
 
 } // namespace mousefx::macos_line_trail

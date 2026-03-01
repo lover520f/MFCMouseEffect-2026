@@ -376,6 +376,14 @@ private final class MfxLineTrailState: NSObject {
     func releaseHandle() {
         resetStateOnMain()
     }
+
+    func isActive() -> Bool {
+        return windowHandle != nil && !points.isEmpty
+    }
+
+    func pointCount() -> Int {
+        return points.count
+    }
 }
 
 @_cdecl("mfx_macos_line_trail_create_v1")
@@ -488,4 +496,56 @@ public func mfx_macos_line_trail_update_v1(
             )
         }
     }
+}
+
+@_cdecl("mfx_macos_line_trail_is_active_v1")
+public func mfx_macos_line_trail_is_active_v1(_ handle: UnsafeMutableRawPointer?) -> Int32 {
+    let bits = UInt(bitPattern: handle)
+    if bits == 0 {
+        return 0
+    }
+    guard let ptr = UnsafeMutableRawPointer(bitPattern: bits) else {
+        return 0
+    }
+    let state = Unmanaged<MfxLineTrailState>.fromOpaque(ptr).takeUnretainedValue()
+
+    if Thread.isMainThread {
+        return MainActor.assumeIsolated {
+            state.isActive() ? 1 : 0
+        }
+    }
+
+    var active: Int32 = 0
+    DispatchQueue.main.sync {
+        active = MainActor.assumeIsolated {
+            state.isActive() ? 1 : 0
+        }
+    }
+    return active
+}
+
+@_cdecl("mfx_macos_line_trail_point_count_v1")
+public func mfx_macos_line_trail_point_count_v1(_ handle: UnsafeMutableRawPointer?) -> Int32 {
+    let bits = UInt(bitPattern: handle)
+    if bits == 0 {
+        return 0
+    }
+    guard let ptr = UnsafeMutableRawPointer(bitPattern: bits) else {
+        return 0
+    }
+    let state = Unmanaged<MfxLineTrailState>.fromOpaque(ptr).takeUnretainedValue()
+
+    if Thread.isMainThread {
+        return MainActor.assumeIsolated {
+            Int32(max(0, min(Int(Int32.max), state.pointCount())))
+        }
+    }
+
+    var count: Int32 = 0
+    DispatchQueue.main.sync {
+        count = MainActor.assumeIsolated {
+            Int32(max(0, min(Int(Int32.max), state.pointCount())))
+        }
+    }
+    return count
 }

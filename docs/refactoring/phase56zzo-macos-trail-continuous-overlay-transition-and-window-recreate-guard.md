@@ -22,6 +22,12 @@
 2. Window recreate stale-point guard in `MacosLineTrailOverlayBridge.swift`:
    - When line-trail overlay window is recreated (screen/frame changed), historical points are cleared before new window use.
    - This prevents old-screen points from being connected in the new-screen coordinate space.
+3. Runtime observability for continuous line-trail:
+   - Added line-trail runtime snapshot bridge (`active`, `point_count`) from Swift bridge to C++ wrapper.
+   - `/api/state.effects_runtime` now includes:
+     - `line_trail_active`
+     - `line_trail_point_count`
+   - `/api/effects/test-overlay-windows` now also returns line-trail before/after snapshots for scripted diagnostics.
 
 ## Validation
 Executed on macOS host:

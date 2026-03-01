@@ -58,6 +58,12 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"ok\":true" "core effect overlay probe ok"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"before\":" "core effect overlay probe before snapshot"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"after\":" "core effect overlay probe after snapshot"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"before_line_trail\":" "core effect overlay probe before line trail snapshot"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"after_line_trail\":" "core effect overlay probe after line trail snapshot"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"before_line_trail_active\":" "core effect overlay probe before line trail active field"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"after_line_trail_active\":" "core effect overlay probe after line trail active field"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"before_line_trail_point_count\":" "core effect overlay probe before line trail point count field"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"after_line_trail_point_count\":" "core effect overlay probe after line trail point count field"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"before_total_matches_components\":true" "core effect overlay probe before invariant"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"after_total_matches_components\":true" "core effect overlay probe after invariant"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-probe.out" "\"restored_to_baseline\":true" "core effect overlay probe restore baseline"
@@ -218,6 +224,8 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"trail_emission_planner\":" "core effect profile state trail emission planner section"
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"teleport_skip_distance_px\":" "core effect profile state trail planner teleport distance"
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"max_segments\":" "core effect profile state trail planner max segments"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"line_trail_active\":" "core effect runtime state line trail active field"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"line_trail_point_count\":" "core effect runtime state line trail point count field"
 
     local probe_meteor_scale
     local state_meteor_scale

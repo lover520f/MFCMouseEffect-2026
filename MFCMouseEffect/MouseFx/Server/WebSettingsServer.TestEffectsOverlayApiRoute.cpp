@@ -16,6 +16,7 @@
 #include "Platform/macos/Effects/MacosClickPulseWindowRegistry.h"
 #include "Platform/macos/Effects/MacosHoldPulseOverlayRenderer.h"
 #include "Platform/macos/Effects/MacosHoverPulseOverlayRenderer.h"
+#include "Platform/macos/Effects/MacosLineTrailOverlay.h"
 #include "Platform/macos/Effects/MacosScrollPulseOverlayRenderer.h"
 #include "Platform/macos/Effects/MacosScrollPulseWindowRegistry.h"
 #include "Platform/macos/Effects/MacosTrailPulseOverlayRenderer.h"
@@ -66,6 +67,18 @@ struct OverlayWindowCounts final {
     }
 };
 
+struct LineTrailProbeState final {
+    bool active = false;
+    int pointCount = 0;
+
+    json ToJson() const {
+        return json{
+            {"line_trail_active", active},
+            {"line_trail_point_count", pointCount},
+        };
+    }
+};
+
 OverlayWindowCounts ReadOverlayWindowCounts() {
     OverlayWindowCounts out{};
 #if MFX_PLATFORM_MACOS
@@ -74,6 +87,16 @@ OverlayWindowCounts ReadOverlayWindowCounts() {
     out.scroll = macos_scroll_pulse::GetActiveScrollPulseWindowCount();
     out.hold = macos_hold_pulse::GetActiveHoldPulseWindowCount();
     out.hover = macos_hover_pulse::GetActiveHoverPulseWindowCount();
+#endif
+    return out;
+}
+
+LineTrailProbeState ReadLineTrailProbeState() {
+    LineTrailProbeState out{};
+#if MFX_PLATFORM_MACOS
+    const auto snapshot = macos_line_trail::ReadLineTrailRuntimeSnapshot();
+    out.active = snapshot.active;
+    out.pointCount = snapshot.pointCount;
 #endif
     return out;
 }
@@ -128,6 +151,7 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
     const int32_t waitForClearMs = std::clamp(ParseInt32OrDefault(payload, "wait_for_clear_ms", 0), 0, 3000);
 
     const OverlayWindowCounts before = ReadOverlayWindowCounts();
+    const LineTrailProbeState beforeLineTrail = ReadLineTrailProbeState();
 
 #if MFX_PLATFORM_MACOS
     const ScreenPoint overlayPoint{x, y};
@@ -165,6 +189,7 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
 #endif
 
     OverlayWindowCounts after = ReadOverlayWindowCounts();
+    LineTrailProbeState afterLineTrail = ReadLineTrailProbeState();
     if (waitForClearMs > 0) {
         const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(waitForClearMs);
         while (std::chrono::steady_clock::now() < deadline) {
@@ -173,6 +198,7 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
             after = ReadOverlayWindowCounts();
+            afterLineTrail = ReadLineTrailProbeState();
         }
     }
 
@@ -194,6 +220,8 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
         {"wait_for_clear_ms", waitForClearMs},
         {"before", before.ToJson()},
         {"after", after.ToJson()},
+        {"before_line_trail", beforeLineTrail.ToJson()},
+        {"after_line_trail", afterLineTrail.ToJson()},
         {"before_click_active_overlay_windows", before.click},
         {"before_trail_active_overlay_windows", before.trail},
         {"before_scroll_active_overlay_windows", before.scroll},
@@ -206,6 +234,10 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
         {"after_hold_active_overlay_windows", after.hold},
         {"after_hover_active_overlay_windows", after.hover},
         {"after_active_overlay_windows_total", after.Total()},
+        {"before_line_trail_active", beforeLineTrail.active},
+        {"before_line_trail_point_count", beforeLineTrail.pointCount},
+        {"after_line_trail_active", afterLineTrail.active},
+        {"after_line_trail_point_count", afterLineTrail.pointCount},
         {"before_total_matches_components", before.InvariantOk()},
         {"after_total_matches_components", after.InvariantOk()},
         {"restored_to_baseline", after.Total() <= before.Total()},
