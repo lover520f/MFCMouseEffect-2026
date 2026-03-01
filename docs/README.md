@@ -30,6 +30,7 @@ Compact AI-first index for fast navigation. This file is intentionally short and
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-core-lane-smoke-workflow.md`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-core-automation-contract-workflow.md`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-linux-compile-gate-workflow.md`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/trail-profiles-config.md`
 
 ## Targeted Retrieval
 ```bash

@@ -70,6 +70,7 @@
 - Unreferenced architecture docs (`dawn-native-effects-route`, `mousefx-folder-structure*`, `trail-effects-differentiation*`, `web-settings-ui*`) were pruned; architecture layer now keeps only linked workflow/contracts docs.
 - Unreferenced root-level docs (`input_indicator_refactor`, `installer_guide`, `macos-text-click-effect-rendering-fix`, `multi-monitor-positioning`, `singleton_implementation`) were removed as historical records with outdated paths/contracts.
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md` was rewritten into a compact execution snapshot (removed long historical step logs) to keep first-read token cost low.
+- Removed unreferenced non-engineering docs in `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/install` and `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/marketing`; retained `trail-profiles-config*` as an active configuration contract and re-linked it in top-level indexes.
 - Current docs focus is now:
   - `P0`: `AGENTS.md`
   - `P1`: this file + roadmap snapshot

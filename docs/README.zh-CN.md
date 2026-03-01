@@ -30,6 +30,7 @@
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-core-lane-smoke-workflow.md`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-core-automation-contract-workflow.md`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-linux-compile-gate-workflow.md`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/trail-profiles-config.zh-CN.md`
 
 ## 定向检索命令
 ```bash
