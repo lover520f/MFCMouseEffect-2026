@@ -43,6 +43,7 @@ private:
     ScreenPoint lastPoint_{};
     uint64_t lastEmitTickMs_ = 0;
     macos_trail_pulse::TrailPulseEmissionPlannerConfig emissionPlannerConfig_{};
+    bool continuousTrailActive_ = false;
 };
 
 } // namespace mousefx

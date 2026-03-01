@@ -57,6 +57,7 @@ Use it as a pointer index, not a full historical catalog.
 - macOS trail emission planner anti-matchstick: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzl-macos-trail-emission-planner-anti-matchstick.md`
 - macOS streamer continuous trail path: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzm-macos-streamer-continuous-trail-path.md`
 - macOS trail planner diagnostics surfacing: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzn-macos-trail-planner-diagnostics-surfacing.md`
+- macOS trail continuous overlay transition/reset guard: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzo-macos-trail-continuous-overlay-transition-and-window-recreate-guard.md`
 
 ## Current macOS Mainline (Phases 50-55)
 - Dual-lane guardrails: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`

@@ -161,6 +161,10 @@ private final class MfxLineTrailState: NSObject {
         }
 
         closeWindow()
+        // Point coordinates are relative to the active screen frame.
+        // When the overlay window is recreated (screen switch / frame change),
+        // drop historical points to prevent cross-screen long connector lines.
+        points.removeAll(keepingCapacity: true)
 
         guard let newWindowHandle = mfxOverlayCreateWindow(
             Double(frame.origin.x),

@@ -40,6 +40,7 @@ bool MacosTrailPulseEffect::Initialize() {
     initialized_ = true;
     hasLastPoint_ = false;
     lastEmitTickMs_ = 0;
+    continuousTrailActive_ = false;
     emissionPlannerConfig_ = macos_trail_pulse::ResolveTrailPulseEmissionPlannerConfig();
     return true;
 }
@@ -48,6 +49,7 @@ void MacosTrailPulseEffect::Shutdown() {
     initialized_ = false;
     hasLastPoint_ = false;
     lastEmitTickMs_ = 0;
+    continuousTrailActive_ = false;
     macos_line_trail::ResetLineTrail();
     macos_trail_pulse::CloseAllTrailPulseWindows();
 }
@@ -66,16 +68,28 @@ void MacosTrailPulseEffect::OnMouseMove(const ScreenPoint& pt) {
     const uint64_t now = CurrentTickMs();
     const std::string normalizedType = NormalizeTrailEffectType(effectType_);
     if (normalizedType == "none") {
+        if (continuousTrailActive_) {
+            macos_line_trail::ResetLineTrail();
+            continuousTrailActive_ = false;
+        }
         lastPoint_ = pt;
         return;
     }
     const bool lineTrail = (normalizedType == "line");
     const bool streamerTrail = (normalizedType == "streamer");
     const bool continuousTrail = (lineTrail || streamerTrail);
+    if (!continuousTrail && continuousTrailActive_) {
+        macos_line_trail::ResetLineTrail();
+        continuousTrailActive_ = false;
+    }
     const double moveDx = static_cast<double>(pt.x - lastPoint_.x);
     const double moveDy = static_cast<double>(pt.y - lastPoint_.y);
     const double moveDistance = std::sqrt(moveDx * moveDx + moveDy * moveDy);
     if (moveDistance > std::max(200.0, emissionPlannerConfig_.teleportSkipDistancePx)) {
+        if (continuousTrail && continuousTrailActive_) {
+            macos_line_trail::ResetLineTrail();
+            continuousTrailActive_ = false;
+        }
         lastPoint_ = pt;
         return;
     }
@@ -110,6 +124,7 @@ void MacosTrailPulseEffect::OnMouseMove(const ScreenPoint& pt) {
                                                        (static_cast<double>(pt.y - lastPoint_.y) * t)));
             macos_line_trail::UpdateLineTrail(segPt, config);
         }
+        continuousTrailActive_ = true;
         lastPoint_ = pt;
         return;
     }

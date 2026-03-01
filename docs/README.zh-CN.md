@@ -57,6 +57,7 @@
 - macOS 拖尾发射规划器（抗火柴棍）: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzl-macos-trail-emission-planner-anti-matchstick.md`
 - macOS streamer 连续拖尾路径：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzm-macos-streamer-continuous-trail-path.md`
 - macOS 拖尾规划器诊断字段透出：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzn-macos-trail-planner-diagnostics-surfacing.md`
+- macOS 连续拖尾切换/重建收口防回潮：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzo-macos-trail-continuous-overlay-transition-and-window-recreate-guard.md`
 
 ## 当前 macOS 主线（Phase 50-55）
 - 双车道护栏：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`
