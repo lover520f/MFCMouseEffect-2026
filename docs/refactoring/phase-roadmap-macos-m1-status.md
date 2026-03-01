@@ -1,602 +1,88 @@
-# macOS M1/M2 Roadmap Status (Snapshot: 2026-02-25)
+# macOS Mainline Roadmap Snapshot (2026-03-01)
 
-## Why this file
-- Keep "plan vs actual" aligned in one short place.
-- Update this snapshot at each phase commit so review cost stays low.
+## Purpose
+Single high-value status page for AI-IDE and reviewers.
+This file intentionally excludes low-value historical step logs.
 
-## Status Matrix
-- Phase 50 (dual runtime lane guardrails): completed.
-  - Evidence: scaffold lane still default, core lane gated by `MFX_ENABLE_POSIX_CORE_RUNTIME`, scaffold regression green.
-- Phase 51 (core Win32/GDI+ decoupling for compile/start): completed (baseline scope).
-  - Evidence: core Win32 constants/path assembly decoupled, mac core lane can compile/start.
-- Phase 52 (mac input + indicator + click-first effect): completed.
-  - 52a completed: dispatch/input/indicator foundations and factory wiring.
-  - 52b completed: AppController bootstrapped in mac core lane, non-Windows degradation path landed.
-  - 52c completed: permission-aware degraded notice path + schema capability consumption in WebUI landed.
-  - 52d completed: manual records landed; permission path validated with degraded warning evidence.
-  - 52e completed: mac coordinate-space unification landed and permission-on alignment manually verified.
-  - 52f completed (code): runtime permission-revocation degradation hardening landed.
-  - 52f completed (acceptance): core automation contract regression now simulates runtime permission revoke and asserts degraded transition without process restart.
-  - 52g completed (code): mac input-indicator empty-label lifetime fix landed.
-  - 52g completed (acceptance): core automation contract regression now probes mouse indicator labels and asserts `L/R/M` render labels through mac overlay path.
-  - 52h completed (code): startup permission-missing path now converges through degraded handler (same as runtime revoke).
-  - 52h completed (acceptance): core automation contract regression now starts with simulated missing permission and asserts startup degraded convergence (`permission_denied`).
-  - 52i completed (code): runtime permission loss notify + hot-recovery path landed.
-  - 52i completed (acceptance): core automation contract regression now simulates runtime regrant and asserts hot-recovery (`active=true`) without process restart.
-  - 52j completed (code): startup-missing-permission retry recovery + startup degraded notify dedup landed.
-  - 52j completed (acceptance): core automation contract regression now captures shell warnings and asserts startup degraded notify dedup + startup grant-after-start auto-recovery.
-  - 52l completed (code): macOS scroll baseline effect landed (`MacosScrollPulseEffect`) and factory mapping now enables native scroll-visible feedback in core lane.
-  - 52l completed (acceptance): full POSIX regression suite remains green after scroll-effect enablement and schema now reports `capabilities.effects.scroll=true` on macOS.
-- Phase 53 (automation mapping with unified shortcut semantics): completed (M1 scope closure).
-  - Evidence: core automation contracts + unified suite remain green, and manual macOS injection acceptance is recorded; closure boundary is documented in `phase53ai`.
-  - 53a completed (code): mac keyboard injector + foreground-process service landed and factory/build wiring completed.
-  - 53a completed (acceptance-script): core automation contract regression now enforces non-empty `active-process`, `schema.capabilities.input.keyboard_injector=true`, and test-inject shortcut acceptance (`Cmd+C`) under explicit dry-run injector mode.
-  - 53a completed (acceptance-manual): user-side real-dispatch selfcheck passed on macOS on February 24, 2026 via `run-macos-automation-injection-selfcheck.sh` (`dry_run=0`, final result `mfx:ok`).
-  - 53b completed (code): shared app-scope normalization/matching helper landed; `.exe/.app/none` suffix compatibility is now unified.
-  - 53b completed (acceptance): core automation contract regression now asserts cross-suffix app-scope hits (`process:code.exe` / `process:code` / `process:code.app`) via test-gated API.
-  - 53c completed (code): POSIX core settings entry rewired to WebSettingsServer, tray width fixed, and Svelte WebUI directory discovery improved.
-  - 53c completed (acceptance): core automation contract regression now asserts tokenized core settings WebUI root + `settings-shell.svelte.js` asset load + shell settings-launcher URL call-path via probe/capture files, and macOS tray smoke now asserts `Settings` action callback + launcher URL call path.
-  - 53d completed (code): macOS shortcut capture now normalizes hardware keycodes to shared virtual-key semantics, removing `Cmd+V -> Cmd+Tab` collision.
-  - 53d completed (acceptance): core automation contract regression now asserts mac keycode->shortcut mapping (`Cmd+V`, `Cmd+Tab`) via test-gated endpoint.
-  - 53e completed (code): macOS automation app catalog scan landed (`/Applications` + `/System/Applications` + `~/Applications`) and platform facade now returns non-empty scan entries on macOS.
-  - 53e completed (acceptance): core automation contract regression now asserts `Refresh app list` (`force=true/false`) and selected-app scope persistence from scanned app entries.
-  - 53f completed (code): macOS automation scope UI now uses `.app` semantics end-to-end (catalog normalization, selected chips, picker suffix, placeholder and validation copy).
-  - 53f completed (acceptance): user manual test passed on macOS (`Selected Apps` semantics and picker copy no longer show `exe`).
-  - 53g completed (code): added test-gated core API for app-scope matching verification and unified matcher reuse across runtime and test paths.
-  - 53g completed (acceptance): macOS core automation contract regression and wasm selfcheck remain green after app-scope contract expansion.
-  - 53h completed (code): extracted shared automation action-id normalization and binding matcher utility, and added test-gated binding-priority endpoint to reuse runtime selection semantics.
-  - 53h completed (acceptance): core automation contract regression now asserts priority contracts (`process` over `all` on same chain length, and longest-chain-first over scope specificity).
-  - 53i completed (code): added test-gated matcher+inject endpoint (`/api/automation/test-match-and-inject`) and one-command macOS injection selfcheck script (real dispatch + dry-run mode).
-  - 53i completed (acceptance): core automation contract regression now asserts `history -> binding -> inject` path, and full POSIX suite remains green after endpoint/script landing.
-  - 53aj completed (code): added one-command macOS app-scope alias selfcheck script (`run-macos-automation-app-scope-selfcheck.sh`) that reuses existing automation scope-match contract helpers.
-  - 53aj completed (acceptance): manual selfcheck now validates `.exe/.app/none` alias hit consistency (`code`, `code.exe`, `code.app`) without ad-hoc curl/token setup.
-  - 53j completed (code): split WebSettings test-only API routes into dedicated module (`WebSettingsServer.TestApiRoutes.*`) and reduced main routing file coupling.
-  - 53j completed (acceptance): core automation contracts + full POSIX suite remain green after route-module split.
-  - 53k completed (code): split WebSettings production WASM API routes into dedicated module (`WebSettingsServer.WasmRoutes.*`) and reduced main routing file coupling further.
-  - 53k completed (acceptance): core automation contracts + full POSIX suite remain green after wasm-route module split.
-  - 53l completed (code): split WebSettings production automation API routes into dedicated module (`WebSettingsServer.AutomationRoutes.*`) and reduced main routing file coupling further.
-  - 53l completed (acceptance): core automation contracts + full POSIX suite remain green after automation-route module split.
-  - 53m completed (code): split WebSettings core settings API routes into dedicated module (`WebSettingsServer.CoreApiRoutes.*`) and made stop behavior callback-driven to avoid shell/class coupling.
-  - 53m completed (acceptance): core automation contracts + full POSIX suite remain green after core-api module split.
-  - 53n completed (code): split WebSettings request gateway concerns into dedicated module (`WebSettingsServer.RequestGateway.*`) and kept routing file as pure API/static delegator.
-  - 53n completed (acceptance): core automation contracts + full POSIX suite remain green after request-gateway module split.
-  - 53o completed (code): split WebSettings WebUI path-discovery logic into dedicated module (`WebSettingsServer.WebUiPathResolver.*`) and kept server bootstrap focused.
-  - 53o completed (acceptance): core automation contracts + full POSIX suite remain green after resolver-module split.
-  - 53p completed (code): split WebSettings WASM routes into runtime/catalog/util layers (`WasmRuntimeRoutes.*`, `WasmCatalogRoutes.*`, `WasmRouteUtils.*`) with delegating entry.
-  - 53p completed (acceptance): core automation contracts + full POSIX suite remain green after wasm-route deep split.
-  - 53q completed (code): split WebSettings test routes into shared/common + automation + wasm/input-indicator layers, keeping `TestApiRoutes.cpp` as delegating entry.
-  - 53q completed (acceptance): core automation contracts + full POSIX suite remain green after test-route deep split.
-  - 53r completed (code): split `SettingsStateMapper` into base-state and diagnostics-state sections (`BaseSections.*`, `Diagnostics.*`) and kept top-level mapper as composition bridge.
-  - 53r completed (acceptance): core automation contracts + full POSIX suite remain green after state-mapper section split.
-  - 53s completed (code): split `SettingsSchemaBuilder` into options and capabilities sections (`OptionsSections.*`, `CapabilitiesSections.*`) and kept top-level builder as composition entry.
-  - 53s completed (acceptance): core automation contracts + full POSIX suite remain green after schema-builder section split.
-  - 53t completed (code): split `HttpServer` into lifecycle/session/protocol layers (`HttpServer.Lifecycle.cpp`, `HttpServer.ClientSession.cpp`, `HttpServer.Protocol.cpp`) and kept `HttpServer.cpp` as thin ctor/dtor entry.
-  - 53t completed (acceptance): full POSIX regression suite remains green after HTTP server layer split.
-  - 53u completed (code): split WebSettings automation test routes into `scope/injection/shortcut` modules with shared route-utils and kept `TestAutomationApiRoutes.cpp` as delegating entry.
-  - 53u completed (acceptance): full POSIX regression suite remains green after automation test-route layer split.
-  - 53v completed (code): split WebSettings runtime automation routes into `shortcut-capture` + `process/catalog` modules with shared route-utils and kept `AutomationRoutes.cpp` as delegating entry.
-  - 53v completed (acceptance): full POSIX regression suite remains green after runtime automation route layer split.
-  - 53w completed (code): split WebSettings WASM catalog routes into `catalog-query/import/export` modules and kept `WasmCatalogRoutes.cpp` as delegating entry.
-  - 53w completed (acceptance): full POSIX regression suite remains green after WASM catalog route layer split.
-  - 53x completed (code): split WebSettings WASM runtime routes into `state/policy` + `action` modules and kept `WasmRuntimeRoutes.cpp` as delegating entry.
-  - 53x completed (acceptance): full POSIX regression suite remains green after WASM runtime route layer split.
-  - 53y completed (code): split WebSettings WASM route utils into `parse/path/response` implementations and removed monolithic `WasmRouteUtils.cpp`.
-  - 53y completed (acceptance): full POSIX regression suite remains green after WASM route utility layer split.
-  - 53z completed (code): split WebSettings WASM import routes into `selected` and `folder-dialog` modules and kept `WasmImportRoutes.cpp` as delegating entry.
-  - 53z completed (acceptance): full POSIX regression suite remains green after WASM import route layer split.
-  - 53aa completed (code): split WebSettings WASM runtime state/action routes into endpoint-level modules (`toggle/policy/reload/load-manifest`) and kept state/action files as delegating entries.
-  - 53aa completed (acceptance): full POSIX regression suite remains green after WASM runtime endpoint-route layer split.
-  - 53ab completed (code): introduced `InputAutomationDispatch` boundary and moved matcher/executor flow (`history -> match -> inject`) out of `InputAutomationEngine`.
-  - 53ab completed (acceptance): full POSIX regression suite remains green after automation dispatch boundary split.
-  - 53ac completed (code): added keyboard label probe support for input indicator (`RunKeyboardLabelProbe` + `/api/input-indicator/test-keyboard-labels`) and integrated it into core automation contract checks.
-  - 53ac completed (acceptance): full POSIX regression suite remains green after keyboard indicator probe contract expansion.
-  - 53ad completed (code): added `input_capture.effects_suspended` state contract backed by `AppController` runtime flag (`effectsSuspendedByInputCapture_`) and wired transition updates on degraded/recovery.
-  - 53ad completed (acceptance): core automation contract now asserts effect suspension transitions (`true/false`) across startup/runtime permission revoke/regrant, and full POSIX suite remains green.
-  - 53ae completed (code): extracted input-capture runtime/degradation orchestration from `AppController.cpp` into `AppController.InputCapture.cpp` and wired both CMake + Visual Studio build ownership.
-  - 53ae completed (acceptance): full POSIX regression suite remains green after controller split, and Windows build-lane wiring is preserved in `MFCMouseEffect.vcxproj`.
-  - 53af completed (code): extracted lifecycle orchestration (`Start/Stop/CreateDispatchWindow/DestroyDispatchWindow`) from `AppController.cpp` into `AppController.Lifecycle.cpp` and wired both CMake + Visual Studio build ownership.
-  - 53af completed (acceptance): full POSIX regression suite remains green after lifecycle split, and Windows build-lane wiring is preserved in `MFCMouseEffect.vcxproj`.
-  - 53ag completed (code): extracted effect orchestration + VM suppression runtime (`SetEffect/ApplyConfiguredEffects/SetTheme/UpdateVmSuppressionState` and related helpers) from `AppController.cpp` into `AppController.Effects.cpp` and wired both CMake + Visual Studio build ownership.
-  - 53ag completed (acceptance): full POSIX regression suite remains green after effects/vm split, and Windows build-lane wiring is preserved in `MFCMouseEffect.vcxproj`.
-  - 53ah completed (code): extracted dispatch-state runtime helpers (`OnGlobalKey`, shortcut-capture session lifecycle, hover/hold timers/state helpers) from `AppController.cpp` into `AppController.DispatchState.cpp` and wired both CMake + Visual Studio build ownership.
-  - 53ah completed (acceptance): full POSIX regression suite remains green after dispatch-state split, and Windows build-lane wiring is preserved in `MFCMouseEffect.vcxproj`.
-  - 53ai completed (closure): phase closure boundary is now explicitly documented with minimal evidence (`core-automation-contract`, unified suite, and manual injection selfcheck) in `phase53ai-automation-mapping-phase-closure.md`.
-- Phase 54 (Linux compile-level + contract-level follow): completed (compile-level + contract-level scope closure).
-  - Evidence: Linux dual-lane compile gate and unified POSIX suite remain green; closure boundary is documented in `phase54i`.
-  - 54a completed (code): Linux compile-level gate is now scriptized as one-command workflow (`run-posix-linux-compile-gate.sh`) with modular regression packaging.
-  - 54a completed (acceptance): gate command executed and passed on current host.
-  - 54b completed (code): WebUI automation platform semantics now have lightweight scripted regression coverage (`test:automation-platform`).
-  - 54b completed (acceptance): platform semantic tests executed and passed (`.app/.exe` normalization, parse/serialize, payload/read mappings).
-  - 54c completed (code): POSIX regression suite orchestrator landed (`run-posix-regression-suite.sh`) to chain scaffold/linux-gate/automation checks under one entry.
-  - 54c completed (acceptance): suite command executed and passed on current host.
-  - 54d completed (code): scaffold HTTP regression now asserts automation API unsupported contracts (`active-process`, `app-catalog` must return `404 not found` in scaffold lane).
-  - 54d completed (acceptance): scaffold regression and unified suite executed and passed after the new checks.
-  - 54e completed (code): core-lane startup/alive/exit smoke is now scriptized (`run-posix-core-smoke.sh`) and integrated into the POSIX suite.
-  - 54e completed (acceptance): core smoke command and updated suite command executed and passed on current host.
-  - 54f completed (code): core-lane automation HTTP contracts are now scriptized (`run-posix-core-automation-contract-regression.sh`) with test-only WebSettings probe output.
-  - 54f completed (acceptance): core automation contract command and updated suite command executed and passed on current host.
-  - 54g completed (code): POSIX suite now includes macOS automation injection selfcheck (`--dry-run`) as a default phase with explicit skip control.
-  - 54g completed (acceptance): full suite remains green after injection selfcheck gate integration.
-  - 54h completed (code): Linux compile gate now validates both runtime lanes by default (`MFX_ENABLE_POSIX_CORE_RUNTIME=OFF/ON`) with one command, and keeps `--skip-core-runtime` for faster local-only runs.
-  - 54h completed (acceptance): Linux gate and full POSIX suite remain green after dual-lane compile expansion.
-  - 54i completed (closure): phase closure boundary is now explicitly documented with minimal evidence (`linux-compile-gate`, unified suite, and WebUI automation-platform semantics test) in `phase54i-linux-follow-phase-closure.md`.
-- Phase 55 (mac WASM runtime): in progress (M2).
-  - 55a completed (code): macOS core lane now wires a native `wasm3_static` backend while keeping Windows default on `dynamic_bridge`.
-  - 55a completed (acceptance): core build/smoke/contracts passed, and `/api/state` contract now asserts `runtime_backend=wasm3_static` on macOS.
-  - 55b completed (code): POSIX dispatch path now invokes WASM host on click/move/scroll/hold/hover-start instead of Windows-only stubs.
-  - 55b completed (acceptance): core/scaffold/linux/webui regression gates passed after dispatch change.
-  - 55b completed (acceptance-script): macOS WASM runtime selfcheck (`load/enable/dispatch/invalid-manifest fallback`) is now integrated into unified regression suite as dedicated phase gate.
-  - 55c completed (code): schema/state now expose WASM `invoke_supported` vs `render_supported` contracts for platform-aware degrade signaling.
-  - 55c completed (acceptance): core HTTP contract regression now enforces wasm capability fields (`invoke_supported`/`render_supported`) and `capabilities.wasm` presence.
-  - 55d completed (code): shared `WasmEventInvokeExecutor` + `IWasmCommandRenderer` strategy landed to remove duplicate invoke/render branches from control paths.
-  - 55d completed (acceptance): core smoke + core automation contract + scaffold regression + Linux compile gate all passed after consolidation.
-  - 55e completed (code): platform renderer adapter is now promoted to explicit strategy contract (`IWasmCommandRenderer`) with platform factory and injectable executor overload.
-  - 55e completed (acceptance): core/scaffold/linux regression gates remain green after replacing adapter files with strategy implementation.
-  - 55f completed (code): macOS `IWasmCommandRenderer` now executes `spawn_text`/`spawn_image` command output via native transient overlays; capability flag is strategy-driven.
-  - 55f completed (acceptance): core HTTP contract now asserts `render_supported=true` on macOS and all regression gates remain green.
-  - 55g completed (code): macOS renderer now consumes plugin `image_assets` when available and maps `delay/vx/vy/ax/ay/rotation` into overlay motion semantics.
-  - 55g completed (acceptance): core/scaffold/linux regression gates remain green after fidelity and overlay-runtime refactor.
-  - 55h completed (code): macOS transient overlays now have policy-driven admission guardrails (in-flight cap + per-kind interval throttling) with test-friendly env overrides.
-  - 55h completed (acceptance): core/scaffold/linux regression gates remain green after overlay throttling hardening.
-  - 55i completed (code): macOS renderer now reports throttled-vs-failed drops explicitly (`last_throttled_render_commands`) while keeping `last_render_error` failure-only semantics, and Linux WASM renderer roadmap is explicitly locked to degrade-only for current M2 scope.
-  - 55i completed (acceptance): core/scaffold/linux regression gates remain green after diagnostics contract extension.
-  - 55j completed (code): macOS throttle diagnostics now split capacity-vs-interval causes (`last_throttled_by_capacity_render_commands` / `last_throttled_by_interval_render_commands`) and WebUI diagnostics panel now exposes both counters.
-  - 55j completed (acceptance): core/scaffold/linux regression gates + WebUI workspace build remain green after diagnostics expansion.
-  - 55k completed (code): fixed macOS async overlay task lifetime crash by switching main-thread overlay task passing from reference semantics to value semantics.
-  - 55k completed (acceptance): synthetic click burst self-run no longer crashes process; core/scaffold/linux regression gates remain green.
-  - 55l completed (code): POSIX core lane now enables WASM plugin catalog/import/export APIs (shared with Windows semantics), including cross-platform build wiring for catalog/transfer modules.
-  - 55l completed (acceptance): POSIX suite remains green after adding WASM catalog HTTP contracts and removing platform-unsupported marker on macOS.
-  - 55m completed (code): macOS native folder picker (`NSOpenPanel`) is now wired through platform facade for `/api/wasm/import-from-folder-dialog`, and the route is no longer Windows-guarded.
-  - 55m completed (acceptance): core smoke + core automation contracts + full POSIX suite remain green after picker integration.
-  - 55m1 completed (code): folder picker modal activation is now foreground-safe for tray/background shell context (temporary activation-policy promotion + app activation), preventing immediate auto-cancel on click.
-  - 55m1 completed (acceptance): core automation contract regression remains green after activation-guard patch.
-  - 55m2 completed (code): macOS chooser now prefers `osascript choose folder` as primary path (isolated foreground chooser process) with `NSOpenPanel` fallback only on script failure, reducing tray-context modal-dismiss instability.
-  - 55m2 completed (acceptance): core automation contract regression remains green after chooser-path switch.
-  - 55m3 completed (code): fixed AppleScript chooser `default location` coercion to alias form so primary chooser path no longer falls back unnecessarily (avoids transient Dock `exec` icon in normal import flow).
-  - 55m3 completed (acceptance): core automation contract regression remains green after chooser-script fix.
-  - 55m4 completed (code): macOS folder chooser no longer shells out via `popen`; it now executes AppleScript in-process (`NSAppleScript`) and fallback activation no longer promotes app policy to Regular, reducing transient Dock `exec` icon risk.
-  - 55m4 completed (acceptance): core automation contract regression remains green after in-process chooser switch.
-  - 55n completed (code): added test-gated WASM dispatch endpoint (`/api/wasm/test-dispatch-click`) and automated import/load/enable/dispatch contract checks in core HTTP regression.
-  - 55n completed (acceptance): core automation contracts and full POSIX suite pass with invoke/render assertions on macOS.
-  - 55o-a completed (code): added one-command macOS manual WebSettings runner (`build -> tray host -> probe URL -> optional open + auto-stop`) to stabilize manual acceptance workflow.
-  - 55o-a completed (acceptance): runner executed successfully on local macOS host and emits valid tokenized URL.
-  - 55o-b completed (code): added macOS WASM runtime selfcheck script (`load-manifest -> enable -> test-dispatch -> invalid-manifest fallback non-crash`) and extracted shared manual host startup helper.
-  - 55o-b completed (acceptance): selfcheck script executed successfully on local macOS host and passed all assertions.
-  - 55o-c completed (code): split macOS folder-picker implementation into coordinator + AppleScript module + OpenPanel fallback module, reducing single-file coupling without behavior change.
-  - 55o-c completed (acceptance): core automation contract regression and wasm selfcheck remain green after split.
-  - 55o-d completed (closure): minimal closure evidence is now recorded (selfcheck pass + manual runner availability + user-confirmed folder-import UX fixes).
-  - 55p completed (code): POSIX regression suite now runs macOS WASM runtime selfcheck as a first-class phase (default enabled, explicit skip flag available).
-  - 55p completed (acceptance): full POSIX suite and standalone selfcheck remain green after suite integration.
-  - 55q completed (code): WASM host and WebSettings diagnostics now expose machine-readable load-failure stage/code fields, and manifest load failures are classified into stable categories (`io_error/json_parse/invalid`).
-  - 55q completed (acceptance): full POSIX suite remains green and macOS WASM selfcheck now asserts invalid-manifest response contract (`last_load_failure_stage=manifest_load`, `last_load_failure_code=manifest_io_error`).
-  - 55r completed (code): macOS WASM runtime selfcheck now covers all current manifest load-failure classes (`manifest_io_error`, `manifest_json_parse_error`, `manifest_invalid`) with deterministic temp-manifest fixtures.
-  - 55r completed (acceptance): full POSIX suite (including macOS WASM selfcheck phase) remains green after classification-coverage expansion.
-  - 55s completed (code): macOS WASM runtime selfcheck now also covers stage-level failures (`manifest_api_version`, `load_module`) and successful-reload failure-field reset (`last_load_failure_stage/code` cleared).
-  - 55s completed (acceptance): full POSIX suite (including macOS WASM selfcheck phase) remains green after stage-coverage expansion.
-  - 55t completed (code): extracted shared WASM selfcheck helpers (`load-manifest` HTTP + stage/code assertions + JSON escaping) to dedicated manual-lib module, reducing duplication in the macOS runtime selfcheck script.
-  - 55t completed (acceptance): script syntax checks and full POSIX suite remain green after helper split.
-  - 55u completed (code): core HTTP contract regression now asserts WASM load-failure diagnostics (`last_load_failure_stage/code`) across success, invalid-manifest failure, and reload-clear paths, with helperized load-manifest request/assert wrappers.
-  - 55u completed (acceptance): shell syntax checks and full POSIX suite remain green after core-http WASM contract expansion.
-  - 55v completed (code): shared Svelte WASM diagnostics panel now renders load-failure stage/code fields and wires warning-state evaluation to non-empty failure signals; EN/ZH i18n keys are added for both labels.
-  - 55v completed (acceptance): WebUI workspace build and full POSIX suite remain green after diagnostics-surface expansion.
-  - 55w completed (code): WebUI WASM state normalization is now deduplicated into shared `state-model` module used by both `wasm-main` and `WasmPluginFields`, removing duplicate normalization branches.
-  - 55w completed (acceptance): WebUI workspace build and full POSIX suite remain green after state-model dedup.
-  - 55x completed (code): split core HTTP WASM load-manifest helper logic into dedicated regression module (`core_http_wasm_helpers.sh`) and reduced coupling in `core_http.sh`.
-  - 55x completed (acceptance): shell syntax checks and full POSIX suite remain green after helper-module split.
-  - 55y completed (code): expanded core HTTP WASM helper module with transfer API contracts (`import-selected` success/failure and `export-all` success with minimum count assertion) and migrated inline assertions from `core_http.sh` to helperized calls.
-  - 55y completed (acceptance): core automation contract regression and full POSIX suite remain green after WASM transfer-contract expansion.
-  - 55z completed (code): strengthened `export-all` contract assertions by validating response-vs-filesystem consistency (`export_path` exists and top-level exported directory count matches response `count`).
-  - 55z completed (acceptance): core automation contract regression and full POSIX suite remain green after export filesystem-contract expansion.
-  - 55za completed (code): strengthened `export-all` assertions with manifest-integrity checks (`export_path/*/plugin.json` count must match response `count`, and each exported `plugin.json` must be non-empty).
-  - 55za completed (acceptance): core automation contract regression and full POSIX suite remain green after export manifest-integrity expansion.
-  - 55zb completed (code): transfer responses (`import-selected`, `export-all`, folder-dialog import) now expose stable `error_code` fields, and transfer service now maps deterministic error-code semantics while keeping legacy `error` text.
-  - 55zb completed (acceptance): core automation contract regression now asserts `import-selected` failure `error_code` contract (`manifest_path_not_found`), and full POSIX suite remains green.
-  - 55zc completed (code): shared Svelte WASM settings UI now consumes transfer `error_code` responses and surfaces readable operation diagnostics (`Error code: <code>`) via dedicated error-code model mapping.
-  - 55zc completed (acceptance): WebUI workspace build + automation platform tests + full POSIX suite remain green after frontend error-code surface expansion.
-  - 55zd completed (code): expanded transfer failure-code regression matrix (`required/not_file/load_failed/not_found`) and switched WebUI error rendering preference to `error_code` mapping (with EN/ZH translation keys and `error` fallback).
-  - 55zd completed (acceptance): core automation contract regression + full POSIX suite + WebUI workspace build/tests remain green after matrix+i18n expansion.
-  - 55ze completed (code): added dedicated WebUI WASM error-model test script and integrated it into default POSIX suite webui semantic phase (`test:automation-platform` + `test:wasm-error-model`).
-  - 55ze completed (acceptance): standalone `test:wasm-error-model` and full POSIX suite remain green after webui test-gate integration.
-  - 55zf completed (code): core HTTP contract checks now support explicit scope mode (`all`/`wasm`), and a dedicated WASM-focused regression entry (`run-posix-core-wasm-contract-regression.sh`) is added for faster M2 WASM closure iteration without changing default full-contract behavior.
-  - 55zf completed (acceptance): standalone wasm-focused regression gate, expanded macOS WASM selfcheck (with transfer/error_code coverage), and full POSIX regression suite all remain green.
-  - 55zg completed (code): extracted WASM HTTP contract execution block from `core_http.sh` into dedicated module (`core_http_wasm_contract_checks.sh`) while preserving existing check scopes and assertions.
-  - 55zg completed (acceptance): core automation contract gate, wasm-focused gate, and full POSIX suite remain green after module split.
-  - 55zh completed (code): extracted non-WASM HTTP contract execution blocks (input-capture and automation contracts) into dedicated modules (`core_http_input_contract_checks.sh`, `core_http_automation_contract_checks.sh`) while preserving existing check scopes and assertions.
-  - 55zh completed (acceptance): core automation contract gate, wasm-focused gate, and full POSIX suite remain green after non-WASM module split.
-  - 55zi completed (code): added shared core-entry lock guard (`mfx-entry-posix-host`) in regression common lib and wired it into core smoke/core automation/core wasm entry scripts to prevent concurrent-run `pkill` interference.
-  - 55zi completed (acceptance): concurrent automation+wasm contract runs now serialize on lock (observed wait path) and both complete successfully; full POSIX suite remains green.
-  - 55zj completed (code): wired the same entry lock guard into macOS manual scripts (core websettings runner, automation injection selfcheck, wasm runtime selfcheck) so manual and regression workflows share host-process scheduling semantics.
-  - 55zj completed (acceptance): concurrent manual wasm selfcheck + core automation contract run now serializes on lock and both complete successfully; full POSIX suite remains green.
-  - 55zk completed (code): suite preflight in `run-posix-regression-suite.sh` is now detect-only; entry-host cleanup is no longer executed at suite level and remains phase-local under `mfx-entry-posix-host` lock.
-  - 55zk completed (acceptance): full POSIX regression suite remains green after suite preflight lock-alignment cleanup.
-  - 55zl completed (code): consolidated stale entry-host cleanup into shared helper (`mfx_terminate_stale_entry_host`) and reused it in core regression scripts plus macOS manual host launcher lib.
-  - 55zl completed (acceptance): full POSIX regression suite remains green after cleanup-helper consolidation.
-  - 55zm completed (code): extracted manual entry-lock acquire boilerplate into shared helper (`mfx_manual_acquire_entry_host_lock`) and switched manual keep-running stop hint to PID-scoped command (`kill -TERM <pid>`).
-  - 55zm completed (acceptance): full POSIX regression suite remains green after manual lock-helper + stop-command hardening.
-  - 55zn completed (code): added shared file-match fallback helpers (`rg` priority, `grep` fallback), replaced direct `rg` checks in core HTTP contract modules, and removed `mfx_require_cmd rg` from regression entry scripts.
-  - 55zn completed (acceptance): full POSIX regression suite remains green after `rg` dependency fallback hardening.
-  - 55zo completed (code): consolidated host-platform detection and `--platform` resolution into shared helpers (`mfx_detect_posix_host_platform`, `mfx_resolve_posix_platform`) and removed duplicated validation blocks across POSIX regression entry scripts.
-  - 55zo completed (acceptance): full POSIX regression suite remains green after platform-arg helper consolidation.
-  - 55zp completed (docs): compacted top-level P0/P1 indexes (`docs/README*.md`, `docs/agent-context/current.md`) by replacing exhaustive 53x/55x lists with key-doc subsets and roadmap pointers.
-  - 55zp completed (acceptance): strict doc hygiene remains green after index compaction.
-  - 55zq completed (code): consolidated core regression workflow boilerplate into shared helpers (`mfx_prepare_core_entry_runtime`, `mfx_run_with_entry_lock`) and rewired core smoke/automation/wasm scripts to use them.
-  - 55zq completed (acceptance): full POSIX regression suite remains green after core workflow-helper consolidation.
-  - 55zr completed (code): added retry-based WASM test-dispatch readiness assertions in both regression and manual selfcheck paths to absorb transient startup races (`invoke_ok`/`rendered_any` timing).
-  - 55zr completed (acceptance): full POSIX regression suite remains green after dispatch-readiness retry hardening.
-  - 55zs completed (code): extracted macOS global-input helper modules (`MacosInputEventUtils`, `MacosInputPermissionState`) to remove event-mapping and permission-file parsing from `MacosGlobalInputHook.mm`.
-  - 55zs completed (acceptance): full POSIX regression suite remains green after helper extraction and CMake wiring update.
-  - 55zt completed (code): split `MacosGlobalInputHook` implementation into lifecycle (`.mm`), callback/probe (`.EventTap.mm`), and runloop (`.RunLoop.mm`) units with shared class-level constants.
-  - 55zt completed (acceptance): full POSIX regression suite remains green after implementation-unit split.
-  - 55zu completed (code): split `MacosInputIndicatorOverlay` into render/lifecycle unit, probe/event-entry unit, and shared internals helper unit (`label/main-thread/string` utilities).
-  - 55zu completed (acceptance): full POSIX regression suite remains green after indicator overlay implementation split.
-  - 55zv completed (code): extracted macOS keyboard shortcut key-resolution logic into dedicated module (`MacosKeyboardInjectorKeyResolver.*`) and kept `MacosKeyboardInjector` focused on injection flow.
-  - 55zv completed (acceptance): full POSIX regression suite remains green after keyboard-injector resolver split.
-  - 55zw completed (code): extracted app-catalog root-scan workflow (`root discovery`, `bundle resolution`, `dedup/sort`) into dedicated module (`MacosApplicationCatalogScanWorkflow.*`) and kept `MacosApplicationCatalogScanner` as thin entry façade.
-  - 55zw completed (acceptance): full POSIX regression suite remains green after app-catalog workflow split.
-  - 55zx completed (code): split macOS wasm renderer into parse/orchestration (`MacosWasmCommandRenderer.mm`), command dispatch (`MacosWasmCommandRenderDispatch.*`), and resolver helpers (`MacosWasmCommandRenderResolvers.*`).
-  - 55zx completed (acceptance): full POSIX regression suite remains green after wasm renderer dispatch/resolver split.
-  - 55zy completed (code): split macOS scroll pulse effect into facade (`MacosScrollPulseEffect.mm`) and overlay renderer module (`MacosScrollPulseOverlayRenderer.*`) with window registry/animation internals extracted.
-  - 55zy completed (acceptance): full POSIX regression suite remains green after scroll pulse renderer split.
-  - 55zz completed (code): split wasm transient image-overlay path into facade (`MacosWasmTransientOverlay.mm`) and dedicated renderer module (`MacosWasmImageOverlayRenderer.*`) with composition/animation internals extracted.
-  - 55zz completed (acceptance): full POSIX regression suite remains green after wasm image-overlay renderer split.
-  - 55zza completed (code): split `MacosDispatchMessageHost` implementation into lifecycle (`.cpp`), messaging worker (`.Messaging.cpp`), and timer management (`.Timers.cpp`) units with shared class-level error constants.
-  - 55zza completed (acceptance): full POSIX regression suite remains green after dispatch-host implementation split.
-  - 55zzb completed (code): split `MacosTrayService` into lifecycle facade + dedicated menu factory/runtime helper modules (`MacosTrayMenuFactory.*`, `MacosTrayRuntimeHelpers.*`) and moved Objective-C action bridge out of service file.
-  - 55zzb completed (acceptance): full POSIX regression suite remains green after tray service menu-factory/runtime-helper split.
-  - 55zzc completed (code): further split app-catalog workflow by extracting scan roots (`MacosApplicationCatalogScanRoots.*`) and entry store (`MacosApplicationCatalogEntryStore.*`), keeping traversal orchestration in `MacosApplicationCatalogScanWorkflow.mm`.
-  - 55zzc completed (acceptance): full POSIX regression suite remains green after app-catalog workflow secondary split.
-  - 55zzd completed (code): split wasm overlay runtime state internals into `MacosWasmOverlayState.*` and kept `MacosWasmOverlayRuntime.mm` as API/main-thread facade.
-  - 55zzd completed (acceptance): full POSIX regression suite remains green after wasm overlay runtime state split.
-  - 55zze completed (code): split macOS scroll pulse overlay internals by extracting style helpers (`MacosScrollPulseOverlayStyle.*`) and transient-window registry (`MacosScrollPulseWindowRegistry.*`), keeping `MacosScrollPulseOverlayRenderer.mm` as orchestration facade.
-  - 55zze completed (acceptance): full POSIX regression suite remains green after scroll pulse overlay internals split.
-  - 55zzf completed (code): split macOS click pulse effect internals into renderer/style/window-registry modules (`MacosClickPulseOverlayRenderer.*`, `MacosClickPulseOverlayStyle.*`, `MacosClickPulseWindowRegistry.*`) and kept `MacosClickPulseEffect.mm` as lifecycle/event-entry facade.
-  - 55zzf completed (acceptance): full POSIX regression suite remains green after click pulse overlay internals split.
-  - 55zzg completed (code): split keyboard injector key mapping tables into `MacosKeyboardInjectorKeyTables.*` and kept `MacosKeyboardInjectorKeyResolver.mm` as resolver flow/orchestration facade.
-  - 55zzg completed (acceptance): full POSIX regression suite remains green after keyboard-injector key-table split.
-  - 55zzh completed (code): expanded wasm dispatch test contracts to assert diagnostics consistency between dispatch response and `/api/state` snapshots, including throttle arithmetic invariant (`total == capacity + interval`).
-  - 55zzh completed (acceptance): full POSIX regression suite remains green after wasm dispatch diagnostics consistency contract expansion.
-  - 55zzi completed (code): added macOS effect overlay lifecycle observability (`/api/state.effects_runtime`) and test-only effect probe route (`/api/effects/test-overlay-windows`) with emit/restore contract checks.
-  - 55zzi completed (acceptance): full POSIX regression suite remains green after effect overlay lifecycle observability + contract probe expansion.
-  - 55zzj completed (code): hardened effect overlay probe contracts with script-computed arithmetic checks from flattened counters (`total == click + scroll`) and removed redundant `effects_runtime.total_matches_components`.
-  - 55zzj completed (acceptance): full POSIX regression suite remains green after effect overlay probe arithmetic hardening.
-  - 55zzk completed (code): hardened automation shortcut test route for invalid keycode path (`supported=false`, `vk_code=0`, empty `shortcut`, reason code) and added regression assertions.
-  - 55zzk completed (acceptance): full POSIX regression suite remains green after invalid-keycode shortcut contract hardening.
-  - 55zzl completed (code): unified `load-manifest/reload` runtime action responses with structured `error_code`, normalized path parsing trim semantics, and added deterministic route-level fallback codes.
-  - 55zzl completed (acceptance): full POSIX regression suite remains green after adding `reload ok` and `load-manifest required` contract assertions to regression/manual wasm checks.
-  - 55zzm completed (code): fixed `wasm_reload` command to execute on all platforms (removed Windows-only guard), added test-gated wasm runtime reset route, and hardened reload error-code precedence for missing-target path.
-  - 55zzm completed (acceptance): full POSIX regression suite remains green after adding deterministic `reset-runtime -> reload_target_missing -> load-manifest restore` wasm contract assertions.
-  - 55zzn completed (code): added deterministic fixture-based reload failure contract path (`load fixture -> remove entry wasm -> reload`) and extended helper assertions to verify reload stage/code semantics.
-  - 55zzn completed (acceptance): full POSIX regression suite remains green after enforcing `module_load_failed` + `load_module` reload failure semantics in both regression and manual selfcheck flows.
-  - 55zzo completed (code): added deterministic fixture mutation contract for reload manifest api mismatch (`load fixture -> set api_version=2 -> reload`) with explicit stage/code assertions.
-  - 55zzo completed (acceptance): full POSIX regression suite remains green after enforcing `manifest_api_unsupported` + `manifest_api_version` reload failure semantics.
-  - 55zzp completed (code): extracted shared WASM fixture helpers (`copy/entry-resolve/remove-entry/rewrite-api-version`) and rewired both regression and manual selfcheck flows to use the shared module.
-  - 55zzp completed (acceptance): full POSIX regression suite remains green after fixture helper consolidation (no contract behavior change).
-  - 55zzq completed (code): expanded shared WebUI wasm action error model to include runtime load/reload error codes, updated wasm error-model tests with runtime cases, and backfilled legacy `WebUI/i18n.js` EN/ZH runtime error-code keys to keep UI translation parity.
-  - 55zzq completed (acceptance): full POSIX regression suite remains green, `test:wasm-error-model` remains green, and `pnpm --dir MFCMouseEffect/WebUIWorkspace run build` remains green after runtime error-code mapping + i18n parity expansion.
-  - 55zzr completed (code): added script-level i18n parity gate for WASM error-model keys (`action-error-model` -> `WebUI/i18n.js` `en-US`/`zh-CN`) by exporting key list and validating key coverage in `test-wasm-action-error-model`.
-  - 55zzr completed (acceptance): `test:wasm-error-model` and full POSIX regression suite remain green after enabling mapping-vs-dictionary parity checks.
-  - 55zzs completed (code): added explicit WASM route path-trim contract helpers/assertions in both core regression and macOS wasm selfcheck, covering `load-manifest` (`"  manifest_path  "` success + `active_manifest_path` match, `"   "` -> `manifest_path_required`) and folder-dialog probe (`"  initial_path  "` -> trimmed `selected_folder_path`).
-  - 55zzs completed (acceptance): wasm-focused gate, macOS wasm selfcheck, and full POSIX regression suite remain green after manifest-path trim contract expansion.
-  - 55zzt completed (code): split macOS wasm selfcheck helper stack into dedicated modules (`parse`, `http`, `runtime_assert`, `transfer_assert`, `dispatch_assert`) and kept compatibility loaders (`wasm_selfcheck_common.sh`, `wasm_selfcheck_assert_helpers.sh`) to preserve call sites.
-  - 55zzt completed (acceptance): `run-macos-wasm-runtime-selfcheck --skip-build` and full POSIX regression suite remain green after helper modularization.
-  - 55zzu completed (code): split core HTTP wasm helper stack into dedicated modules (`parse`, `http`, `runtime_assert`, `transfer_assert`, `dispatch_assert`) with compatibility loader entry (`core_http_wasm_helpers.sh`), and hardened lock owner-pid read (`mfx_read_lock_owner_pid`) to tolerate transient `owner.env` races during concurrent waits.
-  - 55zzu completed (acceptance): concurrent wasm gate runs now serialize under `mfx-entry-posix-host` without wait-path `sed` failure, and full POSIX regression suite remains green.
-  - 55zzv completed (code): split core HTTP wasm contract checks into scenario modules (catalog/path/runtime/transfer/fixture/dispatch/platform) while keeping `core_http_wasm_contract_checks.sh` as the orchestrator.
-  - 55zzv completed (acceptance): wasm contract gate and full POSIX regression suite remain green after contract-check modularization.
-  - 55zzw completed (code): split core HTTP automation contract checks into scenario modules (basic/app-scope/priority/match-inject/shortcut/indicator/effects/platform) while keeping `core_http_automation_contract_checks.sh` as the orchestrator.
-  - 55zzw completed (acceptance): automation contract gate and full POSIX regression suite remain green after contract-check modularization.
-  - 55zzx completed (code): split core HTTP orchestrator helpers into probe/entry/state modules while keeping `core_http.sh` as the top-level workflow.
-  - 55zzx completed (acceptance): automation contract gate and full POSIX regression suite remain green after core-http helper split.
-  - 55zzy completed (code): split core HTTP input-capture helper responsibilities (parse/permission/notification/state/steps) into dedicated modules while keeping `core_http_input_contract_checks.sh` as the contract entry.
-  - 55zzy completed (acceptance): automation contract gate and full POSIX regression suite remain green after input-capture helper split.
-  - 55zzz completed (code): split scaffold HTTP entry lifecycle helpers into `http_entry_helpers.sh` and keep `http.sh` focused on route checks.
-  - 55zzz completed (acceptance): full POSIX regression suite remains green after scaffold HTTP helper split.
-  - 55zzza completed (code): split core smoke entry lifecycle helpers into `core_smoke_entry_helpers.sh` and keep `core_smoke.sh` focused on smoke checks.
-  - 55zzza completed (acceptance): full POSIX regression suite remains green after core smoke helper split.
-  - 55zzzb completed (code): expanded macOS effect routing to click/trail/scroll/hold/hover and added macOS-native trail/hover/hold effect implementations with type-aware click/scroll rendering.
-  - 55zzzb completed (acceptance): full POSIX regression suite remains green after macOS effects category-parity baseline expansion.
-  - 55zzzc completed (code): expanded macOS effects runtime diagnostics and effect-overlay test probe to include trail/hold/hover counters and emit paths, while preserving click/scroll compatibility fields.
-  - 55zzzc completed (acceptance): core automation contract gate and full POSIX regression suite remain green after effects-runtime probe expansion.
-  - 55zzzd completed (code): added macOS effect probe per-category type args and explicit hold style mapping (including GPU-route aliases) with hover alias normalization (`suspension` -> `tubes`).
-  - 55zzzd completed (acceptance): core automation contract gate and full POSIX regression suite remain green after non-default type probe matrix expansion.
-  - 55zzzza completed (code): consolidated duplicated macOS WASM overlay render math (`clamp/scale/life/color`) into shared module (`MacosWasmOverlayRenderMath.*`) and rewired image/text overlay renderers to use the shared boundary.
-  - 55zzzza completed (acceptance): full POSIX regression suite remains green after shared render-math consolidation.
-  - 55zzzzb completed (code): split macOS WASM render dispatch by command responsibility into dispatch entry (`MacosWasmCommandRenderDispatch.mm`), text handler (`.Text.mm`), and image/affine handler (`.Image.mm`) with shared internal contract.
-  - 55zzzzb completed (acceptance): full POSIX regression suite remains green after command-dispatch responsibility split.
-  - 55zzzzc completed (code): split macOS keyboard injector key table mappings into dedicated printable/function/special/modifier units and removed monolithic `MacosKeyboardInjectorKeyTables.mm`.
-  - 55zzzzc completed (acceptance): full POSIX regression suite remains green after keyboard-mapping table responsibility split.
-  - 55zzzzd completed (code): split AppleScript folder-picker implementation into entry-thread dispatch (`.Script.mm`), string/path helpers (`.StringUtils.mm`), and source/execute pipeline (`.Execution.mm`) with shared helper contract.
-  - 55zzzzd completed (acceptance): full POSIX regression suite remains green after picker script responsibility split.
-  - 55zzzze completed (code): split `MacosGlobalInputHook` event-tap dispatch responsibilities into callback routing (`.EventTap.mm`) and per-event handlers (`.EventTapDispatch.mm`) with class-private handler boundaries.
-  - 55zzzze completed (acceptance): full POSIX regression suite remains green after event-tap dispatch split.
-  - 55zzzzf completed (code): split macOS input-indicator overlay style/layout helpers into dedicated module (`MacosInputIndicatorOverlay.Style.*`) and kept overlay file focused on lifecycle/config orchestration.
-  - 55zzzzf completed (acceptance): full POSIX regression suite remains green after input-indicator overlay style split.
-  - 55zzzzg completed (code): split WASM image overlay utility responsibilities (`alpha/delay clamp`, motion check, path conversion) into dedicated support module (`MacosWasmImageOverlayRendererSupport.*`) and kept renderer core focused on render flow.
-  - 55zzzzg completed (acceptance): full POSIX regression suite remains green after image-overlay support split.
-  - 55zzzzh completed (code): split macOS app-catalog scan helper responsibilities into bundle-resolution and root-traversal modules (`MacosApplicationCatalogScanWorkflow.BundleResolve.mm`, `MacosApplicationCatalogScanWorkflow.RootScan.mm`) and removed the mixed helper file.
-  - 55zzzzh completed (acceptance): full POSIX regression suite remains green after app-catalog scan helper split.
-  - 55zzzzi completed (code): split hold overlay core shared-state/update responsibilities into internal contract + dedicated state/update units (`MacosHoldPulseOverlayRendererCore.Internal/State/Update`), keeping start/close render path focused.
-  - 55zzzzi completed (acceptance): full POSIX regression suite remains green after hold-overlay core state/update split.
-  - 55zzzzj completed (code): split scroll overlay renderer support responsibilities (strength/timing/layer helpers) into dedicated support module (`MacosScrollPulseOverlayRendererSupport.*`) and kept core file focused on render flow.
-  - 55zzzzj completed (acceptance): full POSIX regression suite remains green after scroll-overlay support split.
-  - 55zzzzk completed (code): split input-indicator probe helper responsibilities into dedicated probe-helper module (`MacosInputIndicatorOverlay.ProbeHelpers.mm`) and kept probe entry file focused on scenario orchestration.
-  - 55zzzzk completed (acceptance): full POSIX regression suite remains green after input-indicator probe helper split.
-  - 55zzzzl completed (code): split overlay coordinate conversion internals into dedicated module (`MacosOverlayCoordSpaceConversion.*`) and kept `MacosOverlayCoordSpaceService` focused on origin state/service API.
-  - 55zzzzl completed (acceptance): full POSIX regression suite remains green after overlay-coordinate conversion split.
-  - 55zzzzm completed (code): split global-input-hook runloop helpers (`init notify`, `permission simulation loop`, `event-tap mask`) into dedicated helper module (`MacosGlobalInputHook.RunLoopHelpers.mm`) and kept runloop file focused on lifecycle flow.
-  - 55zzzzm completed (acceptance): full POSIX regression suite remains green after global-input-hook runloop helper split.
-  - 55zzzzn completed (code): split keyboard resolver non-modifier fallback chain into dedicated helper module (`MacosKeyboardInjectorKeyResolver.NonModifier.mm`) and kept resolver main file focused on modifier + route composition.
-  - 55zzzzn completed (acceptance): full POSIX regression suite remains green after key-resolver non-modifier split.
-  - 55zzzzo completed (code): split mac virtual-key mapper table/lookup ownership into dedicated module (`MacosVirtualKeyMapper.KeyPairs.mm`) and kept mapper main file focused on entry routing.
-  - 55zzzzo completed (acceptance): full POSIX regression suite remains green after virtual-key mapper table split.
-  - 55zzzzp completed (code): split global-input event-tap dispatch by event domain (`tap-disable` / `mouse` / `key`) into dedicated modules (`MacosGlobalInputHook.EventTapDispatch*.mm`) and kept each file focused on one ingress concern.
-  - 55zzzzp completed (acceptance): full POSIX regression suite remains green after event-tap dispatch domain split.
-  - 55zzzzq completed (code): split input-permission parse helpers and simulation-file parsing flow into dedicated module (`MacosInputPermissionState.Parse.mm`) and kept state entry file focused on runtime trust-source selection.
-  - 55zzzzq completed (acceptance): full POSIX regression suite remains green after input-permission parse split.
-  - 55zzzzr completed (code): split event-loop runloop resource lifecycle into dedicated module (`MacosEventLoopService.RunLoop.cpp`) and kept main service file focused on high-level run/task flow.
-  - 55zzzzr completed (acceptance): full POSIX regression suite remains green after event-loop runloop resource split.
-  - 55zzzzs completed (code): split tray menu factory internals into action-bridge and menu-item helper modules (`MacosTrayMenuFactory.ActionBridge.mm`, `MacosTrayMenuFactory.Items.mm`) and kept factory file focused on menu object assembly/release flow.
-  - 55zzzzs completed (acceptance): full POSIX regression suite remains green after tray menu factory split.
-  - 55zzzzt completed (code): split hold style accent geometry/render helpers into dedicated module (`MacosHoldPulseOverlayStyle.Accent.mm`) and kept main hold-style file focused on type/color mapping and fallback accent policy.
-  - 55zzzzt completed (acceptance): full POSIX regression suite remains green after hold style accent helper split.
-  - 55zzzzu completed (code): split app-catalog root traversal/filtering into dedicated module (`MacosApplicationCatalogScanWorkflow.RootScan.Enumerate.mm`) and kept root-scan file focused on bundle resolve/upsert orchestration.
-  - 55zzzzu completed (acceptance): full POSIX regression suite remains green after app-catalog root enumerate split.
-  - 55zzzzv completed (code): split foreground process-service resolution helpers into dedicated module (`MacosForegroundProcessService.Resolve.mm`) and kept service file focused on cache-window policy.
-  - 55zzzzv completed (acceptance): full POSIX regression suite remains green after foreground process resolve split.
-  - 55zzzzw completed (code): split app-catalog bundle resolve helpers into dedicated module (`MacosApplicationCatalogScanWorkflow.BundleResolve.Helpers.mm`) and kept bundle-resolve file focused on entry orchestration.
-  - 55zzzzw completed (acceptance): full POSIX regression suite remains green after app-catalog bundle resolve helper split.
-  - 55zzzzx completed (code): split OpenPanel folder-picker path/string helpers into dedicated module (`MacosOpenPanelFolderPicker.Paths.mm`) and kept picker file focused on modal interaction/result flow.
-  - 55zzzzx completed (acceptance): full POSIX regression suite remains green after OpenPanel path helper split.
-  - 55zzzzy completed (code): split notification AppleScript escaping/exec and test-capture helpers into dedicated module (`MacosUserNotificationService.AppleScript.cpp`) and kept notification service file focused on warn entry semantics.
-  - 55zzzzy completed (acceptance): full POSIX regression suite remains green after notification AppleScript helper split.
-  - 55zzzzbj completed (code): switched macOS warning-notification dispatch to Swift bridge (`MacosUserNotificationBridge.swift` via C ABI) while keeping C++ service interface and test-capture/fallback semantics unchanged.
-  - 55zzzzbj completed (acceptance): scaffold regression + core automation contract regression + POSIX suite (scaffold phase) remain green after Swift bridge build/runtime wiring.
-  - 55zzzzbk completed (code): switched macOS native folder-picker path to Swift bridge first (`MacosNativeFolderPickerBridge.swift`) with existing Objective-C++ picker chain as fallback under the same `platform::PickFolder` contract.
-  - 55zzzzbk completed (acceptance): scaffold regression + core automation contract regression + POSIX suite (scaffold phase) remain green after Swift-first picker bridge wiring.
-  - 55zzzzbl completed (code): switched macOS settings launcher normal path to Swift bridge (`NSWorkspace.open`) while preserving capture-mode POSIX launcher semantics for existing regression probes.
-  - 55zzzzbl completed (acceptance): scaffold tray/settings-launch contract smoke and core automation contract regression remain green after Swift settings-launcher bridge wiring.
-  - 55zzzzbm completed (code): changed macOS warning-notification Swift bridge to native notification-center delivery (`NSUserNotificationCenter`) with AppleScript fallback only when native path is unavailable, preserving the existing C ABI bridge and C++ service contracts.
-  - 55zzzzbm completed (acceptance): scaffold regression + core automation contract regression remain green after native-first notification bridge update.
-  - 55zzzzbn completed (code): macOS click render profile now carries per-button colors from `EffectConfig.ripple` and click style rendering path consumes profile-derived ARGB colors instead of hardcoded constants.
-  - 55zzzzbn completed (acceptance): scaffold regression + core automation contract regression remain green after click color profile parity update.
-  - 55zzzzbo completed (code): macOS scroll/hover render profiles now carry direction/type color fields resolved from runtime config/theme, and overlay style/render paths consume profile colors instead of hardcoded constants.
-  - 55zzzzbo completed (acceptance): scaffold regression + core automation contract regression remain green after scroll/hover color profile parity update.
-  - 55zzzzbp completed (code): macOS trail/hold render profiles now carry type/style color fields resolved from runtime config, and trail/hold style-render paths consume profile colors instead of hardcoded constants.
-  - 55zzzzbp completed (acceptance): scaffold regression + core automation contract regression remain green after trail/hold color profile parity update.
-  - 55zzzzbq completed (code): expanded effects-profile API/state contracts with color profile fields (`trail/scroll/hold/hover`) and added regression assertions for representative color keys in effect-profile probe checks.
-  - 55zzzzbq completed (acceptance): scaffold regression + core automation contract regression remain green after effects-profile color contract expansion.
-  - 55zzzzbr completed (code): added type-aware tempo/size scaling in macOS render plans for trail/scroll/hover, so effect types have distinct runtime pacing instead of near-uniform defaults.
-  - 55zzzzbr completed (acceptance): scaffold regression + core automation contract regression remain green after type-tempo variant tuning.
-  - 55zzzzbs completed (code): promoted trail/scroll/hover type-tempo scales into render-profile contracts, surfaced these fields in test-route/state diagnostics, and expanded effect-profile regression assertions for tempo keys.
-  - 55zzzzbs completed (acceptance): scaffold regression + core automation contract regression remain green after tempo-contract surfacing.
-  - 55zzzzbt completed (code): effect-profile regression now probes both `/api/effects/test-render-profiles` and `/api/state.effects_profile` and asserts value parity for representative tempo/color fields.
-  - 55zzzzbt completed (acceptance): scaffold regression + core automation contract regression remain green after cross-API parity checks.
-  - 55zzzzz completed (code): split input-indicator show-plan computation into dedicated module (`MacosInputIndicatorOverlay.ShowPlan.*`) and kept overlay file focused on lifecycle and presentation dispatch.
-  - 55zzzzz completed (acceptance): full POSIX regression suite remains green after input-indicator show-plan split.
-  - 55zzzzaa completed (code): split keyboard-injector dry-run/event-post internals into dedicated module (`MacosKeyboardInjector.EventPost.mm`) and kept injector file focused on chord orchestration.
-  - 55zzzzaa completed (acceptance): full POSIX regression suite remains green after keyboard-injector event-post split.
-  - 55zzzzab completed (code): split WASM overlay admission/reset internals into dedicated module (`MacosWasmOverlayState.Admission.mm`) and kept overlay-state file focused on API wrappers.
-  - 55zzzzab completed (acceptance): full POSIX regression suite remains green after WASM overlay admission helper split.
-  - 55zzzzad completed (code): split `PosixCoreAppShell` into `Actions`/`Probe`/`Stdin` modules and kept lifecycle/startup in entry file, reducing shell orchestration coupling without behavior changes.
-  - 55zzzzad completed (acceptance): full POSIX regression suite remains green after shell responsibility split (macOS scaffold/core/automation/wasm + Linux compile gate + WebUI semantic tests).
-  - 55zzzzae completed (code): split `PosixScaffoldAppShell` into `Actions`/`Stdin` modules and consolidated dual-lane stdin-exit parser via shared `PosixShellExitCommand`, reducing core/scaffold drift risk.
-  - 55zzzzae completed (acceptance): full POSIX regression suite remains green after scaffold split + shared exit-command consolidation.
-  - 55zzzzaf completed (code): split scaffold settings responsibilities into dedicated modules (`ScaffoldSettingsApi.StatePatch.cpp` + `ScaffoldSettingsRouteCodec.*`), reducing API/route-coding coupling while preserving settings contracts.
-  - 55zzzzaf completed (acceptance): full POSIX regression suite remains green after scaffold settings API/route split (macOS scaffold/core/automation/wasm + Linux compile gate + WebUI semantic tests).
-  - 55zzzzag completed (code): split `SettingsRequestHandler` into entry/auth + API-route + static-route modules, reducing scaffold HTTP route coupling without behavior changes.
-  - 55zzzzag completed (acceptance): full POSIX regression suite remains green after request-handler routing split.
-  - 55zzzzah completed (code): split `PosixSettingsLauncher` into `capture/spawn` modules and split `ScaffoldSettingsRuntime` start orchestration into dedicated runtime-start module, reducing shell settings runtime coupling.
-  - 55zzzzah completed (acceptance): full POSIX regression suite remains green after launcher/runtime split.
-  - 55zzzzai completed (code): split `ScaffoldSettingsWebUiAssets` into dedicated path/content-type helper modules and kept loader flow in entry module, reducing static-asset coupling.
-  - 55zzzzai completed (acceptance): full POSIX regression suite remains green after scaffold WebUI assets split.
-  - 55zzzzaj completed (code): split `ScaffoldSettingsRouteConfig` into route-bootstrap entry + loopback parser + path/query helper modules, reducing settings-route parsing coupling.
-  - 55zzzzaj completed (acceptance): full POSIX regression suite remains green after route-config split.
-  - 55zzzzak completed (code): consolidated duplicated launcher/probe capture-file atomic-write logic into shared `PosixKeyValueCaptureFile`, reducing POSIX diagnostics-path drift risk.
-  - 55zzzzak completed (acceptance): full POSIX regression suite remains green after capture-writer consolidation.
-  - 55zzzzal completed (code): split `MacosWasmTextOverlay` into layout/style/helper modules with orchestration-only entry, reducing WASM text-overlay coupling without behavior changes.
-  - 55zzzzal completed (acceptance): full POSIX regression suite remains green after macOS WASM text overlay split.
-  - 55zzzzam completed (code): split `MacosClickPulseOverlayRendererCore` into plan + layers/animation helper modules with orchestration-only entry, reducing click-effect render coupling without behavior changes.
-  - 55zzzzam completed (acceptance): full POSIX regression suite remains green after macOS click overlay core split.
-  - 55zzzzan completed (code): split `MacosScrollPulseOverlayRendererCore` into plan + layers/animation helper modules with orchestration-only entry, reducing scroll-effect render coupling without behavior changes.
-  - 55zzzzan completed (acceptance): full POSIX regression suite remains green after macOS scroll overlay core split.
-  - 55zzzzao completed (code): split `MacosHoverPulseOverlayRendererCore` into plan + layers/animation helper modules with orchestration-only entry, reducing hover-effect render coupling without behavior changes.
-  - 55zzzzao completed (acceptance): full POSIX regression suite remains green after macOS hover overlay core split.
-  - 55zzzzap completed (code): split `MacosTrailPulseOverlayRendererCore` into plan + layers/animation helper modules with orchestration-only entry, reducing trail-effect render coupling without behavior changes.
-  - 55zzzzap completed (acceptance): full POSIX regression suite remains green after macOS trail overlay core split.
-  - 55zzzzac completed (code): split WASM image overlay render-plan computation into dedicated module (`MacosWasmImageOverlayRendererCore.Plan.mm`) and kept core renderer file focused on rendering orchestration.
-  - 55zzzzac completed (acceptance): full POSIX regression suite remains green after WASM image render-plan split.
+## Scope Baseline
+- Primary host and priority: macOS.
+- Hard constraints:
+  - Windows behavior must not regress.
+  - Linux follows compile + contract checks.
+  - macOS new work is Swift-first; no Objective-C++ surface expansion.
 
-## Current truth (important)
-- `mfx_entry_posix_host` on mac core lane now boots and exits cleanly.
-- Scaffold lane behavior is preserved and remains regression-protected.
-- macOS core lane now has a real WASM backend (`wasm3_static`) instead of non-Windows forced no-op.
-- macOS permission degradation is now visible in both shell notification and Web settings status banner.
-- WebUI now consumes `schema.capabilities.effects` and disables unavailable effect categories on current platform.
-- macOS core lane now has baseline visible scroll effect (`MacosScrollPulseEffect`) in addition to click effect.
-- macOS click/indicator permission-on coordinate offset has been closed (manual verification passed).
-- Runtime revoke path is now code+script closed (degraded transition asserted through permission simulation and API state checks).
-- macOS indicator empty-label path is now code+script closed (`L/R/M` label probe assertions in core automation contracts).
-- Startup permission-missing path is now code+script closed (startup degraded convergence asserted under simulated missing permission).
-- Runtime permission revoke/regrant path is now code+script closed (revoke/regrant transitions asserted without process restart).
-- Startup-without-permission now retries hook start under degraded state (throttled) so grant-after-start can recover without process restart.
-- macOS automation system services are no longer null-only: keyboard injection and foreground process resolution are now wired.
-- Automation app-scope matching now uses shared normalization + suffix-compatible matching (`.exe/.app/none`) across config/runtime paths.
-- POSIX core settings no longer hardcode scaffold URL; WebSettingsServer URL/token is now produced by runtime and opened through shell launcher.
-- macOS shortcut recording no longer feeds raw keycodes into core; it now passes normalized virtual keys to avoid capture alias collisions.
-- macOS app-catalog endpoint now scans local app bundles through a dedicated scanner instead of non-Windows empty fallback.
-- macOS automation scope UI semantics are now platform-aware (`.app` on macOS, `.exe` on Windows) in both normalization and visible copy.
-- phase53f manual acceptance is now closed by user-side macOS verification.
-- phase53b acceptance is now script-closed by core contract assertions (`code/.exe/.app` alias matching).
-- phase53d acceptance is now script-closed by core contract assertions (`mac_key_code 9 -> Win+V`, `mac_key_code 48 -> Win+Tab`).
-- phase53a service wiring and real key-event dispatch are now both closed (script + user manual evidence).
-- phase53c WebUI, shell-launch, and tray `Settings` action contract is now script-closed (tokenized root + Svelte shell asset + settings-launcher URL probe + tray smoke action/launch assertions).
-- phase53e refresh/catalog/persistence path is now script-closed (`force=true/false` + selected scope roundtrip via `/api/state`).
-- phase53h scope-priority contract is now script-closed (`process > all` and `longest chain > shorter chain` under shared matcher path).
-- phase53i matcher+inject contract is now script-closed (`history -> selected binding -> injected=true`), and real OS injection has one-command manual selfcheck entry.
-- phase53j routing structure is now split by responsibility (production routes vs test-only routes), reducing single-file coupling without changing API contracts.
-- phase53k WebSettings production WASM routes are now isolated in `WebSettingsServer.WasmRoutes.*`, keeping main routing focused on shared and automation endpoints.
-- phase53l WebSettings production automation routes are now isolated in `WebSettingsServer.AutomationRoutes.*`, keeping main routing focused on shared settings and top-level dispatch.
-- phase53m WebSettings core settings APIs are now isolated in `WebSettingsServer.CoreApiRoutes.*`, and main routing is now pure delegator + request gate/static handling.
-- phase53n request-entry gate (`token/404/favicon/exception mapping`) is now isolated in `WebSettingsServer.RequestGateway.*`, further reducing route-file coupling and cross-cutting change risk.
-- phase53o WebSettings WebUI path discovery is now isolated in `WebSettingsServer.WebUiPathResolver.*`, reducing bootstrap/file-system coupling in server core.
-- phase53p WebSettings WASM route internals are now split by responsibility (`runtime` vs `catalog/transfer` vs `shared utils`), reducing single-file change risk on M2 evolution.
-- phase53q WebSettings test routes are now split by contract ownership (`automation` vs `wasm/input-indicator` with shared helpers), reducing test-probe evolution coupling.
-- phase53r Settings state mapping is now split by section ownership (base config vs runtime diagnostics), reducing cross-capability coupling in WebSettings state evolution.
-- phase53s Settings schema building is now split by section ownership (options vs capabilities), reducing schema evolution coupling and review surface.
-- phase53t HttpServer transport internals are now split by responsibility (lifecycle vs client session vs protocol), reducing server-layer coupling while preserving HTTP contracts.
-- phase53u WebSettings automation test routes are now split by contract ownership (`scope` vs `injection` vs `shortcut`) with shared parse/match helpers, reducing test-route coupling while preserving endpoint contracts.
-- phase53v WebSettings runtime automation routes are now split by ownership (`shortcut-capture` vs `process/catalog`) with shared parse/cache helpers, reducing route coupling while preserving endpoint contracts.
-- phase53w WebSettings WASM catalog routes are now split by ownership (`catalog-query` vs `import` vs `export`), reducing WASM control-plane route coupling while preserving endpoint contracts.
-- phase53x WebSettings WASM runtime routes are now split by ownership (`state/policy` vs `action`), reducing runtime control-plane route coupling while preserving endpoint contracts.
-- phase53y WebSettings WASM route utilities are now split by ownership (`parse` vs `path compare` vs `response build`), reducing shared utility coupling while preserving route contracts.
-- phase53z WebSettings WASM import routes are now split by ownership (`selected manifest` vs `folder dialog`), reducing import-path coupling while preserving endpoint contracts.
-- phase53aa WebSettings WASM runtime state/action internals are now split by endpoint ownership (`enable/disable`, `policy`, `reload`, `load-manifest`), reducing runtime control-plane coupling while preserving endpoint contracts.
-- phase53ab automation matcher/executor flow is now isolated in `InputAutomationDispatch`, reducing coupling between input orchestration and dispatch execution while preserving trigger/match contracts.
-- phase53ac keyboard indicator labels now have script-level probe coverage (`A`, `Cmd+K9`, `K6`) in addition to mouse labels, reducing manual-only regression risk in input-indicator rendering.
-- phase53ad input-capture diagnostics now expose `effects_suspended`, making effect pipeline degradation/resume transitions explicit and regression-testable under permission revoke/regrant flows.
-- phase53ae input-capture runtime/state logic is now split into a dedicated controller unit (`AppController.InputCapture.cpp`), reducing `AppController.cpp` coupling while keeping POSIX/Windows build ownership aligned.
-- phase53af lifecycle runtime logic is now split into a dedicated controller unit (`AppController.Lifecycle.cpp`), reducing startup/teardown coupling in `AppController.cpp` while keeping POSIX/Windows build ownership aligned.
-- phase53ag effect orchestration and VM suppression runtime logic is now split into a dedicated controller unit (`AppController.Effects.cpp`), reducing effect/VM coupling in `AppController.cpp` while keeping POSIX/Windows build ownership aligned.
-- phase53ah dispatch-state runtime helpers are now split into a dedicated controller unit (`AppController.DispatchState.cpp`), reducing hover/hold/session handling coupling in `AppController.cpp` while keeping POSIX/Windows build ownership aligned.
-- phase53 is now explicitly closed for current M1 automation scope, and future automation expansion will proceed as new slices without changing existing contracts by default.
-- phase54h Linux compile gate now covers both scaffold-lane and core-runtime-lane compile contracts by default, reducing Linux drift risk while mac-first development continues.
-- phase54 is now explicitly closed for current Linux follow scope (compile + contract), and Linux runtime-level expansion remains deferred.
-- Linux compile gate now has a dedicated orchestration script, reducing manual command drift risk for cross-host follow.
-- Automation platform semantics now have script-level regression guard, reducing manual-only verification for `.app/.exe` behavior.
-- POSIX regression now has a single suite entrypoint with phase-level skip switches for faster diagnosis.
-- POSIX suite preflight is now non-destructive (detect-only); stale entry-host cleanup is performed inside phase scripts under shared `mfx-entry-posix-host` lock.
-- Scaffold HTTP regression now guards scaffold-lane automation boundary contracts (`404 not found`), reducing dual-lane behavior drift risk.
-- Core lane now has an automated startup/alive/exit gate, reducing "compile-only green" risk while core runtime remains non-default.
-- Core lane automation APIs are now contract-tested in CI-style scripts (`200 + token gate + macOS .app catalog semantics`) instead of manual-only checks.
-- Core lane HTTP contracts now additionally guard WASM runtime identity (`runtime_backend=wasm3_static` on macOS).
-- POSIX core lane now dispatches runtime WASM events through a shared strategy path; macOS strategy has visible render output while Linux remains degrade-only.
-- WASM capability boundary is now explicit in schema/state (`invoke_supported` vs `render_supported`) for UI and automation decisions.
-- WASM invoke/render bookkeeping now has a single shared execution pipeline used by both dispatch routing and hover-end handling, reducing branch drift risk.
-- WASM render path now has a platform strategy boundary (`IWasmCommandRenderer`), reducing future backend switch cost on POSIX.
-- macOS core HTTP state now reports `render_supported=true` based on renderer strategy capability rather than compile-time hardcoding.
-- macOS WASM renderer now prefers plugin image assets and supports delayed/motionized image overlays while retaining fallback pulse behavior.
-- macOS overlay runtime internals are split (`overlay runtime` vs `transient overlay renderer`) to reduce file-level coupling.
-- macOS WASM overlays now use runtime admission policy (in-flight + interval) to degrade burst output safely instead of allowing unbounded transient-window buildup.
-- macOS WASM diagnostics now separate throttled drops from generic render failures (`last_throttled_render_commands`), improving failure-path triage from `/api/state` and `/api/wasm/state` without overloading `last_render_error`.
-- macOS WASM diagnostics now also expose throttle cause breakdown (`capacity` vs `interval`) for faster burst-path root-cause triage.
-- macOS core lane synthetic click burst previously crashed due async callable lifetime misuse; this is fixed, and process survival is now verified in automated self-run scenarios.
-- macOS core lane now exposes `POST /api/wasm/catalog`, `POST /api/wasm/import-selected`, and `POST /api/wasm/export-all`; shared WebUI plugin-path workflow is no longer Windows-only.
-- macOS core lane now also supports native folder-dialog import route for WASM plugins (`/api/wasm/import-from-folder-dialog`) instead of returning immediate unsupported.
-- macOS folder picker modal open path is now foreground-safe under tray/accessory policy, reducing immediate-dismiss risk in background-launch state.
-- macOS folder chooser now defaults to AppleScript chooser path and keeps `NSOpenPanel` as fallback, reducing tray-context focus fragility.
-- AppleScript chooser default-location clause now uses alias coercion, reducing unnecessary fallback that can surface transient Dock icon.
-- AppleScript chooser is now executed in-process (no external `exec` helper process), reducing Dock icon side effects during import.
-- macOS manual acceptance now has a single stable launcher script (`tools/platform/manual/run-macos-core-websettings-manual.sh`) that removes ad-hoc token/port command drift.
-- macOS WASM runtime closure now has one-command selfcheck (`tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh`) for invoke/render/fallback process-survival assertions.
-- macOS folder-picker internals are now responsibility-split (coordinator vs AppleScript vs OpenPanel fallback), reducing review and change risk for future behavior updates.
-- phase55o closure is complete with minimal evidence; no additional phase55o-specific manual command choreography is required.
-- Core automation HTTP contracts now include non-interactive import-dialog capability probing (`probe_only=true`) and assert macOS support automatically.
-- Core automation HTTP contracts now include non-interactive WASM dispatch invocation checks (`load-manifest -> enable -> test-dispatch-click`) under test-only endpoint gate.
-- POSIX unified regression suite now includes macOS automation injection selfcheck (`--dry-run`) and WASM runtime selfcheck by default, reducing manual acceptance drift for both automation and plugin runtime behavior.
-- Linux WASM renderer path is now explicitly defined as `degrade-only` for current M2, preserving `invoke_supported=true` and `render_supported=false` contract semantics until a separate Linux-native renderer phase is approved.
-- WASM load failure diagnostics now provide stable stage/code pairs in `/api/state` and `/api/wasm/*` responses, reducing triage ambiguity on manifest/runtime load failures.
-- macOS WASM selfcheck now enforces full manifest-failure classification semantics, reducing silent classifier drift risk.
-- macOS WASM selfcheck now also enforces non-manifest-load stage semantics and recovery cleanup semantics after valid reload.
-- macOS WASM selfcheck internals are now modularized by concern (`parse/http/runtime-assert/transfer-assert/dispatch-assert`) with compatibility loader entry retained, reducing future extension/change risk while preserving existing contract assertions.
-- macOS WASM selfcheck now also covers transfer path contracts (`catalog`, `import-selected`, `export-all`, folder-dialog probe) and transfer failure-code semantics in the same one-command flow.
-- Core HTTP contract regression now enforces the same load-failure diagnostics semantics, reducing drift between manual selfcheck and CI-style contract gates.
-- Core HTTP contract regression now also enforces WASM transfer semantics (`import-selected` success/failure and `export-all` success count), reducing CI blind spots in plugin transfer paths.
-- Core HTTP `export-all` contract now verifies filesystem materialization (`export_path` existence + directory count consistency), reducing false-green risk on transfer regressions.
-- Core HTTP `export-all` contract now also verifies exported manifest integrity (`plugin.json` presence/count/non-empty), further reducing false-green risk on transfer regressions.
-- WASM transfer APIs now expose stable `error_code` fields in addition to `error` text, reducing string-coupling risk in API consumers and regression checks.
-- Shared Svelte WASM UI now surfaces transfer `error_code` details on operation failures, reducing backend/frontend diagnostics contract drift.
-- Core HTTP regression now covers broader transfer failure code semantics (`manifest_path_required/not_file/load_failed/not_found`), reducing false-green risk on importer edge cases.
-- POSIX suite webui semantic phase now gates `test:automation-platform` + `test:effects-profile-model` + `test:wasm-error-model`, reducing frontend platform/effects-profile/error-model drift risk.
-- Shared WebUI diagnostics now surfaces load-failure stage/code directly, closing backend-vs-UI observability gap for WASM load failures.
-- Shared WebUI WASM state normalization now has one source of truth, reducing future diagnostics-field drift in UI adapters.
-- Core HTTP regression helper responsibilities are now split by domain (core flow vs wasm helpers), reducing future maintenance risk in script-level contract evolution.
-- Core HTTP regression now exposes a dedicated WASM-only check scope and one-command entry (`run-posix-core-wasm-contract-regression.sh`), reducing iteration cost during Phase 55 M2 closure.
-- Core HTTP WASM contract execution is now isolated in `core_http_wasm_contract_checks.sh`, reducing coupling in `core_http.sh` and lowering WASM-only change risk.
-- Core HTTP non-WASM contract execution is now also isolated (`core_http_input_contract_checks.sh`, `core_http_automation_contract_checks.sh`), so `core_http.sh` remains orchestration-focused.
-- Core HTTP input-capture helpers are now split by responsibility (parse/permission/notification/state/steps), reducing maintenance risk in input-contract checks.
-- Core regression entry scripts now share an explicit host-process lock (`mfx-entry-posix-host`), reducing false-negative flakiness during concurrent local runs.
-- macOS manual core-entry scripts now also share the same host-process lock, reducing mixed manual+regression local-run interference.
-- Stale entry-host cleanup is now helper-consolidated (`mfx_terminate_stale_entry_host`) across regression/manual startup paths, reducing script-level drift risk.
-- macOS manual keep-running stop hints are now PID-scoped (`kill -TERM <pid>`) instead of broad process-pattern kill, reducing cross-run interference risk.
-- Regression file-content matching now has shared `rg -> grep` fallback helpers, reducing environment friction on hosts without `rg`.
-- POSIX regression entry scripts now share one platform-arg resolution path, reducing script-level drift risk in host detection and cross-host guards.
-- Top-level first-read doc indexes are now compacted (key-doc subsets + roadmap pointer), reducing ongoing token pressure as Phase 55 slices continue.
-- Core regression entry scripts now share one workflow-prep/lock execution path, reducing boilerplate drift in stale cleanup, build lane setup, and lock wrapping.
-- Core HTTP wasm regression helper stack is now modularized by concern (`parse/http/runtime-assert/transfer-assert/dispatch-assert`) while preserving the legacy loader function surface used by contract scripts.
-- Core HTTP wasm contract checks are now modularized by scenario (catalog/path/runtime/transfer/fixture/dispatch/platform), reducing monolithic script churn risk while preserving entrypoints.
-- Core HTTP automation contract checks are now modularized by scenario (basic/app-scope/priority/match-inject/shortcut/indicator/effects/platform), reducing monolithic script churn risk while preserving entrypoints.
-- Core HTTP orchestrator is now helper-split (probe/entry/state), reducing lifecycle/probe coupling in `core_http.sh` while preserving contract flows.
-- Scaffold HTTP entry lifecycle helpers are now split into `http_entry_helpers.sh`, keeping route checks in `http.sh` focused and easier to extend.
-- Core smoke entry lifecycle helpers are now split into `core_smoke_entry_helpers.sh`, keeping smoke flow in `core_smoke.sh` focused and easier to extend.
-- macOS effect runtime now covers click/trail/scroll/hold/hover categories with macOS-native visible implementations (GPU hold routes still excluded by scope), reducing platform capability drift against Windows baseline.
-- macOS effects runtime diagnostics and probe route now cover all 5 effect categories (`click/trail/scroll/hold/hover`) with shared counter arithmetic invariants, reducing blind spots in category-level overlay lifecycle regressions.
-- macOS effects probe now supports per-category type injection and regression runs exercise non-default type matrix, reducing false-green risk where only default visuals are validated.
-- macOS effect creation is now registry-based (replacing hardcoded `switch` wiring) and overlay renderer infrastructure now shares common main-thread/window helpers, reducing coupling and enabling plug-style effect extension without touching core factory branches.
-- macOS click/trail/scroll/hold/hover effects now consume config-driven render profiles (`EffectConfig -> MacosEffectRenderProfile`) and trail throttle mapping, reducing hardcoded timing/size drift and making cross-platform parameter alignment explicit.
-- core automation contracts now also probe `/api/effects/test-render-profiles`, locking click/trail/scroll/hold/hover resolved profile fields (`duration/size/throttle/progress`) as machine-checkable regression contracts.
-- `/api/state` now also includes `effects_profile` diagnostics (non-test route, including `config_basis`), effects settings UI renders this profile snapshot read-only (with dedicated profile normalization model and one-click JSON copy), and core state checks assert those fields, reducing hidden drift risk between runtime state and test-only probes.
-- `SettingsStateMapper` effects diagnostics responsibilities are now split to `SettingsStateMapper.EffectsDiagnostics.cpp` (effects_runtime + effects_profile), reducing diagnostics-file coupling while preserving `/api/state` schema contracts.
-- WebSettings test-only effects routes are now split into profile/overlay modules with delegating entry (`WebSettingsServer.TestEffectsApiRoutes.cpp`), reducing route coupling while preserving test-route contracts.
-- macOS hold overlay renderer now splits style parsing/color/path-accent construction into `MacosHoldPulseOverlayStyle.*`, reducing renderer-file coupling while preserving hold overlay runtime semantics.
-- macOS trail overlay renderer now splits trail-style normalization/color/path construction into `MacosTrailPulseOverlayStyle.*`, reducing renderer-file coupling while preserving trail overlay runtime semantics.
-- macOS click overlay renderer now delegates click-type normalization/star-path construction to `MacosClickPulseOverlayStyle.*`, reducing renderer-file coupling while preserving click overlay runtime semantics.
-- macOS scroll overlay renderer now delegates scroll-type normalization to `MacosScrollPulseOverlayStyle.*`, reducing renderer-file coupling while preserving scroll overlay runtime semantics.
-- macOS hover overlay renderer now delegates hover-type normalization and glow/tubes palette constants to `MacosHoverPulseOverlayStyle.*`, reducing renderer-file coupling while preserving hover overlay runtime semantics.
-- effects profile diagnostics assembly is now split into `SettingsStateMapper.EffectsProfileStateBuilder.*`, reducing diagnostics-file coupling while preserving `/api/state.effects_profile` schema semantics.
-- macOS effect profile resolution and state diagnostics are now multi-split by concern (`ClickTrail` + `ScrollHoldHover` + shared profile helper, plus dedicated wasm/input-capture diagnostics units), reducing monolithic-file change risk while preserving profile/diagnostics contracts.
-- macOS click/scroll renderers are now split into wrapper/core layers (`MacosClickPulseOverlayRendererCore.*`, `MacosScrollPulseOverlayRendererCore.*`), reducing renderer monolith risk while preserving runtime behavior contracts.
-- macOS hold/trail renderers are now split into wrapper/core layers (`MacosHoldPulseOverlayRendererCore.*`, `MacosTrailPulseOverlayRendererCore.*`), reducing renderer monolith risk while preserving runtime behavior contracts.
-- macOS hold overlay core start path is now further isolated in `MacosHoldPulseOverlayRendererCore.Start.mm`, keeping core entry focused on teardown/close path and reducing start-vs-close change coupling while preserving hold runtime behavior contracts.
-- macOS input-indicator overlay is now further split into dedicated lifecycle/display units (`MacosInputIndicatorOverlay.Lifecycle.mm`, `MacosInputIndicatorOverlay.Display.mm`), keeping entry file focused on config/gate checks and reducing lifecycle-vs-presentation change coupling while preserving indicator behavior contracts.
-- macOS WASM image overlay core is now further split into orchestration entry + window-composition module (`MacosWasmImageOverlayRendererCore.mm`, `MacosWasmImageOverlayRendererCore.Window.mm`), reducing admission/scheduling-vs-render coupling while preserving overlay behavior contracts.
-- gesture recognizer core is now split into session/config flow (`GestureRecognizer.cpp`) and direction quantization/serialization module (`GestureRecognizer.Direction.cpp`), reducing automation event-flow vs algorithm coupling while preserving gesture ID behavior contracts.
-- macOS WASM overlay state is now further split into admission/throttle wrappers (`MacosWasmOverlayState.mm`) and window-set ownership operations (`MacosWasmOverlayState.Windows.mm`), reducing quota-state vs window-lifecycle coupling while preserving overlay state behavior contracts.
-- macOS hold style resolution now recognizes Windows-origin effect aliases (`hold_fluxfield_cpu/gpu_v2`, `hold_neon3d_gpu_v2`, `scifi3d`) to keep cross-platform hold semantics aligned instead of defaulting to charge style.
-- macOS trail/scroll/hover style resolution now recognizes cross-platform and legacy aliases (`stream/stardust/direction/suspension` etc.) to keep effect selection semantics aligned instead of defaulting to base styles.
-- macOS trail profile/throttle resolution now also consumes the same alias-normalized trail type set (`stream/neon/arc/suspension/spark/default`), preventing style-vs-parameter drift on legacy/cross-platform type names.
-- macOS non-GPU effect tempo mapping is now retuned for trail/hold/hover profiles (duration/breathe/rotate/spin formulas) so default visual pacing is closer to Windows baseline while preserving existing contracts.
-- macOS hover renderer and effect creator registry are now fully split by responsibility (`MacosHoverPulseOverlayRendererCore.*`, `MacosEffectCreatorRegistry.Table.cpp` + internal contract header), reducing renderer/registry coupling while preserving effect creation/render behavior contracts.
-- `CommandHandler` apply-settings path is now split by responsibility (`entry orchestration` vs `visual/effects` vs `automation/wasm`), reducing cross-domain coupling while preserving settings payload contracts.
-- macOS WASM image overlay renderer is now split into wrapper/core units (`MacosWasmImageOverlayRenderer.mm` + `MacosWasmImageOverlayRendererCore.*`), reducing render-path coupling while preserving WASM image overlay runtime behavior contracts.
-- macOS WASM overlay state is now split into state operations vs storage internals (`MacosWasmOverlayState.mm` + `MacosWasmOverlayState.Internals.*`), reducing state-path coupling while preserving overlay admission/throttle behavior contracts.
-- WASM plugin transfer service is now split by responsibility (`Common` helpers + `Import` flow + `Export` flow + thin delegator entry), reducing transfer-path coupling while preserving import/export error-code and response contracts.
-- WASM plugin manifest path is now split into `Load` and `Validate` units, reducing parse-vs-rule coupling while preserving manifest schema/validation contracts.
-- `Wasm3Runtime` is now split by responsibility (`lifecycle/load`, `call/scratch`, `link/import`) with shared internal helpers, reducing runtime-path coupling while preserving WASM runtime contracts.
-- `WasmEffectHost` invoke-path is now split into a dedicated unit (`WasmEffectHost.Invoke.cpp`), reducing lifecycle-vs-invoke coupling while preserving WASM host execution contracts.
-- `DispatchRouter` is now split by responsibility (`Route` + click/key in main unit, pointer/button/timer in `DispatchRouter.Pointer.cpp`), reducing dispatch-path coupling while preserving routing behavior contracts.
-- `AppController` VM suppression path is now split into dedicated implementation unit (`AppController.VmSuppression.cpp`), reducing suppression-vs-effects coupling while preserving runtime suppression contracts.
-- macOS application catalog scan and AppleScript folder picker are now split into workflow entry vs helper/script internals (`MacosApplicationCatalogScanWorkflow.*`, `MacosAppleScriptFolderPicker.*`), reducing system-workflow coupling while preserving scan/pick behavior contracts.
-- Shared lock owner-pid read path now tolerates transient `owner.env` races, so concurrent gate waits degrade to normal lock waiting rather than shell parse failure.
-- WASM test-dispatch assertions now use bounded retries (configurable timeout/interval), reducing flaky false negatives caused by transient invoke/render readiness races.
-- WASM dispatch contracts now additionally assert dispatch-response diagnostics and `/api/state` diagnostics consistency, reducing silent drift risk in throttle/error fields.
-- Effect overlay contracts now assert click/scroll overlay window lifecycle restore-to-baseline after probe emission, reducing silent overlay cleanup drift risk.
-- Effect overlay contracts now also assert raw counter arithmetic invariants (`before/after total == click + scroll`) at script level, reducing route-local false-green risk.
-- Automation shortcut test contracts now explicitly guard invalid/unmapped keycode semantics, reducing edge-path mapping drift risk.
-- macOS non-GPU effect overlays now share one frame clamp policy (`ClampOverlayFrameToScreenBounds`) across click/trail/scroll/hold/hover, reducing edge-of-screen and multi-screen placement drift without changing effect API/schema contracts.
-- macOS non-GPU effect overlays now also share one per-screen contents-scale policy (`ResolveOverlayContentsScale` / `ApplyOverlayContentScale`) across click/trail/scroll/hold/hover, reducing mixed-DPI rendering drift and removing click-text `mainScreen` coupling.
-- macOS non-GPU effect overlays now also share animation/opacity policy helpers (`CreateScaleFadeAnimationGroup` / `ClampOverlayOpacity`) across click/trail/scroll/hold/hover, reducing cross-category curve/alpha drift while keeping per-effect style parameters.
-- macOS non-GPU effect overlays now also share geometry metric scaling helper (`ScaleOverlayMetric`) across click/trail/scroll/hold/hover, reducing fixed-pixel ratio drift on small/large overlay sizes while preserving style semantics.
-- macOS non-GPU one-shot effect durations now also share bounded size normalization (`ScaleOverlayDurationBySize`), with scroll keeping existing strength mapping and applying size normalization on top.
-- macOS non-GPU effect alpha computation now also shares one policy helper (`ResolveOverlayOpacity`) across click/trail/scroll/hold/hover, reducing category-level clamp/floor drift while preserving per-style deltas.
-- POSIX regression suite now supports explicit ObjC++ edit policy gate (`--enforce-no-objcxx-edits` / `MFX_ENFORCE_NO_OBJCXX_EDITS=1`) to fail fast when closure iterations contain `.mm/.m` edits.
-- POSIX regression suite entry is now split into dedicated options and phase modules (`posix_suite_options.sh`, `posix_suite_phases.sh`), reducing orchestration coupling while preserving phase order and CLI compatibility.
-- POSIX regression suite now validates required option values and build-jobs type at parse stage, reducing silent misconfiguration drift during manual/CI runs.
-- POSIX regression/script common layer now provides shared CLI contract helpers (`mfx_require_option_value`, `mfx_require_positive_integer`), reducing per-script parse drift.
-- POSIX core/scaffold/linux entry scripts now uniformly fail fast on missing value flags (for example `--platform --skip-*`) instead of deferring to late-stage ambiguous errors.
-- macOS warning notification dispatch now uses a Swift bridge (`MacosUserNotificationBridge.swift`) behind C ABI while preserving existing C++ interface/capture/fallback contracts, reducing further `.mm` dependency growth in shell notification path.
-- macOS warning notification dispatch is now native-center first (`NSUserNotificationCenter`) and only falls back to AppleScript execution when native delivery is unavailable, reducing script-process side effects while preserving warning trigger contracts.
-- macOS click effect colors are now config-driven from `EffectConfig.ripple.left/right/middle` on the mac render path, reducing cross-platform drift when users customize click colors.
-- macOS scroll/hover overlay colors are now profile-driven from runtime config/theme resolution (instead of hardcoded constants), reducing cross-platform visual drift under theme/config changes.
-- macOS trail/hold overlay colors are now profile-driven from runtime config resolution (instead of hardcoded constants), reducing cross-platform visual drift under effect config changes.
-- effects profile contracts now include color-profile fields (`*_stroke_argb` / `*_fill_argb`) and core automation regression asserts representative keys, reducing false-green risk for future color-path regressions.
-- macOS trail/scroll/hover render plans now apply type-aware tempo/size scaling (runtime behavior only), reducing cross-type motion similarity and improving parity with Windows type semantics.
-- type-tempo tuning for trail/scroll/hover is now contract-visible (`/api/effects/test-render-profiles` + `/api/state.effects_profile`) and regression-asserted, reducing silent drift risk in future refactors.
-- effects profile regression now includes cross-API value parity checks (`test-render-profiles` vs `state.effects_profile`) for representative fields, reducing dual-output contract drift risk.
-- macOS native folder-picker route now uses Swift bridge first with existing Objective-C++ picker fallback (same `platform::PickFolder` contract), enabling Swift-first migration without import-dialog behavior risk.
-- macOS settings launcher now uses Swift bridge (`NSWorkspace.open`) in normal mode with POSIX `open` fallback, while capture-mode launcher contracts remain unchanged for regression probes.
+## Runtime Lanes
+- `scaffold` lane: default stable path.
+- `core` lane (`mfx_entry_posix_host`): progressive parity path.
+- Policy: ship new cross-platform capability through core lane while preserving scaffold stability.
 
-## Next slice
-- Continue Phase 55+ hardening with macOS-first and Linux compile follow:
-  - keep Phase 54 suite green via `run-posix-regression-suite.sh --platform auto`,
-  - keep one-command manual entries stable (`run-macos-core-websettings-manual.sh`, `run-macos-wasm-runtime-selfcheck.sh`, `run-macos-automation-injection-selfcheck.sh`),
-  - continue platform capability expansion without changing Windows behavior contracts.
+## Phase Status (Plan vs Actual)
+- Phase 50: done.
+  - Dual-lane guardrails in place.
+- Phase 51: done.
+  - Core decoupled from Win32-only assumptions for POSIX compile/start baseline.
+- Phase 52: done.
+  - macOS input capture + permission degrade/recover + indicator baseline complete.
+- Phase 53: done (M1 automation scope).
+  - App-scope normalization, mapping/injection path, and test-route contracts complete.
+- Phase 54: done (Linux follow scope).
+  - Compile-level + contract-level gates complete.
+- Phase 55: done (WASM runtime baseline in current scope).
+  - macOS wasm runtime path, diagnostics, and selfcheck gates complete.
+- Phase 56+: ongoing.
+  - Behavior parity hardening and token-efficient docs governance.
+
+## Current Capability State (macOS)
+- Effects:
+  - click/trail/scroll/hold/hover paths available in core lane.
+  - Type normalization and command-based profile flow active.
+  - `trail=none` hard-disable and anti-origin-connector guards active.
+- Automation:
+  - `process:code` / `code.app` / `code.exe` scope semantics normalized.
+  - Injection and matcher contracts script-gated.
+- WASM:
+  - load/invoke/render/fallback path active.
+  - schema vs state capability parity is contract-gated.
+- Permissions:
+  - runtime revoke -> degrade + notify.
+  - runtime regrant -> hot recovery without restart.
+
+## Regression Gates (Canonical)
+- Scaffold regression:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-posix-scaffold-regression.sh --platform auto`
+- Effects contract:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-posix-core-effects-contract-regression.sh --platform auto`
+- Automation contract:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-posix-core-automation-contract-regression.sh --platform auto`
+- WASM suite:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-posix-wasm-regression-suite.sh --platform auto`
+- macOS ObjC++ surface gate:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-macos-objcxx-surface-regression.sh`
+
+## Manual Selfcheck Entrypoints (macOS)
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/mfx`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-core-websettings-manual.sh --auto-stop-seconds 60`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-effects-type-parity-selfcheck.sh --skip-build`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh --skip-build`
+
+## Active Supporting Docs (Small Set)
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase52e-macos-coordinate-space-unification.md`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase52f-macos-runtime-permission-revocation-hardening.md`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase52g-macos-input-indicator-label-lifetime-fix.md`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase52h-macos-startup-permission-degraded-convergence.md`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase52i-macos-runtime-permission-hot-recovery-and-notify.md`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase52j-macos-startup-missing-permission-retry-and-notify-dedup.md`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase53ai-automation-mapping-phase-closure.md`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase54i-linux-follow-phase-closure.md`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzzbm-macos-user-notification-native-center.md`
+
+## Completion Criteria for Current Milestone
+- macOS behavior parity acceptable for main user-facing paths (effects/automation/wasm/permissions).
+- Windows no-regression verified by existing gates.
+- Linux compile + contract follow remains green.
+- No uncontrolled growth in P0/P1 docs.
+
+## Notes
+- Historical granular phase logs were intentionally removed from this file to keep first-read token usage low.
+- If deep history is required, use git history on this file and targeted surviving phase docs.
