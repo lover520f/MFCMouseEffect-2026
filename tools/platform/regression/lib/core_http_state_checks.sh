@@ -2,6 +2,35 @@
 
 set -euo pipefail
 
+_mfx_core_http_read_json_bool() {
+    local file_path="$1"
+    local dotted_path="$2"
+
+    python3 - "$file_path" "$dotted_path" <<'PY'
+import json
+import sys
+
+file_path = sys.argv[1]
+dotted_path = sys.argv[2]
+
+with open(file_path, "r", encoding="utf-8") as f:
+    root = json.load(f)
+
+value = root
+for part in dotted_path.split("."):
+    if not isinstance(value, dict) or part not in value:
+        print(f"missing:{dotted_path}", file=sys.stderr)
+        sys.exit(2)
+    value = value[part]
+
+if not isinstance(value, bool):
+    print(f"not_bool:{dotted_path}", file=sys.stderr)
+    sys.exit(3)
+
+sys.stdout.write("true" if value else "false")
+PY
+}
+
 _mfx_core_http_run_state_checks() {
     local platform="$1"
     local tmp_dir="$2"
@@ -94,4 +123,15 @@ _mfx_core_http_run_state_checks() {
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"lifetime_invoke_calls\"" "core schema wasm lifetime invoke key"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"lifetime_render_dispatches\"" "core schema wasm lifetime render key"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"lifetime_throttled_render_commands\"" "core schema wasm lifetime throttled key"
+
+    local state_wasm_invoke_supported
+    local state_wasm_render_supported
+    local schema_wasm_invoke
+    local schema_wasm_render
+    state_wasm_invoke_supported="$(_mfx_core_http_read_json_bool "$tmp_dir/state.out" "wasm.invoke_supported")"
+    state_wasm_render_supported="$(_mfx_core_http_read_json_bool "$tmp_dir/state.out" "wasm.render_supported")"
+    schema_wasm_invoke="$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.wasm.invoke")"
+    schema_wasm_render="$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.wasm.render")"
+    mfx_assert_eq "$state_wasm_invoke_supported" "$schema_wasm_invoke" "core wasm invoke capability schema/state parity"
+    mfx_assert_eq "$state_wasm_render_supported" "$schema_wasm_render" "core wasm render capability schema/state parity"
 }

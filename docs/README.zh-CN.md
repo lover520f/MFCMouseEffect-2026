@@ -23,6 +23,7 @@
 - POSIX Linux 编译门禁：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-linux-compile-gate-workflow.md`
 
 ## 近期问题文档
+- WASM schema/state 能力一致性门禁：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp4-wasm-capability-schema-state-contract-parity.md`
 - WASM 能力判定单一来源：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp3-wasm-capability-resolver-single-source.md`
 - macOS 特效类型归一化单一来源：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp2-macos-effects-type-normalization-single-source.md`
 - macOS 点击文字配置语义 + 上浮动画对齐：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp1-macos-click-text-config-float-parity.md`

@@ -23,6 +23,7 @@ Use it as a pointer index, not a full historical catalog.
 - POSIX Linux compile gate workflow: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-linux-compile-gate-workflow.md`
 
 ## Recent Issue Docs
+- WASM schema-state capability parity gate: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp4-wasm-capability-schema-state-contract-parity.md`
 - WASM capability resolver single-source: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp3-wasm-capability-resolver-single-source.md`
 - macOS effects type normalization single-source: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp2-macos-effects-type-normalization-single-source.md`
 - macOS click text config-float parity: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp1-macos-click-text-config-float-parity.md`
