@@ -17,9 +17,9 @@ CGFloat ClampScale(float scale) {
 
 uint32_t ClampLifeMs(uint32_t lifeMs) {
     if (lifeMs == 0u) {
-        return 300u;
+        return 350u;
     }
-    return std::clamp<uint32_t>(lifeMs, 80u, 6000u);
+    return std::clamp<uint32_t>(lifeMs, 60u, 10000u);
 }
 
 } // namespace mousefx::platform::macos::wasm_overlay_render_math

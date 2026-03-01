@@ -25,7 +25,11 @@ WasmImageOverlayRequest BuildImageOverlayRequest(
     request.tintArgb = wasm_render_resolver::ResolveImageTintArgb(config, cmd.tintRgba);
     request.scale = cmd.scale;
     request.alpha = cmd.alpha;
-    request.lifeMs = cmd.lifeMs;
+    if (cmd.lifeMs > 0u) {
+        request.lifeMs = cmd.lifeMs;
+    } else {
+        request.lifeMs = static_cast<uint32_t>(std::max(60, config.icon.durationMs));
+    }
     request.delayMs = cmd.delayMs;
     request.velocityX = cmd.vx;
     request.velocityY = cmd.vy;

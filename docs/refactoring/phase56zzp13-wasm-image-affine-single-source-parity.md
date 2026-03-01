@@ -27,6 +27,14 @@
   - `Platform/macos/Wasm/MacosWasmCommandRenderDispatch.Image.cpp`
   - Also removed duplicate request-build logic via shared local `BuildImageOverlayRequest(...)`.
 
+4. Aligned macOS image alpha/lifetime semantics toward Windows behavior:
+- `Platform/macos/Wasm/MacosWasmImageOverlayRendererSupport.cpp`
+  - `ClampAlpha` floor changed from `0.15` to `0.0`.
+- `Platform/macos/Wasm/MacosWasmOverlayRenderMath.cpp`
+  - image life clamp changed from `80..6000` to `60..10000`, zero fallback from `300` to `350`.
+- `Platform/macos/Wasm/MacosWasmCommandRenderDispatch.Image.cpp`
+  - zero `lifeMs` now maps to `max(60, config.icon.durationMs)` before render-plan clamp (matching Windows config-driven fallback intent).
+
 ## Validation
 1. Core wasm contract:
 ```bash
@@ -41,3 +49,4 @@
 ## Result
 - `spawn_image_affine` semantics are now aligned by construction across macOS and Windows command execution paths.
 - Future affine behavior tuning is centralized in one Core resolver to prevent platform drift.
+- macOS image transparency and default lifetime behavior are now materially closer to Windows under the same command/config inputs.

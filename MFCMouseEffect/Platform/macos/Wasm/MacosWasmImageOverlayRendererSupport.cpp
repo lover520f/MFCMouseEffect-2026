@@ -10,7 +10,7 @@
 namespace mousefx::platform::macos::wasm_image_overlay_support {
 
 CGFloat ClampAlpha(float alpha) {
-    return wasm_overlay_render_math::ClampFloat((alpha > 0.0f) ? static_cast<CGFloat>(alpha) : 1.0, 0.15, 1.0);
+    return wasm_overlay_render_math::ClampFloat((alpha > 0.0f) ? static_cast<CGFloat>(alpha) : 1.0, 0.0, 1.0);
 }
 
 uint32_t ClampDelayMs(uint32_t delayMs) {
