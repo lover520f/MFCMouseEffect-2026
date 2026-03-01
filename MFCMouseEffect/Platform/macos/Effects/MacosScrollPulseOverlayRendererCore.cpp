@@ -49,16 +49,12 @@ void ShowScrollPulseOverlayOnMain(
     NSView* content = [window contentView];
     macos_overlay_support::ApplyOverlayContentScale(content, command.overlayPoint);
 
-    const macos_effect_profile::ScrollRenderProfile profileForGeometry{};
     CAShapeLayer* body = support::CreateBodyLayer(
         content.bounds,
         plan.bodyRect,
-        command.horizontal,
-        command.delta,
         command.baseOpacity,
-        profileForGeometry);
-    body.fillColor = [ArgbToNsColor(command.fillArgb) CGColor];
-    body.strokeColor = [ArgbToNsColor(command.strokeArgb) CGColor];
+        command.fillArgb,
+        command.strokeArgb);
     [content.layer addSublayer:body];
 
     CAShapeLayer* arrow = support::CreateArrowLayer(
@@ -67,8 +63,7 @@ void ShowScrollPulseOverlayOnMain(
         command.horizontal,
         command.delta,
         command.baseOpacity,
-        profileForGeometry);
-    arrow.fillColor = body.strokeColor;
+        command.strokeArgb);
     arrow.strokeColor = body.strokeColor;
     [content.layer addSublayer:arrow];
 

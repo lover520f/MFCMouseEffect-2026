@@ -4,7 +4,6 @@
 #include "MouseFx/Utils/StringUtils.h"
 
 #if defined(__APPLE__)
-#import <AppKit/AppKit.h>
 #include <algorithm>
 #include <cmath>
 #endif
@@ -14,28 +13,6 @@ namespace mousefx::macos_click_pulse {
 #if defined(__APPLE__)
 namespace {
 
-NSColor* ArgbToNsColor(uint32_t argb) {
-    const CGFloat alpha = static_cast<CGFloat>((argb >> 24) & 0xFFu) / 255.0;
-    const CGFloat red = static_cast<CGFloat>((argb >> 16) & 0xFFu) / 255.0;
-    const CGFloat green = static_cast<CGFloat>((argb >> 8) & 0xFFu) / 255.0;
-    const CGFloat blue = static_cast<CGFloat>(argb & 0xFFu) / 255.0;
-    return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
-}
-
-const macos_effect_profile::ClickButtonColorProfile& ResolveClickButtonColorProfile(
-    MouseButton button,
-    const macos_effect_profile::ClickRenderProfile& profile) {
-    switch (button) {
-    case MouseButton::Right:
-        return profile.rightButton;
-    case MouseButton::Middle:
-        return profile.middleButton;
-    case MouseButton::Left:
-    default:
-        return profile.leftButton;
-    }
-}
-
 } // namespace
 
 std::string NormalizeClickType(const std::string& effectType) {
@@ -44,18 +21,6 @@ std::string NormalizeClickType(const std::string& effectType) {
         return value;
     }
     return "ripple";
-}
-
-NSColor* ClickPulseStrokeColor(
-    MouseButton button,
-    const macos_effect_profile::ClickRenderProfile& profile) {
-    return ArgbToNsColor(ResolveClickButtonColorProfile(button, profile).strokeArgb);
-}
-
-NSColor* ClickPulseFillColor(
-    MouseButton button,
-    const macos_effect_profile::ClickRenderProfile& profile) {
-    return ArgbToNsColor(ResolveClickButtonColorProfile(button, profile).fillArgb);
 }
 
 CGPathRef CreateClickPulseStarPath(CGRect bounds, int points) {

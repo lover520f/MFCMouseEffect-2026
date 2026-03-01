@@ -3,6 +3,8 @@
 #include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 #include "MouseFx/Core/Protocol/InputTypes.h"
 
+#include <cstdint>
+
 #if defined(__APPLE__)
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CoreGraphics.h>
@@ -30,10 +32,9 @@ int BuildCloseAfterMs(
 CAShapeLayer* CreateBodyLayer(
     CGRect bounds,
     CGRect bodyRect,
-    bool horizontal,
-    int delta,
     double baseOpacity,
-    const macos_effect_profile::ScrollRenderProfile& profile);
+    uint32_t fillArgb,
+    uint32_t strokeArgb);
 
 CAShapeLayer* CreateArrowLayer(
     CGRect bounds,
@@ -41,7 +42,7 @@ CAShapeLayer* CreateArrowLayer(
     bool horizontal,
     int delta,
     double baseOpacity,
-    const macos_effect_profile::ScrollRenderProfile& profile);
+    uint32_t strokeArgb);
 #endif
 
 } // namespace mousefx::macos_scroll_pulse::support

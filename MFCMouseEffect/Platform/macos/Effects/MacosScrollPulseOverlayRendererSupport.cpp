@@ -6,6 +6,7 @@
 #include "Platform/macos/Effects/MacosScrollPulseOverlayStyle.h"
 
 #if defined(__APPLE__)
+#import <AppKit/AppKit.h>
 #import <QuartzCore/QuartzCore.h>
 #endif
 
@@ -57,20 +58,31 @@ int BuildCloseAfterMs(
 }
 
 #if defined(__APPLE__)
+namespace {
+
+NSColor* ArgbToNsColor(uint32_t argb) {
+    const CGFloat alpha = static_cast<CGFloat>((argb >> 24) & 0xFFu) / 255.0;
+    const CGFloat red = static_cast<CGFloat>((argb >> 16) & 0xFFu) / 255.0;
+    const CGFloat green = static_cast<CGFloat>((argb >> 8) & 0xFFu) / 255.0;
+    const CGFloat blue = static_cast<CGFloat>(argb & 0xFFu) / 255.0;
+    return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
+}
+
+} // namespace
+
 CAShapeLayer* CreateBodyLayer(
     CGRect bounds,
     CGRect bodyRect,
-    bool horizontal,
-    int delta,
     double baseOpacity,
-    const macos_effect_profile::ScrollRenderProfile& profile) {
+    uint32_t fillArgb,
+    uint32_t strokeArgb) {
     CAShapeLayer* body = [CAShapeLayer layer];
     body.frame = bounds;
     CGPathRef bodyPath = CGPathCreateWithRoundedRect(bodyRect, 9.0, 9.0, nullptr);
     body.path = bodyPath;
     CGPathRelease(bodyPath);
-    body.fillColor = [ScrollPulseFillColor(horizontal, delta, profile) CGColor];
-    body.strokeColor = [ScrollPulseStrokeColor(horizontal, delta, profile) CGColor];
+    body.fillColor = [ArgbToNsColor(fillArgb) CGColor];
+    body.strokeColor = [ArgbToNsColor(strokeArgb) CGColor];
     body.lineWidth = 2.0;
     body.opacity = static_cast<float>(macos_overlay_support::ResolveOverlayOpacity(baseOpacity, 0.0, 0.0));
     return body;
@@ -82,13 +94,13 @@ CAShapeLayer* CreateArrowLayer(
     bool horizontal,
     int delta,
     double baseOpacity,
-    const macos_effect_profile::ScrollRenderProfile& profile) {
+    uint32_t strokeArgb) {
     CAShapeLayer* arrow = [CAShapeLayer layer];
     arrow.frame = bounds;
     CGPathRef arrowPath = CreateScrollPulseDirectionArrowPath(bodyRect, horizontal, delta);
     arrow.path = arrowPath;
     CGPathRelease(arrowPath);
-    arrow.fillColor = [ScrollPulseStrokeColor(horizontal, delta, profile) CGColor];
+    arrow.fillColor = [ArgbToNsColor(strokeArgb) CGColor];
     arrow.opacity = static_cast<float>(macos_overlay_support::ResolveOverlayOpacity(baseOpacity, 0.02, 0.0));
     return arrow;
 }
