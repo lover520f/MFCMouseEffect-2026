@@ -163,8 +163,7 @@
   - `reload()` 改为委托 `MfxSettingsForm.render({ schema, state, i18n })`
   - `buildState()` 改为委托 `MfxSettingsForm.read()` 后合并 automation
   - 删除重复的表单工具函数与 indicator 事件绑定逻辑
-- 详细记录：
-  - `docs/issues/web-settings-stage4-form-coordinator.zh-CN.md`
+- 详细记录：已收敛到本文件（阶段子文档已清理）。
 
 ### 阶段 4.2（已完成）：i18n 字典抽离
 - 迁移范围：将 `app.js` 内联的中英文 i18n 字典整体抽离到独立脚本，降低入口文件体积与编辑噪音。
@@ -175,8 +174,7 @@
 - `app.js` 变更：
   - 用 `window.MfxWebI18n` 取代内联字典定义
   - 为 i18n 读取补充空字典兜底（避免脚本加载异常时崩溃）
-- 详细记录：
-  - `docs/issues/web-settings-stage4-i18n-extraction.zh-CN.md`
+- 详细记录：已收敛到本文件（阶段子文档已清理）。
 
 #### 阶段 4.2 核对点
 1. 页面加载后中英文文案与阶段 4.1 前一致，无回归。
@@ -193,8 +191,7 @@
 - `app.js` 变更：
   - 删除内联 `apiGet/apiPost/probeConnection/startHealthCheck` 细节
   - 改为通过 `MfxWebApi.create(...)` 注入 `token` 与回调（未授权、连接状态切换）
-- 详细记录：
-  - `docs/issues/web-settings-stage4-web-api-extraction.zh-CN.md`
+- 详细记录：已收敛到本文件（阶段子文档已清理）。
 
 #### 阶段 4.3 核对点
 1. reload/apply/reset/stop 流程与阶段 4.2 前一致。
@@ -212,8 +209,7 @@
   - 改为通过 `MfxI18nRuntime.create(...)` 创建 i18n 运行时
   - `applyI18n/pickLang/currentText` 改为调用运行时实例
   - `AutomationUi/SectionWorkspace` 的 i18n 同步改为通过运行时回调注入
-- 详细记录：
-  - `docs/issues/web-settings-stage4-i18n-runtime-extraction.zh-CN.md`
+- 详细记录：已收敛到本文件（阶段子文档已清理）。
 
 #### 阶段 4.4 核对点
 1. 中英文切换后，页面文案、tooltip、placeholder 与样式预设名称保持一致更新。
@@ -240,8 +236,7 @@
 - 页面接入：
   - `MFCMouseEffect/WebUI/index.html` 简化为 `web_settings_shell_mount` 挂载点
   - 增加脚本 `settings-shell.svelte.js`，并确保在各分区 bundle 前加载
-- 详细记录：
-  - `docs/issues/web-settings-stage5-shell-svelteization.zh-CN.md`
+- 详细记录：已收敛到本文件（阶段子文档已清理）。
 
 #### 阶段 5.1 核对点
 1. `status`、`btnReload/btnReset/btnStop/btnSave`、`workspace_sidebar_mount` 等关键 DOM id 保持不变。
@@ -261,8 +256,7 @@
 - 页面接入：
   - `MFCMouseEffect/WebUI/index.html` 脚本由 `dialog.js` 切换到 `dialog.svelte.js`
   - 删除 legacy 文件：`MFCMouseEffect/WebUI/dialog.js`
-- 详细记录：
-  - `docs/issues/web-settings-stage5-dialog-svelteization.zh-CN.md`
+- 详细记录：已收敛到本文件（阶段子文档已清理）。
 
 #### 阶段 5.2 核对点
 1. `window.MfxDialog.showNotice/showConfirm` API 保持可用。
@@ -286,8 +280,7 @@
 - `app.js` 变更：
   - 优先通过 `MfxWebShell` 绑定动作和更新状态/按钮可用性
   - 保留 legacy DOM fallback，确保降级兼容
-- 详细记录：
-  - `docs/issues/web-settings-stage5-shell-action-bridge.zh-CN.md`
+- 详细记录：已收敛到本文件（阶段子文档已清理）。
 
 #### 阶段 5.3 核对点
 1. 顶部按钮动作（重载/应用/恢复默认/关闭监听）行为与 5.2 前一致。
@@ -311,8 +304,7 @@
   - `MFCMouseEffect/WebUIWorkspace/src/entries/input-indicator-main.js`
   - `MFCMouseEffect/WebUI/settings-form.js`
   - `MFCMouseEffect/WebUI/input-indicator-settings.svelte.js`
-- 详细记录：
-  - `docs/issues/web-settings-stage6-input-indicator-stateful-svelte.zh-CN.md`
+- 详细记录：已收敛到本文件（阶段子文档已清理）。
 
 #### 阶段 6.1 核对点
 1. reload 后 `ii_*` 字段和 per-monitor overrides 仍按配置正确回填。
@@ -340,8 +332,7 @@
   - `window.MfxEffectsSection.render/read`
   - `window.MfxTextSection.render/read`
   - `window.MfxTrailSection.render/read`
-- 详细记录：
-  - `docs/issues/web-settings-stage6-core-sections-stateful-svelte.zh-CN.md`
+- 详细记录：已收敛到本文件（阶段子文档已清理）。
 
 #### 阶段 6.2 核对点
 1. reload 后四个分区字段按 `/api/state` 正确回填。
@@ -377,5 +368,4 @@ pnpm run build
 - 回退方式：
   1. 每阶段独立提交，可按提交粒度回退。
   2. 保留历史提交可快速回到 legacy JS 版本。
-
 
