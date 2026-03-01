@@ -429,7 +429,6 @@ if(APPLE)
         "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayRendererCore.Layers.cpp"
         "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayRendererCore.cpp"
         "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosScrollPulseOverlayRendererCore.Layers.cpp"
-        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosScrollPulseOverlayRendererCore.cpp"
         "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoverPulseOverlayRendererCore.Layers.cpp"
         "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoverPulseOverlayRendererCore.cpp"
         "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayRendererCore.Start.cpp"
