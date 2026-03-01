@@ -51,6 +51,9 @@
    - Effects contract regression and manual type-parity selfcheck now both assert:
      - active-path probe: `after_line_trail_active=true` and `after_line_trail_point_count>0`
      - cleanup probe (`trail_type=none` + `reset_line_trail`): `after_line_trail_active=false` and `after_line_trail_point_count=0`
+   - Added cross-check against `/api/state`:
+     - active-path: `state.line_trail_active=true` and `state.line_trail_point_count>0`
+     - cleanup-path: `state.line_trail_active=false` and `state.line_trail_point_count=0`
 
 ## Validation
 Executed on macOS host:

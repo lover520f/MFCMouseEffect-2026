@@ -176,6 +176,25 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         fi
     fi
 
+    local code_effect_state_line_trail_active
+    code_effect_state_line_trail_active="$(mfx_http_code "$tmp_dir/effect-state-line-trail-active.out" "$base_url/api/state" \
+        -X GET \
+        -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_effect_state_line_trail_active" "200" "core effect line-trail active state status"
+    mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-active.out" "\"line_trail_active\":" "core effect line-trail active state field"
+    mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-active.out" "\"line_trail_point_count\":" "core effect line-trail active state point field"
+    if [[ "$platform" == "macos" ]]; then
+        mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-active.out" "\"line_trail_active\":true" "core effect line-trail active state on macos"
+        local state_line_trail_active_count
+        state_line_trail_active_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-state-line-trail-active.out" "line_trail_point_count")"
+        if [[ -z "$state_line_trail_active_count" ]]; then
+            mfx_fail "core effect line-trail active state count parse failed"
+        fi
+        if (( state_line_trail_active_count <= 0 )); then
+            mfx_fail "core effect line-trail active state expected point count > 0 on macos, got $state_line_trail_active_count"
+        fi
+    fi
+
     local code_effect_overlay_trail_none_probe
     code_effect_overlay_trail_none_probe="$(mfx_http_code "$tmp_dir/effect-overlay-trail-none-probe.out" "$base_url/api/effects/test-overlay-windows" \
         -X POST \
@@ -190,6 +209,18 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"after_line_trail_active\":false" "core effect overlay trail-none probe after line trail inactive"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"before_line_trail_point_count\":0" "core effect overlay trail-none probe before line trail count zero"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"after_line_trail_point_count\":0" "core effect overlay trail-none probe after line trail count zero"
+
+    local code_effect_state_line_trail_cleared
+    code_effect_state_line_trail_cleared="$(mfx_http_code "$tmp_dir/effect-state-line-trail-cleared.out" "$base_url/api/state" \
+        -X GET \
+        -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_effect_state_line_trail_cleared" "200" "core effect line-trail cleared state status"
+    mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-cleared.out" "\"line_trail_active\":" "core effect line-trail cleared state field"
+    mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-cleared.out" "\"line_trail_point_count\":" "core effect line-trail cleared state point field"
+    if [[ "$platform" == "macos" ]]; then
+        mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-cleared.out" "\"line_trail_active\":false" "core effect line-trail cleared state on macos"
+        mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-cleared.out" "\"line_trail_point_count\":0" "core effect line-trail cleared point count on macos"
+    fi
 
     local code_effect_profile_probe
     code_effect_profile_probe="$(mfx_http_code "$tmp_dir/effect-render-profile-probe.out" "$base_url/api/effects/test-render-profiles" \

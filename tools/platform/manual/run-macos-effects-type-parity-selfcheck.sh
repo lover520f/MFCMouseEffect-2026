@@ -215,6 +215,20 @@ if (( line_trail_after_count <= 0 )); then
     mfx_fail "effects overlay line trail expected point count > 0, got $line_trail_after_count"
 fi
 
+line_trail_state_active_file="$tmp_dir/effects-line-trail-state-active.out"
+line_trail_state_active_code="$(mfx_http_code "$line_trail_state_active_file" "$MFX_MANUAL_BASE_URL/api/state" \
+    -X GET \
+    -H "$token_header")"
+mfx_assert_eq "$line_trail_state_active_code" "200" "effects line trail active state status"
+mfx_assert_file_contains "$line_trail_state_active_file" "\"line_trail_active\":true" "effects line trail active state flag"
+line_trail_state_active_count="$(parse_uint_field "$line_trail_state_active_file" "line_trail_point_count")"
+if [[ -z "$line_trail_state_active_count" ]]; then
+    mfx_fail "effects line trail active state point count parse failed"
+fi
+if (( line_trail_state_active_count <= 0 )); then
+    mfx_fail "effects line trail active state expected point count > 0, got $line_trail_state_active_count"
+fi
+
 overlay_trail_none_probe_file="$tmp_dir/effects-overlay-trail-none-probe.out"
 overlay_trail_none_probe_code="$(mfx_http_code "$overlay_trail_none_probe_file" "$MFX_MANUAL_BASE_URL/api/effects/test-overlay-windows" \
     -X POST \
@@ -228,6 +242,14 @@ mfx_assert_file_contains "$overlay_trail_none_probe_file" "\"before_line_trail_a
 mfx_assert_file_contains "$overlay_trail_none_probe_file" "\"after_line_trail_active\":false" "effects overlay trail none probe after inactive"
 mfx_assert_file_contains "$overlay_trail_none_probe_file" "\"before_line_trail_point_count\":0" "effects overlay trail none probe before point count"
 mfx_assert_file_contains "$overlay_trail_none_probe_file" "\"after_line_trail_point_count\":0" "effects overlay trail none probe after point count"
+
+line_trail_state_cleared_file="$tmp_dir/effects-line-trail-state-cleared.out"
+line_trail_state_cleared_code="$(mfx_http_code "$line_trail_state_cleared_file" "$MFX_MANUAL_BASE_URL/api/state" \
+    -X GET \
+    -H "$token_header")"
+mfx_assert_eq "$line_trail_state_cleared_code" "200" "effects line trail cleared state status"
+mfx_assert_file_contains "$line_trail_state_cleared_file" "\"line_trail_active\":false" "effects line trail cleared state flag"
+mfx_assert_file_contains "$line_trail_state_cleared_file" "\"line_trail_point_count\":0" "effects line trail cleared state point count"
 
 mfx_ok "macos effects type parity selfcheck passed"
 
