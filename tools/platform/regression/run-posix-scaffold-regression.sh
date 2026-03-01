@@ -70,7 +70,12 @@ mfx_info "build dir: $MFX_BUILD_DIR"
 mfx_info "entry host lock: mfx-entry-posix-host"
 
 mfx_run_scaffold_regression_checks() {
-    mfx_configure_and_build "$REPO_ROOT" "$MFX_BUILD_DIR" "$MFX_PLATFORM"
+    mfx_terminate_stale_entry_host "before scaffold regression"
+    mfx_configure_and_build \
+        "$REPO_ROOT" \
+        "$MFX_BUILD_DIR" \
+        "$MFX_PLATFORM" \
+        "-DMFX_ENABLE_POSIX_CORE_RUNTIME=OFF"
 
     if [[ "$MFX_SKIP_SMOKE" -eq 0 ]]; then
         mfx_run_smoke_checks "$MFX_PLATFORM" "$MFX_BUILD_DIR"
