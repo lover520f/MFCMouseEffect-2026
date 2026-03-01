@@ -49,6 +49,7 @@
 - macOS WASM planning/layout headers now use C++-compatible forward-declaration boundaries (with AppKit/Foundation imports moved to ObjC++ implementation files), enabling `MacosWasmImageOverlayRendererCore.Plan.cpp` and `MacosWasmTextOverlay.Layout.cpp` removal from ObjC++ allowlist while preserving scaffold/core-automation/surface-gate passes.
 - `MacosHoldPulseOverlayRendererCore.cpp` is now also removed from ObjC++ allowlist after null-sentinel cleanup (`nil -> nullptr`) confirmed pure C++ compatibility and full scaffold/core-automation/surface-gate regression pass.
 - macOS effects wrapper entry files (`MacosClick/Trail/Scroll/Hover/HoldPulseOverlayRenderer.cpp`) now use C++ callback-based main-thread bridge APIs (no Objective-C block literals), and all five wrappers are removed from `MFX_MACOS_OBJCXX_SOURCE_ALLOWLIST` with scaffold/core-automation/surface-gate regression pass.
+- `MacosTextEffectFallback.cpp` now uses pure C++ callback scheduling (`RunOnMainThread*` callback overload + `dispatch_after_f` animation tick context) and is removed from `MFX_MACOS_OBJCXX_SOURCE_ALLOWLIST` with full scaffold/core-automation/surface-gate regression pass.
 - Validation passed:
   - `cmake -S MFCMouseEffect/Platform -B /tmp/mfx-platform-macos-legacy-mm-build -DMFX_PACKAGE_PLATFORM=macos -DMFX_ENABLE_POSIX_CORE_RUNTIME=ON -DMFX_ENABLE_ENTRY_RUNTIME_TARGETS=ON`
   - `cmake --build /tmp/mfx-platform-macos-legacy-mm-build --target mfx_shell_macos mfx_entry_posix_host -j8`

@@ -14,7 +14,6 @@
 #include <atomic>
 #include <chrono>
 #include <cmath>
-#include <functional>
 #include <memory>
 #include <mutex>
 #include <random>
@@ -51,6 +50,19 @@ struct TextAnimationSpec final {
     uint32_t argb = 0xFFFFFFFFu;
     std::string fontFamilyUtf8{};
     bool emojiText = false;
+};
+
+struct TextAnimationState final {
+    void* panelHandle = nullptr;
+    TextAnimationSpec spec{};
+    uint64_t startTickMs = 0;
+    uint64_t generation = 0;
+};
+
+struct ShowTextContext final {
+    std::string utf8Text{};
+    TextAnimationSpec spec{};
+    size_t cap = 1;
 };
 
 std::mutex& ActivePanelsMutex() {
@@ -190,49 +202,61 @@ void ApplyTextFrame(void* panelHandle, const TextAnimationSpec& spec, double t) 
         spec.emojiText ? 1 : 0);
 }
 
+void TickTextAnimation(void* opaque);
+
+void ScheduleTextAnimationTick(TextAnimationState* state) {
+    if (state == nullptr) {
+        return;
+    }
+    dispatch_after_f(
+        dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(16) * NSEC_PER_MSEC),
+        dispatch_get_main_queue(),
+        state,
+        &TickTextAnimation);
+}
+
+void TickTextAnimation(void* opaque) {
+    std::unique_ptr<TextAnimationState> state(static_cast<TextAnimationState*>(opaque));
+    if (!state || state->panelHandle == nullptr) {
+        return;
+    }
+
+    if (state->generation != AnimationGeneration().load(std::memory_order_acquire)) {
+        CloseTrackedPanel(state->panelHandle);
+        return;
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(ActivePanelsMutex());
+        if (!IsPanelTrackedLocked(state->panelHandle)) {
+            return;
+        }
+    }
+
+    const uint64_t nowMs = MonotonicNowMs();
+    const uint64_t elapsedMs = (nowMs >= state->startTickMs) ? (nowMs - state->startTickMs) : 0;
+    const double t = Clamp01(static_cast<double>(elapsedMs) / std::max(1.0, state->spec.durationMs));
+    ApplyTextFrame(state->panelHandle, state->spec, t);
+
+    if (t >= 1.0) {
+        CloseTrackedPanel(state->panelHandle);
+        return;
+    }
+
+    ScheduleTextAnimationTick(state.release());
+}
+
 void StartTextAnimation(void* panelHandle, TextAnimationSpec spec) {
     if (panelHandle == nullptr) {
         return;
     }
-
-    const uint64_t startTickMs = MonotonicNowMs();
-    const uint64_t generation = AnimationGeneration().load(std::memory_order_acquire);
-
-    auto step = std::make_shared<std::function<void()>>();
-    *step = [panelHandle, spec, startTickMs, generation, step]() {
-        if (generation != AnimationGeneration().load(std::memory_order_acquire)) {
-            CloseTrackedPanel(panelHandle);
-            return;
-        }
-
-        {
-            std::lock_guard<std::mutex> lock(ActivePanelsMutex());
-            if (!IsPanelTrackedLocked(panelHandle)) {
-                return;
-            }
-        }
-
-        const uint64_t nowMs = MonotonicNowMs();
-        const uint64_t elapsedMs = (nowMs >= startTickMs) ? (nowMs - startTickMs) : 0;
-        const double t = Clamp01(static_cast<double>(elapsedMs) / std::max(1.0, spec.durationMs));
-        ApplyTextFrame(panelHandle, spec, t);
-
-        if (t >= 1.0) {
-            CloseTrackedPanel(panelHandle);
-            return;
-        }
-
-        dispatch_after(
-            dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(16) * NSEC_PER_MSEC),
-            dispatch_get_main_queue(),
-            ^{
-              if (step) {
-                  (*step)();
-              }
-            });
+    auto* state = new TextAnimationState{
+        panelHandle,
+        spec,
+        MonotonicNowMs(),
+        AnimationGeneration().load(std::memory_order_acquire),
     };
-
-    (*step)();
+    TickTextAnimation(state);
 }
 
 } // namespace
@@ -248,24 +272,26 @@ void MacosTextEffectFallback::Shutdown() {
     return;
 #else
     AnimationGeneration().fetch_add(1, std::memory_order_acq_rel);
-    macos_overlay_support::RunOnMainThreadSync(^{
-      std::vector<void*> toClose;
-      {
-          std::lock_guard<std::mutex> lock(ActivePanelsMutex());
-          auto& panels = ActivePanels();
-          toClose.reserve(panels.size());
-          for (const auto& item : panels) {
-              if (item.handle != nullptr) {
-                  toClose.push_back(item.handle);
-              }
-          }
-          panels.clear();
-      }
-      diagnostics::SetTextEffectFallbackActivePanels(0);
-      for (void* panelHandle : toClose) {
-          mfx_macos_text_panel_release_v1(panelHandle);
-      }
-    });
+    macos_overlay_support::RunOnMainThreadSync(
+        [](void*) {
+            std::vector<void*> toClose;
+            {
+                std::lock_guard<std::mutex> lock(ActivePanelsMutex());
+                auto& panels = ActivePanels();
+                toClose.reserve(panels.size());
+                for (const auto& item : panels) {
+                    if (item.handle != nullptr) {
+                        toClose.push_back(item.handle);
+                    }
+                }
+                panels.clear();
+            }
+            diagnostics::SetTextEffectFallbackActivePanels(0);
+            for (void* panelHandle : toClose) {
+                mfx_macos_text_panel_release_v1(panelHandle);
+            }
+        },
+        nullptr);
 #endif
 }
 
@@ -320,33 +346,46 @@ void MacosTextEffectFallback::ShowText(
     spec.fontFamilyUtf8 = Utf16ToUtf8(config.fontFamily.c_str());
     spec.emojiText = settings::HasEmojiStarter(text);
 
-    const size_t cap = maxConcurrentWindows_;
-    macos_overlay_support::RunOnMainThreadAsync(^{
-      const double panelSize = ResolvePanelSize(spec.baseFontSize);
-      const char* fontFamilyUtf8 = spec.fontFamilyUtf8.empty() ? "" : spec.fontFamilyUtf8.c_str();
-      void* panelHandle = mfx_macos_text_panel_create_v1(
-          utf8Text.c_str(),
-          panelSize,
-          spec.baseFontSize,
-          spec.argb,
-          fontFamilyUtf8,
-          spec.emojiText ? 1 : 0);
-      if (panelHandle == nullptr) {
-          diagnostics::RecordTextEffectFallbackError("panel_nil");
-          return;
-      }
+    auto* context = new ShowTextContext{
+        utf8Text,
+        spec,
+        maxConcurrentWindows_,
+    };
+    macos_overlay_support::RunOnMainThreadAsync(
+        [](void* opaque) {
+            std::unique_ptr<ShowTextContext> context(
+                static_cast<ShowTextContext*>(opaque));
+            if (!context) {
+                return;
+            }
+            const double panelSize = ResolvePanelSize(context->spec.baseFontSize);
+            const char* fontFamilyUtf8 = context->spec.fontFamilyUtf8.empty()
+                ? ""
+                : context->spec.fontFamilyUtf8.c_str();
+            void* panelHandle = mfx_macos_text_panel_create_v1(
+                context->utf8Text.c_str(),
+                panelSize,
+                context->spec.baseFontSize,
+                context->spec.argb,
+                fontFamilyUtf8,
+                context->spec.emojiText ? 1 : 0);
+            if (panelHandle == nullptr) {
+                diagnostics::RecordTextEffectFallbackError("panel_nil");
+                return;
+            }
 
-      {
-          std::lock_guard<std::mutex> lock(ActivePanelsMutex());
-          ActivePanels().push_back(ActivePanel{panelHandle});
-          diagnostics::SetTextEffectFallbackActivePanels(ActivePanels().size());
-      }
-      EnforceWindowCap(cap);
+            {
+                std::lock_guard<std::mutex> lock(ActivePanelsMutex());
+                ActivePanels().push_back(ActivePanel{panelHandle});
+                diagnostics::SetTextEffectFallbackActivePanels(ActivePanels().size());
+            }
+            EnforceWindowCap(context->cap);
 
-      mfx_macos_text_panel_show_v1(panelHandle);
-      diagnostics::RecordTextEffectFallbackPanelCreated();
-      StartTextAnimation(panelHandle, spec);
-    });
+            mfx_macos_text_panel_show_v1(panelHandle);
+            diagnostics::RecordTextEffectFallbackPanelCreated();
+            StartTextAnimation(panelHandle, context->spec);
+        },
+        context);
 #endif
 }
 
