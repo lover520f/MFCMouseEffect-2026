@@ -31,6 +31,7 @@
   - VM suppression diagnostics/state exposure is present.
 
 ## Build and Regression Gates
+- macOS shell CMake Swift bridge registration has been normalized to one helper (`mfx_add_swift_bridge`) plus one source list (`MFX_MACOS_SWIFT_OBJECTS`), removing 20 duplicated compile blocks and reducing bridge drift risk.
 - POSIX effects suite (core automation scope fixed to `effects`, now includes macOS WASM selfcheck by default):
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-posix-effects-regression-suite.sh --platform auto`
 - POSIX scaffold regression:

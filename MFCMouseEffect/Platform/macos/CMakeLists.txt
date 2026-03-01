@@ -9,31 +9,10 @@ endif()
 set(MFX_MACOS_TRAY_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayService.cpp")
 set(MFX_MACOS_TRAY_LOCALIZATION_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayMenuLocalization.cpp")
 set(MFX_MACOS_TRAY_MENU_FACTORY_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayMenuFactory.cpp")
-set(MFX_MACOS_NOTIFICATION_SWIFT_OBJECT "")
-set(MFX_MACOS_FOLDER_PICKER_SWIFT_OBJECT "")
-set(MFX_MACOS_SETTINGS_LAUNCHER_SWIFT_OBJECT "")
-set(MFX_MACOS_APP_CATALOG_SWIFT_OBJECT "")
-set(MFX_MACOS_FOREGROUND_PROCESS_SWIFT_OBJECT "")
-set(MFX_MACOS_INPUT_PERMISSION_SWIFT_OBJECT "")
-set(MFX_MACOS_INPUT_INDICATOR_SWIFT_OBJECT "")
-set(MFX_MACOS_OVERLAY_COORD_SWIFT_OBJECT "")
-set(MFX_MACOS_OVERLAY_RENDER_SUPPORT_SWIFT_OBJECT "")
-set(MFX_MACOS_CLICK_PULSE_SWIFT_OBJECT "")
-set(MFX_MACOS_SCROLL_PULSE_SWIFT_OBJECT "")
-set(MFX_MACOS_TRAIL_PULSE_SWIFT_OBJECT "")
-set(MFX_MACOS_LINE_TRAIL_SWIFT_OBJECT "")
-set(MFX_MACOS_TEXT_FALLBACK_SWIFT_OBJECT "")
-set(MFX_MACOS_HOVER_PULSE_SWIFT_OBJECT "")
-set(MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT "")
-set(MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT "")
-set(MFX_MACOS_TRAY_MENU_SWIFT_OBJECT "")
-set(MFX_MACOS_EVENT_LOOP_SWIFT_OBJECT "")
-set(MFX_MACOS_WASM_IMAGE_OVERLAY_SWIFT_OBJECT "")
+set(MFX_MACOS_SWIFT_OBJECTS "")
 set(MFX_SWIFT_LANGUAGE_MODE "auto" CACHE STRING "Swift language mode for macOS bridges: auto|5|6")
 set_property(CACHE MFX_SWIFT_LANGUAGE_MODE PROPERTY STRINGS auto 5 6)
 if(APPLE)
-    set(MFX_MACOS_TRAY_LOCALIZATION_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayMenuLocalization.cpp")
-
     find_program(MFX_SWIFTC_EXECUTABLE swiftc REQUIRED)
     set(MFX_SWIFTC_COMMON_ARGS -parse-as-library -c)
     set(MFX_SWIFT_LANGUAGE_MODE_RESOLVED "")
@@ -67,46 +46,6 @@ if(APPLE)
         "macOS Swift language mode: ${MFX_SWIFT_LANGUAGE_MODE_RESOLVED} "
         "(requested=${MFX_SWIFT_LANGUAGE_MODE})")
 
-    set(MFX_MACOS_NOTIFICATION_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosUserNotificationBridge.swift")
-    set(MFX_MACOS_NOTIFICATION_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosUserNotificationBridge.swift.o")
-    set(MFX_MACOS_FOLDER_PICKER_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosNativeFolderPickerBridge.swift")
-    set(MFX_MACOS_FOLDER_PICKER_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosNativeFolderPickerBridge.swift.o")
-    set(MFX_MACOS_SETTINGS_LAUNCHER_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosSettingsLauncherBridge.swift")
-    set(MFX_MACOS_SETTINGS_LAUNCHER_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosSettingsLauncherBridge.swift.o")
-    set(MFX_MACOS_APP_CATALOG_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosApplicationCatalogBridge.swift")
-    set(MFX_MACOS_APP_CATALOG_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosApplicationCatalogBridge.swift.o")
-    set(MFX_MACOS_FOREGROUND_PROCESS_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosForegroundProcessBridge.swift")
-    set(MFX_MACOS_FOREGROUND_PROCESS_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosForegroundProcessBridge.swift.o")
-    set(MFX_MACOS_INPUT_PERMISSION_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosInputPermissionBridge.swift")
-    set(MFX_MACOS_INPUT_PERMISSION_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosInputPermissionBridge.swift.o")
-    set(MFX_MACOS_INPUT_INDICATOR_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Overlay/MacosInputIndicatorBridge.swift")
-    set(MFX_MACOS_INPUT_INDICATOR_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosInputIndicatorBridge.swift.o")
-    set(MFX_MACOS_OVERLAY_COORD_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Overlay/MacosOverlayCoordSpaceBridge.swift")
-    set(MFX_MACOS_OVERLAY_COORD_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosOverlayCoordSpaceBridge.swift.o")
-    set(MFX_MACOS_OVERLAY_RENDER_SUPPORT_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosOverlayRenderSupportBridge.swift")
-    set(MFX_MACOS_OVERLAY_RENDER_SUPPORT_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosOverlayRenderSupportBridge.swift.o")
-    set(MFX_MACOS_CLICK_PULSE_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosClickPulseOverlayBridge.swift")
-    set(MFX_MACOS_CLICK_PULSE_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosClickPulseOverlayBridge.swift.o")
-    set(MFX_MACOS_SCROLL_PULSE_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosScrollPulseOverlayBridge.swift")
-    set(MFX_MACOS_SCROLL_PULSE_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosScrollPulseOverlayBridge.swift.o")
-    set(MFX_MACOS_TRAIL_PULSE_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayBridge.swift")
-    set(MFX_MACOS_TRAIL_PULSE_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosTrailPulseOverlayBridge.swift.o")
-    set(MFX_MACOS_LINE_TRAIL_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosLineTrailOverlayBridge.swift")
-    set(MFX_MACOS_LINE_TRAIL_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosLineTrailOverlayBridge.swift.o")
-    set(MFX_MACOS_TEXT_FALLBACK_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTextEffectFallbackBridge.swift")
-    set(MFX_MACOS_TEXT_FALLBACK_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosTextEffectFallbackBridge.swift.o")
-    set(MFX_MACOS_HOVER_PULSE_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoverPulseOverlayBridge.swift")
-    set(MFX_MACOS_HOVER_PULSE_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosHoverPulseOverlayBridge.swift.o")
-    set(MFX_MACOS_HOLD_PULSE_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayBridge.swift")
-    set(MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosHoldPulseOverlayBridge.swift.o")
-    set(MFX_MACOS_TRAY_LOCALIZATION_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayMenuLocalizationBridge.swift")
-    set(MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosTrayMenuLocalizationBridge.swift.o")
-    set(MFX_MACOS_TRAY_MENU_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayMenuBridge.swift")
-    set(MFX_MACOS_TRAY_MENU_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosTrayMenuBridge.swift.o")
-    set(MFX_MACOS_EVENT_LOOP_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosEventLoopBridge.swift")
-    set(MFX_MACOS_EVENT_LOOP_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosEventLoopBridge.swift.o")
-    set(MFX_MACOS_WASM_IMAGE_OVERLAY_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmImageOverlayBridge.swift")
-    set(MFX_MACOS_WASM_IMAGE_OVERLAY_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosWasmImageOverlayBridge.swift.o")
     set(MFX_SWIFT_DEPLOYMENT_TARGET "${CMAKE_OSX_DEPLOYMENT_TARGET}")
     if(NOT MFX_SWIFT_DEPLOYMENT_TARGET)
         execute_process(
@@ -128,266 +67,48 @@ if(APPLE)
             list(PREPEND MFX_SWIFTC_COMMON_ARGS -target "${MFX_SWIFT_TARGET_ARCH}-apple-macosx${MFX_SWIFT_DEPLOYMENT_TARGET}")
         endif()
     endif()
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_NOTIFICATION_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_NOTIFICATION_SWIFT_SOURCE}" -o "${MFX_MACOS_NOTIFICATION_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_NOTIFICATION_SWIFT_SOURCE}"
-        COMMENT "Compile Swift notification bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_NOTIFICATION_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_FOLDER_PICKER_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_FOLDER_PICKER_SWIFT_SOURCE}" -o "${MFX_MACOS_FOLDER_PICKER_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_FOLDER_PICKER_SWIFT_SOURCE}"
-        COMMENT "Compile Swift folder picker bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_FOLDER_PICKER_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_SETTINGS_LAUNCHER_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_SETTINGS_LAUNCHER_SWIFT_SOURCE}" -o "${MFX_MACOS_SETTINGS_LAUNCHER_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_SETTINGS_LAUNCHER_SWIFT_SOURCE}"
-        COMMENT "Compile Swift settings launcher bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_SETTINGS_LAUNCHER_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_APP_CATALOG_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_APP_CATALOG_SWIFT_SOURCE}" -o "${MFX_MACOS_APP_CATALOG_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_APP_CATALOG_SWIFT_SOURCE}"
-        COMMENT "Compile Swift application catalog bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_APP_CATALOG_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_FOREGROUND_PROCESS_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_FOREGROUND_PROCESS_SWIFT_SOURCE}" -o "${MFX_MACOS_FOREGROUND_PROCESS_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_FOREGROUND_PROCESS_SWIFT_SOURCE}"
-        COMMENT "Compile Swift foreground process bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_FOREGROUND_PROCESS_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_INPUT_PERMISSION_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_INPUT_PERMISSION_SWIFT_SOURCE}" -o "${MFX_MACOS_INPUT_PERMISSION_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_INPUT_PERMISSION_SWIFT_SOURCE}"
-        COMMENT "Compile Swift input permission bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_INPUT_PERMISSION_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_INPUT_INDICATOR_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_INPUT_INDICATOR_SWIFT_SOURCE}" -o "${MFX_MACOS_INPUT_INDICATOR_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_INPUT_INDICATOR_SWIFT_SOURCE}"
-        COMMENT "Compile Swift input indicator bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_INPUT_INDICATOR_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_OVERLAY_COORD_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_OVERLAY_COORD_SWIFT_SOURCE}" -o "${MFX_MACOS_OVERLAY_COORD_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_OVERLAY_COORD_SWIFT_SOURCE}"
-        COMMENT "Compile Swift overlay coord-space bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_OVERLAY_COORD_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_OVERLAY_RENDER_SUPPORT_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_OVERLAY_RENDER_SUPPORT_SWIFT_SOURCE}" -o "${MFX_MACOS_OVERLAY_RENDER_SUPPORT_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_OVERLAY_RENDER_SUPPORT_SWIFT_SOURCE}"
-        COMMENT "Compile Swift overlay render-support bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_OVERLAY_RENDER_SUPPORT_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_CLICK_PULSE_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_CLICK_PULSE_SWIFT_SOURCE}" -o "${MFX_MACOS_CLICK_PULSE_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_CLICK_PULSE_SWIFT_SOURCE}"
-        COMMENT "Compile Swift click-pulse overlay bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_CLICK_PULSE_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_SCROLL_PULSE_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_SCROLL_PULSE_SWIFT_SOURCE}" -o "${MFX_MACOS_SCROLL_PULSE_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_SCROLL_PULSE_SWIFT_SOURCE}"
-        COMMENT "Compile Swift scroll-pulse overlay bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_SCROLL_PULSE_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_TRAIL_PULSE_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_TRAIL_PULSE_SWIFT_SOURCE}" -o "${MFX_MACOS_TRAIL_PULSE_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_TRAIL_PULSE_SWIFT_SOURCE}"
-        COMMENT "Compile Swift trail-pulse overlay bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_TRAIL_PULSE_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_LINE_TRAIL_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_LINE_TRAIL_SWIFT_SOURCE}" -o "${MFX_MACOS_LINE_TRAIL_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_LINE_TRAIL_SWIFT_SOURCE}"
-        COMMENT "Compile Swift line-trail overlay bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_LINE_TRAIL_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_TEXT_FALLBACK_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_TEXT_FALLBACK_SWIFT_SOURCE}" -o "${MFX_MACOS_TEXT_FALLBACK_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_TEXT_FALLBACK_SWIFT_SOURCE}"
-        COMMENT "Compile Swift text-effect fallback bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_TEXT_FALLBACK_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_HOVER_PULSE_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_HOVER_PULSE_SWIFT_SOURCE}" -o "${MFX_MACOS_HOVER_PULSE_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_HOVER_PULSE_SWIFT_SOURCE}"
-        COMMENT "Compile Swift hover-pulse overlay bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_HOVER_PULSE_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_HOLD_PULSE_SWIFT_SOURCE}" -o "${MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_HOLD_PULSE_SWIFT_SOURCE}"
-        COMMENT "Compile Swift hold-pulse overlay bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_TRAY_LOCALIZATION_SWIFT_SOURCE}" -o "${MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_TRAY_LOCALIZATION_SWIFT_SOURCE}"
-        COMMENT "Compile Swift tray localization bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_TRAY_MENU_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_TRAY_MENU_SWIFT_SOURCE}" -o "${MFX_MACOS_TRAY_MENU_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_TRAY_MENU_SWIFT_SOURCE}"
-        COMMENT "Compile Swift tray menu bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_TRAY_MENU_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_EVENT_LOOP_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_EVENT_LOOP_SWIFT_SOURCE}" -o "${MFX_MACOS_EVENT_LOOP_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_EVENT_LOOP_SWIFT_SOURCE}"
-        COMMENT "Compile Swift event loop bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_EVENT_LOOP_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
-    add_custom_command(
-        OUTPUT "${MFX_MACOS_WASM_IMAGE_OVERLAY_SWIFT_OBJECT}"
-        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_WASM_IMAGE_OVERLAY_SWIFT_SOURCE}" -o "${MFX_MACOS_WASM_IMAGE_OVERLAY_SWIFT_OBJECT}"
-        DEPENDS "${MFX_MACOS_WASM_IMAGE_OVERLAY_SWIFT_SOURCE}"
-        COMMENT "Compile Swift WASM image overlay bridge"
-        VERBATIM
-    )
-    set_source_files_properties(
-        "${MFX_MACOS_WASM_IMAGE_OVERLAY_SWIFT_OBJECT}"
-        PROPERTIES
-            GENERATED TRUE
-            EXTERNAL_OBJECT TRUE
-    )
+    function(mfx_add_swift_bridge swift_relative_path swift_label)
+        get_filename_component(mfx_swift_base_name "${swift_relative_path}" NAME)
+        set(mfx_swift_source "${MFX_PROJECT_ROOT}/${swift_relative_path}")
+        set(mfx_swift_object "${CMAKE_CURRENT_BINARY_DIR}/${mfx_swift_base_name}.o")
+        add_custom_command(
+            OUTPUT "${mfx_swift_object}"
+            COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${mfx_swift_source}" -o "${mfx_swift_object}"
+            DEPENDS "${mfx_swift_source}"
+            COMMENT "Compile Swift ${swift_label}"
+            VERBATIM
+        )
+        set_source_files_properties(
+            "${mfx_swift_object}"
+            PROPERTIES
+                GENERATED TRUE
+                EXTERNAL_OBJECT TRUE
+        )
+        set(mfx_swift_objects_local "${MFX_MACOS_SWIFT_OBJECTS}")
+        list(APPEND mfx_swift_objects_local "${mfx_swift_object}")
+        set(MFX_MACOS_SWIFT_OBJECTS "${mfx_swift_objects_local}" PARENT_SCOPE)
+    endfunction()
+
+    mfx_add_swift_bridge("Platform/macos/Shell/MacosUserNotificationBridge.swift" "notification bridge")
+    mfx_add_swift_bridge("Platform/macos/System/MacosNativeFolderPickerBridge.swift" "folder picker bridge")
+    mfx_add_swift_bridge("Platform/macos/Shell/MacosSettingsLauncherBridge.swift" "settings launcher bridge")
+    mfx_add_swift_bridge("Platform/macos/System/MacosApplicationCatalogBridge.swift" "application catalog bridge")
+    mfx_add_swift_bridge("Platform/macos/System/MacosForegroundProcessBridge.swift" "foreground process bridge")
+    mfx_add_swift_bridge("Platform/macos/System/MacosInputPermissionBridge.swift" "input permission bridge")
+    mfx_add_swift_bridge("Platform/macos/Overlay/MacosInputIndicatorBridge.swift" "input indicator bridge")
+    mfx_add_swift_bridge("Platform/macos/Overlay/MacosOverlayCoordSpaceBridge.swift" "overlay coord-space bridge")
+    mfx_add_swift_bridge("Platform/macos/Effects/MacosOverlayRenderSupportBridge.swift" "overlay render-support bridge")
+    mfx_add_swift_bridge("Platform/macos/Effects/MacosClickPulseOverlayBridge.swift" "click-pulse overlay bridge")
+    mfx_add_swift_bridge("Platform/macos/Effects/MacosScrollPulseOverlayBridge.swift" "scroll-pulse overlay bridge")
+    mfx_add_swift_bridge("Platform/macos/Effects/MacosTrailPulseOverlayBridge.swift" "trail-pulse overlay bridge")
+    mfx_add_swift_bridge("Platform/macos/Effects/MacosLineTrailOverlayBridge.swift" "line-trail overlay bridge")
+    mfx_add_swift_bridge("Platform/macos/Effects/MacosTextEffectFallbackBridge.swift" "text-effect fallback bridge")
+    mfx_add_swift_bridge("Platform/macos/Effects/MacosHoverPulseOverlayBridge.swift" "hover-pulse overlay bridge")
+    mfx_add_swift_bridge("Platform/macos/Effects/MacosHoldPulseOverlayBridge.swift" "hold-pulse overlay bridge")
+    mfx_add_swift_bridge("Platform/macos/Shell/MacosTrayMenuLocalizationBridge.swift" "tray localization bridge")
+    mfx_add_swift_bridge("Platform/macos/Shell/MacosTrayMenuBridge.swift" "tray menu bridge")
+    mfx_add_swift_bridge("Platform/macos/Shell/MacosEventLoopBridge.swift" "event loop bridge")
+    mfx_add_swift_bridge("Platform/macos/Wasm/MacosWasmImageOverlayBridge.swift" "WASM image overlay bridge")
 endif()
 
 add_library(mfx_shell_macos STATIC
@@ -528,65 +249,8 @@ target_include_directories(mfx_shell_macos
         ${MFX_MACOS_PLATFORM_HEADER_DIRS}
 )
 
-if(MFX_MACOS_NOTIFICATION_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_NOTIFICATION_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_FOLDER_PICKER_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_FOLDER_PICKER_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_SETTINGS_LAUNCHER_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_SETTINGS_LAUNCHER_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_APP_CATALOG_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_APP_CATALOG_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_FOREGROUND_PROCESS_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_FOREGROUND_PROCESS_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_INPUT_PERMISSION_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_INPUT_PERMISSION_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_INPUT_INDICATOR_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_INPUT_INDICATOR_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_OVERLAY_COORD_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_OVERLAY_COORD_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_OVERLAY_RENDER_SUPPORT_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_OVERLAY_RENDER_SUPPORT_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_CLICK_PULSE_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_CLICK_PULSE_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_SCROLL_PULSE_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_SCROLL_PULSE_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_TRAIL_PULSE_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_TRAIL_PULSE_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_LINE_TRAIL_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_LINE_TRAIL_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_TEXT_FALLBACK_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_TEXT_FALLBACK_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_HOVER_PULSE_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_HOVER_PULSE_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_TRAY_MENU_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_TRAY_MENU_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_EVENT_LOOP_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_EVENT_LOOP_SWIFT_OBJECT}")
-endif()
-if(MFX_MACOS_WASM_IMAGE_OVERLAY_SWIFT_OBJECT)
-    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_WASM_IMAGE_OVERLAY_SWIFT_OBJECT}")
+if(MFX_MACOS_SWIFT_OBJECTS)
+    target_sources(mfx_shell_macos PRIVATE ${MFX_MACOS_SWIFT_OBJECTS})
 endif()
 
 target_link_libraries(mfx_shell_macos
