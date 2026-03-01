@@ -13,6 +13,8 @@
 #import <dispatch/dispatch.h>
 #endif
 
+#include <algorithm>
+
 namespace mousefx::macos_trail_pulse {
 
 #if defined(__APPLE__)
@@ -24,6 +26,33 @@ NSColor* ArgbToNsColor(uint32_t argb) {
     const CGFloat green = static_cast<CGFloat>((argb >> 8) & 0xFFu) / 255.0;
     const CGFloat blue = static_cast<CGFloat>(argb & 0xFFu) / 255.0;
     return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
+}
+
+CAAnimationGroup* CreateScaleFadeAnimationGroup(
+    CGFloat fromScale,
+    CGFloat toScale,
+    CGFloat fromOpacity,
+    CFTimeInterval duration) {
+    const CFTimeInterval clampedDuration = std::max<CFTimeInterval>(0.05, duration);
+
+    CABasicAnimation* scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+    scale.fromValue = @(fromScale);
+    scale.toValue = @(toScale);
+    scale.duration = clampedDuration;
+    scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+
+    CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    fade.fromValue = @(std::clamp(fromOpacity, static_cast<CGFloat>(0.0), static_cast<CGFloat>(1.0)));
+    fade.toValue = @0.0;
+    fade.duration = clampedDuration;
+    fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+
+    CAAnimationGroup* group = [CAAnimationGroup animation];
+    group.animations = @[scale, fade];
+    group.duration = clampedDuration;
+    group.fillMode = kCAFillModeForwards;
+    group.removedOnCompletion = NO;
+    return group;
 }
 
 } // namespace
@@ -162,7 +191,7 @@ void AddTrailGlowLayer(NSView* content, const TrailPulseRenderPlan& plan) {
 }
 
 void StartTrailPulseAnimation(CAShapeLayer* core, const TrailPulseRenderPlan& plan) {
-    CAAnimationGroup* group = macos_overlay_support::CreateScaleFadeAnimationGroup(
+    CAAnimationGroup* group = CreateScaleFadeAnimationGroup(
         0.65,
         1.0,
         static_cast<CGFloat>(plan.command.baseOpacity),

@@ -4,12 +4,12 @@
 #include "Platform/macos/Effects/MacosOverlayRenderSupportSwiftBridge.h"
 
 #if defined(__APPLE__)
-#import <QuartzCore/QuartzCore.h>
 #import <dispatch/dispatch.h>
 #include <pthread.h>
 #endif
 
 #include <algorithm>
+#include <memory>
 
 namespace mousefx::macos_overlay_support {
 
@@ -23,25 +23,21 @@ CGFloat ClampCoordinate(CGFloat value, CGFloat minValue, CGFloat maxValue) {
     return std::clamp(value, minValue, maxValue);
 }
 
+struct MainThreadInvocation final {
+    MainThreadCallback callback = nullptr;
+    void* context = nullptr;
+};
+
+void InvokeMainThreadCallback(void* rawInvocation) {
+    std::unique_ptr<MainThreadInvocation> owned(
+        static_cast<MainThreadInvocation*>(rawInvocation));
+    if (!owned || owned->callback == nullptr) {
+        return;
+    }
+    owned->callback(owned->context);
+}
+
 } // namespace
-
-void RunOnMainThreadSync(dispatch_block_t block) {
-    if (!block) {
-        return;
-    }
-    if (pthread_main_np() != 0) {
-        block();
-        return;
-    }
-    dispatch_sync(dispatch_get_main_queue(), block);
-}
-
-void RunOnMainThreadAsync(dispatch_block_t block) {
-    if (!block) {
-        return;
-    }
-    dispatch_async(dispatch_get_main_queue(), block);
-}
 
 void RunOnMainThreadSync(MainThreadCallback callback, void* context) {
     if (callback == nullptr) {
@@ -51,8 +47,15 @@ void RunOnMainThreadSync(MainThreadCallback callback, void* context) {
         callback(context);
         return;
     }
-    dispatch_sync(dispatch_get_main_queue(), ^{
-      callback(context);
+    MainThreadInvocation invocation{};
+    invocation.callback = callback;
+    invocation.context = context;
+    dispatch_sync_f(dispatch_get_main_queue(), &invocation, [](void* rawInvocation) {
+      auto* invocationPtr = static_cast<MainThreadInvocation*>(rawInvocation);
+      if (invocationPtr == nullptr || invocationPtr->callback == nullptr) {
+          return;
+      }
+      invocationPtr->callback(invocationPtr->context);
     });
 }
 
@@ -60,9 +63,10 @@ void RunOnMainThreadAsync(MainThreadCallback callback, void* context) {
     if (callback == nullptr) {
         return;
     }
-    dispatch_async(dispatch_get_main_queue(), ^{
-      callback(context);
-    });
+    auto* invocation = new MainThreadInvocation{};
+    invocation->callback = callback;
+    invocation->context = context;
+    dispatch_async_f(dispatch_get_main_queue(), invocation, &InvokeMainThreadCallback);
 }
 
 NSWindow* CreateOverlayWindow(const NSRect& frame) {
@@ -106,7 +110,7 @@ bool ResolveScreenFrameForPoint(const ScreenPoint& overlayPt, NSRect* frameOut) 
     if (ok == 0 || width <= 0.0 || height <= 0.0) {
         return false;
     }
-    *frameOut = NSMakeRect(
+    *frameOut = CGRectMake(
         static_cast<CGFloat>(x),
         static_cast<CGFloat>(y),
         static_cast<CGFloat>(width),
@@ -129,12 +133,12 @@ CGFloat ResolveOverlayContentsScale(const ScreenPoint& overlayPt) {
     return ClampCoordinate(static_cast<CGFloat>(scale), 1.0, 4.0);
 }
 
-void ApplyOverlayContentScale(NSView* content, const ScreenPoint& overlayPt) {
-    if (content == nil) {
+void ApplyOverlayContentScale(void* contentHandle, const ScreenPoint& overlayPt) {
+    if (contentHandle == nullptr) {
         return;
     }
     mfx_macos_overlay_apply_content_scale_v1(
-        reinterpret_cast<void*>(content),
+        contentHandle,
         overlayPt.x,
         overlayPt.y);
 }
@@ -147,32 +151,6 @@ CGFloat ResolveOverlayOpacity(CGFloat baseOpacity, CGFloat delta, CGFloat minOpa
     const CGFloat clamped = ClampOverlayOpacity(baseOpacity + delta);
     const CGFloat floor = ClampOverlayOpacity(minOpacity);
     return std::max(clamped, floor);
-}
-
-CAAnimationGroup* CreateScaleFadeAnimationGroup(
-    CGFloat fromScale,
-    CGFloat toScale,
-    CGFloat fromOpacity,
-    CFTimeInterval duration) {
-    const CFTimeInterval clampedDuration = std::max<CFTimeInterval>(0.05, duration);
-    CABasicAnimation* scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-    scale.fromValue = @(fromScale);
-    scale.toValue = @(toScale);
-    scale.duration = clampedDuration;
-    scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-
-    CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    fade.fromValue = @(ClampOverlayOpacity(fromOpacity));
-    fade.toValue = @0.0;
-    fade.duration = clampedDuration;
-    fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
-
-    CAAnimationGroup* group = [CAAnimationGroup animation];
-    group.animations = @[scale, fade];
-    group.duration = clampedDuration;
-    group.fillMode = kCAFillModeForwards;
-    group.removedOnCompletion = NO;
-    return group;
 }
 
 CGFloat ScaleOverlayMetric(

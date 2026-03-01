@@ -45,6 +45,7 @@ Use it as a pointer index, not a full historical catalog.
 - macOS WASM text overlay Swift bridge cutover: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zz-macos-wasm-text-overlay-swift-bridge-cutover.md`
 - macOS WASM image window lifecycle unify: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zza-macos-wasm-image-window-lifecycle-unify.md`
 - macOS WASM image overlay Swift bridge cutover: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzb-macos-wasm-image-overlay-swift-bridge-cutover.md`
+- macOS overlay render-support ObjC++ prune: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzc-macos-overlay-render-support-objcxx-prune.md`
 
 ## Current macOS Mainline (Phases 50-55)
 - Dual-lane guardrails: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`

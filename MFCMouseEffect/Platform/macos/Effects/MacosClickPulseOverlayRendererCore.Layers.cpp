@@ -27,6 +27,33 @@ NSColor* ArgbToNsColor(uint32_t argb) {
     return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
 }
 
+CAAnimationGroup* CreateScaleFadeAnimationGroup(
+    CGFloat fromScale,
+    CGFloat toScale,
+    CGFloat fromOpacity,
+    CFTimeInterval duration) {
+    const CFTimeInterval clampedDuration = std::max<CFTimeInterval>(0.05, duration);
+
+    CABasicAnimation* scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+    scale.fromValue = @(fromScale);
+    scale.toValue = @(toScale);
+    scale.duration = clampedDuration;
+    scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+
+    CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    fade.fromValue = @(std::clamp(fromOpacity, static_cast<CGFloat>(0.0), static_cast<CGFloat>(1.0)));
+    fade.toValue = @0.0;
+    fade.duration = clampedDuration;
+    fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+
+    CAAnimationGroup* group = [CAAnimationGroup animation];
+    group.animations = @[scale, fade];
+    group.duration = clampedDuration;
+    group.fillMode = kCAFillModeForwards;
+    group.removedOnCompletion = NO;
+    return group;
+}
+
 } // namespace
 
 void ConfigureClickPulseBaseLayer(
@@ -96,7 +123,7 @@ void AddClickPulseExtraLayers(NSView* content, const ClickPulseRenderPlan& plan)
 
 void StartClickPulseAnimation(CAShapeLayer* base, const ClickPulseRenderPlan& plan) {
     const bool textMode = (plan.command.normalizedType == "text");
-    CAAnimationGroup* group = macos_overlay_support::CreateScaleFadeAnimationGroup(
+    CAAnimationGroup* group = CreateScaleFadeAnimationGroup(
         textMode ? 0.75 : 0.15,
         1.0,
         static_cast<CGFloat>(plan.command.baseOpacity),

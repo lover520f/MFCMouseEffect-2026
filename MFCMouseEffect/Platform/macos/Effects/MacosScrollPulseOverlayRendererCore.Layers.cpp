@@ -29,6 +29,33 @@ NSColor* ArgbToNsColor(uint32_t argb) {
     return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
 }
 
+CAAnimationGroup* CreateScaleFadeAnimationGroup(
+    CGFloat fromScale,
+    CGFloat toScale,
+    CGFloat fromOpacity,
+    CFTimeInterval duration) {
+    const CFTimeInterval clampedDuration = std::max<CFTimeInterval>(0.05, duration);
+
+    CABasicAnimation* scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+    scale.fromValue = @(fromScale);
+    scale.toValue = @(toScale);
+    scale.duration = clampedDuration;
+    scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+
+    CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
+    fade.fromValue = @(std::clamp(fromOpacity, static_cast<CGFloat>(0.0), static_cast<CGFloat>(1.0)));
+    fade.toValue = @0.0;
+    fade.duration = clampedDuration;
+    fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+
+    CAAnimationGroup* group = [CAAnimationGroup animation];
+    group.animations = @[scale, fade];
+    group.duration = clampedDuration;
+    group.fillMode = kCAFillModeForwards;
+    group.removedOnCompletion = NO;
+    return group;
+}
+
 CAShapeLayer* CreateBodyLayer(
     CGRect bounds,
     CGRect bodyRect,
@@ -114,7 +141,7 @@ void StartScrollPulseAnimation(
     CAShapeLayer* body,
     CAShapeLayer* arrow,
     const ScrollPulseRenderPlan& plan) {
-    CAAnimationGroup* group = macos_overlay_support::CreateScaleFadeAnimationGroup(
+    CAAnimationGroup* group = CreateScaleFadeAnimationGroup(
         0.72,
         1.04,
         static_cast<CGFloat>(plan.command.baseOpacity + 0.02),
