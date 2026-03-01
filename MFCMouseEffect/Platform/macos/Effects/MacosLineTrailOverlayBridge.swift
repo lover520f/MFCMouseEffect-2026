@@ -220,6 +220,7 @@ private final class MfxLineTrailState: NSObject {
         )
         let durationMs = max(1, config.durationMs)
         let lineWidth = max(0.2, config.lineWidth)
+        let layerScale = max(containerLayer.contentsScale, CGFloat(1.0))
 
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -238,6 +239,7 @@ private final class MfxLineTrailState: NSObject {
 
             let dot = CAShapeLayer()
             dot.frame = containerLayer.bounds
+            dot.contentsScale = layerScale
             dot.path = CGPath(
                 ellipseIn: CGRect(x: x - radius, y: y - radius, width: radius * 2.0, height: radius * 2.0),
                 transform: nil
@@ -253,6 +255,7 @@ private final class MfxLineTrailState: NSObject {
 
         let pathLayer = CAShapeLayer()
         pathLayer.frame = containerLayer.bounds
+        pathLayer.contentsScale = layerScale
 
         let path = CGMutablePath()
         var started = false
@@ -272,6 +275,7 @@ private final class MfxLineTrailState: NSObject {
         pathLayer.lineWidth = lineWidth
         pathLayer.lineCap = .round
         pathLayer.lineJoin = .round
+        pathLayer.allowsEdgeAntialiasing = true
 
         let newestAge = Float(nowMs - points[points.count - 1].tickMs)
         let newestLife = max(0.0, 1.0 - newestAge / Float(durationMs))

@@ -23,6 +23,10 @@ bool MacosGlobalInputHook::Start(IDispatchMessageHost* dispatchHost) {
     movePending_.store(false, std::memory_order_release);
     latestMoveX_.store(0, std::memory_order_release);
     latestMoveY_.store(0, std::memory_order_release);
+    hasStableMovePoint_.store(false, std::memory_order_release);
+    stableMoveX_.store(0, std::memory_order_release);
+    stableMoveY_.store(0, std::memory_order_release);
+    originMoveStreak_.store(0, std::memory_order_release);
     keyboardCaptureExclusive_.store(false, std::memory_order_release);
     lastError_.store(kErrorSuccess, std::memory_order_release);
     {
@@ -68,6 +72,10 @@ void MacosGlobalInputHook::Stop() {
 
     dispatchHost_ = nullptr;
     movePending_.store(false, std::memory_order_release);
+    hasStableMovePoint_.store(false, std::memory_order_release);
+    stableMoveX_.store(0, std::memory_order_release);
+    stableMoveY_.store(0, std::memory_order_release);
+    originMoveStreak_.store(0, std::memory_order_release);
     keyboardCaptureExclusive_.store(false, std::memory_order_release);
 }
 

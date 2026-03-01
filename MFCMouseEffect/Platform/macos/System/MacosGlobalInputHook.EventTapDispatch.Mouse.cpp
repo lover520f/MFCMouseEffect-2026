@@ -13,7 +13,8 @@ namespace mousefx {
 
 void MacosGlobalInputHook::HandleMouseMoveEvent(CGEventRef event) {
 #if defined(__APPLE__)
-    const ScreenPoint pt = macos_input_event::ToScreenPoint(CGEventGetLocation(event));
+    const ScreenPoint rawPt = macos_input_event::ToScreenPoint(CGEventGetLocation(event));
+    const ScreenPoint pt = SanitizeMouseMovePoint(rawPt);
     latestMoveX_.store(pt.x, std::memory_order_release);
     latestMoveY_.store(pt.y, std::memory_order_release);
     if (!movePending_.exchange(true, std::memory_order_acq_rel)) {

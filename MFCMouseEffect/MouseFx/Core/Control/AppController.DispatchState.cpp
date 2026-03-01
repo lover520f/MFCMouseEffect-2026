@@ -136,7 +136,9 @@ bool AppController::TryEnterHover(ScreenPoint* outPt) {
 
     hovering_ = true;
     if (outPt) {
-        if (!QueryCursorScreenPoint(outPt)) {
+        if (QueryCursorScreenPoint(outPt)) {
+            RememberLastPointerPoint(*outPt);
+        } else if (!TryGetLastPointerPoint(outPt)) {
             outPt->x = 0;
             outPt->y = 0;
         }
@@ -149,6 +151,19 @@ bool AppController::QueryCursorScreenPoint(ScreenPoint* outPt) const {
         return false;
     }
     return cursorPositionService_->TryGetCursorScreenPoint(outPt);
+}
+
+void AppController::RememberLastPointerPoint(const ScreenPoint& pt) {
+    lastPointerPoint_ = pt;
+    hasLastPointerPoint_ = true;
+}
+
+bool AppController::TryGetLastPointerPoint(ScreenPoint* outPt) const {
+    if (!outPt || !hasLastPointerPoint_) {
+        return false;
+    }
+    *outPt = lastPointerPoint_;
+    return true;
 }
 
 std::string AppController::CurrentForegroundProcessBaseName() {

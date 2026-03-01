@@ -8,6 +8,7 @@
 #include "Platform/macos/Effects/MacosHoldPulseOverlayRenderer.h"
 #include "Platform/macos/Effects/MacosHoverPulseOverlayRenderer.h"
 #include "Platform/macos/Effects/MacosLineTrailOverlay.h"
+#include "Platform/macos/Effects/MacosTrailPulseEffect.h"
 #include "Platform/macos/Effects/MacosScrollPulseWindowRegistry.h"
 #include "Platform/macos/Effects/MacosTrailPulseWindowRegistry.h"
 #include "MouseFx/Core/Diagnostics/TextEffectRuntimeDiagnostics.h"
@@ -25,6 +26,9 @@ json BuildEffectsRuntimeState() {
     size_t hoverActiveOverlayWindows = 0;
     bool lineTrailActive = false;
     int lineTrailPointCount = 0;
+    uint64_t trailMoveSamples = 0;
+    uint64_t trailOriginConnectorDropCount = 0;
+    uint64_t trailTeleportDropCount = 0;
 #if MFX_PLATFORM_MACOS
     clickActiveOverlayWindows = macos_click_pulse::GetActiveClickPulseWindowCount();
     trailActiveOverlayWindows = macos_trail_pulse::GetActiveTrailPulseWindowCount();
@@ -34,6 +38,10 @@ json BuildEffectsRuntimeState() {
     const auto lineTrailSnapshot = macos_line_trail::ReadLineTrailRuntimeSnapshot();
     lineTrailActive = lineTrailSnapshot.active;
     lineTrailPointCount = lineTrailSnapshot.pointCount;
+    const auto trailDiag = ReadTrailPulseRuntimeDiagnostics();
+    trailMoveSamples = trailDiag.moveSamples;
+    trailOriginConnectorDropCount = trailDiag.originConnectorDropCount;
+    trailTeleportDropCount = trailDiag.teleportDropCount;
 #endif
 
     json out;
@@ -50,6 +58,9 @@ json BuildEffectsRuntimeState() {
         hoverActiveOverlayWindows;
     out["line_trail_active"] = lineTrailActive;
     out["line_trail_point_count"] = lineTrailPointCount;
+    out["trail_move_samples"] = trailMoveSamples;
+    out["trail_origin_connector_drop_count"] = trailOriginConnectorDropCount;
+    out["trail_teleport_drop_count"] = trailTeleportDropCount;
 
 #if MFX_PLATFORM_MACOS
     const auto textDiag = diagnostics::GetTextEffectRuntimeSnapshot();

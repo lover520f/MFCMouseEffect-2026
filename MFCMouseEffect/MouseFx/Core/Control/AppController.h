@@ -152,6 +152,8 @@ public:
     void MarkIgnoreNextClick();
     bool TryEnterHover(ScreenPoint* outPt);
     bool QueryCursorScreenPoint(ScreenPoint* outPt) const;
+    void RememberLastPointerPoint(const ScreenPoint& pt);
+    bool TryGetLastPointerPoint(ScreenPoint* outPt) const;
     void KillDispatchTimer(uintptr_t timerId);
     std::string CurrentForegroundProcessBaseName();
     bool InjectShortcutForTest(const std::string& chordText);
@@ -226,6 +228,8 @@ private:
     mutable std::mutex inputCaptureStatusCallbackMutex_{};
 
     uint64_t lastInputTime_ = 0;
+    ScreenPoint lastPointerPoint_{};
+    bool hasLastPointerPoint_ = false;
     bool hovering_ = false;
     static constexpr uintptr_t kHoverTimerId = 2;
     static constexpr uint32_t kHoverThresholdMs = 2000;

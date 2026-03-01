@@ -10,11 +10,45 @@
 #include "Platform/macos/Effects/MacosTrailPulseOverlayRenderer.h"
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <cmath>
 #include <utility>
 
 namespace mousefx {
+namespace {
+
+std::atomic<uint64_t> gTrailMoveSamples{0};
+std::atomic<uint64_t> gTrailOriginConnectorDropCount{0};
+std::atomic<uint64_t> gTrailTeleportDropCount{0};
+
+bool IsNearScreenOrigin(const ScreenPoint& pt) {
+    constexpr int32_t kOriginTolerancePx = 6;
+    return std::abs(pt.x) <= kOriginTolerancePx &&
+           std::abs(pt.y) <= kOriginTolerancePx;
+}
+
+bool IsOriginConnectorSample(const ScreenPoint& from, const ScreenPoint& to) {
+    const bool fromOrigin = IsNearScreenOrigin(from);
+    const bool toOrigin = IsNearScreenOrigin(to);
+    if (fromOrigin == toOrigin) {
+        return false;
+    }
+    const double dx = static_cast<double>(to.x - from.x);
+    const double dy = static_cast<double>(to.y - from.y);
+    const double distance = std::sqrt(dx * dx + dy * dy);
+    return distance >= 24.0;
+}
+
+} // namespace
+
+TrailPulseRuntimeDiagnostics ReadTrailPulseRuntimeDiagnostics() {
+    TrailPulseRuntimeDiagnostics diag{};
+    diag.moveSamples = gTrailMoveSamples.load(std::memory_order_relaxed);
+    diag.originConnectorDropCount = gTrailOriginConnectorDropCount.load(std::memory_order_relaxed);
+    diag.teleportDropCount = gTrailTeleportDropCount.load(std::memory_order_relaxed);
+    return diag;
+}
 
 MacosTrailPulseEffect::MacosTrailPulseEffect(
     std::string effectType,
@@ -64,6 +98,7 @@ void MacosTrailPulseEffect::OnMouseMove(const ScreenPoint& pt) {
         lastPoint_ = pt;
         return;
     }
+    gTrailMoveSamples.fetch_add(1, std::memory_order_relaxed);
 
     const uint64_t now = CurrentTickMs();
     const std::string normalizedType = NormalizeTrailEffectType(effectType_);
@@ -85,7 +120,17 @@ void MacosTrailPulseEffect::OnMouseMove(const ScreenPoint& pt) {
     const double moveDx = static_cast<double>(pt.x - lastPoint_.x);
     const double moveDy = static_cast<double>(pt.y - lastPoint_.y);
     const double moveDistance = std::sqrt(moveDx * moveDx + moveDy * moveDy);
+    if (IsOriginConnectorSample(lastPoint_, pt)) {
+        gTrailOriginConnectorDropCount.fetch_add(1, std::memory_order_relaxed);
+        if (continuousTrail && continuousTrailActive_) {
+            macos_line_trail::ResetLineTrail();
+            continuousTrailActive_ = false;
+        }
+        lastPoint_ = pt;
+        return;
+    }
     if (moveDistance > std::max(200.0, emissionPlannerConfig_.teleportSkipDistancePx)) {
+        gTrailTeleportDropCount.fetch_add(1, std::memory_order_relaxed);
         if (continuousTrail && continuousTrailActive_) {
             macos_line_trail::ResetLineTrail();
             continuousTrailActive_ = false;
@@ -157,6 +202,9 @@ void MacosTrailPulseEffect::OnMouseMove(const ScreenPoint& pt) {
             throttleProfile.minDistancePx,
             emissionPlannerConfig_);
     if (segmentPlan.dropAsTeleport || segmentPlan.segmentPoints.empty()) {
+        if (segmentPlan.dropAsTeleport) {
+            gTrailTeleportDropCount.fetch_add(1, std::memory_order_relaxed);
+        }
         lastPoint_ = pt;
         return;
     }

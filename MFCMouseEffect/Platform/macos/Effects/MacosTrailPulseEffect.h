@@ -10,6 +10,14 @@
 
 namespace mousefx {
 
+struct TrailPulseRuntimeDiagnostics final {
+    uint64_t moveSamples = 0;
+    uint64_t originConnectorDropCount = 0;
+    uint64_t teleportDropCount = 0;
+};
+
+TrailPulseRuntimeDiagnostics ReadTrailPulseRuntimeDiagnostics();
+
 class MacosTrailPulseEffect final : public IMouseEffect {
 public:
     MacosTrailPulseEffect(

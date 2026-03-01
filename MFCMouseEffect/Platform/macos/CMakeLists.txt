@@ -508,6 +508,7 @@ add_library(mfx_shell_macos STATIC
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosGlobalInputHook.cpp"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosGlobalInputHook.EventTapDispatch.cpp"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosGlobalInputHook.EventTapDispatch.Mouse.cpp"
+    "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosGlobalInputHook.EventTapDispatch.PointRepair.cpp"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosGlobalInputHook.EventTapDispatch.Key.cpp"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosGlobalInputHook.EventTap.cpp"
     "${MFX_PROJECT_ROOT}/Platform/macos/System/MacosGlobalInputHook.RunLoop.cpp"

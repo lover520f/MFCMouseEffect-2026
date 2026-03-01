@@ -54,6 +54,9 @@ private:
     void HandleMouseDownEvent(CGEventRef event);
     void HandleMouseUpEvent(CGEventRef event);
     CGEventRef HandleKeyDownEvent(CGEventRef event);
+    ScreenPoint SanitizeMouseMovePoint(const ScreenPoint& rawPt);
+    void RememberStableMovePoint(const ScreenPoint& pt);
+    bool TryReadStableMovePoint(ScreenPoint* outPt) const;
 #if defined(__APPLE__)
     static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* userInfo);
     static void PermissionProbeTimerCallback(CFRunLoopTimerRef timer, void* userInfo);
@@ -68,6 +71,10 @@ private:
     std::atomic<bool> movePending_{false};
     std::atomic<int32_t> latestMoveX_{0};
     std::atomic<int32_t> latestMoveY_{0};
+    std::atomic<bool> hasStableMovePoint_{false};
+    std::atomic<int32_t> stableMoveX_{0};
+    std::atomic<int32_t> stableMoveY_{0};
+    std::atomic<uint32_t> originMoveStreak_{0};
 
     std::mutex initMutex_{};
     std::condition_variable initCv_{};

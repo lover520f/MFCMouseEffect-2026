@@ -8,7 +8,51 @@
 #include "MouseFx/Core/Effects/TrailEffectCompute.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 
+#include <cstdlib>
+
 namespace mousefx {
+namespace {
+
+#if MFX_PLATFORM_MACOS
+constexpr int kPointerOriginTolerancePx = 6;
+
+bool RepairMacPointerPoint(AppController* controller, ScreenPoint* pt, bool dropUnknownOrigin) {
+    if (!controller || !pt) {
+        return false;
+    }
+    if (pt->x != 0 || pt->y != 0) {
+        controller->RememberLastPointerPoint(*pt);
+        return true;
+    }
+
+    ScreenPoint cursor{};
+    if (controller->QueryCursorScreenPoint(&cursor) && (cursor.x != 0 || cursor.y != 0)) {
+        *pt = cursor;
+        controller->RememberLastPointerPoint(*pt);
+        return true;
+    }
+
+    ScreenPoint cached{};
+    if (controller->TryGetLastPointerPoint(&cached)) {
+        const bool cachedAwayFromOrigin =
+            (std::abs(cached.x) > kPointerOriginTolerancePx) ||
+            (std::abs(cached.y) > kPointerOriginTolerancePx);
+        if (cachedAwayFromOrigin) {
+            *pt = cached;
+        }
+        controller->RememberLastPointerPoint(*pt);
+        return true;
+    }
+
+    if (dropUnknownOrigin) {
+        return false;
+    }
+    controller->RememberLastPointerPoint(*pt);
+    return true;
+}
+#endif
+
+} // namespace
 
 intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
     if (ctrl_->IsVmEffectsSuppressed()) {
@@ -20,12 +64,11 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
         pt = dispatch_router_detail::MessagePoint(message);
     }
 #if MFX_PLATFORM_MACOS
-    if (pt.x == 0 && pt.y == 0) {
-        ScreenPoint cursor{};
-        if (ctrl_->QueryCursorScreenPoint(&cursor)) {
-            pt = cursor;
-        }
+    if (!RepairMacPointerPoint(ctrl_, &pt, true)) {
+        return 0;
     }
+#else
+    ctrl_->RememberLastPointerPoint(pt);
 #endif
 
     automationFeature_.OnMouseMove(*ctrl_, pt);
@@ -62,6 +105,11 @@ intptr_t DispatchRouter::OnScroll(const DispatchMessage& message) {
     if (!ctrl_->QueryCursorScreenPoint(&pt)) {
         pt = dispatch_router_detail::MessagePoint(message);
     }
+#if MFX_PLATFORM_MACOS
+    RepairMacPointerPoint(ctrl_, &pt, false);
+#else
+    ctrl_->RememberLastPointerPoint(pt);
+#endif
 
     ScrollEvent ev{};
     ev.pt = pt;
@@ -92,6 +140,11 @@ intptr_t DispatchRouter::OnButtonDown(const DispatchMessage& message) {
     if (!ctrl_->QueryCursorScreenPoint(&pt)) {
         pt = dispatch_router_detail::MessagePoint(message);
     }
+#if MFX_PLATFORM_MACOS
+    RepairMacPointerPoint(ctrl_, &pt, false);
+#else
+    ctrl_->RememberLastPointerPoint(pt);
+#endif
 
     ctrl_->BeginHoldTracking(pt, button);
     automationFeature_.OnButtonDown(*ctrl_, pt, button);
@@ -114,6 +167,11 @@ intptr_t DispatchRouter::OnButtonUp(const DispatchMessage& message) {
         pt.x = 0;
         pt.y = 0;
     }
+#if MFX_PLATFORM_MACOS
+    RepairMacPointerPoint(ctrl_, &pt, false);
+#else
+    ctrl_->RememberLastPointerPoint(pt);
+#endif
     automationFeature_.OnButtonUp(*ctrl_, pt, static_cast<int>(message.button));
     wasmFeature_.RouteHoldEndIfActive(*ctrl_, pt);
 

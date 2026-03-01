@@ -81,6 +81,7 @@ intptr_t DispatchRouter::OnClick(const DispatchMessage& message) {
     }
 
     if (ev) {
+        ctrl_->RememberLastPointerPoint(ev->pt);
         const IMouseEffect* clickEffect = ctrl_->GetEffect(EffectCategory::Click);
         const bool effectIsText = (clickEffect != nullptr) &&
             (NormalizeClickEffectType(clickEffect->TypeName()) == "text");
