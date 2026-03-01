@@ -87,16 +87,24 @@ private func mfxNormalizeTrailType(_ normalizedTypeUtf8: UnsafePointer<CChar>?) 
         let normalizedTypeUtf8,
         let value = String(validatingCString: normalizedTypeUtf8)
     else {
-        return "line"
+        return "none"
     }
     let lowered = value.lowercased()
     if lowered.isEmpty {
-        return "line"
+        return "none"
     }
     if lowered == "none" {
         return "none"
     }
-    return lowered
+    if lowered == "line" ||
+        lowered == "meteor" ||
+        lowered == "streamer" ||
+        lowered == "electric" ||
+        lowered == "tubes" ||
+        lowered == "particle" {
+        return lowered
+    }
+    return "none"
 }
 
 private func mfxCreateTrailLinePath(

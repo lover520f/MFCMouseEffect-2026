@@ -6,6 +6,7 @@
 - Constraints: no Windows regression; Linux follows compile + contract coverage.
 
 ## Latest Delta (2026-03-01)
+- macOS trail Swift bridge type normalization is now fail-closed: invalid/empty/unknown type resolves to `none` (not `line`), with explicit whitelist for valid trail types to prevent accidental visible fallback lines.
 - Core HTTP state contract now hard-asserts WASM capability parity between schema and runtime state (`state.wasm.invoke_supported/render_supported == schema.capabilities.wasm.invoke/render`), turning capability consistency into a regression gate.
 - WASM capability decision is now single-source in `SettingsWasmCapabilities.*`; both schema (`capabilities.wasm.invoke/render`) and runtime diagnostics (`wasm.invoke_supported/render_supported`) consume the same resolver, preventing schema/state drift.
 - macOS style-layer effect type normalization is now single-source for all five categories (`click/trail/scroll/hover/hold`): `Macos*OverlayStyle` now delegates to Core `Normalize*EffectType(...)`, removing duplicate platform-side alias rules and reducing mac-vs-win type drift risk.
