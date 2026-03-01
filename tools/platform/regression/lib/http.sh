@@ -6,6 +6,7 @@ _mfx_http_lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$_mfx_http_lib_dir/http_entry_helpers.sh"
 
 _mfx_http_default_route_skipped=0
+_mfx_http_route_skip_reason=""
 
 _mfx_http_skip_bind_eacces_enabled() {
     local raw="${MFX_HTTP_SKIP_BIND_EACCES:-1}"
@@ -38,7 +39,18 @@ _mfx_http_default_route_checks() {
     local log_file="$tmp_dir/default.log"
     trap "_mfx_http_stop_entry; rm -rf '$tmp_dir'" EXIT
 
-    _mfx_http_start_entry "$entry_bin" "$log_file"
+    local start_status=0
+    _mfx_http_start_entry "$entry_bin" "$log_file" || start_status=$?
+    if [[ "$start_status" -eq 2 ]]; then
+        _mfx_http_route_skip_reason="$_mfx_http_startup_skip_reason"
+        mfx_info "skip scaffold HTTP checks (default route): ${_mfx_http_route_skip_reason:-constrained runtime startup skip}"
+        _mfx_http_default_route_skipped=1
+        trap - EXIT
+        _mfx_http_stop_entry
+        rm -rf "$tmp_dir"
+        return 0
+    fi
+    mfx_assert_eq "$start_status" "0" "default route startup status"
     local base_url="http://127.0.0.1:9527"
 
     local code_root
@@ -99,7 +111,17 @@ _mfx_http_custom_route_checks() {
     local log_file="$tmp_dir/custom.log"
     trap "_mfx_http_stop_entry; rm -rf '$tmp_dir'" EXIT
 
-    _mfx_http_start_entry "$entry_bin" "$log_file" "MFX_SCAFFOLD_SETTINGS_URL=http://127.0.0.1:18127/ui/settings?token=dev"
+    local start_status=0
+    _mfx_http_start_entry "$entry_bin" "$log_file" "MFX_SCAFFOLD_SETTINGS_URL=http://127.0.0.1:18127/ui/settings?token=dev" || start_status=$?
+    if [[ "$start_status" -eq 2 ]]; then
+        _mfx_http_route_skip_reason="$_mfx_http_startup_skip_reason"
+        mfx_info "skip scaffold HTTP checks (custom route): ${_mfx_http_route_skip_reason:-constrained runtime startup skip}"
+        trap - EXIT
+        _mfx_http_stop_entry
+        rm -rf "$tmp_dir"
+        return 2
+    fi
+    mfx_assert_eq "$start_status" "0" "custom route startup status"
     local base_url="http://127.0.0.1:18127"
 
     local code_root
@@ -135,7 +157,17 @@ _mfx_http_missing_webui_checks() {
     local log_file="$tmp_dir/missing-webui.log"
     trap "_mfx_http_stop_entry; rm -rf '$tmp_dir'" EXIT
 
-    _mfx_http_start_entry "$entry_bin" "$log_file" "MFX_SCAFFOLD_WEBUI_DIR=$empty_webui_dir"
+    local start_status=0
+    _mfx_http_start_entry "$entry_bin" "$log_file" "MFX_SCAFFOLD_WEBUI_DIR=$empty_webui_dir" || start_status=$?
+    if [[ "$start_status" -eq 2 ]]; then
+        _mfx_http_route_skip_reason="$_mfx_http_startup_skip_reason"
+        mfx_info "skip scaffold HTTP checks (missing-webui route): ${_mfx_http_route_skip_reason:-constrained runtime startup skip}"
+        trap - EXIT
+        _mfx_http_stop_entry
+        rm -rf "$tmp_dir"
+        return 2
+    fi
+    mfx_assert_eq "$start_status" "0" "missing-webui route startup status"
     local base_url="http://127.0.0.1:9527"
 
     local code_root
@@ -164,15 +196,27 @@ mfx_run_http_checks() {
     mfx_info "run scaffold HTTP checks: default route"
     _mfx_http_default_route_checks "$platform" "$entry_bin"
     if [[ "$_mfx_http_default_route_skipped" -eq 1 ]]; then
-        mfx_ok "HTTP checks skipped due to loopback bind permission denial"
+        mfx_ok "HTTP checks skipped: ${_mfx_http_route_skip_reason:-loopback bind permission denial}"
         return 0
     fi
 
     mfx_info "run scaffold HTTP checks: custom route"
-    _mfx_http_custom_route_checks "$entry_bin"
+    local route_status=0
+    _mfx_http_custom_route_checks "$entry_bin" || route_status=$?
+    if [[ "$route_status" -eq 2 ]]; then
+        mfx_ok "HTTP checks skipped: ${_mfx_http_route_skip_reason:-constrained runtime startup skip}"
+        return 0
+    fi
+    mfx_assert_eq "$route_status" "0" "custom route check status"
 
     mfx_info "run scaffold HTTP checks: missing webui"
-    _mfx_http_missing_webui_checks "$entry_bin"
+    route_status=0
+    _mfx_http_missing_webui_checks "$entry_bin" || route_status=$?
+    if [[ "$route_status" -eq 2 ]]; then
+        mfx_ok "HTTP checks skipped: ${_mfx_http_route_skip_reason:-constrained runtime startup skip}"
+        return 0
+    fi
+    mfx_assert_eq "$route_status" "0" "missing-webui route check status"
 
     mfx_ok "HTTP checks completed"
 }
