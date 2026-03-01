@@ -23,6 +23,13 @@ struct WasmOverlayThrottleCounters final {
     uint64_t rejectedByTextInterval = 0;
 };
 
+struct WasmImageOverlayRenderCounters final {
+    uint64_t requests = 0;
+    uint64_t requestsWithAsset = 0;
+    uint64_t applyTintRequests = 0;
+    uint64_t applyTintRequestsWithAsset = 0;
+};
+
 void RunWasmOverlayOnMainThreadSync(std::function<void()> task);
 void RunWasmOverlayOnMainThreadAsync(std::function<void()> task);
 
@@ -30,6 +37,8 @@ WasmOverlayAdmissionResult TryAcquireWasmOverlaySlot(WasmOverlayKind kind);
 void ReleaseWasmOverlaySlot();
 size_t GetWasmOverlayInFlightCount();
 WasmOverlayThrottleCounters GetWasmOverlayThrottleCounters();
+void RecordWasmImageOverlayRenderRequest(bool hasAsset, bool applyTint);
+WasmImageOverlayRenderCounters GetWasmImageOverlayRenderCounters();
 
 void RegisterWasmOverlayWindow(void* windowHandle);
 bool TakeWasmOverlayWindow(void* windowHandle);

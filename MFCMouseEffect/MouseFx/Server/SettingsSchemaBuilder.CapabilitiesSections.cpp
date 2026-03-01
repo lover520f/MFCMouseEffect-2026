@@ -99,7 +99,11 @@ void AppendSettingsSchemaCapabilitiesSections(const EffectConfig& /*config*/, js
             "last_error",
             "overlay_max_inflight",
             "overlay_min_image_interval_ms",
-            "overlay_min_text_interval_ms"
+            "overlay_min_text_interval_ms",
+            "mac_image_overlay_requests",
+            "mac_image_overlay_requests_with_asset",
+            "mac_image_overlay_apply_tint_requests",
+            "mac_image_overlay_apply_tint_requests_with_asset"
         })}
     };
 

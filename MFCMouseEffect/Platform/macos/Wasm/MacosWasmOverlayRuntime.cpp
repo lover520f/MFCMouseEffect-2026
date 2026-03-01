@@ -8,6 +8,7 @@
 #if defined(__APPLE__)
 #include <dispatch/dispatch.h>
 #include <pthread.h>
+#include <atomic>
 #endif
 
 #include <functional>
@@ -18,6 +19,26 @@ namespace mousefx::platform::macos {
 
 #if defined(__APPLE__)
 namespace {
+
+std::atomic<uint64_t>& ImageOverlayRequestCount() {
+    static std::atomic<uint64_t> counter{0};
+    return counter;
+}
+
+std::atomic<uint64_t>& ImageOverlayRequestWithAssetCount() {
+    static std::atomic<uint64_t> counter{0};
+    return counter;
+}
+
+std::atomic<uint64_t>& ImageOverlayApplyTintRequestCount() {
+    static std::atomic<uint64_t> counter{0};
+    return counter;
+}
+
+std::atomic<uint64_t>& ImageOverlayApplyTintRequestWithAssetCount() {
+    static std::atomic<uint64_t> counter{0};
+    return counter;
+}
 
 void InvokeStdFunction(void* context) {
     std::unique_ptr<std::function<void()>> task(
@@ -73,6 +94,38 @@ size_t GetWasmOverlayInFlightCount() {
 
 WasmOverlayThrottleCounters GetWasmOverlayThrottleCounters() {
     return GetWasmOverlayThrottleCountersState();
+}
+
+void RecordWasmImageOverlayRenderRequest(bool hasAsset, bool applyTint) {
+#if !defined(__APPLE__)
+    (void)hasAsset;
+    (void)applyTint;
+    return;
+#else
+    ImageOverlayRequestCount().fetch_add(1u, std::memory_order_relaxed);
+    if (hasAsset) {
+        ImageOverlayRequestWithAssetCount().fetch_add(1u, std::memory_order_relaxed);
+    }
+    if (applyTint) {
+        ImageOverlayApplyTintRequestCount().fetch_add(1u, std::memory_order_relaxed);
+        if (hasAsset) {
+            ImageOverlayApplyTintRequestWithAssetCount().fetch_add(1u, std::memory_order_relaxed);
+        }
+    }
+#endif
+}
+
+WasmImageOverlayRenderCounters GetWasmImageOverlayRenderCounters() {
+#if !defined(__APPLE__)
+    return {};
+#else
+    WasmImageOverlayRenderCounters counters{};
+    counters.requests = ImageOverlayRequestCount().load(std::memory_order_relaxed);
+    counters.requestsWithAsset = ImageOverlayRequestWithAssetCount().load(std::memory_order_relaxed);
+    counters.applyTintRequests = ImageOverlayApplyTintRequestCount().load(std::memory_order_relaxed);
+    counters.applyTintRequestsWithAsset = ImageOverlayApplyTintRequestWithAssetCount().load(std::memory_order_relaxed);
+    return counters;
+#endif
 }
 
 void RegisterWasmOverlayWindow(void* windowHandle) {

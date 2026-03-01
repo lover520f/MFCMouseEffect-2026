@@ -57,6 +57,7 @@ void RenderWasmImageOverlayWindowOnMain(
     const std::string imagePathUtf8 = req.assetPath.empty()
         ? std::string{}
         : wasm_image_overlay_support::Utf8PathFromWide(req.assetPath);
+    RecordWasmImageOverlayRenderRequest(!imagePathUtf8.empty(), req.applyTint);
 
     void* windowHandle = mfx_macos_wasm_image_overlay_create_v1(
         frameX,

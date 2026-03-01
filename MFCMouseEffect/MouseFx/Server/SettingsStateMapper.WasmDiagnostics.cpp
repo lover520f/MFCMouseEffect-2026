@@ -8,6 +8,7 @@
 #include "MouseFx/Utils/StringUtils.h"
 #if MFX_PLATFORM_MACOS
 #include "Platform/macos/Wasm/MacosWasmOverlayPolicy.h"
+#include "Platform/macos/Wasm/MacosWasmOverlayRuntime.h"
 #endif
 
 using json = nlohmann::json;
@@ -86,6 +87,12 @@ json BuildWasmState(const EffectConfig& cfg, const AppController* controller) {
     out["overlay_max_inflight"] = overlayPolicy.maxInFlightOverlays;
     out["overlay_min_image_interval_ms"] = overlayPolicy.minImageIntervalMs;
     out["overlay_min_text_interval_ms"] = overlayPolicy.minTextIntervalMs;
+    const platform::macos::WasmImageOverlayRenderCounters imageOverlayCounters =
+        platform::macos::GetWasmImageOverlayRenderCounters();
+    out["mac_image_overlay_requests"] = imageOverlayCounters.requests;
+    out["mac_image_overlay_requests_with_asset"] = imageOverlayCounters.requestsWithAsset;
+    out["mac_image_overlay_apply_tint_requests"] = imageOverlayCounters.applyTintRequests;
+    out["mac_image_overlay_apply_tint_requests_with_asset"] = imageOverlayCounters.applyTintRequestsWithAsset;
 #endif
     return out;
 }

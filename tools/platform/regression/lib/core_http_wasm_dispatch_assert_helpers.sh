@@ -126,6 +126,24 @@ _mfx_core_http_assert_wasm_dispatch_diagnostics_consistent() {
         if (( dispatch_executed_text > 0 && after_fallback_show_count <= before_fallback_show_count )); then
             mfx_fail "$context macos text fallback counter did not increase: before=$before_fallback_show_count after=$after_fallback_show_count dispatched_text=$dispatch_executed_text"
         fi
+
+        local before_image_overlay_requests
+        local after_image_overlay_requests
+        local before_image_overlay_apply_tint_requests
+        local after_image_overlay_apply_tint_requests
+        before_image_overlay_requests="$(_mfx_core_http_wasm_parse_uint_field "$state_before_output_file" "mac_image_overlay_requests")"
+        after_image_overlay_requests="$(_mfx_core_http_wasm_parse_uint_field "$state_output_file" "mac_image_overlay_requests")"
+        before_image_overlay_apply_tint_requests="$(_mfx_core_http_wasm_parse_uint_field "$state_before_output_file" "mac_image_overlay_apply_tint_requests")"
+        after_image_overlay_apply_tint_requests="$(_mfx_core_http_wasm_parse_uint_field "$state_output_file" "mac_image_overlay_apply_tint_requests")"
+        if [[ -z "$before_image_overlay_requests" || -z "$after_image_overlay_requests" || -z "$before_image_overlay_apply_tint_requests" || -z "$after_image_overlay_apply_tint_requests" ]]; then
+            mfx_fail "$context macos image overlay diagnostics parse failed"
+        fi
+        if (( dispatch_executed_image > 0 && after_image_overlay_requests <= before_image_overlay_requests )); then
+            mfx_fail "$context macos image overlay request counter did not increase: before=$before_image_overlay_requests after=$after_image_overlay_requests dispatched_image=$dispatch_executed_image"
+        fi
+        if (( after_image_overlay_apply_tint_requests > after_image_overlay_requests )); then
+            mfx_fail "$context macos image overlay tint counter invalid: tint=$after_image_overlay_apply_tint_requests total=$after_image_overlay_requests"
+        fi
     fi
 }
 
