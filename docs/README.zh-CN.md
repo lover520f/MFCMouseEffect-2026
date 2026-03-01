@@ -50,6 +50,7 @@
 - macOS Click 叠层 Swift bridge 切换：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zze-macos-click-overlay-swift-bridge-cutover.md`
 - macOS Scroll 叠层 Swift bridge 切换：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzf-macos-scroll-overlay-swift-bridge-cutover.md`
 - macOS Trail 叠层 Swift bridge 切换：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzg-macos-trail-overlay-swift-bridge-cutover.md`
+- macOS Hold 叠层 Swift bridge 切换 + ObjC++ 白名单清零：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzh-macos-hold-overlay-swift-bridge-and-empty-objcxx-allowlist.md`
 
 ## 当前 macOS 主线（Phase 50-55）
 - 双车道护栏：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`

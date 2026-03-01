@@ -50,6 +50,7 @@ Use it as a pointer index, not a full historical catalog.
 - macOS click overlay Swift bridge cutover: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zze-macos-click-overlay-swift-bridge-cutover.md`
 - macOS scroll overlay Swift bridge cutover: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzf-macos-scroll-overlay-swift-bridge-cutover.md`
 - macOS trail overlay Swift bridge cutover: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzg-macos-trail-overlay-swift-bridge-cutover.md`
+- macOS hold overlay Swift bridge + empty ObjC++ allowlist: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzh-macos-hold-overlay-swift-bridge-and-empty-objcxx-allowlist.md`
 
 ## Current macOS Mainline (Phases 50-55)
 - Dual-lane guardrails: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`

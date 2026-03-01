@@ -6,24 +6,14 @@
 
 #include <string>
 
-#if defined(__APPLE__)
-#ifdef __OBJC__
-@class NSWindow;
-@class CAShapeLayer;
-#else
-struct objc_object;
-using NSWindow = objc_object;
-using CAShapeLayer = objc_object;
-#endif
-#endif
-
 namespace mousefx::macos_hold_pulse::detail {
 
 #if defined(__APPLE__)
 struct HoldOverlayState {
-    NSWindow* window = nullptr;
-    CAShapeLayer* ring = nullptr;
-    CAShapeLayer* accent = nullptr;
+    void* windowHandle = nullptr;
+    void* ringHandle = nullptr;
+    void* accentHandle = nullptr;
+    int overlaySizePx = 0;
     macos_effect_profile::HoldRenderProfile profile{};
     HoldStyle style = HoldStyle::Charge;
     std::string effectType{};

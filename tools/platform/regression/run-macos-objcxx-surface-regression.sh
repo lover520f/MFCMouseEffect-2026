@@ -83,31 +83,31 @@ mapfile -t ALLOWLIST_ENTRIES < <(
 )
 
 if [[ "${#ALLOWLIST_ENTRIES[@]}" -eq 0 ]]; then
-    mfx_fail "ObjC++ allowlist is empty"
-fi
-
-mapfile -t DUP_ALLOWLIST < <(printf '%s\n' "${ALLOWLIST_ENTRIES[@]}" | sort | uniq -d)
-if [[ "${#DUP_ALLOWLIST[@]}" -gt 0 ]]; then
-    printf '[mfx:fail] duplicated ObjC++ allowlist entries:\n' >&2
-    printf '  %s\n' "${DUP_ALLOWLIST[@]}" >&2
-    exit 1
-fi
-
-for entry in "${ALLOWLIST_ENTRIES[@]}"; do
-    case "$entry" in
-        '${MFX_PROJECT_ROOT}/Platform/macos/Effects/'* | \
-        '${MFX_PROJECT_ROOT}/Platform/macos/Overlay/'* | \
-        '${MFX_PROJECT_ROOT}/Platform/macos/Wasm/'*)
-            ;;
-        *)
-            mfx_fail "ObjC++ allowlist entry is outside macOS target scope: $entry"
-            ;;
-    esac
-
-    resolved_path="${entry//'${MFX_PROJECT_ROOT}'/$REPO_ROOT/MFCMouseEffect}"
-    if [[ ! -f "$resolved_path" ]]; then
-        mfx_fail "ObjC++ allowlist entry points to missing file: $entry -> $resolved_path"
+    mfx_info "ObjC++ allowlist is empty (all macOS sources are Swift/C++ mode)"
+else
+    mapfile -t DUP_ALLOWLIST < <(printf '%s\n' "${ALLOWLIST_ENTRIES[@]}" | sort | uniq -d)
+    if [[ "${#DUP_ALLOWLIST[@]}" -gt 0 ]]; then
+        printf '[mfx:fail] duplicated ObjC++ allowlist entries:\n' >&2
+        printf '  %s\n' "${DUP_ALLOWLIST[@]}" >&2
+        exit 1
     fi
-done
+
+    for entry in "${ALLOWLIST_ENTRIES[@]}"; do
+        case "$entry" in
+            '${MFX_PROJECT_ROOT}/Platform/macos/Effects/'* | \
+            '${MFX_PROJECT_ROOT}/Platform/macos/Overlay/'* | \
+            '${MFX_PROJECT_ROOT}/Platform/macos/Wasm/'*)
+                ;;
+            *)
+                mfx_fail "ObjC++ allowlist entry is outside macOS target scope: $entry"
+                ;;
+        esac
+
+        resolved_path="${entry//'${MFX_PROJECT_ROOT}'/$REPO_ROOT/MFCMouseEffect}"
+        if [[ ! -f "$resolved_path" ]]; then
+            mfx_fail "ObjC++ allowlist entry points to missing file: $entry -> $resolved_path"
+        fi
+    done
+fi
 
 mfx_ok "macos objcxx surface regression passed"

@@ -24,6 +24,7 @@ set(MFX_MACOS_TRAIL_PULSE_SWIFT_OBJECT "")
 set(MFX_MACOS_LINE_TRAIL_SWIFT_OBJECT "")
 set(MFX_MACOS_TEXT_FALLBACK_SWIFT_OBJECT "")
 set(MFX_MACOS_HOVER_PULSE_SWIFT_OBJECT "")
+set(MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT "")
 set(MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT "")
 set(MFX_MACOS_TRAY_MENU_SWIFT_OBJECT "")
 set(MFX_MACOS_EVENT_LOOP_SWIFT_OBJECT "")
@@ -97,6 +98,8 @@ if(APPLE)
     set(MFX_MACOS_TEXT_FALLBACK_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosTextEffectFallbackBridge.swift.o")
     set(MFX_MACOS_HOVER_PULSE_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoverPulseOverlayBridge.swift")
     set(MFX_MACOS_HOVER_PULSE_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosHoverPulseOverlayBridge.swift.o")
+    set(MFX_MACOS_HOLD_PULSE_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayBridge.swift")
+    set(MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosHoldPulseOverlayBridge.swift.o")
     set(MFX_MACOS_TRAY_LOCALIZATION_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayMenuLocalizationBridge.swift")
     set(MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT "${CMAKE_CURRENT_BINARY_DIR}/MacosTrayMenuLocalizationBridge.swift.o")
     set(MFX_MACOS_TRAY_MENU_SWIFT_SOURCE "${MFX_PROJECT_ROOT}/Platform/macos/Shell/MacosTrayMenuBridge.swift")
@@ -324,6 +327,19 @@ if(APPLE)
             EXTERNAL_OBJECT TRUE
     )
     add_custom_command(
+        OUTPUT "${MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT}"
+        COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_HOLD_PULSE_SWIFT_SOURCE}" -o "${MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT}"
+        DEPENDS "${MFX_MACOS_HOLD_PULSE_SWIFT_SOURCE}"
+        COMMENT "Compile Swift hold-pulse overlay bridge"
+        VERBATIM
+    )
+    set_source_files_properties(
+        "${MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT}"
+        PROPERTIES
+            GENERATED TRUE
+            EXTERNAL_OBJECT TRUE
+    )
+    add_custom_command(
         OUTPUT "${MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT}"
         COMMAND "${MFX_SWIFTC_EXECUTABLE}" ${MFX_SWIFTC_COMMON_ARGS} "${MFX_MACOS_TRAY_LOCALIZATION_SWIFT_SOURCE}" -o "${MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT}"
         DEPENDS "${MFX_MACOS_TRAY_LOCALIZATION_SWIFT_SOURCE}"
@@ -518,7 +534,6 @@ if(APPLE)
     # Explicit ObjC++ allowlist. Keep this list tight and prune entries when
     # modules are fully migrated to Swift bridges.
     set(MFX_MACOS_OBJCXX_SOURCE_ALLOWLIST
-        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayRendererCore.Start.cpp"
     )
 
     get_target_property(MFX_MACOS_TARGET_SOURCES mfx_shell_macos SOURCES)
@@ -593,6 +608,9 @@ if(MFX_MACOS_TEXT_FALLBACK_SWIFT_OBJECT)
 endif()
 if(MFX_MACOS_HOVER_PULSE_SWIFT_OBJECT)
     target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_HOVER_PULSE_SWIFT_OBJECT}")
+endif()
+if(MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT)
+    target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_HOLD_PULSE_SWIFT_OBJECT}")
 endif()
 if(MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT)
     target_sources(mfx_shell_macos PRIVATE "${MFX_MACOS_TRAY_LOCALIZATION_SWIFT_OBJECT}")
