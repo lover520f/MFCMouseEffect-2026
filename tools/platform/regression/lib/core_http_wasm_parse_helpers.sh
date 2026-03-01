@@ -18,3 +18,9 @@ _mfx_core_http_wasm_parse_string_field() {
     local field_name="$2"
     sed -n "s/.*\"${field_name}\":\"\\([^\"]*\\)\".*/\\1/p" "$input_file" | head -n 1
 }
+
+_mfx_core_http_wasm_parse_bool_field() {
+    local input_file="$1"
+    local field_name="$2"
+    sed -n "s/.*\"${field_name}\":\\(true\\|false\\).*/\\1/p" "$input_file" | head -n 1
+}

@@ -16,6 +16,33 @@ _mfx_core_http_wasm_contract_dispatch_checks() {
     local code_state_before_dispatch
     code_state_before_dispatch="$(mfx_http_code "$tmp_dir/state-before-wasm-dispatch.out" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
     mfx_assert_eq "$code_state_before_dispatch" "200" "core wasm state before dispatch status"
+    local state_before_invoke_supported
+    local state_before_render_supported
+    local enable_invoke_supported
+    local enable_render_supported
+    state_before_invoke_supported="$(_mfx_core_http_wasm_parse_bool_field "$tmp_dir/state-before-wasm-dispatch.out" "invoke_supported")"
+    state_before_render_supported="$(_mfx_core_http_wasm_parse_bool_field "$tmp_dir/state-before-wasm-dispatch.out" "render_supported")"
+    enable_invoke_supported="$(_mfx_core_http_wasm_parse_bool_field "$tmp_dir/wasm-enable.out" "invoke_supported")"
+    enable_render_supported="$(_mfx_core_http_wasm_parse_bool_field "$tmp_dir/wasm-enable.out" "render_supported")"
+    mfx_assert_eq "$enable_invoke_supported" "$state_before_invoke_supported" "core wasm enable/state invoke_supported parity"
+    mfx_assert_eq "$enable_render_supported" "$state_before_render_supported" "core wasm enable/state render_supported parity"
+    if [[ "$platform" == "macos" ]]; then
+        local state_before_overlay_max_inflight
+        local state_before_overlay_min_image_interval_ms
+        local state_before_overlay_min_text_interval_ms
+        local enable_overlay_max_inflight
+        local enable_overlay_min_image_interval_ms
+        local enable_overlay_min_text_interval_ms
+        state_before_overlay_max_inflight="$(_mfx_core_http_wasm_parse_uint_field "$tmp_dir/state-before-wasm-dispatch.out" "overlay_max_inflight")"
+        state_before_overlay_min_image_interval_ms="$(_mfx_core_http_wasm_parse_uint_field "$tmp_dir/state-before-wasm-dispatch.out" "overlay_min_image_interval_ms")"
+        state_before_overlay_min_text_interval_ms="$(_mfx_core_http_wasm_parse_uint_field "$tmp_dir/state-before-wasm-dispatch.out" "overlay_min_text_interval_ms")"
+        enable_overlay_max_inflight="$(_mfx_core_http_wasm_parse_uint_field "$tmp_dir/wasm-enable.out" "overlay_max_inflight")"
+        enable_overlay_min_image_interval_ms="$(_mfx_core_http_wasm_parse_uint_field "$tmp_dir/wasm-enable.out" "overlay_min_image_interval_ms")"
+        enable_overlay_min_text_interval_ms="$(_mfx_core_http_wasm_parse_uint_field "$tmp_dir/wasm-enable.out" "overlay_min_text_interval_ms")"
+        mfx_assert_eq "$enable_overlay_max_inflight" "$state_before_overlay_max_inflight" "core wasm enable/state overlay_max_inflight parity"
+        mfx_assert_eq "$enable_overlay_min_image_interval_ms" "$state_before_overlay_min_image_interval_ms" "core wasm enable/state overlay_min_image_interval_ms parity"
+        mfx_assert_eq "$enable_overlay_min_text_interval_ms" "$state_before_overlay_min_text_interval_ms" "core wasm enable/state overlay_min_text_interval_ms parity"
+    fi
 
     local require_rendered_any="false"
     if [[ "$platform" == "macos" ]]; then

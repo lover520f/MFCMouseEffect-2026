@@ -18,3 +18,9 @@ mfx_wasm_selfcheck_parse_string_field() {
     local field_name="$2"
     sed -n "s/.*\"${field_name}\":\"\\([^\"]*\\)\".*/\\1/p" "$input_file" | head -n 1
 }
+
+mfx_wasm_selfcheck_parse_bool_field() {
+    local input_file="$1"
+    local field_name="$2"
+    sed -n "s/.*\"${field_name}\":\\(true\\|false\\).*/\\1/p" "$input_file" | head -n 1
+}
