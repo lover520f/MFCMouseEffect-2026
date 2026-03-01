@@ -71,7 +71,7 @@ void ShowHoverPulseOverlayOnMain(
 
     AddHoverExtraLayersAndAnimations(content, plan);
 
-    [window orderFrontRegardless];
+    macos_overlay_support::ShowOverlayWindow(reinterpret_cast<void*>(window));
     ActiveHoverWindow() = window;
 #endif
 }

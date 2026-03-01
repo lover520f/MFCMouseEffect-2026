@@ -76,7 +76,7 @@ void ShowScrollPulseOverlayOnMain(
     StartScrollPulseAnimation(body, arrow, plan);
 
     RegisterScrollPulseWindow(reinterpret_cast<void*>(window));
-    [window orderFrontRegardless];
+    macos_overlay_support::ShowOverlayWindow(reinterpret_cast<void*>(window));
 
     dispatch_after(
         dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(plan.closeAfterMs) * NSEC_PER_MSEC),

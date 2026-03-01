@@ -15,6 +15,8 @@ void RunOnMainThreadSync(dispatch_block_t block);
 void RunOnMainThreadAsync(dispatch_block_t block);
 NSWindow* CreateOverlayWindow(const NSRect& frame);
 void ReleaseOverlayWindow(void* windowHandle);
+void ShowOverlayWindow(void* windowHandle);
+bool ResolveScreenFrameForPoint(const ScreenPoint& overlayPt, NSRect* frameOut);
 NSRect ClampOverlayFrameToScreenBounds(const NSRect& desiredFrame, const ScreenPoint& overlayPt);
 CGFloat ResolveOverlayContentsScale(const ScreenPoint& overlayPt);
 void ApplyOverlayContentScale(NSView* content, const ScreenPoint& overlayPt);

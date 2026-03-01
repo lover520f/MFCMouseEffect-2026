@@ -42,7 +42,7 @@ void ShowClickPulseOverlayOnMain(
     StartClickPulseAnimation(base, plan);
 
     RegisterClickPulseWindow(reinterpret_cast<void*>(window));
-    [window orderFrontRegardless];
+    macos_overlay_support::ShowOverlayWindow(reinterpret_cast<void*>(window));
 
     dispatch_after(
         dispatch_time(

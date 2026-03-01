@@ -59,6 +59,39 @@ void ReleaseOverlayWindow(void* windowHandle) {
     mfx_macos_overlay_release_window_v1(windowHandle);
 }
 
+void ShowOverlayWindow(void* windowHandle) {
+    if (windowHandle == nullptr) {
+        return;
+    }
+    mfx_macos_overlay_show_window_v1(windowHandle);
+}
+
+bool ResolveScreenFrameForPoint(const ScreenPoint& overlayPt, NSRect* frameOut) {
+    if (frameOut == nullptr) {
+        return false;
+    }
+    double x = 0.0;
+    double y = 0.0;
+    double width = 0.0;
+    double height = 0.0;
+    const int ok = mfx_macos_overlay_resolve_screen_frame_v1(
+        overlayPt.x,
+        overlayPt.y,
+        &x,
+        &y,
+        &width,
+        &height);
+    if (ok == 0 || width <= 0.0 || height <= 0.0) {
+        return false;
+    }
+    *frameOut = NSMakeRect(
+        static_cast<CGFloat>(x),
+        static_cast<CGFloat>(y),
+        static_cast<CGFloat>(width),
+        static_cast<CGFloat>(height));
+    return true;
+}
+
 NSRect ClampOverlayFrameToScreenBounds(const NSRect& desiredFrame, const ScreenPoint& overlayPt) {
     (void)overlayPt;
     if (desiredFrame.size.width <= 0.0 || desiredFrame.size.height <= 0.0) {

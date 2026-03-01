@@ -31,6 +31,8 @@ struct LineTrailState final {
     NSWindow* window = nil;
     CALayer* containerLayer = nil;
     ScreenPoint windowOrigin{};
+    double windowWidth = 0.0;
+    double windowHeight = 0.0;
     std::deque<TrailPoint> points;
     LineTrailConfig config{};
     uint64_t lastTickMs = 0;
@@ -74,6 +76,8 @@ void CloseWindow(LineTrailState& state) {
     macos_overlay_support::ReleaseOverlayWindow(reinterpret_cast<void*>(state.window));
     state.window = nil;
     state.containerLayer = nil;
+    state.windowWidth = 0.0;
+    state.windowHeight = 0.0;
 }
 
 void ClearSegmentSublayers(LineTrailState& state) {
@@ -96,29 +100,9 @@ void ResetState(LineTrailState& state) {
     state.running = false;
 }
 
-NSScreen* ResolveScreenForPoint(const ScreenPoint& overlayPt) {
-    NSArray<NSScreen*>* screens = [NSScreen screens];
-    if (screens == nil || [screens count] == 0) {
-        return [NSScreen mainScreen];
-    }
-    const NSPoint point = NSMakePoint(static_cast<CGFloat>(overlayPt.x), static_cast<CGFloat>(overlayPt.y));
-    for (NSScreen* screen in screens) {
-        if (NSPointInRect(point, [screen frame])) {
-            return screen;
-        }
-    }
-    NSScreen* main = [NSScreen mainScreen];
-    return main != nil ? main : [screens objectAtIndex:0];
-}
-
 bool EnsureWindowForPoint(LineTrailState& state, const ScreenPoint& overlayPt) {
-    NSScreen* screen = ResolveScreenForPoint(overlayPt);
-    if (screen == nil) {
-        return false;
-    }
-
-    const NSRect frame = [screen frame];
-    if (frame.size.width <= 0.0 || frame.size.height <= 0.0) {
+    NSRect frame = NSZeroRect;
+    if (!macos_overlay_support::ResolveScreenFrameForPoint(overlayPt, &frame)) {
         return false;
     }
 
@@ -126,8 +110,8 @@ bool EnsureWindowForPoint(LineTrailState& state, const ScreenPoint& overlayPt) {
         (state.window == nil) ||
         std::fabs(state.windowOrigin.x - frame.origin.x) > 0.5 ||
         std::fabs(state.windowOrigin.y - frame.origin.y) > 0.5 ||
-        std::fabs([state.window frame].size.width - frame.size.width) > 0.5 ||
-        std::fabs([state.window frame].size.height - frame.size.height) > 0.5;
+        std::fabs(state.windowWidth - frame.size.width) > 0.5 ||
+        std::fabs(state.windowHeight - frame.size.height) > 0.5;
 
     if (!needsNewWindow) {
         return true;
@@ -152,8 +136,10 @@ bool EnsureWindowForPoint(LineTrailState& state, const ScreenPoint& overlayPt) {
     state.containerLayer = containerLayer;
     state.windowOrigin.x = static_cast<int32_t>(std::lround(frame.origin.x));
     state.windowOrigin.y = static_cast<int32_t>(std::lround(frame.origin.y));
+    state.windowWidth = static_cast<double>(frame.size.width);
+    state.windowHeight = static_cast<double>(frame.size.height);
 
-    [window orderFrontRegardless];
+    macos_overlay_support::ShowOverlayWindow(reinterpret_cast<void*>(window));
     return true;
 }
 

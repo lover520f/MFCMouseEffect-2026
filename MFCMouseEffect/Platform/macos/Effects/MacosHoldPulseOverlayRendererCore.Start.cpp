@@ -92,7 +92,7 @@ void StartHoldPulseOverlayOnMain(const HoldEffectStartCommand& command, const st
     spin.repeatCount = HUGE_VALF;
     [accent addAnimation:spin forKey:@"mfx_hold_spin"];
 
-    [window orderFrontRegardless];
+    macos_overlay_support::ShowOverlayWindow(reinterpret_cast<void*>(window));
 
     detail::HoldOverlayState& state = detail::State();
     state.window = window;

@@ -112,6 +112,18 @@ public func mfx_macos_overlay_create_window_v1(
     return UnsafeMutableRawPointer(bitPattern: bits)
 }
 
+@MainActor
+private func mfxShowOverlayWindowOnMainThread(_ windowHandleBits: UInt) {
+    guard windowHandleBits != 0 else {
+        return
+    }
+    guard let ptr = UnsafeMutableRawPointer(bitPattern: windowHandleBits) else {
+        return
+    }
+    let window = Unmanaged<NSWindow>.fromOpaque(ptr).takeUnretainedValue()
+    window.orderFrontRegardless()
+}
+
 @_cdecl("mfx_macos_overlay_release_window_v1")
 public func mfx_macos_overlay_release_window_v1(_ windowHandle: UnsafeMutableRawPointer?) {
     let windowHandleBits = UInt(bitPattern: windowHandle)
@@ -131,6 +143,81 @@ public func mfx_macos_overlay_release_window_v1(_ windowHandle: UnsafeMutableRaw
             mfxReleaseOverlayWindowOnMainThread(windowHandleBits)
         }
     }
+}
+
+@_cdecl("mfx_macos_overlay_show_window_v1")
+public func mfx_macos_overlay_show_window_v1(_ windowHandle: UnsafeMutableRawPointer?) {
+    let windowHandleBits = UInt(bitPattern: windowHandle)
+    if windowHandleBits == 0 {
+        return
+    }
+
+    if Thread.isMainThread {
+        MainActor.assumeIsolated {
+            mfxShowOverlayWindowOnMainThread(windowHandleBits)
+        }
+        return
+    }
+
+    DispatchQueue.main.async {
+        MainActor.assumeIsolated {
+            mfxShowOverlayWindowOnMainThread(windowHandleBits)
+        }
+    }
+}
+
+@_cdecl("mfx_macos_overlay_resolve_screen_frame_v1")
+public func mfx_macos_overlay_resolve_screen_frame_v1(
+    _ x: Int32,
+    _ y: Int32,
+    _ outX: UnsafeMutablePointer<Double>?,
+    _ outY: UnsafeMutablePointer<Double>?,
+    _ outWidth: UnsafeMutablePointer<Double>?,
+    _ outHeight: UnsafeMutablePointer<Double>?
+) -> Int32 {
+    var frame = NSRect.zero
+    var ok = false
+    let resolveOnMain = {
+        let screens = NSScreen.screens
+        if screens.isEmpty {
+            return
+        }
+
+        let point = NSPoint(x: CGFloat(x), y: CGFloat(y))
+        for screen in screens where screen.frame.contains(point) {
+            let candidate = screen.frame
+            if candidate.width > 0.0 && candidate.height > 0.0 {
+                frame = candidate
+                ok = true
+            }
+            return
+        }
+
+        if let fallback = NSScreen.main ?? screens.first {
+            let candidate = fallback.frame
+            if candidate.width > 0.0 && candidate.height > 0.0 {
+                frame = candidate
+                ok = true
+            }
+        }
+    }
+
+    if Thread.isMainThread {
+        resolveOnMain()
+    } else {
+        DispatchQueue.main.sync {
+            resolveOnMain()
+        }
+    }
+
+    if !ok {
+        return 0
+    }
+    outX?.pointee = Double(frame.origin.x)
+    outY?.pointee = Double(frame.origin.y)
+    outWidth?.pointee = Double(frame.size.width)
+    outHeight?.pointee = Double(frame.size.height)
+    return 1
 }
 
 @_cdecl("mfx_macos_overlay_resolve_content_scale_v1")
