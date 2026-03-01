@@ -129,20 +129,37 @@ mfx_wasm_selfcheck_assert_dispatch_diagnostics_consistent() {
 
         local before_image_overlay_requests
         local after_image_overlay_requests
+        local before_image_overlay_requests_with_asset
+        local after_image_overlay_requests_with_asset
         local before_image_overlay_apply_tint_requests
         local after_image_overlay_apply_tint_requests
+        local before_image_overlay_apply_tint_requests_with_asset
+        local after_image_overlay_apply_tint_requests_with_asset
         before_image_overlay_requests="$(mfx_wasm_selfcheck_parse_uint_field "$state_before_output_file" "mac_image_overlay_requests")"
         after_image_overlay_requests="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "mac_image_overlay_requests")"
+        before_image_overlay_requests_with_asset="$(mfx_wasm_selfcheck_parse_uint_field "$state_before_output_file" "mac_image_overlay_requests_with_asset")"
+        after_image_overlay_requests_with_asset="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "mac_image_overlay_requests_with_asset")"
         before_image_overlay_apply_tint_requests="$(mfx_wasm_selfcheck_parse_uint_field "$state_before_output_file" "mac_image_overlay_apply_tint_requests")"
         after_image_overlay_apply_tint_requests="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "mac_image_overlay_apply_tint_requests")"
-        if [[ -z "$before_image_overlay_requests" || -z "$after_image_overlay_requests" || -z "$before_image_overlay_apply_tint_requests" || -z "$after_image_overlay_apply_tint_requests" ]]; then
+        before_image_overlay_apply_tint_requests_with_asset="$(mfx_wasm_selfcheck_parse_uint_field "$state_before_output_file" "mac_image_overlay_apply_tint_requests_with_asset")"
+        after_image_overlay_apply_tint_requests_with_asset="$(mfx_wasm_selfcheck_parse_uint_field "$state_output_file" "mac_image_overlay_apply_tint_requests_with_asset")"
+        if [[ -z "$before_image_overlay_requests" || -z "$after_image_overlay_requests" || -z "$before_image_overlay_requests_with_asset" || -z "$after_image_overlay_requests_with_asset" || -z "$before_image_overlay_apply_tint_requests" || -z "$after_image_overlay_apply_tint_requests" || -z "$before_image_overlay_apply_tint_requests_with_asset" || -z "$after_image_overlay_apply_tint_requests_with_asset" ]]; then
             mfx_fail "selfcheck $label macos image overlay diagnostics parse failed"
         fi
         if (( dispatch_executed_image > 0 && after_image_overlay_requests <= before_image_overlay_requests )); then
             mfx_fail "selfcheck $label macos image overlay request counter did not increase: before=$before_image_overlay_requests after=$after_image_overlay_requests dispatched_image=$dispatch_executed_image"
         fi
+        if (( after_image_overlay_requests_with_asset > after_image_overlay_requests )); then
+            mfx_fail "selfcheck $label macos image overlay with-asset counter invalid: with_asset=$after_image_overlay_requests_with_asset total=$after_image_overlay_requests"
+        fi
         if (( after_image_overlay_apply_tint_requests > after_image_overlay_requests )); then
             mfx_fail "selfcheck $label macos image overlay tint counter invalid: tint=$after_image_overlay_apply_tint_requests total=$after_image_overlay_requests"
+        fi
+        if (( after_image_overlay_apply_tint_requests_with_asset > after_image_overlay_apply_tint_requests )); then
+            mfx_fail "selfcheck $label macos image overlay tint-with-asset counter invalid: tint_with_asset=$after_image_overlay_apply_tint_requests_with_asset tint_total=$after_image_overlay_apply_tint_requests"
+        fi
+        if (( after_image_overlay_apply_tint_requests_with_asset > after_image_overlay_requests_with_asset )); then
+            mfx_fail "selfcheck $label macos image overlay tint-with-asset exceeds with-asset total: tint_with_asset=$after_image_overlay_apply_tint_requests_with_asset with_asset=$after_image_overlay_requests_with_asset"
         fi
     fi
 }

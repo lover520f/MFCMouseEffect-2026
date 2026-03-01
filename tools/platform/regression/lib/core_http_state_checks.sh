@@ -83,6 +83,10 @@ _mfx_core_http_run_state_checks() {
         mfx_assert_file_contains "$tmp_dir/state.out" "\"overlay_max_inflight\":" "core wasm overlay policy max in-flight"
         mfx_assert_file_contains "$tmp_dir/state.out" "\"overlay_min_image_interval_ms\":" "core wasm overlay policy image interval"
         mfx_assert_file_contains "$tmp_dir/state.out" "\"overlay_min_text_interval_ms\":" "core wasm overlay policy text interval"
+        mfx_assert_file_contains "$tmp_dir/state.out" "\"mac_image_overlay_requests\":" "core wasm mac image overlay requests"
+        mfx_assert_file_contains "$tmp_dir/state.out" "\"mac_image_overlay_requests_with_asset\":" "core wasm mac image overlay requests with asset"
+        mfx_assert_file_contains "$tmp_dir/state.out" "\"mac_image_overlay_apply_tint_requests\":" "core wasm mac image overlay tint requests"
+        mfx_assert_file_contains "$tmp_dir/state.out" "\"mac_image_overlay_apply_tint_requests_with_asset\":" "core wasm mac image overlay tint requests with asset"
         if [[ -n "${MFX_EXPECT_MACOS_WASM_OVERLAY_MAX_INFLIGHT:-}" ]]; then
             mfx_assert_file_contains "$tmp_dir/state.out" "\"overlay_max_inflight\":${MFX_EXPECT_MACOS_WASM_OVERLAY_MAX_INFLIGHT}" "core wasm overlay policy max in-flight value"
         fi
@@ -128,6 +132,10 @@ _mfx_core_http_run_state_checks() {
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"lifetime_invoke_calls\"" "core schema wasm lifetime invoke key"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"lifetime_render_dispatches\"" "core schema wasm lifetime render key"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"lifetime_throttled_render_commands\"" "core schema wasm lifetime throttled key"
+    mfx_assert_file_contains "$tmp_dir/schema.out" "\"mac_image_overlay_requests\"" "core schema wasm mac image overlay requests key"
+    mfx_assert_file_contains "$tmp_dir/schema.out" "\"mac_image_overlay_requests_with_asset\"" "core schema wasm mac image overlay requests with asset key"
+    mfx_assert_file_contains "$tmp_dir/schema.out" "\"mac_image_overlay_apply_tint_requests\"" "core schema wasm mac image overlay tint requests key"
+    mfx_assert_file_contains "$tmp_dir/schema.out" "\"mac_image_overlay_apply_tint_requests_with_asset\"" "core schema wasm mac image overlay tint requests with asset key"
 
     local state_wasm_invoke_supported
     local state_wasm_render_supported
