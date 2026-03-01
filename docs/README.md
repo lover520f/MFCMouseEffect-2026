@@ -35,6 +35,7 @@ Use it as a pointer index, not a full historical catalog.
 - macOS WASM plan/layout ObjC++ prune: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zi-macos-wasm-plan-layout-objcxx-prune.md`
 - macOS hold core ObjC++ prune: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zj-macos-hold-core-objcxx-prune.md`
 - macOS hold style compute ObjC++ prune: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zr-macos-hold-style-compute-objcxx-prune.md`
+- macOS hold accent path ObjC++ prune: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zs-macos-hold-accent-path-objcxx-prune.md`
 
 ## Current macOS Mainline (Phases 50-55)
 - Dual-lane guardrails: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`

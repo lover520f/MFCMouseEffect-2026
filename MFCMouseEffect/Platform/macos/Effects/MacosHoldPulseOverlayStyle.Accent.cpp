@@ -2,11 +2,6 @@
 
 #include "Platform/macos/Effects/MacosHoldPulseOverlayStyle.Internal.h"
 
-#if defined(__APPLE__)
-#import <AppKit/AppKit.h>
-#import <QuartzCore/QuartzCore.h>
-#endif
-
 #include <algorithm>
 #include <cmath>
 
@@ -59,60 +54,56 @@ CGPathRef CreateFluxFieldPath(CGRect bounds) {
     return path;
 }
 
-bool ConfigureHexAccent(CAShapeLayer* accent, CGRect bounds, NSColor* baseColor) {
-    CGPathRef path = CreateHexPath(CGRectInset(bounds, 38.0, 38.0));
-    accent.path = path;
-    CGPathRelease(path);
-    accent.fillColor = [NSColor clearColor].CGColor;
-    accent.strokeColor = [baseColor CGColor];
-    accent.lineWidth = 1.8;
+bool BuildHexAccentPath(CGRect bounds, CGPathRef* pathOut, CGFloat* lineWidthOut, bool* fillWithBaseColorOut) {
+    *pathOut = CreateHexPath(CGRectInset(bounds, 38.0, 38.0));
+    *lineWidthOut = 1.8;
+    *fillWithBaseColorOut = false;
     return true;
 }
 
-bool ConfigureLightningAccent(CAShapeLayer* accent, CGRect bounds, NSColor* baseColor) {
-    CGPathRef path = CreateLightningPath(CGRectInset(bounds, 36.0, 36.0));
-    accent.path = path;
-    CGPathRelease(path);
-    accent.fillColor = [baseColor CGColor];
-    accent.strokeColor = [baseColor CGColor];
-    accent.lineWidth = 1.0;
+bool BuildLightningAccentPath(CGRect bounds, CGPathRef* pathOut, CGFloat* lineWidthOut, bool* fillWithBaseColorOut) {
+    *pathOut = CreateLightningPath(CGRectInset(bounds, 36.0, 36.0));
+    *lineWidthOut = 1.0;
+    *fillWithBaseColorOut = true;
     return true;
 }
 
-bool ConfigureFluxFieldAccent(CAShapeLayer* accent, CGRect bounds, NSColor* baseColor) {
-    CGPathRef path = CreateFluxFieldPath(CGRectInset(bounds, 36.0, 36.0));
-    accent.path = path;
-    CGPathRelease(path);
-    accent.fillColor = [NSColor clearColor].CGColor;
-    accent.strokeColor = [baseColor CGColor];
-    accent.lineWidth = 2.0;
+bool BuildFluxFieldAccentPath(CGRect bounds, CGPathRef* pathOut, CGFloat* lineWidthOut, bool* fillWithBaseColorOut) {
+    *pathOut = CreateFluxFieldPath(CGRectInset(bounds, 36.0, 36.0));
+    *lineWidthOut = 2.0;
+    *fillWithBaseColorOut = false;
     return true;
 }
 
-bool ConfigureQuantumHaloAccent(CAShapeLayer* accent, CGRect bounds, NSColor* baseColor) {
-    CGPathRef path = CGPathCreateWithEllipseInRect(CGRectInset(bounds, 36.0, 36.0), nullptr);
-    accent.path = path;
-    CGPathRelease(path);
-    accent.fillColor = [NSColor clearColor].CGColor;
-    accent.strokeColor = [baseColor CGColor];
-    accent.lineWidth = 2.2;
+bool BuildQuantumHaloAccentPath(CGRect bounds, CGPathRef* pathOut, CGFloat* lineWidthOut, bool* fillWithBaseColorOut) {
+    *pathOut = CGPathCreateWithEllipseInRect(CGRectInset(bounds, 36.0, 36.0), nullptr);
+    *lineWidthOut = 2.2;
+    *fillWithBaseColorOut = false;
     return true;
 }
 
 } // namespace
 
-bool ConfigureSpecialHoldAccentLayer(CAShapeLayer* accent, CGRect bounds, HoldStyle holdStyle, NSColor* baseColor) {
+bool BuildSpecialHoldAccentPath(
+    CGRect bounds,
+    HoldStyle holdStyle,
+    CGPathRef* pathOut,
+    CGFloat* lineWidthOut,
+    bool* fillWithBaseColorOut) {
+    if (pathOut == nullptr || lineWidthOut == nullptr || fillWithBaseColorOut == nullptr) {
+        return false;
+    }
     if (holdStyle == HoldStyle::Hex) {
-        return ConfigureHexAccent(accent, bounds, baseColor);
+        return BuildHexAccentPath(bounds, pathOut, lineWidthOut, fillWithBaseColorOut);
     }
     if (holdStyle == HoldStyle::Lightning) {
-        return ConfigureLightningAccent(accent, bounds, baseColor);
+        return BuildLightningAccentPath(bounds, pathOut, lineWidthOut, fillWithBaseColorOut);
     }
     if (holdStyle == HoldStyle::FluxField) {
-        return ConfigureFluxFieldAccent(accent, bounds, baseColor);
+        return BuildFluxFieldAccentPath(bounds, pathOut, lineWidthOut, fillWithBaseColorOut);
     }
     if (holdStyle == HoldStyle::QuantumHalo) {
-        return ConfigureQuantumHaloAccent(accent, bounds, baseColor);
+        return BuildQuantumHaloAccentPath(bounds, pathOut, lineWidthOut, fillWithBaseColorOut);
     }
     return false;
 }

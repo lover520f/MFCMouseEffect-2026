@@ -58,7 +58,20 @@ NSColor* HoldBaseColor(
 }
 
 void ConfigureHoldAccentLayer(CAShapeLayer* accent, CGRect bounds, detail::HoldStyle holdStyle, NSColor* baseColor) {
-    if (detail::ConfigureSpecialHoldAccentLayer(accent, bounds, holdStyle, baseColor)) {
+    CGPathRef specialPath = nullptr;
+    CGFloat specialLineWidth = 0.0;
+    bool fillWithBaseColor = false;
+    if (detail::BuildSpecialHoldAccentPath(
+            bounds,
+            holdStyle,
+            &specialPath,
+            &specialLineWidth,
+            &fillWithBaseColor)) {
+        accent.path = specialPath;
+        CGPathRelease(specialPath);
+        accent.fillColor = fillWithBaseColor ? [baseColor CGColor] : [NSColor clearColor].CGColor;
+        accent.strokeColor = [baseColor CGColor];
+        accent.lineWidth = specialLineWidth;
         return;
     }
 
