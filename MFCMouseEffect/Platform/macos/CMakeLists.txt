@@ -404,16 +404,91 @@ add_library(mfx_shell_macos STATIC
 )
 
 if(APPLE)
-    # Some macOS C++ translation units still rely on Cocoa/AppKit symbols.
-    # Keep those files in ObjC++ compilation mode while Swift-first migration
-    # proceeds incrementally.
+    # Explicit ObjC++ allowlist. Keep this list tight and prune entries when
+    # modules are fully migrated to Swift bridges.
+    set(MFX_MACOS_OBJCXX_SOURCE_ALLOWLIST
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosClickPulseEffect.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosClickPulseOverlayRenderer.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosClickPulseOverlayRendererCore.Layers.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosClickPulseOverlayRendererCore.Plan.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosClickPulseOverlayRendererCore.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosClickPulseOverlayStyle.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosClickPulseWindowRegistry.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosEffectCreatorRegistry.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosEffectCreatorRegistry.Table.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosEffectComputeProfileAdapter.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosEffectRenderProfile.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosEffectRenderProfile.ClickTrail.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosEffectRenderProfile.ScrollHoldHover.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosOverlayRenderSupport.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosLineTrailOverlay.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseEffect.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayStyle.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayRenderer.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayRendererCore.Layers.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayRendererCore.Plan.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseOverlayRendererCore.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTrailPulseWindowRegistry.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosScrollPulseEffect.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosScrollPulseOverlayStyle.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosScrollPulseOverlayRenderer.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosScrollPulseOverlayRendererCore.Layers.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosScrollPulseOverlayRendererCore.Plan.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosScrollPulseOverlayRendererCore.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosScrollPulseOverlayRendererSupport.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosScrollPulseWindowRegistry.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoverPulseEffect.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoverPulseOverlayStyle.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoverPulseOverlayRenderer.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoverPulseOverlayRendererCore.Layers.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoverPulseOverlayRendererCore.Plan.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoverPulseOverlayRendererCore.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseEffect.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayStyle.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayStyle.Accent.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayRenderer.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayRendererCore.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayRendererCore.Start.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayRendererCore.State.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayRendererCore.Update.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosTextEffectFallback.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Overlay/MacosOverlayCoordSpaceConversion.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Overlay/MacosOverlayCoordSpaceService.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Overlay/MacosInputIndicatorOverlay.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Overlay/MacosInputIndicatorOverlay.Lifecycle.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Overlay/MacosInputIndicatorOverlay.Display.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Overlay/MacosInputIndicatorOverlay.ShowPlan.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Overlay/MacosInputIndicatorOverlay.Style.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Overlay/MacosInputIndicatorOverlay.Probes.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Overlay/MacosInputIndicatorOverlay.ProbeHelpers.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Overlay/MacosInputIndicatorOverlayInternals.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmCommandRenderer.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmCommandRenderDispatch.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmCommandRenderDispatch.Text.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmCommandRenderDispatch.Image.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmCommandRenderResolvers.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmImageOverlayRenderer.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmImageOverlayRendererCore.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmImageOverlayRendererCore.Window.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmImageOverlayRendererCore.Plan.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmImageOverlayRendererSupport.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayRenderMath.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayPolicy.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayState.Admission.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayState.Internals.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayState.Windows.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayState.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmOverlayRuntime.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmTextOverlay.Layout.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmTextOverlay.Style.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmTextOverlay.cpp"
+        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmTransientOverlay.cpp"
+    )
+
     get_target_property(MFX_MACOS_TARGET_SOURCES mfx_shell_macos SOURCES)
     set(MFX_MACOS_OBJCXX_CPP_SOURCES "")
     foreach(MFX_MACOS_SOURCE IN LISTS MFX_MACOS_TARGET_SOURCES)
-        if(MFX_MACOS_SOURCE MATCHES "/Platform/macos/legacy/.+\\.cpp$" OR
-           MFX_MACOS_SOURCE MATCHES "/Platform/macos/Effects/.+\\.cpp$" OR
-           MFX_MACOS_SOURCE MATCHES "/Platform/macos/Overlay/.+\\.cpp$" OR
-           MFX_MACOS_SOURCE MATCHES "/Platform/macos/Wasm/.+\\.cpp$")
+        if(MFX_MACOS_SOURCE IN_LIST MFX_MACOS_OBJCXX_SOURCE_ALLOWLIST)
             list(APPEND MFX_MACOS_OBJCXX_CPP_SOURCES "${MFX_MACOS_SOURCE}")
         endif()
     endforeach()
@@ -426,7 +501,7 @@ if(APPLE)
     endif()
 endif()
 
-set(MFX_MACOS_LEGACY_HEADER_DIRS
+set(MFX_MACOS_PLATFORM_HEADER_DIRS
     "${MFX_PROJECT_ROOT}/Platform/macos/Effects"
     "${MFX_PROJECT_ROOT}/Platform/macos/Overlay"
     "${MFX_PROJECT_ROOT}/Platform/macos/Wasm"
@@ -435,7 +510,7 @@ set(MFX_MACOS_LEGACY_HEADER_DIRS
 )
 target_include_directories(mfx_shell_macos
     PRIVATE
-        ${MFX_MACOS_LEGACY_HEADER_DIRS}
+        ${MFX_MACOS_PLATFORM_HEADER_DIRS}
 )
 
 if(MFX_MACOS_NOTIFICATION_SWIFT_OBJECT)
@@ -516,7 +591,7 @@ if(APPLE)
     target_compile_definitions(mfx_shell_macos_tray_smoke PRIVATE MFX_TARGET_PLATFORM_MACOS=1)
     target_include_directories(mfx_shell_macos_tray_smoke
         PRIVATE
-            ${MFX_MACOS_LEGACY_HEADER_DIRS}
+            ${MFX_MACOS_PLATFORM_HEADER_DIRS}
     )
 endif()
 
