@@ -25,6 +25,7 @@
 ## 近期问题文档
 - macOS 拖尾 “无” 不生效：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/issues/macos-trail-none-selection-apply.md`
 - macOS 拖尾 `streamer/line` 回归修复：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/issues/macos-trail-streamer-line-regression-fix.md`
+- macOS LineTrail Swift bridge 收口：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zb-macos-line-trail-swift-bridge-cutover.md`
 
 ## 当前 macOS 主线（Phase 50-55）
 - 双车道护栏：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`

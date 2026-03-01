@@ -25,6 +25,7 @@ Use it as a pointer index, not a full historical catalog.
 ## Recent Issue Docs
 - macOS trail “none” selection not sticking: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/issues/macos-trail-none-selection-apply.md`
 - macOS trail `streamer/line` regression fix: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/issues/macos-trail-streamer-line-regression-fix.md`
+- macOS line-trail Swift bridge cutover: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zb-macos-line-trail-swift-bridge-cutover.md`
 
 ## Current macOS Mainline (Phases 50-55)
 - Dual-lane guardrails: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`
