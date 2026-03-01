@@ -183,6 +183,9 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_eq "$code_effect_state_line_trail_active" "200" "core effect line-trail active state status"
     mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-active.out" "\"line_trail_active\":" "core effect line-trail active state field"
     mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-active.out" "\"line_trail_point_count\":" "core effect line-trail active state point field"
+    mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-active.out" "\"trail_move_samples\":" "core effect line-trail active state move sample field"
+    mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-active.out" "\"trail_origin_connector_drop_count\":" "core effect line-trail active state origin connector drop field"
+    mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-active.out" "\"trail_teleport_drop_count\":" "core effect line-trail active state teleport drop field"
     if [[ "$platform" == "macos" ]]; then
         mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-active.out" "\"line_trail_active\":true" "core effect line-trail active state on macos"
         local state_line_trail_active_count
@@ -217,6 +220,9 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_eq "$code_effect_state_line_trail_cleared" "200" "core effect line-trail cleared state status"
     mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-cleared.out" "\"line_trail_active\":" "core effect line-trail cleared state field"
     mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-cleared.out" "\"line_trail_point_count\":" "core effect line-trail cleared state point field"
+    mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-cleared.out" "\"trail_move_samples\":" "core effect line-trail cleared state move sample field"
+    mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-cleared.out" "\"trail_origin_connector_drop_count\":" "core effect line-trail cleared state origin connector drop field"
+    mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-cleared.out" "\"trail_teleport_drop_count\":" "core effect line-trail cleared state teleport drop field"
     if [[ "$platform" == "macos" ]]; then
         mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-cleared.out" "\"line_trail_active\":false" "core effect line-trail cleared state on macos"
         mfx_assert_file_contains "$tmp_dir/effect-state-line-trail-cleared.out" "\"line_trail_point_count\":0" "core effect line-trail cleared point count on macos"
@@ -331,6 +337,9 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"max_segments\":" "core effect profile state trail planner max segments"
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"line_trail_active\":" "core effect runtime state line trail active field"
     mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"line_trail_point_count\":" "core effect runtime state line trail point count field"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"trail_move_samples\":" "core effect runtime state trail move sample field"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"trail_origin_connector_drop_count\":" "core effect runtime state trail origin connector drop field"
+    mfx_assert_file_contains "$tmp_dir/effect-profile-state.out" "\"trail_teleport_drop_count\":" "core effect runtime state trail teleport drop field"
 
     local probe_meteor_scale
     local state_meteor_scale

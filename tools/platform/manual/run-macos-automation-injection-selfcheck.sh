@@ -222,6 +222,18 @@ mfx_assert_file_contains "$inject_file" "\"matched\":true" "automation inject se
 mfx_assert_file_contains "$inject_file" "\"injected\":true" "automation inject selfcheck injected"
 mfx_assert_file_contains "$inject_file" "\"selected_keys\":\"Cmd+C\"" "automation inject selfcheck selected keys"
 
+scope_probe_file="$tmp_dir/app-scope-alias-probe.out"
+scope_probe_code="$(mfx_http_code "$scope_probe_file" "$MFX_MANUAL_BASE_URL/api/automation/test-app-scope-match" \
+    -X POST \
+    -H "${token_header[0]}" \
+    -H "Content-Type: application/json" \
+    -d '{"process":"code","app_scopes":["process:code.exe"]}')"
+mfx_assert_eq "$scope_probe_code" "200" "automation app-scope alias selfcheck status"
+mfx_assert_file_contains "$scope_probe_file" "\"ok\":true" "automation app-scope alias selfcheck ok"
+mfx_assert_file_contains "$scope_probe_file" "\"matched\":true" "automation app-scope alias selfcheck matched"
+mfx_assert_file_contains "$scope_probe_file" "\"process_aliases\":[\"code\",\"code.exe\",\"code.app\"]" "automation app-scope alias selfcheck process aliases"
+mfx_assert_file_contains "$scope_probe_file" "\"app_scope_alias_matrix\":" "automation app-scope alias selfcheck alias matrix"
+
 if [[ "$dry_run" -eq 0 ]]; then
     sleep 0.2
     copied_text="$(pbpaste)"

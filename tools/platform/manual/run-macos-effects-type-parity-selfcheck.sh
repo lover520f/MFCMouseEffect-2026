@@ -152,6 +152,12 @@ mfx_assert_file_contains "$state_after_file" "\"scroll\":\"helix\"" "effects sta
 mfx_assert_file_contains "$state_after_file" "\"hold\":\"hologram\"" "effects state hold active"
 mfx_assert_file_contains "$state_after_file" "\"hover\":\"tubes\"" "effects state hover active"
 mfx_assert_file_contains "$state_after_file" "\"hold_follow_mode\":\"smooth\"" "effects state hold follow mode alias normalization"
+if ! mfx_file_contains_fixed "$state_after_file" "\"trail_move_samples\":"; then
+    if [[ "$skip_build" -eq 1 ]]; then
+        mfx_fail "effects state trail diagnostics fields missing (likely stale host binary); rerun without --skip-build"
+    fi
+    mfx_fail "effects state trail diagnostics fields missing in /api/state"
+fi
 
 overlay_probe_file="$tmp_dir/effects-overlay-probe.out"
 overlay_probe_code="$(mfx_http_code "$overlay_probe_file" "$MFX_MANUAL_BASE_URL/api/effects/test-overlay-windows" \
@@ -221,6 +227,9 @@ line_trail_state_active_code="$(mfx_http_code "$line_trail_state_active_file" "$
     -H "$token_header")"
 mfx_assert_eq "$line_trail_state_active_code" "200" "effects line trail active state status"
 mfx_assert_file_contains "$line_trail_state_active_file" "\"line_trail_active\":true" "effects line trail active state flag"
+mfx_assert_file_contains "$line_trail_state_active_file" "\"trail_move_samples\":" "effects line trail active state move sample field"
+mfx_assert_file_contains "$line_trail_state_active_file" "\"trail_origin_connector_drop_count\":" "effects line trail active state origin connector drop field"
+mfx_assert_file_contains "$line_trail_state_active_file" "\"trail_teleport_drop_count\":" "effects line trail active state teleport drop field"
 line_trail_state_active_count="$(parse_uint_field "$line_trail_state_active_file" "line_trail_point_count")"
 if [[ -z "$line_trail_state_active_count" ]]; then
     mfx_fail "effects line trail active state point count parse failed"
@@ -250,6 +259,9 @@ line_trail_state_cleared_code="$(mfx_http_code "$line_trail_state_cleared_file" 
 mfx_assert_eq "$line_trail_state_cleared_code" "200" "effects line trail cleared state status"
 mfx_assert_file_contains "$line_trail_state_cleared_file" "\"line_trail_active\":false" "effects line trail cleared state flag"
 mfx_assert_file_contains "$line_trail_state_cleared_file" "\"line_trail_point_count\":0" "effects line trail cleared state point count"
+mfx_assert_file_contains "$line_trail_state_cleared_file" "\"trail_move_samples\":" "effects line trail cleared state move sample field"
+mfx_assert_file_contains "$line_trail_state_cleared_file" "\"trail_origin_connector_drop_count\":" "effects line trail cleared state origin connector drop field"
+mfx_assert_file_contains "$line_trail_state_cleared_file" "\"trail_teleport_drop_count\":" "effects line trail cleared state teleport drop field"
 
 mfx_ok "macos effects type parity selfcheck passed"
 
