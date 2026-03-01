@@ -10,6 +10,7 @@ void* mfx_macos_wasm_image_overlay_create_v1(
     double frameSize,
     const char* imagePathUtf8,
     unsigned int tintArgb,
+    int applyTint,
     double alphaScale,
     double durationSec,
     double rotationRad,

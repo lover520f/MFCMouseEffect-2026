@@ -21,6 +21,21 @@ private func mfxColorFromArgb(_ argb: UInt32, _ alphaScale: CGFloat) -> NSColor 
     return NSColor(calibratedRed: red, green: green, blue: blue, alpha: alpha)
 }
 
+private func mfxCreateTintedImage(_ image: NSImage, tintColor: NSColor) -> NSImage? {
+    let size = image.size
+    guard size.width > 0.0, size.height > 0.0 else {
+        return nil
+    }
+    let rect = NSRect(origin: .zero, size: size)
+    let tinted = NSImage(size: size)
+    tinted.lockFocus()
+    defer { tinted.unlockFocus() }
+    image.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 1.0)
+    tintColor.set()
+    rect.fill(using: .sourceAtop)
+    return tinted
+}
+
 @MainActor
 private func mfxCreateWasmImageOverlayOnMainThread(
     frameX: Double,
@@ -28,6 +43,7 @@ private func mfxCreateWasmImageOverlayOnMainThread(
     frameSize: Double,
     imagePathUtf8: String,
     tintArgb: UInt32,
+    applyTint: Bool,
     alphaScale: Double,
     durationSec: Double,
     rotationRad: Double,
@@ -57,6 +73,13 @@ private func mfxCreateWasmImageOverlayOnMainThread(
     var renderedImage = false
     if !imagePathUtf8.isEmpty, let image = NSImage(contentsOfFile: imagePathUtf8) {
         let imageInset = mfxClamp(size * 0.16, min: 8.0, max: 60.0)
+        let resolvedImage: NSImage
+        if applyTint {
+            let tintColor = mfxColorFromArgb(tintArgb, alphaScaleClamped)
+            resolvedImage = mfxCreateTintedImage(image, tintColor: tintColor) ?? image
+        } else {
+            resolvedImage = image
+        }
         let imageView = NSImageView(
             frame: NSRect(
                 x: imageInset,
@@ -65,7 +88,7 @@ private func mfxCreateWasmImageOverlayOnMainThread(
                 height: size - imageInset * 2.0
             )
         )
-        imageView.image = image
+        imageView.image = resolvedImage
         imageView.imageScaling = .scaleProportionallyUpOrDown
         imageView.alphaValue = alphaScaleClamped
         content.addSubview(imageView)
@@ -154,6 +177,7 @@ public func mfx_macos_wasm_image_overlay_create_v1(
     _ frameSize: Double,
     _ imagePathUtf8: UnsafePointer<CChar>?,
     _ tintArgb: UInt32,
+    _ applyTint: Int32,
     _ alphaScale: Double,
     _ durationSec: Double,
     _ rotationRad: Double,
@@ -161,6 +185,7 @@ public func mfx_macos_wasm_image_overlay_create_v1(
     _ motionDy: Double
 ) -> UnsafeMutableRawPointer? {
     let imagePath = imagePathUtf8.map(String.init(cString:)) ?? ""
+    let shouldApplyTint = applyTint != 0
     if Thread.isMainThread {
         let bits = MainActor.assumeIsolated {
             UInt(
@@ -170,6 +195,7 @@ public func mfx_macos_wasm_image_overlay_create_v1(
                     frameSize: frameSize,
                     imagePathUtf8: imagePath,
                     tintArgb: tintArgb,
+                    applyTint: shouldApplyTint,
                     alphaScale: alphaScale,
                     durationSec: durationSec,
                     rotationRad: rotationRad,
@@ -191,6 +217,7 @@ public func mfx_macos_wasm_image_overlay_create_v1(
                     frameSize: frameSize,
                     imagePathUtf8: imagePath,
                     tintArgb: tintArgb,
+                    applyTint: shouldApplyTint,
                     alphaScale: alphaScale,
                     durationSec: durationSec,
                     rotationRad: rotationRad,

@@ -64,6 +64,7 @@ void RenderWasmImageOverlayWindowOnMain(
         plan.size,
         imagePathUtf8.empty() ? nullptr : imagePathUtf8.c_str(),
         req.tintArgb,
+        req.applyTint ? 1 : 0,
         plan.alphaScale,
         t,
         req.rotationRad,
