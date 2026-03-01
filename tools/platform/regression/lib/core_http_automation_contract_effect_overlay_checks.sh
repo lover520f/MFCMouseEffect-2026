@@ -507,6 +507,58 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         fi
     fi
 
+    local code_effect_state_set_legacy_aliases
+    code_effect_state_set_legacy_aliases="$(mfx_http_code "$tmp_dir/effect-state-set-legacy-aliases.out" "$base_url/api/state" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{"active":{"click":"textclick","trail":"scifi","scroll":"stardust","hold":"scifi3d","hover":"suspension"},"hold_follow_mode":"cursor_priority"}')"
+    mfx_assert_eq "$code_effect_state_set_legacy_aliases" "200" "core effect set legacy aliases state post status"
+
+    local state_legacy_click
+    local state_legacy_trail
+    local state_legacy_scroll
+    local state_legacy_hold
+    local state_legacy_hover
+    local state_legacy_hold_follow_mode
+    state_legacy_click="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-state-set-legacy-aliases.out" "click")"
+    state_legacy_trail="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-state-set-legacy-aliases.out" "trail")"
+    state_legacy_scroll="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-state-set-legacy-aliases.out" "scroll")"
+    state_legacy_hold="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-state-set-legacy-aliases.out" "hold")"
+    state_legacy_hover="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-state-set-legacy-aliases.out" "hover")"
+    state_legacy_hold_follow_mode="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-state-set-legacy-aliases.out" "hold_follow_mode")"
+    state_legacy_hold_follow_mode="${state_legacy_hold_follow_mode//\"/}"
+
+    mfx_assert_eq "$state_legacy_click" "text" "core effect state legacy alias normalize click"
+    mfx_assert_eq "$state_legacy_trail" "tubes" "core effect state legacy alias normalize trail"
+    mfx_assert_eq "$state_legacy_scroll" "twinkle" "core effect state legacy alias normalize scroll"
+    mfx_assert_eq "$state_legacy_hold" "hologram" "core effect state legacy alias normalize hold"
+    mfx_assert_eq "$state_legacy_hover" "tubes" "core effect state legacy alias normalize hover"
+    mfx_assert_eq "$state_legacy_hold_follow_mode" "smooth" "core effect state legacy alias normalize hold follow mode"
+
+    local code_effect_profile_probe_legacy_aliases
+    code_effect_profile_probe_legacy_aliases="$(mfx_http_code "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" "$base_url/api/effects/test-render-profiles" \
+        -X GET \
+        -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_effect_profile_probe_legacy_aliases" "200" "core effect legacy alias render profile probe status"
+
+    local probe_legacy_click
+    local probe_legacy_trail
+    local probe_legacy_scroll
+    local probe_legacy_hold
+    local probe_legacy_hover
+    probe_legacy_click="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" "click")"
+    probe_legacy_trail="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" "trail")"
+    probe_legacy_scroll="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" "scroll")"
+    probe_legacy_hold="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" "hold")"
+    probe_legacy_hover="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" "hover")"
+
+    mfx_assert_eq "$probe_legacy_click" "text" "core effect render profile legacy alias normalize click"
+    mfx_assert_eq "$probe_legacy_trail" "tubes" "core effect render profile legacy alias normalize trail"
+    mfx_assert_eq "$probe_legacy_scroll" "twinkle" "core effect render profile legacy alias normalize scroll"
+    mfx_assert_eq "$probe_legacy_hold" "hologram" "core effect render profile legacy alias normalize hold"
+    mfx_assert_eq "$probe_legacy_hover" "tubes" "core effect render profile legacy alias normalize hover"
+
     local code_effect_state_set_trail_none
     code_effect_state_set_trail_none="$(mfx_http_code "$tmp_dir/effect-state-set-trail-none.out" "$base_url/api/state" \
         -X POST \
