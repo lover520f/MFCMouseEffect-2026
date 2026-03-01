@@ -48,6 +48,7 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/issue
 ```bash
 ./mfx run
 ./mfx run-no-build
+./mfx run-no-build --seconds 30
 ./mfx effects
 # backward-compatible aliases
 ./mfx start

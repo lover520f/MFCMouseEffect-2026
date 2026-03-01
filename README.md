@@ -90,6 +90,9 @@
 # 直接启动（跳过编译）
 ./mfx run-no-build
 
+# 30 秒自动退出（便于快速手测）
+./mfx run-no-build --seconds 30
+
 # 特效类型等价自检
 ./mfx effects
 

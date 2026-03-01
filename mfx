@@ -10,11 +10,11 @@ Usage:
   ./mfx <command> [options]
 
 Commands:
-  run [--minutes N]
+  run [--minutes N | --seconds N]
       Build + run macOS core host and print settings URL.
       Default auto stop: 30 minutes.
 
-  run-no-build [--minutes N]
+  run-no-build [--minutes N | --seconds N]
       Run macOS core host without rebuilding.
       Default auto stop: 30 minutes.
 
@@ -30,24 +30,31 @@ Compatibility aliases:
 EOF
 }
 
-to_seconds() {
-    local minutes="$1"
-    if ! [[ "$minutes" =~ ^[0-9]+$ ]]; then
-        echo "invalid minutes: $minutes" >&2
+to_positive_int() {
+    local value="$1"
+    local label="$2"
+    if ! [[ "$value" =~ ^[0-9]+$ ]] || [[ "$value" == "0" ]]; then
+        echo "invalid $label: $value" >&2
         exit 2
     fi
-    echo $((minutes * 60))
+    echo "$value"
 }
 
 run_start() {
     local skip_build="$1"
     shift
     local minutes=30
+    local seconds=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
         --minutes)
             [[ $# -ge 2 ]] || { echo "missing value for --minutes" >&2; exit 2; }
             minutes="$2"
+            shift 2
+            ;;
+        --seconds)
+            [[ $# -ge 2 ]] || { echo "missing value for --seconds" >&2; exit 2; }
+            seconds="$2"
             shift 2
             ;;
         *)
@@ -58,7 +65,16 @@ run_start() {
     done
 
     local stop_seconds
-    stop_seconds="$(to_seconds "$minutes")"
+    if [[ -n "$seconds" && "$minutes" != "30" ]]; then
+        echo "use either --minutes or --seconds, not both" >&2
+        exit 2
+    fi
+    if [[ -n "$seconds" ]]; then
+        stop_seconds="$(to_positive_int "$seconds" "seconds")"
+    else
+        minutes="$(to_positive_int "$minutes" "minutes")"
+        stop_seconds="$((minutes * 60))"
+    fi
     local -a args
     args=(--auto-stop-seconds "$stop_seconds")
     if [[ "$skip_build" == "1" ]]; then

@@ -51,6 +51,7 @@
 - One-command launcher:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/mfx`
   - primary commands: `run`, `run-no-build`, `effects` (legacy aliases `start`, `fast` remain supported).
+  - supports `--seconds` for quick auto-stop runs (e.g. `./mfx run-no-build --seconds 30`).
 - Core web settings manual run:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-core-websettings-manual.sh --auto-stop-seconds 60`
 - Effects parity selfcheck:
