@@ -46,6 +46,7 @@
 - macOS WASM 图片窗口生命周期收口：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zza-macos-wasm-image-window-lifecycle-unify.md`
 - macOS WASM 图片叠层 Swift bridge 切换：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzb-macos-wasm-image-overlay-swift-bridge-cutover.md`
 - macOS Overlay Render Support 模块 ObjC++ 白名单收缩：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzc-macos-overlay-render-support-objcxx-prune.md`
+- macOS Hover 叠层 Swift bridge 切换：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzd-macos-hover-overlay-swift-bridge-cutover.md`
 
 ## 当前 macOS 主线（Phase 50-55）
 - 双车道护栏：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`
