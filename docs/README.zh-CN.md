@@ -37,6 +37,7 @@
 - macOS Hold Style 计算层 ObjC++ 白名单收缩：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zr-macos-hold-style-compute-objcxx-prune.md`
 - macOS Hold Accent 路径计算 ObjC++ 白名单收缩：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zs-macos-hold-accent-path-objcxx-prune.md`
 - macOS Scroll Support 模块 ObjC++ 白名单收缩：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zt-macos-scroll-support-objcxx-prune.md`
+- macOS Hold Update 模块 ObjC++ 白名单收缩：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zu-macos-hold-update-objcxx-prune.md`
 
 ## 当前 macOS 主线（Phase 50-55）
 - 双车道护栏：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`
