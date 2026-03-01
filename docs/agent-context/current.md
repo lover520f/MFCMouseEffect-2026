@@ -67,6 +67,7 @@
 - Large non-indexed historical issue bundles were removed.
 - Remaining unreferenced issue docs were pruned; `docs/issues` now keeps only actively referenced entries.
 - Unreferenced refactoring history docs were also pruned by reachability; `docs/refactoring` keeps the linked active subset plus roadmap snapshot.
+- Unreferenced architecture docs (`dawn-native-effects-route`, `mousefx-folder-structure*`, `trail-effects-differentiation*`, `web-settings-ui*`) were pruned; architecture layer now keeps only linked workflow/contracts docs.
 - Current docs focus is now:
   - `P0`: `AGENTS.md`
   - `P1`: this file + roadmap snapshot
