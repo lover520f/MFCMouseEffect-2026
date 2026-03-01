@@ -67,8 +67,9 @@ void RenderWasmImageOverlayWindowOnMain(
 
     bool renderedImage = false;
     if (!req.assetPath.empty()) {
-        NSString* imagePath = wasm_image_overlay_support::NsPathFromWide(req.assetPath);
-        if (imagePath != nil) {
+        const std::string imagePathUtf8 = wasm_image_overlay_support::Utf8PathFromWide(req.assetPath);
+        if (!imagePathUtf8.empty()) {
+            NSString* imagePath = [NSString stringWithUTF8String:imagePathUtf8.c_str()];
             NSImage* image = [[NSImage alloc] initWithContentsOfFile:imagePath];
             if (image != nil) {
                 const CGFloat imageInset =

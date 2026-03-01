@@ -5,10 +5,6 @@
 #include "Platform/macos/Wasm/MacosWasmOverlayRenderMath.h"
 #include "MouseFx/Utils/StringUtils.h"
 
-#if defined(__APPLE__)
-#import <Foundation/Foundation.h>
-#endif
-
 #include <cmath>
 
 namespace mousefx::platform::macos::wasm_image_overlay_support {
@@ -28,15 +24,12 @@ bool HasMotion(const WasmImageOverlayRequest& request) {
            std::abs(request.accelerationY) > 0.001f;
 }
 
-NSString* NsPathFromWide(const std::wstring& path) {
+std::string Utf8PathFromWide(const std::wstring& path) {
     if (path.empty()) {
-        return nil;
+        return {};
     }
     const std::string utf8 = Utf16ToUtf8(path.c_str());
-    if (utf8.empty()) {
-        return nil;
-    }
-    return [NSString stringWithUTF8String:utf8.c_str()];
+    return utf8;
 }
 
 } // namespace mousefx::platform::macos::wasm_image_overlay_support

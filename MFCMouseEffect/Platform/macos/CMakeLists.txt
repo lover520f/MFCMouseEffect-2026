@@ -439,7 +439,6 @@ if(APPLE)
         "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayRendererCore.Start.cpp"
         "${MFX_PROJECT_ROOT}/Platform/macos/Effects/MacosHoldPulseOverlayRendererCore.Update.cpp"
         "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmImageOverlayRendererCore.Window.cpp"
-        "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmImageOverlayRendererSupport.cpp"
         "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmTextOverlay.Style.cpp"
         "${MFX_PROJECT_ROOT}/Platform/macos/Wasm/MacosWasmTextOverlay.cpp"
     )
