@@ -74,4 +74,32 @@ _mfx_core_http_wasm_contract_dispatch_checks() {
     mfx_assert_file_contains "$tmp_dir/wasm-affine-rotate.out" "\"ok\":true" "core wasm affine resolve rotate ok"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-rotate.out" "\"resolved_scale_milli\":1000" "core wasm affine resolve rotate scale"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-rotate.out" "\"resolved_rotation_millirad\":1571" "core wasm affine resolve rotate rotation"
+
+    local code_affine_unsigned_max
+    code_affine_unsigned_max="$(_mfx_core_http_wasm_test_resolve_image_affine_http_code \
+        "$tmp_dir/wasm-affine-unsigned-max.out" \
+        "$base_url" \
+        "$token" \
+        '{"tint_rgba":4294967295,"delay_ms":4294967295,"life_ms":4294967295,"image_id":4294967295,"affine_anchor_mode":4294967295}')"
+    mfx_assert_eq "$code_affine_unsigned_max" "200" "core wasm affine resolve unsigned-max status"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-max.out" "\"ok\":true" "core wasm affine resolve unsigned-max ok"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-max.out" "\"resolved_tint_rgba_hex\":\"0xFFFFFFFF\"" "core wasm affine resolve unsigned-max tint"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-max.out" "\"resolved_delay_ms\":4294967295" "core wasm affine resolve unsigned-max delay"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-max.out" "\"resolved_life_ms\":4294967295" "core wasm affine resolve unsigned-max life"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-max.out" "\"resolved_image_id\":4294967295" "core wasm affine resolve unsigned-max image id"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-max.out" "\"resolved_affine_anchor_mode\":4294967295" "core wasm affine resolve unsigned-max anchor"
+
+    local code_affine_unsigned_negative
+    code_affine_unsigned_negative="$(_mfx_core_http_wasm_test_resolve_image_affine_http_code \
+        "$tmp_dir/wasm-affine-unsigned-negative.out" \
+        "$base_url" \
+        "$token" \
+        '{"tint_rgba":-1,"delay_ms":-1,"life_ms":-1,"image_id":-1,"affine_anchor_mode":-1}')"
+    mfx_assert_eq "$code_affine_unsigned_negative" "200" "core wasm affine resolve unsigned-negative status"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"ok\":true" "core wasm affine resolve unsigned-negative ok"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"resolved_tint_rgba_hex\":\"0x00000000\"" "core wasm affine resolve unsigned-negative tint"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"resolved_delay_ms\":0" "core wasm affine resolve unsigned-negative delay"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"resolved_life_ms\":0" "core wasm affine resolve unsigned-negative life"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"resolved_image_id\":0" "core wasm affine resolve unsigned-negative image id"
+    mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"resolved_affine_anchor_mode\":0" "core wasm affine resolve unsigned-negative anchor"
 }

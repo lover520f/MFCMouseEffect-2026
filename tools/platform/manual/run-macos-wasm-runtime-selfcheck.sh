@@ -358,6 +358,34 @@ mfx_assert_file_contains "$affine_rotate_file" "\"ok\":true" "selfcheck wasm aff
 mfx_assert_file_contains "$affine_rotate_file" "\"resolved_scale_milli\":1000" "selfcheck wasm affine resolve rotate scale"
 mfx_assert_file_contains "$affine_rotate_file" "\"resolved_rotation_millirad\":1571" "selfcheck wasm affine resolve rotate rotation"
 
+affine_unsigned_max_file="$tmp_dir/wasm-affine-unsigned-max.out"
+code_affine_unsigned_max="$(mfx_wasm_selfcheck_test_resolve_image_affine_http_code \
+    "$affine_unsigned_max_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    '{"tint_rgba":4294967295,"delay_ms":4294967295,"life_ms":4294967295,"image_id":4294967295,"affine_anchor_mode":4294967295}')"
+mfx_assert_eq "$code_affine_unsigned_max" "200" "selfcheck wasm affine resolve unsigned-max status"
+mfx_assert_file_contains "$affine_unsigned_max_file" "\"ok\":true" "selfcheck wasm affine resolve unsigned-max ok"
+mfx_assert_file_contains "$affine_unsigned_max_file" "\"resolved_tint_rgba_hex\":\"0xFFFFFFFF\"" "selfcheck wasm affine resolve unsigned-max tint"
+mfx_assert_file_contains "$affine_unsigned_max_file" "\"resolved_delay_ms\":4294967295" "selfcheck wasm affine resolve unsigned-max delay"
+mfx_assert_file_contains "$affine_unsigned_max_file" "\"resolved_life_ms\":4294967295" "selfcheck wasm affine resolve unsigned-max life"
+mfx_assert_file_contains "$affine_unsigned_max_file" "\"resolved_image_id\":4294967295" "selfcheck wasm affine resolve unsigned-max image id"
+mfx_assert_file_contains "$affine_unsigned_max_file" "\"resolved_affine_anchor_mode\":4294967295" "selfcheck wasm affine resolve unsigned-max anchor"
+
+affine_unsigned_negative_file="$tmp_dir/wasm-affine-unsigned-negative.out"
+code_affine_unsigned_negative="$(mfx_wasm_selfcheck_test_resolve_image_affine_http_code \
+    "$affine_unsigned_negative_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    '{"tint_rgba":-1,"delay_ms":-1,"life_ms":-1,"image_id":-1,"affine_anchor_mode":-1}')"
+mfx_assert_eq "$code_affine_unsigned_negative" "200" "selfcheck wasm affine resolve unsigned-negative status"
+mfx_assert_file_contains "$affine_unsigned_negative_file" "\"ok\":true" "selfcheck wasm affine resolve unsigned-negative ok"
+mfx_assert_file_contains "$affine_unsigned_negative_file" "\"resolved_tint_rgba_hex\":\"0x00000000\"" "selfcheck wasm affine resolve unsigned-negative tint"
+mfx_assert_file_contains "$affine_unsigned_negative_file" "\"resolved_delay_ms\":0" "selfcheck wasm affine resolve unsigned-negative delay"
+mfx_assert_file_contains "$affine_unsigned_negative_file" "\"resolved_life_ms\":0" "selfcheck wasm affine resolve unsigned-negative life"
+mfx_assert_file_contains "$affine_unsigned_negative_file" "\"resolved_image_id\":0" "selfcheck wasm affine resolve unsigned-negative image id"
+mfx_assert_file_contains "$affine_unsigned_negative_file" "\"resolved_affine_anchor_mode\":0" "selfcheck wasm affine resolve unsigned-negative anchor"
+
 invalid_manifest_path="${manifest_path}.missing"
 invalid_file="$tmp_dir/wasm-load-invalid.out"
 mfx_wasm_selfcheck_assert_load_manifest_failure \

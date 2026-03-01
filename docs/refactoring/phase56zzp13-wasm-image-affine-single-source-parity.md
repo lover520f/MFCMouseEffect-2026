@@ -41,10 +41,14 @@
   - `resolved_x_int`, `resolved_y_int`
   - `resolved_scale_milli`
   - `resolved_rotation_millirad`
+  - `resolved_tint_rgba_hex`, `resolved_delay_ms`, `resolved_life_ms`, `resolved_image_id`, `resolved_affine_anchor_mode`
 - Regression and manual selfcheck now assert three affine cases:
   - translate only (affine disabled)
   - scale matrix (affine enabled)
   - rotation matrix (affine enabled, 90deg)
+  - plus unsigned boundary semantics:
+    - `u32 max` passthrough (`4294967295`)
+    - negative input clamp to `0`
 
 6. Hardened affine test-route payload typing:
 - `WebSettingsServer.TestWasmInputApiRoutes.cpp` now parses unsigned fields via `ParseUInt32OrDefault(...)` instead of signed helper + cast.

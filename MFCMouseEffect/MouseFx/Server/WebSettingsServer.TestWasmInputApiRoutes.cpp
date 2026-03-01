@@ -2,6 +2,7 @@
 #include "WebSettingsServer.TestWasmInputApiRoutes.h"
 
 #include <cmath>
+#include <cstdio>
 #include <string>
 #include <vector>
 
@@ -34,6 +35,12 @@ bool IsInputIndicatorTestApiEnabled() {
 
 bool IsWasmTestDispatchApiEnabled() {
     return IsEnabledByEnv("MFX_ENABLE_WASM_TEST_DISPATCH_API");
+}
+
+std::string FormatU32Hex(uint32_t value) {
+    char buffer[11] = {};
+    std::snprintf(buffer, sizeof(buffer), "0x%08X", value);
+    return std::string(buffer);
 }
 
 } // namespace
@@ -211,11 +218,17 @@ bool HandleWebSettingsTestWasmInputApiRoute(
         SetJsonResponse(resp, json({
             {"ok", true},
             {"affine_enabled", cmd.affineEnabled != 0u},
+            {"input_tint_rgba_hex", FormatU32Hex(cmd.base.tintRgba)},
+            {"resolved_tint_rgba_hex", FormatU32Hex(resolved.tintRgba)},
             {"resolved_x", resolved.x},
             {"resolved_y", resolved.y},
             {"resolved_scale", resolved.scale},
             {"resolved_rotation", resolved.rotation},
             {"resolved_alpha", resolved.alpha},
+            {"resolved_delay_ms", resolved.delayMs},
+            {"resolved_life_ms", resolved.lifeMs},
+            {"resolved_image_id", resolved.imageId},
+            {"resolved_affine_anchor_mode", cmd.affineAnchorMode},
             {"resolved_x_int", static_cast<int32_t>(std::lround(resolved.x))},
             {"resolved_y_int", static_cast<int32_t>(std::lround(resolved.y))},
             {"resolved_scale_milli", static_cast<int32_t>(std::lround(resolved.scale * 1000.0f))},
