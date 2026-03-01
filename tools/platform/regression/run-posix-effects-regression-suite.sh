@@ -12,5 +12,4 @@ mfx_reject_option_in_args \
 
 exec "$SCRIPT_DIR/run-posix-regression-suite.sh" \
     --core-automation-check-scope effects \
-    --skip-macos-wasm-selfcheck \
     "$@"

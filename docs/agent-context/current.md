@@ -30,6 +30,8 @@
   - VM suppression diagnostics/state exposure is present.
 
 ## Build and Regression Gates
+- POSIX effects suite (core automation scope fixed to `effects`, now includes macOS WASM selfcheck by default):
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-posix-effects-regression-suite.sh --platform auto`
 - POSIX scaffold regression:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-posix-scaffold-regression.sh --platform auto`
 - POSIX core effects contract:

@@ -7,6 +7,14 @@ Run this as the default POSIX regression entry:
 ./tools/platform/regression/run-posix-regression-suite.sh --platform auto
 ```
 
+Effects-focused wrapper (same suite, fixed automation scope = `effects`):
+
+```bash
+./tools/platform/regression/run-posix-effects-regression-suite.sh --platform auto
+```
+
+Note: this wrapper now keeps macOS WASM runtime selfcheck enabled by default.
+
 ## What It Runs
 1. Scaffold regression:
    - `run-posix-scaffold-regression.sh`
