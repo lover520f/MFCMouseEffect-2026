@@ -10,16 +10,20 @@ Usage:
   ./mfx <command> [options]
 
 Commands:
-  start [--minutes N]
+  run [--minutes N]
       Build + run macOS core host and print settings URL.
       Default auto stop: 30 minutes.
 
-  fast [--minutes N]
+  run-no-build [--minutes N]
       Run macOS core host without rebuilding.
       Default auto stop: 30 minutes.
 
   effects [--skip-build]
       Run macOS effects type parity selfcheck.
+
+Compatibility aliases:
+  start -> run
+  fast  -> run-no-build
 
   help
       Show this help.
@@ -47,7 +51,7 @@ run_start() {
             shift 2
             ;;
         *)
-            echo "unknown option for start/fast: $1" >&2
+            echo "unknown option for run/run-no-build: $1" >&2
             exit 2
             ;;
         esac
@@ -76,6 +80,14 @@ fi
 
 command="$1"
 case "$command" in
+run)
+    shift
+    run_start 0 "$@"
+    ;;
+run-no-build)
+    shift
+    run_start 1 "$@"
+    ;;
 start)
     shift
     run_start 0 "$@"

@@ -85,13 +85,17 @@
 ### macOS（日常开发快捷入口）
 ```bash
 # 编译 + 启动 core host（默认 30 分钟自动退出）
-./mfx start
+./mfx run
 
 # 直接启动（跳过编译）
-./mfx fast
+./mfx run-no-build
 
 # 特效类型等价自检
 ./mfx effects
+
+# 兼容旧命令（仍可用）
+./mfx start
+./mfx fast
 ```
 
 ## 回归与自检入口

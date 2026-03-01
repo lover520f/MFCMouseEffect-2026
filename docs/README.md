@@ -46,9 +46,12 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/issue
 
 ## macOS Local Commands
 ```bash
+./mfx run
+./mfx run-no-build
+./mfx effects
+# backward-compatible aliases
 ./mfx start
 ./mfx fast
-./mfx effects
 ./tools/platform/manual/run-macos-core-websettings-manual.sh --auto-stop-seconds 60
 ./tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build
 ./tools/platform/manual/run-macos-effects-type-parity-selfcheck.sh --skip-build
