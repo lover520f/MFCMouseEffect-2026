@@ -2,11 +2,23 @@
 #include "SettingsSchemaBuilder.CapabilitiesSections.h"
 
 #include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Core/Wasm/WasmCommandRenderer.h"
 #include "Platform/PlatformTarget.h"
 
 using json = nlohmann::json;
 
 namespace mousefx {
+namespace {
+
+bool IsWasmRenderSupportedOnCurrentPlatform() {
+    static const bool supported = [] {
+        auto renderer = wasm::CreatePlatformWasmCommandRenderer();
+        return renderer && renderer->SupportsRendering();
+    }();
+    return supported;
+}
+
+} // namespace
 
 void AppendSettingsSchemaCapabilitiesSections(const EffectConfig& /*config*/, json* out) {
     if (!out) {
@@ -109,7 +121,12 @@ void AppendSettingsSchemaCapabilitiesSections(const EffectConfig& /*config*/, js
             "scroll_active_overlay_windows",
             "hold_active_overlay_windows",
             "hover_active_overlay_windows",
-            "active_overlay_windows_total"
+            "active_overlay_windows_total",
+            "line_trail_active",
+            "line_trail_point_count",
+            "trail_move_samples",
+            "trail_origin_connector_drop_count",
+            "trail_teleport_drop_count"
         })}
     };
 
@@ -139,7 +156,7 @@ void AppendSettingsSchemaCapabilitiesSections(const EffectConfig& /*config*/, js
         }},
         {"wasm", {
             {"invoke", (MFX_PLATFORM_WINDOWS || MFX_PLATFORM_MACOS) ? true : false},
-            {"render", MFX_PLATFORM_WINDOWS ? true : false}
+            {"render", IsWasmRenderSupportedOnCurrentPlatform()}
         }}
     };
 }
