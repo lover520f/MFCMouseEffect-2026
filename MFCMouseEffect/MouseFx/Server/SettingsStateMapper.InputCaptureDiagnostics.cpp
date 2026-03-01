@@ -58,12 +58,13 @@ json BuildInputCaptureState(const AppController* controller, const std::string& 
         if (zh) {
             notice["message"] =
                 "全局输入采集已降级：未授予 macOS 权限。请在“系统设置 > 隐私与安全性”中为 "
-                "MFCMouseEffect 同时开启“辅助功能”和“输入监控”，然后重启应用。";
+                "MFCMouseEffect 同时开启“辅助功能”和“输入监控”。权限恢复后应用会自动恢复，无需重启。";
         } else {
             notice["message"] =
                 "Global input capture is degraded: macOS permissions are missing. "
                 "Grant both Accessibility and Input Monitoring to MFCMouseEffect in "
-                "System Settings > Privacy & Security, then restart the app.";
+                "System Settings > Privacy & Security. The app recovers automatically after "
+                "permissions are restored; restart is not required.";
         }
         break;
     case AppController::InputCaptureFailureReason::Unsupported:

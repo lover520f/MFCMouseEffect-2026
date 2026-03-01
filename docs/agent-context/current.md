@@ -6,6 +6,7 @@
 - Constraints: no Windows regression; Linux follows compile + contract coverage.
 
 ## Latest Delta (2026-03-01)
+- Input-capture degraded notice copy is now behavior-consistent on macOS: permission-missing guidance no longer says "restart app"; it explicitly states automatic hot-recovery after permissions are restored.
 - POSIX regression suite now gates macOS VM foreground suppression selfcheck as a first-class phase (`run-macos-vm-foreground-suppression-selfcheck.sh --skip-build`) with explicit CLI skip flag `--skip-macos-vm-suppression-selfcheck`; wasm-focused suite defaults to skipping this phase.
 - macOS VM foreground suppression now supports deterministic test override via env (`MFX_VM_FOREGROUND_SUPPRESSION_FORCE=true|false`), suppression state is exposed at `/api/state.input_capture.effects_suspended_vm`, and suppression refresh now also runs on health timer ticks (no mouse input required for state convergence).
 - POSIX regression suite now includes macOS automation app-scope alias selfcheck as a first-class phase (`run-macos-automation-app-scope-selfcheck.sh --skip-build`), with explicit CLI skip flag `--skip-macos-automation-app-scope-selfcheck`; wasm-focused suite defaults to skipping this phase to keep wasm-only lane scoped.

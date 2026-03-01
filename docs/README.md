@@ -23,6 +23,7 @@ Use it as a pointer index, not a full historical catalog.
 - POSIX Linux compile gate workflow: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-linux-compile-gate-workflow.md`
 
 ## Recent Issue Docs
+- macOS input permission degraded notice restart-copy correction: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp9-macos-input-permission-degraded-notice-hot-recovery-copy.md`
 - POSIX suite macOS VM suppression selfcheck gate: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp8-posix-suite-macos-vm-suppression-selfcheck-gate.md`
 - macOS VM suppression force-override + state observability: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp7-macos-vm-suppression-force-and-state-observability.md`
 - POSIX suite macOS automation app-scope selfcheck gate: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp6-posix-suite-macos-automation-app-scope-selfcheck-gate.md`
