@@ -5,6 +5,7 @@
 #include "MouseFx/Core/Diagnostics/TextEffectRuntimeDiagnostics.h"
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/StringUtils.h"
+#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "Platform/macos/Effects/MacosTextEffectFallbackSwiftBridge.h"
 #include "Platform/macos/Overlay/MacosOverlayCoordSpaceConversion.h"
 #include "Settings/EmojiUtils.h"
@@ -22,7 +23,6 @@
 
 #if defined(__APPLE__)
 #import <dispatch/dispatch.h>
-#include <pthread.h>
 #endif
 
 namespace mousefx {
@@ -72,24 +72,6 @@ uint64_t MonotonicNowMs() {
     const auto now = std::chrono::steady_clock::now().time_since_epoch();
     return static_cast<uint64_t>(
         std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
-}
-
-void RunOnMainThreadAsync(dispatch_block_t block) {
-    if (block == nullptr) {
-        return;
-    }
-    dispatch_async(dispatch_get_main_queue(), block);
-}
-
-void RunOnMainThreadSync(dispatch_block_t block) {
-    if (block == nullptr) {
-        return;
-    }
-    if (pthread_main_np() != 0) {
-        block();
-        return;
-    }
-    dispatch_sync(dispatch_get_main_queue(), block);
 }
 
 double Clamp01(double value) {
@@ -266,7 +248,7 @@ void MacosTextEffectFallback::Shutdown() {
     return;
 #else
     AnimationGeneration().fetch_add(1, std::memory_order_acq_rel);
-    RunOnMainThreadSync(^{
+    macos_overlay_support::RunOnMainThreadSync(^{
       std::vector<void*> toClose;
       {
           std::lock_guard<std::mutex> lock(ActivePanelsMutex());
@@ -339,7 +321,7 @@ void MacosTextEffectFallback::ShowText(
     spec.emojiText = settings::HasEmojiStarter(text);
 
     const size_t cap = maxConcurrentWindows_;
-    RunOnMainThreadAsync(^{
+    macos_overlay_support::RunOnMainThreadAsync(^{
       const double panelSize = ResolvePanelSize(spec.baseFontSize);
       const char* fontFamilyUtf8 = spec.fontFamilyUtf8.empty() ? "" : spec.fontFamilyUtf8.c_str();
       void* panelHandle = mfx_macos_text_panel_create_v1(

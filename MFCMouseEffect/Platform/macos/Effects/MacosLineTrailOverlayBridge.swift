@@ -2,6 +2,37 @@
 @preconcurrency import QuartzCore
 @preconcurrency import Foundation
 
+@_silgen_name("mfx_macos_overlay_create_window_v1")
+private func mfxOverlayCreateWindow(
+    _ x: Double,
+    _ y: Double,
+    _ width: Double,
+    _ height: Double
+) -> UnsafeMutableRawPointer?
+
+@_silgen_name("mfx_macos_overlay_release_window_v1")
+private func mfxOverlayReleaseWindow(_ windowHandle: UnsafeMutableRawPointer?)
+
+@_silgen_name("mfx_macos_overlay_show_window_v1")
+private func mfxOverlayShowWindow(_ windowHandle: UnsafeMutableRawPointer?)
+
+@_silgen_name("mfx_macos_overlay_resolve_screen_frame_v1")
+private func mfxOverlayResolveScreenFrame(
+    _ x: Int32,
+    _ y: Int32,
+    _ outX: UnsafeMutablePointer<Double>?,
+    _ outY: UnsafeMutablePointer<Double>?,
+    _ outWidth: UnsafeMutablePointer<Double>?,
+    _ outHeight: UnsafeMutablePointer<Double>?
+) -> Int32
+
+@_silgen_name("mfx_macos_overlay_apply_content_scale_v1")
+private func mfxOverlayApplyContentScale(
+    _ contentHandle: UnsafeMutableRawPointer?,
+    _ x: Int32,
+    _ y: Int32
+)
+
 @MainActor
 private final class MfxLineTrailState: NSObject {
     private struct Point {
@@ -18,6 +49,7 @@ private final class MfxLineTrailState: NSObject {
         var idleFadeEndMs: Int = 220
     }
 
+    private var windowHandle: UnsafeMutableRawPointer?
     private var window: NSWindow?
     private var containerLayer: CALayer?
     private var windowOriginX: Int32 = 0
@@ -44,42 +76,22 @@ private final class MfxLineTrailState: NSObject {
     }
 
     private static func resolveScreenFrame(forX x: Int32, y: Int32) -> NSRect? {
-        let screens = NSScreen.screens
-        if screens.isEmpty {
+        var originX = 0.0
+        var originY = 0.0
+        var width = 0.0
+        var height = 0.0
+        let ok = mfxOverlayResolveScreenFrame(
+            x,
+            y,
+            &originX,
+            &originY,
+            &width,
+            &height
+        )
+        if ok == 0 || width <= 0.0 || height <= 0.0 {
             return nil
         }
-
-        let point = NSPoint(x: CGFloat(x), y: CGFloat(y))
-        for screen in screens where screen.frame.contains(point) {
-            let frame = screen.frame
-            if frame.width > 0.0 && frame.height > 0.0 {
-                return frame
-            }
-            return nil
-        }
-
-        if let fallback = NSScreen.main ?? screens.first {
-            let frame = fallback.frame
-            if frame.width > 0.0 && frame.height > 0.0 {
-                return frame
-            }
-        }
-        return nil
-    }
-
-    private static func resolveScreenScale(forX x: Int32, y: Int32) -> CGFloat {
-        let screens = NSScreen.screens
-        if screens.isEmpty {
-            return 1.0
-        }
-        let point = NSPoint(x: CGFloat(x), y: CGFloat(y))
-        for screen in screens where screen.frame.contains(point) {
-            return max(1.0, min(4.0, screen.backingScaleFactor))
-        }
-        if let fallback = NSScreen.main ?? screens.first {
-            return max(1.0, min(4.0, fallback.backingScaleFactor))
-        }
-        return 1.0
+        return NSRect(x: originX, y: originY, width: width, height: height)
     }
 
     private static func idleFadeFactor(nowMs: UInt64, lastPointMs: UInt64, startMs: Int, endMs: Int) -> Double {
@@ -105,10 +117,11 @@ private final class MfxLineTrailState: NSObject {
     }
 
     private func closeWindow() {
-        guard let window else {
+        guard let windowHandle else {
             return
         }
-        window.orderOut(nil)
+        mfxOverlayReleaseWindow(windowHandle)
+        self.windowHandle = nil
         self.window = nil
         self.containerLayer = nil
         self.windowWidth = 0.0
@@ -149,38 +162,39 @@ private final class MfxLineTrailState: NSObject {
 
         closeWindow()
 
-        let newWindow = NSWindow(
-            contentRect: frame,
-            styleMask: .borderless,
-            backing: .buffered,
-            defer: false
-        )
-        newWindow.isOpaque = false
-        newWindow.backgroundColor = .clear
-        newWindow.hasShadow = false
-        newWindow.ignoresMouseEvents = true
-        newWindow.level = .statusBar
-        newWindow.collectionBehavior = [.canJoinAllSpaces, .transient]
+        guard let newWindowHandle = mfxOverlayCreateWindow(
+            Double(frame.origin.x),
+            Double(frame.origin.y),
+            Double(frame.size.width),
+            Double(frame.size.height)
+        ) else {
+            return false
+        }
+
+        let newWindow = Unmanaged<NSWindow>.fromOpaque(newWindowHandle).takeUnretainedValue()
 
         guard let content = newWindow.contentView else {
+            mfxOverlayReleaseWindow(newWindowHandle)
             return false
         }
         content.wantsLayer = true
-        let scale = Self.resolveScreenScale(forX: x, y: y)
-        content.layer?.contentsScale = scale
+        let contentHandle = Unmanaged.passUnretained(content).toOpaque()
+        mfxOverlayApplyContentScale(contentHandle, x, y)
+        let scale = max(CGFloat(1.0), newWindow.backingScaleFactor)
 
         let container = CALayer()
         container.frame = content.bounds
         container.contentsScale = scale
         content.layer?.addSublayer(container)
 
+        windowHandle = newWindowHandle
         window = newWindow
         containerLayer = container
         windowOriginX = Int32(frame.origin.x.rounded())
         windowOriginY = Int32(frame.origin.y.rounded())
         windowWidth = frame.size.width
         windowHeight = frame.size.height
-        newWindow.orderFrontRegardless()
+        mfxOverlayShowWindow(newWindowHandle)
         return true
     }
 
