@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "Platform/macos/Effects/MacosTrailPulseWindowRegistry.h"
-#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
+#include "Platform/macos/Effects/MacosOverlayRenderSupportSwiftBridge.h"
 
 #include <mutex>
 #include <unordered_set>
@@ -66,7 +66,7 @@ void CloseAllTrailPulseWindowsNow() {
         windows.swap(TrailWindows());
     }
     for (void* handle : windows) {
-        macos_overlay_support::ReleaseOverlayWindow(handle);
+        mfx_macos_overlay_release_window_v1(handle);
     }
 #endif
 }

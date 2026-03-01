@@ -27,6 +27,7 @@
 - macOS 拖尾 `streamer/line` 回归修复：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/issues/macos-trail-streamer-line-regression-fix.md`
 - macOS LineTrail Swift bridge 收口：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zb-macos-line-trail-swift-bridge-cutover.md`
 - macOS 特效 Swift bridge 路径去重：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zc-macos-effects-swift-bridge-path-dedup.md`
+- macOS 窗口注册表去 ObjC++ 依赖：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zd-macos-window-registry-objcxx-detach.md`
 
 ## 当前 macOS 主线（Phase 50-55）
 - 双车道护栏：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase50-posix-core-runtime-dual-lane-guardrails.md`
