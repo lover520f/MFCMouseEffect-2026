@@ -102,4 +102,39 @@ _mfx_core_http_wasm_contract_dispatch_checks() {
     mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"resolved_life_ms\":0" "core wasm affine resolve unsigned-negative life"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"resolved_image_id\":0" "core wasm affine resolve unsigned-negative image id"
     mfx_assert_file_contains "$tmp_dir/wasm-affine-unsigned-negative.out" "\"resolved_affine_anchor_mode\":0" "core wasm affine resolve unsigned-negative anchor"
+
+    local code_text_cfg_motion
+    code_text_cfg_motion="$(_mfx_core_http_wasm_test_resolve_text_config_http_code \
+        "$tmp_dir/wasm-text-config-motion.out" \
+        "$base_url" \
+        "$token" \
+        '{"base_duration_ms":333,"base_float_distance_px":40,"base_font_size_px":20,"life_ms":1200,"vy":-300,"ay":100,"scale":1.0,"color_rgba":4294901760}')"
+    mfx_assert_eq "$code_text_cfg_motion" "200" "core wasm text config motion status"
+    mfx_assert_file_contains "$tmp_dir/wasm-text-config-motion.out" "\"ok\":true" "core wasm text config motion ok"
+    mfx_assert_file_contains "$tmp_dir/wasm-text-config-motion.out" "\"resolved_duration_ms\":1200" "core wasm text config motion duration"
+    mfx_assert_file_contains "$tmp_dir/wasm-text-config-motion.out" "\"resolved_float_distance_px\":288" "core wasm text config motion float distance"
+    mfx_assert_file_contains "$tmp_dir/wasm-text-config-motion.out" "\"resolved_font_size_px_milli\":20000" "core wasm text config motion font size"
+    mfx_assert_file_contains "$tmp_dir/wasm-text-config-motion.out" "\"resolved_color_rgba_hex\":\"0xFFFF0000\"" "core wasm text config motion color"
+
+    local code_text_cfg_clamp
+    code_text_cfg_clamp="$(_mfx_core_http_wasm_test_resolve_text_config_http_code \
+        "$tmp_dir/wasm-text-config-clamp.out" \
+        "$base_url" \
+        "$token" \
+        '{"base_duration_ms":250,"base_float_distance_px":20,"base_font_size_px":18,"life_ms":1,"vy":0,"ay":0,"scale":100}')"
+    mfx_assert_eq "$code_text_cfg_clamp" "200" "core wasm text config clamp status"
+    mfx_assert_file_contains "$tmp_dir/wasm-text-config-clamp.out" "\"ok\":true" "core wasm text config clamp ok"
+    mfx_assert_file_contains "$tmp_dir/wasm-text-config-clamp.out" "\"resolved_duration_ms\":80" "core wasm text config clamp duration"
+    mfx_assert_file_contains "$tmp_dir/wasm-text-config-clamp.out" "\"resolved_float_distance_px\":16" "core wasm text config clamp float distance"
+    mfx_assert_file_contains "$tmp_dir/wasm-text-config-clamp.out" "\"resolved_font_size_px_milli\":90000" "core wasm text config clamp font size"
+
+    local code_text_cfg_negative_scale
+    code_text_cfg_negative_scale="$(_mfx_core_http_wasm_test_resolve_text_config_http_code \
+        "$tmp_dir/wasm-text-config-negative-scale.out" \
+        "$base_url" \
+        "$token" \
+        '{"base_duration_ms":500,"base_float_distance_px":32,"base_font_size_px":24,"life_ms":500,"scale":-1}')"
+    mfx_assert_eq "$code_text_cfg_negative_scale" "200" "core wasm text config negative-scale status"
+    mfx_assert_file_contains "$tmp_dir/wasm-text-config-negative-scale.out" "\"ok\":true" "core wasm text config negative-scale ok"
+    mfx_assert_file_contains "$tmp_dir/wasm-text-config-negative-scale.out" "\"resolved_font_size_px_milli\":24000" "core wasm text config negative-scale font unchanged"
 }

@@ -113,6 +113,18 @@ _mfx_core_http_wasm_test_resolve_image_affine_http_code() {
         -d "$payload_json"
 }
 
+_mfx_core_http_wasm_test_resolve_text_config_http_code() {
+    local output_file="$1"
+    local base_url="$2"
+    local token="$3"
+    local payload_json="$4"
+    mfx_http_code "$output_file" "$base_url/api/wasm/test-resolve-text-config" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d "$payload_json"
+}
+
 _mfx_core_http_wasm_test_reset_runtime_http_code() {
     local output_file="$1"
     local base_url="$2"

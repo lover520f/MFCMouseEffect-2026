@@ -386,6 +386,41 @@ mfx_assert_file_contains "$affine_unsigned_negative_file" "\"resolved_life_ms\":
 mfx_assert_file_contains "$affine_unsigned_negative_file" "\"resolved_image_id\":0" "selfcheck wasm affine resolve unsigned-negative image id"
 mfx_assert_file_contains "$affine_unsigned_negative_file" "\"resolved_affine_anchor_mode\":0" "selfcheck wasm affine resolve unsigned-negative anchor"
 
+text_cfg_motion_file="$tmp_dir/wasm-text-config-motion.out"
+code_text_cfg_motion="$(mfx_wasm_selfcheck_test_resolve_text_config_http_code \
+    "$text_cfg_motion_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    '{"base_duration_ms":333,"base_float_distance_px":40,"base_font_size_px":20,"life_ms":1200,"vy":-300,"ay":100,"scale":1.0,"color_rgba":4294901760}')"
+mfx_assert_eq "$code_text_cfg_motion" "200" "selfcheck wasm text config motion status"
+mfx_assert_file_contains "$text_cfg_motion_file" "\"ok\":true" "selfcheck wasm text config motion ok"
+mfx_assert_file_contains "$text_cfg_motion_file" "\"resolved_duration_ms\":1200" "selfcheck wasm text config motion duration"
+mfx_assert_file_contains "$text_cfg_motion_file" "\"resolved_float_distance_px\":288" "selfcheck wasm text config motion float distance"
+mfx_assert_file_contains "$text_cfg_motion_file" "\"resolved_font_size_px_milli\":20000" "selfcheck wasm text config motion font size"
+mfx_assert_file_contains "$text_cfg_motion_file" "\"resolved_color_rgba_hex\":\"0xFFFF0000\"" "selfcheck wasm text config motion color"
+
+text_cfg_clamp_file="$tmp_dir/wasm-text-config-clamp.out"
+code_text_cfg_clamp="$(mfx_wasm_selfcheck_test_resolve_text_config_http_code \
+    "$text_cfg_clamp_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    '{"base_duration_ms":250,"base_float_distance_px":20,"base_font_size_px":18,"life_ms":1,"vy":0,"ay":0,"scale":100}')"
+mfx_assert_eq "$code_text_cfg_clamp" "200" "selfcheck wasm text config clamp status"
+mfx_assert_file_contains "$text_cfg_clamp_file" "\"ok\":true" "selfcheck wasm text config clamp ok"
+mfx_assert_file_contains "$text_cfg_clamp_file" "\"resolved_duration_ms\":80" "selfcheck wasm text config clamp duration"
+mfx_assert_file_contains "$text_cfg_clamp_file" "\"resolved_float_distance_px\":16" "selfcheck wasm text config clamp float distance"
+mfx_assert_file_contains "$text_cfg_clamp_file" "\"resolved_font_size_px_milli\":90000" "selfcheck wasm text config clamp font size"
+
+text_cfg_negative_scale_file="$tmp_dir/wasm-text-config-negative-scale.out"
+code_text_cfg_negative_scale="$(mfx_wasm_selfcheck_test_resolve_text_config_http_code \
+    "$text_cfg_negative_scale_file" \
+    "$MFX_MANUAL_BASE_URL" \
+    "$token" \
+    '{"base_duration_ms":500,"base_float_distance_px":32,"base_font_size_px":24,"life_ms":500,"scale":-1}')"
+mfx_assert_eq "$code_text_cfg_negative_scale" "200" "selfcheck wasm text config negative-scale status"
+mfx_assert_file_contains "$text_cfg_negative_scale_file" "\"ok\":true" "selfcheck wasm text config negative-scale ok"
+mfx_assert_file_contains "$text_cfg_negative_scale_file" "\"resolved_font_size_px_milli\":24000" "selfcheck wasm text config negative-scale font unchanged"
+
 invalid_manifest_path="${manifest_path}.missing"
 invalid_file="$tmp_dir/wasm-load-invalid.out"
 mfx_wasm_selfcheck_assert_load_manifest_failure \

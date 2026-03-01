@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "WebSettingsServer.TestWasmInputApiRoutes.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <iterator>
 #include <string>
 #include <vector>
 
@@ -11,8 +13,10 @@
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Core/Wasm/WasmEventInvokeExecutor.h"
 #include "MouseFx/Core/Wasm/WasmPluginAbi.h"
+#include "MouseFx/Core/Wasm/WasmTextCommandConfig.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/WebSettingsServer.TestRouteCommon.h"
+#include "MouseFx/Utils/StringUtils.h"
 
 using json = nlohmann::json;
 
@@ -41,6 +45,27 @@ std::string FormatU32Hex(uint32_t value) {
     char buffer[11] = {};
     std::snprintf(buffer, sizeof(buffer), "0x%08X", value);
     return std::string(buffer);
+}
+
+std::wstring ResolveTextByIdForTest(const EffectConfig& config, uint32_t textId) {
+    if (!config.textClick.texts.empty()) {
+        const size_t index = static_cast<size_t>(textId % static_cast<uint32_t>(config.textClick.texts.size()));
+        return config.textClick.texts[index];
+    }
+    static const std::wstring kFallbackTexts[] = {L"WASM", L"MouseFx", L"Click"};
+    const size_t index = static_cast<size_t>(textId % static_cast<uint32_t>(std::size(kFallbackTexts)));
+    return kFallbackTexts[index];
+}
+
+uint32_t ResolveTextColorArgbForTest(const EffectConfig& config, uint32_t textId, uint32_t commandColorArgb) {
+    if (((commandColorArgb >> 24) & 0xFFu) != 0u) {
+        return commandColorArgb;
+    }
+    if (!config.textClick.colors.empty()) {
+        const size_t index = static_cast<size_t>(textId % static_cast<uint32_t>(config.textClick.colors.size()));
+        return config.textClick.colors[index].value;
+    }
+    return 0xFFFFFFFFu;
 }
 
 } // namespace
@@ -233,6 +258,67 @@ bool HandleWebSettingsTestWasmInputApiRoute(
             {"resolved_y_int", static_cast<int32_t>(std::lround(resolved.y))},
             {"resolved_scale_milli", static_cast<int32_t>(std::lround(resolved.scale * 1000.0f))},
             {"resolved_rotation_millirad", static_cast<int32_t>(std::lround(resolved.rotation * 1000.0f))}
+        }).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/test-resolve-text-config") {
+        if (!IsWasmTestDispatchApiEnabled()) {
+            SetPlainResponse(resp, 404, "not found");
+            return true;
+        }
+        if (!controller) {
+            SetJsonResponse(resp, json({
+                {"ok", false},
+                {"error", "no controller"},
+            }).dump());
+            return true;
+        }
+
+        const json payload = ParseObjectOrEmpty(req.body);
+        mousefx::wasm::SpawnTextCommandV1 cmd{};
+        cmd.x = ParseFloatOrDefault(payload, "x", 0.0f);
+        cmd.y = ParseFloatOrDefault(payload, "y", 0.0f);
+        cmd.vx = ParseFloatOrDefault(payload, "vx", 0.0f);
+        cmd.vy = ParseFloatOrDefault(payload, "vy", 0.0f);
+        cmd.ax = ParseFloatOrDefault(payload, "ax", 0.0f);
+        cmd.ay = ParseFloatOrDefault(payload, "ay", 0.0f);
+        cmd.scale = ParseFloatOrDefault(payload, "scale", 1.0f);
+        cmd.textId = ParseUInt32OrDefault(payload, "text_id", 0u);
+        cmd.colorRgba = ParseUInt32OrDefault(payload, "color_rgba", 0u);
+        cmd.lifeMs = ParseUInt32OrDefault(payload, "life_ms", 0u);
+
+        TextConfig baseConfig = controller->Config().textClick;
+        if (payload.contains("base_duration_ms") && payload["base_duration_ms"].is_number_integer()) {
+            baseConfig.durationMs = std::clamp(ParseInt32OrDefault(payload, "base_duration_ms", baseConfig.durationMs), 1, 10000);
+        }
+        if (payload.contains("base_float_distance_px") && payload["base_float_distance_px"].is_number_integer()) {
+            baseConfig.floatDistance = std::clamp(ParseInt32OrDefault(payload, "base_float_distance_px", baseConfig.floatDistance), 0, 1000);
+        }
+        if (payload.contains("base_font_size_px") && payload["base_font_size_px"].is_number()) {
+            const float parsed = ParseFloatOrDefault(payload, "base_font_size_px", baseConfig.fontSize);
+            baseConfig.fontSize = std::clamp(parsed, 1.0f, 180.0f);
+        }
+
+        const TextConfig resolved = mousefx::wasm::BuildSpawnTextConfig(baseConfig, cmd);
+        const std::wstring resolvedText = ResolveTextByIdForTest(controller->Config(), cmd.textId);
+        const uint32_t resolvedColorArgb = ResolveTextColorArgbForTest(controller->Config(), cmd.textId, cmd.colorRgba);
+
+        SetJsonResponse(resp, json({
+            {"ok", true},
+            {"input_scale", cmd.scale},
+            {"input_vy", cmd.vy},
+            {"input_ay", cmd.ay},
+            {"input_life_ms", cmd.lifeMs},
+            {"input_color_rgba_hex", FormatU32Hex(cmd.colorRgba)},
+            {"base_duration_ms", baseConfig.durationMs},
+            {"base_float_distance_px", baseConfig.floatDistance},
+            {"base_font_size_px_milli", static_cast<int32_t>(std::lround(baseConfig.fontSize * 1000.0f))},
+            {"resolved_duration_ms", resolved.durationMs},
+            {"resolved_float_distance_px", resolved.floatDistance},
+            {"resolved_font_size_px_milli", static_cast<int32_t>(std::lround(resolved.fontSize * 1000.0f))},
+            {"resolved_text_utf8", Utf16ToUtf8(resolvedText.c_str())},
+            {"resolved_color_rgba_hex", FormatU32Hex(resolvedColorArgb)}
         }).dump());
         return true;
     }
