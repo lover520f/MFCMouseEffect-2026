@@ -86,4 +86,4 @@ renderer 专属参数（可选）：
 - Profile 查询：`MFCMouseEffect/MouseFx/Core/EffectConfig.h`
 - TrailEffect 注入 profile：`MFCMouseEffect/MouseFx/Core/EffectFactory.cpp`
 - 热重载命令：`MFCMouseEffect/MouseFx/Core/AppController.cpp`
-- 托盘菜单入口：`MFCMouseEffect/UI/Tray/TrayMenuBuilder.cpp`
+- 托盘菜单入口：`MFCMouseEffect/Platform/windows/Shell/Tray/Win32TrayMenuBuilder.cpp`

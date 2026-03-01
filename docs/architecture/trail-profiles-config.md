@@ -86,4 +86,4 @@ Send:
 - Profile lookup: `MFCMouseEffect/MouseFx/Core/EffectConfig.h`
 - Apply profiles to trail effect: `MFCMouseEffect/MouseFx/Core/EffectFactory.cpp`
 - Reload command: `MFCMouseEffect/MouseFx/Core/AppController.cpp`
-- Tray entry: `MFCMouseEffect/UI/Tray/TrayMenuBuilder.cpp`
+- Tray entry: `MFCMouseEffect/Platform/windows/Shell/Tray/Win32TrayMenuBuilder.cpp`
