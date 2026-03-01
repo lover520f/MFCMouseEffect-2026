@@ -61,25 +61,20 @@
 - Windows behavior semantics must remain unchanged when touching shared/core paths.
 
 ## Docs Governance State
-- Top-level docs were compacted to reduce token load:
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/README.md`
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/README.zh-CN.md`
-- Large non-indexed historical issue bundles were removed.
-- Remaining unreferenced issue docs were pruned; `docs/issues` now keeps only actively referenced entries.
-- Unreferenced refactoring history docs were also pruned by reachability; `docs/refactoring` keeps the linked active subset plus roadmap snapshot.
-- Unreferenced architecture docs (`dawn-native-effects-route`, `mousefx-folder-structure*`, `trail-effects-differentiation*`, `web-settings-ui*`) were pruned; architecture layer now keeps only linked workflow/contracts docs.
-- Unreferenced root-level docs (`input_indicator_refactor`, `installer_guide`, `macos-text-click-effect-rendering-fix`, `multi-monitor-positioning`, `singleton_implementation`) were removed as historical records with outdated paths/contracts.
-- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md` was rewritten into a compact execution snapshot (removed long historical step logs) to keep first-read token cost low.
-- Removed unreferenced non-engineering docs in `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/install` and `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/marketing`; retained `trail-profiles-config*` as an active configuration contract and re-linked it in top-level indexes.
-- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/custom-effects-wasm-route.md` and `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/custom-effects-wasm-route.zh-CN.md` were compacted into architecture-contract summaries; low-value phase narrative was removed in favor of targeted issue docs.
-- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-core-automation-contract-workflow.md` was compacted to a contract-oriented checklist (coverage groups + gate flags + ownership boundaries), removing verbose endpoint-by-endpoint prose.
-- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-template-quickstart.md` and `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-template-quickstart.zh-CN.md` were reduced to minimal operator-oriented guidance (build/place/load/ABI/troubleshooting).
-- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-troubleshooting.md` and `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-troubleshooting.zh-CN.md` were compacted into symptom-driven checklists to reduce duplicate explanation text.
-- Current docs focus is now:
-  - `P0`: `AGENTS.md`
-  - `P1`: this file + roadmap snapshot
-  - `P2`: targeted capability docs
-  - `P3`: archive
+- Active structure:
+  - `P0`: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/AGENTS.md`
+  - `P1`: this file + `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
+  - `P2`: targeted docs under `docs/architecture`, `docs/issues`, `docs/refactoring`
+  - `P3`: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/archive/README.md`
+- Cleanup baseline (2026-03-01):
+  - non-referenced historical docs in issues/refactoring/architecture/root were removed
+  - first-read docs were compacted for low-token navigation
+  - WASM architecture/operator docs were rewritten as contract/checklist format
+- Current inventory (after cleanup):
+  - `docs/architecture`: 16
+  - `docs/refactoring`: 10
+  - `docs/issues`: 19
+  - `docs` total markdown: 49
 
 ## Where to Read History
 - For full chronological details, use:
