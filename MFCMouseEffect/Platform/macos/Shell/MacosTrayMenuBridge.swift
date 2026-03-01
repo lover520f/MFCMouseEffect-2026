@@ -3,6 +3,62 @@
 
 public typealias MfxTrayActionCallback = @convention(c) (UnsafeMutableRawPointer?) -> Void
 
+@MainActor
+private var mfxTrayIconCache: NSImage? = nil
+@MainActor
+private var mfxTrayIconCacheInitialized = false
+
+private func mfxProjectLogoPathCandidates() -> [String] {
+    var candidates: [String] = []
+
+    if let bundleLogo = Bundle.main.url(forResource: "logo_elegant", withExtension: "png")?.path {
+        candidates.append(bundleLogo)
+    }
+
+    let cwd = FileManager.default.currentDirectoryPath
+    if !cwd.isEmpty {
+        candidates.append("\(cwd)/res/logo_elegant.png")
+        candidates.append("\(cwd)/MFCMouseEffect/res/logo_elegant.png")
+    }
+
+    if let exe = ProcessInfo.processInfo.arguments.first, !exe.isEmpty {
+        let exeDir = URL(fileURLWithPath: exe).deletingLastPathComponent().path
+        if !exeDir.isEmpty {
+            candidates.append("\(exeDir)/res/logo_elegant.png")
+            candidates.append("\(exeDir)/../res/logo_elegant.png")
+            candidates.append("\(exeDir)/../MFCMouseEffect/res/logo_elegant.png")
+        }
+    }
+
+    return candidates
+}
+
+@MainActor
+private func mfxResolveTrayIconImage() -> NSImage? {
+    if mfxTrayIconCacheInitialized {
+        return mfxTrayIconCache
+    }
+    mfxTrayIconCacheInitialized = true
+
+    for candidate in mfxProjectLogoPathCandidates() {
+        if FileManager.default.fileExists(atPath: candidate), let image = NSImage(contentsOfFile: candidate) {
+            image.size = NSSize(width: 16, height: 16)
+            image.isTemplate = false
+            mfxTrayIconCache = image
+            return image
+        }
+    }
+
+    if #available(macOS 11.0, *) {
+        let symbol = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "MFX")
+        symbol?.isTemplate = true
+        mfxTrayIconCache = symbol
+        return symbol
+    }
+
+    return nil
+}
+
 private final class MfxTrayActionBridge: NSObject {
     private let callbackContextBits: UInt
     private let onOpenSettingsCallback: MfxTrayActionCallback?
@@ -112,7 +168,13 @@ private func mfxCreateTrayMenuOnMainThread(
 
     statusItem.menu = menu
     if let button = statusItem.button {
-        button.title = "MFX"
+        if let trayImage = mfxResolveTrayIconImage() {
+            button.image = trayImage
+            button.imagePosition = .imageOnly
+            button.title = ""
+        } else {
+            button.title = "MFX"
+        }
         button.toolTip = tooltip
     }
 

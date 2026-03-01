@@ -29,6 +29,9 @@
 - Input indicator / permissions:
   - Permission degrade + hot recovery behavior is implemented and script-gated.
   - VM suppression diagnostics/state exposure is present.
+- Shell UX:
+  - macOS tray now prefers icon rendering (project logo path fallback + SF Symbol fallback) instead of text-only `MFX`.
+  - macOS warning notifications now initialize app icon before delivery to avoid generic default sender icon in unbundled runs.
 
 ## Build and Regression Gates
 - macOS shell CMake Swift bridge registration has been normalized to one helper (`mfx_add_swift_bridge`) plus one source list (`MFX_MACOS_SWIFT_OBJECTS`), removing 20 duplicated compile blocks and reducing bridge drift risk.

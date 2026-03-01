@@ -2,6 +2,75 @@ import Foundation
 import AppKit
 import UserNotifications
 
+@MainActor
+private var mfxNotificationAppIconInitialized = false
+
+private func mfxProjectLogoPathCandidates() -> [String] {
+    var candidates: [String] = []
+
+    if let bundleLogo = Bundle.main.url(forResource: "logo_elegant", withExtension: "png")?.path {
+        candidates.append(bundleLogo)
+    }
+
+    let cwd = FileManager.default.currentDirectoryPath
+    if !cwd.isEmpty {
+        candidates.append("\(cwd)/res/logo_elegant.png")
+        candidates.append("\(cwd)/MFCMouseEffect/res/logo_elegant.png")
+    }
+
+    if let exe = ProcessInfo.processInfo.arguments.first, !exe.isEmpty {
+        let exeDir = URL(fileURLWithPath: exe).deletingLastPathComponent().path
+        if !exeDir.isEmpty {
+            candidates.append("\(exeDir)/res/logo_elegant.png")
+            candidates.append("\(exeDir)/../res/logo_elegant.png")
+            candidates.append("\(exeDir)/../MFCMouseEffect/res/logo_elegant.png")
+        }
+    }
+
+    return candidates
+}
+
+private func mfxResolveNotificationAppIcon() -> NSImage? {
+    for candidate in mfxProjectLogoPathCandidates() {
+        if FileManager.default.fileExists(atPath: candidate), let image = NSImage(contentsOfFile: candidate) {
+            return image
+        }
+    }
+
+    if #available(macOS 11.0, *) {
+        return NSImage(systemSymbolName: "sparkles", accessibilityDescription: "MFX")
+    }
+
+    return nil
+}
+
+@MainActor
+private func mfxEnsureNotificationAppIconOnMainActor() {
+    if mfxNotificationAppIconInitialized {
+        return
+    }
+    mfxNotificationAppIconInitialized = true
+
+    guard let icon = mfxResolveNotificationAppIcon() else {
+        return
+    }
+    NSApplication.shared.applicationIconImage = icon
+}
+
+private func mfxEnsureNotificationAppIcon() {
+    if Thread.isMainThread {
+        MainActor.assumeIsolated {
+            mfxEnsureNotificationAppIconOnMainActor()
+        }
+        return
+    }
+    DispatchQueue.main.sync {
+        MainActor.assumeIsolated {
+            mfxEnsureNotificationAppIconOnMainActor()
+        }
+    }
+}
+
 @available(macOS 11.0, *)
 private func mfxDeliverWithUserNotifications(_ safeTitle: String, _ safeMessage: String) -> Bool {
     guard let bundleId = Bundle.main.bundleIdentifier, !bundleId.isEmpty else {
@@ -59,6 +128,7 @@ public func mfx_macos_show_warning_notification(
 
     let safeTitle = String(cString: titlePtr)
     let safeMessage = String(cString: messagePtr)
+    mfxEnsureNotificationAppIcon()
 
     if #available(macOS 11.0, *) {
         if mfxDeliverWithUserNotifications(safeTitle, safeMessage) {
