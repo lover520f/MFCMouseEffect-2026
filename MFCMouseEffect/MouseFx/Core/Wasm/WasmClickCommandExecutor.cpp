@@ -6,6 +6,7 @@
 #include "WasmCommandBufferParser.h"
 #include "WasmPluginAbi.h"
 #include "WasmRenderResourceResolver.h"
+#include "WasmTextCommandConfig.h"
 
 #include <algorithm>
 #include <cmath>
@@ -20,25 +21,6 @@ SpawnImageCommandV1 ToSpawnImageCommand(const SpawnImageAffineCommandV1& cmd) {
     return cmd.base;
 }
 
-TextConfig BuildTextConfig(const TextConfig& base, const SpawnTextCommandV1& cmd) {
-    TextConfig cfg = base;
-    if (cmd.lifeMs > 0) {
-        cfg.durationMs = std::clamp<int>(static_cast<int>(cmd.lifeMs), 80, 8000);
-    }
-
-    const float lifeSeconds = std::max(0.08f, static_cast<float>(cfg.durationMs) / 1000.0f);
-    const float predictedDy = (cmd.vy * lifeSeconds) + (0.5f * cmd.ay * lifeSeconds * lifeSeconds);
-    const float fallbackDy = std::abs(cmd.vy) * 0.55f;
-    const float distance = std::max(std::abs(predictedDy), fallbackDy);
-    cfg.floatDistance = std::clamp<int>(static_cast<int>(std::lround(distance)), 16, 420);
-
-    if (cmd.scale > 0.0f) {
-        const float scaledSize = cfg.fontSize * cmd.scale;
-        cfg.fontSize = std::clamp(scaledSize, 6.0f, 90.0f);
-    }
-    return cfg;
-}
-
 void ExecuteSpawnText(
     const SpawnTextCommandV1& cmd,
     const EffectConfig& config,
@@ -46,7 +28,7 @@ void ExecuteSpawnText(
     if (!outResult) {
         return;
     }
-    const TextConfig textCfg = BuildTextConfig(config.textClick, cmd);
+    const TextConfig textCfg = BuildSpawnTextConfig(config.textClick, cmd);
     const ScreenPoint pt{
         static_cast<LONG>(std::lround(cmd.x)),
         static_cast<LONG>(std::lround(cmd.y)),

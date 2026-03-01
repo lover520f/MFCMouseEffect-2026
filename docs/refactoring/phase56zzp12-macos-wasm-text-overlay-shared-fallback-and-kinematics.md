@@ -25,6 +25,10 @@
   - `Platform/macos/Wasm/MacosWasmTextOverlayFallback.cpp`
 - Updated `Platform/macos/CMakeLists.txt` to remove old text bridge compilation and wire new shared fallback unit.
 
+4. Promoted text-command mapping to Core single-source helper:
+- Added `MouseFx/Core/Wasm/WasmTextCommandConfig.h` (`BuildSpawnTextConfig(...)`).
+- Windows `WasmClickCommandExecutor` and macOS `MacosWasmCommandRenderDispatch.Text.cpp` now call the same helper for `lifeMs/scale/vy/ay -> TextConfig` mapping.
+
 ## Validation
 1. Build:
 ```bash

@@ -7,6 +7,7 @@
 
 ## Latest Delta (2026-03-01)
 - macOS WASM `spawn_text` render path now reuses shared floating-text fallback (`MacosTextEffectFallback`) instead of the old standalone dark panel overlay path; text command physics/scale mapping now follows the same life/size/float-distance formula as Windows command execution semantics, and obsolete WASM text-overlay Swift bridge/layout sources were removed from macOS build wiring.
+- WASM `spawn_text` config mapping is now single-source in Core (`MouseFx/Core/Wasm/WasmTextCommandConfig.h`), and both Windows executor (`WasmClickCommandExecutor`) and macOS dispatch (`MacosWasmCommandRenderDispatch.Text.cpp`) consume the same helper to prevent future cross-platform drift.
 - Input-capture diagnostics now expose VM suppression interval as `effects_suspended_vm_check_interval_ms`; schema declares the key and contracts/selfcheck assert its presence and value parity with configured test interval.
 - macOS VM foreground suppression check interval is now test-configurable via `MFX_VM_FOREGROUND_SUPPRESSION_CHECK_INTERVAL_MS` (default `800`, clamped to `10..5000`), and VM selfcheck script supports `--check-interval-ms` to run fast deterministic validation.
 - POSIX regression suite now gates macOS effects type parity selfcheck (`run-macos-effects-type-parity-selfcheck.sh --skip-build`) as a default phase, with explicit skip flag `--skip-macos-effects-type-parity-selfcheck`; wasm-focused suite defaults to skipping it.
