@@ -2,6 +2,7 @@
 
 #include "Platform/macos/Wasm/MacosWasmImageOverlayRendererCore.Internal.h"
 
+#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "Platform/macos/Wasm/MacosWasmImageOverlayRendererSupport.h"
 #include "Platform/macos/Wasm/MacosWasmOverlayRenderMath.h"
 #include "Platform/macos/Wasm/MacosWasmOverlayRuntime.h"
@@ -13,6 +14,7 @@
 #endif
 
 #include <cmath>
+#include <memory>
 
 namespace mousefx::platform::macos {
 
@@ -30,6 +32,22 @@ NSColor* ArgbToNsColor(uint32_t argb, CGFloat alphaScale) {
     return [NSColor colorWithCalibratedRed:r green:g blue:b alpha:a];
 }
 
+struct WasmImageOverlayCloseContext final {
+    void* windowHandle = nullptr;
+};
+
+void CloseWasmImageOverlayAfterDelay(void* context) {
+    std::unique_ptr<WasmImageOverlayCloseContext> closeContext(
+        static_cast<WasmImageOverlayCloseContext*>(context));
+    if (!closeContext || closeContext->windowHandle == nullptr) {
+        return;
+    }
+    if (!TakeWasmOverlayWindow(closeContext->windowHandle)) {
+        return;
+    }
+    macos_overlay_support::ReleaseOverlayWindow(closeContext->windowHandle);
+}
+
 } // namespace
 #endif
 
@@ -45,22 +63,11 @@ void RenderWasmImageOverlayWindowOnMain(
         plan.overlayPoint.y - plan.size * 0.5,
         plan.size,
         plan.size);
-    NSWindow* window = [[NSWindow alloc] initWithContentRect:frame
-                                                    styleMask:NSWindowStyleMaskBorderless
-                                                      backing:NSBackingStoreBuffered
-                                                        defer:NO];
+    NSWindow* window = macos_overlay_support::CreateOverlayWindow(frame);
     if (window == nil) {
         ReleaseWasmOverlaySlot();
         return;
     }
-
-    [window setOpaque:NO];
-    [window setBackgroundColor:[NSColor clearColor]];
-    [window setHasShadow:NO];
-    [window setIgnoresMouseEvents:YES];
-    [window setLevel:NSStatusWindowLevel];
-    [window setCollectionBehavior:(NSWindowCollectionBehaviorCanJoinAllSpaces |
-                                   NSWindowCollectionBehaviorTransient)];
 
     NSView* content = [window contentView];
     [content setWantsLayer:YES];
@@ -138,7 +145,7 @@ void RenderWasmImageOverlayWindowOnMain(
     }
 
     RegisterWasmOverlayWindow(reinterpret_cast<void*>(window));
-    [window orderFrontRegardless];
+    macos_overlay_support::ShowOverlayWindow(reinterpret_cast<void*>(window));
 
     if (wasm_image_overlay_support::HasMotion(req)) {
         const double t = static_cast<double>(plan.durationMs) / 1000.0;
@@ -155,16 +162,13 @@ void RenderWasmImageOverlayWindowOnMain(
         } completionHandler:nil];
     }
 
-    dispatch_after(
+    auto* closeContext = new WasmImageOverlayCloseContext{};
+    closeContext->windowHandle = reinterpret_cast<void*>(window);
+    dispatch_after_f(
         dispatch_time(DISPATCH_TIME_NOW, static_cast<int64_t>(plan.durationMs + 60u) * NSEC_PER_MSEC),
         dispatch_get_main_queue(),
-        ^{
-          if (!TakeWasmOverlayWindow(reinterpret_cast<void*>(window))) {
-              return;
-          }
-          [window orderOut:nil];
-          [window release];
-        });
+        closeContext,
+        &CloseWasmImageOverlayAfterDelay);
 #endif
 }
 
