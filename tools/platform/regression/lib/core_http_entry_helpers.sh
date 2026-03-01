@@ -182,8 +182,8 @@ _mfx_core_http_start_entry() {
         if [[ -n "$probe_diagnostics_file" && -s "$probe_diagnostics_file" ]]; then
             mfx_info "core http probe diagnostics:"
             cat "$probe_diagnostics_file" || true
-            if grep -q "reason=websettings_start_failed(stage=2,code=1)" "$probe_diagnostics_file"; then
-                mfx_info "hint: websettings bind failed with EACCES (stage=2,code=1); check runtime sandbox/network permissions."
+            if grep -Eq "reason=websettings_start_failed\\(stage=2,code=(1|13)\\)" "$probe_diagnostics_file"; then
+                mfx_info "hint: websettings bind permission denied (EPERM/EACCES stage=2 code=1|13); check runtime sandbox/network permissions."
             fi
         fi
         _mfx_core_http_cleanup_startup_runtime
@@ -191,8 +191,8 @@ _mfx_core_http_start_entry() {
         if (( attempt == max_attempts )); then
             local allow_bind_eacces_skip="${MFX_CORE_HTTP_ALLOW_BIND_EACCES_SKIP:-0}"
             if [[ "$allow_bind_eacces_skip" == "1" && -n "$probe_diagnostics_file" && -s "$probe_diagnostics_file" ]]; then
-                if grep -q "reason=websettings_start_failed(stage=2,code=1)" "$probe_diagnostics_file"; then
-                    _mfx_core_http_startup_skip_reason="websettings bind EACCES under constrained runtime (stage=2,code=1)"
+                if grep -Eq "reason=websettings_start_failed\\(stage=2,code=(1|13)\\)" "$probe_diagnostics_file"; then
+                    _mfx_core_http_startup_skip_reason="websettings bind permission denied under constrained runtime (stage=2,code=1|13)"
                     return 2
                 fi
             fi

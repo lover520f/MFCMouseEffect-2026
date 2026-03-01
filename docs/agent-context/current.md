@@ -52,6 +52,7 @@
   - Gate now checks both macOS CMake rules and any existing `/tmp/mfx-platform-macos*/compile_commands.json` for hidden Objective-C++ flags.
 - Core HTTP regression teardown now attempts `/api/stop` before TERM/KILL fallback to reduce forced-stop noise and flakiness.
 - Scaffold HTTP regression now logs startup failure with `stage/code`; `bind EPERM/EACCES (stage=2, code=1/13)` is treated as a controlled skip in sandbox-like runners (override with `MFX_HTTP_SKIP_BIND_EACCES=0`).
+- Core HTTP startup helper now reports bind permission failures as `EPERM/EACCES (stage=2, code=1/13)` and supports the same constrained-runtime skip intent via `MFX_CORE_HTTP_ALLOW_BIND_EACCES_SKIP`.
 
 ## High-Value Manual Entrypoints (macOS)
 - One-command launcher:
