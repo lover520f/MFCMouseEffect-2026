@@ -137,6 +137,7 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
     const bool emitHold = ParseBooleanOrDefault(payload, "emit_hold", false);
     const bool emitHover = ParseBooleanOrDefault(payload, "emit_hover", false);
     const bool closePersistent = ParseBooleanOrDefault(payload, "close_persistent", true);
+    const bool resetLineTrail = ParseBooleanOrDefault(payload, "reset_line_trail", false);
     const bool scrollHorizontal = ParseBooleanOrDefault(payload, "scroll_horizontal", false);
     const int32_t x = ParseInt32OrDefault(payload, "x", 640);
     const int32_t y = ParseInt32OrDefault(payload, "y", 360);
@@ -149,6 +150,12 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
     const std::string hoverType = payload.value("hover_type", std::string("glow"));
     const int32_t waitMs = std::clamp(ParseInt32OrDefault(payload, "wait_ms", 0), 0, 3000);
     const int32_t waitForClearMs = std::clamp(ParseInt32OrDefault(payload, "wait_for_clear_ms", 0), 0, 3000);
+
+    if (resetLineTrail) {
+#if MFX_PLATFORM_MACOS
+        macos_line_trail::ResetLineTrail();
+#endif
+    }
 
     const OverlayWindowCounts before = ReadOverlayWindowCounts();
     const LineTrailProbeState beforeLineTrail = ReadLineTrailProbeState();
@@ -218,6 +225,7 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
         {"close_persistent", closePersistent},
         {"wait_ms", waitMs},
         {"wait_for_clear_ms", waitForClearMs},
+        {"reset_line_trail", resetLineTrail},
         {"before", before.ToJson()},
         {"after", after.ToJson()},
         {"before_line_trail", beforeLineTrail.ToJson()},

@@ -28,6 +28,13 @@
      - `line_trail_active`
      - `line_trail_point_count`
    - `/api/effects/test-overlay-windows` now also returns line-trail before/after snapshots for scripted diagnostics.
+4. `trail=none` contract hardening in test-only overlay probe:
+   - Added `reset_line_trail` request flag to `/api/effects/test-overlay-windows` for deterministic baseline.
+   - Effects contract regression now executes dedicated `trail_type=none` probe and asserts:
+     - `before_line_trail_active=false`
+     - `after_line_trail_active=false`
+     - `before_line_trail_point_count=0`
+     - `after_line_trail_point_count=0`
 
 ## Validation
 Executed on macOS host:

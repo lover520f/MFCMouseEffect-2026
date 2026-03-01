@@ -117,6 +117,21 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         fi
     fi
 
+    local code_effect_overlay_trail_none_probe
+    code_effect_overlay_trail_none_probe="$(mfx_http_code "$tmp_dir/effect-overlay-trail-none-probe.out" "$base_url/api/effects/test-overlay-windows" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{"emit_trail":true,"trail_type":"none","close_persistent":true,"reset_line_trail":true,"wait_ms":40,"wait_for_clear_ms":400}')"
+    mfx_assert_eq "$code_effect_overlay_trail_none_probe" "200" "core effect overlay trail-none probe status"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"ok\":true" "core effect overlay trail-none probe ok"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"trail_type\":\"none\"" "core effect overlay trail-none probe trail type"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"reset_line_trail\":true" "core effect overlay trail-none probe reset flag"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"before_line_trail_active\":false" "core effect overlay trail-none probe before line trail inactive"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"after_line_trail_active\":false" "core effect overlay trail-none probe after line trail inactive"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"before_line_trail_point_count\":0" "core effect overlay trail-none probe before line trail count zero"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"after_line_trail_point_count\":0" "core effect overlay trail-none probe after line trail count zero"
+
     local code_effect_profile_probe
     code_effect_profile_probe="$(mfx_http_code "$tmp_dir/effect-render-profile-probe.out" "$base_url/api/effects/test-render-profiles" \
         -X GET \
