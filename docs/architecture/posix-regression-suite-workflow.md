@@ -19,12 +19,14 @@ Run this as the default POSIX regression entry:
    - `run-macos-automation-injection-selfcheck.sh --skip-build --dry-run` (macOS host only, skipped on non-mac hosts)
 5. macOS automation app-scope selfcheck:
    - `run-macos-automation-app-scope-selfcheck.sh --skip-build` (macOS host only, skipped on non-mac hosts)
-6. macOS WASM runtime selfcheck:
+6. macOS VM foreground suppression selfcheck:
+   - `run-macos-vm-foreground-suppression-selfcheck.sh --skip-build` (macOS host only, skipped on non-mac hosts)
+7. macOS WASM runtime selfcheck:
    - `run-macos-wasm-runtime-selfcheck.sh --skip-build` (macOS host only, skipped on non-mac hosts)
-7. Linux compile gate:
+8. Linux compile gate:
    - `run-posix-linux-compile-gate.sh`
    - default includes both `MFX_ENABLE_POSIX_CORE_RUNTIME=OFF/ON` compile lanes.
-8. WebUI automation platform semantic tests:
+9. WebUI automation platform semantic tests:
    - `pnpm --dir MFCMouseEffect/WebUIWorkspace run test:automation-platform`
 
 Before phases start, suite only reports existing `mfx_entry_posix_host` processes. Cleanup remains phase-local under the `mfx-entry-posix-host` lock.
@@ -48,6 +50,7 @@ Skip phases when needed:
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-core-automation
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-automation-injection-selfcheck
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-automation-app-scope-selfcheck
+./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-vm-suppression-selfcheck
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-wasm-selfcheck
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-linux-gate
 ./tools/platform/regression/run-posix-regression-suite.sh --linux-skip-core-runtime
