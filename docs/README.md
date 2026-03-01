@@ -50,6 +50,8 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/issue
 ./mfx run-no-build
 ./mfx run-no-build --seconds 30
 ./mfx effects
+./mfx verify-effects
+./mfx verify-full
 # backward-compatible aliases
 ./mfx start
 ./mfx fast

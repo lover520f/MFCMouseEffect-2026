@@ -96,6 +96,12 @@
 # 特效类型等价自检
 ./mfx effects
 
+# 特效回归套件（推荐日常）
+./mfx verify-effects
+
+# 全量 POSIX 回归套件
+./mfx verify-full
+
 # 兼容旧命令（仍可用）
 ./mfx start
 ./mfx fast

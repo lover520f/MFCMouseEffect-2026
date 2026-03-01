@@ -21,6 +21,12 @@ Commands:
   effects [--skip-build]
       Run macOS effects type parity selfcheck.
 
+  verify-effects
+      Run POSIX effects regression suite (recommended daily gate).
+
+  verify-full
+      Run full POSIX regression suite.
+
 Compatibility aliases:
   start -> run
   fast  -> run-no-build
@@ -89,6 +95,16 @@ run_effects() {
     exec "$repo_root/tools/platform/manual/run-macos-effects-type-parity-selfcheck.sh" "$@"
 }
 
+run_verify_effects() {
+    shift
+    exec "$repo_root/tools/platform/regression/run-posix-effects-regression-suite.sh" --platform auto "$@"
+}
+
+run_verify_full() {
+    shift
+    exec "$repo_root/tools/platform/regression/run-posix-regression-suite.sh" --platform auto "$@"
+}
+
 if [[ $# -lt 1 ]]; then
     usage
     exit 1
@@ -114,6 +130,12 @@ fast)
     ;;
 effects)
     run_effects "$@"
+    ;;
+verify-effects)
+    run_verify_effects "$@"
+    ;;
+verify-full)
+    run_verify_full "$@"
     ;;
 help|-h|--help)
     usage
