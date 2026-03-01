@@ -151,6 +151,39 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         if (( text_click_after_count <= text_click_before_count )); then
             mfx_fail "core effect overlay text-click probe expected fallback show increase on macos: before=$text_click_before_count after=$text_click_after_count"
         fi
+
+        local code_effect_factory_click_text_probe
+        code_effect_factory_click_text_probe="$(mfx_http_code "$tmp_dir/effect-overlay-factory-click-text-probe.out" "$base_url/api/effects/test-overlay-windows" \
+            -X POST \
+            -H "x-mfcmouseeffect-token: $token" \
+            -H "Content-Type: application/json" \
+            -d '{"emit_click_via_effect_factory":true,"click_type":"text","text_click_text":"MFX_FACTORY_CLICK_TEXT","text_click_font_size_px":116,"close_persistent":true,"wait_ms":120,"wait_for_clear_ms":500}')"
+        mfx_assert_eq "$code_effect_factory_click_text_probe" "200" "core effect overlay factory click-text probe status"
+        mfx_assert_file_contains "$tmp_dir/effect-overlay-factory-click-text-probe.out" "\"ok\":true" "core effect overlay factory click-text probe ok"
+        mfx_assert_file_contains "$tmp_dir/effect-overlay-factory-click-text-probe.out" "\"emit_click_via_effect_factory\":true" "core effect overlay factory click-text probe emit flag"
+        mfx_assert_file_contains "$tmp_dir/effect-overlay-factory-click-text-probe.out" "\"click_type\":\"text\"" "core effect overlay factory click-text probe click type"
+        mfx_assert_file_contains "$tmp_dir/effect-overlay-factory-click-text-probe.out" "\"before_click_active_overlay_windows\":" "core effect overlay factory click-text probe before click count"
+        mfx_assert_file_contains "$tmp_dir/effect-overlay-factory-click-text-probe.out" "\"after_click_active_overlay_windows\":" "core effect overlay factory click-text probe after click count"
+        mfx_assert_file_contains "$tmp_dir/effect-overlay-factory-click-text-probe.out" "\"before_text_effect_fallback_show_count\":" "core effect overlay factory click-text probe before fallback count"
+        mfx_assert_file_contains "$tmp_dir/effect-overlay-factory-click-text-probe.out" "\"after_text_effect_fallback_show_count\":" "core effect overlay factory click-text probe after fallback count"
+
+        local factory_click_before_count
+        local factory_click_after_count
+        local factory_text_fallback_before_count
+        local factory_text_fallback_after_count
+        factory_click_before_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-factory-click-text-probe.out" "before_click_active_overlay_windows")"
+        factory_click_after_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-factory-click-text-probe.out" "after_click_active_overlay_windows")"
+        factory_text_fallback_before_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-factory-click-text-probe.out" "before_text_effect_fallback_show_count")"
+        factory_text_fallback_after_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-factory-click-text-probe.out" "after_text_effect_fallback_show_count")"
+        if [[ -z "$factory_click_before_count" || -z "$factory_click_after_count" || -z "$factory_text_fallback_before_count" || -z "$factory_text_fallback_after_count" ]]; then
+            mfx_fail "core effect overlay factory click-text probe count parse failed"
+        fi
+        if (( factory_click_after_count <= factory_click_before_count )); then
+            mfx_fail "core effect overlay factory click-text probe expected click overlay increase on macos: before=$factory_click_before_count after=$factory_click_after_count"
+        fi
+        if (( factory_text_fallback_after_count != factory_text_fallback_before_count )); then
+            mfx_fail "core effect overlay factory click-text probe should not touch TextEffect fallback counter on macos: before=$factory_text_fallback_before_count after=$factory_text_fallback_after_count"
+        fi
     fi
 
     local code_effect_overlay_line_trail_probe

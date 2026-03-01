@@ -6,8 +6,10 @@
 #include <cmath>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include "MouseFx/Core/Protocol/InputTypes.h"
+#include "MouseFx/Core/Control/EffectFactory.h"
 #include "MouseFx/Effects/TextEffect.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/WebSettingsServer.TestRouteCommon.h"
@@ -133,6 +135,51 @@ TextEffectProbeState ReadTextEffectProbeState() {
     return out;
 }
 
+#if MFX_PLATFORM_MACOS
+std::vector<std::unique_ptr<IMouseEffect>>& ActiveFactoryProbeEffects() {
+    static std::vector<std::unique_ptr<IMouseEffect>> effects;
+    return effects;
+}
+
+void ResetFactoryProbeEffects() {
+    auto& effects = ActiveFactoryProbeEffects();
+    for (auto& effect : effects) {
+        if (effect) {
+            effect->Shutdown();
+        }
+    }
+    effects.clear();
+}
+
+void EmitClickViaEffectFactory(
+    const ScreenPoint& overlayPoint,
+    MouseButton button,
+    const std::string& clickType,
+    const TextConfig& textConfig,
+    const std::string& themeName) {
+    EffectConfig config = EffectConfig::GetDefault();
+    config.active.click = clickType;
+    config.textClick = textConfig;
+    if (!themeName.empty()) {
+        config.theme = themeName;
+    }
+
+    std::unique_ptr<IMouseEffect> clickEffect = EffectFactory::Create(EffectCategory::Click, clickType, config);
+    if (!clickEffect) {
+        return;
+    }
+    if (!clickEffect->Initialize()) {
+        return;
+    }
+
+    ClickEvent clickEvent{};
+    clickEvent.pt = overlayPoint;
+    clickEvent.button = button;
+    clickEffect->OnClick(clickEvent);
+    ActiveFactoryProbeEffects().push_back(std::move(clickEffect));
+}
+#endif
+
 MouseButton ParseMouseButton(uint8_t rawButton) {
     switch (rawButton) {
     case 2:
@@ -164,6 +211,7 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
 
     const json payload = ParseObjectOrEmpty(req.body);
     const bool emitClick = ParseBooleanOrDefault(payload, "emit_click", false);
+    const bool emitClickViaEffectFactory = ParseBooleanOrDefault(payload, "emit_click_via_effect_factory", false);
     const bool emitTrail = ParseBooleanOrDefault(payload, "emit_trail", false);
     const bool emitLineTrail = ParseBooleanOrDefault(payload, "emit_line_trail", false);
     const bool emitTextClickEffect = ParseBooleanOrDefault(payload, "emit_text_click_effect", false);
@@ -210,6 +258,9 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
 #endif
     }
 
+#if MFX_PLATFORM_MACOS
+    ResetFactoryProbeEffects();
+#endif
     const OverlayWindowCounts before = ReadOverlayWindowCounts();
     const LineTrailProbeState beforeLineTrail = ReadLineTrailProbeState();
     const TextEffectProbeState beforeTextEffect = ReadTextEffectProbeState();
@@ -218,6 +269,18 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
     const ScreenPoint overlayPoint{x, y};
     if (emitClick) {
         macos_click_pulse::ShowClickPulseOverlay(overlayPoint, ParseMouseButton(button), clickType, "");
+    }
+    if (emitClickViaEffectFactory) {
+        TextConfig textConfig = EffectConfig::GetDefault().textClick;
+        textConfig.fontSize = static_cast<float>(textClickFontSizePx);
+        textConfig.texts.clear();
+        textConfig.texts.push_back(Utf8ToWString(textClickText));
+        EmitClickViaEffectFactory(
+            overlayPoint,
+            ParseMouseButton(button),
+            clickType,
+            textConfig,
+            textClickTheme);
     }
     if (emitTextClickEffect) {
         TextConfig textConfig{};
@@ -296,10 +359,15 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
         }
     }
 
+#if MFX_PLATFORM_MACOS
+    ResetFactoryProbeEffects();
+#endif
+
     SetJsonResponse(resp, json({
         {"ok", true},
         {"supported", MFX_PLATFORM_MACOS ? true : false},
         {"emit_click", emitClick},
+        {"emit_click_via_effect_factory", emitClickViaEffectFactory},
         {"emit_trail", emitTrail},
         {"emit_line_trail", emitLineTrail},
         {"emit_text_click_effect", emitTextClickEffect},

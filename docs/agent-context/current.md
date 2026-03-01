@@ -6,7 +6,7 @@
 - Constraints: no Windows regression; Linux follows compile + contract coverage.
 
 ## Latest Delta (2026-03-01)
-- macOS `click=text` now stays in the shared click command lane with `TextConfig` semantics (`texts/colors/fontFamily/fontSize/floatDistance`), and Swift click text mode is text-first (`float + fade`) without ring-layer rendering; `command_samples.click` now exposes `text_font_size_px`, `text_float_distance_px`, `text_font_family_utf8`, and `text_emoji` for contract observability.
+- macOS `click=text` now stays in the shared click command lane with `TextConfig` semantics (`texts/colors/fontFamily/fontSize/floatDistance`), and Swift click text mode is text-first (`float + fade`) without ring-layer rendering; `command_samples.click` now exposes `text_font_size_px`, `text_float_distance_px`, `text_font_family_utf8`, and `text_emoji` for contract observability. effects contract now also probes `emit_click_via_effect_factory` and asserts `click=text` uses click-overlay lane (not `TextEffect` fallback counter).
 - macOS active source ownership is now fully promoted to main paths under `Platform/macos/{Effects,Overlay,Shell,System,Wasm}`; `Platform/macos/legacy` no longer contains active source files.
 - macOS build wiring no longer contains ObjC++ allowlist compilation in `Platform/macos/CMakeLists.txt`; `-x objective-c++` assignment was removed from the mac target path.
 - macOS Swift bridge build now uses explicit latest-stable language mode policy via `MFX_SWIFT_LANGUAGE_MODE` (`auto|5|6`, default `auto`; auto resolves to Swift 6 on Swift 6 toolchains, else Swift 5).

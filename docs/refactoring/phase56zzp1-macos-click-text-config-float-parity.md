@@ -40,6 +40,10 @@
 5. Diagnostics visibility improved:
 - `command_samples.click` now includes `text_font_size_px`, `text_float_distance_px`, `text_font_family_utf8`, and `text_emoji`.
 
+6. Contract coverage tightened:
+- effects overlay test route now supports `emit_click_via_effect_factory`.
+- macOS contract now asserts `emit_click_via_effect_factory + click_type=text` increases click overlay windows while keeping `TextEffect` fallback counter unchanged.
+
 ## Validation
 1. Build:
 - `cmake --build /tmp/mfx-platform-macos-build --target mfx_entry_posix_host -j8`
