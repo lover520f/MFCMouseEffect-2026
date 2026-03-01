@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
-#include <iterator>
 #include <string>
 #include <vector>
 
@@ -14,6 +13,7 @@
 #include "MouseFx/Core/Wasm/WasmEffectHost.h"
 #include "MouseFx/Core/Wasm/WasmEventInvokeExecutor.h"
 #include "MouseFx/Core/Wasm/WasmPluginAbi.h"
+#include "MouseFx/Core/Wasm/WasmRenderValueResolver.h"
 #include "MouseFx/Core/Wasm/WasmTextCommandConfig.h"
 #include "MouseFx/Server/HttpServer.h"
 #include "MouseFx/Server/WebSettingsServer.TestRouteCommon.h"
@@ -46,27 +46,6 @@ std::string FormatU32Hex(uint32_t value) {
     char buffer[11] = {};
     std::snprintf(buffer, sizeof(buffer), "0x%08X", value);
     return std::string(buffer);
-}
-
-std::wstring ResolveTextByIdForTest(const EffectConfig& config, uint32_t textId) {
-    if (!config.textClick.texts.empty()) {
-        const size_t index = static_cast<size_t>(textId % static_cast<uint32_t>(config.textClick.texts.size()));
-        return config.textClick.texts[index];
-    }
-    static const std::wstring kFallbackTexts[] = {L"WASM", L"MouseFx", L"Click"};
-    const size_t index = static_cast<size_t>(textId % static_cast<uint32_t>(std::size(kFallbackTexts)));
-    return kFallbackTexts[index];
-}
-
-uint32_t ResolveTextColorArgbForTest(const EffectConfig& config, uint32_t textId, uint32_t commandColorArgb) {
-    if (((commandColorArgb >> 24) & 0xFFu) != 0u) {
-        return commandColorArgb;
-    }
-    if (!config.textClick.colors.empty()) {
-        const size_t index = static_cast<size_t>(textId % static_cast<uint32_t>(config.textClick.colors.size()));
-        return config.textClick.colors[index].value;
-    }
-    return 0xFFFFFFFFu;
 }
 
 } // namespace
@@ -319,8 +298,9 @@ bool HandleWebSettingsTestWasmInputApiRoute(
         }
 
         const TextConfig resolved = mousefx::wasm::BuildSpawnTextConfig(baseConfig, cmd);
-        const std::wstring resolvedText = ResolveTextByIdForTest(controller->Config(), cmd.textId);
-        const uint32_t resolvedColorArgb = ResolveTextColorArgbForTest(controller->Config(), cmd.textId, cmd.colorRgba);
+        const std::wstring resolvedText = wasm::render_values::ResolveTextById(controller->Config().textClick, cmd.textId);
+        const uint32_t resolvedColorArgb =
+            wasm::render_values::ResolveTextColorArgb(controller->Config().textClick, cmd.textId, cmd.colorRgba);
 
         SetJsonResponse(resp, json({
             {"ok", true},
