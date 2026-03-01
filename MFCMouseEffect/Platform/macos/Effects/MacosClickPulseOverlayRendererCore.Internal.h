@@ -10,14 +10,6 @@
 #if defined(__APPLE__)
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CoreGraphics.h>
-#ifdef __OBJC__
-@class CAShapeLayer;
-@class NSView;
-#else
-struct objc_object;
-using CAShapeLayer = objc_object;
-using NSView = objc_object;
-#endif
 #endif
 
 namespace mousefx::macos_click_pulse {
@@ -33,19 +25,6 @@ struct ClickPulseRenderPlan {
 
 ClickPulseRenderPlan BuildClickPulseRenderPlan(
     const ClickEffectRenderCommand& command);
-
-void ConfigureClickPulseBaseLayer(
-    CAShapeLayer* base,
-    NSView* content,
-    const ClickPulseRenderPlan& plan);
-
-void AddClickPulseExtraLayers(
-    NSView* content,
-    const ClickPulseRenderPlan& plan);
-
-void StartClickPulseAnimation(
-    CAShapeLayer* base,
-    const ClickPulseRenderPlan& plan);
 
 int64_t ComputeClickPulseCloseDelayNs(const ClickPulseRenderPlan& plan);
 #endif

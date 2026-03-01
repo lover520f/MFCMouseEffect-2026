@@ -2,134 +2,38 @@
 
 #include "Platform/macos/Effects/MacosClickPulseOverlayRendererCore.h"
 #include "Platform/macos/Effects/MacosClickPulseOverlayRendererCore.Internal.h"
+#include "Platform/macos/Effects/MacosClickPulseOverlaySwiftBridge.h"
 #include "Platform/macos/Effects/MacosClickPulseWindowRegistry.h"
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
-#include "Platform/macos/Effects/MacosClickPulseOverlayStyle.h"
 
 #if defined(__APPLE__)
-#import <AppKit/AppKit.h>
-#import <QuartzCore/QuartzCore.h>
 #import <dispatch/dispatch.h>
 #endif
 
-#include <algorithm>
+#include <memory>
 
 namespace mousefx::macos_click_pulse {
 
 #if defined(__APPLE__)
 namespace {
 
-NSColor* ArgbToNsColor(uint32_t argb) {
-    const CGFloat alpha = static_cast<CGFloat>((argb >> 24) & 0xFFu) / 255.0;
-    const CGFloat red = static_cast<CGFloat>((argb >> 16) & 0xFFu) / 255.0;
-    const CGFloat green = static_cast<CGFloat>((argb >> 8) & 0xFFu) / 255.0;
-    const CGFloat blue = static_cast<CGFloat>(argb & 0xFFu) / 255.0;
-    return [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha];
-}
+struct ClickPulseCloseContext {
+    void* windowHandle = nullptr;
+};
 
-CAAnimationGroup* CreateScaleFadeAnimationGroup(
-    CGFloat fromScale,
-    CGFloat toScale,
-    CGFloat fromOpacity,
-    CFTimeInterval duration) {
-    const CFTimeInterval clampedDuration = std::max<CFTimeInterval>(0.05, duration);
-
-    CABasicAnimation* scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-    scale.fromValue = @(fromScale);
-    scale.toValue = @(toScale);
-    scale.duration = clampedDuration;
-    scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-
-    CABasicAnimation* fade = [CABasicAnimation animationWithKeyPath:@"opacity"];
-    fade.fromValue = @(std::clamp(fromOpacity, static_cast<CGFloat>(0.0), static_cast<CGFloat>(1.0)));
-    fade.toValue = @0.0;
-    fade.duration = clampedDuration;
-    fade.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
-
-    CAAnimationGroup* group = [CAAnimationGroup animation];
-    group.animations = @[scale, fade];
-    group.duration = clampedDuration;
-    group.fillMode = kCAFillModeForwards;
-    group.removedOnCompletion = NO;
-    return group;
+void CloseClickPulseWindowLater(void* opaque) {
+    std::unique_ptr<ClickPulseCloseContext> context(
+        static_cast<ClickPulseCloseContext*>(opaque));
+    if (!context || context->windowHandle == nullptr) {
+        return;
+    }
+    if (!TakeClickPulseWindow(context->windowHandle)) {
+        return;
+    }
+    macos_overlay_support::ReleaseOverlayWindow(context->windowHandle);
 }
 
 } // namespace
-
-void ConfigureClickPulseBaseLayer(
-    CAShapeLayer* base,
-    NSView* content,
-    const ClickPulseRenderPlan& plan) {
-    const bool textMode = (plan.command.normalizedType == "text");
-    base.frame = content.bounds;
-    CGPathRef ringPath = CGPathCreateWithEllipseInRect(
-        CGRectMake(plan.inset, plan.inset, plan.size - plan.inset * 2.0, plan.size - plan.inset * 2.0),
-        nullptr);
-    base.path = ringPath;
-    CGPathRelease(ringPath);
-    base.fillColor = [ArgbToNsColor(plan.command.fillArgb) CGColor];
-    base.strokeColor = [ArgbToNsColor(plan.command.strokeArgb) CGColor];
-    base.lineWidth = macos_overlay_support::ScaleOverlayMetric(
-        plan.size,
-        textMode ? 2.1 : 2.4,
-        160.0,
-        1.2,
-        4.8);
-    base.opacity = static_cast<float>(
-        macos_overlay_support::ResolveOverlayOpacity(plan.command.baseOpacity, 0.0, 0.0));
-}
-
-void AddClickPulseExtraLayers(NSView* content, const ClickPulseRenderPlan& plan) {
-    const bool starMode = (plan.command.normalizedType == "star");
-    const bool textMode = (plan.command.normalizedType == "text");
-    if (starMode) {
-        CAShapeLayer* star = [CAShapeLayer layer];
-        star.frame = content.bounds;
-        const CGFloat starInset = macos_overlay_support::ScaleOverlayMetric(plan.size, 38.0, 160.0, 18.0, 74.0);
-        const CGRect starBounds = CGRectInset(content.bounds, starInset, starInset);
-        CGPathRef starPath = CreateClickPulseStarPath(starBounds, 5);
-        star.path = starPath;
-        CGPathRelease(starPath);
-        star.fillColor = [ArgbToNsColor(plan.command.strokeArgb) CGColor];
-        star.strokeColor = [ArgbToNsColor(plan.command.strokeArgb) CGColor];
-        star.lineWidth = macos_overlay_support::ScaleOverlayMetric(plan.size, 1.0, 160.0, 0.8, 2.2);
-        star.opacity = static_cast<float>(
-            macos_overlay_support::ResolveOverlayOpacity(plan.command.baseOpacity, 0.03, 0.0));
-        [content.layer addSublayer:star];
-    }
-
-    if (textMode) {
-        CATextLayer* text = [CATextLayer layer];
-        const CGFloat textHeight = macos_overlay_support::ScaleOverlayMetric(plan.size, 36.0, 160.0, 24.0, 60.0);
-        text.frame = CGRectMake(0.0, plan.size * 0.30, plan.size, textHeight);
-        text.alignmentMode = kCAAlignmentCenter;
-        text.foregroundColor = [ArgbToNsColor(plan.command.strokeArgb) CGColor];
-        text.contentsScale = std::max<CGFloat>(1.0, content.layer.contentsScale);
-        const CGFloat fontSize = macos_overlay_support::ScaleOverlayMetric(plan.size, 24.0, 160.0, 14.0, 42.0);
-        text.fontSize = fontSize;
-        NSFont* font = [NSFont boldSystemFontOfSize:fontSize];
-        NSString* fontName = font ? [font fontName] : nil;
-        if (fontName != nil) {
-            text.font = (__bridge CFTypeRef)fontName;
-        } else {
-            text.font = (__bridge CFTypeRef)@"Helvetica-Bold";
-        }
-        text.string = [NSString stringWithUTF8String:plan.command.textLabel.c_str()];
-        text.opacity = static_cast<float>(
-            macos_overlay_support::ResolveOverlayOpacity(plan.command.baseOpacity, 0.03, 0.0));
-        [content.layer addSublayer:text];
-    }
-}
-
-void StartClickPulseAnimation(CAShapeLayer* base, const ClickPulseRenderPlan& plan) {
-    const bool textMode = (plan.command.normalizedType == "text");
-    CAAnimationGroup* group = CreateScaleFadeAnimationGroup(
-        textMode ? 0.75 : 0.15,
-        1.0,
-        static_cast<CGFloat>(plan.command.baseOpacity),
-        plan.animationDuration);
-    [base addAnimation:group forKey:@"mfx_click_pulse"];
-}
 
 void ShowClickPulseOverlayOnMain(
     const ClickEffectRenderCommand& command,
@@ -137,36 +41,38 @@ void ShowClickPulseOverlayOnMain(
     (void)themeName;
 
     const ClickPulseRenderPlan plan = BuildClickPulseRenderPlan(command);
-    NSWindow* window = macos_overlay_support::CreateOverlayWindow(plan.frame);
-    if (window == nil) {
+    const char* normalizedTypeUtf8 = plan.command.normalizedType.empty()
+                                         ? ""
+                                         : plan.command.normalizedType.c_str();
+    const char* textLabelUtf8 = plan.command.textLabel.empty()
+                                    ? ""
+                                    : plan.command.textLabel.c_str();
+    void* windowHandle = mfx_macos_click_pulse_overlay_create_v1(
+        static_cast<double>(plan.frame.origin.x),
+        static_cast<double>(plan.frame.origin.y),
+        static_cast<double>(plan.size),
+        static_cast<double>(plan.inset),
+        command.overlayPoint.x,
+        command.overlayPoint.y,
+        normalizedTypeUtf8,
+        command.fillArgb,
+        command.strokeArgb,
+        command.baseOpacity,
+        static_cast<double>(plan.animationDuration),
+        textLabelUtf8);
+    if (windowHandle == nullptr) {
         return;
     }
 
-    NSView* content = [window contentView];
-    macos_overlay_support::ApplyOverlayContentScale(content, command.overlayPoint);
+    RegisterClickPulseWindow(windowHandle);
+    macos_overlay_support::ShowOverlayWindow(windowHandle);
 
-    CAShapeLayer* base = [CAShapeLayer layer];
-    base.frame = content.bounds;
-    ConfigureClickPulseBaseLayer(base, content, plan);
-    [content.layer addSublayer:base];
-
-    AddClickPulseExtraLayers(content, plan);
-    StartClickPulseAnimation(base, plan);
-
-    RegisterClickPulseWindow(reinterpret_cast<void*>(window));
-    macos_overlay_support::ShowOverlayWindow(reinterpret_cast<void*>(window));
-
-    dispatch_after(
-        dispatch_time(
-            DISPATCH_TIME_NOW,
-            ComputeClickPulseCloseDelayNs(plan)),
+    auto* closeContext = new ClickPulseCloseContext{windowHandle};
+    dispatch_after_f(
+        dispatch_time(DISPATCH_TIME_NOW, ComputeClickPulseCloseDelayNs(plan)),
         dispatch_get_main_queue(),
-        ^{
-          if (!TakeClickPulseWindow(reinterpret_cast<void*>(window))) {
-              return;
-          }
-          macos_overlay_support::ReleaseOverlayWindow(reinterpret_cast<void*>(window));
-        });
+        closeContext,
+        &CloseClickPulseWindowLater);
 }
 
 #endif
