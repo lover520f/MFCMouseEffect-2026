@@ -7,15 +7,39 @@
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "Platform/macos/Effects/MacosScrollPulseWindowRegistry.h"
 
+#include <memory>
+
 namespace mousefx::macos_scroll_pulse {
+
+namespace {
+
+#if defined(__APPLE__)
+void CloseAllScrollPulseWindowsCallback(void*) {
+    CloseAllScrollPulseWindowsNow();
+}
+
+struct ShowScrollPulseContext final {
+    ScrollEffectRenderCommand command{};
+    std::string themeName{};
+};
+
+void ShowScrollPulseOverlayCallback(void* opaque) {
+    std::unique_ptr<ShowScrollPulseContext> context(
+        static_cast<ShowScrollPulseContext*>(opaque));
+    if (!context) {
+        return;
+    }
+    ShowScrollPulseOverlayOnMain(context->command, context->themeName);
+}
+#endif
+
+} // namespace
 
 void CloseAllScrollPulseWindows() {
 #if !defined(__APPLE__)
     return;
 #else
-    macos_overlay_support::RunOnMainThreadSync(^{
-      CloseAllScrollPulseWindowsNow();
-    });
+    macos_overlay_support::RunOnMainThreadSync(&CloseAllScrollPulseWindowsCallback, nullptr);
 #endif
 }
 
@@ -25,11 +49,11 @@ void ShowScrollPulseOverlay(const ScrollEffectRenderCommand& command, const std:
     (void)themeName;
     return;
 #else
-    const ScrollEffectRenderCommand commandCopy = command;
-    const std::string themeCopy = themeName;
-    macos_overlay_support::RunOnMainThreadAsync(^{
-      ShowScrollPulseOverlayOnMain(commandCopy, themeCopy);
-    });
+    auto* context = new ShowScrollPulseContext{
+        command,
+        themeName,
+    };
+    macos_overlay_support::RunOnMainThreadAsync(&ShowScrollPulseOverlayCallback, context);
 #endif
 }
 

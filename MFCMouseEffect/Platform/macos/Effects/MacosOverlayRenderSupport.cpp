@@ -43,6 +43,28 @@ void RunOnMainThreadAsync(dispatch_block_t block) {
     dispatch_async(dispatch_get_main_queue(), block);
 }
 
+void RunOnMainThreadSync(MainThreadCallback callback, void* context) {
+    if (callback == nullptr) {
+        return;
+    }
+    if (pthread_main_np() != 0) {
+        callback(context);
+        return;
+    }
+    dispatch_sync(dispatch_get_main_queue(), ^{
+      callback(context);
+    });
+}
+
+void RunOnMainThreadAsync(MainThreadCallback callback, void* context) {
+    if (callback == nullptr) {
+        return;
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+      callback(context);
+    });
+}
+
 NSWindow* CreateOverlayWindow(const NSRect& frame) {
     void* handle = mfx_macos_overlay_create_window_v1(
         static_cast<double>(frame.origin.x),

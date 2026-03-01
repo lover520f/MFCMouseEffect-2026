@@ -20,6 +20,12 @@ using NSRect = CGRect;
 
 namespace mousefx::macos_overlay_support {
 
+#if defined(__APPLE__)
+using MainThreadCallback = void (*)(void*);
+void RunOnMainThreadSync(MainThreadCallback callback, void* context);
+void RunOnMainThreadAsync(MainThreadCallback callback, void* context);
+#endif
+
 #if defined(__APPLE__) && defined(__OBJC__)
 void RunOnMainThreadSync(dispatch_block_t block);
 void RunOnMainThreadAsync(dispatch_block_t block);

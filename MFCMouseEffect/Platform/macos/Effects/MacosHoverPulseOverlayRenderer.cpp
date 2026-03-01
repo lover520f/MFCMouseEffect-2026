@@ -6,7 +6,45 @@
 #include "Platform/macos/Effects/MacosHoverPulseOverlayRendererCore.h"
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 
+#include <memory>
+
 namespace mousefx::macos_hover_pulse {
+
+namespace {
+
+#if defined(__APPLE__)
+struct ShowHoverPulseContext final {
+    HoverEffectRenderCommand command{};
+    std::string themeName{};
+};
+
+void ShowHoverPulseOverlayCallback(void* opaque) {
+    std::unique_ptr<ShowHoverPulseContext> context(
+        static_cast<ShowHoverPulseContext*>(opaque));
+    if (!context) {
+        return;
+    }
+    ShowHoverPulseOverlayOnMain(context->command, context->themeName);
+}
+
+void CloseHoverPulseOverlayCallback(void*) {
+    CloseHoverPulseOverlayOnMain();
+}
+
+struct ActiveHoverWindowCountContext final {
+    size_t* count = nullptr;
+};
+
+void CaptureActiveHoverWindowCountCallback(void* opaque) {
+    auto* context = static_cast<ActiveHoverWindowCountContext*>(opaque);
+    if (context == nullptr || context->count == nullptr) {
+        return;
+    }
+    *context->count = GetActiveHoverPulseWindowCountOnMain();
+}
+#endif
+
+} // namespace
 
 void ShowHoverPulseOverlay(const HoverEffectRenderCommand& command, const std::string& themeName) {
 #if !defined(__APPLE__)
@@ -14,11 +52,11 @@ void ShowHoverPulseOverlay(const HoverEffectRenderCommand& command, const std::s
     (void)themeName;
     return;
 #else
-    const HoverEffectRenderCommand commandCopy = command;
-    const std::string themeCopy = themeName;
-    macos_overlay_support::RunOnMainThreadAsync(^{
-      ShowHoverPulseOverlayOnMain(commandCopy, themeCopy);
-    });
+    auto* context = new ShowHoverPulseContext{
+        command,
+        themeName,
+    };
+    macos_overlay_support::RunOnMainThreadAsync(&ShowHoverPulseOverlayCallback, context);
 #endif
 }
 
@@ -54,9 +92,7 @@ void CloseHoverPulseOverlay() {
 #if !defined(__APPLE__)
     return;
 #else
-    macos_overlay_support::RunOnMainThreadSync(^{
-      CloseHoverPulseOverlayOnMain();
-    });
+    macos_overlay_support::RunOnMainThreadSync(&CloseHoverPulseOverlayCallback, nullptr);
 #endif
 }
 
@@ -64,10 +100,9 @@ size_t GetActiveHoverPulseWindowCount() {
 #if !defined(__APPLE__)
     return 0;
 #else
-    __block size_t count = 0;
-    macos_overlay_support::RunOnMainThreadSync(^{
-      count = GetActiveHoverPulseWindowCountOnMain();
-    });
+    size_t count = 0;
+    ActiveHoverWindowCountContext context{&count};
+    macos_overlay_support::RunOnMainThreadSync(&CaptureActiveHoverWindowCountCallback, &context);
     return count;
 #endif
 }

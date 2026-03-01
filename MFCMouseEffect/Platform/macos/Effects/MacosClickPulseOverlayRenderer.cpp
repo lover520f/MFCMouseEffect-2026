@@ -7,15 +7,39 @@
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "Platform/macos/Effects/MacosClickPulseWindowRegistry.h"
 
+#include <memory>
+
 namespace mousefx::macos_click_pulse {
+
+namespace {
+
+#if defined(__APPLE__)
+void CloseAllClickPulseWindowsCallback(void*) {
+    CloseAllClickPulseWindowsNow();
+}
+
+struct ShowClickPulseContext final {
+    ClickEffectRenderCommand command{};
+    std::string themeName{};
+};
+
+void ShowClickPulseOverlayCallback(void* opaque) {
+    std::unique_ptr<ShowClickPulseContext> context(
+        static_cast<ShowClickPulseContext*>(opaque));
+    if (!context) {
+        return;
+    }
+    ShowClickPulseOverlayOnMain(context->command, context->themeName);
+}
+#endif
+
+} // namespace
 
 void CloseAllClickPulseWindows() {
 #if !defined(__APPLE__)
     return;
 #else
-    macos_overlay_support::RunOnMainThreadSync(^{
-      CloseAllClickPulseWindowsNow();
-    });
+    macos_overlay_support::RunOnMainThreadSync(&CloseAllClickPulseWindowsCallback, nullptr);
 #endif
 }
 
@@ -25,11 +49,11 @@ void ShowClickPulseOverlay(const ClickEffectRenderCommand& command, const std::s
     (void)themeName;
     return;
 #else
-    const ClickEffectRenderCommand commandCopy = command;
-    const std::string themeCopy = themeName;
-    macos_overlay_support::RunOnMainThreadAsync(^{
-      ShowClickPulseOverlayOnMain(commandCopy, themeCopy);
-    });
+    auto* context = new ShowClickPulseContext{
+        command,
+        themeName,
+    };
+    macos_overlay_support::RunOnMainThreadAsync(&ShowClickPulseOverlayCallback, context);
 #endif
 }
 

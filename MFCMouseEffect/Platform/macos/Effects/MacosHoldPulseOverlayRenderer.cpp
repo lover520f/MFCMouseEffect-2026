@@ -6,7 +6,58 @@
 #include "Platform/macos/Effects/MacosHoldPulseOverlayRendererCore.h"
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 
+#include <memory>
+
 namespace mousefx::macos_hold_pulse {
+
+namespace {
+
+#if defined(__APPLE__)
+struct StartHoldPulseContext final {
+    HoldEffectStartCommand command{};
+    std::string themeName{};
+};
+
+void StartHoldPulseOverlayCallback(void* opaque) {
+    std::unique_ptr<StartHoldPulseContext> context(
+        static_cast<StartHoldPulseContext*>(opaque));
+    if (!context) {
+        return;
+    }
+    StartHoldPulseOverlayOnMain(context->command, context->themeName);
+}
+
+struct UpdateHoldPulseContext final {
+    HoldEffectUpdateCommand command{};
+};
+
+void UpdateHoldPulseOverlayCallback(void* opaque) {
+    std::unique_ptr<UpdateHoldPulseContext> context(
+        static_cast<UpdateHoldPulseContext*>(opaque));
+    if (!context) {
+        return;
+    }
+    UpdateHoldPulseOverlayOnMain(context->command);
+}
+
+void StopHoldPulseOverlayCallback(void*) {
+    CloseHoldPulseOverlayOnMain();
+}
+
+struct ActiveHoldWindowCountContext final {
+    size_t* count = nullptr;
+};
+
+void CaptureActiveHoldWindowCountCallback(void* opaque) {
+    auto* context = static_cast<ActiveHoldWindowCountContext*>(opaque);
+    if (context == nullptr || context->count == nullptr) {
+        return;
+    }
+    *context->count = GetActiveHoldPulseWindowCountOnMain();
+}
+#endif
+
+} // namespace
 
 void StartHoldPulseOverlay(const HoldEffectStartCommand& command, const std::string& themeName) {
 #if !defined(__APPLE__)
@@ -14,11 +65,11 @@ void StartHoldPulseOverlay(const HoldEffectStartCommand& command, const std::str
     (void)themeName;
     return;
 #else
-    const HoldEffectStartCommand commandCopy = command;
-    const std::string themeCopy = themeName;
-    macos_overlay_support::RunOnMainThreadAsync(^{
-      StartHoldPulseOverlayOnMain(commandCopy, themeCopy);
-    });
+    auto* context = new StartHoldPulseContext{
+        command,
+        themeName,
+    };
+    macos_overlay_support::RunOnMainThreadAsync(&StartHoldPulseOverlayCallback, context);
 #endif
 }
 
@@ -28,11 +79,9 @@ void UpdateHoldPulseOverlay(const HoldEffectUpdateCommand& command, const macos_
     (void)profile;
     return;
 #else
-    const HoldEffectUpdateCommand commandCopy = command;
-    macos_overlay_support::RunOnMainThreadAsync(^{
-      (void)profile;
-      UpdateHoldPulseOverlayOnMain(commandCopy);
-    });
+    (void)profile;
+    auto* context = new UpdateHoldPulseContext{command};
+    macos_overlay_support::RunOnMainThreadAsync(&UpdateHoldPulseOverlayCallback, context);
 #endif
 }
 
@@ -94,9 +143,7 @@ void StopHoldPulseOverlay() {
 #if !defined(__APPLE__)
     return;
 #else
-    macos_overlay_support::RunOnMainThreadSync(^{
-      CloseHoldPulseOverlayOnMain();
-    });
+    macos_overlay_support::RunOnMainThreadSync(&StopHoldPulseOverlayCallback, nullptr);
 #endif
 }
 
@@ -104,10 +151,9 @@ size_t GetActiveHoldPulseWindowCount() {
 #if !defined(__APPLE__)
     return 0;
 #else
-    __block size_t count = 0;
-    macos_overlay_support::RunOnMainThreadSync(^{
-      count = GetActiveHoldPulseWindowCountOnMain();
-    });
+    size_t count = 0;
+    ActiveHoldWindowCountContext context{&count};
+    macos_overlay_support::RunOnMainThreadSync(&CaptureActiveHoldWindowCountCallback, &context);
     return count;
 #endif
 }
