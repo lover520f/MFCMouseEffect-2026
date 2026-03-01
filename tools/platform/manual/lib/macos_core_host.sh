@@ -19,6 +19,14 @@ _mfx_manual_allow_bind_eacces_skip() {
     return 1
 }
 
+_mfx_manual_require_execution_enabled() {
+    local raw="${MFX_MANUAL_REQUIRE_EXECUTION:-0}"
+    case "$raw" in
+        1|true|TRUE|True|yes|YES|on|ON) return 0 ;;
+    esac
+    return 1
+}
+
 _mfx_manual_bind_permission_denied() {
     local log_file="$1"
     local diagnostics_file="$2"
@@ -36,6 +44,9 @@ _mfx_manual_bind_permission_denied() {
 
 _mfx_manual_mark_bind_eacces_skip() {
     MFX_MANUAL_STARTUP_SKIP_REASON="websettings bind permission denied under constrained runtime (stage=2,code=1|13)"
+    if _mfx_manual_require_execution_enabled; then
+        mfx_fail "manual selfcheck skipped while MFX_MANUAL_REQUIRE_EXECUTION=1: $MFX_MANUAL_STARTUP_SKIP_REASON"
+    fi
     mfx_info "manual selfcheck skipped: $MFX_MANUAL_STARTUP_SKIP_REASON"
     if [[ -s "$MFX_MANUAL_STARTUP_DIAGNOSTICS_FILE" ]]; then
         mfx_info "manual startup diagnostics:"
@@ -61,6 +72,9 @@ _mfx_manual_early_exit_without_probe() {
 
 _mfx_manual_mark_early_exit_skip() {
     MFX_MANUAL_STARTUP_SKIP_REASON="host exited before probe/log in constrained runtime (likely unavailable tray/gui session)"
+    if _mfx_manual_require_execution_enabled; then
+        mfx_fail "manual selfcheck skipped while MFX_MANUAL_REQUIRE_EXECUTION=1: $MFX_MANUAL_STARTUP_SKIP_REASON"
+    fi
     mfx_info "manual selfcheck skipped: $MFX_MANUAL_STARTUP_SKIP_REASON"
 }
 

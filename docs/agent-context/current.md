@@ -61,6 +61,7 @@
 - Core automation contract regression now defaults `MFX_CORE_HTTP_ALLOW_BIND_EACCES_SKIP=1`, aligning with effects/wasm contracts and avoiding noisy false-negative startup failures under constrained runners.
 - Core HTTP startup now short-circuits on the first confirmed bind-permission denial when skip mode is enabled, reducing duplicate retry noise in constrained runners.
 - macOS manual selfcheck host helper now returns controlled skip (`MFX_MANUAL_ALLOW_BIND_EACCES_SKIP=1`) for constrained-runtime startup failures (`websettings_start_failed(stage=2,code=1/13)` and no-probe/no-log early exit), avoiding noisy false-negative `host exited early`; POSIX suite enables this skip policy by default for manual selfcheck phases.
+- macOS manual selfchecks now support strict non-skip mode (`MFX_MANUAL_REQUIRE_EXECUTION=1`), failing immediately if constrained-runtime startup would otherwise be treated as skip.
 - Startup options now support explicit single-instance key override (`--single-instance-key=...` / `MFX_SINGLE_INSTANCE_KEY`); manual selfchecks can auto-isolate lock key under constrained-runtime skip mode to avoid stale-lock false negatives.
 
 ## High-Value Manual Entrypoints (macOS)
