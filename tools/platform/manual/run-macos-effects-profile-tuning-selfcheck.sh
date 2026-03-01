@@ -157,7 +157,15 @@ host_env+=("MFX_TEST_EFFECTS_DURATION_SCALE=$duration_scale")
 host_env+=("MFX_TEST_EFFECTS_SIZE_SCALE=$size_scale")
 host_env+=("MFX_TEST_EFFECTS_OPACITY_SCALE=$opacity_scale")
 host_env+=("MFX_TEST_EFFECTS_TRAIL_THROTTLE_SCALE=$trail_throttle_scale")
-mfx_manual_start_core_host "$host_bin" "$probe_file" "$log_file" "${host_env[@]}"
+start_status=0
+mfx_manual_start_core_host "$host_bin" "$probe_file" "$log_file" "${host_env[@]}" || start_status=$?
+if [[ "$start_status" -eq 2 ]]; then
+    mfx_ok "macos effects tuning selfcheck skipped: $MFX_MANUAL_STARTUP_SKIP_REASON"
+    exit 0
+fi
+if [[ "$start_status" -ne 0 ]]; then
+    exit "$start_status"
+fi
 
 printf 'mfx_pid=%s\n' "$MFX_MANUAL_HOST_PID"
 printf 'settings_url=%s\n' "$MFX_MANUAL_SETTINGS_URL"

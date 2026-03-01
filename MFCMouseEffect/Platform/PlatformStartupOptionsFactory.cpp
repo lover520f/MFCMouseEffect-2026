@@ -2,6 +2,8 @@
 
 #include "Platform/PlatformStartupOptionsFactory.h"
 
+#include <cstdlib>
+#include <string>
 #include <string_view>
 
 #include "Platform/PlatformTarget.h"
@@ -62,6 +64,26 @@ bool TryParseInlineMode(std::string_view arg, std::string_view* outMode) {
     return false;
 }
 
+bool TryParseInlineSingleInstanceKey(std::string_view arg, std::string_view* outKey) {
+    if (!outKey) {
+        return false;
+    }
+    constexpr std::string_view kPrefixes[] = {
+        "-single-instance-key=",
+        "--single-instance-key=",
+        "-single-instance=",
+        "--single-instance=",
+    };
+    for (const auto prefix : kPrefixes) {
+        if (!StartsWithIgnoreCaseAscii(arg, prefix)) {
+            continue;
+        }
+        *outKey = arg.substr(prefix.size());
+        return true;
+    }
+    return false;
+}
+
 void ApplyModeArg(std::string_view mode, AppShellStartOptions* options) {
     if (!options) {
         return;
@@ -73,6 +95,24 @@ void ApplyModeArg(std::string_view mode, AppShellStartOptions* options) {
     if (EqualsIgnoreCaseAscii(mode, "tray") || EqualsIgnoreCaseAscii(mode, "normal")) {
         options->showTrayIcon = true;
     }
+}
+
+void ApplySingleInstanceKeyArg(std::string_view key, AppShellStartOptions* options) {
+    if (!options || key.empty()) {
+        return;
+    }
+    options->singleInstanceKey.assign(key.begin(), key.end());
+}
+
+void ApplySingleInstanceKeyEnv(AppShellStartOptions* options) {
+    if (!options) {
+        return;
+    }
+    const char* envKey = std::getenv("MFX_SINGLE_INSTANCE_KEY");
+    if (!envKey || *envKey == '\0') {
+        return;
+    }
+    ApplySingleInstanceKeyArg(envKey, options);
 }
 
 #if MFX_PLATFORM_WINDOWS
@@ -102,22 +142,38 @@ std::string WideToUtf8(const wchar_t* wideText) {
 
 AppShellStartOptions ParseStartupOptionsFromArgs(const PlatformEntryArgs& entryArgs) {
     AppShellStartOptions options{};
+    ApplySingleInstanceKeyEnv(&options);
     const auto& args = entryArgs.argvUtf8;
     for (size_t i = 0; i < args.size(); ++i) {
         const std::string_view arg = args[i];
+        std::string_view inlineKey{};
+        if (TryParseInlineSingleInstanceKey(arg, &inlineKey)) {
+            ApplySingleInstanceKeyArg(inlineKey, &options);
+            continue;
+        }
         std::string_view inlineMode{};
         if (TryParseInlineMode(arg, &inlineMode)) {
             ApplyModeArg(inlineMode, &options);
             continue;
         }
 
-        if (!EqualsIgnoreCaseAscii(arg, "-mode") && !EqualsIgnoreCaseAscii(arg, "--mode")) {
+        if (EqualsIgnoreCaseAscii(arg, "-mode") || EqualsIgnoreCaseAscii(arg, "--mode")) {
+            if (i + 1 >= args.size()) {
+                continue;
+            }
+            ApplyModeArg(args[i + 1], &options);
             continue;
         }
-        if (i + 1 >= args.size()) {
+        if (EqualsIgnoreCaseAscii(arg, "-single-instance-key") ||
+            EqualsIgnoreCaseAscii(arg, "--single-instance-key") ||
+            EqualsIgnoreCaseAscii(arg, "-single-instance") ||
+            EqualsIgnoreCaseAscii(arg, "--single-instance")) {
+            if (i + 1 >= args.size()) {
+                continue;
+            }
+            ApplySingleInstanceKeyArg(args[i + 1], &options);
             continue;
         }
-        ApplyModeArg(args[i + 1], &options);
     }
     return options;
 }

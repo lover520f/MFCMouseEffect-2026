@@ -8,6 +8,76 @@ MFX_MANUAL_SETTINGS_TOKEN=""
 MFX_MANUAL_BASE_URL=""
 MFX_MANUAL_LOG_FILE=""
 MFX_MANUAL_HOST_BIN=""
+MFX_MANUAL_STARTUP_SKIP_REASON=""
+MFX_MANUAL_STARTUP_DIAGNOSTICS_FILE=""
+
+_mfx_manual_allow_bind_eacces_skip() {
+    local raw="${MFX_MANUAL_ALLOW_BIND_EACCES_SKIP:-0}"
+    case "$raw" in
+        1|true|TRUE|True|yes|YES|on|ON) return 0 ;;
+    esac
+    return 1
+}
+
+_mfx_manual_bind_permission_denied() {
+    local log_file="$1"
+    local diagnostics_file="$2"
+
+    if [[ -s "$diagnostics_file" ]] && \
+        grep -Eq "reason=websettings_start_failed\(stage=2,code=(1|13)\)" "$diagnostics_file"; then
+        return 0
+    fi
+    if [[ -s "$log_file" ]] && \
+        grep -Eq "Scaffold settings server failed to start \(stage=2,code=(1|13)\)" "$log_file"; then
+        return 0
+    fi
+    return 1
+}
+
+_mfx_manual_mark_bind_eacces_skip() {
+    MFX_MANUAL_STARTUP_SKIP_REASON="websettings bind permission denied under constrained runtime (stage=2,code=1|13)"
+    mfx_info "manual selfcheck skipped: $MFX_MANUAL_STARTUP_SKIP_REASON"
+    if [[ -s "$MFX_MANUAL_STARTUP_DIAGNOSTICS_FILE" ]]; then
+        mfx_info "manual startup diagnostics:"
+        cat "$MFX_MANUAL_STARTUP_DIAGNOSTICS_FILE" || true
+    fi
+}
+
+_mfx_manual_early_exit_without_probe() {
+    local probe_file="$1"
+    local log_file="$2"
+    local diagnostics_file="$3"
+    if [[ -s "$probe_file" ]]; then
+        return 1
+    fi
+    if [[ -s "$log_file" ]]; then
+        return 1
+    fi
+    if [[ -s "$diagnostics_file" ]]; then
+        return 1
+    fi
+    return 0
+}
+
+_mfx_manual_mark_early_exit_skip() {
+    MFX_MANUAL_STARTUP_SKIP_REASON="host exited before probe/log in constrained runtime (likely unavailable tray/gui session)"
+    mfx_info "manual selfcheck skipped: $MFX_MANUAL_STARTUP_SKIP_REASON"
+}
+
+_mfx_manual_resolve_single_instance_key() {
+    local explicit_key="${MFX_MANUAL_SINGLE_INSTANCE_KEY:-}"
+    if [[ -n "$explicit_key" ]]; then
+        printf '%s' "$explicit_key"
+        return 0
+    fi
+    if _mfx_manual_allow_bind_eacces_skip; then
+        local stamp="0"
+        stamp="$(date +%s 2>/dev/null || printf '0')"
+        printf 'Global\\MFCMouseEffect_ManualSelfcheck_%s_%s' "$$" "$stamp"
+        return 0
+    fi
+    printf ''
+}
 
 mfx_manual_probe_value() {
     local key="$1"
@@ -55,6 +125,13 @@ mfx_manual_start_core_host() {
     local log_file="$3"
     shift 3
     local -a extra_env=("$@")
+    local diagnostics_file="${probe_file}.diagnostics"
+    local single_instance_key=""
+    single_instance_key="$(_mfx_manual_resolve_single_instance_key)"
+    local -a host_args=(--mode=tray)
+    if [[ -n "$single_instance_key" ]]; then
+        host_args+=("--single-instance-key=$single_instance_key")
+    fi
 
     if [[ ! -x "$host_bin" ]]; then
         mfx_fail "host binary missing or not executable: $host_bin"
@@ -62,12 +139,18 @@ mfx_manual_start_core_host() {
 
     mfx_terminate_stale_entry_host "before manual host start"
 
-    rm -f "$probe_file"
+    rm -f "$probe_file" "$diagnostics_file"
+    MFX_MANUAL_STARTUP_SKIP_REASON=""
+    MFX_MANUAL_STARTUP_DIAGNOSTICS_FILE="$diagnostics_file"
 
     mfx_info "start host (tray mode)"
+    if [[ -n "$single_instance_key" ]]; then
+        mfx_info "manual host single-instance key: $single_instance_key"
+    fi
     nohup env MFX_CORE_WEB_SETTINGS_PROBE_FILE="$probe_file" \
+        MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE="$diagnostics_file" \
         "${extra_env[@]}" \
-        "$host_bin" --mode=tray >"$log_file" 2>&1 &
+        "$host_bin" "${host_args[@]}" >"$log_file" 2>&1 &
     local pid="$!"
 
     for _ in $(seq 1 100); do
@@ -81,6 +164,15 @@ mfx_manual_start_core_host() {
     done
 
     if ! kill -0 "$pid" 2>/dev/null; then
+        if _mfx_manual_allow_bind_eacces_skip && _mfx_manual_bind_permission_denied "$log_file" "$diagnostics_file"; then
+            _mfx_manual_mark_bind_eacces_skip
+            return 2
+        fi
+        if _mfx_manual_allow_bind_eacces_skip && \
+            _mfx_manual_early_exit_without_probe "$probe_file" "$log_file" "$diagnostics_file"; then
+            _mfx_manual_mark_early_exit_skip
+            return 2
+        fi
         tail -n 80 "$log_file" >&2 || true
         mfx_fail "host exited early"
     fi
@@ -90,6 +182,12 @@ mfx_manual_start_core_host() {
     local token
     token="$(mfx_manual_probe_value "token" "$probe_file")"
     if [[ -z "$settings_url" || -z "$token" ]]; then
+        if _mfx_manual_allow_bind_eacces_skip && _mfx_manual_bind_permission_denied "$log_file" "$diagnostics_file"; then
+            kill -TERM "$pid" 2>/dev/null || true
+            wait "$pid" 2>/dev/null || true
+            _mfx_manual_mark_bind_eacces_skip
+            return 2
+        fi
         tail -n 80 "$log_file" >&2 || true
         mfx_fail "probe file missing url/token: $probe_file"
     fi

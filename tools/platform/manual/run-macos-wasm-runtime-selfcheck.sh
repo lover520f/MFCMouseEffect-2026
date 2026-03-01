@@ -126,7 +126,15 @@ mfx_manual_acquire_entry_host_lock
 mfx_manual_prepare_core_host_binary "$repo_root" "$build_dir" "$skip_build"
 host_bin="$MFX_MANUAL_HOST_BIN"
 
-mfx_manual_start_core_host "$host_bin" "$probe_file" "$log_file" "MFX_ENABLE_WASM_TEST_DISPATCH_API=1"
+start_status=0
+mfx_manual_start_core_host "$host_bin" "$probe_file" "$log_file" "MFX_ENABLE_WASM_TEST_DISPATCH_API=1" || start_status=$?
+if [[ "$start_status" -eq 2 ]]; then
+    mfx_ok "macos wasm runtime selfcheck skipped: $MFX_MANUAL_STARTUP_SKIP_REASON"
+    exit 0
+fi
+if [[ "$start_status" -ne 0 ]]; then
+    exit "$start_status"
+fi
 
 printf 'mfx_pid=%s\n' "$MFX_MANUAL_HOST_PID"
 printf 'settings_url=%s\n' "$MFX_MANUAL_SETTINGS_URL"

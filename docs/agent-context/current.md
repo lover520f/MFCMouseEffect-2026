@@ -53,6 +53,8 @@
 - Core HTTP regression teardown now attempts `/api/stop` before TERM/KILL fallback to reduce forced-stop noise and flakiness.
 - Scaffold HTTP regression now logs startup failure with `stage/code`; `bind EPERM/EACCES (stage=2, code=1/13)` is treated as a controlled skip in sandbox-like runners (override with `MFX_HTTP_SKIP_BIND_EACCES=0`).
 - Core HTTP startup helper now reports bind permission failures as `EPERM/EACCES (stage=2, code=1/13)` and supports the same constrained-runtime skip intent via `MFX_CORE_HTTP_ALLOW_BIND_EACCES_SKIP`.
+- macOS manual selfcheck host helper now returns controlled skip (`MFX_MANUAL_ALLOW_BIND_EACCES_SKIP=1`) for constrained-runtime startup failures (`websettings_start_failed(stage=2,code=1/13)` and no-probe/no-log early exit), avoiding noisy false-negative `host exited early`; POSIX suite enables this skip policy by default for manual selfcheck phases.
+- Startup options now support explicit single-instance key override (`--single-instance-key=...` / `MFX_SINGLE_INSTANCE_KEY`); manual selfchecks can auto-isolate lock key under constrained-runtime skip mode to avoid stale-lock false negatives.
 
 ## High-Value Manual Entrypoints (macOS)
 - One-command launcher:

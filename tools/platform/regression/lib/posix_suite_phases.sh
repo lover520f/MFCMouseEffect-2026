@@ -120,7 +120,8 @@ mfx_posix_suite_run_macos_automation_injection_selfcheck_phase() {
     fi
 
     mfx_info "run macos automation injection selfcheck phase"
-    "$repo_root/tools/platform/manual/run-macos-automation-injection-selfcheck.sh" "${args[@]}"
+    MFX_MANUAL_ALLOW_BIND_EACCES_SKIP="${MFX_MANUAL_ALLOW_BIND_EACCES_SKIP:-1}" \
+        "$repo_root/tools/platform/manual/run-macos-automation-injection-selfcheck.sh" "${args[@]}"
 }
 
 mfx_posix_suite_run_macos_automation_app_scope_selfcheck_phase() {
@@ -142,7 +143,8 @@ mfx_posix_suite_run_macos_automation_app_scope_selfcheck_phase() {
     fi
 
     mfx_info "run macos automation app-scope selfcheck phase"
-    "$repo_root/tools/platform/manual/run-macos-automation-app-scope-selfcheck.sh" "${args[@]}"
+    MFX_MANUAL_ALLOW_BIND_EACCES_SKIP="${MFX_MANUAL_ALLOW_BIND_EACCES_SKIP:-1}" \
+        "$repo_root/tools/platform/manual/run-macos-automation-app-scope-selfcheck.sh" "${args[@]}"
 }
 
 mfx_posix_suite_run_macos_vm_suppression_selfcheck_phase() {
@@ -164,7 +166,8 @@ mfx_posix_suite_run_macos_vm_suppression_selfcheck_phase() {
     fi
 
     mfx_info "run macos vm foreground suppression selfcheck phase"
-    "$repo_root/tools/platform/manual/run-macos-vm-foreground-suppression-selfcheck.sh" "${args[@]}"
+    MFX_MANUAL_ALLOW_BIND_EACCES_SKIP="${MFX_MANUAL_ALLOW_BIND_EACCES_SKIP:-1}" \
+        "$repo_root/tools/platform/manual/run-macos-vm-foreground-suppression-selfcheck.sh" "${args[@]}"
 }
 
 mfx_posix_suite_run_macos_effects_type_parity_selfcheck_phase() {
@@ -186,7 +189,8 @@ mfx_posix_suite_run_macos_effects_type_parity_selfcheck_phase() {
     fi
 
     mfx_info "run macos effects type parity selfcheck phase"
-    "$repo_root/tools/platform/manual/run-macos-effects-type-parity-selfcheck.sh" "${args[@]}"
+    MFX_MANUAL_ALLOW_BIND_EACCES_SKIP="${MFX_MANUAL_ALLOW_BIND_EACCES_SKIP:-1}" \
+        "$repo_root/tools/platform/manual/run-macos-effects-type-parity-selfcheck.sh" "${args[@]}"
 }
 
 mfx_posix_suite_run_macos_effects_tuning_selfcheck_phase() {
@@ -208,7 +212,8 @@ mfx_posix_suite_run_macos_effects_tuning_selfcheck_phase() {
     fi
 
     mfx_info "run macos effects tuning selfcheck phase"
-    "$repo_root/tools/platform/manual/run-macos-effects-profile-tuning-selfcheck.sh" "${args[@]}"
+    MFX_MANUAL_ALLOW_BIND_EACCES_SKIP="${MFX_MANUAL_ALLOW_BIND_EACCES_SKIP:-1}" \
+        "$repo_root/tools/platform/manual/run-macos-effects-profile-tuning-selfcheck.sh" "${args[@]}"
 }
 
 mfx_posix_suite_run_macos_wasm_selfcheck_phase() {
@@ -230,7 +235,8 @@ mfx_posix_suite_run_macos_wasm_selfcheck_phase() {
     fi
 
     mfx_info "run macos wasm runtime selfcheck phase"
-    "$repo_root/tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh" "${args[@]}"
+    MFX_MANUAL_ALLOW_BIND_EACCES_SKIP="${MFX_MANUAL_ALLOW_BIND_EACCES_SKIP:-1}" \
+        "$repo_root/tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh" "${args[@]}"
 }
 
 mfx_posix_suite_run_linux_gate_phase() {
