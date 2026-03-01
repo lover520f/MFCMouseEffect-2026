@@ -4,6 +4,7 @@
 
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "WasmCommandBufferParser.h"
+#include "WasmImageCommandConfig.h"
 #include "WasmPluginAbi.h"
 #include "WasmRenderResourceResolver.h"
 #include "WasmTextCommandConfig.h"
@@ -15,11 +16,6 @@
 namespace mousefx::wasm {
 
 namespace {
-
-SpawnImageCommandV1 ToSpawnImageCommand(const SpawnImageAffineCommandV1& cmd) {
-    // Current host renderer supports base image kinematics; keep affine extras for future extension.
-    return cmd.base;
-}
 
 void ExecuteSpawnText(
     const SpawnTextCommandV1& cmd,
@@ -158,13 +154,13 @@ CommandExecutionResult WasmClickCommandExecutor::Execute(
         case CommandKind::SpawnImage: {
             SpawnImageCommandV1 cmd{};
             std::memcpy(&cmd, raw, sizeof(cmd));
-            ExecuteSpawnImage(cmd, config, activeManifestPath, &result);
+            ExecuteSpawnImage(ResolveSpawnImageCommand(cmd), config, activeManifestPath, &result);
             break;
         }
         case CommandKind::SpawnImageAffine: {
             SpawnImageAffineCommandV1 cmd{};
             std::memcpy(&cmd, raw, sizeof(cmd));
-            ExecuteSpawnImage(ToSpawnImageCommand(cmd), config, activeManifestPath, &result);
+            ExecuteSpawnImage(ResolveSpawnImageCommand(cmd), config, activeManifestPath, &result);
             break;
         }
         default:

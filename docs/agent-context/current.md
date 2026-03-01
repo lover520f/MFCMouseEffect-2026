@@ -6,6 +6,7 @@
 - Constraints: no Windows regression; Linux follows compile + contract coverage.
 
 ## Latest Delta (2026-03-01)
+- WASM image affine normalization is now single-source in Core (`MouseFx/Core/Wasm/WasmImageCommandConfig.h`); both Windows (`WasmClickCommandExecutor`) and macOS (`MacosWasmCommandRenderDispatch.Image.cpp`) consume the same resolver, and Windows no longer drops affine translation/scale/rotation metadata for `spawn_image_affine`.
 - macOS WASM `spawn_text` render path now reuses shared floating-text fallback (`MacosTextEffectFallback`) instead of the old standalone dark panel overlay path; text command physics/scale mapping now follows the same life/size/float-distance formula as Windows command execution semantics, and obsolete WASM text-overlay Swift bridge/layout sources were removed from macOS build wiring.
 - WASM `spawn_text` config mapping is now single-source in Core (`MouseFx/Core/Wasm/WasmTextCommandConfig.h`), and both Windows executor (`WasmClickCommandExecutor`) and macOS dispatch (`MacosWasmCommandRenderDispatch.Text.cpp`) consume the same helper to prevent future cross-platform drift.
 - WASM dispatch contracts and macOS wasm manual selfcheck now assert text-fallback counter progression (`fallback_show_count`) by comparing `/api/state` before/after `test-dispatch-click`, so regressions that silently bypass the shared floating-text path are caught automatically.

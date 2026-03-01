@@ -4,6 +4,7 @@
 
 #include "Platform/macos/Wasm/MacosWasmCommandRenderResolvers.h"
 #include "Platform/macos/Wasm/MacosWasmTransientOverlay.h"
+#include "MouseFx/Core/Wasm/WasmImageCommandConfig.h"
 #include "MouseFx/Core/Wasm/WasmPluginAbi.h"
 
 #include <cmath>
@@ -11,14 +12,12 @@
 
 namespace mousefx::platform::macos::wasm_render_dispatch {
 
-bool HandleSpawnImageCommand(
-    const uint8_t* raw,
+namespace {
+
+WasmImageOverlayRequest BuildImageOverlayRequest(
+    const mousefx::wasm::SpawnImageCommandV1& cmd,
     const mousefx::EffectConfig& config,
-    const std::wstring& activeManifestPath,
-    mousefx::wasm::CommandExecutionResult* outResult,
-    ThrottleCounters* outThrottleCounters) {
-    mousefx::wasm::SpawnImageCommandV1 cmd{};
-    std::memcpy(&cmd, raw, sizeof(cmd));
+    const std::wstring& activeManifestPath) {
     WasmImageOverlayRequest request{};
     request.screenPt.x = static_cast<int32_t>(std::lround(cmd.x));
     request.screenPt.y = static_cast<int32_t>(std::lround(cmd.y));
@@ -34,6 +33,21 @@ bool HandleSpawnImageCommand(
     request.accelerationY = cmd.ay;
     request.rotationRad = cmd.rotation;
     request.applyTint = wasm_render_resolver::HasVisibleAlpha(cmd.tintRgba);
+    return request;
+}
+
+} // namespace
+
+bool HandleSpawnImageCommand(
+    const uint8_t* raw,
+    const mousefx::EffectConfig& config,
+    const std::wstring& activeManifestPath,
+    mousefx::wasm::CommandExecutionResult* outResult,
+    ThrottleCounters* outThrottleCounters) {
+    mousefx::wasm::SpawnImageCommandV1 cmd{};
+    std::memcpy(&cmd, raw, sizeof(cmd));
+    const mousefx::wasm::SpawnImageCommandV1 resolved = mousefx::wasm::ResolveSpawnImageCommand(cmd);
+    const WasmImageOverlayRequest request = BuildImageOverlayRequest(resolved, config, activeManifestPath);
     const WasmOverlayRenderResult renderResult = ShowWasmImageOverlay(request);
     if (renderResult == WasmOverlayRenderResult::Rendered) {
         outResult->executedImageCommands += 1;
@@ -53,21 +67,8 @@ bool HandleSpawnImageAffineCommand(
     ThrottleCounters* outThrottleCounters) {
     mousefx::wasm::SpawnImageAffineCommandV1 cmd{};
     std::memcpy(&cmd, raw, sizeof(cmd));
-    WasmImageOverlayRequest request{};
-    request.screenPt.x = static_cast<int32_t>(std::lround(cmd.base.x + cmd.affineDx));
-    request.screenPt.y = static_cast<int32_t>(std::lround(cmd.base.y + cmd.affineDy));
-    request.assetPath = wasm_render_resolver::ResolveImageAssetPath(activeManifestPath, cmd.base.imageId);
-    request.tintArgb = wasm_render_resolver::ResolveImageTintArgb(config, cmd.base.tintRgba);
-    request.scale = cmd.base.scale;
-    request.alpha = cmd.base.alpha;
-    request.lifeMs = cmd.base.lifeMs;
-    request.delayMs = cmd.base.delayMs;
-    request.velocityX = cmd.base.vx;
-    request.velocityY = cmd.base.vy;
-    request.accelerationX = cmd.base.ax;
-    request.accelerationY = cmd.base.ay;
-    request.rotationRad = cmd.base.rotation;
-    request.applyTint = wasm_render_resolver::HasVisibleAlpha(cmd.base.tintRgba);
+    const mousefx::wasm::SpawnImageCommandV1 resolved = mousefx::wasm::ResolveSpawnImageCommand(cmd);
+    const WasmImageOverlayRequest request = BuildImageOverlayRequest(resolved, config, activeManifestPath);
     const WasmOverlayRenderResult renderResult = ShowWasmImageOverlay(request);
     if (renderResult == WasmOverlayRenderResult::Rendered) {
         outResult->executedImageCommands += 1;
