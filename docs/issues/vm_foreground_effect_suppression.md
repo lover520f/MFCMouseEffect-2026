@@ -16,7 +16,10 @@
   - foreground window title
 - VM token matching includes common identifiers such as:
   - `vmware`, `virtualbox`, `vmconnect`, `qemu`, `parallels`, `hyper-v`
-- Added a 120ms check throttle to reduce per-event overhead.
+- Added a check throttle (default `800ms`) to reduce per-event overhead.
+- Check throttle supports test override via env:
+  - `MFX_VM_FOREGROUND_SUPPRESSION_CHECK_INTERVAL_MS`
+  - valid range: `10..5000` (out-of-range/invalid values fall back to default `800ms`)
 
 ## AppController Integration
 - `AppController` now maintains VM suppression state.
@@ -35,4 +38,3 @@
 2. Move/focus into VMware/VirtualBox/Hyper-V VM window: effects stop.
 3. Return focus to host app: effects resume automatically.
 4. Hold/hover should not remain "stuck" after VM entry/exit transitions.
-

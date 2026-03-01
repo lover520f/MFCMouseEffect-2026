@@ -23,6 +23,7 @@ Use it as a pointer index, not a full historical catalog.
 - POSIX Linux compile gate workflow: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-linux-compile-gate-workflow.md`
 
 ## Recent Issue Docs
+- macOS VM suppression check-interval test configurability: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp12-macos-vm-suppression-check-interval-test-config.md`
 - POSIX suite macOS effects type parity selfcheck gate: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp11-posix-suite-macos-effects-type-parity-selfcheck-gate.md`
 - input_capture VM suppression schema/state contract alignment: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp10-input-capture-vm-suppression-schema-state-contract-alignment.md`
 - macOS input permission degraded notice restart-copy correction: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp9-macos-input-permission-degraded-notice-hot-recovery-copy.md`

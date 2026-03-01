@@ -23,6 +23,7 @@
 - POSIX Linux 编译门禁：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-linux-compile-gate-workflow.md`
 
 ## 近期问题文档
+- macOS VM 抑制检测周期测试态可配置化：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp12-macos-vm-suppression-check-interval-test-config.md`
 - POSIX 套件接入 macOS 特效类型等价自检门禁：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp11-posix-suite-macos-effects-type-parity-selfcheck-gate.md`
 - input_capture VM 抑制字段 schema/state 契约对齐：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp10-input-capture-vm-suppression-schema-state-contract-alignment.md`
 - macOS 输入权限降级提示文案（去除“需重启”误导）：`/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase56zzp9-macos-input-permission-degraded-notice-hot-recovery-copy.md`

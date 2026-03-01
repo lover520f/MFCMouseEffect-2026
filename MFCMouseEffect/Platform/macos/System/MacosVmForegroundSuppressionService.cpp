@@ -4,7 +4,9 @@
 
 #include "MouseFx/Utils/StringUtils.h"
 
+#include <cerrno>
 #include <cstdlib>
+#include <limits>
 
 namespace mousefx {
 namespace {
@@ -30,6 +32,11 @@ bool IsTrueLike(const std::string& value) {
 } // namespace
 
 bool MacosVmForegroundSuppressionService::ShouldSuppress(uint64_t nowTickMs) {
+    if (!checkIntervalResolved_) {
+        checkIntervalMs_ = ResolveCheckIntervalMsFromEnv();
+        checkIntervalResolved_ = true;
+    }
+
     if (!forcedSuppressionResolved_) {
         forcedSuppressionEnabled_ = TryReadForcedSuppressionByEnv(&forcedSuppressionValue_);
         forcedSuppressionResolved_ = true;
@@ -47,7 +54,7 @@ bool MacosVmForegroundSuppressionService::ShouldSuppress(uint64_t nowTickMs) {
         return false;
     }
 
-    if ((nowTickMs - lastCheckTickMs_) < kCheckIntervalMs) {
+    if ((nowTickMs - lastCheckTickMs_) < checkIntervalMs_) {
         return lastResult_;
     }
 
@@ -92,6 +99,40 @@ bool MacosVmForegroundSuppressionService::IsSuppressionEnabledByEnv() {
         return true;
     }
     return !IsFalseLike(value);
+}
+
+uint64_t MacosVmForegroundSuppressionService::ResolveCheckIntervalMsFromEnv() {
+    const char* raw = std::getenv("MFX_VM_FOREGROUND_SUPPRESSION_CHECK_INTERVAL_MS");
+    if (!raw) {
+        return kDefaultCheckIntervalMs;
+    }
+
+    const std::string value = TrimAscii(raw);
+    if (value.empty()) {
+        return kDefaultCheckIntervalMs;
+    }
+
+    char* end = nullptr;
+    errno = 0;
+    const unsigned long long parsed = std::strtoull(value.c_str(), &end, 10);
+    if (errno != 0 || end == value.c_str() || (end && *end != '\0')) {
+        return kDefaultCheckIntervalMs;
+    }
+    if (parsed == 0) {
+        return kDefaultCheckIntervalMs;
+    }
+    if (parsed > static_cast<unsigned long long>(std::numeric_limits<uint64_t>::max())) {
+        return kDefaultCheckIntervalMs;
+    }
+
+    const uint64_t interval = static_cast<uint64_t>(parsed);
+    if (interval < 10) {
+        return 10;
+    }
+    if (interval > 5000) {
+        return 5000;
+    }
+    return interval;
 }
 
 bool MacosVmForegroundSuppressionService::IsVmForegroundProcess(const std::string& processBaseName) {

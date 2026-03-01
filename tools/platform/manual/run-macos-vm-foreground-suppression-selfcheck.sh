@@ -18,6 +18,7 @@ Options:
   --build-dir <path>          Build directory (default: /tmp/mfx-platform-macos-core-build)
   --log-prefix <path>         Host log file prefix (default: /tmp/mfx-core-vm-suppression-selfcheck)
   --probe-prefix <path>       Probe file prefix (default: /tmp/mfx-core-vm-suppression-selfcheck)
+  --check-interval-ms <num>   Override MFX_VM_FOREGROUND_SUPPRESSION_CHECK_INTERVAL_MS for test run (default: 50)
   --jobs <num>                Build jobs (sets MFX_BUILD_JOBS)
   --skip-build                Skip cmake configure/build
   -h, --help                  Show this help
@@ -27,6 +28,7 @@ EOF
 build_dir="/tmp/mfx-platform-macos-core-build"
 log_prefix="/tmp/mfx-core-vm-suppression-selfcheck"
 probe_prefix="/tmp/mfx-core-vm-suppression-selfcheck"
+check_interval_ms="50"
 skip_build=0
 build_jobs=""
 
@@ -45,6 +47,11 @@ while [[ $# -gt 0 ]]; do
     --probe-prefix)
         [[ $# -ge 2 ]] || mfx_fail "missing value for --probe-prefix"
         probe_prefix="$2"
+        shift 2
+        ;;
+    --check-interval-ms)
+        [[ $# -ge 2 ]] || mfx_fail "missing value for --check-interval-ms"
+        check_interval_ms="$2"
         shift 2
         ;;
     --jobs)
@@ -72,6 +79,9 @@ fi
 
 mfx_manual_apply_build_jobs_env "$build_jobs" "--jobs"
 mfx_require_cmd curl
+if ! [[ "$check_interval_ms" =~ ^[0-9]+$ ]] || [[ "$check_interval_ms" -le 0 ]]; then
+    mfx_fail "--check-interval-ms must be a positive integer"
+fi
 
 tmp_dir="$(mktemp -d)"
 cleanup() {
@@ -120,6 +130,7 @@ run_case() {
     declare -a host_env
     host_env+=("MFX_TEST_INPUT_CAPTURE_PERMISSION_SIM_FILE=$permission_sim_file")
     host_env+=("MFX_VM_FOREGROUND_SUPPRESSION_FORCE=$force_value")
+    host_env+=("MFX_VM_FOREGROUND_SUPPRESSION_CHECK_INTERVAL_MS=$check_interval_ms")
     mfx_manual_start_core_host "$host_bin" "$probe_file" "$log_file" "${host_env[@]}"
     wait_vm_suppression_state "$expected_state" "$state_file" "vm suppression selfcheck ($case_name)"
     mfx_manual_stop_core_host "$MFX_MANUAL_HOST_PID"

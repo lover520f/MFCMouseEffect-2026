@@ -16,6 +16,7 @@ public:
 private:
     static bool TryReadForcedSuppressionByEnv(bool* outValue);
     static bool IsSuppressionEnabledByEnv();
+    static uint64_t ResolveCheckIntervalMsFromEnv();
     static bool IsVmForegroundProcess(const std::string& processBaseName);
     static bool ContainsVmToken(const std::string& input);
 
@@ -32,13 +33,15 @@ private:
         "prl_vm",
         "hyper-v",
     };
-    static constexpr uint64_t kCheckIntervalMs = 800;
+    static constexpr uint64_t kDefaultCheckIntervalMs = 800;
 
     MacosForegroundProcessService foregroundProcessService_{};
     uint64_t lastCheckTickMs_ = 0;
+    uint64_t checkIntervalMs_ = kDefaultCheckIntervalMs;
     bool lastResult_ = false;
     bool envEnabledCached_ = false;
     bool envEnabledResolved_ = false;
+    bool checkIntervalResolved_ = false;
     bool forcedSuppressionResolved_ = false;
     bool forcedSuppressionEnabled_ = false;
     bool forcedSuppressionValue_ = false;

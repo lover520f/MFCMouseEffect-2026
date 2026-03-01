@@ -6,6 +6,7 @@
 - Constraints: no Windows regression; Linux follows compile + contract coverage.
 
 ## Latest Delta (2026-03-01)
+- macOS VM foreground suppression check interval is now test-configurable via `MFX_VM_FOREGROUND_SUPPRESSION_CHECK_INTERVAL_MS` (default `800`, clamped to `10..5000`), and VM selfcheck script supports `--check-interval-ms` to run fast deterministic validation.
 - POSIX regression suite now gates macOS effects type parity selfcheck (`run-macos-effects-type-parity-selfcheck.sh --skip-build`) as a default phase, with explicit skip flag `--skip-macos-effects-type-parity-selfcheck`; wasm-focused suite defaults to skipping it.
 - `input_capture.effects_suspended_vm` is now schema-declared (`/api/schema.input_capture.diagnostic_keys`) and state contracts assert both key presence and boolean shape, preventing silent mapper/schema drift.
 - Input-capture degraded notice copy is now behavior-consistent on macOS: permission-missing guidance no longer says "restart app"; it explicitly states automatic hot-recovery after permissions are restored.
