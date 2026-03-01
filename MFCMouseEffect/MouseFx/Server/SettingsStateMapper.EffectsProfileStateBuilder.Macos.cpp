@@ -371,6 +371,7 @@ nlohmann::json BuildMacosEffectRenderCommandSamplesJson(const EffectConfig& cfg)
         {"scroll_delta", kSampleScrollDelta},
         {"hold_duration_ms", kSampleHoldDurationMs},
         {"hold_follow_mode", cfg.holdFollowMode},
+        {"hold_follow_mode_normalized", config_internal::NormalizeHoldFollowMode(cfg.holdFollowMode)},
         {"active_raw", {
             {"click", cfg.active.click},
             {"trail", cfg.active.trail},
@@ -385,6 +386,13 @@ nlohmann::json BuildMacosEffectRenderCommandSamplesJson(const EffectConfig& cfg)
             {"hold", NormalizeHoldEffectType(cfg.active.hold)},
             {"hover", NormalizeHoverEffectType(cfg.active.hover)},
         }},
+    };
+    out["active_resolved"] = {
+        {"click", clickCommand.normalizedType},
+        {"trail", trailCommand.normalizedType},
+        {"scroll", scrollCommand.normalizedType},
+        {"hold", holdStartCommand.normalizedType},
+        {"hover", hoverCommand.normalizedType},
     };
     out["click"] = BuildClickCommandJson(clickCommand);
     out["trail"] = BuildTrailCommandJson(trailCommand);
