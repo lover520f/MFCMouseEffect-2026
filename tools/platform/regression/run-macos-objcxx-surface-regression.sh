@@ -70,4 +70,24 @@ if grep -Eq 'objective-c\+\+|OBJCXX|LANGUAGE[[:space:]]+OBJCXX' "$CMAKE_FILE"; t
     mfx_fail "CMake still contains Objective-C++ specific compile rules"
 fi
 
+declare -a COMPILE_COMMANDS_CANDIDATES=(
+    "/tmp/mfx-platform-macos-build/compile_commands.json"
+    "/tmp/mfx-platform-macos-core-build/compile_commands.json"
+    "/tmp/mfx-platform-macos-core-automation-build/compile_commands.json"
+)
+compile_commands_checked=0
+for compile_commands_file in "${COMPILE_COMMANDS_CANDIDATES[@]}"; do
+    if [[ ! -f "$compile_commands_file" ]]; then
+        continue
+    fi
+    compile_commands_checked=$((compile_commands_checked + 1))
+    mfx_info "objcxx surface gate compile_commands: $compile_commands_file"
+    if grep -Eq -- 'objective-c\+\+|OBJCXX|-x[[:space:]]+objective-c\+\+' "$compile_commands_file"; then
+        mfx_fail "compile_commands still contains Objective-C++ compile flags: $compile_commands_file"
+    fi
+done
+if [[ "$compile_commands_checked" -eq 0 ]]; then
+    mfx_info "objcxx surface gate compile_commands: none found, CMake-only checks applied"
+fi
+
 mfx_ok "macos objcxx surface regression passed"

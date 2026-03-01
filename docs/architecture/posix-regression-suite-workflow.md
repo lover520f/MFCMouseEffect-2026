@@ -41,6 +41,10 @@ Note: this wrapper now keeps macOS WASM runtime selfcheck enabled by default.
 11. WebUI automation platform semantic tests:
    - `pnpm --dir MFCMouseEffect/WebUIWorkspace run test:automation-platform`
 
+ObjC++ surface gate details:
+- validates `Platform/macos/CMakeLists.txt` does not contain Objective-C++ wildcard/allowlist rules
+- validates existing `/tmp/mfx-platform-macos*/compile_commands.json` do not contain hidden `objective-c++` compile flags
+
 Before phases start, suite only reports existing `mfx_entry_posix_host` processes. Cleanup remains phase-local under the `mfx-entry-posix-host` lock.
 
 ## Core Options
