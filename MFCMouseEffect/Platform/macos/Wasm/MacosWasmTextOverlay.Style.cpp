@@ -10,6 +10,21 @@
 namespace mousefx::platform::macos {
 
 #if defined(__APPLE__)
+namespace {
+
+NSColor* ArgbToNsColor(uint32_t argb, CGFloat alphaScale) {
+    const CGFloat a = wasm_overlay_render_math::ClampFloat(
+        (static_cast<CGFloat>((argb >> 24) & 0xFFu) / 255.0) * alphaScale,
+        0.0,
+        1.0);
+    const CGFloat r = static_cast<CGFloat>((argb >> 16) & 0xFFu) / 255.0;
+    const CGFloat g = static_cast<CGFloat>((argb >> 8) & 0xFFu) / 255.0;
+    const CGFloat b = static_cast<CGFloat>(argb & 0xFFu) / 255.0;
+    return [NSColor colorWithCalibratedRed:r green:g blue:b alpha:a];
+}
+
+} // namespace
+
 void ConfigureWasmTextOverlayPanel(NSPanel* panel, CGFloat height) {
     [panel setOpaque:NO];
     [panel setBackgroundColor:[NSColor clearColor]];
@@ -44,7 +59,7 @@ NSTextField* CreateWasmTextOverlayLabel(
     [label setDrawsBackground:NO];
     [label setSelectable:NO];
     [label setAlignment:NSTextAlignmentCenter];
-    [label setTextColor:wasm_overlay_render_math::ColorFromArgb(argb, 1.0)];
+    [label setTextColor:ArgbToNsColor(argb, 1.0)];
     [label setFont:[NSFont monospacedSystemFontOfSize:fontSize weight:NSFontWeightSemibold]];
     [label setStringValue:value];
     return label;

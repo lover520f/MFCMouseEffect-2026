@@ -16,6 +16,23 @@
 
 namespace mousefx::platform::macos {
 
+#if defined(__APPLE__)
+namespace {
+
+NSColor* ArgbToNsColor(uint32_t argb, CGFloat alphaScale) {
+    const CGFloat a = wasm_overlay_render_math::ClampFloat(
+        (static_cast<CGFloat>((argb >> 24) & 0xFFu) / 255.0) * alphaScale,
+        0.0,
+        1.0);
+    const CGFloat r = static_cast<CGFloat>((argb >> 16) & 0xFFu) / 255.0;
+    const CGFloat g = static_cast<CGFloat>((argb >> 8) & 0xFFu) / 255.0;
+    const CGFloat b = static_cast<CGFloat>(argb & 0xFFu) / 255.0;
+    return [NSColor colorWithCalibratedRed:r green:g blue:b alpha:a];
+}
+
+} // namespace
+#endif
+
 void RenderWasmImageOverlayWindowOnMain(
     const wasm_image_overlay_core_detail::ImageOverlayRenderPlan& plan) {
 #if !defined(__APPLE__)
@@ -81,10 +98,10 @@ void RenderWasmImageOverlayWindowOnMain(
         nullptr);
     ring.path = ringPath;
     CGPathRelease(ringPath);
-    ring.fillColor = [wasm_overlay_render_math::ColorFromArgb(
+    ring.fillColor = [ArgbToNsColor(
         req.tintArgb,
         renderedImage ? 0.08 * plan.alphaScale : 0.22 * plan.alphaScale) CGColor];
-    ring.strokeColor = [wasm_overlay_render_math::ColorFromArgb(req.tintArgb, 0.95 * plan.alphaScale) CGColor];
+    ring.strokeColor = [ArgbToNsColor(req.tintArgb, 0.95 * plan.alphaScale) CGColor];
     ring.lineWidth = wasm_overlay_render_math::ClampFloat(plan.size * 0.022, 1.5, 5.0);
     ring.opacity = 0.98;
     [content.layer addSublayer:ring];
