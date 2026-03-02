@@ -1,4 +1,4 @@
-# Agent Current Context (2026-03-01)
+# Agent Current Context (2026-03-02)
 
 ## Scope and Priority
 - Primary host: macOS.
@@ -18,6 +18,40 @@
   - macOS supports click/trail/scroll/hold/hover in core lane.
   - Shared compute-command model is active; renderer path is execution-focused.
   - Trail `none` hard-disable, line-trail diagnostics, and anti-origin-connector guards are in place.
+  - Core effects contract now also enforces trail visibility semantics on macOS:
+    - `trail=line` must increase active trail overlay window count in overlay probe.
+    - `trail=none` must not increase active trail overlay window count.
+  - Core effects contract now enforces trail command parity from `/api/effects/test-render-profiles`:
+    - `active.trail=line` => `command_samples.trail.normalized_type=line` and `emit=true`.
+    - `active.trail=none` => `command_samples.trail.normalized_type=none` and `emit=false`.
+  - Core effects contract now enforces render-profile geometry diagnostics:
+    - `effective_timing.click_text_font_size_px` and `click_text_float_distance_px` must stay positive.
+    - for `command_samples.trail.normalized_type=line`, `effective_timing.trail_command_line_width_px` must match `trail_profile_line_width_px`.
+  - Core effects contract now enforces render-profile command parity for remaining categories:
+    - `active.scroll=helix` => `command_samples.scroll.normalized_type=helix`, `emit=true`, `helix_mode=true`.
+    - `active.hover=tubes` => `command_samples.hover.normalized_type=tubes`, `tubes_mode=true`.
+    - `active.hold=hologram` => `command_samples.hold.start.normalized_type=hologram`, `command_samples.hold.update.emit=true`.
+  - Core effects contract now enforces alias/fallback command semantics:
+    - legacy alias group (`textclick/scifi/stardust/scifi3d/suspension`) must map to command types (`text/tubes/twinkle/hologram/tubes`) with matching mode flags.
+    - `none` fallback group (`click/scroll/hover`) must map to command types (`ripple/arrow/glow`) and disable incompatible mode flags (`helix/twinkle/tubes`).
+  - Core effects contract now enforces hold follow-mode command update samples:
+    - `hold_follow_mode_samples.smooth_second` must output smoothed overlay coordinates (`x=635,y=368`) for the fixed sample path.
+    - `hold_follow_mode_samples.efficient_*` must satisfy emit cadence (`first=true`, `suppressed=false`, `resumed=true`).
+  - Theme catalog is now registry-driven in core style layer; schema `options.themes` is sourced from shared theme registry (reduces hardcoded duplication, behavior unchanged).
+  - Windows tray theme submenu now consumes the same shared theme catalog (command ids unchanged), avoiding duplicate hardcoded theme lists.
+  - Theme phase-2 landed: core can now load external theme package JSON files from `theme_catalog_root_path` (`theme.json` or `*.theme.json`) and merge with built-ins at startup/reload (schema + tray consume the same runtime catalog source).
+  - Config/state contract extended with `theme_catalog_root_path`; `apply_settings` now accepts this field and triggers runtime theme catalog reload without restart.
+  - WebUI general section now exposes `theme_catalog_root_path` (text input + native folder picker action) via Svelte shared settings shell; UI action posts to core API without introducing platform-specific frontend branches.
+  - Core API adds `POST /api/theme/catalog-folder-dialog` (probe mode + native pick mode) for theme catalog path selection, reusing `PlatformNativeFolderPicker` contract and token auth path.
+  - Theme catalog runtime metadata is now exposed in both schema and state (`theme_catalog` / `theme_catalog_runtime`: runtime/built-in/external/rejected/scanned counts + picker support), giving one contract source for UI/diagnostics.
+  - WebUI save flow now forces schema refresh when `theme_catalog_root_path` changes, so newly discovered theme options appear immediately after Apply (no manual reload required).
+  - Theme selection now resolves through runtime catalog (`ResolveRuntimeThemeName`) during startup/reload/set-theme/set-root-path, preventing persisted `theme` from drifting outside available runtime catalog options.
+  - Windows tray theme submenu now supports runtime external themes via dynamic command mapping (built-in command IDs unchanged), so tray theme selection remains aligned with shared theme catalog.
+  - macOS tray theme submenu now pulls theme entries through `IAppShellHost::GetThemeMenuSnapshotFromShell(...)` (host-side snapshot contract), removing direct `ThemeStyle/StringUtils` dependency from `MacosTrayMenuFactory` and restoring stable `mfx_shell_macos` link boundaries.
+  - `chromatic` theme semantic is preserved in runtime resolution (no forced `chromatic -> neon` rewrite), so chromatic-specific behavior in legacy render paths remains available while still using shared catalog.
+  - Legacy settings option source (`SettingsOptions::ThemeOptions`) now reads from shared runtime theme catalog instead of a hardcoded 5-theme list, removing another Windows-only divergence point.
+  - `SettingsOptions::ThemeOptions` now serves immutable snapshot-backed option pointers (append-only snapshot cache), avoiding pointer invalidation risk during runtime theme catalog refresh.
+  - External theme loader now validates theme `value` token format (`[a-z0-9_-]+`, disallow `none`) before merge; invalid files are rejected and counted in runtime diagnostics.
   - Core effects contract now asserts `trail=none` consistency across `POST /api/state` -> `GET /api/state` -> `/api/effects/test-render-profiles` active snapshot, preventing silent fallback to `line`.
   - Core effects contract now asserts legacy alias normalization through runtime state and render-profile snapshot (`textclick/scifi/stardust/scifi3d/suspension + cursor_priority -> text/tubes/twinkle/hologram/tubes + smooth`).
   - Line-trail runtime diagnostics now include `line_trail_line_width_px` so contract gates can catch thin-line regressions.
@@ -39,7 +73,9 @@
   - macOS tray now prefers icon rendering (project logo path fallback + SF Symbol fallback) instead of text-only `MFX`.
   - macOS warning notifications now initialize app icon before delivery to avoid generic default sender icon in unbundled runs.
   - icon resolution supports explicit override via `MFX_MACOS_APP_ICON_PATH` (highest priority), then bundle/dev fallback paths.
-  - tray smoke gate now uses explicit CLI args (`--expect-settings-action`, `--settings-url`, `--launch-capture-file`); when sandbox runners do not emit launch-capture files, regression falls back to exit-code gating to avoid false negatives.
+  - Core lane init order now starts `AppController` before tray startup, so tray theme submenu snapshot is populated from runtime catalog (fixes empty-menu/no-callback race at startup).
+  - tray smoke gate now uses explicit CLI args (`--expect-settings-action`, `--expect-theme-action`, `--settings-url`, `--theme-value`, capture files) and validates both settings-launch callback and theme-select callback path; if capture files are not emitted in constrained runners, regression falls back to exit-code gating.
+  - Added macOS tray theme persistence selfcheck: auto-select theme via tray submenu callback, assert `/api/state.theme` changes, restart host, assert persisted theme remains, then restore original theme.
 
 ## Build and Regression Gates
 - macOS shell CMake Swift bridge registration has been normalized to one helper (`mfx_add_swift_bridge`) plus one source list (`MFX_MACOS_SWIFT_OBJECTS`), removing 20 duplicated compile blocks and reducing bridge drift risk.
@@ -49,21 +85,63 @@
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-posix-scaffold-regression.sh --platform auto`
 - POSIX core effects contract:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-posix-core-effects-contract-regression.sh --platform auto`
+  - overlay probe now contains explicit trail mode guards:
+    - `emit_trail + trail_type=line` => `after_trail_active_overlay_windows > before`
+    - `emit_trail + trail_type=none` => `after_trail_active_overlay_windows <= before`
+  - render-profile probe now contains explicit trail command guards:
+    - `POST /api/state active.trail=line` => `command_samples.trail.emit=true`
+    - `POST /api/state active.trail=none` => `command_samples.trail.emit=false`
+  - render-profile probe now also asserts click/trail geometry diagnostics:
+    - click text command geometry (`font_size/float_distance`) remains positive
+    - line-trail command/profile line-width parity for normalized `line` trail
+  - render-profile probe now asserts scroll/hover/hold command parity for canonical active types:
+    - `scroll=helix` command emits and helix mode is enabled
+    - `hover=tubes` command resolves tubes mode
+    - `hold=hologram` start/update command semantics remain active
+  - render-profile probe now asserts alias/fallback command parity:
+    - legacy aliases map to expected normalized command types + mode switches
+    - click/scroll/hover `none` inputs map to fallback command types with mode switches off
+  - render-profile probe now asserts hold follow-mode update semantics:
+    - smooth mode uses smoothed overlay coordinates on second update sample
+    - efficient mode enforces update throttling cadence (emit/suppress/resume)
+  - Effects overlay contract script now reuses shared assertion helpers (`active+type`, section flags, nested fields), keeping contract semantics unchanged while reducing duplicated parser/assert blocks.
+  - Core state checks now include theme catalog route probe (`/api/theme/catalog-folder-dialog`, `probe_only=true`) and schema/state presence checks for `theme_catalog_root_path`/`themes`.
+  - Core state checks now assert theme-catalog schema/state parity (`themes` option count == `theme_catalog.runtime_theme_count` == `theme_catalog_runtime.runtime_theme_count`).
+  - Core state checks now assert `state.theme` is always present in `schema.themes` (baseline/apply/restore), preventing invalid theme persistence across external catalog reloads.
+  - Core state checks now include invalid-theme normalization contract (`POST /api/state` with invalid `theme` must auto-resolve to catalog-supported value, and restore path must recover original theme).
+  - Core state checks now include chromatic semantic contract (`POST /api/state` with `theme=chromatic` must remain `chromatic`, not rewritten to `neon`).
+  - Core state checks now include file-driven external theme discovery contract (`*.theme.json` temp package -> apply `theme_catalog_root_path` -> assert schema/state update -> restore original root path).
+  - External theme contract now includes two rejection paths (invalid token + built-in value override) to assert loader/runtime rejection accounting (`scanned=3, external=1, rejected=2`).
 - POSIX core automation contract:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-posix-core-automation-contract-regression.sh --platform auto`
 - POSIX wasm suite:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-posix-wasm-regression-suite.sh --platform auto`
+  - macOS wasm runtime selfcheck now asserts fallback diagnostics persistence in `/api/state` after invalid manifest path (`last_load_failure_stage/code` non-empty) and verifies these fields clear after successful reload.
+- POSIX core wasm contract:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-posix-core-wasm-contract-regression.sh --platform auto`
+  - core wasm contract now also asserts `/api/state` fallback diagnostics lifecycle:
+    - invalid manifest load keeps `runtime_backend=wasm3_static` and sets non-empty `last_load_failure_stage/code`
+    - successful reload clears `last_load_failure_stage/code` back to empty
 - macOS ObjC++ surface gate:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-macos-objcxx-surface-regression.sh`
   - Gate now checks both macOS CMake rules and any existing `/tmp/mfx-platform-macos*/compile_commands.json` for hidden Objective-C++ flags.
+- Theme catalog surface gate:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-theme-catalog-surface-regression.sh`
+  - Gate enforces single-source runtime theme catalog wiring across legacy settings options, schema theme options, Windows/macOS tray theme menu boundaries, and core HTTP external-theme contract checks.
+- WebUI semantic gate now includes `test:general-state-model`, which asserts `theme_catalog_root_path` and other general settings defaults/round-trip normalization from one shared model.
 - Core HTTP regression teardown now attempts `/api/stop` before TERM/KILL fallback to reduce forced-stop noise and flakiness.
+- Regression lock runner (`mfx_with_lock`) now executes workflow in a strict subshell and captures status explicitly, avoiding `cmd || status=$?` side effects that could hide phase failures under weakened `set -e` semantics.
 - Scaffold HTTP regression now logs startup failure with `stage/code`; `bind EPERM/EACCES (stage=2, code=1/13)` is treated as a controlled skip in sandbox-like runners (override with `MFX_HTTP_SKIP_BIND_EACCES=0`).
 - Scaffold HTTP startup helper now also treats "early exit without startup log" as constrained-runtime skip, and `http.sh` consumes helper return code `2` across default/custom/missing-webui routes so skip paths no longer break under `set -e`.
 - Scaffold/core HTTP gates now support strict non-skip mode (`MFX_HTTP_REQUIRE_EXECUTION=1`, `MFX_CORE_HTTP_REQUIRE_EXECUTION=1`) to force real execution in full-capability environments.
 - Core HTTP startup helper now reports bind permission failures as `EPERM/EACCES (stage=2, code=1/13)` and supports the same constrained-runtime skip intent via `MFX_CORE_HTTP_ALLOW_BIND_EACCES_SKIP`.
 - Core automation contract regression now defaults `MFX_CORE_HTTP_ALLOW_BIND_EACCES_SKIP=1`, aligning with effects/wasm contracts and avoiding noisy false-negative startup failures under constrained runners.
 - Core HTTP startup now short-circuits on the first confirmed bind-permission denial when skip mode is enabled, reducing duplicate retry noise in constrained runners.
+- Core HTTP startup helper now injects an isolated single-instance key per run (`--single-instance-key` + `MFX_SINGLE_INSTANCE_KEY`) to avoid stale-lock collisions with user-running app instances.
+- Core HTTP startup helper now treats no-probe/no-log/no-diagnostics early exits as constrained-runtime skip when skip mode is enabled; strict-mode fail remains controlled by `MFX_CORE_HTTP_REQUIRE_EXECUTION=1`.
+- Core smoke entry helper now also injects an isolated single-instance key (`--single-instance-key` + `MFX_SINGLE_INSTANCE_KEY`) to avoid false-negative early exits after scaffold/core-http phases in the same suite run.
 - Regression entry helpers (`scaffold/core-http/core-smoke`) now allocate FIFO through private temp directories (`mktemp -d` + `mkfifo`) instead of `mktemp -u`, removing TOCTOU race windows in concurrent runs.
+- POSIX text encoding/runtime path no longer relies on deprecated `std::codecvt`/`std::wstring_convert`; `PlatformTextEncoding` now uses explicit UTF-8 codec logic and `PlatformRuntimeEnvironment` reuses that conversion path (Xcode deprecation warnings removed from these files).
 - macOS manual selfcheck host helper now returns controlled skip (`MFX_MANUAL_ALLOW_BIND_EACCES_SKIP=1`) for constrained-runtime startup failures (`websettings_start_failed(stage=2,code=1/13)` and no-probe/no-log early exit), avoiding noisy false-negative `host exited early`; POSIX suite enables this skip policy by default for manual selfcheck phases.
 - macOS manual selfchecks now support strict non-skip mode (`MFX_MANUAL_REQUIRE_EXECUTION=1`), failing immediately if constrained-runtime startup would otherwise be treated as skip.
 - Startup options now support explicit single-instance key override (`--single-instance-key=...` / `MFX_SINGLE_INSTANCE_KEY`); manual selfchecks can auto-isolate lock key under constrained-runtime skip mode to avoid stale-lock false negatives.

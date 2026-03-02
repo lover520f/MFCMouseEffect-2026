@@ -1,4 +1,4 @@
-# macOS Mainline Roadmap Snapshot (2026-03-01)
+# macOS Mainline Roadmap Snapshot (2026-03-02)
 
 ## Purpose
 Single high-value status page for AI-IDE and reviewers.
@@ -37,6 +37,26 @@ This file intentionally excludes low-value historical step logs.
   - click/trail/scroll/hold/hover paths available in core lane.
   - Type normalization and command-based profile flow active.
   - `trail=none` hard-disable and anti-origin-connector guards active.
+  - Effects contract now hard-checks trail mode runtime semantics on macOS overlay probe:
+    - `trail=line` must produce observable trail overlay window increase.
+    - `trail=none` must not produce trail overlay window increase.
+  - Effects contract now hard-checks trail mode command semantics in render profile probe:
+    - `trail=line` => command `normalized_type=line` and `emit=true`.
+    - `trail=none` => command `normalized_type=none` and `emit=false`.
+  - Effects contract now hard-checks command geometry diagnostics:
+    - click text sample geometry (`font_size/float_distance`) must be positive.
+    - for normalized `line` trail, command line-width must match profile line-width.
+  - Effects contract now hard-checks command parity for scroll/hover/hold canonical modes:
+    - `scroll=helix` => command emits with helix mode on.
+    - `hover=tubes` => command resolves tubes mode on.
+    - `hold=hologram` => hold start/update command remains active with normalized hologram semantics.
+  - Effects contract now hard-checks alias and fallback command semantics:
+    - legacy aliases (`textclick/scifi/stardust/scifi3d/suspension`) map to expected command normalized types and mode flags.
+    - `none` fallbacks for click/scroll/hover map to (`ripple/arrow/glow`) with conflicting mode flags disabled.
+  - Effects contract now hard-checks hold follow-mode update semantics:
+    - smooth mode sample must output deterministic smoothed overlay coordinates on second update.
+    - efficient mode sample must satisfy emit throttling cadence (first emit, short-interval suppress, long-interval resume).
+  - Effects contract assertion script has been deduplicated to shared helper-based checks (active+type, mode flags, nested command fields) with no behavior contract change.
 - Automation:
   - `process:code` / `code.app` / `code.exe` scope semantics normalized.
   - Injection and matcher contracts script-gated.

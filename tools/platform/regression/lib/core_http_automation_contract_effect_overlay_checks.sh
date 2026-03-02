@@ -21,6 +21,49 @@ _mfx_core_http_automation_assert_float_within_tolerance() {
     fi
 }
 
+_mfx_core_http_automation_assert_active_and_command_type() {
+    local input_file="$1"
+    local effect_name="$2"
+    local expected_active="$3"
+    local expected_command_type="$4"
+    local context="$5"
+
+    local actual_active
+    local actual_command_type
+    actual_active="$(_mfx_core_http_automation_parse_active_field "$input_file" "$effect_name")"
+    actual_command_type="$(_mfx_core_http_automation_parse_section_scalar_field "$input_file" "$effect_name" "normalized_type")"
+    actual_command_type="${actual_command_type//\"/}"
+
+    mfx_assert_eq "$actual_active" "$expected_active" "$context active type"
+    mfx_assert_eq "$actual_command_type" "$expected_command_type" "$context command normalized type"
+}
+
+_mfx_core_http_automation_assert_command_flag_eq() {
+    local input_file="$1"
+    local section_name="$2"
+    local field_name="$3"
+    local expected_value="$4"
+    local context="$5"
+
+    local actual_value
+    actual_value="$(_mfx_core_http_automation_parse_section_scalar_field "$input_file" "$section_name" "$field_name")"
+    mfx_assert_eq "$actual_value" "$expected_value" "$context"
+}
+
+_mfx_core_http_automation_assert_nested_command_field_eq() {
+    local input_file="$1"
+    local section_name="$2"
+    local nested_section_name="$3"
+    local field_name="$4"
+    local expected_value="$5"
+    local context="$6"
+
+    local actual_value
+    actual_value="$(_mfx_core_http_automation_parse_nested_section_scalar_field "$input_file" "$section_name" "$nested_section_name" "$field_name")"
+    actual_value="${actual_value//\"/}"
+    mfx_assert_eq "$actual_value" "$expected_value" "$context"
+}
+
 _mfx_core_http_automation_contract_effect_overlay_checks() {
     local platform="$1"
     local tmp_dir="$2"
@@ -247,6 +290,30 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         _mfx_core_http_automation_assert_float_within_tolerance "$state_line_trail_active_width" "4.0" "0.001" "core effect line-trail active state expected line width"
     fi
 
+    local code_effect_overlay_trail_line_probe
+    code_effect_overlay_trail_line_probe="$(mfx_http_code "$tmp_dir/effect-overlay-trail-line-probe.out" "$base_url/api/effects/test-overlay-windows" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{"emit_trail":true,"trail_type":"line","close_persistent":true,"reset_line_trail":true,"wait_ms":80,"wait_for_clear_ms":0}')"
+    mfx_assert_eq "$code_effect_overlay_trail_line_probe" "200" "core effect overlay trail-line probe status"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-line-probe.out" "\"ok\":true" "core effect overlay trail-line probe ok"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-line-probe.out" "\"trail_type\":\"line\"" "core effect overlay trail-line probe trail type"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-line-probe.out" "\"before_trail_active_overlay_windows\":" "core effect overlay trail-line probe before trail count"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-line-probe.out" "\"after_trail_active_overlay_windows\":" "core effect overlay trail-line probe after trail count"
+    if [[ "$platform" == "macos" ]]; then
+        local trail_line_before_count
+        local trail_line_after_count
+        trail_line_before_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-trail-line-probe.out" "before_trail_active_overlay_windows")"
+        trail_line_after_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-trail-line-probe.out" "after_trail_active_overlay_windows")"
+        if [[ -z "$trail_line_before_count" || -z "$trail_line_after_count" ]]; then
+            mfx_fail "core effect overlay trail-line probe trail count parse failed"
+        fi
+        if (( trail_line_after_count <= trail_line_before_count )); then
+            mfx_fail "core effect overlay trail-line probe expected trail overlay increase on macos: before=$trail_line_before_count after=$trail_line_after_count"
+        fi
+    fi
+
     local code_effect_overlay_trail_none_probe
     code_effect_overlay_trail_none_probe="$(mfx_http_code "$tmp_dir/effect-overlay-trail-none-probe.out" "$base_url/api/effects/test-overlay-windows" \
         -X POST \
@@ -261,6 +328,20 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"after_line_trail_active\":false" "core effect overlay trail-none probe after line trail inactive"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"before_line_trail_point_count\":0" "core effect overlay trail-none probe before line trail count zero"
     mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"after_line_trail_point_count\":0" "core effect overlay trail-none probe after line trail count zero"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"before_trail_active_overlay_windows\":" "core effect overlay trail-none probe before trail count"
+    mfx_assert_file_contains "$tmp_dir/effect-overlay-trail-none-probe.out" "\"after_trail_active_overlay_windows\":" "core effect overlay trail-none probe after trail count"
+    if [[ "$platform" == "macos" ]]; then
+        local trail_none_before_count
+        local trail_none_after_count
+        trail_none_before_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-trail-none-probe.out" "before_trail_active_overlay_windows")"
+        trail_none_after_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-trail-none-probe.out" "after_trail_active_overlay_windows")"
+        if [[ -z "$trail_none_before_count" || -z "$trail_none_after_count" ]]; then
+            mfx_fail "core effect overlay trail-none probe trail count parse failed"
+        fi
+        if (( trail_none_after_count > trail_none_before_count )); then
+            mfx_fail "core effect overlay trail-none probe should not increase trail overlays on macos: before=$trail_none_before_count after=$trail_none_after_count"
+        fi
+    fi
 
     local code_effect_state_line_trail_cleared
     code_effect_state_line_trail_cleared="$(mfx_http_code "$tmp_dir/effect-state-line-trail-cleared.out" "$base_url/api/state" \
@@ -298,7 +379,11 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"alias_matrix\":" "core effect render profile probe alias matrix section"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"effective_timing\":" "core effect render profile probe effective timing section"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"click_duration_sec\":" "core effect render profile probe effective click duration"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"click_text_font_size_px\":" "core effect render profile probe effective click text font-size"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"click_text_float_distance_px\":" "core effect render profile probe effective click text float distance"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail_duration_sec\":" "core effect render profile probe effective trail duration"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail_command_line_width_px\":" "core effect render profile probe effective trail command line-width"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail_profile_line_width_px\":" "core effect render profile probe effective trail profile line-width"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail_planner_teleport_skip_distance_px\":" "core effect render profile probe trail planner teleport distance"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail_planner_max_segments\":" "core effect render profile probe trail planner max segments"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"scroll_duration_sec\":" "core effect render profile probe effective scroll duration"
@@ -343,6 +428,7 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"hold_follow_mode_normalized\":" "core effect render profile probe hold follow mode normalized field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"hold\":\"" "core effect render profile probe active hold field"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"hover\":\"" "core effect render profile probe active hover field"
+    mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"hold_follow_mode_samples\":" "core effect render profile probe hold follow mode samples section"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"profiles\":" "core effect render profile probe profiles"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"click\":" "core effect render profile click section"
     mfx_assert_file_contains "$tmp_dir/effect-render-profile-probe.out" "\"trail\":" "core effect render profile trail section"
@@ -434,6 +520,12 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     local state_hold_base_opacity
     local probe_hover_base_opacity
     local state_hover_base_opacity
+    local probe_click_text_font_size
+    local probe_click_text_float_distance
+    local probe_trail_command_line_width
+    local probe_trail_profile_line_width
+    local probe_trail_command_emit
+    local probe_trail_command_type
     probe_meteor_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "meteor_duration_scale")"
     state_meteor_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-profile-state.out" "meteor_duration_scale")"
     probe_helix_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "helix_duration_scale")"
@@ -470,8 +562,15 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     state_hold_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-profile-state.out" "hold" "base_opacity")"
     probe_hover_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-render-profile-probe.out" "hover" "base_opacity")"
     state_hover_base_opacity="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-profile-state.out" "hover" "base_opacity")"
+    probe_click_text_font_size="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "click_text_font_size_px")"
+    probe_click_text_float_distance="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "click_text_float_distance_px")"
+    probe_trail_command_line_width="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail_command_line_width_px")"
+    probe_trail_profile_line_width="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail_profile_line_width_px")"
+    probe_trail_command_emit="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail" "emit")"
+    probe_trail_command_type="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail" "normalized_type")"
+    probe_trail_command_type="${probe_trail_command_type//\"/}"
 
-    if [[ -z "$probe_meteor_scale" || -z "$state_meteor_scale" || -z "$probe_helix_scale" || -z "$state_helix_scale" || -z "$probe_tubes_spin_scale" || -z "$state_tubes_spin_scale" || -z "$probe_line_stroke" || -z "$state_line_stroke" || -z "$probe_duration_scale" || -z "$state_duration_scale" || -z "$probe_size_scale" || -z "$state_size_scale" || -z "$probe_opacity_scale" || -z "$state_opacity_scale" || -z "$probe_trail_throttle_scale" || -z "$state_trail_throttle_scale" || -z "$probe_active_click" || -z "$state_active_click" || -z "$probe_active_trail" || -z "$state_active_trail" || -z "$probe_active_scroll" || -z "$state_active_scroll" || -z "$probe_active_hold" || -z "$state_active_hold" || -z "$probe_active_hover" || -z "$state_active_hover" || -z "$probe_click_base_opacity" || -z "$state_click_base_opacity" || -z "$probe_trail_base_opacity" || -z "$state_trail_base_opacity" || -z "$probe_scroll_base_opacity" || -z "$state_scroll_base_opacity" || -z "$probe_hold_base_opacity" || -z "$state_hold_base_opacity" || -z "$probe_hover_base_opacity" || -z "$state_hover_base_opacity" ]]; then
+    if [[ -z "$probe_meteor_scale" || -z "$state_meteor_scale" || -z "$probe_helix_scale" || -z "$state_helix_scale" || -z "$probe_tubes_spin_scale" || -z "$state_tubes_spin_scale" || -z "$probe_line_stroke" || -z "$state_line_stroke" || -z "$probe_duration_scale" || -z "$state_duration_scale" || -z "$probe_size_scale" || -z "$state_size_scale" || -z "$probe_opacity_scale" || -z "$state_opacity_scale" || -z "$probe_trail_throttle_scale" || -z "$state_trail_throttle_scale" || -z "$probe_active_click" || -z "$state_active_click" || -z "$probe_active_trail" || -z "$state_active_trail" || -z "$probe_active_scroll" || -z "$state_active_scroll" || -z "$probe_active_hold" || -z "$state_active_hold" || -z "$probe_active_hover" || -z "$state_active_hover" || -z "$probe_click_base_opacity" || -z "$state_click_base_opacity" || -z "$probe_trail_base_opacity" || -z "$state_trail_base_opacity" || -z "$probe_scroll_base_opacity" || -z "$state_scroll_base_opacity" || -z "$probe_hold_base_opacity" || -z "$state_hold_base_opacity" || -z "$probe_hover_base_opacity" || -z "$state_hover_base_opacity" || -z "$probe_click_text_font_size" || -z "$probe_click_text_float_distance" || -z "$probe_trail_command_line_width" || -z "$probe_trail_profile_line_width" || -z "$probe_trail_command_emit" || -z "$probe_trail_command_type" ]]; then
         mfx_fail "core effect profile parity parse failed"
     fi
     _mfx_core_http_automation_assert_float_within_tolerance "$probe_duration_scale" "$expected_duration_scale" "0.0001" "core effect render profile expected duration test tuning"
@@ -500,6 +599,12 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     _mfx_core_http_automation_assert_float_within_tolerance "$probe_scroll_base_opacity" "$state_scroll_base_opacity" "0.0001" "core effect profile parity scroll base opacity"
     _mfx_core_http_automation_assert_float_within_tolerance "$probe_hold_base_opacity" "$state_hold_base_opacity" "0.0001" "core effect profile parity hold base opacity"
     _mfx_core_http_automation_assert_float_within_tolerance "$probe_hover_base_opacity" "$state_hover_base_opacity" "0.0001" "core effect profile parity hover base opacity"
+    if ! awk -v font="$probe_click_text_font_size" -v dist="$probe_click_text_float_distance" 'BEGIN { exit(font > 0 && dist > 0 ? 0 : 1); }'; then
+        mfx_fail "core effect profile parity click text geometry invalid: font_size=$probe_click_text_font_size float_distance=$probe_click_text_float_distance"
+    fi
+    if [[ "$probe_active_trail" != "none" && "$probe_trail_command_emit" == "true" && "$probe_trail_command_type" == "line" ]]; then
+        _mfx_core_http_automation_assert_float_within_tolerance "$probe_trail_command_line_width" "$probe_trail_profile_line_width" "0.0001" "core effect profile parity trail command/profile line width"
+    fi
 
     if [[ "$platform" == "macos" ]]; then
         if ! mfx_file_contains_fixed "$tmp_dir/effect-render-profile-probe.out" "\"supported\":true"; then
@@ -548,22 +653,134 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         -H "x-mfcmouseeffect-token: $token")"
     mfx_assert_eq "$code_effect_profile_probe_legacy_aliases" "200" "core effect legacy alias render profile probe status"
 
-    local probe_legacy_click
-    local probe_legacy_trail
-    local probe_legacy_scroll
-    local probe_legacy_hold
-    local probe_legacy_hover
-    probe_legacy_click="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" "click")"
-    probe_legacy_trail="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" "trail")"
-    probe_legacy_scroll="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" "scroll")"
-    probe_legacy_hold="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" "hold")"
-    probe_legacy_hover="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" "hover")"
+    _mfx_core_http_automation_assert_active_and_command_type \
+        "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" \
+        "click" \
+        "text" \
+        "text" \
+        "core effect render profile legacy alias normalize click"
+    _mfx_core_http_automation_assert_active_and_command_type \
+        "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" \
+        "trail" \
+        "tubes" \
+        "tubes" \
+        "core effect render profile legacy alias normalize trail"
+    _mfx_core_http_automation_assert_active_and_command_type \
+        "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" \
+        "scroll" \
+        "twinkle" \
+        "twinkle" \
+        "core effect render profile legacy alias normalize scroll"
+    _mfx_core_http_automation_assert_active_and_command_type \
+        "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" \
+        "hover" \
+        "tubes" \
+        "tubes" \
+        "core effect render profile legacy alias normalize hover"
+    _mfx_core_http_automation_assert_nested_command_field_eq \
+        "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" \
+        "hold" \
+        "start" \
+        "normalized_type" \
+        "hologram" \
+        "core effect render profile legacy alias normalize hold"
 
-    mfx_assert_eq "$probe_legacy_click" "text" "core effect render profile legacy alias normalize click"
-    mfx_assert_eq "$probe_legacy_trail" "tubes" "core effect render profile legacy alias normalize trail"
-    mfx_assert_eq "$probe_legacy_scroll" "twinkle" "core effect render profile legacy alias normalize scroll"
-    mfx_assert_eq "$probe_legacy_hold" "hologram" "core effect render profile legacy alias normalize hold"
-    mfx_assert_eq "$probe_legacy_hover" "tubes" "core effect render profile legacy alias normalize hover"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" \
+        "trail" \
+        "tubes_mode" \
+        "true" \
+        "core effect render profile legacy alias command trail tubes mode"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" \
+        "scroll" \
+        "twinkle_mode" \
+        "true" \
+        "core effect render profile legacy alias command scroll twinkle mode"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-legacy-aliases.out" \
+        "hover" \
+        "tubes_mode" \
+        "true" \
+        "core effect render profile legacy alias command hover tubes mode"
+
+    local code_effect_state_set_none_fallback_modes
+    code_effect_state_set_none_fallback_modes="$(mfx_http_code "$tmp_dir/effect-state-set-none-fallback-modes.out" "$base_url/api/state" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{"active":{"click":"none","trail":"line","scroll":"none","hold":"hologram","hover":"none"}}')"
+    mfx_assert_eq "$code_effect_state_set_none_fallback_modes" "200" "core effect set none-fallback modes state post status"
+
+    local code_effect_profile_probe_none_fallback_modes
+    code_effect_profile_probe_none_fallback_modes="$(mfx_http_code "$tmp_dir/effect-render-profile-probe-none-fallback-modes.out" "$base_url/api/effects/test-render-profiles" \
+        -X GET \
+        -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_effect_profile_probe_none_fallback_modes" "200" "core effect set none-fallback modes render profile probe status"
+
+    _mfx_core_http_automation_assert_active_and_command_type \
+        "$tmp_dir/effect-render-profile-probe-none-fallback-modes.out" \
+        "click" \
+        "ripple" \
+        "ripple" \
+        "core effect render profile none fallback click"
+    _mfx_core_http_automation_assert_active_and_command_type \
+        "$tmp_dir/effect-render-profile-probe-none-fallback-modes.out" \
+        "scroll" \
+        "arrow" \
+        "arrow" \
+        "core effect render profile none fallback scroll"
+    _mfx_core_http_automation_assert_active_and_command_type \
+        "$tmp_dir/effect-render-profile-probe-none-fallback-modes.out" \
+        "hover" \
+        "glow" \
+        "glow" \
+        "core effect render profile none fallback hover"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-none-fallback-modes.out" \
+        "scroll" \
+        "helix_mode" \
+        "false" \
+        "core effect render profile none fallback command scroll helix mode"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-none-fallback-modes.out" \
+        "scroll" \
+        "twinkle_mode" \
+        "false" \
+        "core effect render profile none fallback command scroll twinkle mode"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-none-fallback-modes.out" \
+        "hover" \
+        "tubes_mode" \
+        "false" \
+        "core effect render profile none fallback command hover tubes mode"
+
+    local code_effect_state_set_trail_line
+    code_effect_state_set_trail_line="$(mfx_http_code "$tmp_dir/effect-state-set-trail-line.out" "$base_url/api/state" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{"active":{"click":"ripple","trail":"line","scroll":"helix","hold":"hologram","hover":"tubes"}}')"
+    mfx_assert_eq "$code_effect_state_set_trail_line" "200" "core effect set trail-line state post status"
+
+    local code_effect_profile_probe_trail_line
+    code_effect_profile_probe_trail_line="$(mfx_http_code "$tmp_dir/effect-render-profile-probe-trail-line.out" "$base_url/api/effects/test-render-profiles" \
+        -X GET \
+        -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_effect_profile_probe_trail_line" "200" "core effect set trail-line render profile probe status"
+
+    _mfx_core_http_automation_assert_active_and_command_type \
+        "$tmp_dir/effect-render-profile-probe-trail-line.out" \
+        "trail" \
+        "line" \
+        "line" \
+        "core effect set trail-line render profile"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-trail-line.out" \
+        "trail" \
+        "emit" \
+        "true" \
+        "core effect set trail-line command emit"
 
     local code_effect_state_set_trail_none
     code_effect_state_set_trail_none="$(mfx_http_code "$tmp_dir/effect-state-set-trail-none.out" "$base_url/api/state" \
@@ -591,9 +808,122 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         -H "x-mfcmouseeffect-token: $token")"
     mfx_assert_eq "$code_effect_profile_probe_trail_none" "200" "core effect set trail-none render profile probe status"
 
-    local probe_trail_none_active_trail
-    probe_trail_none_active_trail="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe-trail-none.out" "trail")"
-    if [[ "$probe_trail_none_active_trail" != "none" ]]; then
-        mfx_fail "core effect set trail-none render profile active trail mismatch: expected none, got ${probe_trail_none_active_trail:-<empty>}"
+    _mfx_core_http_automation_assert_active_and_command_type \
+        "$tmp_dir/effect-render-profile-probe-trail-none.out" \
+        "trail" \
+        "none" \
+        "none" \
+        "core effect set trail-none render profile"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-trail-none.out" \
+        "trail" \
+        "emit" \
+        "false" \
+        "core effect set trail-none command emit"
+
+    local code_effect_state_set_scroll_hover_hold_modes
+    code_effect_state_set_scroll_hover_hold_modes="$(mfx_http_code "$tmp_dir/effect-state-set-scroll-hover-hold-modes.out" "$base_url/api/state" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{"active":{"click":"text","trail":"line","scroll":"helix","hold":"hologram","hover":"tubes"}}')"
+    mfx_assert_eq "$code_effect_state_set_scroll_hover_hold_modes" "200" "core effect set scroll-hover-hold modes state post status"
+
+    local code_effect_profile_probe_scroll_hover_hold_modes
+    code_effect_profile_probe_scroll_hover_hold_modes="$(mfx_http_code "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" "$base_url/api/effects/test-render-profiles" \
+        -X GET \
+        -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_effect_profile_probe_scroll_hover_hold_modes" "200" "core effect set scroll-hover-hold modes render profile probe status"
+
+    local probe_scroll_hover_hold_active_hold
+    local probe_scroll_strength_level
+    local probe_hold_progress_full_ms
+    probe_scroll_hover_hold_active_hold="$(_mfx_core_http_automation_parse_active_field "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" "hold")"
+    probe_scroll_strength_level="$(_mfx_core_http_automation_parse_section_scalar_field "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" "scroll" "strength_level")"
+    probe_hold_progress_full_ms="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" "hold_progress_full_ms")"
+
+    _mfx_core_http_automation_assert_active_and_command_type \
+        "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \
+        "scroll" \
+        "helix" \
+        "helix" \
+        "core effect render profile parity scroll"
+    _mfx_core_http_automation_assert_active_and_command_type \
+        "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \
+        "hover" \
+        "tubes" \
+        "tubes" \
+        "core effect render profile parity hover"
+    mfx_assert_eq "$probe_scroll_hover_hold_active_hold" "hologram" "core effect render profile parity hold active type"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \
+        "scroll" \
+        "emit" \
+        "true" \
+        "core effect render profile parity scroll command emit"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \
+        "scroll" \
+        "helix_mode" \
+        "true" \
+        "core effect render profile parity scroll command helix mode"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \
+        "hover" \
+        "tubes_mode" \
+        "true" \
+        "core effect render profile parity hover command tubes mode"
+    _mfx_core_http_automation_assert_nested_command_field_eq \
+        "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \
+        "hold" \
+        "start" \
+        "normalized_type" \
+        "hologram" \
+        "core effect render profile parity hold start command normalized type"
+    _mfx_core_http_automation_assert_nested_command_field_eq \
+        "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \
+        "hold" \
+        "update" \
+        "emit" \
+        "true" \
+        "core effect render profile parity hold update command emit"
+    if ! awk -v level="$probe_scroll_strength_level" -v progress="$probe_hold_progress_full_ms" 'BEGIN { exit(level > 0 && progress > 0 ? 0 : 1); }'; then
+        mfx_fail "core effect render profile parity scroll/hold command metrics invalid: scroll_strength_level=$probe_scroll_strength_level hold_progress_full_ms=$probe_hold_progress_full_ms"
     fi
+
+    _mfx_core_http_automation_assert_nested_command_field_eq \
+        "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \
+        "hold_follow_mode_samples" \
+        "smooth_second" \
+        "overlay_x" \
+        "635" \
+        "core effect render profile parity hold smooth mode second overlay x"
+    _mfx_core_http_automation_assert_nested_command_field_eq \
+        "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \
+        "hold_follow_mode_samples" \
+        "smooth_second" \
+        "overlay_y" \
+        "368" \
+        "core effect render profile parity hold smooth mode second overlay y"
+    _mfx_core_http_automation_assert_nested_command_field_eq \
+        "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \
+        "hold_follow_mode_samples" \
+        "efficient_first" \
+        "emit" \
+        "true" \
+        "core effect render profile parity hold efficient mode first emit"
+    _mfx_core_http_automation_assert_nested_command_field_eq \
+        "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \
+        "hold_follow_mode_samples" \
+        "efficient_suppressed" \
+        "emit" \
+        "false" \
+        "core effect render profile parity hold efficient mode suppressed emit"
+    _mfx_core_http_automation_assert_nested_command_field_eq \
+        "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \
+        "hold_follow_mode_samples" \
+        "efficient_resumed" \
+        "emit" \
+        "true" \
+        "core effect render profile parity hold efficient mode resumed emit"
 }
