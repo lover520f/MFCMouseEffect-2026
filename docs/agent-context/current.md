@@ -29,6 +29,8 @@
 - WASM:
   - macOS runtime path + diagnostics + fallback contracts are active.
   - Capability schema/state parity is gated.
+  - Core state gate now asserts wasm runtime backend consistency (`dynamic_bridge|wasm3_static|null|external`) and enforces `runtime_backend=null => runtime_fallback_reason` non-empty.
+  - Core state gate now hard-checks schema wasm platform matrix (`macOS: invoke/render=true`, `Linux: invoke/render=false`) before parity checks.
   - Shared config resolvers (text/image/runtime value) are single-source.
 - Input indicator / permissions:
   - Permission degrade + hot recovery behavior is implemented and script-gated.

@@ -60,6 +60,40 @@ sys.stdout.write(value)
 PY
 }
 
+_mfx_core_http_assert_wasm_runtime_backend_consistency() {
+    local platform="$1"
+    local state_file="$2"
+    local schema_wasm_invoke="$3"
+    local schema_wasm_render="$4"
+
+    local state_wasm_runtime_backend
+    local state_wasm_fallback_reason
+    state_wasm_runtime_backend="$(_mfx_core_http_read_json_string "$state_file" "wasm.runtime_backend")"
+    state_wasm_fallback_reason="$(_mfx_core_http_read_json_string "$state_file" "wasm.runtime_fallback_reason")"
+
+    case "$state_wasm_runtime_backend" in
+        dynamic_bridge|wasm3_static|null|external)
+            ;;
+        *)
+            mfx_fail "core wasm runtime backend value: unsupported '$state_wasm_runtime_backend'"
+            ;;
+    esac
+
+    if [[ "$state_wasm_runtime_backend" == "null" && -z "$state_wasm_fallback_reason" ]]; then
+        mfx_fail "core wasm runtime backend null requires non-empty runtime_fallback_reason"
+    fi
+
+    if [[ "$platform" == "macos" ]]; then
+        if [[ "$schema_wasm_invoke" != "true" || "$schema_wasm_render" != "true" ]]; then
+            mfx_fail "core schema wasm capability matrix on macos must be invoke=true/render=true"
+        fi
+    elif [[ "$platform" == "linux" ]]; then
+        if [[ "$schema_wasm_invoke" != "false" || "$schema_wasm_render" != "false" ]]; then
+            mfx_fail "core schema wasm capability matrix on linux must be invoke=false/render=false"
+        fi
+    fi
+}
+
 _mfx_core_http_run_state_checks() {
     local platform="$1"
     local tmp_dir="$2"
@@ -201,4 +235,9 @@ _mfx_core_http_run_state_checks() {
     schema_wasm_render="$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.wasm.render")"
     mfx_assert_eq "$state_wasm_invoke_supported" "$schema_wasm_invoke" "core wasm invoke capability schema/state parity"
     mfx_assert_eq "$state_wasm_render_supported" "$schema_wasm_render" "core wasm render capability schema/state parity"
+    _mfx_core_http_assert_wasm_runtime_backend_consistency \
+        "$platform" \
+        "$tmp_dir/state.out" \
+        "$schema_wasm_invoke" \
+        "$schema_wasm_render"
 }
