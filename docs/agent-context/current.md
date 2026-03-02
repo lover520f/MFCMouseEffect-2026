@@ -63,6 +63,7 @@
   - Binding-priority contract now asserts selected binding normalized scope token (`selected.app_scopes_normalized`) with platform-aware expectation, and adds alias-tie first-wins deterministic check.
   - macOS manual app-scope selfcheck now verifies alias-dedupe persistence (`process:code.exe/code.app/code -> process:code`) plus `app_scope` parity.
   - App-scope mapping parse helpers are now shared between regression contracts and manual selfcheck scripts to avoid dual parser drift.
+  - Nested contract field parser now resolves JSON paths with strict section matching plus one-level compatible fallback (for existing `command_samples.*` call style), removing ambiguous regex parsing while keeping current contracts stable.
   - Injection selfcheck and app-scope selfcheck are part of POSIX suite phases.
 - WASM:
   - macOS runtime path + diagnostics + fallback contracts are active.

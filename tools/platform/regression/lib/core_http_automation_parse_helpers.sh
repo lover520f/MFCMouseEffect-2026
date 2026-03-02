@@ -46,10 +46,60 @@ _mfx_core_http_automation_parse_nested_section_scalar_field() {
     local section_name="$2"
     local nested_section_name="$3"
     local field_name="$4"
-    : "$section_name"
-    tr -d '\n\r' <"$input_file" | \
-        sed -n "s/.*\"${nested_section_name}\":{[^}]*\"${field_name}\":[[:space:]]*\\([^,}]*\\).*/\\1/p" | \
-        head -n 1 | tr -d '[:space:]'
+    python3 - "$input_file" "$section_name" "$nested_section_name" "$field_name" <<'PY'
+import json
+import sys
+
+input_file = sys.argv[1]
+section_name = sys.argv[2]
+nested_section_name = sys.argv[3]
+field_name = sys.argv[4]
+
+try:
+    with open(input_file, "r", encoding="utf-8") as f:
+        root = json.load(f)
+except Exception:
+    print("")
+    sys.exit(0)
+
+section = root.get(section_name, {})
+resolved = None
+if isinstance(section, dict):
+    nested = section.get(nested_section_name, {})
+    if isinstance(nested, dict) and field_name in nested:
+        resolved = nested[field_name]
+
+if resolved is None:
+    # Backward-compatible fallback: many existing callers pass
+    # section_name relative to a top-level bucket (for example
+    # command_samples.hold.start => section_name=hold,nested=start).
+    for candidate in root.values():
+        if not isinstance(candidate, dict):
+            continue
+        section = candidate.get(section_name, {})
+        if not isinstance(section, dict):
+            continue
+        nested = section.get(nested_section_name, {})
+        if isinstance(nested, dict) and field_name in nested:
+            resolved = nested[field_name]
+            break
+
+if resolved is None:
+    print("")
+    sys.exit(0)
+
+value = resolved
+if isinstance(value, bool):
+    print("true" if value else "false")
+elif isinstance(value, (int, float)):
+    print(str(value))
+elif value is None:
+    print("null")
+elif isinstance(value, str):
+    print(json.dumps(value, ensure_ascii=False, separators=(",", ":")))
+else:
+    print(json.dumps(value, ensure_ascii=False, separators=(",", ":")))
+PY
 }
 
 _mfx_core_http_automation_parse_first_mapping_scope_count() {

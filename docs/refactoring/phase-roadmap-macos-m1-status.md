@@ -63,6 +63,7 @@ This file intentionally excludes low-value historical step logs.
   - Binding-priority contract now verifies platform-aware normalized selected scope and alias-tie deterministic winner behavior.
   - macOS manual app-scope selfcheck now includes alias-dedupe persistence assertions.
   - App-scope JSON parse helpers are shared across regression/manual scripts for single-source contract parsing behavior.
+  - Nested contract scalar parsing moved from regex extraction to JSON path parsing with compatible fallback, reducing false positives under expanding payloads.
   - Injection and matcher contracts script-gated.
 - WASM:
   - load/invoke/render/fallback path active.
