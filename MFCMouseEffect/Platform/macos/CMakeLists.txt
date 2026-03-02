@@ -15,6 +15,8 @@ set_property(CACHE MFX_SWIFT_LANGUAGE_MODE PROPERTY STRINGS auto 5 6)
 if(APPLE)
     find_program(MFX_SWIFTC_EXECUTABLE swiftc REQUIRED)
     set(MFX_SWIFTC_COMMON_ARGS -parse-as-library -c)
+    set(MFX_SWIFT_MODULE_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/swift-module-cache")
+    list(APPEND MFX_SWIFTC_COMMON_ARGS -module-cache-path "${MFX_SWIFT_MODULE_CACHE_DIR}")
     set(MFX_SWIFT_LANGUAGE_MODE_RESOLVED "")
     if(MFX_SWIFT_LANGUAGE_MODE STREQUAL "auto")
         execute_process(

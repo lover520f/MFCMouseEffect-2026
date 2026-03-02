@@ -2,6 +2,7 @@
 
 #include "Platform/PlatformRuntimeEnvironment.h"
 
+#include "Platform/PlatformTextEncoding.h"
 #include "Platform/PlatformTarget.h"
 
 #if MFX_PLATFORM_WINDOWS
@@ -18,26 +19,11 @@
 #endif
 
 #include <array>
-#include <codecvt>
 #include <cstdlib>
 #include <filesystem>
-#include <locale>
 #include <string>
 
 namespace {
-
-std::wstring Utf8ToWide(const std::string& utf8) {
-    if (utf8.empty()) {
-        return {};
-    }
-
-    try {
-        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> convert;
-        return convert.from_bytes(utf8);
-    } catch (...) {
-        return {};
-    }
-}
 
 std::wstring BuildConfigDirFromHome(const char* home, const char* subPath) {
     if (home == nullptr || home[0] == '\0' || subPath == nullptr || subPath[0] == '\0') {
@@ -46,7 +32,7 @@ std::wstring BuildConfigDirFromHome(const char* home, const char* subPath) {
 
     std::filesystem::path dir(home);
     dir /= subPath;
-    return Utf8ToWide(dir.generic_string());
+    return mousefx::platform::Utf8ToWide(dir.generic_string());
 }
 
 #if MFX_PLATFORM_MACOS || MFX_PLATFORM_LINUX
@@ -63,7 +49,7 @@ std::wstring ReadExecutableDirFromProcPath(const char* procPath) {
 
     buf[static_cast<size_t>(len)] = '\0';
     std::filesystem::path exePath(buf.data());
-    return Utf8ToWide(exePath.parent_path().generic_string());
+    return mousefx::platform::Utf8ToWide(exePath.parent_path().generic_string());
 }
 #endif
 
@@ -81,7 +67,7 @@ std::wstring GetExecutableDirectoryW() {
         std::string path(size, '\0');
         if (_NSGetExecutablePath(path.data(), &size) == 0) {
             std::filesystem::path exePath(path.c_str());
-            return Utf8ToWide(exePath.parent_path().generic_string());
+            return mousefx::platform::Utf8ToWide(exePath.parent_path().generic_string());
         }
     }
     return ReadExecutableDirFromProcPath("/proc/self/exe");
