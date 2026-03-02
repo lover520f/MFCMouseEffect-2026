@@ -133,6 +133,38 @@ mfx_manual_try_stop_via_http() {
     return 1
 }
 
+mfx_manual_assert_core_api_ready() {
+    local base_url="${1:-$MFX_MANUAL_BASE_URL}"
+    local token="${2:-$MFX_MANUAL_SETTINGS_TOKEN}"
+    local context="${3:-manual core host startup}"
+    if [[ -z "$base_url" || -z "$token" ]]; then
+        mfx_fail "$context missing base_url/token for core API readiness check"
+    fi
+    if ! command -v curl >/dev/null 2>&1; then
+        mfx_fail "$context requires curl for core API readiness check"
+    fi
+
+    local state_url
+    state_url="$(mfx_manual_trim_trailing_slash "$base_url")/api/state"
+    local http_code=""
+    for _ in $(seq 1 30); do
+        http_code="$(
+            curl -sS -m 2 -o /dev/null -w "%{http_code}" \
+                -H "x-mfcmouseeffect-token: $token" \
+                "$state_url" 2>/dev/null || true
+        )"
+        if [[ "$http_code" == "200" ]]; then
+            return 0
+        fi
+        if [[ "$http_code" == "404" ]]; then
+            mfx_fail "$context failed: /api/state returned 404 (host is likely scaffold lane). Rebuild without --skip-build or use a core-runtime build directory."
+        fi
+        sleep 0.1
+    done
+
+    mfx_fail "$context failed: /api/state not ready (last_http_code=${http_code:-<empty>})"
+}
+
 mfx_manual_start_core_host() {
     local host_bin="$1"
     local probe_file="$2"
@@ -211,6 +243,7 @@ mfx_manual_start_core_host() {
     MFX_MANUAL_SETTINGS_TOKEN="$token"
     MFX_MANUAL_BASE_URL="$(mfx_manual_trim_trailing_slash "${settings_url%%\?*}")"
     MFX_MANUAL_LOG_FILE="$log_file"
+    mfx_manual_assert_core_api_ready "$MFX_MANUAL_BASE_URL" "$MFX_MANUAL_SETTINGS_TOKEN" "manual core host startup"
 }
 
 mfx_manual_stop_core_host() {

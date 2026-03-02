@@ -77,6 +77,7 @@
   - Core lane init order now starts `AppController` before tray startup, so tray theme submenu snapshot is populated from runtime catalog (fixes empty-menu/no-callback race at startup).
   - tray smoke gate now uses explicit CLI args (`--expect-settings-action`, `--expect-theme-action`, `--settings-url`, `--theme-value`, capture files) and validates both settings-launch callback and theme-select callback path; if capture files are not emitted in constrained runners, regression falls back to exit-code gating.
   - Added macOS tray theme persistence selfcheck: auto-select theme via tray submenu callback, assert `/api/state.theme` changes, restart host, assert persisted theme remains, then restore original theme.
+  - macOS manual core-host startup now performs `/api/state` readiness assertion; if a stale scaffold-lane binary is used (common with `--skip-build` + wrong build dir), scripts fail fast with explicit guidance instead of opaque 404 follow-up errors.
 
 ## Build and Regression Gates
 - macOS shell CMake Swift bridge registration has been normalized to one helper (`mfx_add_swift_bridge`) plus one source list (`MFX_MACOS_SWIFT_OBJECTS`), removing 20 duplicated compile blocks and reducing bridge drift risk.

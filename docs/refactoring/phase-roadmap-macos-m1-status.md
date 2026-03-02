@@ -87,6 +87,7 @@ This file intentionally excludes low-value historical step logs.
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-effects-type-parity-selfcheck.sh --skip-build`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-wasm-runtime-selfcheck.sh --skip-build`
+- Manual core-host startup now validates `/api/state` readiness and fails fast when a scaffold-lane binary is accidentally reused via `--skip-build`.
 
 ## Active Supporting Docs (Small Set)
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase55zzzzbm-macos-user-notification-native-center.md`
