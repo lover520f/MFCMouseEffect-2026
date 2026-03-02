@@ -175,13 +175,28 @@ mfx_http_code() {
     shift 2
     local connect_timeout="${MFX_HTTP_CONNECT_TIMEOUT_SECONDS:-3}"
     local max_time="${MFX_HTTP_MAX_TIME_SECONDS:-20}"
-    curl -sS \
+    local curl_error_file="${output_file}.curl.err"
+    local http_code=""
+    if ! http_code="$(curl -sS \
         --connect-timeout "$connect_timeout" \
         --max-time "$max_time" \
         -o "$output_file" \
         -w '%{http_code}' \
         "$@" \
-        "$url"
+        "$url" \
+        2>"$curl_error_file")"; then
+        if [[ -s "$curl_error_file" ]]; then
+            cat "$curl_error_file" >"$output_file"
+        else
+            : >"$output_file"
+        fi
+        rm -f "$curl_error_file"
+        printf '000'
+        return 0
+    fi
+
+    rm -f "$curl_error_file"
+    printf '%s' "$http_code"
 }
 
 mfx_terminate_stale_entry_host() {
@@ -302,7 +317,16 @@ mfx_with_lock() {
 
     mfx_acquire_lock "$lock_name" "$timeout_seconds"
     local status=0
-    "$@" || status=$?
+    # Run the workflow in a strict subshell and capture status explicitly.
+    # Avoid boolean-list invocation (`cmd || ...`) because it weakens `set -e`
+    # semantics inside called shell functions and can hide phase failures.
+    set +e
+    (
+        set -euo pipefail
+        "$@"
+    )
+    status=$?
+    set -e
     mfx_release_lock
     return "$status"
 }
