@@ -2,6 +2,33 @@
 
 set -euo pipefail
 
+_mfx_core_http_automation_parse_helper_surface_gate() {
+    local script_dir
+    local repo_root
+    local matches
+    script_dir="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    repo_root="$(cd -- "$script_dir/../../../.." && pwd)"
+
+    if command -v rg >/dev/null 2>&1; then
+        matches="$(rg "_mfx_core_http_automation_parse_(active_field|section_scalar_field|nested_section_scalar_field|scalar_field)" \
+            -n \
+            "$repo_root/tools/platform/regression/lib" \
+            "$repo_root/tools/platform/manual" \
+            --glob '!core_http_automation_parse_helpers.sh' \
+            --glob '!core_http_automation_parse_helper_contract_checks.sh' || true)"
+    else
+        matches="$(grep -R -n -E "_mfx_core_http_automation_parse_(active_field|section_scalar_field|nested_section_scalar_field|scalar_field)" \
+            "$repo_root/tools/platform/regression/lib" \
+            "$repo_root/tools/platform/manual" \
+            | grep -v "core_http_automation_parse_helpers.sh" \
+            | grep -v "core_http_automation_parse_helper_contract_checks.sh" || true)"
+    fi
+
+    if [[ -n "$matches" ]]; then
+        mfx_fail "core automation parse helper surface gate failed; legacy parser helpers still used outside compatibility fixture:\n$matches"
+    fi
+}
+
 _mfx_core_http_automation_parse_helper_contract_checks() {
     local tmp_dir="$1"
     local fixture_file="$tmp_dir/automation-parse-helper-fixture.json"
@@ -69,4 +96,6 @@ JSON
     mfx_assert_eq "$parsed_click_opacity" "0.95" "core automation parse helper section number scalar"
     mfx_assert_eq "$parsed_trail_emit" "false" "core automation parse helper section fallback scalar"
     mfx_assert_eq "$parsed_hold_start_type" "\"hologram\"" "core automation parse helper nested section fallback scalar"
+
+    _mfx_core_http_automation_parse_helper_surface_gate
 }
