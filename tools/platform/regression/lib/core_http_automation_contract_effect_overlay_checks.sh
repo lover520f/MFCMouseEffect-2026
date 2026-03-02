@@ -248,7 +248,7 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         local line_trail_after_count
         local line_trail_after_width
         line_trail_after_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-overlay-line-trail-probe.out" "after_line_trail_point_count")"
-        line_trail_after_width="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-overlay-line-trail-probe.out" "after_line_trail_line_width_px")"
+        line_trail_after_width="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-overlay-line-trail-probe.out" "after_line_trail_line_width_px")"
         if [[ -z "$line_trail_after_count" ]]; then
             mfx_fail "core effect overlay line-trail probe count parse failed"
         fi
@@ -277,7 +277,7 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         local state_line_trail_active_count
         local state_line_trail_active_width
         state_line_trail_active_count="$(_mfx_core_http_automation_parse_uint_field "$tmp_dir/effect-state-line-trail-active.out" "line_trail_point_count")"
-        state_line_trail_active_width="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-state-line-trail-active.out" "line_trail_line_width_px")"
+        state_line_trail_active_width="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-state-line-trail-active.out" "line_trail_line_width_px")"
         if [[ -z "$state_line_trail_active_count" ]]; then
             mfx_fail "core effect line-trail active state count parse failed"
         fi
@@ -526,21 +526,21 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     local probe_trail_profile_line_width
     local probe_trail_command_emit
     local probe_trail_command_type
-    probe_meteor_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "meteor_duration_scale")"
+    probe_meteor_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "meteor_duration_scale")"
     state_meteor_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-profile-state.out" "effects_profile" "meteor_duration_scale")"
-    probe_helix_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "helix_duration_scale")"
+    probe_helix_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "helix_duration_scale")"
     state_helix_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-profile-state.out" "effects_profile" "helix_duration_scale")"
-    probe_tubes_spin_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "tubes_spin_scale")"
+    probe_tubes_spin_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "tubes_spin_scale")"
     state_tubes_spin_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-profile-state.out" "effects_profile" "tubes_spin_scale")"
-    probe_line_stroke="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "line_stroke_argb")"
+    probe_line_stroke="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "line_stroke_argb")"
     state_line_stroke="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-profile-state.out" "effects_profile" "line_stroke_argb")"
-    probe_duration_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "duration_scale")"
+    probe_duration_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "duration_scale")"
     state_duration_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-profile-state.out" "effects_profile" "duration_scale")"
-    probe_size_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "size_scale")"
+    probe_size_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "size_scale")"
     state_size_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-profile-state.out" "effects_profile" "size_scale")"
-    probe_opacity_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "opacity_scale")"
+    probe_opacity_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "opacity_scale")"
     state_opacity_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-profile-state.out" "effects_profile" "opacity_scale")"
-    probe_trail_throttle_scale="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail_throttle_scale")"
+    probe_trail_throttle_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail_throttle_scale")"
     state_trail_throttle_scale="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-profile-state.out" "effects_profile" "trail_throttle_scale")"
     probe_active_click="$(_mfx_core_http_automation_parse_path_string_field "$tmp_dir/effect-render-profile-probe.out" "active" "click")"
     state_active_click="$(_mfx_core_http_automation_parse_path_string_field "$tmp_dir/effect-profile-state.out" "effects_profile" "active" "click")"
@@ -562,10 +562,10 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     state_hold_base_opacity="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-profile-state.out" "effects_profile" "hold" "base_opacity")"
     probe_hover_base_opacity="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "hover" "base_opacity")"
     state_hover_base_opacity="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-profile-state.out" "effects_profile" "hover" "base_opacity")"
-    probe_click_text_font_size="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "click_text_font_size_px")"
-    probe_click_text_float_distance="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "click_text_float_distance_px")"
-    probe_trail_command_line_width="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail_command_line_width_px")"
-    probe_trail_profile_line_width="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail_profile_line_width_px")"
+    probe_click_text_font_size="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "click_text_font_size_px")"
+    probe_click_text_float_distance="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "click_text_float_distance_px")"
+    probe_trail_command_line_width="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail_command_line_width_px")"
+    probe_trail_profile_line_width="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail_profile_line_width_px")"
     probe_trail_command_emit="$(_mfx_core_http_automation_parse_command_section_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail" "emit")"
     probe_trail_command_type="$(_mfx_core_http_automation_parse_command_section_scalar_field "$tmp_dir/effect-render-profile-probe.out" "trail" "normalized_type")"
     probe_trail_command_type="${probe_trail_command_type//\"/}"
@@ -840,7 +840,7 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
     local probe_hold_progress_full_ms
     probe_scroll_hover_hold_active_hold="$(_mfx_core_http_automation_parse_path_string_field "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" "active" "hold")"
     probe_scroll_strength_level="$(_mfx_core_http_automation_parse_command_section_scalar_field "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" "scroll" "strength_level")"
-    probe_hold_progress_full_ms="$(_mfx_core_http_automation_parse_scalar_field "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" "hold_progress_full_ms")"
+    probe_hold_progress_full_ms="$(_mfx_core_http_automation_parse_path_scalar_field "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" "hold_progress_full_ms")"
 
     _mfx_core_http_automation_assert_active_and_command_type \
         "$tmp_dir/effect-render-profile-probe-scroll-hover-hold-modes.out" \

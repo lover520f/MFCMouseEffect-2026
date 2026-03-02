@@ -68,6 +68,7 @@
   - Core automation contracts now run a parser fixture gate (`core_http_automation_parse_helper_contract_checks.sh`) to lock scalar/section/nested fallback output semantics (`string/number/bool/null`) before HTTP assertions execute.
   - Effects contract command assertions (`normalized_type`/mode flags/hold nested fields) now read from explicit `command_samples.*` paths, and state parity reads from explicit `effects_profile.*` paths, reducing one-level fallback parser coupling.
   - Effects contract probe parsing now reads `active.*` and category base-opacity fields via strict JSON paths (no first-match scanning), making render-profile contracts deterministic under payload growth.
+  - Effects contract probe scalar metrics (`duration/size/opacity/trail_throttle`, geometry, line-trail width, hold progress) now also use strict JSON paths, removing remaining first-key scalar reads.
   - Manual effects profile tuning selfcheck now reads profile values through explicit JSON paths (`duration/size/opacity/trail_throttle`), including `effects_profile.*` state fields, to keep manual and regression parser semantics aligned.
   - Injection selfcheck and app-scope selfcheck are part of POSIX suite phases.
 - WASM:
