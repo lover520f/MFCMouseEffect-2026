@@ -60,6 +60,136 @@ sys.stdout.write(value)
 PY
 }
 
+_mfx_core_http_read_json_uint() {
+    local file_path="$1"
+    local dotted_path="$2"
+
+    python3 - "$file_path" "$dotted_path" <<'PY'
+import json
+import sys
+
+file_path = sys.argv[1]
+dotted_path = sys.argv[2]
+
+with open(file_path, "r", encoding="utf-8") as f:
+    root = json.load(f)
+
+value = root
+for part in dotted_path.split("."):
+    if not isinstance(value, dict) or part not in value:
+        print(f"missing:{dotted_path}", file=sys.stderr)
+        sys.exit(2)
+    value = value[part]
+
+if not isinstance(value, int) or value < 0:
+    print(f"not_uint:{dotted_path}", file=sys.stderr)
+    sys.exit(3)
+
+sys.stdout.write(str(value))
+PY
+}
+
+_mfx_core_http_read_json_array_size() {
+    local file_path="$1"
+    local dotted_path="$2"
+
+    python3 - "$file_path" "$dotted_path" <<'PY'
+import json
+import sys
+
+file_path = sys.argv[1]
+dotted_path = sys.argv[2]
+
+with open(file_path, "r", encoding="utf-8") as f:
+    root = json.load(f)
+
+value = root
+for part in dotted_path.split("."):
+    if not isinstance(value, dict) or part not in value:
+        print(f"missing:{dotted_path}", file=sys.stderr)
+        sys.exit(2)
+    value = value[part]
+
+if not isinstance(value, list):
+    print(f"not_array:{dotted_path}", file=sys.stderr)
+    sys.exit(3)
+
+sys.stdout.write(str(len(value)))
+PY
+}
+
+_mfx_core_http_json_array_contains_string() {
+    local file_path="$1"
+    local dotted_path="$2"
+    local expected="$3"
+
+    python3 - "$file_path" "$dotted_path" "$expected" <<'PY'
+import json
+import sys
+
+file_path = sys.argv[1]
+dotted_path = sys.argv[2]
+expected = sys.argv[3]
+
+with open(file_path, "r", encoding="utf-8") as f:
+    root = json.load(f)
+
+value = root
+for part in dotted_path.split("."):
+    if not isinstance(value, dict) or part not in value:
+        print(f"missing:{dotted_path}", file=sys.stderr)
+        sys.exit(2)
+    value = value[part]
+
+if not isinstance(value, list):
+    print(f"not_array:{dotted_path}", file=sys.stderr)
+    sys.exit(3)
+
+found = False
+for item in value:
+    if isinstance(item, str) and item == expected:
+        found = True
+        break
+    if isinstance(item, dict) and isinstance(item.get("value"), str) and item["value"] == expected:
+        found = True
+        break
+
+sys.stdout.write("1" if found else "0")
+PY
+}
+
+_mfx_core_http_write_theme_catalog_payload() {
+    local output_file="$1"
+    local root_path="$2"
+
+    python3 - "$output_file" "$root_path" <<'PY'
+import json
+import sys
+
+output_file = sys.argv[1]
+root_path = sys.argv[2]
+
+with open(output_file, "w", encoding="utf-8") as f:
+    json.dump({"theme_catalog_root_path": root_path}, f, ensure_ascii=False)
+PY
+}
+
+_mfx_core_http_write_theme_payload() {
+    local output_file="$1"
+    local theme_value="$2"
+
+    python3 - "$output_file" "$theme_value" <<'PY'
+import json
+import sys
+
+output_file = sys.argv[1]
+theme_value = sys.argv[2]
+
+with open(output_file, "w", encoding="utf-8") as f:
+    json.dump({"theme": theme_value}, f, ensure_ascii=False)
+PY
+}
+
 _mfx_core_http_assert_wasm_runtime_backend_consistency() {
     local platform="$1"
     local state_file="$2"
@@ -114,6 +244,11 @@ _mfx_core_http_run_state_checks() {
     mfx_assert_eq "$code_state" "200" "core state status"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"automation\":" "core state automation section"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"input_capture\":" "core state input_capture section"
+    mfx_assert_file_contains "$tmp_dir/state.out" "\"theme_catalog_root_path\":" "core state theme catalog root path"
+    mfx_assert_file_contains "$tmp_dir/state.out" "\"theme_catalog_runtime\":" "core state theme catalog runtime section"
+    mfx_assert_file_contains "$tmp_dir/state.out" "\"runtime_theme_count\":" "core state theme catalog runtime count"
+    mfx_assert_file_contains "$tmp_dir/state.out" "\"external_theme_count\":" "core state theme catalog external count"
+    mfx_assert_file_contains "$tmp_dir/state.out" "\"rejected_external_theme_files\":" "core state theme catalog rejected count"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"effects_suspended_vm\":" "core state input_capture vm suppression field"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"effects_suspended_vm_check_interval_ms\":" "core state input_capture vm suppression interval field"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"wasm\":" "core state wasm section"
@@ -189,6 +324,10 @@ _mfx_core_http_run_state_checks() {
     mfx_assert_eq "$code_schema" "200" "core schema status"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"capabilities\":" "core schema capabilities section"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"wasm\":" "core schema wasm capabilities section"
+    mfx_assert_file_contains "$tmp_dir/schema.out" "\"themes\":" "core schema themes options section"
+    mfx_assert_file_contains "$tmp_dir/schema.out" "\"theme_catalog\":" "core schema theme catalog section"
+    mfx_assert_file_contains "$tmp_dir/schema.out" "\"runtime_theme_count\":" "core schema theme catalog runtime count"
+    mfx_assert_file_contains "$tmp_dir/schema.out" "\"folder_picker_supported\":" "core schema theme catalog folder picker support"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"input_capture\":" "core schema input_capture section"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"effects_suspended_vm\"" "core schema input_capture vm suppression key"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"effects_suspended_vm_check_interval_ms\"" "core schema input_capture vm suppression interval key"
@@ -240,4 +379,342 @@ _mfx_core_http_run_state_checks() {
         "$tmp_dir/state.out" \
         "$schema_wasm_invoke" \
         "$schema_wasm_render"
+
+    local schema_theme_count
+    local schema_theme_runtime_count
+    local state_theme_runtime_count
+    schema_theme_count="$(_mfx_core_http_read_json_array_size "$tmp_dir/schema.out" "themes")"
+    schema_theme_runtime_count="$(_mfx_core_http_read_json_uint "$tmp_dir/schema.out" "theme_catalog.runtime_theme_count")"
+    state_theme_runtime_count="$(_mfx_core_http_read_json_uint "$tmp_dir/state.out" "theme_catalog_runtime.runtime_theme_count")"
+    mfx_assert_eq "$schema_theme_count" "$schema_theme_runtime_count" "core theme catalog schema themes/runtime count parity"
+    mfx_assert_eq "$state_theme_runtime_count" "$schema_theme_runtime_count" "core theme catalog schema/state runtime count parity"
+    mfx_assert_eq \
+        "$(_mfx_core_http_json_array_contains_string "$tmp_dir/schema.out" "themes" "$(_mfx_core_http_read_json_string "$tmp_dir/state.out" "theme")")" \
+        "1" \
+        "core theme value exists in schema themes options"
+
+    local original_theme_value
+    original_theme_value="$(_mfx_core_http_read_json_string "$tmp_dir/state.out" "theme")"
+
+    local apply_chromatic_theme_payload="$tmp_dir/apply-chromatic-theme-contract.json"
+    _mfx_core_http_write_theme_payload "$apply_chromatic_theme_payload" "chromatic"
+    local code_apply_chromatic_theme
+    code_apply_chromatic_theme="$(mfx_http_code "$tmp_dir/state-apply-chromatic-theme-contract.out" "$base_url/api/state" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        --data-binary "@$apply_chromatic_theme_payload")"
+    mfx_assert_eq "$code_apply_chromatic_theme" "200" "core chromatic theme apply state status"
+    mfx_assert_file_contains "$tmp_dir/state-apply-chromatic-theme-contract.out" "\"ok\":true" "core chromatic theme apply response ok"
+
+    local code_state_after_chromatic_theme
+    code_state_after_chromatic_theme="$(mfx_http_code "$tmp_dir/state-after-chromatic-theme-contract.out" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_state_after_chromatic_theme" "200" "core chromatic theme state-after status"
+    mfx_assert_eq "$(_mfx_core_http_read_json_string "$tmp_dir/state-after-chromatic-theme-contract.out" "theme")" "chromatic" "core chromatic theme preserved"
+    local code_schema_after_chromatic_theme
+    code_schema_after_chromatic_theme="$(mfx_http_code "$tmp_dir/schema-after-chromatic-theme-contract.out" "$base_url/api/schema" -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_schema_after_chromatic_theme" "200" "core chromatic theme schema-after status"
+    mfx_assert_eq \
+        "$(_mfx_core_http_json_array_contains_string "$tmp_dir/schema-after-chromatic-theme-contract.out" "themes" "chromatic")" \
+        "1" \
+        "core chromatic theme exists in schema themes options"
+
+    local invalid_theme_value="__mfx_contract_invalid_theme__"
+    local apply_invalid_theme_payload="$tmp_dir/apply-invalid-theme-contract.json"
+    _mfx_core_http_write_theme_payload "$apply_invalid_theme_payload" "$invalid_theme_value"
+    local code_apply_invalid_theme
+    code_apply_invalid_theme="$(mfx_http_code "$tmp_dir/state-apply-invalid-theme-contract.out" "$base_url/api/state" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        --data-binary "@$apply_invalid_theme_payload")"
+    mfx_assert_eq "$code_apply_invalid_theme" "200" "core invalid theme apply state status"
+    mfx_assert_file_contains "$tmp_dir/state-apply-invalid-theme-contract.out" "\"ok\":true" "core invalid theme apply response ok"
+
+    local code_state_after_invalid_theme
+    code_state_after_invalid_theme="$(mfx_http_code "$tmp_dir/state-after-invalid-theme-contract.out" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_state_after_invalid_theme" "200" "core invalid theme state-after status"
+    local state_theme_after_invalid
+    state_theme_after_invalid="$(_mfx_core_http_read_json_string "$tmp_dir/state-after-invalid-theme-contract.out" "theme")"
+    if [[ "$state_theme_after_invalid" == "$invalid_theme_value" ]]; then
+        mfx_fail "core invalid theme normalization failed: persisted invalid theme value"
+    fi
+    local code_schema_after_invalid_theme
+    code_schema_after_invalid_theme="$(mfx_http_code "$tmp_dir/schema-after-invalid-theme-contract.out" "$base_url/api/schema" -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_schema_after_invalid_theme" "200" "core invalid theme schema-after status"
+    mfx_assert_eq \
+        "$(_mfx_core_http_json_array_contains_string "$tmp_dir/schema-after-invalid-theme-contract.out" "themes" "$state_theme_after_invalid")" \
+        "1" \
+        "core invalid theme normalized value exists in schema themes options"
+
+    local restore_theme_payload="$tmp_dir/restore-theme-contract.json"
+    _mfx_core_http_write_theme_payload "$restore_theme_payload" "$original_theme_value"
+    local code_restore_theme
+    code_restore_theme="$(mfx_http_code "$tmp_dir/state-restore-theme-contract.out" "$base_url/api/state" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        --data-binary "@$restore_theme_payload")"
+    mfx_assert_eq "$code_restore_theme" "200" "core theme restore state status"
+    mfx_assert_file_contains "$tmp_dir/state-restore-theme-contract.out" "\"ok\":true" "core theme restore response ok"
+
+    local code_state_after_theme_restore
+    code_state_after_theme_restore="$(mfx_http_code "$tmp_dir/state-after-theme-restore-contract.out" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_state_after_theme_restore" "200" "core theme state-after-restore status"
+    mfx_assert_eq "$(_mfx_core_http_read_json_string "$tmp_dir/state-after-theme-restore-contract.out" "theme")" "$original_theme_value" "core theme value restored"
+
+    local code_theme_catalog_picker_probe
+    code_theme_catalog_picker_probe="$(mfx_http_code "$tmp_dir/theme-catalog-picker-probe.out" "$base_url/api/theme/catalog-folder-dialog" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{"probe_only":true}')"
+    mfx_assert_eq "$code_theme_catalog_picker_probe" "200" "core theme catalog picker probe status"
+    mfx_assert_file_contains "$tmp_dir/theme-catalog-picker-probe.out" "\"ok\":true" "core theme catalog picker probe ok"
+    mfx_assert_file_contains "$tmp_dir/theme-catalog-picker-probe.out" "\"probe_only\":true" "core theme catalog picker probe mode"
+    mfx_assert_file_contains "$tmp_dir/theme-catalog-picker-probe.out" "\"supported\":" "core theme catalog picker probe support field"
+
+    local original_theme_catalog_root_path
+    original_theme_catalog_root_path="$(_mfx_core_http_read_json_string "$tmp_dir/state.out" "theme_catalog_root_path")"
+
+    local contract_theme_root="$tmp_dir/theme-catalog-contract"
+    mkdir -p "$contract_theme_root/pack"
+    cat > "$contract_theme_root/pack/contract.theme.json" <<'JSON'
+{
+  "value": "contract_external_theme",
+  "label_zh": "Contract Theme",
+  "label_en": "Contract Theme",
+  "palette": {
+    "click": {
+      "duration_ms": 300,
+      "window_size": 210,
+      "start_radius": 10.0,
+      "end_radius": 54.0,
+      "stroke_width": 2.5,
+      "fill": "#2233AA66",
+      "stroke": "#44CCFF",
+      "glow": "#66CCFF"
+    },
+    "icon": {
+      "duration_ms": 320,
+      "window_size": 220,
+      "start_radius": 10.0,
+      "end_radius": 52.0,
+      "stroke_width": 2.4,
+      "fill": "#11224455",
+      "stroke": "#66DDEE",
+      "glow": "#77DDEE"
+    },
+    "scroll": {
+      "duration_ms": 240,
+      "window_size": 190,
+      "start_radius": 8.0,
+      "end_radius": 46.0,
+      "stroke_width": 2.2,
+      "fill": "#11335544",
+      "stroke": "#77EEFF",
+      "glow": "#88EEFF"
+    },
+    "hold": {
+      "duration_ms": 900,
+      "window_size": 230,
+      "start_radius": 12.0,
+      "end_radius": 64.0,
+      "stroke_width": 2.8,
+      "fill": "#00000000",
+      "stroke": "#55DDEE",
+      "glow": "#66DDEE"
+    },
+    "hover": {
+      "duration_ms": 2600,
+      "window_size": 200,
+      "start_radius": 6.0,
+      "end_radius": 58.0,
+      "stroke_width": 2.0,
+      "fill": "#00000000",
+      "stroke": "#88EEFF",
+      "glow": "#44EEFF"
+    }
+  }
+}
+JSON
+
+    cat > "$contract_theme_root/pack/invalid.theme.json" <<'JSON'
+{
+  "value": "bad theme !",
+  "label_zh": "Invalid Theme",
+  "label_en": "Invalid Theme",
+  "palette": {
+    "click": {
+      "duration_ms": 200,
+      "window_size": 180,
+      "start_radius": 8.0,
+      "end_radius": 40.0,
+      "stroke_width": 2.0,
+      "fill": "#22000000",
+      "stroke": "#33AAFF",
+      "glow": "#33AAFF"
+    },
+    "icon": {
+      "duration_ms": 200,
+      "window_size": 180,
+      "start_radius": 8.0,
+      "end_radius": 40.0,
+      "stroke_width": 2.0,
+      "fill": "#22000000",
+      "stroke": "#33AAFF",
+      "glow": "#33AAFF"
+    },
+    "scroll": {
+      "duration_ms": 200,
+      "window_size": 180,
+      "start_radius": 8.0,
+      "end_radius": 40.0,
+      "stroke_width": 2.0,
+      "fill": "#22000000",
+      "stroke": "#33AAFF",
+      "glow": "#33AAFF"
+    },
+    "hold": {
+      "duration_ms": 200,
+      "window_size": 180,
+      "start_radius": 8.0,
+      "end_radius": 40.0,
+      "stroke_width": 2.0,
+      "fill": "#22000000",
+      "stroke": "#33AAFF",
+      "glow": "#33AAFF"
+    },
+    "hover": {
+      "duration_ms": 200,
+      "window_size": 180,
+      "start_radius": 8.0,
+      "end_radius": 40.0,
+      "stroke_width": 2.0,
+      "fill": "#22000000",
+      "stroke": "#33AAFF",
+      "glow": "#33AAFF"
+    }
+  }
+}
+JSON
+
+    cat > "$contract_theme_root/pack/neon.theme.json" <<'JSON'
+{
+  "value": "neon",
+  "label_zh": "External Neon Override",
+  "label_en": "External Neon Override",
+  "palette": {
+    "click": {
+      "duration_ms": 360,
+      "window_size": 230,
+      "start_radius": 11.0,
+      "end_radius": 66.0,
+      "stroke_width": 3.1,
+      "fill": "#22AA3344",
+      "stroke": "#11AA22",
+      "glow": "#33BB44"
+    },
+    "icon": {
+      "duration_ms": 350,
+      "window_size": 220,
+      "start_radius": 10.0,
+      "end_radius": 58.0,
+      "stroke_width": 2.9,
+      "fill": "#22AA3344",
+      "stroke": "#11AA22",
+      "glow": "#33BB44"
+    },
+    "scroll": {
+      "duration_ms": 250,
+      "window_size": 190,
+      "start_radius": 8.0,
+      "end_radius": 46.0,
+      "stroke_width": 2.4,
+      "fill": "#22AA3344",
+      "stroke": "#11AA22",
+      "glow": "#33BB44"
+    },
+    "hold": {
+      "duration_ms": 920,
+      "window_size": 240,
+      "start_radius": 12.0,
+      "end_radius": 70.0,
+      "stroke_width": 3.0,
+      "fill": "#00000000",
+      "stroke": "#11AA22",
+      "glow": "#33BB44"
+    },
+    "hover": {
+      "duration_ms": 2600,
+      "window_size": 210,
+      "start_radius": 7.0,
+      "end_radius": 60.0,
+      "stroke_width": 2.2,
+      "fill": "#00000000",
+      "stroke": "#11AA22",
+      "glow": "#33BB44"
+    }
+  }
+}
+JSON
+
+    local apply_theme_catalog_payload="$tmp_dir/apply-theme-catalog-contract.json"
+    _mfx_core_http_write_theme_catalog_payload "$apply_theme_catalog_payload" "$contract_theme_root"
+    local code_apply_theme_catalog
+    code_apply_theme_catalog="$(mfx_http_code "$tmp_dir/state-apply-theme-catalog-contract.out" "$base_url/api/state" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        --data-binary "@$apply_theme_catalog_payload")"
+    mfx_assert_eq "$code_apply_theme_catalog" "200" "core theme catalog apply state status"
+    mfx_assert_file_contains "$tmp_dir/state-apply-theme-catalog-contract.out" "\"ok\":true" "core theme catalog apply response ok"
+
+    local code_schema_after_theme_catalog
+    code_schema_after_theme_catalog="$(mfx_http_code "$tmp_dir/schema-after-theme-catalog.out" "$base_url/api/schema" -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_schema_after_theme_catalog" "200" "core theme catalog schema-after status"
+    mfx_assert_file_contains "$tmp_dir/schema-after-theme-catalog.out" "\"value\":\"contract_external_theme\"" "core theme catalog schema includes external theme"
+    mfx_assert_eq "$(_mfx_core_http_read_json_string "$tmp_dir/schema-after-theme-catalog.out" "theme_catalog.configured_root_path")" "$contract_theme_root" "core theme catalog configured_root_path after apply"
+    mfx_assert_eq "$(_mfx_core_http_read_json_uint "$tmp_dir/schema-after-theme-catalog.out" "theme_catalog.external_theme_count")" "1" "core theme catalog external count after apply"
+    mfx_assert_eq "$(_mfx_core_http_read_json_uint "$tmp_dir/schema-after-theme-catalog.out" "theme_catalog.scanned_external_theme_files")" "3" "core theme catalog scanned file count after apply"
+    mfx_assert_eq "$(_mfx_core_http_read_json_uint "$tmp_dir/schema-after-theme-catalog.out" "theme_catalog.rejected_external_theme_files")" "2" "core theme catalog rejected file count after apply"
+    if mfx_file_contains_fixed "$tmp_dir/schema-after-theme-catalog.out" "External Neon Override"; then
+        mfx_fail "core theme catalog built-in override guard failed: schema exposed external neon override label"
+    fi
+    mfx_assert_eq "$(_mfx_core_http_read_json_array_size "$tmp_dir/schema-after-theme-catalog.out" "themes")" "$(_mfx_core_http_read_json_uint "$tmp_dir/schema-after-theme-catalog.out" "theme_catalog.runtime_theme_count")" "core theme catalog schema parity after apply"
+
+    local code_state_after_theme_catalog
+    code_state_after_theme_catalog="$(mfx_http_code "$tmp_dir/state-after-theme-catalog.out" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_state_after_theme_catalog" "200" "core theme catalog state-after status"
+    mfx_assert_eq "$(_mfx_core_http_read_json_string "$tmp_dir/state-after-theme-catalog.out" "theme_catalog_root_path")" "$contract_theme_root" "core theme catalog root path in state after apply"
+    mfx_assert_eq "$(_mfx_core_http_read_json_uint "$tmp_dir/state-after-theme-catalog.out" "theme_catalog_runtime.external_theme_count")" "1" "core theme catalog runtime external count after apply"
+    mfx_assert_eq "$(_mfx_core_http_read_json_uint "$tmp_dir/state-after-theme-catalog.out" "theme_catalog_runtime.runtime_theme_count")" "$(_mfx_core_http_read_json_uint "$tmp_dir/schema-after-theme-catalog.out" "theme_catalog.runtime_theme_count")" "core theme catalog schema/state runtime parity after apply"
+    mfx_assert_eq \
+        "$(_mfx_core_http_json_array_contains_string "$tmp_dir/schema-after-theme-catalog.out" "themes" "$(_mfx_core_http_read_json_string "$tmp_dir/state-after-theme-catalog.out" "theme")")" \
+        "1" \
+        "core theme value exists in schema themes options after apply"
+
+    local restore_theme_catalog_payload="$tmp_dir/restore-theme-catalog.json"
+    _mfx_core_http_write_theme_catalog_payload "$restore_theme_catalog_payload" "$original_theme_catalog_root_path"
+    local code_restore_theme_catalog
+    code_restore_theme_catalog="$(mfx_http_code "$tmp_dir/state-restore-theme-catalog.out" "$base_url/api/state" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        --data-binary "@$restore_theme_catalog_payload")"
+    mfx_assert_eq "$code_restore_theme_catalog" "200" "core theme catalog restore state status"
+    mfx_assert_file_contains "$tmp_dir/state-restore-theme-catalog.out" "\"ok\":true" "core theme catalog restore response ok"
+
+    local code_state_after_restore_theme_catalog
+    code_state_after_restore_theme_catalog="$(mfx_http_code "$tmp_dir/state-after-restore-theme-catalog.out" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_state_after_restore_theme_catalog" "200" "core theme catalog state-after-restore status"
+    mfx_assert_eq "$(_mfx_core_http_read_json_string "$tmp_dir/state-after-restore-theme-catalog.out" "theme_catalog_root_path")" "$original_theme_catalog_root_path" "core theme catalog root path restored"
+
+    local code_schema_after_restore_theme_catalog
+    code_schema_after_restore_theme_catalog="$(mfx_http_code "$tmp_dir/schema-after-restore-theme-catalog.out" "$base_url/api/schema" -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_schema_after_restore_theme_catalog" "200" "core theme catalog schema-after-restore status"
+    mfx_assert_eq \
+        "$(_mfx_core_http_json_array_contains_string "$tmp_dir/schema-after-restore-theme-catalog.out" "themes" "$(_mfx_core_http_read_json_string "$tmp_dir/state-after-restore-theme-catalog.out" "theme")")" \
+        "1" \
+        "core theme value exists in schema themes options after restore"
 }

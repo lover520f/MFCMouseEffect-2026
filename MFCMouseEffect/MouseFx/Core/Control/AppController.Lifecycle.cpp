@@ -6,6 +6,7 @@
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Core/System/GdiPlusSession.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
+#include "MouseFx/Styles/ThemeStyle.h"
 #include "Platform/PlatformTarget.h"
 
 namespace mousefx {
@@ -25,6 +26,8 @@ bool AppController::Start() {
     // Load config from the best available directory (AppData preferred)
     configDir_ = ResolveConfigDirectory();
     config_ = EffectConfig::Load(configDir_);
+    ReloadThemeCatalogFromRootPath(config_.themeCatalogRootPath);
+    const bool themeNormalized = NormalizeConfiguredThemeName();
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
     InitializeWasmHost();
     inputIndicatorOverlay_->Initialize();
@@ -53,7 +56,7 @@ bool AppController::Start() {
     ApplyConfiguredEffects();
     inputIndicatorOverlay_->UpdateConfig(config_.inputIndicator);
 
-    if (NormalizeActiveEffectTypes()) {
+    if (NormalizeActiveEffectTypes() || themeNormalized) {
         PersistConfig();
     }
 

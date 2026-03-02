@@ -2,6 +2,7 @@
 #include "SettingsStateMapper.BaseSections.h"
 
 #include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/StringUtils.h"
 
 using json = nlohmann::json;
@@ -15,6 +16,16 @@ void AppendBaseSettingsState(const EffectConfig& cfg, json* out) {
 
     (*out)["ui_language"] = EnsureUtf8(cfg.uiLanguage);
     (*out)["theme"] = EnsureUtf8(cfg.theme);
+    (*out)["theme_catalog_root_path"] = EnsureUtf8(cfg.themeCatalogRootPath);
+    const ThemeCatalogRuntimeInfo themeCatalogRuntime = GetThemeCatalogRuntimeInfo();
+    (*out)["theme_catalog_runtime"] = {
+        {"configured_root_path", themeCatalogRuntime.configuredRootPath},
+        {"built_in_theme_count", themeCatalogRuntime.builtInThemeCount},
+        {"runtime_theme_count", themeCatalogRuntime.runtimeThemeCount},
+        {"scanned_external_theme_files", themeCatalogRuntime.scannedExternalThemeFiles},
+        {"external_theme_count", themeCatalogRuntime.externalThemeCount},
+        {"rejected_external_theme_files", themeCatalogRuntime.rejectedExternalThemeFiles},
+    };
     (*out)["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
     (*out)["hold_presenter_backend"] = EnsureUtf8(cfg.holdPresenterBackend);
     (*out)["active"] = {

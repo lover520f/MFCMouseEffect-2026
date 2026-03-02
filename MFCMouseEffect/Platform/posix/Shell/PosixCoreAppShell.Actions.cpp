@@ -5,11 +5,43 @@
 #if MFX_PLATFORM_MACOS || MFX_PLATFORM_LINUX
 
 #include "MouseFx/Server/WebSettingsServer.h"
+#include "MouseFx/Styles/ThemeStyle.h"
+#include "MouseFx/Utils/StringUtils.h"
 
 #include <functional>
 #include <utility>
 
 namespace mousefx::platform {
+
+void PosixCoreAppShell::GetThemeMenuSnapshotFromShell(
+    bool preferZhLabels,
+    std::vector<ShellThemeMenuItem>* outItems,
+    std::string* outSelectedTheme) {
+    if (outItems == nullptr || outSelectedTheme == nullptr) {
+        return;
+    }
+    outItems->clear();
+    outSelectedTheme->clear();
+    if (!appController_) {
+        return;
+    }
+
+    *outSelectedTheme = ResolveRuntimeThemeName(appController_->Config().theme);
+    const std::vector<ThemeOption> options = GetThemeOptions();
+    outItems->reserve(options.size());
+    for (const auto& option : options) {
+        ShellThemeMenuItem item;
+        item.value = option.value;
+        const std::wstring& labelWide = preferZhLabels ? option.labelZh : option.labelEn;
+        if (!labelWide.empty()) {
+            item.label = EnsureUtf8(Utf16ToUtf8(labelWide.c_str()));
+        }
+        if (item.label.empty()) {
+            item.label = item.value;
+        }
+        outItems->push_back(std::move(item));
+    }
+}
 
 void PosixCoreAppShell::OpenSettingsFromShell() {
     if (!PostShellTask([this]() {
@@ -24,6 +56,22 @@ void PosixCoreAppShell::RequestExitFromShell() {
             RequestExitOnLoop();
         })) {
         RequestExitOnLoop();
+    }
+}
+
+void PosixCoreAppShell::SetThemeFromShell(const std::string& theme) {
+    const std::string requestedTheme = theme;
+    if (requestedTheme.empty()) {
+        return;
+    }
+    if (!PostShellTask([this, requestedTheme]() {
+            if (appController_) {
+                appController_->SetTheme(requestedTheme);
+            }
+        })) {
+        if (appController_) {
+            appController_->SetTheme(requestedTheme);
+        }
     }
 }
 

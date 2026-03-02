@@ -59,6 +59,7 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/issue
 ./tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build
 ./tools/platform/manual/run-macos-effects-type-parity-selfcheck.sh --skip-build
 ./tools/platform/regression/run-macos-objcxx-surface-regression.sh
+./tools/platform/regression/run-theme-catalog-surface-regression.sh
 ```
 
 ## Note

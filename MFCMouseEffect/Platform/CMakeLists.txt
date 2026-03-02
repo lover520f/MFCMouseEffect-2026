@@ -297,6 +297,7 @@ if(MFX_ENABLE_ENTRY_RUNTIME_TARGETS)
             "${MFX_PROJECT_ROOT}/MouseFx/Core/Wasm/WasmRuntimeFactory.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Effects/TextEffect.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Effects/HoldRouteCatalog.cpp"
+            "${MFX_PROJECT_ROOT}/MouseFx/Styles/ThemeCatalogLoader.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Styles/ThemeStyle.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterBackendRegistry.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.cpp"

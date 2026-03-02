@@ -9,6 +9,7 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 
 namespace mousefx::platform {
 
@@ -23,8 +24,13 @@ public:
 
 private:
     AppController* AppControllerForShell() noexcept override;
+    void GetThemeMenuSnapshotFromShell(
+        bool preferZhLabels,
+        std::vector<ShellThemeMenuItem>* outItems,
+        std::string* outSelectedTheme) override;
     void OpenSettingsFromShell() override;
     void RequestExitFromShell() override;
+    void SetThemeFromShell(const std::string& theme) override;
 
     bool PostShellTask(std::function<void()> task);
     void RequestExitOnLoop();

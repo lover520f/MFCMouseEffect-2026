@@ -7,6 +7,7 @@
 #include "MouseFx/Core/Control/EffectFactory.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
+#include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/StringUtils.h"
 
 #include <filesystem>
@@ -158,6 +159,15 @@ bool AppController::NormalizeActiveEffectTypes() {
     return normalizedChanged;
 }
 
+bool AppController::NormalizeConfiguredThemeName() {
+    const std::string resolvedTheme = ResolveRuntimeThemeName(config_.theme);
+    if (resolvedTheme.empty() || config_.theme == resolvedTheme) {
+        return false;
+    }
+    config_.theme = resolvedTheme;
+    return true;
+}
+
 void AppController::SetEffect(EffectCategory category, const std::string& type) {
     size_t idx = static_cast<size_t>(category);
     if (idx >= kCategoryCount) return;
@@ -197,7 +207,14 @@ void AppController::ClearEffect(EffectCategory category) {
 
 void AppController::SetTheme(const std::string& theme) {
     if (theme.empty()) return;
-    config_.theme = theme;
+    const std::string resolvedTheme = ResolveRuntimeThemeName(theme);
+    if (resolvedTheme.empty()) {
+        return;
+    }
+    if (config_.theme == resolvedTheme) {
+        return;
+    }
+    config_.theme = resolvedTheme;
     // Re-create themed effects to pick up new palette.
     for (const auto& descriptor : kActiveCategoryDescriptors) {
         if (!descriptor.themeSensitive) {

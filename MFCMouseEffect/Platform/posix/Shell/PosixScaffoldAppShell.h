@@ -6,6 +6,8 @@
 #include "Platform/PlatformTarget.h"
 #include "Platform/posix/Shell/ScaffoldSettingsRuntime.h"
 
+#include <string>
+
 namespace mousefx::platform {
 
 #if MFX_PLATFORM_MACOS || MFX_PLATFORM_LINUX
@@ -19,8 +21,13 @@ public:
 
 private:
     AppController* AppControllerForShell() noexcept override;
+    void GetThemeMenuSnapshotFromShell(
+        bool preferZhLabels,
+        std::vector<ShellThemeMenuItem>* outItems,
+        std::string* outSelectedTheme) override;
     void OpenSettingsFromShell() override;
     void RequestExitFromShell() override;
+    void SetThemeFromShell(const std::string& theme) override;
 
     void StartStdinExitMonitor();
 

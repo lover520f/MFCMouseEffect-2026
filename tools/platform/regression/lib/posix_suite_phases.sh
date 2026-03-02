@@ -135,6 +135,29 @@ mfx_posix_suite_run_macos_automation_injection_selfcheck_phase() {
         "$repo_root/tools/platform/manual/run-macos-automation-injection-selfcheck.sh" "${args[@]}"
 }
 
+mfx_posix_suite_run_macos_tray_theme_selfcheck_phase() {
+    local repo_root="$1"
+    if [[ "$MFX_SKIP_MACOS_TRAY_THEME_SELFCHECK" -eq 1 ]]; then
+        mfx_info "skip macos tray theme selfcheck phase"
+        return
+    fi
+    if ! mfx_posix_suite_is_macos_host; then
+        mfx_info "skip macos tray theme selfcheck phase (non-macos host)"
+        return
+    fi
+
+    local args=("--skip-build")
+    local resolved_build_dir
+    resolved_build_dir="$(_mfx_posix_suite_resolve_core_build_dir)"
+    if [[ -n "$resolved_build_dir" ]]; then
+        args+=("--build-dir" "$resolved_build_dir")
+    fi
+
+    mfx_info "run macos tray theme selfcheck phase"
+    MFX_MANUAL_ALLOW_BIND_EACCES_SKIP="${MFX_MANUAL_ALLOW_BIND_EACCES_SKIP:-1}" \
+        "$repo_root/tools/platform/manual/run-macos-tray-theme-selfcheck.sh" "${args[@]}"
+}
+
 mfx_posix_suite_run_macos_automation_app_scope_selfcheck_phase() {
     local repo_root="$1"
     if [[ "$MFX_SKIP_MACOS_AUTOMATION_APP_SCOPE_SELFCHECK" -eq 1 ]]; then
@@ -281,6 +304,7 @@ mfx_posix_suite_run_webui_semantic_phase() {
     (
         cd "$repo_root"
         pnpm --dir MFCMouseEffect/WebUIWorkspace run test:automation-platform
+        pnpm --dir MFCMouseEffect/WebUIWorkspace run test:general-state-model
         pnpm --dir MFCMouseEffect/WebUIWorkspace run test:effects-profile-model
         pnpm --dir MFCMouseEffect/WebUIWorkspace run test:wasm-error-model
         pnpm --dir MFCMouseEffect/WebUIWorkspace run test:wasm-state-model

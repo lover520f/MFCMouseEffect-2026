@@ -4,6 +4,7 @@ namespace mousefx::config_json::keys {
 
 inline constexpr const char kDefaultEffect[] = "default_effect";
 inline constexpr const char kTheme[] = "theme";
+inline constexpr const char kThemeCatalogRootPath[] = "theme_catalog_root_path";
 inline constexpr const char kUiLanguage[] = "ui_language";
 inline constexpr const char kHoldFollowMode[] = "hold_follow_mode";
 inline constexpr const char kHoldPresenterBackend[] = "hold_presenter_backend";

@@ -50,6 +50,15 @@
 - Keep built-in theme command IDs unchanged (`kCmdTheme*`) for backward compatibility.
 - Add dynamic command mapping for runtime external themes so tray menu can select catalog-loaded themes instead of silently skipping them.
 
+8. macOS tray theme boundary hardening:
+- `MacosTrayMenuFactory` no longer reads `ThemeStyle` directly.
+- Theme list + selected theme now come from `IAppShellHost::GetThemeMenuSnapshotFromShell(...)`, so shell menu rendering stays decoupled from core style runtime linkage.
+- Theme apply callback remains `SetThemeFromShell(...)` (no behavior change to user action path).
+
+8. WebUI general state model unification:
+- General section now uses one shared normalizer (`src/general/general-state-model.js`) across entry and Svelte field component.
+- Added `scripts/test-general-state-model.mjs` and wired into POSIX WebUI semantic gate to prevent field drift for `theme_catalog_root_path` and defaults.
+
 ## API Contract
 - Request:
   - `{"probe_only": true}` or `{"initial_path":"..."}`
@@ -81,15 +90,47 @@
     - assert `chromatic` remains available in `schema.themes`
   - Add file-driven external theme contract:
     - create temp `contract.theme.json`
+    - create temp `neon.theme.json` (built-in value override attempt)
     - `POST /api/state` with temp `theme_catalog_root_path`
     - assert schema contains `contract_external_theme`
-    - assert `external_theme_count/scanned_external_theme_files/rejected_external_theme_files` values
+    - assert override on built-in `neon` is rejected and built-in semantic stays owned by runtime built-ins
+    - assert schema does not expose external override label (`External Neon Override`)
+    - assert `external_theme_count/scanned_external_theme_files/rejected_external_theme_files` values (`1/3/2`)
     - restore original `theme_catalog_root_path` and verify restored state
 
 - Added static source-consistency gate:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-theme-catalog-surface-regression.sh`
   - Fails if theme options regress to hardcoded lists in legacy settings, or if schema/tray stop reading from runtime catalog.
+  - Added macOS boundary checks: fail if `MacosTrayMenuFactory` reintroduces direct `ThemeStyle/StringUtils` includes instead of host snapshot contract.
   - Fails if core HTTP theme contract coverage markers are removed (`contract_external_theme`, `rejected_external_theme_files`).
+
+- Extended macOS tray smoke contract:
+  - `mfx_shell_macos_tray_smoke` now validates menu callback path for both:
+    - settings action (`OpenSettingsFromShell`)
+    - theme submenu select action (`SetThemeFromShell`)
+  - Regression script `tools/platform/regression/lib/smoke.sh` now asserts captured `theme_select` event (`expected_theme == selected_theme == neon`) in addition to settings launch capture.
+- Added end-to-end tray theme persistence selfcheck (`tools/platform/manual/run-macos-tray-theme-selfcheck.sh`) for core lane:
+  - trigger tray theme selection callback via test env
+  - assert `/api/state.theme` updates to target theme
+  - restart host and assert theme persists
+  - restore original theme to avoid config drift after gate run
+  - selfcheck now forces a deterministic precondition (`/api/state` set to non-target theme first), then verifies tray callback switches to target theme, reducing false-positive "already same theme" passes.
+
+- Extended macOS WASM fallback contract:
+  - `run-macos-wasm-runtime-selfcheck.sh` now validates `/api/state` fallback diagnostics behavior:
+  - after invalid load path, `last_load_failure_stage/code` must be non-empty
+  - after successful reload, `last_load_failure_stage/code` must clear to empty strings
+  - `run-posix-core-wasm-contract-regression.sh` now enforces the same lifecycle in core HTTP gates:
+  - invalid load from `*.missing` path must leave `/api/state.runtime_backend=wasm3_static` and non-empty `last_load_failure_stage/code`
+  - successful reload must clear `/api/state.last_load_failure_stage/code` to empty
+
+- Core initialization ordering fix for tray-theme parity:
+  - `PosixCoreAppShell` (and shared `AppShellCore`) now starts core controller before tray startup.
+  - This removes startup race where tray menu requested theme snapshot before controller was ready, causing empty theme submenu and missed theme callback during startup probes.
+
+- Regression execution reliability fix:
+  - `mfx_with_lock` now runs workflows in a strict subshell and captures return status directly.
+  - This prevents `cmd || status=$?` boolean-list semantics from weakening `set -e` behavior and accidentally masking phase failures.
 
 - Core HTTP startup reliability hardening (for contract runs):
   - inject isolated single-instance key on each startup attempt (`--single-instance-key` + `MFX_SINGLE_INSTANCE_KEY`)

@@ -48,14 +48,6 @@ bool PosixCoreAppShell::Initialize(const AppShellStartOptions& options) {
     }
 
     backgroundMode_ = !options.showTrayIcon || !services_.trayService;
-    if (!backgroundMode_ && services_.trayService) {
-        if (!services_.trayService->Start(this, options.showTrayIcon)) {
-            services_.singleInstanceGuard->Release();
-            return false;
-        }
-    } else {
-        StartStdinExitMonitor();
-    }
 
     appController_ = std::make_unique<AppController>();
     if (!appController_ || !appController_->Start()) {
@@ -65,9 +57,6 @@ bool PosixCoreAppShell::Initialize(const AppShellStartOptions& options) {
                 "Core runtime failed to start. Check permissions and logs.");
         }
         appController_.reset();
-        if (services_.trayService) {
-            services_.trayService->Stop();
-        }
         services_.singleInstanceGuard->Release();
         return false;
     }
@@ -96,6 +85,18 @@ bool PosixCoreAppShell::Initialize(const AppShellStartOptions& options) {
         services_.notifier->ShowWarning(
             "MFCMouseEffect",
             "Core WebSettings probe output failed. Check MFX_CORE_WEB_SETTINGS_PROBE_FILE.");
+    }
+
+    if (!backgroundMode_ && services_.trayService) {
+        if (!services_.trayService->Start(this, options.showTrayIcon)) {
+            appController_->SetInputCaptureStatusCallback(nullptr);
+            appController_->Stop();
+            appController_.reset();
+            services_.singleInstanceGuard->Release();
+            return false;
+        }
+    } else {
+        StartStdinExitMonitor();
     }
 
     initialized_ = true;

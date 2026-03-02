@@ -2,6 +2,7 @@
 @preconcurrency import Foundation
 
 public typealias MfxTrayActionCallback = @convention(c) (UnsafeMutableRawPointer?) -> Void
+public typealias MfxTrayThemeSelectCallback = @convention(c) (UnsafeMutableRawPointer?, UnsafePointer<CChar>?) -> Void
 
 @MainActor
 private var mfxTrayIconCache: NSImage? = nil
@@ -67,15 +68,18 @@ private final class MfxTrayActionBridge: NSObject {
     private let callbackContextBits: UInt
     private let onOpenSettingsCallback: MfxTrayActionCallback?
     private let onExitCallback: MfxTrayActionCallback?
+    private let onThemeSelectCallback: MfxTrayThemeSelectCallback?
 
     init(
         callbackContextBits: UInt,
         onOpenSettingsCallback: MfxTrayActionCallback?,
-        onExitCallback: MfxTrayActionCallback?
+        onExitCallback: MfxTrayActionCallback?,
+        onThemeSelectCallback: MfxTrayThemeSelectCallback?
     ) {
         self.callbackContextBits = callbackContextBits
         self.onOpenSettingsCallback = onOpenSettingsCallback
         self.onExitCallback = onExitCallback
+        self.onThemeSelectCallback = onThemeSelectCallback
     }
 
     private var callbackContext: UnsafeMutableRawPointer? {
@@ -92,6 +96,20 @@ private final class MfxTrayActionBridge: NSObject {
     func onExit(_ sender: Any?) {
         _ = sender
         onExitCallback?(callbackContext)
+    }
+
+    @objc
+    func onSelectTheme(_ sender: Any?) {
+        guard
+            let item = sender as? NSMenuItem,
+            let themeValue = item.representedObject as? String,
+            !themeValue.isEmpty
+        else {
+            return
+        }
+        themeValue.withCString { raw in
+            onThemeSelectCallback?(callbackContext, raw)
+        }
     }
 }
 
@@ -121,6 +139,22 @@ private func mfxNormalizeTrayText(_ value: UnsafePointer<CChar>?, _ fallback: St
     return decoded
 }
 
+private func mfxReadUtf8StringArray(_ values: UnsafePointer<UnsafePointer<CChar>?>?, _ count: UInt32) -> [String] {
+    guard let values, count > 0 else {
+        return []
+    }
+    var out: [String] = []
+    out.reserveCapacity(Int(count))
+    for index in 0..<Int(count) {
+        guard let ptr = values[index] else {
+            out.append("")
+            continue
+        }
+        out.append(String(cString: ptr))
+    }
+    return out
+}
+
 private func mfxIsTraySettingsAutoTriggerEnabled() -> Bool {
     let raw = ProcessInfo.processInfo.environment["MFX_TEST_TRAY_AUTO_TRIGGER_SETTINGS_ACTION"] ?? ""
     if raw.isEmpty {
@@ -130,14 +164,42 @@ private func mfxIsTraySettingsAutoTriggerEnabled() -> Bool {
     return normalized == "1" || normalized == "true" || normalized == "yes" || normalized == "on"
 }
 
+private func mfxReadTrayAutoTriggerThemeValue() -> String {
+    let raw = ProcessInfo.processInfo.environment["MFX_TEST_TRAY_AUTO_TRIGGER_THEME_VALUE"] ?? ""
+    if raw.isEmpty {
+        return ""
+    }
+    return raw.trimmingCharacters(in: .whitespacesAndNewlines)
+}
+
+private func mfxFindThemeMenuItem(_ menu: NSMenu?, value: String) -> NSMenuItem? {
+    guard let menu else {
+        return nil
+    }
+    for item in menu.items {
+        if let representedValue = item.representedObject as? String, representedValue == value {
+            return item
+        }
+        if let nested = mfxFindThemeMenuItem(item.submenu, value: value) {
+            return nested
+        }
+    }
+    return nil
+}
+
 @MainActor
 private func mfxCreateTrayMenuOnMainThread(
+    themeTitle: String,
     settingsTitle: String,
     exitTitle: String,
     tooltip: String,
+    themeValues: [String],
+    themeLabels: [String],
+    selectedThemeValue: String,
     callbackContextBits: UInt,
     onOpenSettings: MfxTrayActionCallback?,
-    onExit: MfxTrayActionCallback?
+    onExit: MfxTrayActionCallback?,
+    onThemeSelect: MfxTrayThemeSelectCallback?
 ) -> UnsafeMutableRawPointer? {
     let app = NSApplication.shared
     app.setActivationPolicy(.accessory)
@@ -146,9 +208,40 @@ private func mfxCreateTrayMenuOnMainThread(
     let actionBridge = MfxTrayActionBridge(
         callbackContextBits: callbackContextBits,
         onOpenSettingsCallback: onOpenSettings,
-        onExitCallback: onExit
+        onExitCallback: onExit,
+        onThemeSelectCallback: onThemeSelect
     )
     let menu = NSMenu(title: "MFCMouseEffect")
+
+    if !themeValues.isEmpty {
+        let themeMenu = NSMenu(title: themeTitle)
+        let selectedTheme = selectedThemeValue
+        let maxCount = min(themeValues.count, themeLabels.count)
+        for index in 0..<maxCount {
+            let value = themeValues[index]
+            if value.isEmpty {
+                continue
+            }
+            let label = themeLabels[index].isEmpty ? value : themeLabels[index]
+            let item = NSMenuItem(
+                title: label,
+                action: #selector(MfxTrayActionBridge.onSelectTheme(_:)),
+                keyEquivalent: ""
+            )
+            item.target = actionBridge
+            item.representedObject = value
+            if value == selectedTheme {
+                item.state = .on
+            }
+            themeMenu.addItem(item)
+        }
+        if themeMenu.items.count > 0 {
+            let rootItem = NSMenuItem(title: themeTitle, action: nil, keyEquivalent: "")
+            rootItem.submenu = themeMenu
+            menu.addItem(rootItem)
+            menu.addItem(NSMenuItem.separator())
+        }
+    }
 
     let settingsItem = NSMenuItem(
         title: settingsTitle,
@@ -190,23 +283,33 @@ private func mfxCreateTrayMenuOnMainThread(
 }
 
 private func mfxCreateTrayMenu(
+    themeTitle: String,
     settingsTitle: String,
     exitTitle: String,
     tooltip: String,
+    themeValues: [String],
+    themeLabels: [String],
+    selectedThemeValue: String,
     callbackContextBits: UInt,
     onOpenSettings: MfxTrayActionCallback?,
-    onExit: MfxTrayActionCallback?
+    onExit: MfxTrayActionCallback?,
+    onThemeSelect: MfxTrayThemeSelectCallback?
 ) -> UnsafeMutableRawPointer? {
     if Thread.isMainThread {
         let menuHandleBits = MainActor.assumeIsolated {
             UInt(
                 bitPattern: mfxCreateTrayMenuOnMainThread(
+                    themeTitle: themeTitle,
                     settingsTitle: settingsTitle,
                     exitTitle: exitTitle,
                     tooltip: tooltip,
+                    themeValues: themeValues,
+                    themeLabels: themeLabels,
+                    selectedThemeValue: selectedThemeValue,
                     callbackContextBits: callbackContextBits,
                     onOpenSettings: onOpenSettings,
-                    onExit: onExit
+                    onExit: onExit,
+                    onThemeSelect: onThemeSelect
                 )
             )
         }
@@ -221,12 +324,17 @@ private func mfxCreateTrayMenu(
         menuHandleBits = MainActor.assumeIsolated {
             UInt(
                 bitPattern: mfxCreateTrayMenuOnMainThread(
+                    themeTitle: themeTitle,
                     settingsTitle: settingsTitle,
                     exitTitle: exitTitle,
                     tooltip: tooltip,
+                    themeValues: themeValues,
+                    themeLabels: themeLabels,
+                    selectedThemeValue: selectedThemeValue,
                     callbackContextBits: callbackContextBits,
                     onOpenSettings: onOpenSettings,
-                    onExit: onExit
+                    onExit: onExit,
+                    onThemeSelect: onThemeSelect
                 )
             )
         }
@@ -259,12 +367,49 @@ public func mfx_macos_tray_menu_create_v1(
     _ onExit: MfxTrayActionCallback?
 ) -> UnsafeMutableRawPointer? {
     return mfxCreateTrayMenu(
+        themeTitle: "Theme",
         settingsTitle: mfxNormalizeTrayText(settingsTitleUtf8, "Settings"),
         exitTitle: mfxNormalizeTrayText(exitTitleUtf8, "Exit"),
         tooltip: mfxNormalizeTrayText(tooltipUtf8, "MFCMouseEffect"),
+        themeValues: [],
+        themeLabels: [],
+        selectedThemeValue: "",
         callbackContextBits: UInt(bitPattern: callbackContext),
         onOpenSettings: onOpenSettings,
-        onExit: onExit
+        onExit: onExit,
+        onThemeSelect: nil
+    )
+}
+
+@_cdecl("mfx_macos_tray_menu_create_v2")
+public func mfx_macos_tray_menu_create_v2(
+    _ themeTitleUtf8: UnsafePointer<CChar>?,
+    _ settingsTitleUtf8: UnsafePointer<CChar>?,
+    _ exitTitleUtf8: UnsafePointer<CChar>?,
+    _ tooltipUtf8: UnsafePointer<CChar>?,
+    _ themeValuesUtf8: UnsafePointer<UnsafePointer<CChar>?>?,
+    _ themeLabelsUtf8: UnsafePointer<UnsafePointer<CChar>?>?,
+    _ themeCount: UInt32,
+    _ selectedThemeValueUtf8: UnsafePointer<CChar>?,
+    _ callbackContext: UnsafeMutableRawPointer?,
+    _ onOpenSettings: MfxTrayActionCallback?,
+    _ onExit: MfxTrayActionCallback?,
+    _ onThemeSelect: MfxTrayThemeSelectCallback?
+) -> UnsafeMutableRawPointer? {
+    let values = mfxReadUtf8StringArray(themeValuesUtf8, themeCount)
+    let labels = mfxReadUtf8StringArray(themeLabelsUtf8, themeCount)
+    return mfxCreateTrayMenu(
+        themeTitle: mfxNormalizeTrayText(themeTitleUtf8, "Theme"),
+        settingsTitle: mfxNormalizeTrayText(settingsTitleUtf8, "Settings"),
+        exitTitle: mfxNormalizeTrayText(exitTitleUtf8, "Exit"),
+        tooltip: mfxNormalizeTrayText(tooltipUtf8, "MFCMouseEffect"),
+        themeValues: values,
+        themeLabels: labels,
+        selectedThemeValue: mfxNormalizeTrayText(selectedThemeValueUtf8, ""),
+        callbackContextBits: UInt(bitPattern: callbackContext),
+        onOpenSettings: onOpenSettings,
+        onExit: onExit,
+        onThemeSelect: onThemeSelect
     )
 }
 
@@ -289,6 +434,23 @@ public func mfx_macos_tray_menu_release_v1(_ menuHandle: UnsafeMutableRawPointer
 
 @_cdecl("mfx_macos_tray_menu_schedule_auto_open_settings_v1")
 public func mfx_macos_tray_menu_schedule_auto_open_settings_v1(_ menuHandle: UnsafeMutableRawPointer?) {
+    let autoThemeValue = mfxReadTrayAutoTriggerThemeValue()
+    if !autoThemeValue.isEmpty {
+        let menuHandleBits = UInt(bitPattern: menuHandle)
+        if menuHandleBits != 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(80)) {
+                guard let ptr = UnsafeMutableRawPointer(bitPattern: menuHandleBits) else {
+                    return
+                }
+                let handle = Unmanaged<MfxTrayMenuHandle>.fromOpaque(ptr).takeUnretainedValue()
+                guard let item = mfxFindThemeMenuItem(handle.menu, value: autoThemeValue) else {
+                    return
+                }
+                handle.actionBridge?.onSelectTheme(item)
+            }
+        }
+    }
+
     if !mfxIsTraySettingsAutoTriggerEnabled() {
         return
     }

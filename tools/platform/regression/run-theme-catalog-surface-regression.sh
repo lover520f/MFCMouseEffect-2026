@@ -30,12 +30,14 @@ done
 SETTINGS_OPTIONS_FILE="$REPO_ROOT/MFCMouseEffect/Settings/SettingsOptions.h"
 SCHEMA_OPTIONS_FILE="$REPO_ROOT/MFCMouseEffect/MouseFx/Server/SettingsSchemaBuilder.OptionsSections.cpp"
 WIN_TRAY_MENU_FILE="$REPO_ROOT/MFCMouseEffect/Platform/windows/Shell/Tray/Win32TrayMenuBuilder.cpp"
+MAC_TRAY_MENU_FILE="$REPO_ROOT/MFCMouseEffect/Platform/macos/Shell/MacosTrayMenuFactory.cpp"
 HTTP_STATE_CHECKS_FILE="$REPO_ROOT/tools/platform/regression/lib/core_http_state_checks.sh"
 
 for required_file in \
     "$SETTINGS_OPTIONS_FILE" \
     "$SCHEMA_OPTIONS_FILE" \
     "$WIN_TRAY_MENU_FILE" \
+    "$MAC_TRAY_MENU_FILE" \
     "$HTTP_STATE_CHECKS_FILE"; do
     if [[ ! -f "$required_file" ]]; then
         mfx_fail "missing required file: $required_file"
@@ -73,9 +75,42 @@ mfx_assert_file_contains \
     "windows tray dynamic theme mapping fallback must stay enabled"
 
 mfx_assert_file_contains \
+    "$MAC_TRAY_MENU_FILE" \
+    "host->GetThemeMenuSnapshotFromShell(" \
+    "macos tray theme submenu must source theme snapshot from shell host boundary"
+
+if mfx_file_contains_fixed "$MAC_TRAY_MENU_FILE" "MouseFx/Styles/ThemeStyle.h"; then
+    mfx_fail "macos tray menu factory must not directly include ThemeStyle; use shell host snapshot boundary"
+fi
+
+if mfx_file_contains_fixed "$MAC_TRAY_MENU_FILE" "MouseFx/Utils/StringUtils.h"; then
+    mfx_fail "macos tray menu factory must not directly include StringUtils; trim/codec should stay outside shell-style boundary"
+fi
+
+mfx_assert_file_contains \
     "$HTTP_STATE_CHECKS_FILE" \
     "contract_external_theme" \
     "core http state checks must cover external theme contract"
+
+mfx_assert_file_contains \
+    "$HTTP_STATE_CHECKS_FILE" \
+    "neon.theme.json" \
+    "core http state checks must include built-in override rejection fixture"
+
+mfx_assert_file_contains \
+    "$HTTP_STATE_CHECKS_FILE" \
+    "theme_catalog.scanned_external_theme_files\")\" \"3\"" \
+    "core http state checks must assert scanned external theme file count contract"
+
+mfx_assert_file_contains \
+    "$HTTP_STATE_CHECKS_FILE" \
+    "theme_catalog.rejected_external_theme_files\")\" \"2\"" \
+    "core http state checks must assert rejected external theme file count contract"
+
+mfx_assert_file_contains \
+    "$HTTP_STATE_CHECKS_FILE" \
+    "External Neon Override" \
+    "core http state checks must assert built-in neon override remains rejected"
 
 mfx_assert_file_contains \
     "$HTTP_STATE_CHECKS_FILE" \

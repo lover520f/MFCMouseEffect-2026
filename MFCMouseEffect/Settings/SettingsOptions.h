@@ -1,12 +1,16 @@
 #pragma once
 
 #include <cstddef>
+#include <deque>
 #include <iterator>
+#include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 #include "MouseFx/Effects/HoldRouteCatalog.h"
 #include "MouseFx/Interfaces/EffectCommands.h"
 #include "MouseFx/Interfaces/EffectMetadata.h"
+#include "MouseFx/Styles/ThemeStyle.h"
 
 struct SettingOption {
     const wchar_t* display;
@@ -161,23 +165,92 @@ inline const EffectOption* HoverMetadata(size_t& n) {
 } // namespace mousefx
 
 // Converter helpers for SettingsWindow compatibility
+namespace mousefx {
+
+struct ThemeOptionsSnapshot {
+    std::vector<std::string> values;
+    std::vector<std::wstring> labelsZh;
+    std::vector<std::wstring> labelsEn;
+    std::vector<SettingOption> optionsZh;
+    std::vector<SettingOption> optionsEn;
+};
+
+inline bool IsThemeSnapshotCompatible(const ThemeOptionsSnapshot& snapshot, const std::vector<ThemeOption>& runtimeThemes) {
+    if (snapshot.values.size() != runtimeThemes.size() ||
+        snapshot.labelsZh.size() != runtimeThemes.size() ||
+        snapshot.labelsEn.size() != runtimeThemes.size()) {
+        return false;
+    }
+
+    for (size_t i = 0; i < runtimeThemes.size(); ++i) {
+        const std::wstring runtimeZh = runtimeThemes[i].labelZh.empty()
+            ? Utf8ToWString(runtimeThemes[i].value)
+            : runtimeThemes[i].labelZh;
+        const std::wstring runtimeEn = runtimeThemes[i].labelEn.empty()
+            ? Utf8ToWString(runtimeThemes[i].value)
+            : runtimeThemes[i].labelEn;
+        if (snapshot.values[i] != runtimeThemes[i].value ||
+            snapshot.labelsZh[i] != runtimeZh ||
+            snapshot.labelsEn[i] != runtimeEn) {
+            return false;
+        }
+    }
+    return true;
+}
+
+inline std::unique_ptr<ThemeOptionsSnapshot> BuildThemeOptionsSnapshot(const std::vector<ThemeOption>& runtimeThemes) {
+    auto snapshot = std::make_unique<ThemeOptionsSnapshot>();
+    snapshot->values.reserve(runtimeThemes.size());
+    snapshot->labelsZh.reserve(runtimeThemes.size());
+    snapshot->labelsEn.reserve(runtimeThemes.size());
+    snapshot->optionsZh.reserve(runtimeThemes.size());
+    snapshot->optionsEn.reserve(runtimeThemes.size());
+
+    for (const auto& theme : runtimeThemes) {
+        snapshot->values.push_back(theme.value);
+        snapshot->labelsZh.push_back(theme.labelZh.empty() ? Utf8ToWString(theme.value) : theme.labelZh);
+        snapshot->labelsEn.push_back(theme.labelEn.empty() ? Utf8ToWString(theme.value) : theme.labelEn);
+    }
+    for (size_t i = 0; i < snapshot->values.size(); ++i) {
+        snapshot->optionsZh.push_back({snapshot->labelsZh[i].c_str(), snapshot->values[i].c_str()});
+        snapshot->optionsEn.push_back({snapshot->labelsEn[i].c_str(), snapshot->values[i].c_str()});
+    }
+    return snapshot;
+}
+
+} // namespace mousefx
+
 inline const SettingOption* ThemeOptions(bool zh, size_t& n) {
-    static const SettingOption zhOpts[] = {
-        {L"\u70ab\u5f69", "chromatic"},
-        {L"\u9713\u8679", "neon"},
-        {L"\u79D1\u5E7B", "scifi"},
-        {L"\u6781\u7B80", "minimal"},
-        {L"\u6E38\u620F\u611F", "game"},
-    };
-    static const SettingOption enOpts[] = {
-        {L"Chromatic", "chromatic"},
-        {L"Neon", "neon"},
-        {L"Sci-Fi", "scifi"},
-        {L"Minimal", "minimal"},
-        {L"Game", "game"},
-    };
-    if (zh) { n = std::size(zhOpts); return zhOpts; }
-    n = std::size(enOpts); return enOpts;
+    static std::mutex cacheMutex;
+    static std::deque<std::unique_ptr<mousefx::ThemeOptionsSnapshot>> snapshots;
+    static const mousefx::ThemeOptionsSnapshot* activeSnapshot = nullptr;
+    constexpr size_t kRetainedSnapshotMax = 16;
+
+    const std::vector<mousefx::ThemeOption> runtimeThemes = mousefx::GetThemeOptions();
+    std::lock_guard<std::mutex> guard(cacheMutex);
+
+    if (activeSnapshot == nullptr || !mousefx::IsThemeSnapshotCompatible(*activeSnapshot, runtimeThemes)) {
+        auto nextSnapshot = mousefx::BuildThemeOptionsSnapshot(runtimeThemes);
+        activeSnapshot = nextSnapshot.get();
+        snapshots.push_back(std::move(nextSnapshot));
+        while (snapshots.size() > kRetainedSnapshotMax) {
+            if (snapshots.front().get() == activeSnapshot) {
+                break;
+            }
+            snapshots.pop_front();
+        }
+    }
+
+    if (activeSnapshot == nullptr) {
+        n = 0;
+        return nullptr;
+    }
+    if (zh) {
+        n = activeSnapshot->optionsZh.size();
+        return activeSnapshot->optionsZh.empty() ? nullptr : activeSnapshot->optionsZh.data();
+    }
+    n = activeSnapshot->optionsEn.size();
+    return activeSnapshot->optionsEn.empty() ? nullptr : activeSnapshot->optionsEn.data();
 }
 
 inline const SettingOption* ClickOptions(bool zh, size_t& n) {

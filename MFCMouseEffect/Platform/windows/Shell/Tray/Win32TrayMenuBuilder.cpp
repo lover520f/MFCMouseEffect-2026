@@ -4,7 +4,11 @@
 #include "Platform/windows/Shell/Tray/Win32TrayMenuCommands.h"
 
 #include "MouseFx/Core/Control/AppController.h"
+#include "MouseFx/Styles/ThemeStyle.h"
 #include "Settings/SettingsOptions.h"
+
+#include <mutex>
+#include <unordered_map>
 
 using namespace mousefx;
 
@@ -31,6 +35,66 @@ static std::wstring PickLabel(const wchar_t* zh, const wchar_t* en, bool isZh) {
     if (zh) return std::wstring(zh);
     if (en) return std::wstring(en);
     return std::wstring();
+}
+
+static bool TryBuildThemeMenuCommand(const std::string& themeValue, UINT* outCmd) {
+    if (!outCmd) return false;
+    const std::string normalized = mousefx::NormalizeThemeName(themeValue);
+    if (normalized == "chromatic") {
+        *outCmd = kCmdThemeChromatic;
+        return true;
+    }
+    if (normalized == "scifi") {
+        *outCmd = kCmdThemeSciFi;
+        return true;
+    }
+    if (normalized == "neon") {
+        *outCmd = kCmdThemeNeon;
+        return true;
+    }
+    if (normalized == "minimal") {
+        *outCmd = kCmdThemeMinimal;
+        return true;
+    }
+    if (normalized == "game") {
+        *outCmd = kCmdThemeGame;
+        return true;
+    }
+    return false;
+}
+
+constexpr UINT kDynamicThemeCmdBase = 8100;
+constexpr UINT kDynamicThemeCmdMax = 8299;
+
+std::mutex& DynamicThemeMenuMapMutex() {
+    static std::mutex mutex;
+    return mutex;
+}
+
+std::unordered_map<UINT, std::string>& DynamicThemeMenuMap() {
+    static std::unordered_map<UINT, std::string> map;
+    return map;
+}
+
+void ResetDynamicThemeMenuMap() {
+    std::lock_guard<std::mutex> guard(DynamicThemeMenuMapMutex());
+    DynamicThemeMenuMap().clear();
+}
+
+void RegisterDynamicThemeMenuItem(UINT cmd, const std::string& themeValue) {
+    std::lock_guard<std::mutex> guard(DynamicThemeMenuMapMutex());
+    DynamicThemeMenuMap()[cmd] = themeValue;
+}
+
+bool TryReadDynamicThemeMenuItem(UINT cmd, std::string* outTheme) {
+    if (!outTheme) return false;
+    std::lock_guard<std::mutex> guard(DynamicThemeMenuMapMutex());
+    const auto it = DynamicThemeMenuMap().find(cmd);
+    if (it == DynamicThemeMenuMap().end()) {
+        return false;
+    }
+    *outTheme = it->second;
+    return true;
 }
 
 static std::wstring FallbackOptionLabel(UINT cmd, bool zh) {
@@ -180,26 +244,45 @@ static void AppendThemeSubMenu(HMENU parent, mousefx::AppController* mouseFx) {
     HMENU themeMenu = CreatePopupMenu();
     if (!themeMenu) return;
 
-    const bool zh = IsZhUi(mouseFx);
-    AppendMenuW(themeMenu, MF_STRING, kCmdThemeChromatic, PickLabel(L"\u70ab\u5f69", L"Chromatic", zh).c_str());
-    AppendMenuW(themeMenu, MF_STRING, kCmdThemeSciFi, PickLabel(L"\u79d1\u5e7b", L"Sci-Fi", zh).c_str());
-    AppendMenuW(themeMenu, MF_STRING, kCmdThemeNeon, PickLabel(L"\u9713\u8679", L"Neon", zh).c_str());
-    AppendMenuW(themeMenu, MF_STRING, kCmdThemeMinimal, PickLabel(L"\u6781\u7b80", L"Minimal", zh).c_str());
-    AppendMenuW(themeMenu, MF_STRING, kCmdThemeGame, PickLabel(L"\u6e38\u620f\u611f", L"Game", zh).c_str());
+    ResetDynamicThemeMenuMap();
 
+    const bool zh = IsZhUi(mouseFx);
+    UINT nextDynamicCmd = kDynamicThemeCmdBase;
+    std::string currentThemeNormalized = "neon";
     if (mouseFx) {
-        std::string theme = ToLowerAscii(mouseFx->Config().theme);
-        if (theme == "scifi" || theme == "sci-fi" || theme == "sci_fi") {
-            CheckMenuItem(themeMenu, kCmdThemeSciFi, MF_BYCOMMAND | MF_CHECKED);
-        } else if (theme == "chromatic") {
-            CheckMenuItem(themeMenu, kCmdThemeChromatic, MF_BYCOMMAND | MF_CHECKED);
-        } else if (theme == "minimal") {
-            CheckMenuItem(themeMenu, kCmdThemeMinimal, MF_BYCOMMAND | MF_CHECKED);
-        } else if (theme == "game") {
-            CheckMenuItem(themeMenu, kCmdThemeGame, MF_BYCOMMAND | MF_CHECKED);
-        } else {
-            CheckMenuItem(themeMenu, kCmdThemeNeon, MF_BYCOMMAND | MF_CHECKED);
+        const std::string configuredTheme = mouseFx->Config().theme;
+        const std::string resolvedTheme = mousefx::ResolveRuntimeThemeName(configuredTheme);
+        currentThemeNormalized = mousefx::NormalizeThemeName(resolvedTheme.empty() ? configuredTheme : resolvedTheme);
+        if (currentThemeNormalized.empty()) {
+            currentThemeNormalized = "neon";
         }
+    }
+    UINT checkedCmd = kCmdThemeNeon;
+    bool hasCheckedCmd = false;
+
+    for (const auto& option : mousefx::GetThemeOptions()) {
+        UINT cmd = 0;
+        if (!TryBuildThemeMenuCommand(option.value, &cmd)) {
+            if (nextDynamicCmd > kDynamicThemeCmdMax) {
+                continue;
+            }
+            cmd = nextDynamicCmd++;
+            RegisterDynamicThemeMenuItem(cmd, option.value);
+        }
+        std::wstring label = zh ? option.labelZh : option.labelEn;
+        if (label.empty()) {
+            label = std::wstring(option.value.begin(), option.value.end());
+        }
+        if (AppendMenuW(themeMenu, MF_STRING, cmd, label.c_str())) {
+            if (mousefx::NormalizeThemeName(option.value) == currentThemeNormalized) {
+                checkedCmd = cmd;
+                hasCheckedCmd = true;
+            }
+        }
+    }
+
+    if (hasCheckedCmd) {
+        CheckMenuItem(themeMenu, checkedCmd, MF_BYCOMMAND | MF_CHECKED);
     }
 
     if (!AppendMenuW(parent, MF_POPUP | MF_BYPOSITION, reinterpret_cast<UINT_PTR>(themeMenu),
@@ -310,6 +393,8 @@ bool Win32TrayMenuBuilder::TryBuildTheme(UINT cmd, std::string* outTheme) {
     case kCmdThemeNeon: *outTheme = "neon"; return true;
     case kCmdThemeMinimal: *outTheme = "minimal"; return true;
     case kCmdThemeGame: *outTheme = "game"; return true;
-    default: return false;
+    default:
+        break;
     }
+    return TryReadDynamicThemeMenuItem(cmd, outTheme);
 }

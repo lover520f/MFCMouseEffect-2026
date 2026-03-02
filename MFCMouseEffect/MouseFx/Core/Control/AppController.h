@@ -128,6 +128,7 @@ public:
     void SetWasmFallbackToBuiltinClick(bool enabled);
     void SetWasmManifestPath(const std::string& manifestPath);
     void SetWasmCatalogRootPath(const std::string& catalogRootPath);
+    void SetThemeCatalogRootPath(const std::string& rootPath);
     void SetWasmExecutionBudget(uint32_t outputBufferBytes, uint32_t maxCommands, double maxExecutionMs);
     bool LoadWasmPluginFromManifestPath(const std::string& manifestPath);
     bool ShouldFallbackToBuiltinClickWhenWasmActive() const;
@@ -188,6 +189,7 @@ private:
     void ReapplyActiveEffect(EffectCategory category);
     std::string ResolveConfiguredClickType() const;
     void ApplyConfiguredEffects();
+    bool NormalizeConfiguredThemeName();
     bool NormalizeActiveEffectTypes();
     void InitializeWasmHost();
     void ShutdownWasmHost();

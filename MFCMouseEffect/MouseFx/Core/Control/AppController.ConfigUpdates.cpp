@@ -6,7 +6,9 @@
 #include "MouseFx/Core/Config/EffectConfigInternal.h"
 #include "MouseFx/Core/Effects/ClickEffectCompute.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
+#include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/MathUtils.h"
+#include "MouseFx/Utils/StringUtils.h"
 
 #include <cmath>
 
@@ -77,9 +79,28 @@ void AppController::SetTrailLineWidth(float lineWidth) {
     }
 }
 
+void AppController::SetThemeCatalogRootPath(const std::string& rootPath) {
+    const std::string normalizedRootPath = TrimAscii(rootPath);
+    if (config_.themeCatalogRootPath == normalizedRootPath) {
+        return;
+    }
+
+    config_.themeCatalogRootPath = normalizedRootPath;
+    ReloadThemeCatalogFromRootPath(config_.themeCatalogRootPath);
+    const bool themeNormalized = NormalizeConfiguredThemeName();
+    ApplyConfiguredEffects();
+    if (NormalizeActiveEffectTypes() || themeNormalized) {
+        PersistConfig();
+        return;
+    }
+    PersistConfig();
+}
+
 void AppController::ResetConfig() {
     // 1. Get default config
     config_ = EffectConfig::GetDefault();
+    ReloadThemeCatalogFromRootPath(config_.themeCatalogRootPath);
+    NormalizeConfiguredThemeName();
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
 
     // 2. Save it to disk
@@ -102,12 +123,14 @@ void AppController::ReloadConfigFromDisk() {
 
     EffectConfig loaded = EffectConfig::Load(configDir_);
     config_ = loaded;
+    ReloadThemeCatalogFromRootPath(config_.themeCatalogRootPath);
+    const bool themeNormalized = NormalizeConfiguredThemeName();
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
     inputAutomationEngine_.UpdateConfig(config_.automation);
     ApplyWasmConfigToHost(true);
 
     ApplyConfiguredEffects();
-    if (NormalizeActiveEffectTypes()) {
+    if (NormalizeActiveEffectTypes() || themeNormalized) {
         PersistConfig();
     }
 

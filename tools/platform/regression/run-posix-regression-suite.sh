@@ -26,6 +26,7 @@ mfx_run_posix_regression_suite_workflow() {
     mfx_posix_suite_run_core_smoke_phase "$SCRIPT_DIR"
     mfx_posix_suite_run_core_automation_phase "$SCRIPT_DIR"
     mfx_posix_suite_run_macos_automation_injection_selfcheck_phase "$REPO_ROOT"
+    mfx_posix_suite_run_macos_tray_theme_selfcheck_phase "$REPO_ROOT"
     mfx_posix_suite_run_macos_automation_app_scope_selfcheck_phase "$REPO_ROOT"
     mfx_posix_suite_run_macos_vm_suppression_selfcheck_phase "$REPO_ROOT"
     mfx_posix_suite_run_macos_effects_type_parity_selfcheck_phase "$REPO_ROOT"

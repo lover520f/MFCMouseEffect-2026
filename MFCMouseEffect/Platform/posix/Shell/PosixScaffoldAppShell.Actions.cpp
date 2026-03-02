@@ -6,6 +6,19 @@
 
 namespace mousefx::platform {
 
+void PosixScaffoldAppShell::GetThemeMenuSnapshotFromShell(
+    bool preferZhLabels,
+    std::vector<ShellThemeMenuItem>* outItems,
+    std::string* outSelectedTheme) {
+    (void)preferZhLabels;
+    if (outItems != nullptr) {
+        outItems->clear();
+    }
+    if (outSelectedTheme != nullptr) {
+        outSelectedTheme->clear();
+    }
+}
+
 void PosixScaffoldAppShell::OpenSettingsFromShell() {
     if (!services_.settingsLauncher) {
         return;
@@ -22,6 +35,12 @@ void PosixScaffoldAppShell::RequestExitFromShell() {
     if (services_.eventLoopService) {
         services_.eventLoopService->RequestExit();
     }
+}
+
+void PosixScaffoldAppShell::SetThemeFromShell(const std::string& theme) {
+    (void)theme;
+    // Scaffold lane does not own runtime effect controller; theme changes are
+    // expected to be applied from WebSettings API.
 }
 
 } // namespace mousefx::platform

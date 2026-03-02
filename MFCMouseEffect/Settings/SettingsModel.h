@@ -4,7 +4,7 @@
 
 struct SettingsModel {
     std::string uiLanguage = "zh-CN"; // zh-CN | en-US
-    std::string theme = "neon";       // neon | scifi | minimal | game
+    std::string theme = "neon";       // built-ins + optional external theme catalog entries
 
     std::string click = "ripple";     // ripple | star | text | none
     std::string trail = "particle";   // particle | line | none

@@ -7,6 +7,7 @@
   let reloadRetryTimer = 0;
   let cachedSchema = null;
   let cachedSchemaLang = '';
+  let cachedState = null;
 
   const I18N = window.MfxWebI18n || {};
 
@@ -246,6 +247,7 @@
     const i18n = I18N[uiLang] || I18N['en-US'] || {};
     cachedSchema = schema;
     cachedSchemaLang = uiLang;
+    cachedState = st;
 
     try {
       applyI18n(uiLang);
@@ -258,6 +260,7 @@
         schema,
         state: st,
         i18n,
+        generalAction: handleGeneralAction,
         wasmAction: handleWasmAction,
       });
     }
@@ -400,6 +403,33 @@
     }
   }
 
+  async function handleGeneralAction(action, payload) {
+    try {
+      if (blockActionWhenDisconnected()) {
+        return { ok: false, error: 'blocked' };
+      }
+      const body = payload || {};
+      if (action === 'pickThemeCatalogRootPath') {
+        setStatus(statusText('status_theme_catalog_picker_opening', 'Opening theme folder picker...'));
+        const result = await apiPost('/api/theme/catalog-folder-dialog', body);
+        if (result && !result.ok && result.error) {
+          setStatus(statusText('status_theme_catalog_picker_failed', 'Theme folder picker failed: ') + result.error, 'warn');
+        }
+        return result;
+      }
+      return { ok: false, error: 'unsupported action' };
+    } catch (e) {
+      if (e && e.code === 'unauthorized') {
+        return { ok: false, error: 'unauthorized' };
+      }
+      setStatus(statusError('status_theme_catalog_picker_failed', 'Theme folder picker failed: ', e), 'warn');
+      return {
+        ok: false,
+        error: (e && e.message) ? e.message : String(e || ''),
+      };
+    }
+  }
+
   function buildState() {
     const automation = (window.MfxAutomationUi && typeof window.MfxAutomationUi.read === 'function')
       ? window.MfxAutomationUi.read()
@@ -450,9 +480,18 @@
       }
       setStatus(statusText('status_applying', 'Applying...'));
       const st = buildState();
+      const previousThemeCatalogRootPath = `${cachedState?.theme_catalog_root_path || ''}`.trim();
+      const requestedThemeCatalogRootPath = `${st?.theme_catalog_root_path || ''}`.trim();
+      const shouldRefreshSchema = requestedThemeCatalogRootPath !== previousThemeCatalogRootPath;
       const res = await apiPost('/api/state', st);
       if (res.ok) {
         const latest = await apiGet('/api/state');
+        if (shouldRefreshSchema) {
+          const schema = await apiGet('/api/schema');
+          renderSettingsSnapshot(schema, latest);
+        } else {
+          cachedState = latest;
+        }
         const runtimeNotice = pickRuntimeNotice(latest);
         if (runtimeNotice) {
           setStatus(runtimeNotice.message, runtimeNotice.level === 'warn' ? 'warn' : 'ok');

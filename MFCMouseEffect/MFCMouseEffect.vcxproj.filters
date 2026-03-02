@@ -180,6 +180,9 @@
     <ClInclude Include="MouseFx\Styles\RippleStyle.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Styles\ThemeCatalogLoader.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Styles\ThemeStyle.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -580,6 +583,9 @@
     </ClCompile>
     <ClCompile Include="Platform\PlatformDisplayTopology.cpp">
       <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Styles\ThemeCatalogLoader.cpp">
+      <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Styles\ThemeStyle.cpp">
       <Filter>源文件\MouseFx</Filter>

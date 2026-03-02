@@ -31,6 +31,9 @@ void CommandHandler::HandleApplySettings(const std::string& jsonCmd) {
     if (payload.contains("hold_presenter_backend") && payload["hold_presenter_backend"].is_string()) {
         controller_->SetHoldPresenterBackend(payload["hold_presenter_backend"].get<std::string>());
     }
+    if (payload.contains("theme_catalog_root_path") && payload["theme_catalog_root_path"].is_string()) {
+        controller_->SetThemeCatalogRootPath(payload["theme_catalog_root_path"].get<std::string>());
+    }
 
     command_handler_apply_settings::ApplyTrailTuningSettings(payload, controller_);
 

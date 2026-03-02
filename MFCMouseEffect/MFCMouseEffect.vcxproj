@@ -327,6 +327,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Server\WebSettingsServer.h" />
     <ClInclude Include="MouseFx\Effects\RippleEffect.h" />
     <ClInclude Include="MouseFx\Styles\RippleStyle.h" />
+    <ClInclude Include="MouseFx\Styles\ThemeCatalogLoader.h" />
     <ClInclude Include="MouseFx\Styles\ThemeStyle.h" />
     <ClInclude Include="MouseFx\Effects\TextEffect.h" />
     <ClInclude Include="Platform\windows\Effects\TextWindow.h" />
@@ -510,6 +511,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Control\DispatchRouter.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleBasedHoldRuntime.cpp" />
     <ClCompile Include="MouseFx\Renderers\Indicator\IndicatorRenderer.cpp" />
+    <ClCompile Include="MouseFx\Styles\ThemeCatalogLoader.cpp" />
     <ClCompile Include="MouseFx\Styles\ThemeStyle.cpp" />
     <ClCompile Include="MouseFx\Effects\TextEffect.cpp" />
     <ClCompile Include="Platform\windows\Effects\TextWindow.cpp" />

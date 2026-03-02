@@ -278,10 +278,13 @@
     return result;
   }
 
-  function renderGeneral(schema, appState) {
+  function renderGeneral(schema, appState, generalAction) {
     const section = generalSection();
     if (section && typeof section.render === 'function') {
-      section.render({ schema, state: appState });
+      if (typeof section.onAction === 'function') {
+        section.onAction(generalAction);
+      }
+      section.render({ schema, state: appState, onAction: generalAction });
       return;
     }
 
@@ -421,6 +424,9 @@
     const schema = payload?.schema || {};
     const appState = payload?.state || {};
     const texts = payload?.i18n || {};
+    const generalAction = (typeof payload?.generalAction === 'function')
+      ? payload.generalAction
+      : null;
     const wasmAction = (typeof payload?.wasmAction === 'function')
       ? payload.wasmAction
       : null;
@@ -429,7 +435,7 @@
       : null;
 
     state.schema = schema;
-    renderGeneral(schema, appState);
+    renderGeneral(schema, appState, generalAction);
     renderEffects(schema, appState);
     renderText(appState);
     renderTrail(appState);
@@ -451,6 +457,7 @@
       : {
         ui_language: getText('ui_language'),
         theme: getText('theme'),
+        theme_catalog_root_path: getText('theme_catalog_root_path'),
         hold_follow_mode: getText('hold_follow_mode'),
         hold_presenter_backend: getText('hold_presenter_backend') || 'auto',
       };
@@ -523,6 +530,7 @@
     return {
       ui_language: generalState.ui_language,
       theme: generalState.theme,
+      theme_catalog_root_path: generalState.theme_catalog_root_path || '',
       hold_follow_mode: generalState.hold_follow_mode,
       hold_presenter_backend: generalState.hold_presenter_backend || 'auto',
       active: effectsState,

@@ -11,6 +11,7 @@ nlohmann::json BuildRootFromConfig(const EffectConfig& config) {
     nlohmann::json root;
     root[keys::kDefaultEffect] = config.defaultEffect;
     root[keys::kTheme] = config.theme;
+    root[keys::kThemeCatalogRootPath] = config.themeCatalogRootPath;
     root[keys::kUiLanguage] = config.uiLanguage;
     root[keys::kHoldFollowMode] = config_internal::NormalizeHoldFollowMode(config.holdFollowMode);
     root[keys::kHoldPresenterBackend] = config_internal::NormalizeHoldPresenterBackend(config.holdPresenterBackend);

@@ -14,6 +14,8 @@
 #include "MouseFx/Core/Shell/ITrayService.h"
 #include "MouseFx/Core/Shell/IUserNotificationService.h"
 #include "MouseFx/Server/WebSettingsServer.h"
+#include "MouseFx/Styles/ThemeStyle.h"
+#include "MouseFx/Utils/StringUtils.h"
 
 namespace mousefx {
 
@@ -80,12 +82,6 @@ bool AppShellCore::Initialize(const AppShellStartOptions& options) {
     }
 
     backgroundMode_ = !options.showTrayIcon || !trayService_;
-    if (!backgroundMode_ && trayService_) {
-        if (!trayService_->Start(this, options.showTrayIcon)) {
-            singleInstanceGuard_->Release();
-            return false;
-        }
-    }
 
     mouseFx_ = std::make_unique<AppController>();
     if (!mouseFx_->Start()) {
@@ -93,6 +89,19 @@ bool AppShellCore::Initialize(const AppShellStartOptions& options) {
         NotifyWarning("MFCMouseEffect", BuildStartupFailureMessage(mouseFx_.get()));
 #endif
         mouseFx_.reset();
+        singleInstanceGuard_->Release();
+        return false;
+    }
+
+    if (!backgroundMode_ && trayService_) {
+        if (!trayService_->Start(this, options.showTrayIcon)) {
+            if (mouseFx_) {
+                mouseFx_->Stop();
+                mouseFx_.reset();
+            }
+            singleInstanceGuard_->Release();
+            return false;
+        }
     }
 
     ipc_ = std::make_unique<IpcController>();
@@ -152,6 +161,36 @@ AppController* AppShellCore::AppControllerForShell() noexcept {
     return mouseFx_.get();
 }
 
+void AppShellCore::GetThemeMenuSnapshotFromShell(
+    bool preferZhLabels,
+    std::vector<ShellThemeMenuItem>* outItems,
+    std::string* outSelectedTheme) {
+    if (outItems == nullptr || outSelectedTheme == nullptr) {
+        return;
+    }
+    outItems->clear();
+    outSelectedTheme->clear();
+    if (!mouseFx_) {
+        return;
+    }
+
+    *outSelectedTheme = ResolveRuntimeThemeName(mouseFx_->Config().theme);
+    const std::vector<ThemeOption> options = GetThemeOptions();
+    outItems->reserve(options.size());
+    for (const auto& option : options) {
+        ShellThemeMenuItem item;
+        item.value = option.value;
+        const std::wstring& labelWide = preferZhLabels ? option.labelZh : option.labelEn;
+        if (!labelWide.empty()) {
+            item.label = EnsureUtf8(Utf16ToUtf8(labelWide.c_str()));
+        }
+        if (item.label.empty()) {
+            item.label = item.value;
+        }
+        outItems->push_back(std::move(item));
+    }
+}
+
 void AppShellCore::OpenSettingsFromShell() {
     if (!PostShellTask([this]() {
             ShowWebSettings();
@@ -165,6 +204,22 @@ void AppShellCore::RequestExitFromShell() {
             RequestExitOnLoop();
         })) {
         RequestExitOnLoop();
+    }
+}
+
+void AppShellCore::SetThemeFromShell(const std::string& theme) {
+    const std::string requestedTheme = theme;
+    if (requestedTheme.empty()) {
+        return;
+    }
+    if (!PostShellTask([this, requestedTheme]() {
+            if (mouseFx_) {
+                mouseFx_->SetTheme(requestedTheme);
+            }
+        })) {
+        if (mouseFx_) {
+            mouseFx_->SetTheme(requestedTheme);
+        }
     }
 }
 

@@ -2,8 +2,10 @@
 #include "SettingsSchemaBuilder.OptionsSections.h"
 
 #include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/StringUtils.h"
 #include "Platform/PlatformDisplayTopology.h"
+#include "Platform/PlatformNativeFolderPicker.h"
 #include "Settings/SettingsOptions.h"
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterBackendRegistry.h"
 
@@ -42,13 +44,24 @@ void AppendSettingsSchemaOptionsSections(const EffectConfig& config, json* out) 
         {{"value","en-US"},{"label", LabelByLang(L"\u82f1\u6587", L"English", lang)}}
     });
 
-    (*out)["themes"] = json::array({
-        {{"value","chromatic"},{"label", LabelByLang(L"\u70ab\u5f69", L"Chromatic", lang)}},
-        {{"value","neon"},{"label", LabelByLang(L"\u9713\u8679", L"Neon", lang)}},
-        {{"value","scifi"},{"label", LabelByLang(L"\u79d1\u5e7b", L"Sci-Fi", lang)}},
-        {{"value","minimal"},{"label", LabelByLang(L"\u6781\u7b80", L"Minimal", lang)}},
-        {{"value","game"},{"label", LabelByLang(L"\u6e38\u620f\u611f", L"Game", lang)}}
-    });
+    json themeOptions = json::array();
+    for (const auto& theme : GetThemeOptions()) {
+        themeOptions.push_back({
+            {"value", theme.value},
+            {"label", LabelByLang(theme.labelZh, theme.labelEn, lang)}
+        });
+    }
+    (*out)["themes"] = std::move(themeOptions);
+    const ThemeCatalogRuntimeInfo themeCatalogRuntime = GetThemeCatalogRuntimeInfo();
+    (*out)["theme_catalog"] = {
+        {"configured_root_path", themeCatalogRuntime.configuredRootPath},
+        {"built_in_theme_count", themeCatalogRuntime.builtInThemeCount},
+        {"runtime_theme_count", themeCatalogRuntime.runtimeThemeCount},
+        {"scanned_external_theme_files", themeCatalogRuntime.scannedExternalThemeFiles},
+        {"external_theme_count", themeCatalogRuntime.externalThemeCount},
+        {"rejected_external_theme_files", themeCatalogRuntime.rejectedExternalThemeFiles},
+        {"folder_picker_supported", platform::IsNativeFolderPickerSupported()},
+    };
 
     (*out)["hold_follow_modes"] = json::array({
         {{"value","precise"},{"label", LabelByLang(L"\u7cbe\u51c6\u8ddf\u968f\uff08\u4f4e\u5ef6\u8fdf\uff09", L"Precise (Low Latency)", lang)}},

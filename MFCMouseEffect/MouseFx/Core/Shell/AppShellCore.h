@@ -28,8 +28,13 @@ public:
     void Shutdown();
 
     AppController* AppControllerForShell() noexcept override;
+    void GetThemeMenuSnapshotFromShell(
+        bool preferZhLabels,
+        std::vector<ShellThemeMenuItem>* outItems,
+        std::string* outSelectedTheme) override;
     void OpenSettingsFromShell() override;
     void RequestExitFromShell() override;
+    void SetThemeFromShell(const std::string& theme) override;
 
 private:
     bool PostShellTask(std::function<void()> task);
