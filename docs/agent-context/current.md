@@ -56,6 +56,7 @@
   - Core effects contract now asserts legacy alias normalization through runtime state and render-profile snapshot (`textclick/scifi/stardust/scifi3d/suspension + cursor_priority -> text/tubes/twinkle/hologram/tubes + smooth`).
   - Line-trail runtime diagnostics now include `line_trail_line_width_px` so contract gates can catch thin-line regressions.
   - Effects profile probe now exposes metadata-derived `catalog_values`; selfcheck asserts full five-category option coverage.
+  - Effects overlay contract parity parser is now fully path-based against current API schema (`profiles.*`, `config_basis.test_tuning.*`, `command_samples.effective_timing.*`, `effects_runtime.*`); legacy alias gate also reads normalized `hold_follow_mode` from top-level state (`/api/state.hold_follow_mode`), removing false-negative parse failures from stale paths.
 - Automation:
   - App-scope alias normalization (`process:code` / `code.app` / `code.exe`) is gated.
   - App-scope persistence dedupe is contract-gated: writing equivalent aliases (`process:code.exe/code.app/code`) must collapse to one persisted scope token.
@@ -71,6 +72,7 @@
   - Effects contract probe parsing now reads `active.*` and category base-opacity fields via strict JSON paths (no first-match scanning), making render-profile contracts deterministic under payload growth.
   - Effects contract probe scalar metrics (`duration/size/opacity/trail_throttle`, geometry, line-trail width, hold progress) now also use strict JSON paths, removing remaining first-key scalar reads.
   - Manual effects profile tuning selfcheck now reads profile values through explicit JSON paths (`duration/size/opacity/trail_throttle`), including `effects_profile.*` state fields, to keep manual and regression parser semantics aligned.
+  - Manual effects profile tuning selfcheck now follows `config_basis.test_tuning.*` for both probe/state comparisons, aligned with current test-render-profile payload shape.
   - Injection selfcheck and app-scope selfcheck are part of POSIX suite phases.
 - WASM:
   - macOS runtime path + diagnostics + fallback contracts are active.
@@ -162,6 +164,8 @@
 - macOS manual selfcheck host helper now returns controlled skip (`MFX_MANUAL_ALLOW_BIND_EACCES_SKIP=1`) for constrained-runtime startup failures (`websettings_start_failed(stage=2,code=1/13)` and no-probe/no-log early exit), avoiding noisy false-negative `host exited early`; POSIX suite enables this skip policy by default for manual selfcheck phases.
 - macOS manual selfchecks now support strict non-skip mode (`MFX_MANUAL_REQUIRE_EXECUTION=1`), failing immediately if constrained-runtime startup would otherwise be treated as skip.
 - Startup options now support explicit single-instance key override (`--single-instance-key=...` / `MFX_SINGLE_INSTANCE_KEY`); manual selfchecks can auto-isolate lock key under constrained-runtime skip mode to avoid stale-lock false negatives.
+- Full POSIX suite passed on macOS on 2026-03-02 after effects/runtime parity parser path migration:
+  - `./tools/platform/regression/run-posix-regression-suite.sh --platform auto`
 
 ## High-Value Manual Entrypoints (macOS)
 - One-command launcher:
