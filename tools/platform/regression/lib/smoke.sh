@@ -30,20 +30,35 @@ mfx_run_smoke_checks() {
         mfx_info "run macOS event-loop smoke"
         "$smoke_bin" >/dev/null 2>&1
 
-        mfx_info "run macOS tray smoke (settings + theme action contracts)"
+        mfx_info "run macOS tray smoke (settings + theme + effect + reload + star action contracts)"
         local tray_smoke_tmp_dir
         tray_smoke_tmp_dir="$(mktemp -d)"
         local tray_settings_url="http://127.0.0.1:9527/?token=tray-smoke"
+        local tray_star_url="https://github.com/sqmw/MFCMouseEffect"
         local tray_launch_capture_file="$tray_smoke_tmp_dir/tray-launch-capture.env"
         local tray_theme_capture_file="$tray_smoke_tmp_dir/tray-theme-capture.env"
+        local tray_effect_capture_file="$tray_smoke_tmp_dir/tray-effect-capture.env"
+        local tray_reload_capture_file="$tray_smoke_tmp_dir/tray-reload-capture.env"
+        local tray_star_capture_file="$tray_smoke_tmp_dir/tray-star-capture.env"
         local tray_theme_value="neon"
+        local tray_effect_category="click"
+        local tray_effect_value="ripple"
         "$tray_smoke_bin" \
             --expect-settings-action \
             --expect-theme-action \
+            --expect-effect-action \
+            --expect-reload-action \
+            --expect-star-action \
             --settings-url "$tray_settings_url" \
+            --star-url "$tray_star_url" \
             --theme-value "$tray_theme_value" \
+            --effect-category "$tray_effect_category" \
+            --effect-value "$tray_effect_value" \
             --launch-capture-file "$tray_launch_capture_file" \
-            --theme-capture-file "$tray_theme_capture_file" >/dev/null 2>&1
+            --theme-capture-file "$tray_theme_capture_file" \
+            --effect-capture-file "$tray_effect_capture_file" \
+            --reload-capture-file "$tray_reload_capture_file" \
+            --star-capture-file "$tray_star_capture_file" >/dev/null 2>&1
         if [[ -f "$tray_launch_capture_file" ]]; then
             mfx_assert_file_contains "$tray_launch_capture_file" "captured=1" "macOS tray smoke launch capture flag"
             mfx_assert_file_contains "$tray_launch_capture_file" "command=open" "macOS tray smoke launch command"
@@ -58,6 +73,29 @@ mfx_run_smoke_checks() {
             mfx_assert_file_contains "$tray_theme_capture_file" "selected_theme=$tray_theme_value" "macOS tray smoke selected theme"
         else
             mfx_info "macOS tray smoke theme capture file not emitted; keep exit-code gate only under current runner"
+        fi
+        if [[ -f "$tray_effect_capture_file" ]]; then
+            mfx_assert_file_contains "$tray_effect_capture_file" "captured=1" "macOS tray smoke effect capture flag"
+            mfx_assert_file_contains "$tray_effect_capture_file" "command=effect_select" "macOS tray smoke effect capture command"
+            mfx_assert_file_contains "$tray_effect_capture_file" "expected_category=$tray_effect_category" "macOS tray smoke expected effect category"
+            mfx_assert_file_contains "$tray_effect_capture_file" "expected_value=$tray_effect_value" "macOS tray smoke expected effect value"
+            mfx_assert_file_contains "$tray_effect_capture_file" "selected_category=$tray_effect_category" "macOS tray smoke selected effect category"
+            mfx_assert_file_contains "$tray_effect_capture_file" "selected_value=$tray_effect_value" "macOS tray smoke selected effect value"
+        else
+            mfx_info "macOS tray smoke effect capture file not emitted; keep exit-code gate only under current runner"
+        fi
+        if [[ -f "$tray_reload_capture_file" ]]; then
+            mfx_assert_file_contains "$tray_reload_capture_file" "captured=1" "macOS tray smoke reload capture flag"
+            mfx_assert_file_contains "$tray_reload_capture_file" "command=reload_config" "macOS tray smoke reload command"
+        else
+            mfx_info "macOS tray smoke reload capture file not emitted; keep exit-code gate only under current runner"
+        fi
+        if [[ -f "$tray_star_capture_file" ]]; then
+            mfx_assert_file_contains "$tray_star_capture_file" "captured=1" "macOS tray smoke star capture flag"
+            mfx_assert_file_contains "$tray_star_capture_file" "command=star_project" "macOS tray smoke star command"
+            mfx_assert_file_contains "$tray_star_capture_file" "url=$tray_star_url" "macOS tray smoke star url"
+        else
+            mfx_info "macOS tray smoke star capture file not emitted; keep exit-code gate only under current runner"
         fi
         rm -rf "$tray_smoke_tmp_dir"
     else

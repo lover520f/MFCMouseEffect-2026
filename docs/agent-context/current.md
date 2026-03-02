@@ -87,8 +87,11 @@
   - macOS tray now prefers icon rendering (project logo path fallback + SF Symbol fallback) instead of text-only `MFX`.
   - macOS warning notifications now initialize app icon before delivery to avoid generic default sender icon in unbundled runs.
   - icon resolution supports explicit override via `MFX_MACOS_APP_ICON_PATH` (highest priority), then bundle/dev fallback paths.
+  - macOS tray now exposes effect submenus (`click/trail/scroll/hold/hover`) with metadata-driven labels and active-item checks; selection is routed through the same `set_effect` / `clear_effect` command path used on Windows (`AppController::HandleCommand`), closing tray capability parity gap.
+  - macOS tray now also exposes `★ Star Project` and `Reload config` actions with Windows-aligned behavior (`OpenProjectRepositoryFromShell` and `reload_config` command dispatch), removing the remaining tray action-surface mismatch.
+  - macOS tray label language now follows runtime `uiLanguage` first (with system-language fallback), so tray text/tooltip stays aligned with app language semantics used on Windows.
   - Core lane init order now starts `AppController` before tray startup, so tray theme submenu snapshot is populated from runtime catalog (fixes empty-menu/no-callback race at startup).
-  - tray smoke gate now uses explicit CLI args (`--expect-settings-action`, `--expect-theme-action`, `--settings-url`, `--theme-value`, capture files) and validates both settings-launch callback and theme-select callback path; if capture files are not emitted in constrained runners, regression falls back to exit-code gating.
+  - tray smoke gate now uses explicit CLI args (`--expect-settings-action`, `--expect-theme-action`, `--expect-effect-action`, `--expect-reload-action`, `--expect-star-action`, `--settings-url`, `--star-url`, `--theme-value`, `--effect-category`, `--effect-value`, capture files) and validates settings/theme/effect/reload/star callback paths; if capture files are not emitted in constrained runners, regression falls back to exit-code gating.
   - Added macOS tray theme persistence selfcheck: auto-select theme via tray submenu callback, assert `/api/state.theme` changes, restart host, assert persisted theme remains, then restore original theme.
   - macOS manual core-host startup now performs `/api/state` readiness assertion; if a stale scaffold-lane binary is used (common with `--skip-build` + wrong build dir), scripts fail fast with explicit guidance instead of opaque 404 follow-up errors.
 

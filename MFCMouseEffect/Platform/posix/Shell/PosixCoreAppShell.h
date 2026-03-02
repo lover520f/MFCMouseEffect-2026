@@ -24,13 +24,20 @@ public:
 
 private:
     AppController* AppControllerForShell() noexcept override;
+    bool PreferZhLabelsFromShell(bool fallbackPreferZh) override;
     void GetThemeMenuSnapshotFromShell(
         bool preferZhLabels,
         std::vector<ShellThemeMenuItem>* outItems,
         std::string* outSelectedTheme) override;
+    void GetEffectMenuSnapshotFromShell(
+        bool preferZhLabels,
+        std::vector<ShellEffectMenuSection>* outSections) override;
+    void OpenProjectRepositoryFromShell() override;
     void OpenSettingsFromShell() override;
+    void ReloadConfigFromShell() override;
     void RequestExitFromShell() override;
     void SetThemeFromShell(const std::string& theme) override;
+    void SetEffectFromShell(const std::string& category, const std::string& effectType) override;
 
     bool PostShellTask(std::function<void()> task);
     void RequestExitOnLoop();
