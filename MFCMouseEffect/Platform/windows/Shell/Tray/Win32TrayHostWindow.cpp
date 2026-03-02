@@ -195,7 +195,7 @@ void Win32TrayHostWindow::HandleTrayMenu() {
     } else if (cmd == kCmdTraySettings) {
         shellHost_->OpenSettingsFromShell();
     } else if (cmd == kCmdStarRepo) {
-        ShellExecuteW(nullptr, L"open", L"https://github.com/sqmw/MFCMouseEffect", nullptr, nullptr, SW_SHOWNORMAL);
+        shellHost_->OpenProjectRepositoryFromShell();
     } else if (mouseFx) {
         std::string json;
         if (Win32TrayMenuBuilder::TryBuildIpcJson(cmd, &json)) {
