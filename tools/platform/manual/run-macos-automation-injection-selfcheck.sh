@@ -33,6 +33,24 @@ json_escape() {
     printf '%s' "$value" | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
 
+run_inject_probe() {
+    local keys="$1"
+    local output_file="$2"
+    local escaped_keys
+    escaped_keys="$(json_escape "$keys")"
+    local payload
+    payload="{\"history\":[\"left_click\"],\"mappings\":[{\"enabled\":true,\"trigger\":\"left_click\",\"app_scopes\":[\"all\"],\"keys\":\"$escaped_keys\"}]}"
+
+    local code
+    code="$(mfx_http_code "$output_file" "$MFX_MANUAL_BASE_URL/api/automation/test-match-and-inject" \
+        -X POST -H "${token_header[0]}" -H "Content-Type: application/json" -d "$payload")"
+    mfx_assert_eq "$code" "200" "automation inject selfcheck status ($keys)"
+    mfx_assert_file_contains "$output_file" "\"ok\":true" "automation inject selfcheck ok ($keys)"
+    mfx_assert_file_contains "$output_file" "\"matched\":true" "automation inject selfcheck matched ($keys)"
+    mfx_assert_file_contains "$output_file" "\"injected\":true" "automation inject selfcheck injected ($keys)"
+    mfx_assert_file_contains "$output_file" "\"selected_keys\":\"$escaped_keys\"" "automation inject selfcheck selected keys ($keys)"
+}
+
 prepare_textedit_selection() {
     local selected_text="$1"
     osascript - "$selected_text" <<'OSA'
@@ -220,15 +238,11 @@ if [[ "$dry_run" -eq 0 ]]; then
     fi
 fi
 
-payload='{"history":["left_click"],"mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["all"],"keys":"Cmd+C"}]}'
-inject_file="$tmp_dir/match-and-inject.out"
-code_inject="$(mfx_http_code "$inject_file" "$MFX_MANUAL_BASE_URL/api/automation/test-match-and-inject" \
-    -X POST -H "${token_header[0]}" -H "Content-Type: application/json" -d "$payload")"
-mfx_assert_eq "$code_inject" "200" "automation inject selfcheck status"
-mfx_assert_file_contains "$inject_file" "\"ok\":true" "automation inject selfcheck ok"
-mfx_assert_file_contains "$inject_file" "\"matched\":true" "automation inject selfcheck matched"
-mfx_assert_file_contains "$inject_file" "\"injected\":true" "automation inject selfcheck injected"
-mfx_assert_file_contains "$inject_file" "\"selected_keys\":\"Cmd+C\"" "automation inject selfcheck selected keys"
+inject_copy_file="$tmp_dir/match-and-inject-copy.out"
+run_inject_probe "Cmd+C" "$inject_copy_file"
+
+inject_paste_file="$tmp_dir/match-and-inject-paste.out"
+run_inject_probe "Cmd+V" "$inject_paste_file"
 
 scope_probe_file="$tmp_dir/app-scope-alias-probe.out"
 scope_probe_code="$(mfx_http_code "$scope_probe_file" "$MFX_MANUAL_BASE_URL/api/automation/test-app-scope-match" \

@@ -73,7 +73,7 @@
   - Effects contract probe scalar metrics (`duration/size/opacity/trail_throttle`, geometry, line-trail width, hold progress) now also use strict JSON paths, removing remaining first-key scalar reads.
   - Manual effects profile tuning selfcheck now reads profile values through explicit JSON paths (`duration/size/opacity/trail_throttle`), including `effects_profile.*` state fields, to keep manual and regression parser semantics aligned.
   - Manual effects profile tuning selfcheck now follows `config_basis.test_tuning.*` for both probe/state comparisons, aligned with current test-render-profile payload shape.
-  - Injection selfcheck and app-scope selfcheck are part of POSIX suite phases.
+  - Injection selfcheck now asserts both `Cmd+C` and `Cmd+V` on `/api/automation/test-match-and-inject` (`ok/matched/injected/selected_keys`), and app-scope selfcheck remains part of POSIX suite phases.
 - WASM:
   - macOS runtime path + diagnostics + fallback contracts are active.
   - Capability schema/state parity is gated.
