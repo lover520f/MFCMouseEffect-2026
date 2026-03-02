@@ -31,6 +31,35 @@ sys.stdout.write("true" if value else "false")
 PY
 }
 
+_mfx_core_http_read_json_string() {
+    local file_path="$1"
+    local dotted_path="$2"
+
+    python3 - "$file_path" "$dotted_path" <<'PY'
+import json
+import sys
+
+file_path = sys.argv[1]
+dotted_path = sys.argv[2]
+
+with open(file_path, "r", encoding="utf-8") as f:
+    root = json.load(f)
+
+value = root
+for part in dotted_path.split("."):
+    if not isinstance(value, dict) or part not in value:
+        print(f"missing:{dotted_path}", file=sys.stderr)
+        sys.exit(2)
+    value = value[part]
+
+if not isinstance(value, str):
+    print(f"not_string:{dotted_path}", file=sys.stderr)
+    sys.exit(3)
+
+sys.stdout.write(value)
+PY
+}
+
 _mfx_core_http_run_state_checks() {
     local platform="$1"
     local tmp_dir="$2"
@@ -136,6 +165,30 @@ _mfx_core_http_run_state_checks() {
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"mac_image_overlay_requests_with_asset\"" "core schema wasm mac image overlay requests with asset key"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"mac_image_overlay_apply_tint_requests\"" "core schema wasm mac image overlay tint requests key"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"mac_image_overlay_apply_tint_requests_with_asset\"" "core schema wasm mac image overlay tint requests with asset key"
+
+    local schema_platform
+    schema_platform="$(_mfx_core_http_read_json_string "$tmp_dir/schema.out" "capabilities.platform")"
+    if [[ "$platform" == "macos" ]]; then
+        mfx_assert_eq "$schema_platform" "macos" "core schema capabilities platform value"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.effects.click")" "true" "core schema capabilities effects.click"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.effects.trail")" "true" "core schema capabilities effects.trail"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.effects.scroll")" "true" "core schema capabilities effects.scroll"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.effects.hold")" "true" "core schema capabilities effects.hold"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.effects.hover")" "true" "core schema capabilities effects.hover"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.input.global_hook")" "true" "core schema capabilities input.global_hook"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.input.cursor_position")" "true" "core schema capabilities input.cursor_position"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.input.keyboard_injector")" "true" "core schema capabilities input.keyboard_injector"
+    elif [[ "$platform" == "linux" ]]; then
+        mfx_assert_eq "$schema_platform" "linux" "core schema capabilities platform value"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.effects.click")" "true" "core schema capabilities effects.click"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.effects.trail")" "false" "core schema capabilities effects.trail"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.effects.scroll")" "false" "core schema capabilities effects.scroll"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.effects.hold")" "false" "core schema capabilities effects.hold"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.effects.hover")" "false" "core schema capabilities effects.hover"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.input.global_hook")" "false" "core schema capabilities input.global_hook"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.input.cursor_position")" "false" "core schema capabilities input.cursor_position"
+        mfx_assert_eq "$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.input.keyboard_injector")" "false" "core schema capabilities input.keyboard_injector"
+    fi
 
     local state_wasm_invoke_supported
     local state_wasm_render_supported

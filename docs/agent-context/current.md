@@ -84,6 +84,7 @@
 
 ## Key Contracts (Do Not Break)
 - `settings schema` vs `runtime diagnostics` capability parity.
+- `capabilities.effects/input/wasm` platform matrix must remain schema-consistent (mac/linux contract checks in core state gate).
 - `effects active type` normalization consistency across core/runtime/web state.
 - `trail=none` must remain no-render residual.
 - Permission revoke/regrant must not require process restart.
