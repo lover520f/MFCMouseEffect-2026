@@ -626,7 +626,7 @@ public func mfx_macos_tray_menu_create_v1(
     return mfxCreateTrayMenu(
         themeTitle: "Theme",
         starProjectTitle: "",
-        settingsTitle: mfxNormalizeTrayText(settingsTitleUtf8, "Settings"),
+        settingsTitle: mfxNormalizeTrayText(settingsTitleUtf8, "Settings..."),
         reloadConfigTitle: "",
         exitTitle: mfxNormalizeTrayText(exitTitleUtf8, "Exit"),
         tooltip: mfxNormalizeTrayText(tooltipUtf8, "MFCMouseEffect"),
@@ -664,7 +664,7 @@ public func mfx_macos_tray_menu_create_v2(
     return mfxCreateTrayMenu(
         themeTitle: mfxNormalizeTrayText(themeTitleUtf8, "Theme"),
         starProjectTitle: "",
-        settingsTitle: mfxNormalizeTrayText(settingsTitleUtf8, "Settings"),
+        settingsTitle: mfxNormalizeTrayText(settingsTitleUtf8, "Settings..."),
         reloadConfigTitle: "",
         exitTitle: mfxNormalizeTrayText(exitTitleUtf8, "Exit"),
         tooltip: mfxNormalizeTrayText(tooltipUtf8, "MFCMouseEffect"),
@@ -766,7 +766,7 @@ public func mfx_macos_tray_menu_create_v3(
     return mfxCreateTrayMenu(
         themeTitle: mfxNormalizeTrayText(themeTitleUtf8, "Theme"),
         starProjectTitle: "",
-        settingsTitle: mfxNormalizeTrayText(settingsTitleUtf8, "Settings"),
+        settingsTitle: mfxNormalizeTrayText(settingsTitleUtf8, "Settings..."),
         reloadConfigTitle: "",
         exitTitle: mfxNormalizeTrayText(exitTitleUtf8, "Exit"),
         tooltip: mfxNormalizeTrayText(tooltipUtf8, "MFCMouseEffect"),
@@ -872,7 +872,7 @@ public func mfx_macos_tray_menu_create_v4(
     return mfxCreateTrayMenu(
         themeTitle: mfxNormalizeTrayText(themeTitleUtf8, "Theme"),
         starProjectTitle: mfxNormalizeTrayText(starProjectTitleUtf8, "★ Star Project"),
-        settingsTitle: mfxNormalizeTrayText(settingsTitleUtf8, "Settings"),
+        settingsTitle: mfxNormalizeTrayText(settingsTitleUtf8, "Settings..."),
         reloadConfigTitle: mfxNormalizeTrayText(reloadConfigTitleUtf8, "Reload config"),
         exitTitle: mfxNormalizeTrayText(exitTitleUtf8, "Exit"),
         tooltip: mfxNormalizeTrayText(tooltipUtf8, "MFCMouseEffect"),
