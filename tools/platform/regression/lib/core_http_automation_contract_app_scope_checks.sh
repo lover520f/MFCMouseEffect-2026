@@ -2,6 +2,59 @@
 
 set -euo pipefail
 
+_mfx_core_http_automation_parse_first_mapping_scope_count() {
+    local input_file="$1"
+    python3 - "$input_file" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as f:
+    root = json.load(f)
+
+mappings = (
+    root.get("automation", {})
+        .get("mouse_mappings", [])
+)
+if not mappings:
+    print("0")
+    sys.exit(0)
+
+scopes = mappings[0].get("app_scopes", [])
+if not isinstance(scopes, list):
+    print("0")
+    sys.exit(0)
+
+print(len(scopes))
+PY
+}
+
+_mfx_core_http_automation_parse_first_mapping_scope_value() {
+    local input_file="$1"
+    python3 - "$input_file" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as f:
+    root = json.load(f)
+
+mappings = (
+    root.get("automation", {})
+        .get("mouse_mappings", [])
+)
+if not mappings:
+    print("")
+    sys.exit(0)
+
+scopes = mappings[0].get("app_scopes", [])
+if not isinstance(scopes, list) or not scopes:
+    print("")
+    sys.exit(0)
+
+value = scopes[0]
+print(value if isinstance(value, str) else "")
+PY
+}
+
 _mfx_core_http_automation_contract_app_scope_checks() {
     local tmp_dir="$1"
     local base_url="$2"
@@ -39,6 +92,27 @@ _mfx_core_http_automation_contract_app_scope_checks() {
         code_state_after_scope="$(mfx_http_code "$tmp_dir/state-after-scope.out" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
         mfx_assert_eq "$code_state_after_scope" "200" "core state after selected-scope status"
         mfx_assert_file_contains "$tmp_dir/state-after-scope.out" "\"app_scopes\":[\"$selected_scope\"]" "core selected-scope persistence"
+    fi
+
+    local code_state_apply_scope_alias_dedupe
+    code_state_apply_scope_alias_dedupe="$(mfx_http_code "$tmp_dir/state-apply-scope-alias-dedupe.out" "$base_url/api/state" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{"automation":{"enabled":true,"mouse_mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["process:code.exe","process:code.app","process:code"],"keys":"Cmd+C"}]}}')"
+    mfx_assert_eq "$code_state_apply_scope_alias_dedupe" "200" "core state apply app-scope alias dedupe status"
+
+    local code_state_after_scope_alias_dedupe
+    code_state_after_scope_alias_dedupe="$(mfx_http_code "$tmp_dir/state-after-scope-alias-dedupe.out" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_state_after_scope_alias_dedupe" "200" "core state after app-scope alias dedupe status"
+
+    local dedupe_scope_count
+    local dedupe_scope_value
+    dedupe_scope_count="$(_mfx_core_http_automation_parse_first_mapping_scope_count "$tmp_dir/state-after-scope-alias-dedupe.out")"
+    dedupe_scope_value="$(_mfx_core_http_automation_parse_first_mapping_scope_value "$tmp_dir/state-after-scope-alias-dedupe.out")"
+    mfx_assert_eq "$dedupe_scope_count" "1" "core app-scope alias dedupe persisted count"
+    if [[ -z "$dedupe_scope_value" || ! "$dedupe_scope_value" =~ ^process:code(\.app|\.exe)?$ ]]; then
+        mfx_fail "core app-scope alias dedupe persisted value unexpected: ${dedupe_scope_value:-<empty>}"
     fi
 
     _mfx_core_http_automation_assert_scope_match "$base_url" "$token" "code" "process:code.exe" "true" "$tmp_dir/scope-code-vs-exe.out" "core app-scope code<->exe"

@@ -24,6 +24,7 @@
   - Effects profile probe now exposes metadata-derived `catalog_values`; selfcheck asserts full five-category option coverage.
 - Automation:
   - App-scope alias normalization (`process:code` / `code.app` / `code.exe`) is gated.
+  - App-scope persistence dedupe is contract-gated: writing equivalent aliases (`process:code.exe/code.app/code`) must collapse to one persisted scope token.
   - Injection selfcheck and app-scope selfcheck are part of POSIX suite phases.
 - WASM:
   - macOS runtime path + diagnostics + fallback contracts are active.
