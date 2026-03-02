@@ -32,6 +32,7 @@ _mfx_core_http_run_automation_contract_checks() {
         "$token"
 
     _mfx_core_http_automation_contract_priority_checks \
+        "$platform" \
         "$tmp_dir" \
         "$base_url" \
         "$token"

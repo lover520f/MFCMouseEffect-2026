@@ -100,6 +100,67 @@ cleanup() {
 }
 trap cleanup EXIT
 
+parse_first_mapping_scope_count() {
+    local input_file="$1"
+    python3 - "$input_file" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as f:
+    root = json.load(f)
+
+mappings = root.get("automation", {}).get("mouse_mappings", [])
+if not mappings:
+    print("0")
+    sys.exit(0)
+scopes = mappings[0].get("app_scopes", [])
+if not isinstance(scopes, list):
+    print("0")
+    sys.exit(0)
+print(len(scopes))
+PY
+}
+
+parse_first_mapping_scope_value() {
+    local input_file="$1"
+    python3 - "$input_file" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as f:
+    root = json.load(f)
+
+mappings = root.get("automation", {}).get("mouse_mappings", [])
+if not mappings:
+    print("")
+    sys.exit(0)
+scopes = mappings[0].get("app_scopes", [])
+if not isinstance(scopes, list) or not scopes:
+    print("")
+    sys.exit(0)
+value = scopes[0]
+print(value if isinstance(value, str) else "")
+PY
+}
+
+parse_first_mapping_legacy_scope_value() {
+    local input_file="$1"
+    python3 - "$input_file" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as f:
+    root = json.load(f)
+
+mappings = root.get("automation", {}).get("mouse_mappings", [])
+if not mappings:
+    print("")
+    sys.exit(0)
+value = mappings[0].get("app_scope", "")
+print(value if isinstance(value, str) else "")
+PY
+}
+
 mfx_manual_acquire_entry_host_lock
 
 mfx_manual_prepare_core_host_binary "$repo_root" "$build_dir" "$skip_build"
@@ -129,6 +190,23 @@ _mfx_core_http_automation_assert_scope_match "$MFX_MANUAL_BASE_URL" "$MFX_MANUAL
     "code.exe" "process:code.app" "true" "$tmp_dir/scope-exe-vs-app.out" "app-scope exe<->app"
 _mfx_core_http_automation_assert_scope_match "$MFX_MANUAL_BASE_URL" "$MFX_MANUAL_SETTINGS_TOKEN" \
     "safari" "process:code" "false" "$tmp_dir/scope-negative.out" "app-scope negative"
+
+code_state_apply_scope_alias_dedupe="$(mfx_http_code "$tmp_dir/state-apply-scope-alias-dedupe.out" "$MFX_MANUAL_BASE_URL/api/state" \
+    -X POST \
+    -H "x-mfcmouseeffect-token: $MFX_MANUAL_SETTINGS_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"automation":{"enabled":true,"mouse_mappings":[{"enabled":true,"trigger":"left_click","app_scopes":["process:code.exe","process:code.app","process:code"],"keys":"Cmd+C"}]}}')"
+mfx_assert_eq "$code_state_apply_scope_alias_dedupe" "200" "app-scope alias dedupe apply status"
+
+code_state_after_scope_alias_dedupe="$(mfx_http_code "$tmp_dir/state-after-scope-alias-dedupe.out" "$MFX_MANUAL_BASE_URL/api/state" -H "x-mfcmouseeffect-token: $MFX_MANUAL_SETTINGS_TOKEN")"
+mfx_assert_eq "$code_state_after_scope_alias_dedupe" "200" "app-scope alias dedupe state status"
+
+dedupe_scope_count="$(parse_first_mapping_scope_count "$tmp_dir/state-after-scope-alias-dedupe.out")"
+dedupe_scope_value="$(parse_first_mapping_scope_value "$tmp_dir/state-after-scope-alias-dedupe.out")"
+dedupe_legacy_scope_value="$(parse_first_mapping_legacy_scope_value "$tmp_dir/state-after-scope-alias-dedupe.out")"
+mfx_assert_eq "$dedupe_scope_count" "1" "app-scope alias dedupe persisted count"
+mfx_assert_eq "$dedupe_scope_value" "process:code" "app-scope alias dedupe persisted canonical scope"
+mfx_assert_eq "$dedupe_legacy_scope_value" "process:code" "app-scope alias dedupe legacy field parity"
 
 mfx_ok "macos automation app-scope selfcheck passed"
 
