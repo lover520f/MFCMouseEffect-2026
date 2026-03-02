@@ -528,11 +528,33 @@ mfx_wasm_selfcheck_assert_load_manifest_failure \
     "missing wasm manifest" "$missing_wasm_file" "$MFX_MANUAL_BASE_URL" "$token" "$missing_wasm_manifest_path" \
     "load_module" "module_load_failed"
 
+state_after_failure_file="$tmp_dir/state-after-failure-path.out"
+code_state_after_failure="$(mfx_http_code "$state_after_failure_file" "$MFX_MANUAL_BASE_URL/api/state" -H "$token_header")"
+mfx_assert_eq "$code_state_after_failure" "200" "selfcheck state after wasm fallback path status"
+mfx_assert_file_contains "$state_after_failure_file" "\"runtime_backend\":\"wasm3_static\"" "selfcheck wasm backend remains static after fallback path"
+failure_stage_after_invalid="$(mfx_wasm_selfcheck_parse_string_field "$state_after_failure_file" "last_load_failure_stage")"
+failure_code_after_invalid="$(mfx_wasm_selfcheck_parse_string_field "$state_after_failure_file" "last_load_failure_code")"
+if [[ -z "$failure_stage_after_invalid" || -z "$failure_code_after_invalid" ]]; then
+    mfx_fail "selfcheck wasm fallback diagnostics missing last_load_failure_stage/code in /api/state"
+fi
+
 reload_file="$tmp_dir/wasm-load-manifest-reload.out"
 mfx_wasm_selfcheck_assert_load_manifest_ok \
     "wasm reload-manifest" "$reload_file" "$MFX_MANUAL_BASE_URL" "$token" "$manifest_path"
 mfx_assert_file_contains "$reload_file" "\"last_load_failure_stage\":\"\"" "selfcheck wasm reload clears failure stage"
 mfx_assert_file_contains "$reload_file" "\"last_load_failure_code\":\"\"" "selfcheck wasm reload clears failure code"
+
+state_after_reload_file="$tmp_dir/state-after-reload.out"
+code_state_after_reload="$(mfx_http_code "$state_after_reload_file" "$MFX_MANUAL_BASE_URL/api/state" -H "$token_header")"
+mfx_assert_eq "$code_state_after_reload" "200" "selfcheck state after wasm reload status"
+mfx_assert_eq \
+    "$(mfx_wasm_selfcheck_parse_string_field "$state_after_reload_file" "last_load_failure_stage")" \
+    "" \
+    "selfcheck state wasm reload clears failure stage"
+mfx_assert_eq \
+    "$(mfx_wasm_selfcheck_parse_string_field "$state_after_reload_file" "last_load_failure_code")" \
+    "" \
+    "selfcheck state wasm reload clears failure code"
 
 if ! kill -0 "$MFX_MANUAL_HOST_PID" 2>/dev/null; then
     tail -n 100 "$MFX_MANUAL_LOG_FILE" >&2 || true

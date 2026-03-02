@@ -29,6 +29,40 @@ _mfx_core_http_try_recover_probe_file_from_launch_probe() {
     return 0
 }
 
+_mfx_core_http_resolve_single_instance_key() {
+    local explicit_key="${MFX_CORE_HTTP_SINGLE_INSTANCE_KEY:-}"
+    if [[ -n "$explicit_key" ]]; then
+        printf '%s' "$explicit_key"
+        return 0
+    fi
+
+    local stamp="0"
+    stamp="$(date +%s 2>/dev/null || printf '0')"
+    printf 'Global\\MFCMouseEffect_CoreHttp_%s_%s' "$$" "$stamp"
+}
+
+_mfx_core_http_early_exit_without_probe() {
+    local probe_file="$1"
+    local launch_probe_file="$2"
+    local log_file="$3"
+    local diagnostics_file="$4"
+    local require_launch_probe="${5:-1}"
+
+    if [[ -s "$probe_file" ]]; then
+        return 1
+    fi
+    if [[ "$require_launch_probe" == "1" && -s "$launch_probe_file" ]]; then
+        return 1
+    fi
+    if [[ -s "$log_file" ]]; then
+        return 1
+    fi
+    if [[ -n "$diagnostics_file" && -s "$diagnostics_file" ]]; then
+        return 1
+    fi
+    return 0
+}
+
 _mfx_core_http_cleanup_startup_runtime() {
     if [[ -n "${_mfx_core_http_entry_pid:-}" ]]; then
         kill -TERM "$_mfx_core_http_entry_pid" >/dev/null 2>&1 || true
@@ -110,6 +144,8 @@ _mfx_core_http_start_entry() {
     local notification_capture_file="$7"
     local require_launch_probe="${8:-1}"
     local probe_diagnostics_file="${9:-}"
+    local single_instance_key=""
+    single_instance_key="$(_mfx_core_http_resolve_single_instance_key)"
     _mfx_core_http_startup_skip_reason=""
 
     _mfx_core_http_probe_file="$probe_file"
@@ -131,6 +167,9 @@ _mfx_core_http_start_entry() {
     local attempt=1
     local start_wait_seconds
     start_wait_seconds="$(mfx_parse_positive_integer_or_default "${MFX_CORE_HTTP_START_WAIT_SECONDS:-1}" "1")"
+    if [[ -n "$single_instance_key" ]]; then
+        mfx_info "core http single-instance key: $single_instance_key"
+    fi
     while (( attempt <= max_attempts )); do
         _mfx_core_http_prepare_fifo_runtime
 
@@ -151,7 +190,8 @@ _mfx_core_http_start_entry() {
             MFX_TEST_KEYBOARD_INJECTOR_DRY_RUN="${MFX_TEST_KEYBOARD_INJECTOR_DRY_RUN:-1}" \
             MFX_ENABLE_WASM_TEST_DISPATCH_API="${MFX_ENABLE_WASM_TEST_DISPATCH_API:-1}" \
             MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE="$probe_diagnostics_file" \
-                "$entry_bin" -mode=background <"$_mfx_core_http_fifo_path" >"$log_file" 2>&1 &
+            MFX_SINGLE_INSTANCE_KEY="$single_instance_key" \
+                "$entry_bin" -mode=background "--single-instance-key=$single_instance_key" <"$_mfx_core_http_fifo_path" >"$log_file" 2>&1 &
         else
             MFX_CORE_WEB_SETTINGS_PROBE_FILE="$probe_file" \
             MFX_TEST_INPUT_CAPTURE_PERMISSION_SIM_FILE="$permission_sim_file" \
@@ -164,7 +204,8 @@ _mfx_core_http_start_entry() {
             MFX_TEST_KEYBOARD_INJECTOR_DRY_RUN="${MFX_TEST_KEYBOARD_INJECTOR_DRY_RUN:-1}" \
             MFX_ENABLE_WASM_TEST_DISPATCH_API="${MFX_ENABLE_WASM_TEST_DISPATCH_API:-1}" \
             MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE="$probe_diagnostics_file" \
-                "$entry_bin" -mode=background <"$_mfx_core_http_fifo_path" >"$log_file" 2>&1 &
+            MFX_SINGLE_INSTANCE_KEY="$single_instance_key" \
+                "$entry_bin" -mode=background "--single-instance-key=$single_instance_key" <"$_mfx_core_http_fifo_path" >"$log_file" 2>&1 &
         fi
         _mfx_core_http_entry_pid="$!"
 
@@ -204,12 +245,35 @@ _mfx_core_http_start_entry() {
                 return 2
             fi
         fi
+        if [[ "$allow_bind_eacces_skip" == "1" ]]; then
+            if _mfx_core_http_early_exit_without_probe \
+                "$probe_file" \
+                "$launch_probe_file" \
+                "$log_file" \
+                "$probe_diagnostics_file" \
+                "$require_launch_probe"; then
+                _mfx_core_http_cleanup_startup_runtime
+                _mfx_core_http_startup_skip_reason="host exited before probe/log in constrained runtime (likely unavailable tray/gui session)"
+                return 2
+            fi
+        fi
         _mfx_core_http_cleanup_startup_runtime
 
         if (( attempt == max_attempts )); then
             if [[ "$allow_bind_eacces_skip" == "1" && -n "$probe_diagnostics_file" && -s "$probe_diagnostics_file" ]]; then
                 if grep -Eq "reason=websettings_start_failed\\(stage=2,code=(1|13)\\)" "$probe_diagnostics_file"; then
                     _mfx_core_http_startup_skip_reason="websettings bind permission denied under constrained runtime (stage=2,code=1|13)"
+                    return 2
+                fi
+            fi
+            if [[ "$allow_bind_eacces_skip" == "1" ]]; then
+                if _mfx_core_http_early_exit_without_probe \
+                    "$probe_file" \
+                    "$launch_probe_file" \
+                    "$log_file" \
+                    "$probe_diagnostics_file" \
+                    "$require_launch_probe"; then
+                    _mfx_core_http_startup_skip_reason="host exited before probe/log in constrained runtime (likely unavailable tray/gui session)"
                     return 2
                 fi
             fi

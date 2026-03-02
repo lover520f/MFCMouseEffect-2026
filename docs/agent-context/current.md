@@ -135,6 +135,7 @@
   - core wasm contract now also asserts `/api/state` fallback diagnostics lifecycle:
     - invalid manifest load keeps `runtime_backend=wasm3_static` and sets non-empty `last_load_failure_stage/code`
     - successful reload clears `last_load_failure_stage/code` back to empty
+  - wasm runtime manual selfcheck now mirrors the same `/api/state` failure-diagnostics lifecycle assertions, keeping manual and regression verdict criteria aligned.
   - wasm platform checks now explicitly assert macOS schema/state/runtime parity in wasm scope (`capabilities.wasm.invoke/render=true`, `state.wasm.invoke_supported/render_supported=true`, `runtime_backend=wasm3_static`).
 - macOS ObjC++ surface gate:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/regression/run-macos-objcxx-surface-regression.sh`

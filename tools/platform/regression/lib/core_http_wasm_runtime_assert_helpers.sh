@@ -134,3 +134,46 @@ _mfx_core_http_assert_wasm_test_reset_runtime_ok() {
     mfx_assert_file_contains "$output_file" "\"has_active_manifest_path\":false" "$context manifest target cleared"
     mfx_assert_file_contains "$output_file" "\"has_active_wasm_path\":false" "$context wasm target cleared"
 }
+
+_mfx_core_http_assert_wasm_state_failure_diagnostics_non_empty() {
+    local output_file="$1"
+    local base_url="$2"
+    local token="$3"
+    local context="$4"
+    local expected_runtime_backend="${5:-}"
+
+    local code
+    code="$(mfx_http_code "$output_file" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code" "200" "$context status"
+
+    if [[ -n "$expected_runtime_backend" ]]; then
+        mfx_assert_file_contains "$output_file" "\"runtime_backend\":\"$expected_runtime_backend\"" "$context runtime backend"
+    fi
+
+    local failure_stage
+    local failure_code
+    failure_stage="$(_mfx_core_http_wasm_parse_string_field "$output_file" "last_load_failure_stage")"
+    failure_code="$(_mfx_core_http_wasm_parse_string_field "$output_file" "last_load_failure_code")"
+    if [[ -z "$failure_stage" || -z "$failure_code" ]]; then
+        mfx_fail "$context missing non-empty last_load_failure_stage/code"
+    fi
+}
+
+_mfx_core_http_assert_wasm_state_failure_diagnostics_cleared() {
+    local output_file="$1"
+    local base_url="$2"
+    local token="$3"
+    local context="$4"
+
+    local code
+    code="$(mfx_http_code "$output_file" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code" "200" "$context status"
+    mfx_assert_eq \
+        "$(_mfx_core_http_wasm_parse_string_field "$output_file" "last_load_failure_stage")" \
+        "" \
+        "$context failure stage cleared"
+    mfx_assert_eq \
+        "$(_mfx_core_http_wasm_parse_string_field "$output_file" "last_load_failure_code")" \
+        "" \
+        "$context failure code cleared"
+}

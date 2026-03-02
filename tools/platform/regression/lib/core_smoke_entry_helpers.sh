@@ -7,6 +7,18 @@ _mfx_core_smoke_fifo_path=""
 _mfx_core_smoke_fifo_dir=""
 _mfx_core_smoke_fifo_writer_pid=""
 
+_mfx_core_smoke_resolve_single_instance_key() {
+    local explicit_key="${MFX_CORE_SMOKE_SINGLE_INSTANCE_KEY:-}"
+    if [[ -n "$explicit_key" ]]; then
+        printf '%s' "$explicit_key"
+        return 0
+    fi
+
+    local stamp="0"
+    stamp="$(date +%s 2>/dev/null || printf '0')"
+    printf 'Global\\MFCMouseEffect_CoreSmoke_%s_%s' "$$" "$stamp"
+}
+
 _mfx_core_smoke_prepare_fifo_runtime() {
     _mfx_core_smoke_fifo_dir="$(mktemp -d "/tmp/mfx-posix-core-smoke-fifo.XXXXXX")"
     _mfx_core_smoke_fifo_path="$_mfx_core_smoke_fifo_dir/entry.fifo"
@@ -16,13 +28,16 @@ _mfx_core_smoke_prepare_fifo_runtime() {
 _mfx_core_smoke_start_entry() {
     local entry_bin="$1"
     local log_file="$2"
+    local single_instance_key=""
+    single_instance_key="$(_mfx_core_smoke_resolve_single_instance_key)"
 
     _mfx_core_smoke_prepare_fifo_runtime
 
     tail -f /dev/null >"$_mfx_core_smoke_fifo_path" &
     _mfx_core_smoke_fifo_writer_pid="$!"
 
-    "$entry_bin" -mode=background <"$_mfx_core_smoke_fifo_path" >"$log_file" 2>&1 &
+    MFX_SINGLE_INSTANCE_KEY="$single_instance_key" \
+        "$entry_bin" -mode=background "--single-instance-key=$single_instance_key" <"$_mfx_core_smoke_fifo_path" >"$log_file" 2>&1 &
     _mfx_core_smoke_entry_pid="$!"
 
     sleep "${MFX_CORE_SMOKE_START_WAIT_SECONDS:-1}"

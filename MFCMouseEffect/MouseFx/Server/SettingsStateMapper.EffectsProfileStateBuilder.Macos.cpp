@@ -430,6 +430,45 @@ nlohmann::json BuildMacosEffectRenderCommandSamplesJson(const EffectConfig& cfg)
         ParseHoldEffectFollowMode(cfg.holdFollowMode),
         &holdFollowState);
 
+    constexpr ScreenPoint kSmoothFirstPoint{600, 340};
+    constexpr ScreenPoint kSmoothSecondPoint{700, 420};
+    HoldEffectFollowState smoothFollowState{};
+    const HoldEffectUpdateCommand holdSmoothFirstCommand = ComputeHoldEffectUpdateCommand(
+        kSmoothFirstPoint,
+        420,
+        3000,
+        HoldEffectFollowMode::Smooth,
+        &smoothFollowState);
+    const HoldEffectUpdateCommand holdSmoothSecondCommand = ComputeHoldEffectUpdateCommand(
+        kSmoothSecondPoint,
+        440,
+        3016,
+        HoldEffectFollowMode::Smooth,
+        &smoothFollowState);
+
+    constexpr ScreenPoint kEfficientFirstPoint{640, 360};
+    constexpr ScreenPoint kEfficientSuppressedPoint{664, 376};
+    constexpr ScreenPoint kEfficientResumedPoint{688, 392};
+    HoldEffectFollowState efficientFollowState{};
+    const HoldEffectUpdateCommand holdEfficientFirstCommand = ComputeHoldEffectUpdateCommand(
+        kEfficientFirstPoint,
+        420,
+        4000,
+        HoldEffectFollowMode::Efficient,
+        &efficientFollowState);
+    const HoldEffectUpdateCommand holdEfficientSuppressedCommand = ComputeHoldEffectUpdateCommand(
+        kEfficientSuppressedPoint,
+        430,
+        4010,
+        HoldEffectFollowMode::Efficient,
+        &efficientFollowState);
+    const HoldEffectUpdateCommand holdEfficientResumedCommand = ComputeHoldEffectUpdateCommand(
+        kEfficientResumedPoint,
+        450,
+        4035,
+        HoldEffectFollowMode::Efficient,
+        &efficientFollowState);
+
     nlohmann::json out = nlohmann::json::object();
     out["sample_input"] = {
         {"point", {{"x", kSamplePoint.x}, {"y", kSamplePoint.y}}},
@@ -476,10 +515,21 @@ nlohmann::json BuildMacosEffectRenderCommandSamplesJson(const EffectConfig& cfg)
         {"start", BuildHoldStartCommandJson(holdStartCommand)},
         {"update", BuildHoldUpdateCommandJson(holdUpdateCommand)},
     };
+    out["hold_follow_mode_samples"] = {
+        {"smooth_first", BuildHoldUpdateCommandJson(holdSmoothFirstCommand)},
+        {"smooth_second", BuildHoldUpdateCommandJson(holdSmoothSecondCommand)},
+        {"efficient_first", BuildHoldUpdateCommandJson(holdEfficientFirstCommand)},
+        {"efficient_suppressed", BuildHoldUpdateCommandJson(holdEfficientSuppressedCommand)},
+        {"efficient_resumed", BuildHoldUpdateCommandJson(holdEfficientResumedCommand)},
+    };
     out["alias_matrix"] = BuildAliasMatrixJson();
     out["effective_timing"] = {
         {"click_duration_sec", clickCommand.animationDurationSec},
+        {"click_text_font_size_px", clickCommand.textFontSizePx},
+        {"click_text_float_distance_px", clickCommand.textFloatDistancePx},
         {"trail_duration_sec", trailCommand.durationSec},
+        {"trail_command_line_width_px", trailCommand.lineWidthPx},
+        {"trail_profile_line_width_px", trailProfile.lineWidthPx},
         {"scroll_duration_sec", scrollCommand.durationSec},
         {"trail_planner_teleport_skip_distance_px", trailPlannerConfig.teleportSkipDistancePx},
         {"trail_planner_max_segments", trailPlannerConfig.maxSegments},

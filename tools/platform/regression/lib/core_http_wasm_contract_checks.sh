@@ -88,12 +88,25 @@ _mfx_core_http_run_wasm_contract_checks() {
             "manifest_io_error" \
             "core wasm load-manifest invalid path"
 
+        _mfx_core_http_assert_wasm_state_failure_diagnostics_non_empty \
+            "$tmp_dir/wasm-state-after-invalid-manifest.out" \
+            "$base_url" \
+            "$token" \
+            "core wasm state after invalid manifest" \
+            "wasm3_static"
+
         _mfx_core_http_assert_wasm_load_manifest_ok \
             "$tmp_dir/wasm-load-manifest-reload.out" \
             "$base_url" \
             "$token" \
             "$wasm_manifest_path" \
             "core wasm load-manifest reload"
+
+        _mfx_core_http_assert_wasm_state_failure_diagnostics_cleared \
+            "$tmp_dir/wasm-state-after-reload.out" \
+            "$base_url" \
+            "$token" \
+            "core wasm state after reload"
     else
         mfx_info "skip wasm dispatch test: no plugin manifest found"
     fi
