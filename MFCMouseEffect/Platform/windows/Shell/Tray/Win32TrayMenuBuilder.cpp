@@ -92,8 +92,13 @@ std::mutex& DynamicEffectMenuMapMutex() {
     return mutex;
 }
 
-std::unordered_map<UINT, std::string>& DynamicEffectMenuMap() {
-    static std::unordered_map<UINT, std::string> map;
+struct DynamicEffectSelection final {
+    std::string category;
+    std::string effectType;
+};
+
+std::unordered_map<UINT, DynamicEffectSelection>& DynamicEffectMenuMap() {
+    static std::unordered_map<UINT, DynamicEffectSelection> map;
     return map;
 }
 
@@ -132,17 +137,29 @@ std::string BuildDynamicEffectCommandJson(const std::string& category, const std
 
 void RegisterDynamicEffectMenuItem(UINT cmd, const std::string& category, const std::string& effectType) {
     std::lock_guard<std::mutex> guard(DynamicEffectMenuMapMutex());
-    DynamicEffectMenuMap()[cmd] = BuildDynamicEffectCommandJson(category, effectType);
+    DynamicEffectMenuMap()[cmd] = {category, effectType};
 }
 
-bool TryReadDynamicEffectMenuItem(UINT cmd, std::string* outJson) {
-    if (!outJson) return false;
+bool TryReadDynamicEffectSelection(UINT cmd, std::string* outCategory, std::string* outEffectType) {
+    if (!outCategory || !outEffectType) return false;
     std::lock_guard<std::mutex> guard(DynamicEffectMenuMapMutex());
     const auto it = DynamicEffectMenuMap().find(cmd);
     if (it == DynamicEffectMenuMap().end()) {
         return false;
     }
-    *outJson = it->second;
+    *outCategory = it->second.category;
+    *outEffectType = it->second.effectType;
+    return true;
+}
+
+bool TryReadDynamicEffectMenuItem(UINT cmd, std::string* outJson) {
+    if (!outJson) return false;
+    std::string category;
+    std::string effectType;
+    if (!TryReadDynamicEffectSelection(cmd, &category, &effectType)) {
+        return false;
+    }
+    *outJson = BuildDynamicEffectCommandJson(category, effectType);
     return true;
 }
 
@@ -459,53 +476,56 @@ static void AppendThemeSubMenu(HMENU parent, mousefx::AppController* mouseFx, mo
     }
 }
 
-static bool TryBuildEffectJsonByCommand(UINT cmd, std::string* outJson) {
-    if (!outJson) return true;
-
-    auto setEffect = [&](const char* category, const char* effectType) {
-        *outJson = std::string("{\"cmd\":\"set_effect\",\"category\":\"") + category + "\",\"type\":\"" + effectType + "\"}";
-    };
-    auto clearEffect = [&](const char* category) {
-        *outJson = std::string("{\"cmd\":\"clear_effect\",\"category\":\"") + category + "\"}";
-    };
-
+static bool TryBuildEffectSelectionByCommand(UINT cmd, std::string* outCategory, std::string* outEffectType) {
+    if (!outCategory || !outEffectType) return false;
     switch (cmd) {
-    case kCmdClickRipple: setEffect("click", "ripple"); return true;
-    case kCmdClickStar: setEffect("click", "star"); return true;
-    case kCmdClickText: setEffect("click", "text"); return true;
-    case kCmdClickNone: clearEffect("click"); return true;
+    case kCmdClickRipple: *outCategory = "click"; *outEffectType = "ripple"; return true;
+    case kCmdClickStar: *outCategory = "click"; *outEffectType = "star"; return true;
+    case kCmdClickText: *outCategory = "click"; *outEffectType = "text"; return true;
+    case kCmdClickNone: *outCategory = "click"; *outEffectType = "none"; return true;
 
-    case kCmdTrailMeteor: setEffect("trail", "meteor"); return true;
-    case kCmdTrailStreamer: setEffect("trail", "streamer"); return true;
-    case kCmdTrailElectric: setEffect("trail", "electric"); return true;
-    case kCmdTrailTubes: setEffect("trail", "tubes"); return true;
-    case kCmdTrailParticle: setEffect("trail", "particle"); return true;
-    case kCmdTrailLine: setEffect("trail", "line"); return true;
-    case kCmdTrailNone: clearEffect("trail"); return true;
+    case kCmdTrailMeteor: *outCategory = "trail"; *outEffectType = "meteor"; return true;
+    case kCmdTrailStreamer: *outCategory = "trail"; *outEffectType = "streamer"; return true;
+    case kCmdTrailElectric: *outCategory = "trail"; *outEffectType = "electric"; return true;
+    case kCmdTrailTubes: *outCategory = "trail"; *outEffectType = "tubes"; return true;
+    case kCmdTrailParticle: *outCategory = "trail"; *outEffectType = "particle"; return true;
+    case kCmdTrailLine: *outCategory = "trail"; *outEffectType = "line"; return true;
+    case kCmdTrailNone: *outCategory = "trail"; *outEffectType = "none"; return true;
 
-    case kCmdScrollArrow: setEffect("scroll", "arrow"); return true;
-    case kCmdScrollHelix: setEffect("scroll", "helix"); return true;
-    case kCmdScrollTwinkle: setEffect("scroll", "twinkle"); return true;
-    case kCmdScrollNone: clearEffect("scroll"); return true;
+    case kCmdScrollArrow: *outCategory = "scroll"; *outEffectType = "arrow"; return true;
+    case kCmdScrollHelix: *outCategory = "scroll"; *outEffectType = "helix"; return true;
+    case kCmdScrollTwinkle: *outCategory = "scroll"; *outEffectType = "twinkle"; return true;
+    case kCmdScrollNone: *outCategory = "scroll"; *outEffectType = "none"; return true;
 
-    case kCmdHoldCharge: setEffect("hold", "charge"); return true;
-    case kCmdHoldLightning: setEffect("hold", "lightning"); return true;
-    case kCmdHoldHex: setEffect("hold", "hex"); return true;
-    case kCmdHoldTechRing: setEffect("hold", "tech_ring"); return true;
-    case kCmdHoldHologram: setEffect("hold", "hologram"); return true;
-    case kCmdHoldNeon3D: setEffect("hold", "hold_neon3d"); return true;
-    case kCmdHoldQuantumHaloGpuV2: setEffect("hold", "hold_quantum_halo_gpu_v2"); return true;
-    case kCmdHoldFluxFieldCpu: setEffect("hold", mousefx::hold_route::kTypeFluxFieldCpu); return true;
-    case kCmdHoldFluxFieldGpuV2: setEffect("hold", mousefx::hold_route::kTypeFluxFieldGpuV2); return true;
-    case kCmdHoldNone: clearEffect("hold"); return true;
+    case kCmdHoldCharge: *outCategory = "hold"; *outEffectType = "charge"; return true;
+    case kCmdHoldLightning: *outCategory = "hold"; *outEffectType = "lightning"; return true;
+    case kCmdHoldHex: *outCategory = "hold"; *outEffectType = "hex"; return true;
+    case kCmdHoldTechRing: *outCategory = "hold"; *outEffectType = "tech_ring"; return true;
+    case kCmdHoldHologram: *outCategory = "hold"; *outEffectType = "hologram"; return true;
+    case kCmdHoldNeon3D: *outCategory = "hold"; *outEffectType = "hold_neon3d"; return true;
+    case kCmdHoldQuantumHaloGpuV2: *outCategory = "hold"; *outEffectType = "hold_quantum_halo_gpu_v2"; return true;
+    case kCmdHoldFluxFieldCpu: *outCategory = "hold"; *outEffectType = mousefx::hold_route::kTypeFluxFieldCpu; return true;
+    case kCmdHoldFluxFieldGpuV2: *outCategory = "hold"; *outEffectType = mousefx::hold_route::kTypeFluxFieldGpuV2; return true;
+    case kCmdHoldNone: *outCategory = "hold"; *outEffectType = "none"; return true;
 
-    case kCmdHoverGlow: setEffect("hover", "glow"); return true;
-    case kCmdHoverTubes: setEffect("hover", "tubes"); return true;
-    case kCmdHoverNone: clearEffect("hover"); return true;
+    case kCmdHoverGlow: *outCategory = "hover"; *outEffectType = "glow"; return true;
+    case kCmdHoverTubes: *outCategory = "hover"; *outEffectType = "tubes"; return true;
+    case kCmdHoverNone: *outCategory = "hover"; *outEffectType = "none"; return true;
     default:
         break;
     }
     return false;
+}
+
+static bool TryBuildEffectJsonByCommand(UINT cmd, std::string* outJson) {
+    if (!outJson) return true;
+    std::string category;
+    std::string effectType;
+    if (!TryBuildEffectSelectionByCommand(cmd, &category, &effectType)) {
+        return false;
+    }
+    *outJson = BuildDynamicEffectCommandJson(category, effectType);
+    return true;
 }
 
 } // namespace
@@ -567,6 +587,14 @@ bool Win32TrayMenuBuilder::TryBuildIpcJson(UINT cmd, std::string* outJson) {
         return true;
     }
     return TryBuildEffectJsonByCommand(cmd, outJson);
+}
+
+bool Win32TrayMenuBuilder::TryBuildEffectSelection(UINT cmd, std::string* outCategory, std::string* outEffectType) {
+    if (!outCategory || !outEffectType) return false;
+    if (TryReadDynamicEffectSelection(cmd, outCategory, outEffectType)) {
+        return true;
+    }
+    return TryBuildEffectSelectionByCommand(cmd, outCategory, outEffectType);
 }
 
 bool Win32TrayMenuBuilder::TryBuildTheme(UINT cmd, std::string* outTheme) {

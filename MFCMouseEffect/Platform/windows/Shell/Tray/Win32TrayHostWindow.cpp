@@ -198,10 +198,16 @@ void Win32TrayHostWindow::HandleTrayMenu() {
         shellHost_->ReloadConfigFromShell();
     } else if (cmd == kCmdStarRepo) {
         shellHost_->OpenProjectRepositoryFromShell();
-    } else if (mouseFx) {
-        std::string json;
-        if (Win32TrayMenuBuilder::TryBuildIpcJson(cmd, &json)) {
-            mouseFx->HandleCommand(json);
+    } else {
+        std::string category;
+        std::string effectType;
+        if (Win32TrayMenuBuilder::TryBuildEffectSelection(cmd, &category, &effectType) && shellHost_) {
+            shellHost_->SetEffectFromShell(category, effectType);
+        } else if (mouseFx) {
+            std::string json;
+            if (Win32TrayMenuBuilder::TryBuildIpcJson(cmd, &json)) {
+                mouseFx->HandleCommand(json);
+            }
         }
 
         std::string theme;
