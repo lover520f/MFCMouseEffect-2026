@@ -82,6 +82,36 @@ ClickRenderProfile ResolveClickRenderProfile(const EffectConfig& config) {
         tuning.durationScale,
         0.16,
         2.4);
+    profile.rippleStartRadiusPx = detail::ScaleDouble(
+        static_cast<double>(detail::ClampDouble(config.ripple.startRadius, 0.0, 120.0)),
+        tuning.sizeScale,
+        0.0,
+        240.0);
+    profile.rippleEndRadiusPx = detail::ScaleDouble(
+        static_cast<double>(detail::ClampDouble(config.ripple.endRadius, 1.0, 180.0)),
+        tuning.sizeScale,
+        1.0,
+        320.0);
+    profile.rippleStrokeWidthPx = detail::ScaleDouble(
+        static_cast<double>(detail::ClampDouble(config.ripple.strokeWidth, 0.1, 24.0)),
+        tuning.sizeScale,
+        0.1,
+        48.0);
+    profile.starStartRadiusPx = detail::ScaleDouble(
+        static_cast<double>(detail::ClampDouble(config.icon.startRadius, 0.0, 120.0)),
+        tuning.sizeScale,
+        0.0,
+        240.0);
+    profile.starEndRadiusPx = detail::ScaleDouble(
+        static_cast<double>(detail::ClampDouble(config.icon.endRadius, 1.0, 180.0)),
+        tuning.sizeScale,
+        1.0,
+        320.0);
+    profile.starStrokeWidthPx = detail::ScaleDouble(
+        static_cast<double>(detail::ClampDouble(config.icon.strokeWidth, 0.1, 24.0)),
+        tuning.sizeScale,
+        0.1,
+        48.0);
     profile.closePaddingMs = 60;
     profile.baseOpacity = ScaleOpacity(0.95, tuning.opacityScale);
     profile.leftButton.fillArgb = config.ripple.leftClick.fill.value;

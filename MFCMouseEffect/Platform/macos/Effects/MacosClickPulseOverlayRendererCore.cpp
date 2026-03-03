@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Platform/macos/Effects/MacosClickPulseOverlayRendererCore.h"
+#include "Platform/macos/Effects/MacosEffectComputeProfileAdapter.h"
 
 namespace mousefx::macos_click_pulse {
 
@@ -18,19 +19,7 @@ void ShowClickPulseOverlayOnMain(
     (void)profile;
     return;
 #else
-    const ClickEffectProfile computeProfile{
-        profile.normalSizePx,
-        profile.textSizePx,
-        profile.textFontSizePx,
-        profile.textFloatDistancePx,
-        profile.normalDurationSec,
-        profile.textDurationSec,
-        profile.closePaddingMs,
-        profile.baseOpacity,
-        {profile.leftButton.fillArgb, profile.leftButton.strokeArgb, profile.leftButton.glowArgb},
-        {profile.rightButton.fillArgb, profile.rightButton.strokeArgb, profile.rightButton.glowArgb},
-        {profile.middleButton.fillArgb, profile.middleButton.strokeArgb, profile.middleButton.glowArgb},
-    };
+    const ClickEffectProfile computeProfile = macos_effect_compute_profile::BuildClickProfile(profile);
     const ClickEffectRenderCommand command =
         ComputeClickEffectRenderCommand(overlayPt, button, effectType, computeProfile);
     ShowClickPulseOverlayOnMain(command, themeName);

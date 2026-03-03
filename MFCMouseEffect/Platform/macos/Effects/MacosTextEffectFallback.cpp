@@ -3,11 +3,11 @@
 #include "Platform/macos/Effects/MacosTextEffectFallback.h"
 
 #include "MouseFx/Core/Diagnostics/TextEffectRuntimeDiagnostics.h"
+#include "MouseFx/Core/Effects/TextEffectCompute.h"
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
 #include "MouseFx/Utils/StringUtils.h"
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 #include "Platform/macos/Effects/MacosTextEffectFallbackSwiftBridge.h"
-#include "Platform/macos/Overlay/MacosOverlayCoordSpaceConversion.h"
 #include "Settings/EmojiUtils.h"
 
 #include <algorithm>
@@ -18,6 +18,7 @@
 #include <mutex>
 #include <random>
 #include <string>
+#include <utility>
 #include <vector>
 
 #if defined(__APPLE__)
@@ -29,39 +30,26 @@ namespace mousefx {
 #if defined(__APPLE__)
 namespace {
 
-constexpr double kMinPanelSize = 200.0;
-
-double ResolvePanelSize(double fontSize) {
-    return std::max(kMinPanelSize, fontSize * 8.0);
-}
-
 struct ActivePanel final {
     void* handle = nullptr;
 };
 
-struct TextAnimationSpec final {
+struct TextAnimationCommand final {
     ScreenPoint startPoint{};
-    double durationMs = 300.0;
-    double floatDistance = 48.0;
-    double driftX = 0.0;
-    double swayFreq = 1.0;
-    double swayAmp = 6.0;
-    double baseFontSize = 24.0;
-    uint32_t argb = 0xFFFFFFFFu;
+    TextEffectRenderCommand command{};
     std::string fontFamilyUtf8{};
-    bool emojiText = false;
 };
 
 struct TextAnimationState final {
     void* panelHandle = nullptr;
-    TextAnimationSpec spec{};
+    TextAnimationCommand cmd{};
     uint64_t startTickMs = 0;
     uint64_t generation = 0;
 };
 
 struct ShowTextContext final {
     std::string utf8Text{};
-    TextAnimationSpec spec{};
+    TextAnimationCommand cmd{};
     size_t cap = 1;
 };
 
@@ -84,15 +72,6 @@ uint64_t MonotonicNowMs() {
     const auto now = std::chrono::steady_clock::now().time_since_epoch();
     return static_cast<uint64_t>(
         std::chrono::duration_cast<std::chrono::milliseconds>(now).count());
-}
-
-double Clamp01(double value) {
-    return std::clamp(value, 0.0, 1.0);
-}
-
-double EaseOutCubic(double t) {
-    const double u = 1.0 - Clamp01(t);
-    return 1.0 - (u * u * u);
 }
 
 bool IsPanelTrackedLocked(void* panelHandle) {
@@ -162,44 +141,25 @@ void EnforceWindowCap(size_t maxConcurrentWindows) {
     }
 }
 
-void ApplyTextFrame(void* panelHandle, const TextAnimationSpec& spec, double t) {
+void ApplyTextFrame(void* panelHandle, const TextAnimationCommand& cmd, double t) {
     if (panelHandle == nullptr) {
         return;
     }
 
-    const double eased = EaseOutCubic(t);
-    const double yOffset = eased * spec.floatDistance;
-    const double xOffset = (t * spec.driftX) + std::sin(t * 3.1415926 * spec.swayFreq) * spec.swayAmp;
-
-    double scale = 1.0;
-    if (t < 0.3) {
-        scale = 0.8 + (t / 0.3) * 0.4;
-    } else {
-        scale = 1.2 - ((t - 0.3) / 0.7) * 0.2;
-    }
-
-    double alphaFactor = 1.0;
-    if (t < 0.08) {
-        alphaFactor = 0.5 + (t / 0.08) * 0.5;
-    } else if (t > 0.6) {
-        alphaFactor = 1.0 - (t - 0.6) / 0.4;
-    }
-    alphaFactor = Clamp01(alphaFactor);
-
-    const double panelSize = ResolvePanelSize(spec.baseFontSize);
-    const double x = static_cast<double>(spec.startPoint.x) + xOffset - panelSize * 0.5;
-    const double y = static_cast<double>(spec.startPoint.y) + yOffset - panelSize * 0.5;
+    const TextEffectRenderFrame frame = ComputeTextEffectRenderFrame(cmd.command, t);
+    const double panelSize = std::max(1.0, cmd.command.panelSizePx);
+    const double x = static_cast<double>(cmd.startPoint.x) + frame.offsetXPx - panelSize * 0.5;
+    const double y = static_cast<double>(cmd.startPoint.y) + frame.offsetYUpPx - panelSize * 0.5;
     mfx_macos_text_panel_set_frame_v1(panelHandle, x, y, panelSize);
 
-    const double fontSize = std::max(6.0, spec.baseFontSize * scale);
-    const char* fontFamilyUtf8 = spec.fontFamilyUtf8.empty() ? "" : spec.fontFamilyUtf8.c_str();
+    const char* fontFamilyUtf8 = cmd.fontFamilyUtf8.empty() ? "" : cmd.fontFamilyUtf8.c_str();
     mfx_macos_text_panel_apply_style_v1(
         panelHandle,
-        fontSize,
-        spec.argb,
-        alphaFactor,
+        frame.fontSizePx,
+        cmd.command.argb,
+        frame.alpha,
         fontFamilyUtf8,
-        spec.emojiText ? 1 : 0);
+        cmd.command.emojiText ? 1 : 0);
 }
 
 void TickTextAnimation(void* opaque);
@@ -235,8 +195,9 @@ void TickTextAnimation(void* opaque) {
 
     const uint64_t nowMs = MonotonicNowMs();
     const uint64_t elapsedMs = (nowMs >= state->startTickMs) ? (nowMs - state->startTickMs) : 0;
-    const double t = Clamp01(static_cast<double>(elapsedMs) / std::max(1.0, state->spec.durationMs));
-    ApplyTextFrame(state->panelHandle, state->spec, t);
+    const double durationMs = std::max(1, state->cmd.command.durationMs);
+    const double t = std::clamp(static_cast<double>(elapsedMs) / static_cast<double>(durationMs), 0.0, 1.0);
+    ApplyTextFrame(state->panelHandle, state->cmd, t);
 
     if (t >= 1.0) {
         CloseTrackedPanel(state->panelHandle);
@@ -246,13 +207,13 @@ void TickTextAnimation(void* opaque) {
     ScheduleTextAnimationTick(state.release());
 }
 
-void StartTextAnimation(void* panelHandle, TextAnimationSpec spec) {
+void StartTextAnimation(void* panelHandle, TextAnimationCommand cmd) {
     if (panelHandle == nullptr) {
         return;
     }
     auto* state = new TextAnimationState{
         panelHandle,
-        spec,
+        std::move(cmd),
         MonotonicNowMs(),
         AnimationGeneration().load(std::memory_order_acquire),
     };
@@ -307,7 +268,35 @@ void MacosTextEffectFallback::ShowText(
     (void)config;
     return;
 #else
-    if (text.empty()) {
+    static thread_local std::mt19937 rng(std::random_device{}());
+    std::uniform_int_distribution<int> driftXDist(-50, 49);
+    std::uniform_int_distribution<int> swayFreqDist(0, 199);
+    std::uniform_int_distribution<int> swayAmpDist(0, 99);
+
+    TextEffectRandomSamples randomSamples{};
+    randomSamples.driftX = driftXDist(rng);
+    randomSamples.swayFreqCenti = swayFreqDist(rng);
+    randomSamples.swayAmpDeci = swayAmpDist(rng);
+
+    const TextEffectRenderCommand command = ComputeTextEffectRenderCommand(
+        text,
+        color,
+        config,
+        settings::HasEmojiStarter(text),
+        randomSamples);
+    ShowTextComputed(pt, command);
+#endif
+}
+
+void MacosTextEffectFallback::ShowTextComputed(
+    const ScreenPoint& anchorPoint,
+    const TextEffectRenderCommand& command) {
+#if !defined(__APPLE__)
+    (void)anchorPoint;
+    (void)command;
+    return;
+#else
+    if (command.text.empty()) {
         diagnostics::RecordTextEffectFallbackError("empty_text");
         return;
     }
@@ -315,40 +304,21 @@ void MacosTextEffectFallback::ShowText(
         maxConcurrentWindows_ = 8;
     }
 
-    diagnostics::RecordTextEffectFallbackShow(pt, text);
+    diagnostics::RecordTextEffectFallbackShow(anchorPoint, command.text);
 
-    const std::string utf8Text = Utf16ToUtf8(text.c_str());
+    const std::string utf8Text = Utf16ToUtf8(command.text.c_str());
     if (utf8Text.empty()) {
         diagnostics::RecordTextEffectFallbackError("utf8_empty");
         return;
     }
 
-    static thread_local std::mt19937 rng(std::random_device{}());
-    std::uniform_int_distribution<int> driftXDist(-50, 49);
-    std::uniform_int_distribution<int> swayFreqDist(0, 199);
-    std::uniform_int_distribution<int> swayAmpDist(0, 99);
-
-    TextAnimationSpec spec{};
-    ScreenPoint overlayPt = pt;
-    ScreenPoint cocoaPt{};
-    if (macos_overlay_coord_conversion::TryConvertQuartzToCocoa(pt, &cocoaPt)) {
-        overlayPt = cocoaPt;
-    }
-    spec.startPoint = overlayPt;
-    spec.durationMs = static_cast<double>(std::max(config.durationMs, 1));
-    spec.floatDistance = static_cast<double>(std::max(config.floatDistance, 0));
-    spec.driftX = static_cast<double>(driftXDist(rng));
-    spec.swayFreq = 1.0 + static_cast<double>(swayFreqDist(rng)) / 100.0;
-    spec.swayAmp = 5.0 + static_cast<double>(swayAmpDist(rng)) / 10.0;
-    const double baseFontPx = static_cast<double>(config.fontSize) * (96.0 / 72.0);
-    spec.baseFontSize = std::max(baseFontPx, 6.0);
-    spec.argb = color.value;
-    spec.fontFamilyUtf8 = Utf16ToUtf8(config.fontFamily.c_str());
-    spec.emojiText = settings::HasEmojiStarter(text);
-
+    TextAnimationCommand animCmd{};
+    animCmd.startPoint = ScreenToOverlayPoint(anchorPoint);
+    animCmd.command = command;
+    animCmd.fontFamilyUtf8 = Utf16ToUtf8(command.fontFamily.c_str());
     auto* context = new ShowTextContext{
         utf8Text,
-        spec,
+        animCmd,
         maxConcurrentWindows_,
     };
     macos_overlay_support::RunOnMainThreadAsync(
@@ -358,17 +328,17 @@ void MacosTextEffectFallback::ShowText(
             if (!context) {
                 return;
             }
-            const double panelSize = ResolvePanelSize(context->spec.baseFontSize);
-            const char* fontFamilyUtf8 = context->spec.fontFamilyUtf8.empty()
+            const double panelSize = std::max(1.0, context->cmd.command.panelSizePx);
+            const char* fontFamilyUtf8 = context->cmd.fontFamilyUtf8.empty()
                 ? ""
-                : context->spec.fontFamilyUtf8.c_str();
+                : context->cmd.fontFamilyUtf8.c_str();
             void* panelHandle = mfx_macos_text_panel_create_v1(
                 context->utf8Text.c_str(),
                 panelSize,
-                context->spec.baseFontSize,
-                context->spec.argb,
+                context->cmd.command.baseFontSizePx,
+                context->cmd.command.argb,
                 fontFamilyUtf8,
-                context->spec.emojiText ? 1 : 0);
+                context->cmd.command.emojiText ? 1 : 0);
             if (panelHandle == nullptr) {
                 diagnostics::RecordTextEffectFallbackError("panel_nil");
                 return;
@@ -383,7 +353,7 @@ void MacosTextEffectFallback::ShowText(
 
             mfx_macos_text_panel_show_v1(panelHandle);
             diagnostics::RecordTextEffectFallbackPanelCreated();
-            StartTextAnimation(panelHandle, context->spec);
+            StartTextAnimation(panelHandle, std::move(context->cmd));
         },
         context);
 #endif

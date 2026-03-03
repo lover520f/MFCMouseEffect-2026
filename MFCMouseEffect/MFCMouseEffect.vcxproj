@@ -305,6 +305,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\PlatformNativeFolderPicker.h" />
     <ClInclude Include="Platform\PlatformDisplayTopology.h" />
     <ClInclude Include="MouseFx\Effects\IconEffect.h" />
+    <ClInclude Include="MouseFx\Effects\ClickEffectCommandAdapter.h" />
     <ClInclude Include="MouseFx\Interfaces\IMouseEffect.h" />
     <ClInclude Include="MouseFx\Interfaces\IOverlayLayer.h" />
     <ClInclude Include="MouseFx\Interfaces\ITextEffectFallback.h" />
@@ -385,6 +386,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Wasm\WasmRenderResourceResolver.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmImageFileRenderer.h" />
     <ClInclude Include="MouseFx\Core\Effects\ClickEffectCompute.h" />
+    <ClInclude Include="MouseFx\Core\Effects\TextEffectCompute.h" />
     <ClInclude Include="MouseFx\Core\Effects\TrailEffectCompute.h" />
     <ClInclude Include="MouseFx\Core\Effects\ScrollEffectCompute.h" />
     <ClInclude Include="MouseFx\Core\Effects\HoverEffectCompute.h" />
@@ -434,6 +436,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Config\ConfigPathResolver.cpp" />
     <ClCompile Include="MouseFx\Core\Control\EffectFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Effects\ClickEffectCompute.cpp" />
+    <ClCompile Include="MouseFx\Core\Effects\TextEffectCompute.cpp" />
     <ClCompile Include="MouseFx\Core\Effects\TrailEffectCompute.cpp" />
     <ClCompile Include="MouseFx\Core\Effects\ScrollEffectCompute.cpp" />
     <ClCompile Include="MouseFx\Core\Effects\HoverEffectCompute.cpp" />
@@ -446,6 +449,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\PlatformNativeFolderPicker.cpp" />
     <ClCompile Include="Platform\PlatformDisplayTopology.cpp" />
     <ClCompile Include="MouseFx\Effects\IconEffect.cpp" />
+    <ClCompile Include="MouseFx\Effects\ClickEffectCommandAdapter.cpp" />
     <ClCompile Include="MouseFx\Core\Control\IpcController.cpp" />
     <ClCompile Include="MouseFx\Core\Shell\AppShellCore.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32AppShell.cpp" />

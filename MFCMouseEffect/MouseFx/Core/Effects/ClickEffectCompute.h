@@ -22,6 +22,13 @@ struct ClickEffectProfile {
     double textDurationSec = 0.36;
     int closePaddingMs = 60;
     double baseOpacity = 0.95;
+    // Geometric parameters shared by platform renderers.
+    double rippleStartRadiusPx = 0.0;
+    double rippleEndRadiusPx = 40.0;
+    double rippleStrokeWidthPx = 2.5;
+    double starStartRadiusPx = 5.0;
+    double starEndRadiusPx = 35.0;
+    double starStrokeWidthPx = 2.0;
     ClickEffectPalette left{};
     ClickEffectPalette right{};
     ClickEffectPalette middle{};
@@ -40,6 +47,9 @@ struct ClickEffectRenderCommand {
     double animationDurationSec = 0.32;
     int closePaddingMs = 60;
     double baseOpacity = 0.95;
+    double startRadiusPx = 0.0;
+    double endRadiusPx = 40.0;
+    double strokeWidthPx = 2.5;
     uint32_t fillArgb = 0;
     uint32_t strokeArgb = 0;
     uint32_t glowArgb = 0;

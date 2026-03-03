@@ -67,6 +67,16 @@ ClickEffectRenderCommand ComputeClickEffectRenderCommand(
         (command.normalizedType == "text") ? profile.textDurationSec : profile.normalDurationSec;
     command.closePaddingMs = profile.closePaddingMs;
     command.baseOpacity = std::clamp(profile.baseOpacity, 0.05, 1.0);
+    if (command.normalizedType == "star") {
+        command.startRadiusPx = std::clamp(profile.starStartRadiusPx, 0.0, 640.0);
+        command.endRadiusPx = std::clamp(profile.starEndRadiusPx, 1.0, 800.0);
+        command.strokeWidthPx = std::clamp(profile.starStrokeWidthPx, 0.1, 64.0);
+    } else {
+        command.startRadiusPx = std::clamp(profile.rippleStartRadiusPx, 0.0, 640.0);
+        command.endRadiusPx = std::clamp(profile.rippleEndRadiusPx, 1.0, 800.0);
+        command.strokeWidthPx = std::clamp(profile.rippleStrokeWidthPx, 0.1, 64.0);
+    }
+    command.endRadiusPx = std::max(command.endRadiusPx, command.startRadiusPx + 1.0);
 
     const auto& palette = ResolvePalette(button, profile);
     command.fillArgb = palette.fillArgb;

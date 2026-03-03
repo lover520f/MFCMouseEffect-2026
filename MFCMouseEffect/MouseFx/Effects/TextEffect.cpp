@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TextEffect.h"
+#include "MouseFx/Core/Effects/TextEffectCompute.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Core/Diagnostics/TextEffectRuntimeDiagnostics.h"
 #include "MouseFx/Styles/ThemeStyle.h"
@@ -34,6 +35,14 @@ std::wstring ResolveClickText(const TextConfig& config, MouseButton button) {
         return config.texts[RandomRange(0, static_cast<int>(config.texts.size()) - 1)];
     }
     return ResolveDefaultLabel(button);
+}
+
+TextEffectRandomSamples BuildRandomSamples() {
+    TextEffectRandomSamples samples{};
+    samples.driftX = RandomRange(-50, 49);
+    samples.swayFreqCenti = RandomRange(0, 199);
+    samples.swayAmpDeci = RandomRange(0, 99);
+    return samples;
 }
 
 } // namespace
@@ -84,16 +93,23 @@ void TextEffect::OnClick(const ClickEvent& event) {
     } else if (!config_.colors.empty()) {
         color = config_.colors[RandomRange(0, (int)config_.colors.size() - 1)];
     }
+    const bool emojiText = settings::HasEmojiStarter(text);
+    const TextEffectRenderCommand command = ComputeTextEffectRenderCommand(
+        text,
+        color,
+        config_,
+        emojiText,
+        BuildRandomSamples());
 
-    if (settings::HasEmojiStarter(text)) {
+    if (emojiText) {
         if (!fallback_ || !fallback_->EnsureInitialized(8)) return;
-        fallback_->ShowText(event.pt, text, color, config_);
+        fallback_->ShowTextComputed(event.pt, command);
         return;
     }
 
 #if defined(__APPLE__)
     if (fallback_ && fallback_->EnsureInitialized(8)) {
-        fallback_->ShowText(event.pt, text, color, config_);
+        fallback_->ShowTextComputed(event.pt, command);
         return;
     }
 #endif
@@ -103,7 +119,7 @@ void TextEffect::OnClick(const ClickEvent& event) {
     }
 
     if (!fallback_ || !fallback_->EnsureInitialized(8)) return;
-    fallback_->ShowText(event.pt, text, color, config_);
+    fallback_->ShowTextComputed(event.pt, command);
 }
 
 } // namespace mousefx

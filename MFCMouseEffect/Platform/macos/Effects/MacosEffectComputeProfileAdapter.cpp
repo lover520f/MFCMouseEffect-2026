@@ -14,6 +14,12 @@ ClickEffectProfile BuildClickProfile(const macos_effect_profile::ClickRenderProf
     out.textDurationSec = profile.textDurationSec;
     out.closePaddingMs = profile.closePaddingMs;
     out.baseOpacity = profile.baseOpacity;
+    out.rippleStartRadiusPx = profile.rippleStartRadiusPx;
+    out.rippleEndRadiusPx = profile.rippleEndRadiusPx;
+    out.rippleStrokeWidthPx = profile.rippleStrokeWidthPx;
+    out.starStartRadiusPx = profile.starStartRadiusPx;
+    out.starEndRadiusPx = profile.starEndRadiusPx;
+    out.starStrokeWidthPx = profile.starStrokeWidthPx;
     out.left = {profile.leftButton.fillArgb, profile.leftButton.strokeArgb, profile.leftButton.glowArgb};
     out.right = {profile.rightButton.fillArgb, profile.rightButton.strokeArgb, profile.rightButton.glowArgb};
     out.middle = {profile.middleButton.fillArgb, profile.middleButton.strokeArgb, profile.middleButton.glowArgb};

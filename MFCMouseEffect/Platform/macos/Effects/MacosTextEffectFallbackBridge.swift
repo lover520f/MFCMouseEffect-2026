@@ -12,6 +12,16 @@ private func mfxClamp01(_ value: Double) -> Double {
     return value
 }
 
+private func mfxClamp(_ value: CGFloat, min minValue: CGFloat, max maxValue: CGFloat) -> CGFloat {
+    if value < minValue {
+        return minValue
+    }
+    if value > maxValue {
+        return maxValue
+    }
+    return value
+}
+
 private func mfxColorFromArgb(_ argb: UInt32, _ alphaScale: Double) -> NSColor {
     let baseAlpha = Double((argb >> 24) & 0xFF) / 255.0
     let alpha = CGFloat(mfxClamp01(baseAlpha * alphaScale))
@@ -40,6 +50,9 @@ private final class MfxTextPanelHandle: NSObject {
     private let panel: NSPanel
     private let label: CATextLayer
     private let content: NSView
+    private let textValue: String
+    private var panelSide: CGFloat = 1.0
+    private var currentFont: NSFont = NSFont.boldSystemFont(ofSize: 12.0)
 
     init(
         text: String,
@@ -63,6 +76,7 @@ private final class MfxTextPanelHandle: NSObject {
         panel.hidesOnDeactivate = false
         panel.level = .statusBar
         panel.collectionBehavior = [.canJoinAllSpaces, .transient]
+        textValue = text
 
         content = NSView(frame: NSRect(x: 0, y: 0, width: side, height: side))
         content.wantsLayer = true
@@ -82,15 +96,50 @@ private final class MfxTextPanelHandle: NSObject {
         setFrame(x: 0.0, y: 0.0, panelSize: panelSize)
     }
 
+    private func updateLabelLayout() {
+        let safeSide = max(1.0, panelSide)
+        let maxWidth = max(8.0, safeSide * 0.94)
+        let maxHeight = max(8.0, safeSide * 0.92)
+        let attributed = NSAttributedString(
+            string: textValue,
+            attributes: [.font: currentFont]
+        )
+        var textBounds = attributed.boundingRect(
+            with: CGSize(width: maxWidth, height: maxHeight),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            context: nil
+        ).integral
+        if textBounds.width <= 0.0 {
+            textBounds.size.width = currentFont.pointSize
+        }
+        if textBounds.height <= 0.0 {
+            textBounds.size.height = max(10.0, currentFont.ascender - currentFont.descender)
+        }
+        let fontSize = max(6.0, currentFont.pointSize)
+        let labelWidth = mfxClamp(
+            textBounds.width + fontSize * 0.16,
+            min: max(10.0, fontSize * 0.9),
+            max: maxWidth
+        )
+        let labelHeight = mfxClamp(
+            textBounds.height + fontSize * 0.18,
+            min: max(10.0, fontSize * 1.05),
+            max: maxHeight
+        )
+        label.frame = CGRect(
+            x: (safeSide - labelWidth) * 0.5,
+            y: (safeSide - labelHeight) * 0.5,
+            width: labelWidth,
+            height: labelHeight
+        )
+        label.contentsScale = max(1.0, panel.backingScaleFactor)
+    }
+
     func setFrame(x: Double, y: Double, panelSize: Double) {
         let side = CGFloat(max(1.0, panelSize))
+        panelSide = side
         panel.setFrame(NSRect(x: x, y: y, width: side, height: side), display: false)
-
-        let labelHeight = CGFloat(max(12.0, panelSize * 0.5))
-        let labelY = (side - labelHeight) * 0.5
-        label.frame = CGRect(x: 0.0, y: labelY, width: side, height: labelHeight)
-        let contentsScale = max(1.0, panel.backingScaleFactor)
-        label.contentsScale = contentsScale
+        updateLabelLayout()
     }
 
     func applyStyle(
@@ -101,10 +150,11 @@ private final class MfxTextPanelHandle: NSObject {
         emoji: Bool
     ) {
         let clampedSize = CGFloat(max(6.0, fontSize))
-        let font = mfxResolveLabelFont(fontFamily, clampedSize, emoji)
+        currentFont = mfxResolveLabelFont(fontFamily, clampedSize, emoji)
         label.fontSize = clampedSize
-        label.font = font.fontName as CFTypeRef
+        label.font = currentFont.fontName as CFTypeRef
         label.foregroundColor = mfxColorFromArgb(argb, alphaScale).cgColor
+        updateLabelLayout()
     }
 
     func show() {

@@ -4,6 +4,7 @@
 #include <string>
 
 #include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Core/Effects/TextEffectCompute.h"
 #include "MouseFx/Core/Protocol/InputTypes.h"
 
 namespace mousefx {
@@ -15,6 +16,7 @@ public:
     virtual bool EnsureInitialized(size_t count) = 0;
     virtual void Shutdown() = 0;
     virtual void ShowText(const ScreenPoint& pt, const std::wstring& text, Argb color, const TextConfig& config) = 0;
+    virtual void ShowTextComputed(const ScreenPoint& anchorPoint, const TextEffectRenderCommand& command) = 0;
 };
 
 } // namespace mousefx

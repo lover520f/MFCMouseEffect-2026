@@ -5,8 +5,6 @@
 #include "Settings/EmojiUtils.h"
 #include <algorithm>
 #include <cmath>
-#include <memory>
-#include <vector>
 #include <dxgiformat.h>
 
 namespace mousefx {
@@ -25,26 +23,12 @@ static float GetWindowDpi(HWND hwnd) {
     return 96.0f;
 }
 
-static Gdiplus::Color ToGdiPlus(Argb c, BYTE alpha) {
-    return Gdiplus::Color(alpha, (BYTE)((c.value >> 16) & 0xFF), (BYTE)((c.value >> 8) & 0xFF), (BYTE)(c.value & 0xFF));
-}
-
-
-
-static std::wstring ResolveFontFamilyName(const TextConfig& config, const std::wstring& text) {
-    if (settings::IsEmojiOnlyText(text)) {
+static std::wstring ResolveFontFamilyName(const TextEffectRenderCommand& command) {
+    if (settings::IsEmojiOnlyText(command.text)) {
         return L"Segoe UI Emoji";
     }
-    if (!config.fontFamily.empty()) return config.fontFamily;
+    if (!command.fontFamily.empty()) return command.fontFamily;
     return L"Segoe UI";
-}
-
-static std::unique_ptr<Gdiplus::FontFamily> CreateAvailableFamily(const std::wstring& name) {
-    auto family = std::make_unique<Gdiplus::FontFamily>(name.c_str());
-    if (family->IsAvailable()) return family;
-    family = std::make_unique<Gdiplus::FontFamily>(L"Segoe UI");
-    if (family->IsAvailable()) return family;
-    return std::make_unique<Gdiplus::FontFamily>(L"Arial");
 }
 
 TextWindow::~TextWindow() {
@@ -97,25 +81,19 @@ bool TextWindow::Create() {
     return true;
 }
 
-void TextWindow::StartAt(const ScreenPoint& pt, const std::wstring& text, Argb color, const TextConfig& config) {
+void TextWindow::StartAtComputed(const ScreenPoint& anchorPoint, const TextEffectRenderCommand& command) {
     if (!hwnd_ && !Create()) return;
 
-    text_ = text;
-    color_ = color;
-    config_ = config;
-
-    // Estimate window size (roughly 100x100 or based on text)
-    // For simplicity, fixed size with center alignment
-    int winSize = (int)(config.fontSize * 8); 
-    if (winSize < 200) winSize = 200;
+    command_ = command;
+    const int winSize = std::max(1, static_cast<int>(std::lround(command_.panelSizePx)));
 
     EnsureSurface(winSize, winSize);
 
-    const int left = pt.x - (winSize / 2);
-    const int top = pt.y - (winSize / 2);
+    const int left = anchorPoint.x - (winSize / 2);
+    const int top = anchorPoint.y - (winSize / 2);
     baseLeft_ = left;
     baseTop_ = top;
-    emojiColorMode_ = settings::HasEmojiStarter(text_);
+    emojiColorMode_ = command_.emojiText;
     emojiFrameReady_ = false;
 
     SetWindowPos(hwnd_, HWND_TOPMOST, left, top, winSize, winSize, SWP_NOACTIVATE | SWP_SHOWWINDOW);
@@ -123,20 +101,17 @@ void TextWindow::StartAt(const ScreenPoint& pt, const std::wstring& text, Argb c
     startTick_ = NowMs();
     active_ = true;
 
-    // Randomize path characteristics
-    driftX_ = (float)(rand() % 100 - 50); // Drift -50 to 50 pixels horizontally
-    swayFreq_ = 1.0f + (float)(rand() % 200) / 100.0f; // 1.0 to 3.0 frequency
-    swayAmp_ = 5.0f + (float)(rand() % 100) / 10.0f;   // 5.0 to 15.0 px amplitude
+    const TextEffectRenderFrame firstFrame = ComputeTextEffectRenderFrame(command_, 0.0);
 
     if (emojiColorMode_) {
         emojiFrameReady_ = RenderEmojiBaseFrame();
         if (emojiFrameReady_) {
-            PresentEmojiCachedFrame(0.0f);
+            PresentEmojiCachedFrame(firstFrame);
         } else {
-            RenderFrame(0.0f);
+            RenderFrame(firstFrame);
         }
     } else {
-        RenderFrame(0.0f);
+        RenderFrame(firstFrame);
     }
     SetTimer(hwnd_, kTimerId, 16, nullptr);
 }
@@ -180,20 +155,22 @@ void TextWindow::OnTick() {
         return;
     }
 
-    uint64_t elapsed = NowMs() - startTick_;
-    float t = (float)elapsed / (float)config_.durationMs;
+    const uint64_t elapsed = NowMs() - startTick_;
+    const double t = static_cast<double>(elapsed) / static_cast<double>(std::max(command_.durationMs, 1));
 
-    if (t >= 1.0f) {
+    if (t >= 1.0) {
         active_ = false;
         ShowWindow(hwnd_, SW_HIDE);
         KillTimer(hwnd_, kTimerId);
         return;
     }
 
+    const TextEffectRenderFrame frame = ComputeTextEffectRenderFrame(command_, t);
+
     if (emojiColorMode_ && emojiFrameReady_) {
-        PresentEmojiCachedFrame(t);
+        PresentEmojiCachedFrame(frame);
     } else {
-        RenderFrame(t);
+        RenderFrame(frame);
     }
 }
 
@@ -219,11 +196,6 @@ void TextWindow::DestroySurface() {
     if (memDc_) DeleteDC(memDc_);
     dib_ = nullptr; memDc_ = nullptr; bits_ = nullptr;
     DestroyD2DResources();
-}
-
-static float EaseOutCubic(float t) {
-    float u = 1.0f - t;
-    return 1.0f - (u * u * u);
 }
 
 bool TextWindow::EnsureD2DResources() {
@@ -254,7 +226,7 @@ bool TextWindow::EnsureTextLayout(float dpi, float widthDip, float heightDip) {
     IDWriteFactory* dwriteFactory = SharedDWriteFactory();
     if (!dwriteFactory) return false;
 
-    const float fontSize = (config_.fontSize) * (96.0f / 72.0f);
+    const float fontSize = static_cast<float>(std::max(6.0, command_.baseFontSizePx));
     const bool sizeChanged =
         std::abs(layoutDpi_ - dpi) > 0.01f ||
         std::abs(layoutWidthDip_ - widthDip) > 0.01f ||
@@ -267,9 +239,9 @@ bool TextWindow::EnsureTextLayout(float dpi, float widthDip, float heightDip) {
     textLayout_.Reset();
     textFormat_.Reset();
 
-    const bool emojiOnly = settings::IsEmojiOnlyText(text_);
-    const bool hasEmoji = settings::HasEmojiStarter(text_);
-    const std::wstring fontName = ResolveFontFamilyName(config_, text_);
+    const bool emojiOnly = settings::IsEmojiOnlyText(command_.text);
+    const bool hasEmoji = command_.emojiText;
+    const std::wstring fontName = ResolveFontFamilyName(command_);
     const std::wstring emojiFontName = L"Segoe UI Emoji";
     const DWRITE_FONT_WEIGHT baseWeight = emojiOnly ? DWRITE_FONT_WEIGHT_REGULAR : DWRITE_FONT_WEIGHT_BOLD;
 
@@ -290,8 +262,8 @@ bool TextWindow::EnsureTextLayout(float dpi, float widthDip, float heightDip) {
     textFormat_->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
 
     if (FAILED(dwriteFactory->CreateTextLayout(
-        text_.c_str(),
-        (UINT32)text_.size(),
+        command_.text.c_str(),
+        (UINT32)command_.text.size(),
         textFormat_.Get(),
         (FLOAT)widthDip,
         (FLOAT)heightDip,
@@ -302,17 +274,17 @@ bool TextWindow::EnsureTextLayout(float dpi, float widthDip, float heightDip) {
 
     if (hasEmoji) {
         size_t pos = 0;
-        while (pos < text_.size()) {
+        while (pos < command_.text.size()) {
             size_t runStart = pos;
             size_t next = pos;
-            uint32_t cp = settings::NextCodePointUtf16(text_, &next);
+            uint32_t cp = settings::NextCodePointUtf16(command_.text, &next);
             if (cp == 0) break;
             pos = next;
             if (settings::IsEmojiCodePoint(cp)) {
                 size_t runEnd = pos;
-                while (runEnd < text_.size()) {
+                while (runEnd < command_.text.size()) {
                     size_t probe = runEnd;
-                    uint32_t cp2 = settings::NextCodePointUtf16(text_, &probe);
+                    uint32_t cp2 = settings::NextCodePointUtf16(command_.text, &probe);
                     if (cp2 == 0) break;
                     if (!settings::IsEmojiComponent(cp2)) break;
                     runEnd = probe;
@@ -323,9 +295,9 @@ bool TextWindow::EnsureTextLayout(float dpi, float widthDip, float heightDip) {
                 pos = runEnd;
             } else {
                 size_t runEnd = pos;
-                while (runEnd < text_.size()) {
+                while (runEnd < command_.text.size()) {
                     size_t probe = runEnd;
-                    uint32_t cp2 = settings::NextCodePointUtf16(text_, &probe);
+                    uint32_t cp2 = settings::NextCodePointUtf16(command_.text, &probe);
                     if (cp2 == 0) break;
                     if (settings::IsEmojiCodePoint(cp2)) break;
                     runEnd = probe;
@@ -354,7 +326,7 @@ void TextWindow::DestroyD2DResources() {
     d2dTarget_.Reset();
 }
 
-void TextWindow::RenderFrame(float t) {
+void TextWindow::RenderFrame(const TextEffectRenderFrame& frame) {
     if (!hwnd_ || !memDc_ || !bits_) return;
 
     ZeroMemory(bits_, (size_t)width_ * (size_t)height_ * 4);
@@ -370,39 +342,23 @@ void TextWindow::RenderFrame(float t) {
     d2dTarget_->BeginDraw();
     d2dTarget_->Clear(D2D1::ColorF(0, 0, 0, 0));
 
-    // Elegant movement: Non-linear path
-    float eased = EaseOutCubic(t);
-    float yOffset = eased * config_.floatDistance;
-    
-    // Combine drift and sway for a curved path
-    float xPos = (t * driftX_) + std::sin(t * 3.14159f * swayFreq_) * swayAmp_;
-    
-    // Scale: pop up slightly at start
-    float scale = 1.0f;
-    if (t < 0.3f) scale = 0.8f + (t / 0.3f) * 0.4f;
-    else scale = 1.2f - ((t - 0.3f) / 0.7f) * 0.2f;
-
-    // Alpha
-    float alpha = 1.0f;
-    if (t < 0.15f) alpha = t / 0.15f; 
-    else if (t > 0.6f) alpha = 1.0f - (t - 0.6f) / 0.4f;
-
     if (!EnsureTextLayout(dpi, widthDip, heightDip)) {
         d2dTarget_->EndDraw();
         return;
     }
 
     d2dBrush_->SetColor(D2D1::ColorF(
-        (float)((color_.value >> 16) & 0xFF) / 255.0f,
-        (float)((color_.value >> 8) & 0xFF) / 255.0f,
-        (float)(color_.value & 0xFF) / 255.0f,
-        alpha));
+        (float)((command_.argb >> 16) & 0xFF) / 255.0f,
+        (float)((command_.argb >> 8) & 0xFF) / 255.0f,
+        (float)(command_.argb & 0xFF) / 255.0f,
+        static_cast<float>(std::clamp(frame.alpha, 0.0, 1.0))));
 
-    const float xPosDip = xPos * pxToDip;
-    const float yOffsetDip = yOffset * pxToDip;
+    const float xPosDip = static_cast<float>(frame.offsetXPx) * pxToDip;
+    const float yOffsetDip = static_cast<float>(frame.offsetYUpPx) * pxToDip;
     const float centerX = (widthDip / 2.0f) + xPosDip;
     const float centerY = (heightDip / 2.0f) - yOffsetDip;
-    const float angle = xPos * 0.2f;
+    const float angle = static_cast<float>(frame.rotationDeg);
+    const float scale = static_cast<float>(std::max(0.1, frame.scale));
     D2D1_MATRIX_3X2_F transform =
         D2D1::Matrix3x2F::Translation(centerX, centerY) *
         D2D1::Matrix3x2F::Rotation(angle) *
@@ -449,9 +405,9 @@ bool TextWindow::RenderEmojiBaseFrame() {
     }
 
     d2dBrush_->SetColor(D2D1::ColorF(
-        (float)((color_.value >> 16) & 0xFF) / 255.0f,
-        (float)((color_.value >> 8) & 0xFF) / 255.0f,
-        (float)(color_.value & 0xFF) / 255.0f,
+        (float)((command_.argb >> 16) & 0xFF) / 255.0f,
+        (float)((command_.argb >> 8) & 0xFF) / 255.0f,
+        (float)(command_.argb & 0xFF) / 255.0f,
         1.0f));
 
     d2dTarget_->SetTransform(D2D1::Matrix3x2F::Identity());
@@ -464,21 +420,12 @@ bool TextWindow::RenderEmojiBaseFrame() {
     return true;
 }
 
-void TextWindow::PresentEmojiCachedFrame(float t) {
-    const float eased = EaseOutCubic(t);
-    const float yOffset = eased * config_.floatDistance;
-    const float xPos = (t * driftX_) + std::sin(t * 3.14159f * swayFreq_) * swayAmp_;
-
-    float alpha = 1.0f;
-    if (t < 0.15f) alpha = t / 0.15f;
-    else if (t > 0.6f) alpha = 1.0f - (t - 0.6f) / 0.4f;
-    if (alpha < 0.0f) alpha = 0.0f;
-    if (alpha > 1.0f) alpha = 1.0f;
-
-    const int left = baseLeft_ + (int)std::lround(xPos);
-    const int top = baseTop_ - (int)std::lround(yOffset);
+void TextWindow::PresentEmojiCachedFrame(const TextEffectRenderFrame& frame) {
+    const int left = baseLeft_ + static_cast<int>(std::lround(frame.offsetXPx));
+    const int top = baseTop_ - static_cast<int>(std::lround(frame.offsetYUpPx));
     SetWindowPos(hwnd_, HWND_TOPMOST, left, top, width_, height_, SWP_NOACTIVATE | SWP_NOSIZE | SWP_SHOWWINDOW);
-    PresentBackbuffer(left, top, (BYTE)std::lround(alpha * 255.0f));
+    const double alpha = std::clamp(frame.alpha, 0.0, 1.0);
+    PresentBackbuffer(left, top, static_cast<BYTE>(std::lround(alpha * 255.0)));
 }
 
 void TextWindow::PresentBackbuffer(int left, int top, BYTE alpha) {

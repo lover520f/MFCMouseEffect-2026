@@ -9,6 +9,7 @@ public:
     bool EnsureInitialized(size_t) override { return false; }
     void Shutdown() override {}
     void ShowText(const ScreenPoint&, const std::wstring&, Argb, const TextConfig&) override {}
+    void ShowTextComputed(const ScreenPoint&, const TextEffectRenderCommand&) override {}
 };
 
 } // namespace mousefx

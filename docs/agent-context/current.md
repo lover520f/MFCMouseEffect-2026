@@ -1,4 +1,4 @@
-# Agent Current Context (2026-03-02)
+# Agent Current Context (2026-03-03)
 
 ## Scope and Priority
 - Primary host: macOS.
@@ -17,6 +17,15 @@
 - Effects:
   - macOS supports click/trail/scroll/hold/hover in core lane.
   - Shared compute-command model is active; renderer path is execution-focused.
+  - macOS click `text` overlay now uses measured text bounds (instead of full-frame label) plus combined float/drift/scale/fade animation in Swift bridge, fixing baseline anchor drift and static-text appearance regression.
+  - macOS click `text` float direction is corrected to upward screen motion semantics (Windows-aligned behavior intent).
+  - 2026-03-03 follow-up: adjusted click text vertical animation sign again based on live feedback to prevent downward drift regression on current macOS runtime.
+  - 2026-03-03 parity fix: macOS `active.click=text` now routes to shared `TextEffect` (same as Windows) instead of `MacosClickPulseEffect` text mode, so text style/trajectory/color behavior follows one cross-platform implementation.
+  - 2026-03-03 position fix: `MacosTextEffectFallback` now uses `ScreenToOverlayPoint(...)` as the single coord-space entry, and text panel layout switched to measured glyph bounds centering (instead of fixed half-height label frame) to remove visible click-anchor offset.
+  - 2026-03-03 text compute closure: `TextEffectCompute` is now the single source for floating-text trajectory/alpha/scale/font-size frame calculation (`ComputeTextEffectRenderCommand/Frame`); both Windows `TextWindow` and macOS `MacosTextEffectFallback` consume computed frames and only execute rendering/window lifecycle.
+  - `ITextEffectFallback` now exposes `ShowTextComputed(...)`; `TextEffect` builds one command in Core and dispatches it to platform fallback paths (Windows/macOS), removing duplicate per-platform drift/sway/easing math.
+  - 2026-03-03 click compute closure (ripple/star): Windows `RippleEffect/IconEffect` now also route through shared `ComputeClickEffectRenderCommand(...)`; platform path only adapts command -> renderer execution (`ClickEffectCommandAdapter`), removing direct effect-side timing/size/color branching.
+  - 2026-03-03 click geometry parity closure: `ClickEffectRenderCommand` now includes `start_radius_px/end_radius_px/stroke_width_px`; both Windows adapter and macOS click bridge consume these shared geometry fields (plus shared glow color), reducing platform-side guesswork that caused `star too small` / `ripple too large` drift.
   - Trail `none` hard-disable, line-trail diagnostics, and anti-origin-connector guards are in place.
   - Core effects contract now also enforces trail visibility semantics on macOS:
     - `trail=line` must increase active trail overlay window count in overlay probe.

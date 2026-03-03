@@ -8,7 +8,7 @@
 #include <d2d1.h>
 #include <dwrite.h>
 
-#include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Core/Effects/TextEffectCompute.h"
 #include "MouseFx/Core/Protocol/InputTypes.h"
 
 namespace mousefx {
@@ -25,7 +25,7 @@ public:
     bool IsActive() const { return active_; }
     uint64_t StartTick() const { return startTick_; }
 
-    void StartAt(const ScreenPoint& pt, const std::wstring& text, Argb color, const TextConfig& config);
+    void StartAtComputed(const ScreenPoint& anchorPoint, const TextEffectRenderCommand& command);
 
 private:
     static constexpr UINT_PTR kTimerId = 4;
@@ -33,9 +33,9 @@ private:
 
     LRESULT OnMessage(UINT msg, WPARAM wParam, LPARAM lParam);
     void OnTick();
-    void RenderFrame(float t);
+    void RenderFrame(const TextEffectRenderFrame& frame);
     bool RenderEmojiBaseFrame();
-    void PresentEmojiCachedFrame(float t);
+    void PresentEmojiCachedFrame(const TextEffectRenderFrame& frame);
     void PresentBackbuffer(int left, int top, BYTE alpha);
     void EnsureSurface(int w, int h);
     void DestroySurface();
@@ -49,13 +49,8 @@ private:
     HWND hwnd_ = nullptr;
     bool active_ = false;
 
-    TextConfig config_{};
-    std::wstring text_;
-    Argb color_{};
+    TextEffectRenderCommand command_{};
     uint64_t startTick_ = 0;
-    float driftX_ = 0.0f;
-    float swayFreq_ = 1.0f;
-    float swayAmp_ = 0.0f;
     bool emojiColorMode_ = false;
     bool emojiFrameReady_ = false;
     int baseLeft_ = 0;

@@ -8,6 +8,7 @@
 #include "Platform/macos/Effects/MacosHoverPulseEffect.h"
 #include "Platform/macos/Effects/MacosScrollPulseEffect.h"
 #include "Platform/macos/Effects/MacosTrailPulseEffect.h"
+#include "MouseFx/Effects/TextEffect.h"
 
 namespace mousefx::macos_effect_registry::detail {
 namespace {
@@ -18,6 +19,10 @@ std::unique_ptr<IMouseEffect> CreateClick(const std::string& type, const EffectC
         config.theme,
         macos_effect_profile::ResolveClickRenderProfile(config),
         config.textClick);
+}
+
+std::unique_ptr<IMouseEffect> CreateClickText(const std::string&, const EffectConfig& config) {
+    return std::make_unique<TextEffect>(config.textClick, config.theme);
 }
 
 std::unique_ptr<IMouseEffect> CreateTrail(const std::string& type, const EffectConfig& config) {
@@ -62,7 +67,7 @@ const std::array<CategoryRegistryEntry, CategoryIndex(EffectCategory::Count)>& R
         click.fallbackCreator = &CreateClick;
         click.typedCreators.emplace("ripple", &CreateClick);
         click.typedCreators.emplace("star", &CreateClick);
-        click.typedCreators.emplace("text", &CreateClick);
+        click.typedCreators.emplace("text", &CreateClickText);
 
         auto& trail = result[CategoryIndex(EffectCategory::Trail)];
         trail.fallbackCreator = &CreateTrail;

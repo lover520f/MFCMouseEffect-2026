@@ -22,6 +22,12 @@ struct ClickRenderProfile {
     double textDurationSec = 0.36;
     int closePaddingMs = 60;
     double baseOpacity = 0.95;
+    double rippleStartRadiusPx = 0.0;
+    double rippleEndRadiusPx = 40.0;
+    double rippleStrokeWidthPx = 2.5;
+    double starStartRadiusPx = 5.0;
+    double starEndRadiusPx = 35.0;
+    double starStrokeWidthPx = 2.0;
     ClickButtonColorProfile leftButton{};
     ClickButtonColorProfile rightButton{0x50FFB74Du, 0xFFFF6F00u, 0x55FF6F00u};
     ClickButtonColorProfile middleButton{0x5033D17Au, 0xFF0B8043u, 0x550B8043u};

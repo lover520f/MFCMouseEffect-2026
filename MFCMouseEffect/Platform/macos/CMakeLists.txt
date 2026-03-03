@@ -115,6 +115,7 @@ endif()
 
 add_library(mfx_shell_macos STATIC
     "${MFX_PROJECT_ROOT}/MouseFx/Core/Effects/ClickEffectCompute.cpp"
+    "${MFX_PROJECT_ROOT}/MouseFx/Core/Effects/TextEffectCompute.cpp"
     "${MFX_PROJECT_ROOT}/MouseFx/Core/Effects/TrailEffectCompute.cpp"
     "${MFX_PROJECT_ROOT}/MouseFx/Core/Effects/ScrollEffectCompute.cpp"
     "${MFX_PROJECT_ROOT}/MouseFx/Core/Effects/HoverEffectCompute.cpp"

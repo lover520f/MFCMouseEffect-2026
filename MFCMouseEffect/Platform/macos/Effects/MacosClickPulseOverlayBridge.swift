@@ -54,6 +54,13 @@ private func mfxColorFromArgb(_ argb: UInt32) -> NSColor {
     return NSColor(calibratedRed: red, green: green, blue: blue, alpha: alpha)
 }
 
+private func mfxColorFromArgb(_ argb: UInt32, alphaScale: CGFloat) -> NSColor {
+    let color = mfxColorFromArgb(argb)
+    return color.withAlphaComponent(
+        mfxClamp(color.alphaComponent * alphaScale, min: 0.0, max: 1.0)
+    )
+}
+
 private func mfxCreateClickStarPath(_ bounds: CGRect, points: Int) -> CGPath {
     let safePoints = max(4, points)
     let cx = bounds.midX
@@ -110,25 +117,53 @@ private func mfxMakeScaleFadeAnimationGroup(
 private func mfxMakeTextFloatAnimationGroup(
     fromOpacity: CGFloat,
     duration: Double,
-    floatDistancePx: CGFloat
+    floatDistancePx: CGFloat,
+    referenceSize: CGFloat
 ) -> CAAnimationGroup {
     let clampedDuration = max(0.05, duration)
-    let clampedDistance = max(0.0, floatDistancePx)
+    let maxDistance = max(12.0, referenceSize * 0.72)
+    let clampedDistance = mfxClamp(floatDistancePx, min: 4.0, max: maxDistance)
+    let horizontalDrift = CGFloat.random(in: -(referenceSize * 0.14)...(referenceSize * 0.14))
 
-    let move = CABasicAnimation(keyPath: "transform.translation.y")
-    move.fromValue = 0.0
-    move.toValue = clampedDistance
-    move.duration = clampedDuration
-    move.timingFunction = CAMediaTimingFunction(name: .easeOut)
+    let moveY = CAKeyframeAnimation(keyPath: "transform.translation.y")
+    moveY.values = [0.0, clampedDistance * 0.58, clampedDistance]
+    moveY.keyTimes = [0.0, 0.72, 1.0]
+    moveY.duration = clampedDuration
+    moveY.timingFunctions = [
+        CAMediaTimingFunction(name: .easeOut),
+        CAMediaTimingFunction(name: .easeOut),
+    ]
 
-    let fade = CABasicAnimation(keyPath: "opacity")
-    fade.fromValue = mfxClamp(fromOpacity, min: 0.0, max: 1.0)
-    fade.toValue = 0.0
+    let moveX = CAKeyframeAnimation(keyPath: "transform.translation.x")
+    moveX.values = [0.0, horizontalDrift * 0.42, horizontalDrift]
+    moveX.keyTimes = [0.0, 0.72, 1.0]
+    moveX.duration = clampedDuration
+    moveX.timingFunctions = [
+        CAMediaTimingFunction(name: .easeOut),
+        CAMediaTimingFunction(name: .easeOut),
+    ]
+
+    let scale = CAKeyframeAnimation(keyPath: "transform.scale")
+    scale.values = [0.86, 1.10, 1.0]
+    scale.keyTimes = [0.0, 0.28, 1.0]
+    scale.duration = clampedDuration
+    scale.timingFunctions = [
+        CAMediaTimingFunction(name: .easeOut),
+        CAMediaTimingFunction(name: .easeInEaseOut),
+    ]
+
+    let fade = CAKeyframeAnimation(keyPath: "opacity")
+    let clampedOpacity = mfxClamp(fromOpacity, min: 0.0, max: 1.0)
+    fade.values = [clampedOpacity, clampedOpacity * 0.94, 0.0]
+    fade.keyTimes = [0.0, 0.55, 1.0]
     fade.duration = clampedDuration
-    fade.timingFunction = CAMediaTimingFunction(name: .easeIn)
+    fade.timingFunctions = [
+        CAMediaTimingFunction(name: .easeOut),
+        CAMediaTimingFunction(name: .easeIn),
+    ]
 
     let group = CAAnimationGroup()
-    group.animations = [move, fade]
+    group.animations = [moveY, moveX, scale, fade]
     group.duration = clampedDuration
     group.fillMode = .forwards
     group.isRemovedOnCompletion = false
@@ -184,8 +219,12 @@ private func mfxCreateClickPulseOverlayOnMainThread(
     normalizedType: String,
     fillArgb: UInt32,
     strokeArgb: UInt32,
+    glowArgb: UInt32,
     baseOpacity: Double,
     animationDurationSec: Double,
+    startRadiusPx: Double,
+    endRadiusPx: Double,
+    strokeWidthPx: Double,
     textLabel: String,
     textFontSizePx: Double,
     textFloatDistancePx: Double,
@@ -217,54 +256,135 @@ private func mfxCreateClickPulseOverlayOnMainThread(
     let starMode = normalizedType == "star"
     let sizeCGFloat = CGFloat(size)
     let safeInset = mfxClamp(CGFloat(inset), min: 0.0, max: max(0.0, sizeCGFloat * 0.48))
-    let safeRingSize = max(1.0, sizeCGFloat - safeInset * 2.0)
     let baseOpacityCGFloat = CGFloat(baseOpacity)
+    let geometryStartRadius = CGFloat(max(0.0, startRadiusPx))
+    let geometryEndRadius = CGFloat(max(1.0, endRadiusPx))
+    let geometryStrokeWidth = CGFloat(max(0.1, strokeWidthPx))
 
-    if !textMode {
+    if !textMode && !starMode {
+        let maxRadius = max(1.0, (sizeCGFloat - safeInset * 2.0) * 0.5)
+        let endRadius = mfxClamp(geometryEndRadius, min: 1.0, max: maxRadius)
+        let startRadius = mfxClamp(geometryStartRadius, min: 0.0, max: max(0.0, endRadius - 1.0))
+        let ringFrame = CGRect(
+            x: (sizeCGFloat - endRadius * 2.0) * 0.5,
+            y: (sizeCGFloat - endRadius * 2.0) * 0.5,
+            width: endRadius * 2.0,
+            height: endRadius * 2.0
+        )
+        let ringPath = CGPath(ellipseIn: ringFrame, transform: nil)
+        let ringStrokeWidth = mfxClamp(
+            geometryStrokeWidth,
+            min: 0.6,
+            max: max(0.8, endRadius * 0.55)
+        )
+        let startScale = mfxClamp(
+            startRadius / max(1.0, endRadius),
+            min: 0.03,
+            max: 1.0
+        )
+
         let base = CAShapeLayer()
         base.frame = content.bounds
-        base.path = CGPath(
-            ellipseIn: CGRect(x: safeInset, y: safeInset, width: safeRingSize, height: safeRingSize),
-            transform: nil
-        )
-        base.fillColor = mfxColorFromArgb(fillArgb).cgColor
-        base.strokeColor = mfxColorFromArgb(strokeArgb).cgColor
-        base.lineWidth = mfxScaleMetric(
-            sizeCGFloat,
-            2.4,
-            160.0,
-            1.2,
-            4.8
-        )
+        base.path = ringPath
+        base.fillColor = mfxColorFromArgb(
+            fillArgb,
+            alphaScale: mfxClamp(baseOpacityCGFloat, min: 0.0, max: 1.0)
+        ).cgColor
+        base.strokeColor = mfxColorFromArgb(
+            strokeArgb,
+            alphaScale: mfxClamp(baseOpacityCGFloat, min: 0.0, max: 1.0)
+        ).cgColor
+        base.lineWidth = ringStrokeWidth
+        base.lineCap = .round
         base.opacity = Float(mfxResolveOpacity(baseOpacityCGFloat, 0.0, 0.0))
         contentLayer.addSublayer(base)
 
-        let group = mfxMakeScaleFadeAnimationGroup(
-            fromScale: 0.15,
+        let coreGroup = mfxMakeScaleFadeAnimationGroup(
+            fromScale: startScale,
             toScale: 1.0,
             fromOpacity: baseOpacityCGFloat,
             duration: animationDurationSec
         )
-        base.add(group, forKey: "mfx_click_pulse")
+        base.add(coreGroup, forKey: "mfx_click_pulse")
+
+        for index in 0..<3 {
+            let glow = CAShapeLayer()
+            glow.frame = content.bounds
+            glow.path = ringPath
+            glow.fillColor = NSColor.clear.cgColor
+            glow.strokeColor = mfxColorFromArgb(
+                glowArgb,
+                alphaScale: mfxClamp(
+                    baseOpacityCGFloat * max(0.08, 0.34 - CGFloat(index) * 0.08),
+                    min: 0.0,
+                    max: 1.0
+                )
+            ).cgColor
+            glow.lineWidth = ringStrokeWidth + mfxScaleMetric(
+                sizeCGFloat,
+                CGFloat(10 + index * 4),
+                160.0,
+                5.0,
+                22.0
+            )
+            glow.opacity = Float(mfxResolveOpacity(baseOpacityCGFloat, -0.28, 0.03))
+            glow.lineCap = .round
+            contentLayer.addSublayer(glow)
+
+            let glowGroup = mfxMakeScaleFadeAnimationGroup(
+                fromScale: startScale,
+                toScale: 1.0,
+                fromOpacity: mfxResolveOpacity(baseOpacityCGFloat, -0.1, 0.04),
+                duration: animationDurationSec
+            )
+            glow.add(glowGroup, forKey: "mfx_click_pulse_glow_\(index)")
+        }
     }
 
     if starMode {
+        let maxRadius = max(1.0, (sizeCGFloat - safeInset * 2.0) * 0.5)
+        let endRadius = mfxClamp(geometryEndRadius, min: 1.0, max: maxRadius)
+        let startRadius = mfxClamp(geometryStartRadius, min: 0.0, max: max(0.0, endRadius - 1.0))
         let star = CAShapeLayer()
         star.frame = content.bounds
-        let starInset = mfxScaleMetric(sizeCGFloat, 38.0, 160.0, 18.0, 74.0)
-        let starBounds = content.bounds.insetBy(dx: starInset, dy: starInset)
+        let starBounds = CGRect(
+            x: (sizeCGFloat - endRadius * 2.0) * 0.5,
+            y: (sizeCGFloat - endRadius * 2.0) * 0.5,
+            width: endRadius * 2.0,
+            height: endRadius * 2.0
+        )
         star.path = mfxCreateClickStarPath(starBounds, points: 5)
-        star.fillColor = mfxColorFromArgb(strokeArgb).cgColor
-        star.strokeColor = mfxColorFromArgb(strokeArgb).cgColor
-        star.lineWidth = mfxScaleMetric(sizeCGFloat, 1.0, 160.0, 0.8, 2.2)
+        star.fillColor = mfxColorFromArgb(
+            fillArgb,
+            alphaScale: mfxClamp(baseOpacityCGFloat, min: 0.0, max: 1.0)
+        ).cgColor
+        star.strokeColor = mfxColorFromArgb(
+            strokeArgb,
+            alphaScale: mfxClamp(baseOpacityCGFloat, min: 0.0, max: 1.0)
+        ).cgColor
+        star.lineWidth = mfxClamp(geometryStrokeWidth, min: 0.6, max: max(1.0, endRadius * 0.48))
         star.opacity = Float(mfxResolveOpacity(baseOpacityCGFloat, 0.03, 0.0))
+        star.lineJoin = .round
         contentLayer.addSublayer(star)
+
+        let starGroup = mfxMakeScaleFadeAnimationGroup(
+            fromScale: mfxClamp(
+                startRadius / max(1.0, endRadius),
+                min: 0.03,
+                max: 1.0
+            ),
+            toScale: 1.0,
+            fromOpacity: baseOpacityCGFloat,
+            duration: animationDurationSec
+        )
+        star.add(starGroup, forKey: "mfx_click_star")
     }
 
     if textMode {
         let text = CATextLayer()
-        text.frame = CGRect(x: 0.0, y: 0.0, width: sizeCGFloat, height: sizeCGFloat)
         text.alignmentMode = .center
+        text.isWrapped = false
+        text.truncationMode = .none
         text.foregroundColor = mfxColorFromArgb(strokeArgb).cgColor
         text.contentsScale = max(1.0, contentLayer.contentsScale)
         let fontSize = mfxClamp(
@@ -273,7 +393,39 @@ private func mfxCreateClickPulseOverlayOnMainThread(
             max: max(10.0, sizeCGFloat * 0.92)
         )
         text.fontSize = fontSize
-        text.font = mfxResolveTextFont(textFontFamily, fontSize, textEmoji).fontName as CFTypeRef
+        let textFont = mfxResolveTextFont(textFontFamily, fontSize, textEmoji)
+        text.font = textFont.fontName as CFTypeRef
+        let attributed = NSAttributedString(
+            string: textLabel,
+            attributes: [.font: textFont]
+        )
+        var bounds = attributed.boundingRect(
+            with: CGSize(width: max(8.0, sizeCGFloat * 0.94), height: max(8.0, sizeCGFloat * 0.92)),
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            context: nil
+        ).integral
+        if bounds.width <= 0.0 {
+            bounds.size.width = fontSize
+        }
+        if bounds.height <= 0.0 {
+            bounds.size.height = fontSize * 1.2
+        }
+        let textWidth = mfxClamp(
+            bounds.size.width + fontSize * 0.18,
+            min: max(10.0, fontSize * 0.92),
+            max: max(12.0, sizeCGFloat * 0.96)
+        )
+        let textHeight = mfxClamp(
+            bounds.size.height + fontSize * 0.18,
+            min: max(10.0, fontSize * 0.88),
+            max: max(12.0, sizeCGFloat * 0.96)
+        )
+        text.frame = CGRect(
+            x: (sizeCGFloat - textWidth) * 0.5,
+            y: (sizeCGFloat - textHeight) * 0.5,
+            width: textWidth,
+            height: textHeight
+        )
         text.string = textLabel
         text.opacity = Float(mfxResolveOpacity(baseOpacityCGFloat, 0.0, 0.0))
         contentLayer.addSublayer(text)
@@ -281,7 +433,8 @@ private func mfxCreateClickPulseOverlayOnMainThread(
         let textGroup = mfxMakeTextFloatAnimationGroup(
             fromOpacity: baseOpacityCGFloat,
             duration: animationDurationSec,
-            floatDistancePx: CGFloat(textFloatDistancePx)
+            floatDistancePx: CGFloat(textFloatDistancePx),
+            referenceSize: sizeCGFloat
         )
         text.add(textGroup, forKey: "mfx_click_text_float")
     }
@@ -300,8 +453,12 @@ public func mfx_macos_click_pulse_overlay_create_v1(
     _ normalizedTypeUtf8: UnsafePointer<CChar>?,
     _ fillArgb: UInt32,
     _ strokeArgb: UInt32,
+    _ glowArgb: UInt32,
     _ baseOpacity: Double,
     _ animationDurationSec: Double,
+    _ startRadiusPx: Double,
+    _ endRadiusPx: Double,
+    _ strokeWidthPx: Double,
     _ textLabelUtf8: UnsafePointer<CChar>?,
     _ textFontSizePx: Double,
     _ textFloatDistancePx: Double,
@@ -326,8 +483,12 @@ public func mfx_macos_click_pulse_overlay_create_v1(
                     normalizedType: normalizedType,
                     fillArgb: fillArgb,
                     strokeArgb: strokeArgb,
+                    glowArgb: glowArgb,
                     baseOpacity: baseOpacity,
                     animationDurationSec: animationDurationSec,
+                    startRadiusPx: startRadiusPx,
+                    endRadiusPx: endRadiusPx,
+                    strokeWidthPx: strokeWidthPx,
                     textLabel: textLabel,
                     textFontSizePx: textFontSizePx,
                     textFloatDistancePx: textFloatDistancePx,
@@ -353,8 +514,12 @@ public func mfx_macos_click_pulse_overlay_create_v1(
                     normalizedType: normalizedType,
                     fillArgb: fillArgb,
                     strokeArgb: strokeArgb,
+                    glowArgb: glowArgb,
                     baseOpacity: baseOpacity,
                     animationDurationSec: animationDurationSec,
+                    startRadiusPx: startRadiusPx,
+                    endRadiusPx: endRadiusPx,
+                    strokeWidthPx: strokeWidthPx,
                     textLabel: textLabel,
                     textFontSizePx: textFontSizePx,
                     textFloatDistancePx: textFloatDistancePx,
