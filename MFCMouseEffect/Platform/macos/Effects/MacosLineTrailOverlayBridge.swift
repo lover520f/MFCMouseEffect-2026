@@ -130,6 +130,14 @@ private func mfxComputeTubesNodeFollow(
     _ outNextY: UnsafeMutablePointer<Double>?
 )
 
+@_silgen_name("mfx_compute_trail_chromatic_hue_deg_v1")
+private func mfxComputeTrailChromaticHueDeg(
+    _ nowMs: UInt64,
+    _ styleKind: Int32,
+    _ segmentIndex: UInt32,
+    _ laneIndex: UInt32
+) -> Double
+
 @MainActor
 private final class MfxLineTrailState: NSObject {
     private struct Point {
@@ -638,14 +646,21 @@ private final class MfxLineTrailState: NSObject {
 
             let fadeScale = tubeFadeAlpha / 255.0
             let frameTime = CGFloat(Double(nowMs) * 0.005)
-            let chromaBaseHue = CGFloat(fmod(Double(nowMs) * 0.2, 360.0))
             for chainIndex in 0..<tubeChains.count {
                 let chain = tubeChains[chainIndex]
                 let nodesCount = max(1, chain.nodes.count)
                 var chainColor = chain.color
                 if config.chromatic {
+                    let hue = CGFloat(
+                        mfxComputeTrailChromaticHueDeg(
+                            nowMs,
+                            4,
+                            0,
+                            UInt32(chainIndex)
+                        )
+                    )
                     chainColor = Self.hslToRgbColor(
-                        hueDegrees: fmod(chromaBaseHue + CGFloat(chainIndex) * 30.0, 360.0),
+                        hueDegrees: hue,
                         saturation: 0.9,
                         lightness: 0.6,
                         alpha: 1.0
@@ -767,7 +782,14 @@ private final class MfxLineTrailState: NSObject {
             case .line:
                 var c = strokeColor
                 if config.chromatic {
-                    let hue = CGFloat(fmod(Double(nowMs) * 0.10 + Double(i) * 12.0, 360.0))
+                    let hue = CGFloat(
+                        mfxComputeTrailChromaticHueDeg(
+                            nowMs,
+                            0,
+                            UInt32(i),
+                            0
+                        )
+                    )
                     c = Self.hslToRgbColor(hueDegrees: hue, saturation: 0.85, lightness: 0.60, alpha: 1.0)
                 }
                 let p = CGMutablePath()
@@ -792,7 +814,14 @@ private final class MfxLineTrailState: NSObject {
                 var coreColor = strokeColor
                 var glowColor = fillColor
                 if config.chromatic {
-                    let hue = CGFloat(fmod(Double(nowMs) * 0.18 + Double(i) * 6.0, 360.0))
+                    let hue = CGFloat(
+                        mfxComputeTrailChromaticHueDeg(
+                            nowMs,
+                            1,
+                            UInt32(i),
+                            0
+                        )
+                    )
                     coreColor = Self.hslToRgbColor(hueDegrees: hue, saturation: 0.95, lightness: 0.62, alpha: 1.0)
                     glowColor = Self.hslToRgbColor(hueDegrees: hue, saturation: 0.95, lightness: 0.58, alpha: 1.0)
                 }
@@ -868,7 +897,14 @@ private final class MfxLineTrailState: NSObject {
                 var cGlow = Self.hslToRgbColor(hueDegrees: 190.0, saturation: 0.9, lightness: 0.62, alpha: 1.0)
                 var cCore = NSColor.white
                 if config.chromatic {
-                    let hue = CGFloat(fmod(Double(nowMs) * 0.55 + Double(i) * 18.0, 360.0))
+                    let hue = CGFloat(
+                        mfxComputeTrailChromaticHueDeg(
+                            nowMs,
+                            2,
+                            UInt32(i),
+                            0
+                        )
+                    )
                     cGlow = Self.hslToRgbColor(hueDegrees: hue, saturation: 1.0, lightness: 0.60, alpha: 1.0)
                     cCore = Self.hslToRgbColor(hueDegrees: fmod(hue + 30.0, 360.0), saturation: 1.0, lightness: 0.75, alpha: 1.0)
                 }
@@ -932,7 +968,14 @@ private final class MfxLineTrailState: NSObject {
                 )
                 var meteorColor = fillColor
                 if config.chromatic {
-                    let hue = CGFloat(fmod(Double(nowMs) * 0.15 + Double(i) * 8.0, 360.0))
+                    let hue = CGFloat(
+                        mfxComputeTrailChromaticHueDeg(
+                            nowMs,
+                            3,
+                            UInt32(i),
+                            0
+                        )
+                    )
                     meteorColor = Self.hslToRgbColor(hueDegrees: hue, saturation: 0.9, lightness: 0.6, alpha: 1.0)
                 } else {
                     meteorColor = NSColor(calibratedRed: 1.0, green: 220.0 / 255.0, blue: 160.0 / 255.0, alpha: 1.0)
@@ -977,7 +1020,14 @@ private final class MfxLineTrailState: NSObject {
                 )
                 var particleColor = fillColor
                 if config.chromatic {
-                    let hue = CGFloat(fmod(Double(nowMs) * 0.20 + Double(i) * 10.0, 360.0))
+                    let hue = CGFloat(
+                        mfxComputeTrailChromaticHueDeg(
+                            nowMs,
+                            5,
+                            UInt32(i),
+                            0
+                        )
+                    )
                     particleColor = Self.hslToRgbColor(hueDegrees: hue, saturation: 0.92, lightness: 0.64, alpha: 1.0)
                 }
                 let particleCenter = end

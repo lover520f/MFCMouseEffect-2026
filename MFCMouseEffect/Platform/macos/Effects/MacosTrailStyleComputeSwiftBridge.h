@@ -83,6 +83,12 @@ void mfx_compute_tubes_node_follow_v1(
     double* outNextX,
     double* outNextY);
 
+double mfx_compute_trail_chromatic_hue_deg_v1(
+    uint64_t nowMs,
+    int32_t styleKind,
+    uint32_t segmentIndex,
+    uint32_t laneIndex);
+
 #ifdef __cplusplus
 }
 #endif

@@ -96,4 +96,10 @@ void ComputeTubesNodeFollow(
     double* outNextX,
     double* outNextY);
 
+double ComputeTrailChromaticHueDeg(
+    uint64_t nowMs,
+    int32_t styleKind,
+    uint32_t segmentIndex,
+    uint32_t laneIndex);
+
 } // namespace mousefx::trail_style_compute

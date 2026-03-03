@@ -207,4 +207,45 @@ void ComputeTubesNodeFollow(
     }
 }
 
+double ComputeTrailChromaticHueDeg(
+    uint64_t nowMs,
+    int32_t styleKind,
+    uint32_t segmentIndex,
+    uint32_t laneIndex) {
+    const double t = static_cast<double>(nowMs);
+    const double i = static_cast<double>(segmentIndex);
+    const double lane = static_cast<double>(laneIndex);
+
+    double hue = 0.0;
+    switch (styleKind) {
+    case 0: // line
+        hue = t * 0.10 + i * 12.0;
+        break;
+    case 1: // streamer
+        hue = t * 0.18 + i * 6.0;
+        break;
+    case 2: // electric
+        hue = t * 0.55 + i * 18.0;
+        break;
+    case 3: // meteor
+        hue = t * 0.15 + i * 8.0;
+        break;
+    case 4: // tubes
+        hue = t * 0.20 + lane * 30.0;
+        break;
+    case 5: // particle
+        hue = t * 0.20 + i * 10.0;
+        break;
+    default:
+        hue = t * 0.12 + i * 10.0;
+        break;
+    }
+
+    hue = std::fmod(hue, 360.0);
+    if (hue < 0.0) {
+        hue += 360.0;
+    }
+    return hue;
+}
+
 } // namespace mousefx::trail_style_compute

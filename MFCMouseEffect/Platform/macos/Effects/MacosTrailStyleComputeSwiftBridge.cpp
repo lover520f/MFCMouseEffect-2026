@@ -174,3 +174,15 @@ void mfx_compute_tubes_node_follow_v1(
         outNextX,
         outNextY);
 }
+
+double mfx_compute_trail_chromatic_hue_deg_v1(
+    uint64_t nowMs,
+    int32_t styleKind,
+    uint32_t segmentIndex,
+    uint32_t laneIndex) {
+    return mousefx::trail_style_compute::ComputeTrailChromaticHueDeg(
+        nowMs,
+        styleKind,
+        segmentIndex,
+        laneIndex);
+}
