@@ -74,12 +74,19 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
     automationFeature_.OnMouseMove(*ctrl_, pt);
 
     IMouseEffect* trailEffect = ctrl_->GetEffect(EffectCategory::Trail);
-    const bool forceBuiltinLineTrail = (trailEffect != nullptr) &&
-        (NormalizeTrailEffectType(trailEffect->TypeName()) == "line");
+    bool forceBuiltinTrailOnMove = false;
+    if (trailEffect != nullptr) {
+        const std::string normalizedTrailType = NormalizeTrailEffectType(trailEffect->TypeName());
+        // Keep line/particle on the built-in trail lane so macOS matches the
+        // Windows trail semantics instead of being overridden by wasm move render.
+        forceBuiltinTrailOnMove =
+            (normalizedTrailType == "line") ||
+            (normalizedTrailType == "particle");
+    }
 
     bool moveRenderedByWasm = false;
     bool moveRouteActive = false;
-    if (!forceBuiltinLineTrail) {
+    if (!forceBuiltinTrailOnMove) {
         moveRouteActive = wasmFeature_.RouteMove(*ctrl_, pt, &moveRenderedByWasm);
     }
     if ((!moveRouteActive || !moveRenderedByWasm) && (trailEffect != nullptr)) {

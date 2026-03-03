@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MouseFx/Core/Effects/HoverEffectCompute.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Styles/RippleStyle.h"
 #include <cstdint>
@@ -25,6 +26,7 @@ public:
 private:
     uint64_t currentGlowId_ = 0;
     RippleStyle style_{};
+    HoverEffectProfile computeProfile_{};
     std::string type_;
     bool isChromatic_ = false;
 };

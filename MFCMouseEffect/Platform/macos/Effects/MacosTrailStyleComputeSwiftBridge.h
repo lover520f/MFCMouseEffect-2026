@@ -53,6 +53,33 @@ void mfx_compute_particle_trail_segment_metrics_v1(
     double* outHaloRadiusPx,
     double* outHaloOpacity);
 
+int mfx_compute_particle_trail_emit_count_v1(double distancePx);
+
+void mfx_compute_particle_trail_spawn_metrics_v1(
+    uint32_t* ioSeed,
+    int chromatic,
+    double globalHueDeg,
+    double* outAngleRad,
+    double* outSpeedPxPerTick,
+    double* outSizePx,
+    double* outHueDeg);
+
+void mfx_compute_particle_trail_step_metrics_v1(
+    double x,
+    double y,
+    double vx,
+    double vy,
+    double life,
+    double sizePx,
+    double dtSec,
+    double* outNextX,
+    double* outNextY,
+    double* outNextVx,
+    double* outNextVy,
+    double* outNextLife,
+    double* outRenderRadiusPx,
+    double* outRenderOpacity);
+
 void mfx_compute_tubes_node_render_metrics_v1(
     uint32_t chainIndex,
     uint32_t nodeIndex,

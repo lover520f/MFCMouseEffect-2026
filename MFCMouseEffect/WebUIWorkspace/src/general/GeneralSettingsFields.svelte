@@ -4,10 +4,10 @@
 
   export let uiLanguages = [];
   export let themes = [];
+  export let overlayTargetFpsRange = {};
   export let holdFollowModes = [];
   export let holdPresenterBackends = [];
   export let general = {};
-  export let onAction = null;
 
   const dispatch = createEventDispatcher();
 
@@ -17,38 +17,19 @@
 
   let form = normalizeGeneralState(general);
   let lastGeneralRef = general;
-  let browsePending = false;
+  $: overlayFpsMin = Number.isFinite(Number(overlayTargetFpsRange?.min))
+    ? Number(overlayTargetFpsRange.min)
+    : 0;
+  $: overlayFpsMax = Number.isFinite(Number(overlayTargetFpsRange?.max))
+    ? Number(overlayTargetFpsRange.max)
+    : 360;
+  $: overlayFpsStep = Number.isFinite(Number(overlayTargetFpsRange?.step))
+    ? Number(overlayTargetFpsRange.step)
+    : 1;
 
   $: if (general !== lastGeneralRef) {
     lastGeneralRef = general;
     form = normalizeGeneralState(general);
-  }
-
-  async function browseThemeCatalogPath() {
-    if (browsePending) {
-      return;
-    }
-    if (typeof onAction !== 'function') {
-      return;
-    }
-    browsePending = true;
-    try {
-      const response = await onAction('pickThemeCatalogRootPath', {
-        initial_path: form.theme_catalog_root_path || '',
-      });
-      if (!response || !response.ok) {
-        return;
-      }
-      if (typeof response.selected_folder_path !== 'string') {
-        return;
-      }
-      form = {
-        ...form,
-        theme_catalog_root_path: response.selected_folder_path,
-      };
-    } finally {
-      browsePending = false;
-    }
   }
 
   $: dispatch('change', toSnapshot(form));
@@ -77,27 +58,15 @@
       title="Optional path for external theme packages."
     >!</span>
   </label>
-  <div class="field-inline">
-    <input
-      id="theme_catalog_root_path"
-      type="text"
-      bind:value={form.theme_catalog_root_path}
-      data-i18n-placeholder="placeholder_theme_catalog_root_path"
-      placeholder="Optional: custom theme catalog directory" />
-    <button
-      type="button"
-      class="btn-soft"
-      on:click={browseThemeCatalogPath}
-      disabled={browsePending}
-      data-i18n="btn_theme_catalog_browse"
-      data-i18n-title="tip_theme_catalog_browse"
-      title="Pick a folder for external theme files (*.theme.json / theme.json).">
-      Browse
-    </button>
-  </div>
+  <input
+    id="theme_catalog_root_path"
+    type="text"
+    bind:value={form.theme_catalog_root_path}
+    data-i18n-placeholder="placeholder_theme_catalog_root_path"
+    placeholder="Optional: custom theme catalog directory" />
 
   <label for="hold_follow_mode" class="label-with-tip">
-    <span data-i18n="label_hold_follow_mode">Hold Tracking</span>
+    <span data-i18n="label_hold_follow_mode">Follow Strategy</span>
     <span
       class="info-badge"
       data-i18n-title="tip_hold_follow_mode"
@@ -123,21 +92,22 @@
       <option value={option.value}>{option.label}</option>
     {/each}
   </select>
+
+  <label for="overlay_target_fps" class="label-with-tip">
+    <span data-i18n="label_overlay_target_fps">Overlay Target FPS</span>
+    <span
+      class="info-badge"
+      data-i18n-title="tip_overlay_target_fps"
+      title="0 means auto (follow display max refresh). Positive value caps FPS."
+    >!</span>
+  </label>
+  <input
+    id="overlay_target_fps"
+    type="number"
+    min={overlayFpsMin}
+    max={overlayFpsMax}
+    step={overlayFpsStep}
+    bind:value={form.overlay_target_fps}
+    data-i18n-placeholder="placeholder_overlay_target_fps"
+    placeholder="0 = Auto(Max), for example 144" />
 </div>
-
-<style>
-  .field-inline {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .field-inline input {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .field-inline button {
-    white-space: nowrap;
-  }
-</style>

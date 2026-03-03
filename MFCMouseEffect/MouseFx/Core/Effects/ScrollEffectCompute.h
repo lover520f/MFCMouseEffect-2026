@@ -2,6 +2,7 @@
 
 #include "MouseFx/Core/Protocol/InputTypes.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
@@ -52,6 +53,7 @@ struct ScrollEffectRenderCommand {
 
 struct ScrollEffectInputShaperProfile {
     uint64_t emitIntervalMs = 10;
+    size_t maxActiveRipples = 12;
     uint32_t maxDurationMs = 320;
 };
 

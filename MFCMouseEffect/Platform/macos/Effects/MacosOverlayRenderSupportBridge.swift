@@ -1,6 +1,29 @@
 @preconcurrency import AppKit
 @preconcurrency import Foundation
 
+@MainActor
+private var mfxOverlayTargetFpsState: Int32 = 0
+
+private func mfxSanitizeOverlayTargetFps(_ value: Int32) -> Int32 {
+    if value <= 0 {
+        return 0
+    }
+    if value > 360 {
+        return 360
+    }
+    return value
+}
+
+@MainActor
+private func mfxReadOverlayTargetFpsOnMainThread() -> Int32 {
+    mfxOverlayTargetFpsState
+}
+
+@MainActor
+private func mfxWriteOverlayTargetFpsOnMainThread(_ value: Int32) {
+    mfxOverlayTargetFpsState = mfxSanitizeOverlayTargetFps(value)
+}
+
 private func mfxClampScale(_ value: CGFloat) -> CGFloat {
     if value < 1.0 {
         return 1.0
@@ -24,6 +47,25 @@ private func mfxResolveTargetScreenOnMainThread(_ x: Int32, _ y: Int32) -> NSScr
     }
 
     return NSScreen.main ?? screens.first
+}
+
+@MainActor
+private func mfxResolveMaxFramesPerSecondOnMainThread(_ screen: NSScreen?) -> Int32 {
+    let fallback: Int32 = 60
+    guard let value = screen?.maximumFramesPerSecond else {
+        return fallback
+    }
+    return max(fallback, Int32(value))
+}
+
+@MainActor
+private func mfxResolveOverlayTimerIntervalMsOnMainThread(_ x: Int32, _ y: Int32) -> Int32 {
+    let targetFps = mfxReadOverlayTargetFpsOnMainThread()
+    let targetScreen = mfxResolveTargetScreenOnMainThread(x, y)
+    let screenMaxFps = mfxResolveMaxFramesPerSecondOnMainThread(targetScreen)
+    let effectiveFps = targetFps <= 0 ? screenMaxFps : max(1, min(targetFps, screenMaxFps))
+    let intervalMs = Int((1000.0 / Double(max(1, effectiveFps))).rounded())
+    return Int32(max(4, min(intervalMs, 1000)))
 }
 
 @MainActor
@@ -164,6 +206,39 @@ public func mfx_macos_overlay_show_window_v1(_ windowHandle: UnsafeMutableRawPoi
             mfxShowOverlayWindowOnMainThread(windowHandleBits)
         }
     }
+}
+
+@_cdecl("mfx_macos_overlay_set_target_fps_v1")
+public func mfx_macos_overlay_set_target_fps_v1(_ targetFps: Int32) {
+    if Thread.isMainThread {
+        MainActor.assumeIsolated {
+            mfxWriteOverlayTargetFpsOnMainThread(targetFps)
+        }
+        return
+    }
+
+    DispatchQueue.main.sync {
+        MainActor.assumeIsolated {
+            mfxWriteOverlayTargetFpsOnMainThread(targetFps)
+        }
+    }
+}
+
+@_cdecl("mfx_macos_overlay_timer_interval_ms_v1")
+public func mfx_macos_overlay_timer_interval_ms_v1(_ x: Int32, _ y: Int32) -> Int32 {
+    if Thread.isMainThread {
+        return MainActor.assumeIsolated {
+            mfxResolveOverlayTimerIntervalMsOnMainThread(x, y)
+        }
+    }
+
+    var interval: Int32 = 16
+    DispatchQueue.main.sync {
+        interval = MainActor.assumeIsolated {
+            mfxResolveOverlayTimerIntervalMsOnMainThread(x, y)
+        }
+    }
+    return interval
 }
 
 @_cdecl("mfx_macos_overlay_resolve_screen_frame_v1")

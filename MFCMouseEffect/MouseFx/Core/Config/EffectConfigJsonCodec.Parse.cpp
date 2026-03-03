@@ -13,6 +13,8 @@ void ApplyRootToConfig(const nlohmann::json& root, EffectConfig& config) {
     config.theme = parse_internal::GetOr<std::string>(root, keys::kTheme, config.theme);
     config.themeCatalogRootPath = TrimAscii(
         parse_internal::GetOr<std::string>(root, keys::kThemeCatalogRootPath, config.themeCatalogRootPath));
+    config.overlayTargetFps = config_internal::SanitizeOverlayTargetFps(
+        parse_internal::GetOr<int>(root, keys::kOverlayTargetFps, config.overlayTargetFps));
     config.uiLanguage = parse_internal::GetOr<std::string>(root, keys::kUiLanguage, config.uiLanguage);
     config.holdFollowMode = config_internal::NormalizeHoldFollowMode(
         parse_internal::GetOr<std::string>(root, keys::kHoldFollowMode, config.holdFollowMode));

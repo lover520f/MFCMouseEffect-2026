@@ -9,10 +9,20 @@
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
+#include "Platform/PlatformTarget.h"
+#if MFX_PLATFORM_MACOS
+#include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
+#endif
 
 #include <cmath>
 
 namespace mousefx {
+
+void AppController::ApplyOverlayTargetFpsToPlatform() {
+#if MFX_PLATFORM_MACOS
+    macos_overlay_support::SetOverlayTargetFps(config_.overlayTargetFps);
+#endif
+}
 
 void AppController::SetUiLanguage(const std::string& lang) {
     if (lang.empty()) return;
@@ -53,6 +63,15 @@ void AppController::SetInputAutomationConfig(const InputAutomationConfig& cfg) {
     config_.automation = config_internal::SanitizeInputAutomationConfig(cfg);
     inputAutomationEngine_.UpdateConfig(config_.automation);
     PersistConfig();
+}
+
+void AppController::SetOverlayTargetFps(int targetFps) {
+    const int normalized = config_internal::SanitizeOverlayTargetFps(targetFps);
+    if (config_.overlayTargetFps != normalized) {
+        config_.overlayTargetFps = normalized;
+        PersistConfig();
+    }
+    ApplyOverlayTargetFpsToPlatform();
 }
 
 void AppController::SetTrailTuning(const std::string& style, const TrailProfilesConfig& profiles, const TrailRendererParamsConfig& params) {
@@ -102,6 +121,7 @@ void AppController::ResetConfig() {
     ReloadThemeCatalogFromRootPath(config_.themeCatalogRootPath);
     NormalizeConfiguredThemeName();
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
+    ApplyOverlayTargetFpsToPlatform();
 
     // 2. Save it to disk
     PersistConfig();
@@ -126,6 +146,7 @@ void AppController::ReloadConfigFromDisk() {
     ReloadThemeCatalogFromRootPath(config_.themeCatalogRootPath);
     const bool themeNormalized = NormalizeConfiguredThemeName();
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
+    ApplyOverlayTargetFpsToPlatform();
     inputAutomationEngine_.UpdateConfig(config_.automation);
     ApplyWasmConfigToHost(true);
 

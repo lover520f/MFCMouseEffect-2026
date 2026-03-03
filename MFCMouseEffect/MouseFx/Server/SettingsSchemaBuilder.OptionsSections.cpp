@@ -43,6 +43,12 @@ void AppendSettingsSchemaOptionsSections(const EffectConfig& config, json* out) 
         {{"value","zh-CN"},{"label", LabelByLang(L"\u4e2d\u6587", L"Chinese", lang)}},
         {{"value","en-US"},{"label", LabelByLang(L"\u82f1\u6587", L"English", lang)}}
     });
+    (*out)["overlay_target_fps_range"] = {
+        {"min", 0},
+        {"max", 360},
+        {"step", 1},
+        {"default", 0},
+    };
 
     json themeOptions = json::array();
     for (const auto& theme : GetThemeOptions()) {
@@ -64,7 +70,7 @@ void AppendSettingsSchemaOptionsSections(const EffectConfig& config, json* out) 
     };
 
     (*out)["hold_follow_modes"] = json::array({
-        {{"value","precise"},{"label", LabelByLang(L"\u7cbe\u51c6\u8ddf\u968f\uff08\u4f4e\u5ef6\u8fdf\uff09", L"Precise (Low Latency)", lang)}},
+        {{"value","precise"},{"label", LabelByLang(L"\u7cbe\u51c6\u8ddf\u968f\uff08\u7a33\u5b9a\u4f18\u5148\uff0c\u53ef\u80fd\u6709\u5ef6\u8fdf\uff09", L"Precise (Stability First, May Lag)", lang)}},
         {{"value","smooth"},{"label", LabelByLang(L"\u5149\u6807\u4f18\u5148\uff08\u63a8\u8350\uff09", L"Cursor Priority (Recommended)", lang)}},
         {{"value","efficient"},{"label", LabelByLang(L"\u6027\u80fd\u4f18\u5148\uff08CPU\u53cb\u597d\uff09", L"Performance First (CPU Saver)", lang)}}
     });

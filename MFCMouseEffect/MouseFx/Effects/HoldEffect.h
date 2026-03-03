@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MouseFx/Core/Effects/HoldEffectCompute.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Interfaces/IHoldRuntime.h"
 #include "MouseFx/Styles/RippleStyle.h"
@@ -31,26 +32,15 @@ public:
     void OnCommand(const std::string& cmd, const std::string& args) override;
 
 private:
-    enum class FollowMode : uint8_t {
-        Precise = 0,
-        Smooth,
-        Efficient,
-    };
-
-    static FollowMode ParseFollowMode(const std::string& mode);
-    static bool IsSamePoint(const ScreenPoint& a, const ScreenPoint& b);
-
     ScreenPoint holdPoint_{};
     int holdButton_ = 0;
 
     std::string type_;
     std::unique_ptr<IHoldRuntime> runtime_;
     RippleStyle style_{};
-    FollowMode followMode_ = FollowMode::Smooth;
-    bool hasSmoothedPoint_ = false;
-    float smoothedX_ = 0.0f;
-    float smoothedY_ = 0.0f;
-    uint64_t lastEfficientPosMs_ = 0;
+    HoldEffectProfile computeProfile_{};
+    HoldEffectFollowMode followMode_ = HoldEffectFollowMode::Smooth;
+    HoldEffectFollowState followState_{};
 };
 
 } // namespace mousefx

@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "HoverEffect.h"
+#include "MouseFx/Effects/HoverEffectCommandAdapter.h"
+#include "MouseFx/Core/Effects/HoverEffectCompute.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Renderers/Hover/CrosshairRenderer.h"
@@ -9,6 +11,7 @@ namespace mousefx {
 
 HoverEffect::HoverEffect(const std::string& themeName, const std::string& type) : type_(type) {
     style_ = GetThemePalette(themeName).hover;
+    computeProfile_ = hover_effect_adapter::BuildHoverProfileFromStyle(style_);
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
 }
 
@@ -27,23 +30,17 @@ void HoverEffect::Shutdown() {
 void HoverEffect::OnHoverStart(const ScreenPoint& pt) {
     if (currentGlowId_ != 0) return;
 
-    ClickEvent ev{};
-    ev.pt = pt;
-    ev.button = MouseButton::Left;
-
-    RenderParams params;
-    params.loop = true;
-    params.intensity = 1.0f;
-
-    params.intensity = 1.0f;
-
-    RippleStyle finalStyle = style_;
-    if (isChromatic_) {
-        finalStyle = MakeRandomStyle(style_);
-    }
+    const RippleStyle runtimeStyle = isChromatic_ ? MakeRandomStyle(style_) : style_;
+    const HoverEffectProfile runtimeProfile = isChromatic_
+        ? hover_effect_adapter::BuildHoverProfileFromStyle(runtimeStyle)
+        : computeProfile_;
+    const HoverEffectRenderCommand command = ComputeHoverEffectRenderCommand(pt, type_, runtimeProfile);
+    const ClickEvent ev = hover_effect_adapter::BuildClickEventFromCommand(command);
+    const RenderParams params = hover_effect_adapter::BuildRenderParamsFromCommand();
+    const RippleStyle renderStyle = hover_effect_adapter::BuildRippleStyleFromCommand(runtimeStyle, command);
 
     std::unique_ptr<IRippleRenderer> renderer;
-    if (type_ == "tubes" || type_ == "suspension") {
+    if (command.tubesMode) {
         renderer = std::make_unique<TubesHoverRenderer>(isChromatic_);
     } else {
         // Default "glow"
@@ -51,7 +48,7 @@ void HoverEffect::OnHoverStart(const ScreenPoint& pt) {
     }
 
     currentGlowId_ = OverlayHostService::Instance().ShowContinuousRipple(
-        ev, finalStyle, std::move(renderer), params);
+        ev, renderStyle, std::move(renderer), params);
 }
 
 void HoverEffect::OnHoverEnd() {

@@ -101,6 +101,34 @@ float ResolveTrailLineWidthFloorPx(const std::string& normalizedType) {
     return 2.4f;
 }
 
+IdleFadeParams ResolveTrailIdleFadeParams(
+    const std::string& normalizedType,
+    const IdleFadeParams& configured) {
+    IdleFadeParams resolved{};
+    int defaultStartMs = 60;
+    int defaultEndMs = 220;
+    if (normalizedType == "streamer") {
+        defaultStartMs = 50;
+        defaultEndMs = 260;
+    } else if (normalizedType == "electric") {
+        defaultStartMs = 40;
+        defaultEndMs = 180;
+    } else if (normalizedType == "meteor") {
+        defaultStartMs = 50;
+        defaultEndMs = 260;
+    }
+
+    // 0 in config means "use renderer default"; keep Windows semantics here.
+    resolved.startMs = configured.startMs > 0 ? configured.startMs : defaultStartMs;
+    resolved.endMs = configured.endMs > 0 ? configured.endMs : defaultEndMs;
+    resolved.startMs = std::clamp(resolved.startMs, 0, 3000);
+    resolved.endMs = std::clamp(resolved.endMs, 0, 6000);
+    if (resolved.endMs <= resolved.startMs) {
+        resolved.endMs = resolved.startMs + 1;
+    }
+    return resolved;
+}
+
 macos_line_trail::LineTrailConfig BuildLineTrailConfig(
     const TrailEffectRenderCommand& command,
     const std::string& themeName,
@@ -139,8 +167,7 @@ macos_line_trail::LineTrailConfig BuildLineTrailConfig(
     config.electricForkChance = trailParams.electric.forkChance;
     config.meteorSparkRateScale = trailParams.meteor.sparkRateScale;
     config.meteorSparkSpeedScale = trailParams.meteor.sparkSpeedScale;
-    config.idleFade.startMs = std::max(0, trailParams.idleFade.startMs);
-    config.idleFade.endMs = std::max(config.idleFade.startMs + 1, trailParams.idleFade.endMs);
+    config.idleFade = ResolveTrailIdleFadeParams(command.normalizedType, trailParams.idleFade);
     return config;
 }
 
@@ -257,6 +284,22 @@ void MacosTrailPulseEffect::OnMouseMove(const ScreenPoint& pt) {
     }
     const TrailEffectProfile profile =
         macos_effect_compute_profile::BuildTrailProfile(renderProfile_);
+    if (normalizedType == "particle") {
+        const TrailEffectRenderCommand command = ComputeTrailEffectRenderCommand(
+            ScreenToOverlayPoint(pt),
+            moveDx,
+            moveDy,
+            normalizedType,
+            profile);
+        if (command.emit) {
+            const macos_line_trail::LineTrailConfig config =
+                BuildLineTrailConfig(command, themeName_, trailParams_, lineWidth_);
+            macos_line_trail::UpdateLineTrail(pt, config);
+            continuousTrailActive_ = true;
+        }
+        lastPoint_ = pt;
+        return;
+    }
     const double segmentStepPx = ResolveContinuousTrailStepPx(normalizedType);
     const int segmentCount = static_cast<int>(std::clamp(std::ceil(moveDistance / segmentStepPx), 1.0, 72.0));
     ScreenPoint prev = lastPoint_;

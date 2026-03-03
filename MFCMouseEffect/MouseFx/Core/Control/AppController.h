@@ -95,6 +95,8 @@ public:
     void SetHoldFollowMode(const std::string& mode);
     // Set hold presenter backend preference (auto or backend id).
     void SetHoldPresenterBackend(const std::string& backend);
+    // Set overlay target FPS (0=auto max refresh, positive value=cap).
+    void SetOverlayTargetFps(int targetFps);
 
     // Advanced tuning: trail history + renderer params (persisted).
     void SetTrailTuning(const std::string& style, const TrailProfilesConfig& profiles, const TrailRendererParamsConfig& params);
@@ -189,6 +191,7 @@ private:
     void ReapplyActiveEffect(EffectCategory category);
     std::string ResolveConfiguredClickType() const;
     void ApplyConfiguredEffects();
+    void ApplyOverlayTargetFpsToPlatform();
     bool NormalizeConfiguredThemeName();
     bool NormalizeActiveEffectTypes();
     void InitializeWasmHost();

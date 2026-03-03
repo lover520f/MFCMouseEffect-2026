@@ -211,6 +211,10 @@ struct EffectConfig {
     std::string theme = "neon";
     // Optional extra theme package root path (UTF-8 path string).
     std::string themeCatalogRootPath;
+    // Overlay target FPS for effect windows.
+    // 0 means auto (follow display max refresh).
+    // Positive value means explicit cap.
+    int overlayTargetFps = 0;
     // UI language for non-background settings window (persisted).
     // Values: "zh-CN" (default) or "en-US".
     std::string uiLanguage = "zh-CN";

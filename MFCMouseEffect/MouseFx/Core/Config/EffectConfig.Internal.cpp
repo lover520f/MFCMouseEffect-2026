@@ -31,6 +31,10 @@ std::string NormalizeHoldPresenterBackend(std::string backend) {
     return backend;
 }
 
+int SanitizeOverlayTargetFps(int targetFps) {
+    return ClampInt(targetFps, 0, 360);
+}
+
 TrailHistoryProfile SanitizeTrailHistoryProfile(TrailHistoryProfile profile) {
     if (profile.durationMs < 80) {
         profile.durationMs = 80;

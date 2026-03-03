@@ -71,11 +71,13 @@ ScrollEffectInputShaperProfile ResolveScrollInputShaperProfile(const std::string
     const std::string normalizedType = NormalizeScrollEffectType(effectType);
     if (normalizedType == "helix") {
         profile.emitIntervalMs = 14;
+        profile.maxActiveRipples = 8;
         profile.maxDurationMs = 240;
         return profile;
     }
     if (normalizedType == "twinkle") {
         profile.emitIntervalMs = 30;
+        profile.maxActiveRipples = 3;
         profile.maxDurationMs = 220;
         return profile;
     }

@@ -29,6 +29,7 @@ bool AppController::Start() {
     ReloadThemeCatalogFromRootPath(config_.themeCatalogRootPath);
     const bool themeNormalized = NormalizeConfiguredThemeName();
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);
+    ApplyOverlayTargetFpsToPlatform();
     InitializeWasmHost();
     inputIndicatorOverlay_->Initialize();
     inputIndicatorOverlay_->UpdateConfig(config_.inputIndicator);

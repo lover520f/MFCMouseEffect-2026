@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "HoldEffect.h"
+#include "MouseFx/Effects/HoldEffectCommandAdapter.h"
 
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
+#include "MouseFx/Core/Effects/HoldEffectCompute.h"
 #include "MouseFx/Effects/RippleBasedHoldRuntime.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"
 #include "MouseFx/Renderers/HoldRuntimeRegistry.h"
@@ -81,8 +83,9 @@ HoldEffect::HoldEffect(
     const std::string& followMode,
     const std::string& presenterBackend)
     : type_(type),
-      followMode_(ParseFollowMode(followMode)) {
+      followMode_(ParseHoldEffectFollowMode(followMode)) {
     style_ = GetThemePalette(themeName).hold;
+    computeProfile_ = hold_effect_adapter::BuildHoldProfileFromStyle(style_);
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(
         QuantumHaloPresenterSelection::NormalizeBackendPreference(presenterBackend));
     runtime_ = CreateRuntime(type_, themeName);
@@ -105,56 +108,43 @@ void HoldEffect::OnHoldStart(const ScreenPoint& pt, int button) {
 
     holdPoint_ = pt;
     holdButton_ = button;
-    hasSmoothedPoint_ = false;
-    lastEfficientPosMs_ = 0;
+    followState_ = HoldEffectFollowState{};
+
+    MouseButton holdMouseButton = MouseButton::Left;
+    if (button == static_cast<int>(MouseButton::Right)) {
+        holdMouseButton = MouseButton::Right;
+    } else if (button == static_cast<int>(MouseButton::Middle)) {
+        holdMouseButton = MouseButton::Middle;
+    }
+    const HoldEffectStartCommand command = ComputeHoldEffectStartCommand(
+        pt,
+        holdMouseButton,
+        type_,
+        computeProfile_);
+    const RippleStyle runtimeStyle = hold_effect_adapter::BuildRuntimeStyleFromStartCommand(style_, command);
 
     if (runtime_) {
-        runtime_->Start(style_, pt);
-        runtime_->Update(0u, pt);
+        runtime_->Start(runtimeStyle, command.overlayPoint);
+        runtime_->Update(0u, command.overlayPoint);
     }
 
     WriteHoldRuntimeSnapshot(
         "hold_start", type_,
         runtime_ ? runtime_->IsRunning() : false,
-        pt, 0);
+        command.overlayPoint, 0);
 }
 
 void HoldEffect::OnHoldUpdate(const ScreenPoint& pt, uint32_t durationMs) {
     holdPoint_ = pt;
 
-    const uint64_t nowMs = NowMs();
-    ScreenPoint outPt = pt;
-    bool shouldUpdate = false;
-
-    switch (followMode_) {
-        case FollowMode::Precise:
-            shouldUpdate = true;
-            break;
-        case FollowMode::Smooth: {
-            const float alpha = 0.35f;
-            if (!hasSmoothedPoint_) {
-                smoothedX_ = (float)pt.x;
-                smoothedY_ = (float)pt.y;
-                hasSmoothedPoint_ = true;
-            } else {
-                smoothedX_ += ((float)pt.x - smoothedX_) * alpha;
-                smoothedY_ += ((float)pt.y - smoothedY_) * alpha;
-            }
-            outPt.x = static_cast<int32_t>(std::lround(smoothedX_));
-            outPt.y = static_cast<int32_t>(std::lround(smoothedY_));
-            shouldUpdate = true;
-            break;
-        }
-        case FollowMode::Efficient:
-            if (nowMs - lastEfficientPosMs_ >= 20) {
-                lastEfficientPosMs_ = nowMs;
-                shouldUpdate = true;
-            }
-            break;
-    }
-
-    if (shouldUpdate && runtime_) {
-        runtime_->Update(static_cast<uint32_t>(durationMs), outPt);
+    const HoldEffectUpdateCommand command = ComputeHoldEffectUpdateCommand(
+        pt,
+        durationMs,
+        NowMs(),
+        followMode_,
+        &followState_);
+    if (command.emit && runtime_) {
+        runtime_->Update(command.holdMs, command.overlayPoint);
     }
 }
 
@@ -169,25 +159,13 @@ void HoldEffect::OnHoldEnd() {
         holdPoint_, 0);
 
     holdButton_ = 0;
-    hasSmoothedPoint_ = false;
-    lastEfficientPosMs_ = 0;
+    followState_ = HoldEffectFollowState{};
 }
 
 void HoldEffect::OnCommand(const std::string& cmd, const std::string& args) {
     // Commands are handled internally by the runtime.
     (void)cmd;
     (void)args;
-}
-
-HoldEffect::FollowMode HoldEffect::ParseFollowMode(const std::string& mode) {
-    std::string value = ToLowerAscii(mode);
-    if (value == "precise") return FollowMode::Precise;
-    if (value == "efficient") return FollowMode::Efficient;
-    return FollowMode::Smooth;
-}
-
-bool HoldEffect::IsSamePoint(const ScreenPoint& a, const ScreenPoint& b) {
-    return a.x == b.x && a.y == b.y;
 }
 
 } // namespace mousefx

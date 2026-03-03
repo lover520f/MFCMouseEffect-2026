@@ -114,6 +114,62 @@ void mfx_compute_particle_trail_segment_metrics_v1(
     WriteValue(outHaloOpacity, metrics.haloOpacity);
 }
 
+int mfx_compute_particle_trail_emit_count_v1(double distancePx) {
+    return mousefx::trail_style_compute::ComputeParticleEmitCount(distancePx);
+}
+
+void mfx_compute_particle_trail_spawn_metrics_v1(
+    uint32_t* ioSeed,
+    int chromatic,
+    double globalHueDeg,
+    double* outAngleRad,
+    double* outSpeedPxPerTick,
+    double* outSizePx,
+    double* outHueDeg) {
+    const mousefx::trail_style_compute::ParticleSpawnMetrics metrics =
+        mousefx::trail_style_compute::ComputeParticleSpawnMetrics(
+            ioSeed,
+            chromatic != 0,
+            globalHueDeg);
+    WriteValue(outAngleRad, metrics.angleRad);
+    WriteValue(outSpeedPxPerTick, metrics.speedPxPerTick);
+    WriteValue(outSizePx, metrics.sizePx);
+    WriteValue(outHueDeg, metrics.hueDeg);
+}
+
+void mfx_compute_particle_trail_step_metrics_v1(
+    double x,
+    double y,
+    double vx,
+    double vy,
+    double life,
+    double sizePx,
+    double dtSec,
+    double* outNextX,
+    double* outNextY,
+    double* outNextVx,
+    double* outNextVy,
+    double* outNextLife,
+    double* outRenderRadiusPx,
+    double* outRenderOpacity) {
+    const mousefx::trail_style_compute::ParticleStepMetrics metrics =
+        mousefx::trail_style_compute::ComputeParticleStepMetrics(
+            x,
+            y,
+            vx,
+            vy,
+            life,
+            sizePx,
+            dtSec);
+    WriteValue(outNextX, metrics.nextX);
+    WriteValue(outNextY, metrics.nextY);
+    WriteValue(outNextVx, metrics.nextVx);
+    WriteValue(outNextVy, metrics.nextVy);
+    WriteValue(outNextLife, metrics.nextLife);
+    WriteValue(outRenderRadiusPx, metrics.renderRadiusPx);
+    WriteValue(outRenderOpacity, metrics.renderOpacity);
+}
+
 void mfx_compute_tubes_node_render_metrics_v1(
     uint32_t chainIndex,
     uint32_t nodeIndex,

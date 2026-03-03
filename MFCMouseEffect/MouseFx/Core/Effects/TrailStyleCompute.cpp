@@ -37,6 +37,14 @@ double NextRange(uint32_t* state, double minValue, double maxValue) {
     return minValue + (maxValue - minValue) * t;
 }
 
+double WrapHue(double hue) {
+    double wrapped = std::fmod(hue, 360.0);
+    if (wrapped < 0.0) {
+        wrapped += 360.0;
+    }
+    return wrapped;
+}
+
 } // namespace
 
 StreamerSegmentMetrics ComputeStreamerSegmentMetrics(
@@ -66,6 +74,7 @@ ElectricSegmentMetrics ComputeElectricSegmentMetrics(
     const double safeLength = std::max(0.0, lengthPx);
     const double safeAmp = ClampDouble(amplitudeScale, 0.2, 3.0);
     const double safeFork = ClampDouble(forkChance, 0.0, 0.5);
+    const double forkLengthFactor = Clamp01((safeLength - 4.0) / 20.0);
 
     uint32_t seed = static_cast<uint32_t>((frameBucket & 0xFFFFFFFFu) ^
                                           (static_cast<uint64_t>(segmentIndex) * 0x9E3779B9u));
@@ -81,13 +90,15 @@ ElectricSegmentMetrics ComputeElectricSegmentMetrics(
     metrics.coreOpacity = safeLife;
     metrics.glowOpacity = Clamp01(safeLife * 0.5);
 
-    const double dynamicForkChance = safeFork * safeLife;
-    if (Next01(&seed) < dynamicForkChance) {
+    const double dynamicForkChance = safeFork * safeLife * (0.2 + 0.8 * forkLengthFactor);
+    if (forkLengthFactor > 0.05 && Next01(&seed) < dynamicForkChance) {
         metrics.emitFork = true;
         metrics.forkT = NextRange(&seed, 0.35, 0.75);
-        metrics.forkLengthPx = NextRange(&seed, 10.0, 22.0) * safeLife;
+        const double forkScale = ClampDouble(0.25 + 0.75 * forkLengthFactor, 0.25, 1.0);
+        metrics.forkLengthPx = NextRange(&seed, 10.0, 22.0) * safeLife * forkScale;
         metrics.forkWidthPx = std::max(1.0, metrics.coreWidthPx * 1.2);
-        metrics.forkOpacity = Clamp01(safeLife * 0.8);
+        // Keep electric fork visibility aligned with the Win renderer's glow alpha model.
+        metrics.forkOpacity = metrics.glowOpacity;
         metrics.forkSide = (Next01(&seed) < 0.5) ? -1 : 1;
     }
 
@@ -130,6 +141,57 @@ ParticleSegmentMetrics ComputeParticleSegmentMetrics(
         metrics.haloRadiusPx = metrics.radiusPx * (1.8 + 0.8 * energy);
         metrics.haloOpacity = Clamp01(metrics.opacity * 0.35);
     }
+    return metrics;
+}
+
+int32_t ComputeParticleEmitCount(double distancePx) {
+    if (distancePx < 1.0) {
+        return 0;
+    }
+    int32_t emitCount = static_cast<int32_t>(distancePx * 0.18) + 2;
+    emitCount = std::clamp(emitCount, int32_t{2}, int32_t{12});
+    return emitCount;
+}
+
+ParticleSpawnMetrics ComputeParticleSpawnMetrics(
+    uint32_t* state,
+    bool chromatic,
+    double globalHueDeg) {
+    ParticleSpawnMetrics metrics{};
+    constexpr double kTwoPi = 6.28318530717958647692;
+
+    metrics.angleRad = NextRange(state, 0.0, kTwoPi);
+    metrics.speedPxPerTick = NextRange(state, 0.5, 3.8);
+    metrics.sizePx = NextRange(state, 2.0, 5.9);
+    if (chromatic) {
+        metrics.hueDeg = NextRange(state, 0.0, 359.999);
+    } else {
+        metrics.hueDeg = WrapHue(globalHueDeg + NextRange(state, -20.0, 20.0));
+    }
+    return metrics;
+}
+
+ParticleStepMetrics ComputeParticleStepMetrics(
+    double x,
+    double y,
+    double vx,
+    double vy,
+    double life,
+    double sizePx,
+    double dtSec) {
+    ParticleStepMetrics metrics{};
+    const double safeDt = ClampDouble(dtSec, 0.0, 0.1);
+    const double safeLife = Clamp01(life);
+    const double safeSize = std::max(0.0, sizePx);
+
+    metrics.nextX = x + vx;
+    metrics.nextY = y + vy;
+    metrics.nextVx = vx;
+    metrics.nextVy = vy + 0.05;
+    metrics.nextLife = safeLife - safeDt * 1.5;
+    const double renderLife = Clamp01(metrics.nextLife);
+    metrics.renderRadiusPx = std::max(0.0, safeSize * renderLife * 0.5);
+    metrics.renderOpacity = renderLife;
     return metrics;
 }
 

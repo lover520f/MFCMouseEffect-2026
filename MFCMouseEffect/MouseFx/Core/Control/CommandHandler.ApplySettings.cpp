@@ -34,6 +34,9 @@ void CommandHandler::HandleApplySettings(const std::string& jsonCmd) {
     if (payload.contains("theme_catalog_root_path") && payload["theme_catalog_root_path"].is_string()) {
         controller_->SetThemeCatalogRootPath(payload["theme_catalog_root_path"].get<std::string>());
     }
+    if (payload.contains("overlay_target_fps") && payload["overlay_target_fps"].is_number_integer()) {
+        controller_->SetOverlayTargetFps(payload["overlay_target_fps"].get<int>());
+    }
 
     command_handler_apply_settings::ApplyTrailTuningSettings(payload, controller_);
 

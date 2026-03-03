@@ -458,6 +458,7 @@
         ui_language: getText('ui_language'),
         theme: getText('theme'),
         theme_catalog_root_path: getText('theme_catalog_root_path'),
+        overlay_target_fps: getNum('overlay_target_fps'),
         hold_follow_mode: getText('hold_follow_mode'),
         hold_presenter_backend: getText('hold_presenter_backend') || 'auto',
       };
@@ -531,6 +532,7 @@
       ui_language: generalState.ui_language,
       theme: generalState.theme,
       theme_catalog_root_path: generalState.theme_catalog_root_path || '',
+      overlay_target_fps: Number(generalState.overlay_target_fps ?? 0),
       hold_follow_mode: generalState.hold_follow_mode,
       hold_presenter_backend: generalState.hold_presenter_backend || 'auto',
       active: effectsState,

@@ -1,9 +1,10 @@
 #include "pch.h"
 #include "ScrollEffect.h"
+#include "MouseFx/Effects/ScrollEffectCommandAdapter.h"
+#include "MouseFx/Core/Effects/ScrollEffectCompute.h"
 #include "MouseFx/Core/Overlay/OverlayHostService.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/TimeUtils.h"
-#include <algorithm>
 #include "MouseFx/Renderers/RendererRegistry.h"
 
 // Ensure standard renderers are linked
@@ -13,14 +14,10 @@
 
 namespace mousefx {
 
-static float Clamp01(float v) {
-    return std::max(0.0f, std::min(1.0f, v));
-}
-
-
 ScrollEffect::ScrollEffect(const std::string& themeName, const std::string& rendererName) 
-    : currentRendererName_(rendererName) {
+    : currentRendererName_(NormalizeScrollEffectType(rendererName)) {
     style_ = GetThemePalette(themeName).scroll;
+    computeProfile_ = scroll_effect_adapter::BuildScrollProfileFromStyle(style_);
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
 }
 
@@ -37,33 +34,11 @@ void ScrollEffect::Shutdown() {
 
 void ScrollEffect::OnCommand(const std::string& cmd, const std::string& args) {
     if (cmd == "type") {
-        currentRendererName_ = args;
+        currentRendererName_ = NormalizeScrollEffectType(args);
         lastEmitTickMs_ = 0;
         pendingDelta_ = 0;
         activeRippleIds_.clear();
     }
-}
-
-bool ScrollEffect::IsHelixRenderer() const {
-    return ToLowerAscii(currentRendererName_) == "helix";
-}
-
-bool ScrollEffect::IsTwinkleRenderer() const {
-    return ToLowerAscii(currentRendererName_) == "twinkle";
-}
-
-ScrollEffect::InputShaperProfile ScrollEffect::GetInputShaperProfile() const {
-    InputShaperProfile profile{};
-    if (IsHelixRenderer()) {
-        profile.emitIntervalMs = kHelixEmitIntervalMs;
-        profile.maxActiveRipples = kHelixMaxActiveRipples;
-        profile.maxDurationMs = kHelixMaxDurationMs;
-    } else if (IsTwinkleRenderer()) {
-        profile.emitIntervalMs = kTwinkleEmitIntervalMs;
-        profile.maxActiveRipples = kTwinkleMaxActiveRipples;
-        profile.maxDurationMs = kTwinkleMaxDurationMs;
-    }
-    return profile;
 }
 
 void ScrollEffect::PruneInactiveRipples(size_t maxActive) {
@@ -81,7 +56,7 @@ void ScrollEffect::PruneInactiveRipples(size_t maxActive) {
 }
 
 void ScrollEffect::OnScroll(const ScrollEvent& event) {
-    const InputShaperProfile shaper = GetInputShaperProfile();
+    const ScrollEffectInputShaperProfile shaper = ResolveScrollInputShaperProfile(currentRendererName_);
     pendingDelta_ += event.delta;
 
     const uint64_t now = NowMs();
@@ -97,42 +72,40 @@ void ScrollEffect::OnScroll(const ScrollEvent& event) {
         pendingDelta_ = 0;
     }
 
-    auto renderer = RendererRegistry::Instance().Create(currentRendererName_);
+    const RippleStyle runtimeStyle = isChromatic_ ? MakeRandomStyle(style_) : style_;
+    const ScrollEffectProfile runtimeProfile = isChromatic_
+        ? scroll_effect_adapter::BuildScrollProfileFromStyle(runtimeStyle)
+        : computeProfile_;
+    const ScrollEffectRenderCommand command = ComputeScrollEffectRenderCommand(
+        event.pt,
+        event.horizontal,
+        effectiveDelta,
+        currentRendererName_,
+        runtimeProfile);
+    if (!command.emit) {
+        PruneInactiveRipples(shaper.maxActiveRipples);
+        return;
+    }
+
+    auto renderer = RendererRegistry::Instance().Create(scroll_effect_adapter::ResolveRendererName(command));
     if (!renderer) {
-        if (currentRendererName_ != "none") {
-             renderer = RendererRegistry::Instance().Create("arrow");
-        }
+        return;
     }
-    
-    if (!renderer) return;
 
-    ClickEvent ev{};
-    ev.pt = event.pt;
-    ev.button = MouseButton::Left;
-
-    RenderParams params;
-    const float base = (effectiveDelta >= 0) ? 3.1415926f / 2.0f : -3.1415926f / 2.0f;
-    if (event.horizontal) {
-        params.directionRad = (effectiveDelta >= 0) ? 0.0f : 3.1415926f;
-    } else {
-        params.directionRad = base;
-    }
-    const float strength = (float)std::abs(effectiveDelta) / 120.0f;
-    params.intensity = Clamp01(0.6f + strength * 0.6f);
-    params.loop = false;
+    const ClickEvent renderEvent = scroll_effect_adapter::BuildClickEventFromCommand(event, command);
+    const RenderParams params = scroll_effect_adapter::BuildRenderParamsFromCommand(command);
+    const RippleStyle renderStyle = scroll_effect_adapter::BuildRippleStyleFromCommand(runtimeStyle, command);
     renderer->SetParams(params);
 
-    RippleStyle finalStyle = style_;
-    if (isChromatic_) {
-        finalStyle = MakeRandomStyle(style_);
-    }
-    finalStyle.durationMs = std::min<uint32_t>(finalStyle.durationMs, shaper.maxDurationMs);
-
-    const uint64_t rippleId = OverlayHostService::Instance().ShowRipple(ev, finalStyle, std::move(renderer), params);
+    const uint64_t rippleId = OverlayHostService::Instance().ShowRipple(
+        renderEvent,
+        renderStyle,
+        std::move(renderer),
+        params);
     if (rippleId != 0) {
         activeRippleIds_.push_back(rippleId);
-        PruneInactiveRipples(shaper.maxActiveRipples);
     }
+    PruneInactiveRipples(shaper.maxActiveRipples);
 }
 
 } // namespace mousefx

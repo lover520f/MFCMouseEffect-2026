@@ -41,6 +41,23 @@ struct ParticleSegmentMetrics final {
     double haloOpacity = 0.0;
 };
 
+struct ParticleSpawnMetrics final {
+    double angleRad = 0.0;
+    double speedPxPerTick = 0.0;
+    double sizePx = 0.0;
+    double hueDeg = 0.0;
+};
+
+struct ParticleStepMetrics final {
+    double nextX = 0.0;
+    double nextY = 0.0;
+    double nextVx = 0.0;
+    double nextVy = 0.0;
+    double nextLife = 0.0;
+    double renderRadiusPx = 0.0;
+    double renderOpacity = 0.0;
+};
+
 struct TubesNodeRenderMetrics final {
     double radiusPx = 0.0;
     double amplitudePx = 0.0;
@@ -70,6 +87,22 @@ ParticleSegmentMetrics ComputeParticleSegmentMetrics(
     double segmentRatio,
     double life,
     double intensity);
+
+int32_t ComputeParticleEmitCount(double distancePx);
+
+ParticleSpawnMetrics ComputeParticleSpawnMetrics(
+    uint32_t* state,
+    bool chromatic,
+    double globalHueDeg);
+
+ParticleStepMetrics ComputeParticleStepMetrics(
+    double x,
+    double y,
+    double vx,
+    double vy,
+    double life,
+    double sizePx,
+    double dtSec);
 
 TubesNodeRenderMetrics ComputeTubesNodeRenderMetrics(
     uint32_t chainIndex,

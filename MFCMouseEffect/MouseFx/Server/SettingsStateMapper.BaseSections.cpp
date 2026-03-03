@@ -2,6 +2,7 @@
 #include "SettingsStateMapper.BaseSections.h"
 
 #include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Core/Config/EffectConfigInternal.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/StringUtils.h"
 
@@ -17,6 +18,7 @@ void AppendBaseSettingsState(const EffectConfig& cfg, json* out) {
     (*out)["ui_language"] = EnsureUtf8(cfg.uiLanguage);
     (*out)["theme"] = EnsureUtf8(cfg.theme);
     (*out)["theme_catalog_root_path"] = EnsureUtf8(cfg.themeCatalogRootPath);
+    (*out)["overlay_target_fps"] = config_internal::SanitizeOverlayTargetFps(cfg.overlayTargetFps);
     const ThemeCatalogRuntimeInfo themeCatalogRuntime = GetThemeCatalogRuntimeInfo();
     (*out)["theme_catalog_runtime"] = {
         {"configured_root_path", themeCatalogRuntime.configuredRootPath},

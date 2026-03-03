@@ -94,6 +94,40 @@ private func mfxComputeParticleTrailSegmentMetrics(
     _ outHaloOpacity: UnsafeMutablePointer<Double>?
 )
 
+@_silgen_name("mfx_compute_particle_trail_emit_count_v1")
+private func mfxComputeParticleTrailEmitCount(
+    _ distancePx: Double
+) -> Int32
+
+@_silgen_name("mfx_compute_particle_trail_spawn_metrics_v1")
+private func mfxComputeParticleTrailSpawnMetrics(
+    _ ioSeed: UnsafeMutablePointer<UInt32>?,
+    _ chromatic: Int32,
+    _ globalHueDeg: Double,
+    _ outAngleRad: UnsafeMutablePointer<Double>?,
+    _ outSpeedPxPerTick: UnsafeMutablePointer<Double>?,
+    _ outSizePx: UnsafeMutablePointer<Double>?,
+    _ outHueDeg: UnsafeMutablePointer<Double>?
+)
+
+@_silgen_name("mfx_compute_particle_trail_step_metrics_v1")
+private func mfxComputeParticleTrailStepMetrics(
+    _ x: Double,
+    _ y: Double,
+    _ vx: Double,
+    _ vy: Double,
+    _ life: Double,
+    _ sizePx: Double,
+    _ dtSec: Double,
+    _ outNextX: UnsafeMutablePointer<Double>?,
+    _ outNextY: UnsafeMutablePointer<Double>?,
+    _ outNextVx: UnsafeMutablePointer<Double>?,
+    _ outNextVy: UnsafeMutablePointer<Double>?,
+    _ outNextLife: UnsafeMutablePointer<Double>?,
+    _ outRenderRadiusPx: UnsafeMutablePointer<Double>?,
+    _ outRenderOpacity: UnsafeMutablePointer<Double>?
+)
+
 @_silgen_name("mfx_compute_tubes_node_render_metrics_v1")
 private func mfxComputeTubesNodeRenderMetrics(
     _ chainIndex: UInt32,
@@ -188,6 +222,18 @@ private final class MfxLineTrailState: NSObject {
         var hue: CGFloat
     }
 
+    private struct TrailParticle {
+        var x: CGFloat
+        var y: CGFloat
+        var vx: CGFloat
+        var vy: CGFloat
+        var life: CGFloat
+        var size: CGFloat
+        var hue: CGFloat
+        var renderRadius: CGFloat
+        var renderOpacity: CGFloat
+    }
+
     private struct TubeChain {
         var nodes: [CGPoint]
         var color: NSColor
@@ -209,10 +255,17 @@ private final class MfxLineTrailState: NSObject {
     private var rngState: UInt32 = 0x7F4A7C15
     private var meteorSparks: [MeteorSpark] = []
     private var meteorLastUpdateMs: UInt64 = 0
+    private var trailParticles: [TrailParticle] = []
+    private var particleLastUpdateMs: UInt64 = 0
+    private var particleGlobalHueDeg: Double = 0.0
+    private var particleLastEmitPoint: CGPoint = .zero
+    private var particleHasLastEmitPoint = false
+    private var particleHasPendingPoint = false
     private var tubeChains: [TubeChain] = []
     private var tubeFadeAlpha: CGFloat = 255.0
     private var tubeLastTarget: CGPoint = .zero
     private var tubeHasLastTarget = false
+    private var tubeLastFrameMs: UInt64 = 0
 
     private static func nowMs() -> UInt64 {
         let ms = ProcessInfo.processInfo.systemUptime * 1000.0
@@ -297,6 +350,63 @@ private final class MfxLineTrailState: NSObject {
         containerLayer.addSublayer(layer)
     }
 
+    private static func normalizeRgb(_ color: NSColor) -> (r: CGFloat, g: CGFloat, b: CGFloat) {
+        let resolved = color.usingColorSpace(.deviceRGB) ?? color
+        var r: CGFloat = 0.0
+        var g: CGFloat = 0.0
+        var b: CGFloat = 0.0
+        var a: CGFloat = 0.0
+        resolved.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return (r, g, b)
+    }
+
+    private func addTubeNodeLayer(
+        containerLayer: CALayer,
+        layerScale: CGFloat,
+        center: CGPoint,
+        radius: CGFloat,
+        baseColor: NSColor,
+        alpha: CGFloat
+    ) {
+        let clampedAlpha = CGFloat(Self.clamp01(Double(alpha)))
+        if clampedAlpha <= 0.001 {
+            return
+        }
+        let safeRadius = max(0.4, radius)
+        let frame = CGRect(
+            x: center.x - safeRadius,
+            y: center.y - safeRadius,
+            width: safeRadius * 2.0,
+            height: safeRadius * 2.0
+        )
+        let rgb = Self.normalizeRgb(baseColor)
+        let centerColor = NSColor(
+            calibratedRed: min(1.0, rgb.r + (100.0 / 255.0)),
+            green: min(1.0, rgb.g + (100.0 / 255.0)),
+            blue: min(1.0, rgb.b + (100.0 / 255.0)),
+            alpha: clampedAlpha
+        )
+        let edgeColor = NSColor(
+            calibratedRed: rgb.r,
+            green: rgb.g,
+            blue: rgb.b,
+            alpha: 0.0
+        )
+
+        let gradient = CAGradientLayer()
+        gradient.frame = frame
+        gradient.contentsScale = layerScale
+        gradient.type = .radial
+        gradient.startPoint = CGPoint(x: 0.5, y: 0.5)
+        gradient.endPoint = CGPoint(x: 1.0, y: 1.0)
+        gradient.colors = [centerColor.cgColor, edgeColor.cgColor]
+        gradient.locations = [0.0, 1.0]
+        gradient.cornerRadius = safeRadius
+        gradient.masksToBounds = true
+        gradient.opacity = 1.0
+        containerLayer.addSublayer(gradient)
+    }
+
     private func nextRandom01() -> CGFloat {
         // xorshift32
         var x = rngState
@@ -347,10 +457,25 @@ private final class MfxLineTrailState: NSObject {
     private func resetStyleRuntimeStateOnMain() {
         meteorSparks.removeAll(keepingCapacity: false)
         meteorLastUpdateMs = 0
+        trailParticles.removeAll(keepingCapacity: false)
+        particleLastUpdateMs = 0
+        particleGlobalHueDeg = 0.0
+        particleLastEmitPoint = .zero
+        particleHasLastEmitPoint = false
+        particleHasPendingPoint = false
         tubeChains.removeAll(keepingCapacity: false)
         tubeFadeAlpha = 255.0
         tubeHasLastTarget = false
         tubeLastTarget = .zero
+        tubeLastFrameMs = 0
+    }
+
+    private static func normalizedTubeLag(baseLag: CGFloat, frameDeltaMs: UInt64) -> Double {
+        let clampedBase = max(0.01, min(0.99, Double(baseLag)))
+        let clampedDt = max(4.0, min(100.0, Double(frameDeltaMs)))
+        let frameUnits = clampedDt / 16.6667
+        let normalized = 1.0 - pow(1.0 - clampedBase, frameUnits)
+        return max(0.01, min(0.99, normalized))
     }
 
     private func ensureTubeChains(initialTarget: CGPoint) {
@@ -511,22 +636,173 @@ private final class MfxLineTrailState: NSObject {
         return true
     }
 
+    private func emitParticleBurstIfNeeded(head: CGPoint) {
+        if !particleHasLastEmitPoint {
+            particleLastEmitPoint = head
+            particleHasLastEmitPoint = true
+            return
+        }
+
+        let dx = head.x - particleLastEmitPoint.x
+        let dy = head.y - particleLastEmitPoint.y
+        let distance = sqrt(dx * dx + dy * dy)
+        let emitCount = Int(mfxComputeParticleTrailEmitCount(Double(distance)))
+        if emitCount <= 0 {
+            return
+        }
+
+        particleGlobalHueDeg = fmod(particleGlobalHueDeg + 5.0, 360.0)
+        withUnsafeMutablePointer(to: &rngState) { seedPtr in
+            for _ in 0..<emitCount {
+                var angle = 0.0
+                var speed = 0.0
+                var size = 0.0
+                var hue = 0.0
+                mfxComputeParticleTrailSpawnMetrics(
+                    seedPtr,
+                    config.chromatic ? 1 : 0,
+                    particleGlobalHueDeg,
+                    &angle,
+                    &speed,
+                    &size,
+                    &hue
+                )
+                trailParticles.append(
+                    TrailParticle(
+                        x: head.x,
+                        y: head.y,
+                        vx: CGFloat(cos(angle) * speed),
+                        vy: CGFloat(sin(angle) * speed),
+                        life: 1.0,
+                        size: CGFloat(size),
+                        hue: CGFloat(hue),
+                        renderRadius: CGFloat(max(0.0, size * 0.5)),
+                        renderOpacity: 1.0
+                    )
+                )
+            }
+        }
+
+        if trailParticles.count > 320 {
+            trailParticles.removeFirst(trailParticles.count - 320)
+        }
+        particleLastEmitPoint = head
+    }
+
+    private func updateTrailParticles(nowMs: UInt64) {
+        let dtSec: Double
+        if particleLastUpdateMs == 0 || nowMs <= particleLastUpdateMs {
+            dtSec = 0.016
+        } else {
+            dtSec = min(0.1, Double(nowMs - particleLastUpdateMs) / 1000.0)
+        }
+        particleLastUpdateMs = nowMs
+
+        if trailParticles.isEmpty {
+            return
+        }
+
+        var nextParticles: [TrailParticle] = []
+        nextParticles.reserveCapacity(trailParticles.count)
+        for particle in trailParticles {
+            var nextX = 0.0
+            var nextY = 0.0
+            var nextVx = 0.0
+            var nextVy = 0.0
+            var nextLife = 0.0
+            var nextRadius = 0.0
+            var nextOpacity = 0.0
+            mfxComputeParticleTrailStepMetrics(
+                Double(particle.x),
+                Double(particle.y),
+                Double(particle.vx),
+                Double(particle.vy),
+                Double(particle.life),
+                Double(particle.size),
+                dtSec,
+                &nextX,
+                &nextY,
+                &nextVx,
+                &nextVy,
+                &nextLife,
+                &nextRadius,
+                &nextOpacity
+            )
+            if nextLife <= 0.0 {
+                continue
+            }
+            nextParticles.append(
+                TrailParticle(
+                    x: CGFloat(nextX),
+                    y: CGFloat(nextY),
+                    vx: CGFloat(nextVx),
+                    vy: CGFloat(nextVy),
+                    life: CGFloat(nextLife),
+                    size: particle.size,
+                    hue: particle.hue,
+                    renderRadius: CGFloat(max(0.0, nextRadius)),
+                    renderOpacity: CGFloat(max(0.0, min(1.0, nextOpacity)))
+                )
+            )
+        }
+        trailParticles = nextParticles
+    }
+
+    private func renderTrailParticles(containerLayer: CALayer, layerScale: CGFloat) {
+        for particle in trailParticles {
+            let radius = max(0.2, particle.renderRadius)
+            let alpha = max(0.0, min(1.0, particle.renderOpacity))
+            if alpha <= 0.001 {
+                continue
+            }
+            let localX = particle.x - CGFloat(windowOriginX)
+            let localY = particle.y - CGFloat(windowOriginY)
+            let color = Self.hslToRgbColor(
+                hueDegrees: particle.hue,
+                saturation: 0.8,
+                lightness: 0.6,
+                alpha: 1.0
+            )
+            let layer = CAShapeLayer()
+            layer.frame = containerLayer.bounds
+            layer.contentsScale = layerScale
+            layer.path = CGPath(
+                ellipseIn: CGRect(
+                    x: localX - radius,
+                    y: localY - radius,
+                    width: radius * 2.0,
+                    height: radius * 2.0
+                ),
+                transform: nil
+            )
+            layer.fillColor = color.withAlphaComponent(alpha).cgColor
+            layer.strokeColor = NSColor.clear.cgColor
+            layer.opacity = 1.0
+            containerLayer.addSublayer(layer)
+        }
+    }
+
     private func rebuildPath(nowMs: UInt64) {
         guard let containerLayer else {
             return
         }
 
         clearSegmentSublayers()
-        if points.isEmpty {
+        if points.isEmpty && !(config.style == .particle && !trailParticles.isEmpty) {
             return
         }
 
-        let idleFactor = Self.idleFadeFactor(
-            nowMs: nowMs,
-            lastPointMs: points[points.count - 1].tickMs,
-            startMs: config.idleFadeStartMs,
-            endMs: config.idleFadeEndMs
-        )
+        let idleFactor: Double
+        if let lastPoint = points.last {
+            idleFactor = Self.idleFadeFactor(
+                nowMs: nowMs,
+                lastPointMs: lastPoint.tickMs,
+                startMs: config.idleFadeStartMs,
+                endMs: config.idleFadeEndMs
+            )
+        } else {
+            idleFactor = 1.0
+        }
         let durationMs = max(1, config.durationMs)
         let lineWidth = max(1.0, config.lineWidth)
         let layerScale = max(containerLayer.contentsScale, CGFloat(1.0))
@@ -539,7 +815,7 @@ private final class MfxLineTrailState: NSObject {
         let strokeColor = Self.colorFromArgb(fullAlphaStroke, 1.0)
         let fillColor = Self.colorFromArgb(fullAlphaFill, 1.0)
 
-        if points.count == 1 {
+        if points.count == 1 && config.style != .particle {
             let point = points[0]
             let local = localPoint(point)
             let radius = max(lineWidth * 0.6, 2.0)
@@ -561,7 +837,25 @@ private final class MfxLineTrailState: NSObject {
             return
         }
 
+        if config.style == .particle {
+            if let head = points.last {
+                emitParticleBurstIfNeeded(head: CGPoint(x: CGFloat(head.x), y: CGFloat(head.y)))
+            }
+            updateTrailParticles(nowMs: nowMs)
+            renderTrailParticles(containerLayer: containerLayer, layerScale: layerScale)
+            CATransaction.commit()
+            return
+        }
+
         if config.style == .tubes {
+            let frameDeltaMs: UInt64
+            if tubeLastFrameMs == 0 || nowMs <= tubeLastFrameMs {
+                frameDeltaMs = UInt64(max(4, min(100, timerIntervalMs)))
+            } else {
+                frameDeltaMs = min(100, nowMs - tubeLastFrameMs)
+            }
+            tubeLastFrameMs = nowMs
+
             let hasInput = !points.isEmpty
             let target: CGPoint
             if let head = points.last {
@@ -612,7 +906,7 @@ private final class MfxLineTrailState: NSObject {
                         Double(target.y),
                         Double(chain.nodes[0].x),
                         Double(chain.nodes[0].y),
-                        Double(chain.lag),
+                        Self.normalizedTubeLag(baseLag: chain.lag, frameDeltaMs: frameDeltaMs),
                         &headNextX,
                         &headNextY
                     )
@@ -630,7 +924,7 @@ private final class MfxLineTrailState: NSObject {
                                 Double(prev.y),
                                 Double(curr.x),
                                 Double(curr.y),
-                                Double(chain.lag),
+                                Self.normalizedTubeLag(baseLag: chain.lag, frameDeltaMs: frameDeltaMs),
                                 3.5,
                                 &nextX,
                                 &nextY
@@ -686,23 +980,14 @@ private final class MfxLineTrailState: NSObject {
                     )
                     let renderX = node.x + cos(frameTime + CGFloat(nodePhase) + CGFloat(chainPhase)) * CGFloat(amplitude)
                     let renderY = node.y + sin(frameTime + CGFloat(nodePhase) + CGFloat(chainPhase)) * CGFloat(amplitude)
-                    let halo = CAShapeLayer()
-                    halo.frame = containerLayer.bounds
-                    halo.contentsScale = layerScale
-                    halo.path = CGPath(ellipseIn: CGRect(x: renderX - CGFloat(radius * 1.3), y: renderY - CGFloat(radius * 1.3), width: CGFloat(radius * 2.6), height: CGFloat(radius * 2.6)), transform: nil)
-                    halo.fillColor = chainColor.withAlphaComponent(CGFloat(alpha * 0.22)).cgColor
-                    halo.strokeColor = NSColor.clear.cgColor
-                    halo.opacity = 1.0
-                    containerLayer.addSublayer(halo)
-
-                    let core = CAShapeLayer()
-                    core.frame = containerLayer.bounds
-                    core.contentsScale = layerScale
-                    core.path = CGPath(ellipseIn: CGRect(x: renderX - CGFloat(radius), y: renderY - CGFloat(radius), width: CGFloat(radius * 2.0), height: CGFloat(radius * 2.0)), transform: nil)
-                    core.fillColor = chainColor.withAlphaComponent(CGFloat(alpha)).cgColor
-                    core.strokeColor = NSColor.clear.cgColor
-                    core.opacity = 1.0
-                    containerLayer.addSublayer(core)
+                    addTubeNodeLayer(
+                        containerLayer: containerLayer,
+                        layerScale: layerScale,
+                        center: CGPoint(x: renderX, y: renderY),
+                        radius: CGFloat(radius),
+                        baseColor: chainColor,
+                        alpha: CGFloat(alpha)
+                    )
                 }
             }
 
@@ -1002,72 +1287,7 @@ private final class MfxLineTrailState: NSObject {
                     )
                 }
             case .particle:
-                let ratio = Double(i) / Double(safeSegmentCount)
-                var radius = 0.0
-                var alpha = 0.0
-                var emitHalo: Int32 = 0
-                var haloRadius = 0.0
-                var haloOpacity = 0.0
-                mfxComputeParticleTrailSegmentMetrics(
-                    ratio,
-                    life,
-                    config.intensity,
-                    &radius,
-                    &alpha,
-                    &emitHalo,
-                    &haloRadius,
-                    &haloOpacity
-                )
-                var particleColor = fillColor
-                if config.chromatic {
-                    let hue = CGFloat(
-                        mfxComputeTrailChromaticHueDeg(
-                            nowMs,
-                            5,
-                            UInt32(i),
-                            0
-                        )
-                    )
-                    particleColor = Self.hslToRgbColor(hueDegrees: hue, saturation: 0.92, lightness: 0.64, alpha: 1.0)
-                }
-                let particleCenter = end
-                let coreRadius = CGFloat(max(0.6, radius))
-                let core = CAShapeLayer()
-                core.frame = containerLayer.bounds
-                core.contentsScale = layerScale
-                core.path = CGPath(
-                    ellipseIn: CGRect(
-                        x: particleCenter.x - coreRadius,
-                        y: particleCenter.y - coreRadius,
-                        width: coreRadius * 2.0,
-                        height: coreRadius * 2.0
-                    ),
-                    transform: nil
-                )
-                core.fillColor = particleColor.withAlphaComponent(CGFloat(alpha)).cgColor
-                core.strokeColor = NSColor.clear.cgColor
-                core.opacity = 1.0
-                containerLayer.addSublayer(core)
-
-                if emitHalo != 0 {
-                    let haloRadiusPx = CGFloat(max(coreRadius, haloRadius))
-                    let halo = CAShapeLayer()
-                    halo.frame = containerLayer.bounds
-                    halo.contentsScale = layerScale
-                    halo.path = CGPath(
-                        ellipseIn: CGRect(
-                            x: particleCenter.x - haloRadiusPx,
-                            y: particleCenter.y - haloRadiusPx,
-                            width: haloRadiusPx * 2.0,
-                            height: haloRadiusPx * 2.0
-                        ),
-                        transform: nil
-                    )
-                    halo.fillColor = particleColor.withAlphaComponent(CGFloat(haloOpacity)).cgColor
-                    halo.strokeColor = NSColor.clear.cgColor
-                    halo.opacity = 1.0
-                    containerLayer.addSublayer(halo)
-                }
+                break
             case .tubes:
                 break
             }
@@ -1133,6 +1353,32 @@ private final class MfxLineTrailState: NSObject {
     private func tickOnMain() {
         let nowMs = Self.nowMs()
         let duration = UInt64(max(1, config.durationMs))
+
+        if config.style == .particle {
+            if particleHasPendingPoint, let head = points.last {
+                emitParticleBurstIfNeeded(head: CGPoint(x: CGFloat(head.x), y: CGFloat(head.y)))
+                points.removeAll(keepingCapacity: true)
+                particleHasPendingPoint = false
+            }
+            updateTrailParticles(nowMs: nowMs)
+            clearSegmentSublayers()
+            if let containerLayer {
+                CATransaction.begin()
+                CATransaction.setDisableActions(true)
+                renderTrailParticles(
+                    containerLayer: containerLayer,
+                    layerScale: max(containerLayer.contentsScale, CGFloat(1.0))
+                )
+                CATransaction.commit()
+            }
+            if trailParticles.isEmpty {
+                if lastInputMs == 0 || nowMs > lastInputMs + duration {
+                    resetStateOnMain()
+                }
+            }
+            return
+        }
+
         while !points.isEmpty {
             let age = nowMs > points[0].tickMs ? nowMs - points[0].tickMs : 0
             if age <= duration {
@@ -1141,21 +1387,24 @@ private final class MfxLineTrailState: NSObject {
             points.removeFirst()
         }
 
-        if !points.isEmpty {
+        let particleActive = (config.style == .particle && !trailParticles.isEmpty)
+        if !points.isEmpty || particleActive {
             rebuildPath(nowMs: nowMs)
         } else {
             clearSegmentSublayers()
         }
 
         if points.count < 2 {
-            if lastInputMs == 0 || nowMs > lastInputMs + duration {
+            let canResetParticle = config.style != .particle || trailParticles.isEmpty
+            if lastInputMs == 0 || (canResetParticle && nowMs > lastInputMs + duration) {
                 resetStateOnMain()
             }
         }
     }
 
     private func ensureTimerOnMain(x: Int32, y: Int32) {
-        let desiredIntervalMs = resolveTimerIntervalMs(forX: x, y: y)
+        let baseIntervalMs = resolveTimerIntervalMs(forX: x, y: y)
+        let desiredIntervalMs = (config.style == .particle) ? max(16, baseIntervalMs) : baseIntervalMs
         if let timer {
             if timerIntervalMs != desiredIntervalMs {
                 timer.schedule(
@@ -1243,6 +1492,14 @@ private final class MfxLineTrailState: NSObject {
             }
         }
 
+        if config.style == .particle {
+            points.removeAll(keepingCapacity: true)
+            points.append(Point(x: x, y: y, tickMs: nowMs))
+            particleHasPendingPoint = true
+            ensureTimerOnMain(x: x, y: y)
+            return
+        }
+
         points.append(Point(x: x, y: y, tickMs: nowMs))
 
         let duration = UInt64(max(1, config.durationMs))
@@ -1267,7 +1524,7 @@ private final class MfxLineTrailState: NSObject {
     }
 
     func isActive() -> Bool {
-        return windowHandle != nil && !points.isEmpty
+        return windowHandle != nil && (!points.isEmpty || !trailParticles.isEmpty)
     }
 
     func pointCount() -> Int {

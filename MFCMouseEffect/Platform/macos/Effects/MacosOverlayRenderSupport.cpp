@@ -9,6 +9,7 @@
 #endif
 
 #include <algorithm>
+#include <cstdint>
 #include <memory>
 
 namespace mousefx::macos_overlay_support {
@@ -90,6 +91,11 @@ void ShowOverlayWindow(void* windowHandle) {
         return;
     }
     mfx_macos_overlay_show_window_v1(windowHandle);
+}
+
+void SetOverlayTargetFps(int targetFps) {
+    const int sanitized = std::clamp(targetFps, 0, 360);
+    mfx_macos_overlay_set_target_fps_v1(static_cast<int32_t>(sanitized));
 }
 
 bool ResolveScreenFrameForPoint(const ScreenPoint& overlayPt, NSRect* frameOut) {

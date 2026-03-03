@@ -70,6 +70,7 @@ inline std::string NormalizeHoldFollowMode(std::string mode) {
     return "smooth";
 }
 std::string NormalizeHoldPresenterBackend(std::string backend);
+int SanitizeOverlayTargetFps(int targetFps);
 TrailHistoryProfile SanitizeTrailHistoryProfile(TrailHistoryProfile profile);
 TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig params);
 InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig config);

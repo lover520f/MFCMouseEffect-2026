@@ -3,17 +3,16 @@ import { normalizeGeneralState } from '../general/general-state-model.js';
 import { createLazyMountBridge } from './lazy-mount.js';
 
 let currentState = normalizeGeneralState({});
-let currentActionHandler = null;
 
 const bridge = createLazyMountBridge({
   mountId: 'general_settings_mount',
   initialProps: {
     uiLanguages: [],
     themes: [],
+    overlayTargetFpsRange: {},
     holdFollowModes: [],
     holdPresenterBackends: [],
     general: currentState,
-    onAction: currentActionHandler,
   },
   createComponent: (mountNode, props) => {
     const instance = new GeneralSettingsFields({
@@ -33,16 +32,13 @@ function render(payload) {
   const appState = payload?.state || {};
   const general = normalizeGeneralState(appState);
   currentState = general;
-  currentActionHandler = typeof payload?.onAction === 'function'
-    ? payload.onAction
-    : currentActionHandler;
   bridge.updateProps({
     uiLanguages: schema.ui_languages || [],
     themes: schema.themes || [],
+    overlayTargetFpsRange: schema.overlay_target_fps_range || {},
     holdFollowModes: schema.hold_follow_modes || [],
     holdPresenterBackends: schema.hold_presenter_backends || [],
     general,
-    onAction: currentActionHandler,
   });
 }
 
@@ -51,10 +47,7 @@ function read() {
 }
 
 function onAction(handler) {
-  currentActionHandler = typeof handler === 'function' ? handler : null;
-  bridge.updateProps({
-    onAction: currentActionHandler,
-  });
+  void handler;
 }
 
 window.MfxGeneralSection = {
