@@ -42,7 +42,7 @@ bool IsOriginConnectorSample(const ScreenPoint& from, const ScreenPoint& to) {
 }
 
 bool IsContinuousTrailType(const std::string& normalizedType) {
-    return normalizedType != "none" && normalizedType != "particle";
+    return normalizedType != "none";
 }
 
 macos_line_trail::LineTrailStyleKind ResolveLineTrailStyleKind(const std::string& normalizedType) {
@@ -57,6 +57,9 @@ macos_line_trail::LineTrailStyleKind ResolveLineTrailStyleKind(const std::string
     }
     if (normalizedType == "tubes") {
         return macos_line_trail::LineTrailStyleKind::Tubes;
+    }
+    if (normalizedType == "particle") {
+        return macos_line_trail::LineTrailStyleKind::Particle;
     }
     return macos_line_trail::LineTrailStyleKind::Line;
 }
@@ -74,6 +77,9 @@ int ResolveTrailDurationFloorMs(const std::string& normalizedType) {
     if (normalizedType == "tubes") {
         return 350;
     }
+    if (normalizedType == "particle") {
+        return 240;
+    }
     return 300;
 }
 
@@ -89,6 +95,9 @@ float ResolveTrailLineWidthFloorPx(const std::string& normalizedType) {
     }
     if (normalizedType == "tubes") {
         return 3.0f;
+    }
+    if (normalizedType == "particle") {
+        return 1.8f;
     }
     return 2.4f;
 }
@@ -148,6 +157,9 @@ double ResolveContinuousTrailStepPx(const std::string& normalizedType) {
     }
     if (normalizedType == "tubes") {
         return 3.5;
+    }
+    if (normalizedType == "particle") {
+        return 2.2;
     }
     return 4.0;
 }

@@ -33,6 +33,14 @@ struct MeteorSegmentMetrics final {
     double coreOpacity = 0.0;
 };
 
+struct ParticleSegmentMetrics final {
+    double radiusPx = 0.0;
+    double opacity = 0.0;
+    bool emitHalo = false;
+    double haloRadiusPx = 0.0;
+    double haloOpacity = 0.0;
+};
+
 StreamerSegmentMetrics ComputeStreamerSegmentMetrics(
     double segmentRatio,
     double life,
@@ -50,5 +58,9 @@ MeteorSegmentMetrics ComputeMeteorSegmentMetrics(
     double segmentRatio,
     double life);
 
-} // namespace mousefx::trail_style_compute
+ParticleSegmentMetrics ComputeParticleSegmentMetrics(
+    double segmentRatio,
+    double life,
+    double intensity);
 
+} // namespace mousefx::trail_style_compute

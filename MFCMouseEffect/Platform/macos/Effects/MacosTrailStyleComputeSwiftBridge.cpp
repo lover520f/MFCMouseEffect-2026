@@ -93,3 +93,23 @@ void mfx_compute_meteor_trail_segment_metrics_v1(
     WriteValue(outCoreOpacity, metrics.coreOpacity);
 }
 
+void mfx_compute_particle_trail_segment_metrics_v1(
+    double segmentRatio,
+    double life,
+    double intensity,
+    double* outRadiusPx,
+    double* outOpacity,
+    int* outEmitHalo,
+    double* outHaloRadiusPx,
+    double* outHaloOpacity) {
+    const mousefx::trail_style_compute::ParticleSegmentMetrics metrics =
+        mousefx::trail_style_compute::ComputeParticleSegmentMetrics(
+            segmentRatio,
+            life,
+            intensity);
+    WriteValue(outRadiusPx, metrics.radiusPx);
+    WriteValue(outOpacity, metrics.opacity);
+    WriteValue(outEmitHalo, metrics.emitHalo ? 1 : 0);
+    WriteValue(outHaloRadiusPx, metrics.haloRadiusPx);
+    WriteValue(outHaloOpacity, metrics.haloOpacity);
+}

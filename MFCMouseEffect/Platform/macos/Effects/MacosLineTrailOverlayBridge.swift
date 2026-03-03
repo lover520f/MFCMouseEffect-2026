@@ -82,6 +82,18 @@ private func mfxComputeMeteorTrailSegmentMetrics(
     _ outCoreOpacity: UnsafeMutablePointer<Double>?
 )
 
+@_silgen_name("mfx_compute_particle_trail_segment_metrics_v1")
+private func mfxComputeParticleTrailSegmentMetrics(
+    _ segmentRatio: Double,
+    _ life: Double,
+    _ intensity: Double,
+    _ outRadiusPx: UnsafeMutablePointer<Double>?,
+    _ outOpacity: UnsafeMutablePointer<Double>?,
+    _ outEmitHalo: UnsafeMutablePointer<Int32>?,
+    _ outHaloRadiusPx: UnsafeMutablePointer<Double>?,
+    _ outHaloOpacity: UnsafeMutablePointer<Double>?
+)
+
 @MainActor
 private final class MfxLineTrailState: NSObject {
     private struct Point {
@@ -96,6 +108,7 @@ private final class MfxLineTrailState: NSObject {
         case electric = 2
         case meteor = 3
         case tubes = 4
+        case particle = 5
 
         static func resolve(_ rawValue: Int32) -> StyleKind {
             return StyleKind(rawValue: rawValue) ?? .line
@@ -893,6 +906,66 @@ private final class MfxLineTrailState: NSObject {
                         lineWidth: CGFloat(max(1.0, coreWidth)),
                         opacity: coreOpacity
                     )
+                }
+            case .particle:
+                let ratio = Double(i) / Double(safeSegmentCount)
+                var radius = 0.0
+                var alpha = 0.0
+                var emitHalo: Int32 = 0
+                var haloRadius = 0.0
+                var haloOpacity = 0.0
+                mfxComputeParticleTrailSegmentMetrics(
+                    ratio,
+                    life,
+                    config.intensity,
+                    &radius,
+                    &alpha,
+                    &emitHalo,
+                    &haloRadius,
+                    &haloOpacity
+                )
+                var particleColor = fillColor
+                if config.chromatic {
+                    let hue = CGFloat(fmod(Double(nowMs) * 0.20 + Double(i) * 10.0, 360.0))
+                    particleColor = Self.hslToRgbColor(hueDegrees: hue, saturation: 0.92, lightness: 0.64, alpha: 1.0)
+                }
+                let particleCenter = end
+                let coreRadius = CGFloat(max(0.6, radius))
+                let core = CAShapeLayer()
+                core.frame = containerLayer.bounds
+                core.contentsScale = layerScale
+                core.path = CGPath(
+                    ellipseIn: CGRect(
+                        x: particleCenter.x - coreRadius,
+                        y: particleCenter.y - coreRadius,
+                        width: coreRadius * 2.0,
+                        height: coreRadius * 2.0
+                    ),
+                    transform: nil
+                )
+                core.fillColor = particleColor.withAlphaComponent(CGFloat(alpha)).cgColor
+                core.strokeColor = NSColor.clear.cgColor
+                core.opacity = 1.0
+                containerLayer.addSublayer(core)
+
+                if emitHalo != 0 {
+                    let haloRadiusPx = CGFloat(max(coreRadius, haloRadius))
+                    let halo = CAShapeLayer()
+                    halo.frame = containerLayer.bounds
+                    halo.contentsScale = layerScale
+                    halo.path = CGPath(
+                        ellipseIn: CGRect(
+                            x: particleCenter.x - haloRadiusPx,
+                            y: particleCenter.y - haloRadiusPx,
+                            width: haloRadiusPx * 2.0,
+                            height: haloRadiusPx * 2.0
+                        ),
+                        transform: nil
+                    )
+                    halo.fillColor = particleColor.withAlphaComponent(CGFloat(haloOpacity)).cgColor
+                    halo.strokeColor = NSColor.clear.cgColor
+                    halo.opacity = 1.0
+                    containerLayer.addSublayer(halo)
                 }
             case .tubes:
                 break

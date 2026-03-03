@@ -43,7 +43,16 @@ void mfx_compute_meteor_trail_segment_metrics_v1(
     double* outCoreWidthPx,
     double* outCoreOpacity);
 
+void mfx_compute_particle_trail_segment_metrics_v1(
+    double segmentRatio,
+    double life,
+    double intensity,
+    double* outRadiusPx,
+    double* outOpacity,
+    int* outEmitHalo,
+    double* outHaloRadiusPx,
+    double* outHaloOpacity);
+
 #ifdef __cplusplus
 }
 #endif
-

@@ -13,6 +13,7 @@ enum class LineTrailStyleKind : int32_t {
     Electric = 2,
     Meteor = 3,
     Tubes = 4,
+    Particle = 5,
 };
 
 struct LineTrailConfig final {

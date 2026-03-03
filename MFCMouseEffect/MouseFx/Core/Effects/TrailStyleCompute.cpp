@@ -110,5 +110,27 @@ MeteorSegmentMetrics ComputeMeteorSegmentMetrics(
     return metrics;
 }
 
-} // namespace mousefx::trail_style_compute
+ParticleSegmentMetrics ComputeParticleSegmentMetrics(
+    double segmentRatio,
+    double life,
+    double intensity) {
+    ParticleSegmentMetrics metrics{};
+    const double safeRatio = Clamp01(segmentRatio);
+    const double safeLife = Clamp01(life);
+    const double safeIntensity = Clamp01(intensity);
+    const double energy = ClampDouble(0.35 + safeIntensity * 0.65, 0.35, 1.0);
 
+    metrics.radiusPx = std::max(
+        0.6,
+        (1.2 + 4.8 * safeRatio) * safeLife * (0.8 + 0.5 * energy));
+    metrics.opacity = Clamp01(
+        (0.28 + 0.72 * safeRatio) * safeLife * (0.55 + 0.45 * energy));
+    metrics.emitHalo = (safeRatio > 0.55 && metrics.opacity > 0.03);
+    if (metrics.emitHalo) {
+        metrics.haloRadiusPx = metrics.radiusPx * (1.8 + 0.8 * energy);
+        metrics.haloOpacity = Clamp01(metrics.opacity * 0.35);
+    }
+    return metrics;
+}
+
+} // namespace mousefx::trail_style_compute
