@@ -825,6 +825,39 @@ _mfx_core_http_automation_contract_effect_overlay_checks() {
         "true" \
         "core effect set trail-line command emit"
 
+    local code_effect_state_set_trail_particle
+    code_effect_state_set_trail_particle="$(mfx_http_code "$tmp_dir/effect-state-set-trail-particle.out" "$base_url/api/state" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{"active":{"click":"ripple","trail":"particle","scroll":"helix","hold":"hologram","hover":"tubes"}}')"
+    mfx_assert_eq "$code_effect_state_set_trail_particle" "200" "core effect set trail-particle state post status"
+
+    local code_effect_profile_probe_trail_particle
+    code_effect_profile_probe_trail_particle="$(mfx_http_code "$tmp_dir/effect-render-profile-probe-trail-particle.out" "$base_url/api/effects/test-render-profiles" \
+        -X GET \
+        -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_effect_profile_probe_trail_particle" "200" "core effect set trail-particle render profile probe status"
+
+    _mfx_core_http_automation_assert_active_and_command_type \
+        "$tmp_dir/effect-render-profile-probe-trail-particle.out" \
+        "trail" \
+        "particle" \
+        "particle" \
+        "core effect set trail-particle render profile"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-trail-particle.out" \
+        "trail" \
+        "emit" \
+        "true" \
+        "core effect set trail-particle command emit"
+    _mfx_core_http_automation_assert_command_flag_eq \
+        "$tmp_dir/effect-render-profile-probe-trail-particle.out" \
+        "trail" \
+        "particle_mode" \
+        "true" \
+        "core effect set trail-particle command particle mode"
+
     local code_effect_state_set_trail_none
     code_effect_state_set_trail_none="$(mfx_http_code "$tmp_dir/effect-state-set-trail-none.out" "$base_url/api/state" \
         -X POST \

@@ -42,6 +42,7 @@
     - `trail=none` must not increase active trail overlay window count.
   - Core effects contract now enforces trail command parity from `/api/effects/test-render-profiles`:
     - `active.trail=line` => `command_samples.trail.normalized_type=line` and `emit=true`.
+    - `active.trail=particle` => `command_samples.trail.normalized_type=particle`, `emit=true`, `particle_mode=true`.
     - `active.trail=none` => `command_samples.trail.normalized_type=none` and `emit=false`.
   - Core effects contract now enforces render-profile geometry diagnostics:
     - `effective_timing.click_text_font_size_px` and `click_text_float_distance_px` must stay positive.
