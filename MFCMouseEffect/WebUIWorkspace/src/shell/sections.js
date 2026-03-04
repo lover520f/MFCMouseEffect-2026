@@ -12,9 +12,9 @@ export const CARD_SECTIONS = [
     id: 'active',
     cardClass: 'card-effects',
     titleKey: 'section_effects',
-    titleDefault: 'Active Effects',
+    titleDefault: 'Visual Effects',
     descKey: 'desc_effects',
-    descDefault: 'Select the runtime effect for each mouse interaction channel.',
+    descDefault: 'Choose effects for each interaction, customize text content, and fine-tune trail rendering.',
     mountId: 'effects_settings_mount',
   },
   {
@@ -25,15 +25,6 @@ export const CARD_SECTIONS = [
     descKey: 'desc_input_indicator',
     descDefault: 'Configure visual feedback for click, wheel, and keyboard input.',
     mountId: 'input_indicator_settings_mount',
-  },
-  {
-    id: 'text',
-    cardClass: 'card-text',
-    titleKey: 'section_text',
-    titleDefault: 'Text Content (Click/Text)',
-    descKey: 'desc_text',
-    descDefault: 'Maintain your click text vocabulary and typography in one place.',
-    mountId: 'text_settings_mount',
   },
   {
     id: 'automation',
@@ -54,14 +45,5 @@ export const CARD_SECTIONS = [
     descKey: 'desc_wasm_plugin',
     descDefault: 'Manage effect plugins and runtime diagnostics.',
     mountId: 'wasm_settings_mount',
-  },
-  {
-    id: 'trail',
-    cardClass: 'card-trail',
-    titleKey: 'section_trail_tuning',
-    titleDefault: 'Trail Tuning',
-    descKey: 'desc_trail',
-    descDefault: 'Adjust trail history and renderer parameters with predictable safe limits.',
-    mountId: 'trail_settings_mount',
   },
 ];

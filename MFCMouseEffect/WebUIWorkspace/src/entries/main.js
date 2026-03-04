@@ -1,11 +1,8 @@
 import WorkspaceSidebar from '../WorkspaceSidebar.svelte';
 
-const MODE_STORAGE_KEY = 'mfx_webui_view_mode';
-
 const state = {
   initialized: false,
   hashBound: false,
-  mode: 'focus',
   sections: [],
   activeId: '',
   i18n: null,
@@ -16,28 +13,8 @@ function el(id) {
   return document.getElementById(id);
 }
 
-function normalizeMode(mode) {
-  return mode === 'all' ? 'all' : 'focus';
-}
-
 function currentHashId() {
   return (location.hash || '').replace('#', '').trim();
-}
-
-function readStoredMode() {
-  try {
-    return normalizeMode(window.localStorage.getItem(MODE_STORAGE_KEY) || 'focus');
-  } catch (_e) {
-    return 'focus';
-  }
-}
-
-function persistMode(mode) {
-  try {
-    window.localStorage.setItem(MODE_STORAGE_KEY, normalizeMode(mode));
-  } catch (_e) {
-    // Ignore storage errors in restricted environments.
-  }
 }
 
 function readSectionTitle(card) {
@@ -123,11 +100,8 @@ function sectionsViewModel() {
 function workspaceTexts() {
   const i18n = state.i18n || {};
   return {
-    btn_view_focus: i18n.btn_view_focus || 'Focused View',
-    btn_view_all: i18n.btn_view_all || 'All Sections',
     hint_view_focus: i18n.hint_view_focus || 'Focused view shows one section at a time to reduce noise.',
     workspace_current_label: i18n.workspace_current_label || 'Current Section',
-    view_mode_aria: i18n.view_mode_aria || 'View mode',
     section_nav_aria: i18n.section_nav_aria || 'Settings sections',
   };
 }
@@ -144,14 +118,8 @@ function updateHashIfNeeded(sectionId) {
 }
 
 function applyCardsVisibility() {
-  const grid = el('settings_grid');
-  if (grid) {
-    grid.classList.toggle('is-all-mode', state.mode === 'all');
-  }
-
-  const allMode = state.mode === 'all';
   for (const section of state.sections) {
-    const visible = allMode || section.id === state.activeId;
+    const visible = section.id === state.activeId;
     section.card.classList.toggle('is-active', visible);
     section.card.hidden = !visible;
   }
@@ -162,7 +130,6 @@ function updateSidebarView() {
     return;
   }
   state.component.$set({
-    mode: state.mode,
     sections: sectionsViewModel(),
     summary: activeSectionSummary(),
     texts: workspaceTexts(),
@@ -183,13 +150,6 @@ function render(options) {
   if (opts.updateHash !== false) {
     updateHashIfNeeded(state.activeId);
   }
-
-  if (opts.scroll && state.mode === 'all') {
-    const section = sectionById(state.activeId);
-    if (section) {
-      section.card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
 }
 
 function setActive(sectionId, options) {
@@ -197,19 +157,13 @@ function setActive(sectionId, options) {
   state.activeId = pickAvailableSectionId(sectionId);
   render({
     updateHash: opts.updateHash !== false,
-    scroll: !!opts.scroll,
   });
 }
 
-function setMode(mode, options) {
+function setMode(_mode, options) {
   const opts = options || {};
-  state.mode = normalizeMode(mode);
-  persistMode(state.mode);
-
-  render({
-    updateHash: opts.updateHash !== false,
-    scroll: !!opts.scroll,
-  });
+  // Keep API compatibility, but workspace is now always focused mode.
+  render({ updateHash: opts.updateHash !== false });
 }
 
 function bindHashChange() {
@@ -235,7 +189,6 @@ function ensureSidebarComponent() {
   const component = new WorkspaceSidebar({
     target: mountNode,
     props: {
-      mode: state.mode,
       sections: [],
       summary: { title: '', description: '' },
       texts: workspaceTexts(),
@@ -244,12 +197,7 @@ function ensureSidebarComponent() {
 
   component.$on('select', (event) => {
     const id = event?.detail?.id;
-    setActive(id, { updateHash: true, scroll: state.mode === 'all' });
-  });
-
-  component.$on('mode', (event) => {
-    const mode = event?.detail?.mode;
-    setMode(mode, { updateHash: true, scroll: mode === 'all' });
+    setActive(id, { updateHash: true });
   });
 
   state.component = component;
@@ -260,10 +208,9 @@ function init() {
   ensureSidebarComponent();
   bindHashChange();
 
-  state.mode = readStoredMode();
   state.activeId = pickAvailableSectionId(currentHashId());
 
-  render({ updateHash: true, scroll: false });
+  render({ updateHash: true });
   state.initialized = true;
 }
 
@@ -278,7 +225,7 @@ function refresh() {
   bindHashChange();
 
   state.activeId = pickAvailableSectionId(state.activeId || currentHashId());
-  render({ updateHash: false, scroll: false });
+  render({ updateHash: false });
 }
 
 function syncI18n(i18n) {

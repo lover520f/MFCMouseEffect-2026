@@ -13,6 +13,17 @@
 - Progressive lane: `core` (`mfx_entry_posix_host`).
 - Policy: keep scaffold behavior stable while landing core-lane parity increments.
 
+## Latest Update (2026-03-04)
+- Settings workspace now enforces focused-only navigation (the old `all sections` workspace mode is removed from the left sidebar).
+- `Text Content` and `Trail Tuning` are now integrated as secondary tabs inside `Active Effects`.
+- `Effect Plugins` remains a dedicated top-level settings section.
+- Effects sub-tab selection is now state-controlled by `effects-main` (`active/text/trail`) to prevent remount/refresh from resetting tab focus.
+- Fixed sub-tab switch regression: local tab state now syncs from prop only on actual prop changes (avoids click-time immediate fallback to default tab).
+- Further hardening for sub-tab click interaction: switched to plain `mousedown/click` handlers (removed propagation modifiers) and raised tab-bar/button pointer-event/z-index priority to avoid event loss under overlapping UI layers.
+- Renamed `Active Effects` (特效选择) top-level section to `Visual Effects` (视觉特效) to better represent its combined scope.
+- Sub-tabs renamed with dedicated i18n keys (`Effect Channel`, `Text Config`, `Trail Tuning`) preventing translation clobbering from the sidebar.
+- Moved WebUI status message badge from the top-left floating corner to the center of the main header component (`TopBar.svelte`) for better visual balance and flow.
+
 ## Current Capability Status
 - Effects:
   - macOS supports click/trail/scroll/hold/hover in core lane.

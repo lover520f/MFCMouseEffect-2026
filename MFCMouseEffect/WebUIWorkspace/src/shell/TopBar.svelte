@@ -1,20 +1,38 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from "svelte";
 
   export let actionsDisabled = false;
+  export let statusMessage = "";
+  export let statusTone = "";
 
   const dispatch = createEventDispatcher();
 
   function emitAction(type) {
-    dispatch('action', { type });
+    dispatch("action", { type });
   }
 </script>
 
 <div class="top">
   <div class="brand">
     <div class="t" data-i18n="title">MFCMouseEffect Settings</div>
-    <div class="s" data-i18n="subtitle">Local UI · instant apply · saved to config.json</div>
-    <div class="hint" data-i18n="hint_apply">Change values then click Apply.</div>
+    <div class="s" data-i18n="subtitle">
+      Local UI · instant apply · saved to config.json
+    </div>
+    <div class="hint" data-i18n="hint_apply">
+      Change values then click Apply.
+    </div>
+  </div>
+
+  <div
+    class="top-status"
+    class:show={!!statusMessage}
+    class:warn={statusTone === "warn"}
+    class:ok={statusTone === "ok"}
+    class:offline={statusTone === "offline"}
+    id="status"
+    aria-live="polite"
+  >
+    {statusMessage || ""}
   </div>
 
   <div class="btns">
@@ -36,7 +54,7 @@
       data-i18n-title="tip_reload"
       title="Reload config.json from disk"
       disabled={actionsDisabled}
-      on:click={() => emitAction('reload')}
+      on:click={() => emitAction("reload")}
     >
       Reload
     </button>
@@ -47,7 +65,7 @@
       data-i18n-title="tip_reset"
       title="Reset to defaults"
       disabled={actionsDisabled}
-      on:click={() => emitAction('reset')}
+      on:click={() => emitAction("reset")}
     >
       Reset
     </button>
@@ -58,7 +76,7 @@
       data-i18n-title="tip_stop"
       title="Stop server (reopen from tray)"
       disabled={actionsDisabled}
-      on:click={() => emitAction('stop')}
+      on:click={() => emitAction("stop")}
     >
       Stop
     </button>
@@ -69,7 +87,7 @@
       data-i18n-title="tip_apply"
       title="Apply current form values"
       disabled={actionsDisabled}
-      on:click={() => emitAction('save')}
+      on:click={() => emitAction("save")}
     >
       Apply
     </button>

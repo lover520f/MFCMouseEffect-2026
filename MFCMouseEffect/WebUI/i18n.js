@@ -49,14 +49,16 @@
       status_theme_catalog_picker_failed: "Theme folder picker failed: ",
       status_ready: "Ready.",
       section_general: "General",
-      section_effects: "Active Effects",
-      section_text: "Text Content (Click/Text)",
+      section_effects: "Visual Effects",
+      section_text: "Text Config",
       section_trail_tuning: "Trail Tuning",
       section_input_indicator: "Input Indicator",
       section_automation: "Automation Mapping",
       section_wasm_plugin: "Effect Plugins",
+      tab_effects_channel: "Effect Channel",
+      tab_text_config: "Text Config",
       desc_general: "Pick language, theme, and hold behavior before fine tuning.",
-      desc_effects: "Select the runtime effect for each mouse interaction channel.",
+      desc_effects: "Choose effects for each interaction, customize text content, and fine-tune trail rendering.",
       desc_input_indicator: "Configure visual feedback for click, wheel, and keyboard input.",
       desc_text: "Maintain your click text vocabulary and typography in one place.",
       desc_trail: "Adjust trail history and renderer parameters with predictable safe limits.",
@@ -387,14 +389,16 @@
       status_theme_catalog_picker_failed: "\u4e3b\u9898\u76ee\u5f55\u9009\u62e9\u5931\u8d25\uff1a",
       status_ready: "\u5c31\u7eea\u3002",
       section_general: "\u4e00\u822c",
-      section_effects: "\u7279\u6548\u9009\u62e9",
-      section_text: "\u6587\u5b57\u5185\u5bb9\uff08\u70b9\u51fb/\u6587\u5b57\uff09",
+      section_effects: "\u89c6\u89c9\u7279\u6548",
+      section_text: "\u6587\u5b57\u914d\u7f6e",
       section_trail_tuning: "\u62d6\u5c3e\u8c03\u53c2",
       section_input_indicator: "\u9f20\u6807/\u952e\u76d8\u6307\u793a\u5668",
       section_automation: "\u81ea\u52a8\u5316\u6620\u5c04",
       section_wasm_plugin: "\u7279\u6548\u63d2\u4ef6",
+      tab_effects_channel: "\u6548\u679c\u901a\u9053",
+      tab_text_config: "\u6587\u5b57\u914d\u7f6e",
       desc_general: "\u5148\u5b8c\u6210\u8bed\u8a00\u3001\u4e3b\u9898\u548c\u957f\u6309\u7b56\u7565\uff0c\u518d\u8fdb\u884c\u7ec6\u8282\u8c03\u53c2\u3002",
-      desc_effects: "\u4e3a\u70b9\u51fb\u3001\u62d6\u5c3e\u3001\u6eda\u8f6e\u3001\u957f\u6309\u3001\u60ac\u505c\u5206\u522b\u9009\u62e9\u8fd0\u884c\u65f6\u7279\u6548\u3002",
+      desc_effects: "\u4e3a\u70b9\u51fb\u3001\u62d6\u5c3e\u3001\u6eda\u8f6e\u3001\u957f\u6309\u3001\u60ac\u505c\u9009\u62e9\u7279\u6548\uff0c\u914d\u7f6e\u6587\u5b57\u4e0e\u8c03\u6574\u62d6\u5c3e\u53c2\u6570\u3002",
       desc_input_indicator: "\u7edf\u4e00\u914d\u7f6e\u70b9\u51fb\u3001\u6eda\u8f6e\u4e0e\u952e\u76d8\u7684\u53ef\u89c6\u53cd\u9988\u3002",
       desc_text: "\u5728\u4e00\u5904\u7ef4\u62a4\u70b9\u51fb\u6587\u6848\u5217\u8868\u548c\u5b57\u4f53\u5927\u5c0f\u3002",
       desc_trail: "\u5728\u5b89\u5168\u53d6\u503c\u8303\u56f4\u5185\u5fae\u8c03\u62d6\u5c3e\u5386\u53f2\u548c\u6e32\u67d3\u53c2\u6570\u3002",
@@ -679,7 +683,7 @@
   };
   // Platform-aware text: macOS uses "menu bar" instead of "tray"
   const isMac = /Mac|iPhone|iPad/.test(navigator.platform || '') ||
-                /Mac OS/.test(navigator.userAgent || '');
+    /Mac OS/.test(navigator.userAgent || '');
   if (isMac) {
     // en-US: "tray" → "menu bar"
     const en = I18N["en-US"];
@@ -687,7 +691,7 @@
       for (const k of Object.keys(en)) {
         if (typeof en[k] === 'string') {
           en[k] = en[k].replace(/\bfrom the tray\b/gi, 'from the menu bar')
-                       .replace(/\bfrom tray\b/gi, 'from menu bar');
+            .replace(/\bfrom tray\b/gi, 'from menu bar');
         }
       }
     }

@@ -545,7 +545,7 @@ textarea {
   padding: 6px 2px;
 }
 
-.monitor-row + .monitor-row {
+.monitor-row+.monitor-row {
   border-top: 1px solid rgba(162, 186, 212, 0.45);
 }
 
@@ -963,11 +963,11 @@ textarea {
   gap: 8px;
 }
 
-.automation-collapse > summary {
+.automation-collapse>summary {
   list-style: none;
 }
 
-.automation-collapse > summary::-webkit-details-marker {
+.automation-collapse>summary::-webkit-details-marker {
   display: none;
 }
 
@@ -1364,49 +1364,48 @@ textarea {
   color: #0f4f82;
 }
 
-.status {
-  position: fixed;
-  top: 16px;
-  left: 16px;
-  right: auto;
-  max-width: 420px;
-  min-width: 280px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #b8d5ee;
-  background: #eef7ff;
-  color: #144b78;
-  box-shadow: 0 14px 34px rgba(18, 30, 47, 0.16);
+/* Status badge inside the top header bar (center between brand and buttons) */
+.top-status {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+  padding: 6px 14px;
+  border-radius: 8px;
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   opacity: 0;
-  transform: translateY(-8px);
+  transition: opacity 0.2s ease;
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  z-index: 30;
+  color: transparent;
 }
 
-.status.show {
+.top-status.show {
   opacity: 1;
-  transform: translateY(0);
+  pointer-events: auto;
+  color: #144b78;
+  background: rgba(200, 220, 245, 0.45);
+  border: 1px solid rgba(160, 195, 230, 0.4);
 }
 
-.status.warn {
-  border-color: #e5b6aa;
-  background: #fff0ec;
+.top-status.warn {
   color: #8f3324;
+  background: rgba(255, 230, 220, 0.55);
+  border-color: rgba(220, 170, 150, 0.5);
 }
 
-.status.ok {
-  border-color: #9fd7d1;
-  background: var(--ok-soft);
+.top-status.ok {
   color: #0f5752;
+  background: rgba(180, 230, 220, 0.45);
+  border-color: rgba(140, 210, 200, 0.5);
 }
 
-.status.offline {
-  border-color: #e4bcc1;
-  background: #fff2f4;
+.top-status.offline {
   color: #8f3540;
+  background: rgba(255, 220, 225, 0.55);
+  border-color: rgba(220, 170, 180, 0.5);
 }
 
 .mfx-modal-mask {
@@ -1643,15 +1642,14 @@ textarea {
     margin-top: 6px;
   }
 
-  .status {
-    right: 10px;
-    left: 10px;
-    max-width: none;
-    min-width: 0;
+  .top-status {
+    font-size: 12px;
+    padding: 4px 8px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -1659,4 +1657,42 @@ textarea {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Effects section sub-tabs (global: Svelte scoped CSS extracts to unloaded file) */
+.effects-subtabs {
+  display: grid;
+  gap: 14px;
+}
+
+.effects-subtabs-bar {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid rgba(160, 185, 215, 0.35);
+  padding-bottom: 0;
+}
+
+.effects-subtab-btn {
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(34, 59, 92, 0.6);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 8px 16px;
+  cursor: pointer;
+  position: relative;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.effects-subtab-btn:hover {
+  color: rgba(34, 59, 92, 0.88);
+}
+
+.effects-subtab-btn.is-active {
+  color: rgba(13, 90, 168, 0.95);
+  border-bottom-color: rgba(13, 90, 168, 0.85);
+  font-weight: 700;
 }

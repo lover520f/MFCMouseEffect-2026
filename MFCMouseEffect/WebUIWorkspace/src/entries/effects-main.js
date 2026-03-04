@@ -1,4 +1,4 @@
-import ActiveEffectsFields from '../effects/ActiveEffectsFields.svelte';
+import EffectsSectionTabs from '../effects/EffectsSectionTabs.svelte';
 import { normalizeEffectsProfile } from '../effects/profile-model.js';
 import { createLazyMountBridge } from './lazy-mount.js';
 
@@ -18,7 +18,19 @@ let currentCapabilities = {
   hover: true,
 };
 let currentEffectsProfile = {};
+let currentActiveTab = 'active';
 let showEffectsProfile = false;
+
+function normalizeActiveTab(input) {
+  const value = `${input || ''}`.trim().toLowerCase();
+  if (value === 'text') {
+    return 'text';
+  }
+  if (value === 'trail') {
+    return 'trail';
+  }
+  return 'active';
+}
 
 function normalizeDebugFlag(value) {
   const text = `${value || ''}`.trim().toLowerCase();
@@ -64,24 +76,30 @@ function normalizeEffectCapabilities(input) {
 const bridge = createLazyMountBridge({
   mountId: 'effects_settings_mount',
   initialProps: {
-    clickOptions: [],
-    trailOptions: [],
-    scrollOptions: [],
-    holdOptions: [],
-    hoverOptions: [],
-    effectCapabilities: currentCapabilities,
-    active: currentState,
-    effectsProfile: currentEffectsProfile,
-    showEffectsProfile,
+    activeTab: currentActiveTab,
+    effectProps: {
+      clickOptions: [],
+      trailOptions: [],
+      scrollOptions: [],
+      holdOptions: [],
+      hoverOptions: [],
+      effectCapabilities: currentCapabilities,
+      active: currentState,
+      effectsProfile: currentEffectsProfile,
+      showEffectsProfile,
+    },
   },
   createComponent: (mountNode, props) => {
-    const instance = new ActiveEffectsFields({
+    const instance = new EffectsSectionTabs({
       target: mountNode,
       props,
     });
-    instance.$on('change', (event) => {
+    instance.$on('activeChange', (event) => {
       const detail = event?.detail || {};
       currentState = normalizeActive(detail);
+    });
+    instance.$on('tabChange', (event) => {
+      currentActiveTab = normalizeActiveTab(event?.detail?.tabId);
     });
     return instance;
   },
@@ -98,15 +116,18 @@ function render(payload) {
   currentCapabilities = effectCapabilities;
   currentEffectsProfile = effectsProfile;
   bridge.updateProps({
-    clickOptions: schema.effects?.click || [],
-    trailOptions: schema.effects?.trail || [],
-    scrollOptions: schema.effects?.scroll || [],
-    holdOptions: schema.effects?.hold || [],
-    hoverOptions: schema.effects?.hover || [],
-    effectCapabilities,
-    active,
-    effectsProfile,
-    showEffectsProfile,
+    activeTab: currentActiveTab,
+    effectProps: {
+      clickOptions: schema.effects?.click || [],
+      trailOptions: schema.effects?.trail || [],
+      scrollOptions: schema.effects?.scroll || [],
+      holdOptions: schema.effects?.hold || [],
+      hoverOptions: schema.effects?.hover || [],
+      effectCapabilities,
+      active,
+      effectsProfile,
+      showEffectsProfile,
+    },
   });
 }
 
