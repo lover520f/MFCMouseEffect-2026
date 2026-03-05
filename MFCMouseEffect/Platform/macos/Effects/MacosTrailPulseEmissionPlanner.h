@@ -8,8 +8,8 @@
 namespace mousefx::macos_trail_pulse {
 
 struct TrailPulseEmissionPlannerConfig final {
-    double teleportSkipDistancePx = 900.0;
-    int maxSegments = 8;
+    double teleportSkipDistancePx = 1600.0;
+    int maxSegments = 20;
 };
 
 struct TrailPulseEmissionPlan final {

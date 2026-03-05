@@ -2,6 +2,7 @@
 #include "ParticleTrailWindow.h"
 #include "MouseFx/Core/Effects/TrailStyleCompute.h"
 #include "MouseFx/Utils/TimeUtils.h"
+#include "Platform/windows/Overlay/Win32OverlayTimerSupport.h"
 #include <algorithm>
 #include <cmath>
 
@@ -51,6 +52,7 @@ void ParticleTrailWindow::Shutdown() {
     UnregisterForegroundHook();
     if (hwnd_) {
         KillTimer(hwnd_, kTimerId);
+        frameTimerArmed_ = false;
         DestroyWindow(hwnd_);
         hwnd_ = nullptr;
     }
@@ -109,7 +111,7 @@ bool ParticleTrailWindow::Create() {
     if (rngState_ == 0u) {
         rngState_ = 0x7F4A7C15u;
     }
-    SetTimer(hwnd_, kTimerId, 16, nullptr);
+    UpdateFrameTimerForPoint(nullptr, true);
     ShowWindow(hwnd_, SW_SHOWNA);
     RegisterForegroundHook();
     EnsureTopmostZOrder(true);
@@ -125,6 +127,8 @@ void ParticleTrailWindow::AddCommand(const TrailEffectRenderCommand& command) {
     if (!command.emit || command.normalizedType != "particle") {
         return;
     }
+
+    UpdateFrameTimerForPoint(&command.overlayPoint, false);
 
     const int emitCount = trail_style_compute::ComputeParticleEmitCount(std::max(1.0, command.speedPx));
     if (emitCount <= 0) {
@@ -206,6 +210,8 @@ LRESULT ParticleTrailWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
         break;
     case WM_DESTROY:
         UnregisterForegroundHook();
+        KillTimer(hwnd_, kTimerId);
+        frameTimerArmed_ = false;
         break;
     case kMsgEnsureTopmost:
         EnsureTopmostZOrder(true);
@@ -215,6 +221,7 @@ LRESULT ParticleTrailWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
 }
 
 void ParticleTrailWindow::OnTick() {
+    UpdateFrameTimerForPoint(nullptr, false);
     uint64_t now = NowMs();
     float dt = (now - lastTick_) / 1000.0f;
     if (dt > 0.1f) dt = 0.1f;
@@ -246,6 +253,28 @@ void ParticleTrailWindow::OnTick() {
 
     EnsureTopmostZOrder(false);
     Render();
+}
+
+void ParticleTrailWindow::UpdateFrameTimerForPoint(const ScreenPoint* hintPoint, bool force) {
+    if (!hwnd_) {
+        return;
+    }
+    int desiredIntervalMs = 16;
+    if (hintPoint) {
+        desiredIntervalMs = win32_overlay_timer_support::ResolveTimerIntervalMsForScreenPoint(
+            hintPoint->x,
+            hintPoint->y);
+    } else {
+        desiredIntervalMs = win32_overlay_timer_support::ResolveTimerIntervalMsForCursor();
+    }
+    desiredIntervalMs = std::clamp(desiredIntervalMs, 4, 1000);
+    const UINT desiredTimerMs = static_cast<UINT>(desiredIntervalMs);
+    if (!force && frameTimerArmed_ && frameTimerIntervalMs_ == desiredTimerMs) {
+        return;
+    }
+    SetTimer(hwnd_, kTimerId, desiredTimerMs, nullptr);
+    frameTimerIntervalMs_ = desiredTimerMs;
+    frameTimerArmed_ = true;
 }
 
 void CALLBACK ParticleTrailWindow::ForegroundEventProc(HWINEVENTHOOK, DWORD event, HWND hwnd, LONG, LONG, DWORD, DWORD) {

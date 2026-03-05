@@ -29,9 +29,9 @@ void mfx_macos_hold_pulse_overlay_update_v1(
     int overlayY,
     double baseOpacity,
     unsigned int progressFullMs,
-    unsigned int holdMs);
+    unsigned int holdMs,
+    int holdStyleCode);
 
 #ifdef __cplusplus
 }
 #endif
-

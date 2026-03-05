@@ -31,6 +31,11 @@ nlohmann::json BuildRootFromConfig(const EffectConfig& config) {
         {keys::effect_size_scale::kHold, scales.hold},
         {keys::effect_size_scale::kHover, scales.hover},
     };
+    const EffectConflictPolicyConfig policy =
+        config_internal::SanitizeEffectConflictPolicyConfig(config.effectConflictPolicy);
+    root[keys::kEffectConflictPolicy] = {
+        {keys::effect_conflict_policy::kHoldMovePolicy, policy.holdMovePolicy},
+    };
     root[keys::kEffects] = serialize_internal::BuildEffectsJson(config);
     return root;
 }

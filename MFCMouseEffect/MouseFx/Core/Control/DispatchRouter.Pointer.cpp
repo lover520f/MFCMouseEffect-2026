@@ -14,6 +14,58 @@
 namespace mousefx {
 namespace {
 
+bool IsHoldInteractionActive(AppController* controller) {
+    if (!controller) {
+        return false;
+    }
+    return controller->CurrentHoldDurationMs() >= AppController::HoldDelayMs();
+}
+
+std::string HoldMovePolicy(AppController* controller) {
+    if (!controller) {
+        return "hold_only";
+    }
+    return controller->Config().effectConflictPolicy.holdMovePolicy;
+}
+
+bool ShouldForceBuiltinTrailOnMove(const std::string& normalizedTrailType) {
+    return normalizedTrailType == "line" ||
+           normalizedTrailType == "streamer" ||
+           normalizedTrailType == "electric" ||
+           normalizedTrailType == "meteor" ||
+           normalizedTrailType == "tubes" ||
+           normalizedTrailType == "particle";
+}
+
+bool ShouldSuppressTrailWhileHold(AppController* controller) {
+    if (!controller) {
+        return false;
+    }
+    if (!controller->IsHoldButtonDown()) {
+        return false;
+    }
+    return HoldMovePolicy(controller) == "hold_only";
+}
+
+bool ShouldSuppressHoldUpdateWhileMove(AppController* controller) {
+    if (!IsHoldInteractionActive(controller)) {
+        return false;
+    }
+    return HoldMovePolicy(controller) == "move_only";
+}
+
+bool ShouldUseHoldUpdateTimer(AppController* controller) {
+    if (!controller) {
+        return false;
+    }
+    return HoldMovePolicy(controller) == "hold_only";
+}
+
+bool ShouldSuppressClickAfterHold(AppController* controller) {
+    (void)controller;
+    return true;
+}
+
 #if MFX_PLATFORM_MACOS
 constexpr int kPointerOriginTolerancePx = 6;
 
@@ -74,31 +126,37 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
 
     automationFeature_.OnMouseMove(*ctrl_, pt);
 
+    const bool suppressTrailByPolicy = ShouldSuppressTrailWhileHold(ctrl_);
+    const bool suppressHoldUpdateByPolicy = ShouldSuppressHoldUpdateWhileMove(ctrl_);
+
     IMouseEffect* trailEffect = ctrl_->GetEffect(EffectCategory::Trail);
     bool forceBuiltinTrailOnMove = false;
     if (trailEffect != nullptr) {
         const std::string normalizedTrailType = NormalizeTrailEffectType(trailEffect->TypeName());
-        // Keep line/particle on the built-in trail lane so macOS matches the
-        // Windows trail semantics instead of being overridden by wasm move render.
-        forceBuiltinTrailOnMove =
-            (normalizedTrailType == "line") ||
-            (normalizedTrailType == "particle");
+        // Built-in trail types are rendered by native trail lane. Keep wasm move
+        // routing out of these types to avoid route-switch gaps during hold state
+        // transitions (blend/move-only).
+        forceBuiltinTrailOnMove = ShouldForceBuiltinTrailOnMove(normalizedTrailType);
     }
 
     bool moveRenderedByWasm = false;
     bool moveRouteActive = false;
-    if (!forceBuiltinTrailOnMove) {
+    if (!forceBuiltinTrailOnMove && !suppressTrailByPolicy) {
         moveRouteActive = wasmFeature_.RouteMove(*ctrl_, pt, &moveRenderedByWasm);
     }
-    if ((!moveRouteActive || !moveRenderedByWasm) && (trailEffect != nullptr)) {
+    if (!suppressTrailByPolicy &&
+        (!moveRouteActive || !moveRenderedByWasm) &&
+        (trailEffect != nullptr)) {
         if (auto* effect = trailEffect) {
             effect->OnMouseMove(pt);
         }
     }
 
-    wasmFeature_.RouteHoldUpdateIfActive(*ctrl_, pt, static_cast<uint32_t>(ctrl_->CurrentHoldDurationMs()));
-    if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
-        effect->OnHoldUpdate(pt, ctrl_->CurrentHoldDurationMs());
+    if (!suppressHoldUpdateByPolicy) {
+        wasmFeature_.RouteHoldUpdateIfActive(*ctrl_, pt, static_cast<uint32_t>(ctrl_->CurrentHoldDurationMs()));
+        if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
+            effect->OnHoldUpdate(pt, ctrl_->CurrentHoldDurationMs());
+        }
     }
     return 0;
 }
@@ -144,7 +202,8 @@ intptr_t DispatchRouter::OnScroll(const DispatchMessage& message) {
     if (!forceBuiltinScrollOnWheel) {
         scrollRouteActive = wasmFeature_.RouteScroll(*ctrl_, ev, &scrollRenderedByWasm);
     }
-    if ((!scrollRouteActive || !scrollRenderedByWasm) && (scrollEffect != nullptr)) {
+    if ((!scrollRouteActive || !scrollRenderedByWasm) &&
+        (scrollEffect != nullptr)) {
         scrollEffect->OnScroll(ev);
     }
     return 0;
@@ -177,6 +236,7 @@ intptr_t DispatchRouter::OnButtonDown(const DispatchMessage& message) {
 intptr_t DispatchRouter::OnButtonUp(const DispatchMessage& message) {
     ctrl_->EndHoldTracking();
     ctrl_->CancelPendingHold();
+    ctrl_->DisarmHoldUpdateTimer();
 
     if (ctrl_->IsVmEffectsSuppressed()) {
         automationFeature_.OnSuppressed(*ctrl_);
@@ -208,7 +268,13 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
         if (ctrl_->IsVmEffectsSuppressed()) {
             return 0;
         }
+        if (IsHoldInteractionActive(ctrl_)) {
+            return 0;
+        }
         ScreenPoint pt{};
+        if (!ctrl_->QueryCursorScreenPoint(&pt)) {
+            pt = dispatch_router_detail::MessagePoint(message);
+        }
         if (ctrl_->TryEnterHover(&pt)) {
             bool hoverRenderedByWasm = false;
             const bool hoverRouteActive = wasmFeature_.RouteHoverStart(*ctrl_, pt, &hoverRenderedByWasm);
@@ -227,9 +293,18 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
             ctrl_->ClearPendingHold();
             return 0;
         }
+        const bool moveOnlyPolicy = (HoldMovePolicy(ctrl_) == "move_only");
         ScreenPoint pt{};
         int button = 0;
         if (ctrl_->ConsumePendingHold(&pt, &button)) {
+            if (moveOnlyPolicy) {
+                // In move-only mode, keep long-press lane disabled so trail
+                // rendering is not interrupted by hold start/end churn.
+                ctrl_->DisarmHoldUpdateTimer();
+                return 0;
+            }
+            // For hold-enabled policies, start hold lane after delay.
+            // move_only policy is handled above and does not enter hold lane.
             bool holdRenderedByWasm = false;
             const bool holdRouteActive = wasmFeature_.RouteHoldStart(
                 *ctrl_,
@@ -242,7 +317,84 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
                     effect->OnHoldStart(pt, button);
                 }
             }
-            ctrl_->MarkIgnoreNextClick();
+            if (ShouldSuppressClickAfterHold(ctrl_)) {
+                ctrl_->MarkIgnoreNextClick();
+            }
+            // Start periodic hold-update timer so the overlay animates
+            // even if the cursor is stationary.
+            if (ShouldUseHoldUpdateTimer(ctrl_)) {
+                ctrl_->ArmHoldUpdateTimer();
+            } else {
+                ctrl_->DisarmHoldUpdateTimer();
+            }
+        }
+        return 0;
+    }
+
+    if (timerId == AppController::HoldUpdateTimerId()) {
+        if (!ShouldUseHoldUpdateTimer(ctrl_)) {
+            ctrl_->DisarmHoldUpdateTimer();
+            return 0;
+        }
+        // Persistent state for cursor idle detection across timer ticks.
+        static ScreenPoint sLastTimerPt{0, 0};
+        static int sIdleTicks = 0;
+
+        // Periodic hold overlay update (~60fps) for stationary hold.
+        if (!ctrl_->IsHoldButtonDown() || ctrl_->IsVmEffectsSuppressed()) {
+            ctrl_->DisarmHoldUpdateTimer();
+            sIdleTicks = 0;
+            return 0;
+        }
+        if (!IsHoldInteractionActive(ctrl_)) {
+            return 0;
+        }
+        ScreenPoint pt{};
+        if (!ctrl_->QueryCursorScreenPoint(&pt)) {
+            pt = dispatch_router_detail::MessagePoint(message);
+        }
+#if MFX_PLATFORM_MACOS
+        RepairMacPointerPoint(ctrl_, &pt, false);
+#else
+        ctrl_->RememberLastPointerPoint(pt);
+#endif
+        // Track cursor movement across timer ticks.
+        const bool cursorMoved =
+            (pt.x != sLastTimerPt.x || pt.y != sLastTimerPt.y);
+        sLastTimerPt = pt;
+        if (cursorMoved) {
+            sIdleTicks = 0;
+        } else {
+            ++sIdleTicks;
+        }
+
+        auto* effect = ctrl_->GetEffect(EffectCategory::Hold);
+        if (effect && !effect->IsEffectActive()) {
+            // Hold was ended (e.g. by move_only policy during movement).
+            // Only restart once the cursor has been idle for ~100ms (6 ticks)
+            // to prevent create/destroy flicker during active movement.
+            constexpr int kIdleTicksBeforeRestart = 6;
+            if (sIdleTicks >= kIdleTicksBeforeRestart) {
+                const int trackedButton =
+                    (ctrl_->HoldTrackingButton() != 0)
+                        ? ctrl_->HoldTrackingButton()
+                        : static_cast<int>(MouseButton::Left);
+                bool holdRenderedByWasm = false;
+                const bool holdRouteActive = wasmFeature_.RouteHoldStart(
+                    *ctrl_,
+                    pt,
+                    trackedButton,
+                    static_cast<uint32_t>(ctrl_->CurrentHoldDurationMs()),
+                    &holdRenderedByWasm);
+                if (!holdRouteActive || !holdRenderedByWasm) {
+                    effect->OnHoldStart(pt, trackedButton);
+                }
+            }
+        }
+        wasmFeature_.RouteHoldUpdateIfActive(
+            *ctrl_, pt, static_cast<uint32_t>(ctrl_->CurrentHoldDurationMs()));
+        if (effect) {
+            effect->OnHoldUpdate(pt, ctrl_->CurrentHoldDurationMs());
         }
         return 0;
     }

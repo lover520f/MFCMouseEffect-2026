@@ -57,6 +57,7 @@ private:
     void EnsureTopmostZOrder(bool force = false);
     void RegisterForegroundHook();
     void UnregisterForegroundHook();
+    void UpdateFrameTimerForPoint(const ScreenPoint* hintPoint, bool force);
 
     static const wchar_t* ClassName();
     static bool EnsureClassRegistered();
@@ -79,6 +80,8 @@ private:
     int height_ = 0;
     uint64_t lastTopmostEnsureMs_ = 0;
     HWINEVENTHOOK foregroundHook_ = nullptr;
+    UINT frameTimerIntervalMs_ = 16;
+    bool frameTimerArmed_ = false;
     TrailPoint latestPoint_{};
     bool hasLatestPoint_ = false;
     ScreenPoint lastSamplePt_{};

@@ -21,6 +21,7 @@ void ApplyAutomationSettings(const json& payload, AppController* controller);
 void ApplyWasmSettings(const json& payload, AppController* controller);
 void ApplyTrailTuningSettings(const json& payload, AppController* controller);
 void ApplyEffectSizeScaleSettings(const json& payload, AppController* controller);
+void ApplyEffectConflictPolicySettings(const json& payload, AppController* controller);
 
 } // namespace command_handler_apply_settings
 } // namespace mousefx

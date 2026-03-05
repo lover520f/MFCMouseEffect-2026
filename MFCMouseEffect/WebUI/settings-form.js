@@ -146,6 +146,13 @@
     };
   }
 
+  function normalizeEffectConflictPolicyPayload(value) {
+    const source = value || {};
+    return {
+      hold_move_policy: (source.hold_move_policy || source.hold_move || 'hold_only').toString(),
+    };
+  }
+
   function syncIndicatorPositionUi() {
     const section = inputIndicatorSection();
     if (section && typeof section.syncIndicatorPositionUi === 'function') {
@@ -491,9 +498,13 @@
           hover: getText('hover'),
         },
         effect_size_scales: normalizeEffectSizeScalesPayload({}),
+        effect_conflict_policy: normalizeEffectConflictPolicyPayload({}),
       };
     const activeEffectsState = effectsState?.active || effectsState || {};
     const effectSizeScales = normalizeEffectSizeScalesPayload(effectsState?.effect_size_scales || {});
+    const effectConflictPolicy = normalizeEffectConflictPolicyPayload(
+      effectsState?.effect_conflict_policy || {},
+    );
 
     const textState = (text && typeof text.read === 'function')
       ? text.read()
@@ -565,6 +576,7 @@
         hover: activeEffectsState.hover || '',
       },
       effect_size_scales: effectSizeScales,
+      effect_conflict_policy: effectConflictPolicy,
       text_content: textState.text_content,
       text_font_size: textState.text_font_size,
       trail_style: trailState.trail_style,

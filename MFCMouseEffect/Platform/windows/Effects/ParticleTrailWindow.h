@@ -38,6 +38,7 @@ private:
     void EnsureTopmostZOrder(bool force = false);
     void RegisterForegroundHook();
     void UnregisterForegroundHook();
+    void UpdateFrameTimerForPoint(const ScreenPoint* hintPoint, bool force);
 
     struct Particle {
         float x, y;
@@ -67,6 +68,8 @@ private:
     int height_ = 0;
     uint64_t lastTopmostEnsureMs_ = 0;
     HWINEVENTHOOK foregroundHook_ = nullptr;
+    UINT frameTimerIntervalMs_ = 16;
+    bool frameTimerArmed_ = false;
     float globalHue_ = 0.0f;
     uint32_t rngState_ = 0x7F4A7C15u;
 

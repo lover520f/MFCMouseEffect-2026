@@ -26,6 +26,7 @@ public:
     void OnHoldStart(const ScreenPoint& pt, int button) override;
     void OnHoldUpdate(const ScreenPoint& pt, uint32_t durationMs) override;
     void OnHoldEnd() override;
+    bool IsEffectActive() const override;
 
 private:
     static uint64_t CurrentTickMs();

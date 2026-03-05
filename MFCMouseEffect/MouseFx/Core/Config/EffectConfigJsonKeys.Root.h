@@ -19,6 +19,12 @@ inline constexpr const char kTrailParams[] = "trail_params";
 inline constexpr const char kTrailProfiles[] = "trail_profiles";
 inline constexpr const char kEffects[] = "effects";
 inline constexpr const char kEffectSizeScales[] = "effect_size_scales";
+inline constexpr const char kEffectConflictPolicy[] = "effect_conflict_policy";
+
+namespace effect_conflict_policy {
+inline constexpr const char kHoldMovePolicy[] = "hold_move_policy";
+inline constexpr const char kHoldMoveLegacy[] = "hold_move";
+} // namespace effect_conflict_policy
 
 namespace effect_size_scale {
 inline constexpr const char kClick[] = "click";

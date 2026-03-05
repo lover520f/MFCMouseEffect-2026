@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include "MouseFx/Effects/HoldEffectCommandAdapter.h"
+#include "MouseFx/Styles/ThemeStyle.h"
 #include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 #include "Platform/macos/Effects/MacosEffectRenderProfile.Shared.h"
 
@@ -98,45 +100,42 @@ ScrollRenderProfile ResolveScrollRenderProfile(const EffectConfig& config) {
 HoldRenderProfile ResolveHoldRenderProfile(const EffectConfig& config) {
     const TestProfileTuning tuning = ResolveTestProfileTuning();
     const double holdSizeScale = ResolveCategorySizeScale(config.effectSizeScales.hold);
+    const RippleStyle holdStyle = GetThemePalette(config.theme).hold;
+    const HoldEffectProfile holdComputeProfile = hold_effect_adapter::BuildHoldProfileFromStyle(holdStyle);
     HoldRenderProfile profile{};
-    const int rippleDurationMs = ClampInt(config.ripple.durationMs, 180, 1200);
-    const double rawBreatheDurationSec =
-        detail::ClampDouble(static_cast<double>(rippleDurationMs) / 1000.0 * 2.57, 0.55, 2.8);
-    const double rawRotateDurationSec = detail::ClampDouble(rawBreatheDurationSec * 2.44, 1.2, 4.0);
-    const double rawRotateDurationFastSec = detail::ClampDouble(rawRotateDurationSec * 0.68, 0.7, 2.4);
-    profile.sizePx =
-        detail::ScaleInt(ClampInt(config.ripple.windowSize + 68, 140, 260), tuning.sizeScale, 96, 520);
+    profile.sizePx = detail::ScaleInt(
+        ClampInt(holdComputeProfile.sizePx, 64, 640),
+        tuning.sizeScale,
+        96,
+        520);
     profile.sizePx = detail::ScaleInt(profile.sizePx, holdSizeScale, 96, 780);
     profile.progressFullMs = detail::ScaleInt(
-        ClampInt(static_cast<int>(std::lround(rippleDurationMs * 4.0)), 800, 3000),
+        ClampInt(holdComputeProfile.progressFullMs, 1, 60000),
         tuning.durationScale,
         300,
         8000);
     profile.breatheDurationSec = detail::ScaleDouble(
-        rawBreatheDurationSec,
+        holdComputeProfile.breatheDurationSec,
         tuning.durationScale,
         0.18,
         6.0);
-    profile.rotateDurationSec = detail::ScaleDouble(rawRotateDurationSec, tuning.durationScale, 0.4, 9.0);
+    profile.rotateDurationSec = detail::ScaleDouble(holdComputeProfile.rotateDurationSec, tuning.durationScale, 0.4, 9.0);
     profile.rotateDurationFastSec = detail::ScaleDouble(
-        rawRotateDurationFastSec,
+        holdComputeProfile.rotateDurationFastSec,
         tuning.durationScale,
         0.2,
         6.0);
-    profile.baseOpacity = ScaleOpacity(0.92, tuning.opacityScale);
+    profile.baseOpacity = ScaleOpacity(holdComputeProfile.baseOpacity, tuning.opacityScale);
 
-    profile.colors.leftBaseStrokeArgb = config.ripple.leftClick.stroke.value;
-    profile.colors.rightBaseStrokeArgb = config.ripple.rightClick.stroke.value;
-    profile.colors.middleBaseStrokeArgb = config.ripple.middleClick.stroke.value;
-
-    profile.colors.lightningStrokeArgb = ScaleArgbBrightness(config.ripple.leftClick.stroke.value, 1.12);
-    profile.colors.hexStrokeArgb = ScaleArgbBrightness(config.ripple.middleClick.stroke.value, 1.08);
-    profile.colors.hologramStrokeArgb =
-        BlendArgb(config.ripple.leftClick.stroke.value, config.ripple.middleClick.stroke.value, 0.42);
-    profile.colors.quantumHaloStrokeArgb = ScaleArgbBrightness(config.ripple.leftClick.stroke.value, 1.20);
-    profile.colors.fluxFieldStrokeArgb = ScaleArgbBrightness(config.ripple.middleClick.stroke.value, 1.14);
-    profile.colors.techNeonStrokeArgb =
-        BlendArgb(config.ripple.leftClick.stroke.value, config.ripple.rightClick.stroke.value, 0.20);
+    profile.colors.leftBaseStrokeArgb = holdComputeProfile.colors.leftBaseStrokeArgb;
+    profile.colors.rightBaseStrokeArgb = holdComputeProfile.colors.rightBaseStrokeArgb;
+    profile.colors.middleBaseStrokeArgb = holdComputeProfile.colors.middleBaseStrokeArgb;
+    profile.colors.lightningStrokeArgb = holdComputeProfile.colors.lightningStrokeArgb;
+    profile.colors.hexStrokeArgb = holdComputeProfile.colors.hexStrokeArgb;
+    profile.colors.hologramStrokeArgb = holdComputeProfile.colors.hologramStrokeArgb;
+    profile.colors.quantumHaloStrokeArgb = holdComputeProfile.colors.quantumHaloStrokeArgb;
+    profile.colors.fluxFieldStrokeArgb = holdComputeProfile.colors.fluxFieldStrokeArgb;
+    profile.colors.techNeonStrokeArgb = holdComputeProfile.colors.techNeonStrokeArgb;
     return profile;
 }
 

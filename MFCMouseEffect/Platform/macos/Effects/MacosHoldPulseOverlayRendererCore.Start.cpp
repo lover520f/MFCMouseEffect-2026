@@ -35,37 +35,6 @@ int ToBridgeHoldStyleCode(detail::HoldStyle holdStyle) {
     }
 }
 
-uint32_t ResolveHoldBaseStrokeArgb(
-    MouseButton button,
-    detail::HoldStyle style,
-    const macos_effect_profile::HoldRenderProfile& profile) {
-    if (style == detail::HoldStyle::Lightning) {
-        return profile.colors.lightningStrokeArgb;
-    }
-    if (style == detail::HoldStyle::Hex) {
-        return profile.colors.hexStrokeArgb;
-    }
-    if (style == detail::HoldStyle::Hologram) {
-        return profile.colors.hologramStrokeArgb;
-    }
-    if (style == detail::HoldStyle::QuantumHalo) {
-        return profile.colors.quantumHaloStrokeArgb;
-    }
-    if (style == detail::HoldStyle::FluxField) {
-        return profile.colors.fluxFieldStrokeArgb;
-    }
-    if (style == detail::HoldStyle::TechRing || style == detail::HoldStyle::Neon) {
-        return profile.colors.techNeonStrokeArgb;
-    }
-    if (button == MouseButton::Right) {
-        return profile.colors.rightBaseStrokeArgb;
-    }
-    if (button == MouseButton::Middle) {
-        return profile.colors.middleBaseStrokeArgb;
-    }
-    return profile.colors.leftBaseStrokeArgb;
-}
-
 macos_effect_profile::HoldRenderProfile BuildProfile(const HoldEffectStartCommand& command) {
     macos_effect_profile::HoldRenderProfile profile{};
     profile.sizePx = command.sizePx;
@@ -100,7 +69,6 @@ void StartHoldPulseOverlayOnMain(const HoldEffectStartCommand& command, const st
     const std::string holdType = detail::NormalizeHoldType(command.normalizedType);
     const detail::HoldStyle holdStyle = detail::ResolveHoldStyle(holdType);
     const macos_effect_profile::HoldRenderProfile profile = BuildProfile(command);
-    const uint32_t baseStrokeArgb = ResolveHoldBaseStrokeArgb(command.button, holdStyle, profile);
     const double size = static_cast<double>(std::max(command.sizePx, 1));
     const CGRect rawFrame = CGRectMake(
         command.overlayPoint.x - size * 0.5,
@@ -117,7 +85,7 @@ void StartHoldPulseOverlayOnMain(const HoldEffectStartCommand& command, const st
         size,
         command.overlayPoint.x,
         command.overlayPoint.y,
-        baseStrokeArgb,
+        command.strokeArgb,
         ToBridgeHoldStyleCode(holdStyle),
         command.baseOpacity,
         command.breatheDurationSec,
@@ -139,75 +107,6 @@ void StartHoldPulseOverlayOnMain(const HoldEffectStartCommand& command, const st
     state.style = holdStyle;
     state.effectType = holdType;
     state.button = command.button;
-#endif
-}
-
-void StartHoldPulseOverlayOnMain(
-    const ScreenPoint& overlayPt,
-    MouseButton button,
-    const std::string& effectType,
-    const std::string& themeName,
-    const macos_effect_profile::HoldRenderProfile& profile) {
-#if !defined(__APPLE__)
-    (void)overlayPt;
-    (void)button;
-    (void)effectType;
-    (void)themeName;
-    (void)profile;
-    return;
-#else
-    HoldEffectStartCommand command{};
-    command.overlayPoint = overlayPt;
-    command.button = button;
-    command.normalizedType = effectType;
-    command.sizePx = profile.sizePx;
-    command.progressFullMs = profile.progressFullMs;
-    command.breatheDurationSec = profile.breatheDurationSec;
-    command.rotateDurationSec = profile.rotateDurationSec;
-    command.rotateDurationFastSec = profile.rotateDurationFastSec;
-    command.baseOpacity = profile.baseOpacity;
-    command.colors.leftBaseStrokeArgb = profile.colors.leftBaseStrokeArgb;
-    command.colors.rightBaseStrokeArgb = profile.colors.rightBaseStrokeArgb;
-    command.colors.middleBaseStrokeArgb = profile.colors.middleBaseStrokeArgb;
-    command.colors.lightningStrokeArgb = profile.colors.lightningStrokeArgb;
-    command.colors.hexStrokeArgb = profile.colors.hexStrokeArgb;
-    command.colors.hologramStrokeArgb = profile.colors.hologramStrokeArgb;
-    command.colors.quantumHaloStrokeArgb = profile.colors.quantumHaloStrokeArgb;
-    command.colors.fluxFieldStrokeArgb = profile.colors.fluxFieldStrokeArgb;
-    command.colors.techNeonStrokeArgb = profile.colors.techNeonStrokeArgb;
-    StartHoldPulseOverlayOnMain(command, themeName);
-#endif
-}
-
-void UpdateHoldPulseOverlayOnMain(const ScreenPoint& overlayPt, uint32_t holdMs) {
-#if !defined(__APPLE__)
-    (void)overlayPt;
-    (void)holdMs;
-    return;
-#else
-    detail::HoldOverlayState& state = detail::State();
-    if (state.windowHandle == nullptr || state.ringHandle == nullptr) {
-        return;
-    }
-
-    const double size = static_cast<double>(std::max(state.overlaySizePx, 1));
-    const CGRect rawFrame = CGRectMake(
-        overlayPt.x - size * 0.5,
-        overlayPt.y - size * 0.5,
-        size,
-        size);
-    const CGRect clampedFrame = macos_overlay_support::ClampOverlayFrameToScreenBounds(rawFrame, overlayPt);
-    mfx_macos_hold_pulse_overlay_update_v1(
-        state.windowHandle,
-        state.ringHandle,
-        state.accentHandle,
-        static_cast<double>(clampedFrame.origin.x),
-        static_cast<double>(clampedFrame.origin.y),
-        overlayPt.x,
-        overlayPt.y,
-        state.profile.baseOpacity,
-        static_cast<uint32_t>(std::max(0, state.profile.progressFullMs)),
-        holdMs);
 #endif
 }
 

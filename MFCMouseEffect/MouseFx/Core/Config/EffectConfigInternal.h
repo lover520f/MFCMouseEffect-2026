@@ -72,6 +72,7 @@ inline std::string NormalizeHoldFollowMode(std::string mode) {
 std::string NormalizeHoldPresenterBackend(std::string backend);
 int SanitizeOverlayTargetFps(int targetFps);
 EffectSizeScaleConfig SanitizeEffectSizeScaleConfig(EffectSizeScaleConfig scales);
+EffectConflictPolicyConfig SanitizeEffectConflictPolicyConfig(EffectConflictPolicyConfig policy);
 TrailHistoryProfile SanitizeTrailHistoryProfile(TrailHistoryProfile profile);
 TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig params);
 InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig config);

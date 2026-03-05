@@ -3,6 +3,7 @@
 #include "MouseFx/Core/System/CursorPositionProvider.h"
 #include "MouseFx/Utils/TrailColor.h"
 #include "MouseFx/Utils/TimeUtils.h"
+#include "Platform/windows/Overlay/Win32OverlayTimerSupport.h"
 #include <algorithm>
 
 #pragma comment(lib, "gdiplus.lib")
@@ -24,6 +25,7 @@ void TrailWindow::Shutdown() {
     UnregisterForegroundHook();
     if (hwnd_) {
         KillTimer(hwnd_, kTimerId);
+        frameTimerArmed_ = false;
         DestroyWindow(hwnd_);
         hwnd_ = nullptr;
     }
@@ -81,7 +83,7 @@ bool TrailWindow::Create() {
     EnsureSurface(w, h);
     
     // Start loop
-    SetTimer(hwnd_, kTimerId, 16, nullptr); // ~60fps
+    UpdateFrameTimerForPoint(nullptr, true);
     ShowWindow(hwnd_, SW_SHOWNA);
     RegisterForegroundHook();
     EnsureTopmostZOrder(true);
@@ -92,6 +94,7 @@ bool TrailWindow::Create() {
 void TrailWindow::AddPoint(const TrailPoint& point) {
     latestPoint_ = point;
     hasLatestPoint_ = true;
+    UpdateFrameTimerForPoint(&point.pt, false);
 }
 
 void TrailWindow::Clear() {
@@ -130,6 +133,7 @@ LRESULT TrailWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     case WM_DESTROY:
         UnregisterForegroundHook();
         KillTimer(hwnd_, kTimerId);
+        frameTimerArmed_ = false;
         break;
     case kMsgEnsureTopmost:
         EnsureTopmostZOrder(true);
@@ -139,6 +143,7 @@ LRESULT TrailWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
 }
 
 void TrailWindow::OnTick() {
+    UpdateFrameTimerForPoint(nullptr, false);
     uint64_t now = NowMs();
     SampleCursorPoint(now);
     
@@ -155,6 +160,28 @@ void TrailWindow::OnTick() {
     // Always render (or optimize to only render if dirty? For smooth fadeout we need to render always)
     EnsureTopmostZOrder(false);
     Render();
+}
+
+void TrailWindow::UpdateFrameTimerForPoint(const ScreenPoint* hintPoint, bool force) {
+    if (!hwnd_) {
+        return;
+    }
+    int desiredIntervalMs = 16;
+    if (hintPoint) {
+        desiredIntervalMs = win32_overlay_timer_support::ResolveTimerIntervalMsForScreenPoint(
+            hintPoint->x,
+            hintPoint->y);
+    } else {
+        desiredIntervalMs = win32_overlay_timer_support::ResolveTimerIntervalMsForCursor();
+    }
+    desiredIntervalMs = std::clamp(desiredIntervalMs, 4, 1000);
+    const UINT desiredTimerMs = static_cast<UINT>(desiredIntervalMs);
+    if (!force && frameTimerArmed_ && frameTimerIntervalMs_ == desiredTimerMs) {
+        return;
+    }
+    SetTimer(hwnd_, kTimerId, desiredTimerMs, nullptr);
+    frameTimerIntervalMs_ = desiredTimerMs;
+    frameTimerArmed_ = true;
 }
 
 void TrailWindow::SampleCursorPoint(uint64_t nowMs) {

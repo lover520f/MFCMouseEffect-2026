@@ -12,6 +12,8 @@
 #include "Platform/PlatformTarget.h"
 #if MFX_PLATFORM_MACOS
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
+#elif MFX_PLATFORM_WINDOWS
+#include "Platform/windows/Overlay/Win32OverlayTimerSupport.h"
 #endif
 
 #include <cmath>
@@ -21,6 +23,8 @@ namespace mousefx {
 void AppController::ApplyOverlayTargetFpsToPlatform() {
 #if MFX_PLATFORM_MACOS
     macos_overlay_support::SetOverlayTargetFps(config_.overlayTargetFps);
+#elif MFX_PLATFORM_WINDOWS
+    win32_overlay_timer_support::SetOverlayTargetFps(config_.overlayTargetFps);
 #endif
 }
 
@@ -125,6 +129,18 @@ void AppController::SetEffectSizeScales(const EffectSizeScaleConfig& scales) {
     if (IsActiveEffectEnabled(EffectCategory::Hover)) {
         ReapplyActiveEffect(EffectCategory::Hover);
     }
+}
+
+void AppController::SetEffectConflictPolicy(const EffectConflictPolicyConfig& policy) {
+    const EffectConflictPolicyConfig normalized =
+        config_internal::SanitizeEffectConflictPolicyConfig(policy);
+    const EffectConflictPolicyConfig current =
+        config_internal::SanitizeEffectConflictPolicyConfig(config_.effectConflictPolicy);
+    if (current.holdMovePolicy == normalized.holdMovePolicy) {
+        return;
+    }
+    config_.effectConflictPolicy = normalized;
+    PersistConfig();
 }
 
 void AppController::SetThemeCatalogRootPath(const std::string& rootPath) {

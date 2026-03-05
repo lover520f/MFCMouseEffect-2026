@@ -146,15 +146,9 @@ inline ScrollHelixFrameData ComputeHelixFrame(
             Mix(glowR, 1.0f, sm2), Mix(glowG, 1.0f, sm2), Mix(glowB, 1.0f, sm2), avgA2
         });
 
-        if (i % 8 == 0) {
-            float rz = (avgZ + avgZ2) * 0.5f - 0.015f;
-            float rw = std::max(1.0f, (strokeWidth + 0.5f) * 0.34f);
-            float ra = Clamp01((avgA + avgA2) * 0.34f);
-            frame.segments.push_back({
-                rz, p1.x, p1.y, q1.x, q1.y, rw,
-                Mix(strokeR, glowR, 0.5f), Mix(strokeG, glowG, 0.5f), Mix(strokeB, glowB, 0.5f), ra
-            });
-        }
+        // Keep helix strands independent (no ladder-style crossbars).
+        // This preserves the expected "double helix" visual semantics on both
+        // Windows and macOS because both platforms consume this shared frame data.
     }
 
     std::sort(frame.segments.begin(), frame.segments.end(),

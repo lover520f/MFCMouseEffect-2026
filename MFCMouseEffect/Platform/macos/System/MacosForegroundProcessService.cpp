@@ -29,7 +29,10 @@ std::string MacosForegroundProcessService::CurrentProcessBaseName() {
     }
 
     lastCheckTickMs_ = nowTickMs;
-    lastProcessBaseName_ = QueryForegroundProcessBaseName();
+    const std::string resolvedProcessName = QueryForegroundProcessBaseName();
+    if (!resolvedProcessName.empty()) {
+        lastProcessBaseName_ = resolvedProcessName;
+    }
     return lastProcessBaseName_;
 }
 

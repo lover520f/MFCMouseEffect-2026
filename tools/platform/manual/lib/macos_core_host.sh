@@ -10,6 +10,8 @@ MFX_MANUAL_LOG_FILE=""
 MFX_MANUAL_HOST_BIN=""
 MFX_MANUAL_STARTUP_SKIP_REASON=""
 MFX_MANUAL_STARTUP_DIAGNOSTICS_FILE=""
+MFX_MANUAL_SINGLE_INSTANCE_SEQ=0
+MFX_MANUAL_START_SEQ=0
 
 _mfx_manual_allow_bind_eacces_skip() {
     local raw="${MFX_MANUAL_ALLOW_BIND_EACCES_SKIP:-0}"
@@ -84,13 +86,10 @@ _mfx_manual_resolve_single_instance_key() {
         printf '%s' "$explicit_key"
         return 0
     fi
-    if _mfx_manual_allow_bind_eacces_skip; then
-        local stamp="0"
-        stamp="$(date +%s 2>/dev/null || printf '0')"
-        printf 'Global\\MFCMouseEffect_ManualSelfcheck_%s_%s' "$$" "$stamp"
-        return 0
-    fi
-    printf ''
+    local stamp="0"
+    stamp="$(date +%s 2>/dev/null || printf '0')"
+    MFX_MANUAL_SINGLE_INSTANCE_SEQ=$((MFX_MANUAL_SINGLE_INSTANCE_SEQ + 1))
+    printf 'Global\\MFCMouseEffect_ManualSelfcheck_%s_%s_%s' "$$" "$stamp" "$MFX_MANUAL_SINGLE_INSTANCE_SEQ"
 }
 
 mfx_manual_probe_value() {
@@ -137,6 +136,7 @@ mfx_manual_assert_core_api_ready() {
     local base_url="${1:-$MFX_MANUAL_BASE_URL}"
     local token="${2:-$MFX_MANUAL_SETTINGS_TOKEN}"
     local context="${3:-manual core host startup}"
+    local host_pid="${4:-}"
     if [[ -z "$base_url" || -z "$token" ]]; then
         mfx_fail "$context missing base_url/token for core API readiness check"
     fi
@@ -145,9 +145,20 @@ mfx_manual_assert_core_api_ready() {
     fi
 
     local state_url
+    local attempts="${MFX_MANUAL_API_READY_ATTEMPTS:-80}"
+    local sleep_seconds="${MFX_MANUAL_API_READY_SLEEP_SECONDS:-0.1}"
+    if ! [[ "$attempts" =~ ^[0-9]+$ ]] || [[ "$attempts" -le 0 ]]; then
+        attempts=80
+    fi
+    if ! [[ "$sleep_seconds" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+        sleep_seconds=0.1
+    fi
     state_url="$(mfx_manual_trim_trailing_slash "$base_url")/api/state"
     local http_code=""
-    for _ in $(seq 1 30); do
+    for _ in $(seq 1 "$attempts"); do
+        if [[ -n "$host_pid" ]] && ! kill -0 "$host_pid" 2>/dev/null; then
+            mfx_fail "$context failed: host exited before /api/state became ready (pid=$host_pid)"
+        fi
         http_code="$(
             curl -sS -m 2 -o /dev/null -w "%{http_code}" \
                 -H "x-mfcmouseeffect-token: $token" \
@@ -159,7 +170,7 @@ mfx_manual_assert_core_api_ready() {
         if [[ "$http_code" == "404" ]]; then
             mfx_fail "$context failed: /api/state returned 404 (host is likely scaffold lane). Rebuild without --skip-build or use a core-runtime build directory."
         fi
-        sleep 0.1
+        sleep "$sleep_seconds"
     done
 
     mfx_fail "$context failed: /api/state not ready (last_http_code=${http_code:-<empty>})"
@@ -171,7 +182,10 @@ mfx_manual_start_core_host() {
     local log_file="$3"
     shift 3
     local -a extra_env=("$@")
+    MFX_MANUAL_START_SEQ=$((MFX_MANUAL_START_SEQ + 1))
+    local start_probe_file="${probe_file}.run-${MFX_MANUAL_START_SEQ}"
     local diagnostics_file="${probe_file}.diagnostics"
+    local start_diagnostics_file="${start_probe_file}.diagnostics"
     local single_instance_key=""
     single_instance_key="$(_mfx_manual_resolve_single_instance_key)"
     local -a host_args=(--mode=tray)
@@ -185,7 +199,7 @@ mfx_manual_start_core_host() {
 
     mfx_terminate_stale_entry_host "before manual host start"
 
-    rm -f "$probe_file" "$diagnostics_file"
+    rm -f "$probe_file" "$diagnostics_file" "$start_probe_file" "$start_diagnostics_file"
     MFX_MANUAL_STARTUP_SKIP_REASON=""
     MFX_MANUAL_STARTUP_DIAGNOSTICS_FILE="$diagnostics_file"
 
@@ -193,14 +207,14 @@ mfx_manual_start_core_host() {
     if [[ -n "$single_instance_key" ]]; then
         mfx_info "manual host single-instance key: $single_instance_key"
     fi
-    nohup env MFX_CORE_WEB_SETTINGS_PROBE_FILE="$probe_file" \
-        MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE="$diagnostics_file" \
+    nohup env MFX_CORE_WEB_SETTINGS_PROBE_FILE="$start_probe_file" \
+        MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE="$start_diagnostics_file" \
         "${extra_env[@]}" \
         "$host_bin" "${host_args[@]}" >"$log_file" 2>&1 &
     local pid="$!"
 
     for _ in $(seq 1 100); do
-        if [[ -s "$probe_file" ]]; then
+        if [[ -s "$start_probe_file" ]]; then
             break
         fi
         if ! kill -0 "$pid" 2>/dev/null; then
@@ -210,12 +224,12 @@ mfx_manual_start_core_host() {
     done
 
     if ! kill -0 "$pid" 2>/dev/null; then
-        if _mfx_manual_allow_bind_eacces_skip && _mfx_manual_bind_permission_denied "$log_file" "$diagnostics_file"; then
+        if _mfx_manual_allow_bind_eacces_skip && _mfx_manual_bind_permission_denied "$log_file" "$start_diagnostics_file"; then
             _mfx_manual_mark_bind_eacces_skip
             return 2
         fi
         if _mfx_manual_allow_bind_eacces_skip && \
-            _mfx_manual_early_exit_without_probe "$probe_file" "$log_file" "$diagnostics_file"; then
+            _mfx_manual_early_exit_without_probe "$start_probe_file" "$log_file" "$start_diagnostics_file"; then
             _mfx_manual_mark_early_exit_skip
             return 2
         fi
@@ -223,19 +237,26 @@ mfx_manual_start_core_host() {
         mfx_fail "host exited early"
     fi
 
+    if [[ -s "$start_probe_file" ]]; then
+        cp -f "$start_probe_file" "$probe_file" >/dev/null 2>&1 || true
+    fi
+    if [[ -s "$start_diagnostics_file" ]]; then
+        cp -f "$start_diagnostics_file" "$diagnostics_file" >/dev/null 2>&1 || true
+    fi
+
     local settings_url
-    settings_url="$(mfx_manual_probe_value "url" "$probe_file")"
+    settings_url="$(mfx_manual_probe_value "url" "$start_probe_file")"
     local token
-    token="$(mfx_manual_probe_value "token" "$probe_file")"
+    token="$(mfx_manual_probe_value "token" "$start_probe_file")"
     if [[ -z "$settings_url" || -z "$token" ]]; then
-        if _mfx_manual_allow_bind_eacces_skip && _mfx_manual_bind_permission_denied "$log_file" "$diagnostics_file"; then
+        if _mfx_manual_allow_bind_eacces_skip && _mfx_manual_bind_permission_denied "$log_file" "$start_diagnostics_file"; then
             kill -TERM "$pid" 2>/dev/null || true
             wait "$pid" 2>/dev/null || true
             _mfx_manual_mark_bind_eacces_skip
             return 2
         fi
         tail -n 80 "$log_file" >&2 || true
-        mfx_fail "probe file missing url/token: $probe_file"
+        mfx_fail "probe file missing url/token: $start_probe_file"
     fi
 
     MFX_MANUAL_HOST_PID="$pid"
@@ -243,7 +264,11 @@ mfx_manual_start_core_host() {
     MFX_MANUAL_SETTINGS_TOKEN="$token"
     MFX_MANUAL_BASE_URL="$(mfx_manual_trim_trailing_slash "${settings_url%%\?*}")"
     MFX_MANUAL_LOG_FILE="$log_file"
-    mfx_manual_assert_core_api_ready "$MFX_MANUAL_BASE_URL" "$MFX_MANUAL_SETTINGS_TOKEN" "manual core host startup"
+    mfx_manual_assert_core_api_ready \
+        "$MFX_MANUAL_BASE_URL" \
+        "$MFX_MANUAL_SETTINGS_TOKEN" \
+        "manual core host startup" \
+        "$MFX_MANUAL_HOST_PID"
 }
 
 mfx_manual_stop_core_host() {

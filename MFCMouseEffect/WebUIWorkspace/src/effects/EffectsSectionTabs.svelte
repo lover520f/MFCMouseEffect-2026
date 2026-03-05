@@ -2,6 +2,7 @@
   import { createEventDispatcher } from "svelte";
   import ActiveEffectsFields from "./ActiveEffectsFields.svelte";
   import EffectSizeFields from "./EffectSizeFields.svelte";
+  import EffectConflictPolicyFields from "./EffectConflictPolicyFields.svelte";
 
   export let effectProps = {};
   export let activeTab = "active";
@@ -12,6 +13,7 @@
   const TAB_TEXT = "text";
   const TAB_TRAIL = "trail";
   const TAB_SIZE = "size";
+  const TAB_CONFLICT = "conflict";
 
   function normalizeTab(tabId) {
     if (tabId === TAB_TEXT) {
@@ -22,6 +24,9 @@
     }
     if (tabId === TAB_SIZE) {
       return TAB_SIZE;
+    }
+    if (tabId === TAB_CONFLICT) {
+      return TAB_CONFLICT;
     }
     return TAB_ACTIVE;
   }
@@ -46,6 +51,7 @@
   $: isTextTab = selectedTab === TAB_TEXT;
   $: isTrailTab = selectedTab === TAB_TRAIL;
   $: isSizeTab = selectedTab === TAB_SIZE;
+  $: isConflictTab = selectedTab === TAB_CONFLICT;
 
   function handleActiveEffectChange(event) {
     dispatch("activeChange", event?.detail || {});
@@ -53,6 +59,10 @@
 
   function handleSizeScaleChange(event) {
     dispatch("sizeChange", event?.detail || {});
+  }
+
+  function handleConflictPolicyChange(event) {
+    dispatch("conflictPolicyChange", event?.detail || {});
   }
 
   function normalizeEffectProps(input) {
@@ -68,6 +78,8 @@
       effectsProfile: value.effectsProfile || {},
       showEffectsProfile: !!value.showEffectsProfile,
       effectSizeScales: value.effectSizeScales || {},
+      effectConflictPolicy: value.effectConflictPolicy || {},
+      effectConflictPolicyOptions: value.effectConflictPolicyOptions || {},
     };
   }
 
@@ -124,6 +136,17 @@
     >
       Effect Size
     </button>
+    <button
+      type="button"
+      role="tab"
+      class="effects-subtab-btn"
+      class:is-active={isConflictTab}
+      aria-selected={isConflictTab ? "true" : "false"}
+      data-i18n="tab_effect_conflict_policy"
+      on:click={() => selectTab(TAB_CONFLICT)}
+    >
+      Hold-Move Policy
+    </button>
   </div>
 
   <div
@@ -173,6 +196,19 @@
     <EffectSizeFields
       scales={normalizedEffectProps.effectSizeScales}
       on:change={handleSizeScaleChange}
+    />
+  </div>
+
+  <div
+    class="effects-subtab-panel"
+    role="tabpanel"
+    style:display={isConflictTab ? "" : "none"}
+    aria-label="effect-conflict-policy"
+  >
+    <EffectConflictPolicyFields
+      policy={normalizedEffectProps.effectConflictPolicy}
+      options={normalizedEffectProps.effectConflictPolicyOptions}
+      on:change={handleConflictPolicyChange}
     />
   </div>
 </div>

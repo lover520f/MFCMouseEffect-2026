@@ -146,7 +146,8 @@ void AppController::OnDispatchActivity(DispatchMessageKind kind, uint32_t timerI
          kind == DispatchMessageKind::Key);
     const bool isStateTimerMsg =
         (kind == DispatchMessageKind::Timer &&
-         (timerId == kHoverTimerId || timerId == kHoldTimerId));
+         (timerId == kHoverTimerId ||
+          timerId == kHoldTimerId));
     const bool isInputCaptureHealthTimerMsg =
         (kind == DispatchMessageKind::Timer && timerId == kInputCaptureHealthTimerId);
     if (isStateTimerMsg || isInputCaptureHealthTimerMsg) {

@@ -1,6 +1,24 @@
 import AppKit
 import Foundation
 
+private final class ForegroundNameBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value = ""
+
+    func store(_ newValue: String) {
+        lock.lock()
+        value = newValue
+        lock.unlock()
+    }
+
+    func load() -> String {
+        lock.lock()
+        let snapshot = value
+        lock.unlock()
+        return snapshot
+    }
+}
+
 private func mfxCopyCString(_ value: String, _ outBuffer: UnsafeMutablePointer<CChar>?, _ capacity: Int32) {
     guard let outBuffer, capacity > 0 else {
         return
@@ -82,13 +100,20 @@ public func mfx_macos_resolve_foreground_process_name_v1(
             mfxResolveForegroundProcessNameOnMainThread()
         }
     } else {
-        var captured = ""
-        DispatchQueue.main.sync {
-            captured = MainActor.assumeIsolated {
+        let box = ForegroundNameBox()
+        let semaphore = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async {
+            let resolved = MainActor.assumeIsolated {
                 mfxResolveForegroundProcessNameOnMainThread()
             }
+            box.store(resolved)
+            semaphore.signal()
         }
-        processName = captured
+        if semaphore.wait(timeout: .now() + .milliseconds(2)) == .success {
+            processName = box.load()
+        } else {
+            processName = ""
+        }
     }
 
     if processName.isEmpty {

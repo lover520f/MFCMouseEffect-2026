@@ -39,6 +39,7 @@ struct HoldEffectStartCommand {
     ScreenPoint overlayPoint{};
     MouseButton button = MouseButton::Left;
     std::string normalizedType = "charge";
+    uint32_t strokeArgb = 0;
     int sizePx = 188;
     int progressFullMs = 1400;
     double breatheDurationSec = 0.9;

@@ -205,6 +205,11 @@ struct EffectSizeScaleConfig {
     int hover = 100;
 };
 
+struct EffectConflictPolicyConfig {
+    // hold_only | move_only | blend
+    std::string holdMovePolicy = "hold_only";
+};
+
 // Active effect selections per category (persisted).
 struct ActiveEffectConfig {
     std::string click = "text";
@@ -243,6 +248,7 @@ struct EffectConfig {
     IconConfig icon;
     TextConfig textClick;
     EffectSizeScaleConfig effectSizeScales;
+    EffectConflictPolicyConfig effectConflictPolicy;
     InputIndicatorConfig inputIndicator;
     InputAutomationConfig automation;
     WasmConfig wasm;

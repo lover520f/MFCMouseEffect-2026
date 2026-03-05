@@ -33,10 +33,12 @@ void AppController::ApplyVmSuppression(bool suppressed) {
 void AppController::SuspendEffectsForVm() {
     if (dispatchMessageHost_ && dispatchMessageHost_->IsCreated()) {
         dispatchMessageHost_->KillTimer(kHoldTimerId);
+        dispatchMessageHost_->KillTimer(kHoldUpdateTimerId);
     }
     pendingHold_.active = false;
     ignoreNextClick_ = false;
     holdButtonDown_ = false;
+    holdTrackingButton_ = 0;
     holdDownTick_ = 0;
     hovering_ = false;
     inputIndicatorOverlay_->Hide();

@@ -44,6 +44,34 @@ EffectSizeScaleConfig SanitizeEffectSizeScaleConfig(EffectSizeScaleConfig scales
     return scales;
 }
 
+namespace {
+
+std::string NormalizeEffectConflictMode(std::string value, const char* onlyValue, const char* otherValue, const char* fallback) {
+    value = ToLowerAscii(TrimAscii(value));
+    std::replace(value.begin(), value.end(), '-', '_');
+    std::replace(value.begin(), value.end(), ' ', '_');
+    if ((onlyValue && value == onlyValue) ||
+        (otherValue && value == otherValue) ||
+        value == "blend") {
+        return value;
+    }
+    if (value == "other_only" && otherValue) {
+        return otherValue;
+    }
+    return fallback ? std::string(fallback) : std::string("hold_only");
+}
+
+} // namespace
+
+EffectConflictPolicyConfig SanitizeEffectConflictPolicyConfig(EffectConflictPolicyConfig policy) {
+    policy.holdMovePolicy = NormalizeEffectConflictMode(
+        std::move(policy.holdMovePolicy),
+        "hold_only",
+        "move_only",
+        "hold_only");
+    return policy;
+}
+
 TrailHistoryProfile SanitizeTrailHistoryProfile(TrailHistoryProfile profile) {
     if (profile.durationMs < 80) {
         profile.durationMs = 80;

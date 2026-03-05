@@ -9,6 +9,20 @@
 #include "MouseFx/Interfaces/IMouseEffect.h"
 
 namespace mousefx {
+namespace {
+
+bool IsHoldInteractionActive(AppController* controller) {
+    if (!controller) {
+        return false;
+    }
+    return controller->CurrentHoldDurationMs() >= AppController::HoldDelayMs();
+}
+
+bool ShouldSuppressClickEffectForHoldPolicy(AppController* controller) {
+    return IsHoldInteractionActive(controller);
+}
+
+} // namespace
 
 DispatchRouter::DispatchRouter(AppController* controller)
     : ctrl_(controller) {}
@@ -82,6 +96,7 @@ intptr_t DispatchRouter::OnClick(const DispatchMessage& message) {
 
     if (ev) {
         ctrl_->RememberLastPointerPoint(ev->pt);
+        const bool suppressClickEffectByPolicy = ShouldSuppressClickEffectForHoldPolicy(ctrl_);
         const IMouseEffect* clickEffect = ctrl_->GetEffect(EffectCategory::Click);
         const bool effectIsText = (clickEffect != nullptr) &&
             (NormalizeClickEffectType(clickEffect->TypeName()) == "text");
@@ -90,7 +105,7 @@ intptr_t DispatchRouter::OnClick(const DispatchMessage& message) {
         const bool forceBuiltinTextClick = effectIsText || configIsText;
         bool renderedByWasm = false;
         bool wasmRouteActive = false;
-        if (!forceBuiltinTextClick) {
+        if (!forceBuiltinTextClick && !suppressClickEffectByPolicy) {
             wasmRouteActive = wasmFeature_.RouteClick(*ctrl_, *ev, &renderedByWasm);
         }
         automationFeature_.OnClick(*ctrl_, *ev);
@@ -99,7 +114,9 @@ intptr_t DispatchRouter::OnClick(const DispatchMessage& message) {
         const bool shouldFallbackToBuiltin =
             forceBuiltinTextClick ||
             ((!wasmRouteActive) || ctrl_->ShouldFallbackToBuiltinClickWhenWasmActive());
-        if (shouldFallbackToBuiltin && (forceBuiltinTextClick || !renderedByWasm)) {
+        if (!suppressClickEffectByPolicy &&
+            shouldFallbackToBuiltin &&
+            (forceBuiltinTextClick || !renderedByWasm)) {
             if (auto* effect = ctrl_->GetEffect(EffectCategory::Click)) {
                 effect->OnClick(*ev);
             }

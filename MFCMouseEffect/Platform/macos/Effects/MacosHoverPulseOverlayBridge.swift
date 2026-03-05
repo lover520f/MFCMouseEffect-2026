@@ -17,6 +17,12 @@ private func mfx_macos_overlay_apply_content_scale_v1(
     _ y: Int32
 )
 
+@_silgen_name("mfx_macos_overlay_timer_interval_ms_v1")
+private func mfx_macos_overlay_timer_interval_ms_v1(
+    _ x: Int32,
+    _ y: Int32
+) -> Int32
+
 private func mfxClamp(_ value: CGFloat, min minValue: CGFloat, max maxValue: CGFloat) -> CGFloat {
     if value < minValue {
         return minValue
@@ -92,6 +98,7 @@ private final class MfxHoverPulseCanvasView: NSView {
     private let baseOpacity: CGFloat
     private let breatheDurationSec: Double
     private let tubesSpinDurationSec: Double
+    private let timerIntervalMs: Int
     private let startTick: CFTimeInterval
     private var timer: DispatchSourceTimer?
 
@@ -112,7 +119,8 @@ private final class MfxHoverPulseCanvasView: NSView {
         tubesStrokeColor: NSColor,
         baseOpacity: CGFloat,
         breatheDurationSec: Double,
-        tubesSpinDurationSec: Double
+        tubesSpinDurationSec: Double,
+        timerIntervalMs: Int
     ) {
         self.tubesMode = tubesMode
         self.chromaticMode = chromaticMode
@@ -121,6 +129,7 @@ private final class MfxHoverPulseCanvasView: NSView {
         self.baseOpacity = mfxClamp(baseOpacity, min: 0.0, max: 1.0)
         self.breatheDurationSec = max(0.05, breatheDurationSec)
         self.tubesSpinDurationSec = max(0.05, tubesSpinDurationSec)
+        self.timerIntervalMs = max(4, min(1000, timerIntervalMs))
         self.startTick = CACurrentMediaTime()
         super.init(frame: frameRect)
         wantsLayer = true
@@ -141,7 +150,11 @@ private final class MfxHoverPulseCanvasView: NSView {
             return
         }
         let source = DispatchSource.makeTimerSource(queue: DispatchQueue.main)
-        source.schedule(deadline: .now(), repeating: .milliseconds(16))
+        source.schedule(
+            deadline: .now(),
+            repeating: .milliseconds(timerIntervalMs),
+            leeway: .milliseconds(max(1, timerIntervalMs / 8))
+        )
         source.setEventHandler { [weak self] in
             guard let self else {
                 return
@@ -391,7 +404,8 @@ private func mfxCreateHoverPulseOverlayOnMainThread(
         tubesStrokeColor: mfxColorFromArgb(tubesStrokeArgb),
         baseOpacity: CGFloat(baseOpacity),
         breatheDurationSec: breatheDurationSec,
-        tubesSpinDurationSec: tubesSpinDurationSec
+        tubesSpinDurationSec: tubesSpinDurationSec,
+        timerIntervalMs: Int(mfx_macos_overlay_timer_interval_ms_v1(overlayX, overlayY))
     )
     hoverView.autoresizingMask = [.width, .height]
     content.addSubview(hoverView)

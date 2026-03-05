@@ -27,6 +27,12 @@ let currentCapabilities = {
 let currentEffectsProfile = {};
 let currentActiveTab = 'active';
 let showEffectsProfile = false;
+let currentEffectConflictPolicy = {
+  hold_move_policy: 'hold_only',
+};
+let currentEffectConflictPolicyOptions = {
+  hold_move_policy: [],
+};
 
 function normalizeActiveTab(input) {
   const value = `${input || ''}`.trim().toLowerCase();
@@ -38,6 +44,9 @@ function normalizeActiveTab(input) {
   }
   if (value === 'size') {
     return 'size';
+  }
+  if (value === 'conflict') {
+    return 'conflict';
   }
   return 'active';
 }
@@ -100,6 +109,23 @@ function normalizeEffectCapabilities(input) {
   };
 }
 
+function normalizeEffectConflictPolicy(input) {
+  const value = input || {};
+  return {
+    hold_move_policy: value.hold_move_policy || value.hold_move || 'hold_only',
+  };
+}
+
+function normalizeEffectConflictPolicyOptions(input) {
+  const value = input || {};
+  const normalizeList = (key) => (Array.isArray(value[key]) ? value[key] : []);
+  return {
+    hold_move_policy: normalizeList('hold_move_policy').length
+      ? normalizeList('hold_move_policy')
+      : normalizeList('hold_move'),
+  };
+}
+
 const bridge = createLazyMountBridge({
   mountId: 'effects_settings_mount',
   initialProps: {
@@ -113,6 +139,8 @@ const bridge = createLazyMountBridge({
       effectCapabilities: currentCapabilities,
       active: currentActiveState,
       effectSizeScales: currentSizeScales,
+      effectConflictPolicy: currentEffectConflictPolicy,
+      effectConflictPolicyOptions: currentEffectConflictPolicyOptions,
       effectsProfile: currentEffectsProfile,
       showEffectsProfile,
     },
@@ -133,6 +161,10 @@ const bridge = createLazyMountBridge({
     instance.$on('tabChange', (event) => {
       currentActiveTab = normalizeActiveTab(event?.detail?.tabId);
     });
+    instance.$on('conflictPolicyChange', (event) => {
+      const detail = event?.detail || {};
+      currentEffectConflictPolicy = normalizeEffectConflictPolicy(detail);
+    });
     return instance;
   },
 });
@@ -143,11 +175,17 @@ function render(payload) {
   const active = normalizeActive(appState.active || {});
   const effectSizeScales = normalizeEffectSizeScales(appState.effect_size_scales || {});
   const effectCapabilities = normalizeEffectCapabilities(schema.capabilities?.effects || {});
+  const effectConflictPolicy = normalizeEffectConflictPolicy(appState.effect_conflict_policy || {});
+  const effectConflictPolicyOptions = normalizeEffectConflictPolicyOptions(
+    schema.effect_conflict_policy_options || {},
+  );
   const effectsProfile = normalizeEffectsProfile(appState.effects_profile || {});
   showEffectsProfile = resolveEffectsProfileDebugFlag();
   currentActiveState = active;
   currentSizeScales = effectSizeScales;
   currentCapabilities = effectCapabilities;
+  currentEffectConflictPolicy = effectConflictPolicy;
+  currentEffectConflictPolicyOptions = effectConflictPolicyOptions;
   currentEffectsProfile = effectsProfile;
   bridge.updateProps({
     activeTab: currentActiveTab,
@@ -160,6 +198,8 @@ function render(payload) {
       effectCapabilities,
       active,
       effectSizeScales,
+      effectConflictPolicy,
+      effectConflictPolicyOptions,
       effectsProfile,
       showEffectsProfile,
     },
@@ -170,6 +210,7 @@ function read() {
   return {
     active: normalizeActive(currentActiveState),
     effect_size_scales: normalizeEffectSizeScales(currentSizeScales),
+    effect_conflict_policy: normalizeEffectConflictPolicy(currentEffectConflictPolicy),
   };
 }
 

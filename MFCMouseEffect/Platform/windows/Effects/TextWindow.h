@@ -42,6 +42,7 @@ private:
     bool EnsureD2DResources();
     bool EnsureTextLayout(float dpi, float widthDip, float heightDip);
     void DestroyD2DResources();
+    void UpdateFrameTimerForPoint(const ScreenPoint& anchorPoint, bool force);
 
     static const wchar_t* ClassName();
     static bool EnsureClassRegistered();
@@ -55,6 +56,8 @@ private:
     bool emojiFrameReady_ = false;
     int baseLeft_ = 0;
     int baseTop_ = 0;
+    UINT frameTimerIntervalMs_ = 16;
+    bool frameTimerArmed_ = false;
 
     // Layered window backbuffer.
     HDC memDc_ = nullptr;

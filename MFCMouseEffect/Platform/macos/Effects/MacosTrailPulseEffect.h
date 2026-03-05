@@ -2,6 +2,7 @@
 
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Core/Effects/TrailEffectCompute.h"
 #include "Platform/macos/Effects/MacosEffectRenderProfile.h"
 #include "Platform/macos/Effects/MacosTrailPulseEmissionPlanner.h"
 
@@ -34,6 +35,7 @@ public:
     bool Initialize() override;
     void Shutdown() override;
     void OnMouseMove(const ScreenPoint& pt) override;
+    void OnTrailAnchorReset(const ScreenPoint& pt) override;
 
 private:
     std::string effectType_{};
@@ -45,6 +47,8 @@ private:
 
     bool hasLastPoint_ = false;
     ScreenPoint lastPoint_{};
+    uint64_t lastMoveTickMs_ = 0;
+    TrailEffectThrottleProfile throttleProfile_{};
     macos_trail_pulse::TrailPulseEmissionPlannerConfig emissionPlannerConfig_{};
     bool continuousTrailActive_ = false;
 };

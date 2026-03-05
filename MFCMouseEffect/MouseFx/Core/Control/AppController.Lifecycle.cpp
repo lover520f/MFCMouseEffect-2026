@@ -100,6 +100,9 @@ void AppController::Stop() {
     inputCaptureError_.store(0, std::memory_order_release);
     effectsSuspendedByInputCapture_.store(false, std::memory_order_release);
     if (dispatchMessageHost_ && dispatchMessageHost_->IsCreated()) {
+        dispatchMessageHost_->KillTimer(kHoverTimerId);
+        dispatchMessageHost_->KillTimer(kHoldTimerId);
+        dispatchMessageHost_->KillTimer(kHoldUpdateTimerId);
         dispatchMessageHost_->KillTimer(kInputCaptureHealthTimerId);
     }
     ShutdownWasmHost();

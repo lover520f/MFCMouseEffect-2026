@@ -79,13 +79,17 @@ void MacosHoldPulseEffect::OnHoldUpdate(const ScreenPoint& pt, uint32_t duration
     if (!command.emit) {
         return;
     }
-    macos_hold_pulse::UpdateHoldPulseOverlay(command, renderProfile_);
+    macos_hold_pulse::UpdateHoldPulseOverlay(command);
 }
 
 void MacosHoldPulseEffect::OnHoldEnd() {
     running_ = false;
     followState_ = HoldEffectFollowState{};
     macos_hold_pulse::StopHoldPulseOverlay();
+}
+
+bool MacosHoldPulseEffect::IsEffectActive() const {
+    return running_;
 }
 
 uint64_t MacosHoldPulseEffect::CurrentTickMs() {

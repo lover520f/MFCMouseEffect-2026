@@ -46,6 +46,19 @@ void ApplyRootToConfig(const nlohmann::json& root, EffectConfig& config) {
     }
     config.effectSizeScales = config_internal::SanitizeEffectSizeScaleConfig(config.effectSizeScales);
 
+    if (root.contains(keys::kEffectConflictPolicy) && root[keys::kEffectConflictPolicy].is_object()) {
+        const auto& policy = root[keys::kEffectConflictPolicy];
+        config.effectConflictPolicy.holdMovePolicy = parse_internal::GetOr<std::string>(
+            policy,
+            keys::effect_conflict_policy::kHoldMovePolicy,
+            config.effectConflictPolicy.holdMovePolicy);
+        config.effectConflictPolicy.holdMovePolicy = parse_internal::GetOr<std::string>(
+            policy,
+            keys::effect_conflict_policy::kHoldMoveLegacy,
+            config.effectConflictPolicy.holdMovePolicy);
+    }
+    config.effectConflictPolicy = config_internal::SanitizeEffectConflictPolicyConfig(config.effectConflictPolicy);
+
     parse_internal::ParseInputIndicator(root, config);
     parse_internal::ParseAutomation(root, config);
     parse_internal::ParseWasm(root, config);

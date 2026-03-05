@@ -15,6 +15,41 @@ bool ContainsToken(const std::string& value, const char* token) {
     return value.find(token) != std::string::npos;
 }
 
+uint32_t ResolveHoldStrokeColor(
+    MouseButton button,
+    const std::string& normalizedType,
+    const HoldEffectColorProfile& colors) {
+    if (ContainsToken(normalizedType, "lightning")) {
+        return colors.lightningStrokeArgb;
+    }
+    if (ContainsToken(normalizedType, "hex")) {
+        return colors.hexStrokeArgb;
+    }
+    if (ContainsToken(normalizedType, "hologram") || ContainsToken(normalizedType, "scifi3d")) {
+        return colors.hologramStrokeArgb;
+    }
+    if (ContainsToken(normalizedType, "hold_quantum_halo_gpu_v2") ||
+        ContainsToken(normalizedType, "hold_neon3d_gpu_v2") ||
+        ContainsToken(normalizedType, "quantum_halo")) {
+        return colors.quantumHaloStrokeArgb;
+    }
+    if (ContainsToken(normalizedType, "fluxfield") ||
+        ContainsToken(normalizedType, "flux_field") ||
+        ContainsToken(normalizedType, "hold_flux_field")) {
+        return colors.fluxFieldStrokeArgb;
+    }
+    if (ContainsToken(normalizedType, "tech") || ContainsToken(normalizedType, "neon")) {
+        return colors.techNeonStrokeArgb;
+    }
+    if (button == MouseButton::Right) {
+        return colors.rightBaseStrokeArgb;
+    }
+    if (button == MouseButton::Middle) {
+        return colors.middleBaseStrokeArgb;
+    }
+    return colors.leftBaseStrokeArgb;
+}
+
 } // namespace
 
 std::string NormalizeHoldEffectType(const std::string& effectType) {
@@ -46,6 +81,7 @@ HoldEffectStartCommand ComputeHoldEffectStartCommand(
     command.overlayPoint = overlayPoint;
     command.button = button;
     command.normalizedType = NormalizeHoldEffectType(effectType);
+    command.strokeArgb = ResolveHoldStrokeColor(button, command.normalizedType, profile.colors);
     command.sizePx = profile.sizePx;
     command.progressFullMs = profile.progressFullMs;
     command.breatheDurationSec = profile.breatheDurationSec;

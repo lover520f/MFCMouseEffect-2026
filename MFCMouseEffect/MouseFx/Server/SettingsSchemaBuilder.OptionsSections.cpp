@@ -49,6 +49,13 @@ void AppendSettingsSchemaOptionsSections(const EffectConfig& config, json* out) 
         {"step", 1},
         {"default", 0},
     };
+    (*out)["effect_conflict_policy_options"] = {
+        {"hold_move_policy", json::array({
+            MakeOpt("hold_only", L"\u4ec5\u957f\u6309\u7279\u6548\uff08\u63a8\u8350\uff09", L"Hold Effect Only (Recommended)", lang),
+            MakeOpt("move_only", L"\u4ec5\u79fb\u52a8\u7279\u6548", L"Move Effect Only", lang),
+            MakeOpt("blend", L"\u4e0e\u62d6\u5c3e\u6548\u679c\u53e0\u52a0", L"Blend With Trail Effect", lang),
+        })},
+    };
 
     json themeOptions = json::array();
     for (const auto& theme : GetThemeOptions()) {

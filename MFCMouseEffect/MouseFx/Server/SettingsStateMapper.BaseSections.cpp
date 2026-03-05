@@ -45,6 +45,11 @@ void AppendBaseSettingsState(const EffectConfig& cfg, json* out) {
         {"hold", scales.hold},
         {"hover", scales.hover},
     };
+    const EffectConflictPolicyConfig conflictPolicy =
+        config_internal::SanitizeEffectConflictPolicyConfig(cfg.effectConflictPolicy);
+    (*out)["effect_conflict_policy"] = {
+        {"hold_move_policy", EnsureUtf8(conflictPolicy.holdMovePolicy)},
+    };
 
     std::string text;
     for (size_t i = 0; i < cfg.textClick.texts.size(); ++i) {

@@ -2,6 +2,7 @@
 #include "TextWindow.h"
 #include "MouseFx/Utils/TimeUtils.h"
 #include "Platform/windows/Graphics/Win32D2DFactory.h"
+#include "Platform/windows/Overlay/Win32OverlayTimerSupport.h"
 #include "Settings/EmojiUtils.h"
 #include <algorithm>
 #include <cmath>
@@ -33,6 +34,8 @@ static std::wstring ResolveFontFamilyName(const TextEffectRenderCommand& command
 
 TextWindow::~TextWindow() {
     if (hwnd_) {
+        KillTimer(hwnd_, kTimerId);
+        frameTimerArmed_ = false;
         DestroyWindow(hwnd_);
         hwnd_ = nullptr;
     }
@@ -113,7 +116,7 @@ void TextWindow::StartAtComputed(const ScreenPoint& anchorPoint, const TextEffec
     } else {
         RenderFrame(firstFrame);
     }
-    SetTimer(hwnd_, kTimerId, 16, nullptr);
+    UpdateFrameTimerForPoint(anchorPoint, true);
 }
 
 LRESULT CALLBACK TextWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -142,10 +145,28 @@ LRESULT TextWindow::OnMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
         break;
     case WM_DESTROY:
         KillTimer(hwnd_, kTimerId);
+        frameTimerArmed_ = false;
         active_ = false;
         break;
     }
     return DefWindowProcW(hwnd_, msg, wParam, lParam);
+}
+
+void TextWindow::UpdateFrameTimerForPoint(const ScreenPoint& anchorPoint, bool force) {
+    if (!hwnd_) {
+        return;
+    }
+    int desiredIntervalMs = win32_overlay_timer_support::ResolveTimerIntervalMsForScreenPoint(
+        anchorPoint.x,
+        anchorPoint.y);
+    desiredIntervalMs = std::clamp(desiredIntervalMs, 4, 1000);
+    const UINT desiredTimerMs = static_cast<UINT>(desiredIntervalMs);
+    if (!force && frameTimerArmed_ && frameTimerIntervalMs_ == desiredTimerMs) {
+        return;
+    }
+    SetTimer(hwnd_, kTimerId, desiredTimerMs, nullptr);
+    frameTimerIntervalMs_ = desiredTimerMs;
+    frameTimerArmed_ = true;
 }
 
 void TextWindow::OnTick() {

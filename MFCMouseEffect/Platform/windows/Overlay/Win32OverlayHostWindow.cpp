@@ -2,7 +2,9 @@
 
 #include "Platform/windows/Overlay/Win32OverlayHostWindow.h"
 #include "MouseFx/Core/Overlay/OverlayCoordSpace.h"
+#include "MouseFx/Core/System/CursorPositionProvider.h"
 #include "MouseFx/Utils/TimeUtils.h"
+#include "Platform/windows/Overlay/Win32OverlayTimerSupport.h"
 
 #include <algorithm>
 #include <vector>
@@ -255,6 +257,7 @@ LRESULT Win32OverlayHostWindow::OnMessage(HWND hwnd, UINT msg, WPARAM wParam, LP
         if (hwnd == timerHwnd_) {
             ClearOverlayWindowHandle();
             timerHwnd_ = nullptr;
+            frameTimerArmed_ = false;
         }
         break;
     case WM_DISPLAYCHANGE:
@@ -277,6 +280,7 @@ void Win32OverlayHostWindow::OnTick() {
         return;
     }
 
+    UpdateFrameTimerForCursor(false);
     SyncBoundsWithVirtualScreen(false);
     EnsureTopmostZOrder(false);
     const uint64_t nowMs = NowMs();
@@ -441,7 +445,7 @@ void Win32OverlayHostWindow::StartFrameLoop() {
     for (auto& surface : surfaces_) {
         if (surface.hwnd) ShowWindow(surface.hwnd, SW_SHOWNA);
     }
-    SetTimer(timerHwnd_, kTimerId, 16, nullptr);
+    UpdateFrameTimerForCursor(true);
     EnsureTopmostZOrder(true);
 }
 
@@ -451,9 +455,33 @@ void Win32OverlayHostWindow::StopFrameLoop() {
     if (timerHwnd_) {
         KillTimer(timerHwnd_, kTimerId);
     }
+    frameTimerArmed_ = false;
     for (auto& surface : surfaces_) {
         if (surface.hwnd) ShowWindow(surface.hwnd, SW_HIDE);
     }
+}
+
+void Win32OverlayHostWindow::UpdateFrameTimerForCursor(bool force) {
+    if (!timerHwnd_) {
+        return;
+    }
+    ScreenPoint cursorPoint{};
+    int desiredIntervalMs = 16;
+    if (TryGetCursorScreenPoint(&cursorPoint)) {
+        desiredIntervalMs = win32_overlay_timer_support::ResolveTimerIntervalMsForScreenPoint(
+            cursorPoint.x,
+            cursorPoint.y);
+    } else {
+        desiredIntervalMs = win32_overlay_timer_support::ResolveTimerIntervalMsForWindow(timerHwnd_);
+    }
+    desiredIntervalMs = std::clamp(desiredIntervalMs, 4, 1000);
+    const UINT desiredTimerMs = static_cast<UINT>(desiredIntervalMs);
+    if (!force && frameTimerArmed_ && frameTimerIntervalMs_ == desiredTimerMs) {
+        return;
+    }
+    SetTimer(timerHwnd_, kTimerId, desiredTimerMs, nullptr);
+    frameTimerIntervalMs_ = desiredTimerMs;
+    frameTimerArmed_ = true;
 }
 
 void Win32OverlayHostWindow::EnsureTopmostZOrder(bool force) {
@@ -503,7 +531,5 @@ void Win32OverlayHostWindow::UnregisterForegroundHook() {
 }
 
 } // namespace mousefx
-
-
 
 

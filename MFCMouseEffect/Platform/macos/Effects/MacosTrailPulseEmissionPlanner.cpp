@@ -65,21 +65,21 @@ double ResolvePreferredSegmentStep(const std::string& normalizedType, double thr
     const std::string type = ToLowerAscii(normalizedType);
     const double throttleBase = ClampDouble(throttleMinDistancePx, 1.0, 32.0);
     if (type == "streamer") {
-        return std::max(16.0, throttleBase * 2.4);
+        return std::max(6.0, throttleBase * 0.9);
     }
     if (type == "electric") {
-        return std::max(18.0, throttleBase * 2.2);
+        return std::max(5.0, throttleBase * 0.8);
     }
     if (type == "meteor") {
-        return std::max(22.0, throttleBase * 2.6);
+        return std::max(6.0, throttleBase * 0.9);
     }
     if (type == "tubes") {
-        return std::max(20.0, throttleBase * 2.3);
+        return std::max(7.0, throttleBase * 1.0);
     }
     if (type == "particle") {
-        return std::max(14.0, throttleBase * 1.8);
+        return std::max(4.0, throttleBase * 0.6);
     }
-    return std::max(12.0, throttleBase * 1.8);
+    return std::max(5.0, throttleBase * 0.7);
 }
 
 void AppendUniquePoint(std::vector<ScreenPoint>* points, const ScreenPoint& point) {
@@ -98,7 +98,7 @@ TrailPulseEmissionPlannerConfig ResolveTrailPulseEmissionPlannerConfig() {
     TrailPulseEmissionPlannerConfig config{};
     double parsedDistance = 0.0;
     if (TryParseEnvDouble(kTeleportDistanceEnv, &parsedDistance)) {
-        config.teleportSkipDistancePx = ClampDouble(parsedDistance, 200.0, 4000.0);
+        config.teleportSkipDistancePx = ClampDouble(parsedDistance, 400.0, 8000.0);
     }
     int parsedSegments = 0;
     if (TryParseEnvInt(kMaxSegmentsEnv, &parsedSegments)) {
@@ -122,7 +122,7 @@ TrailPulseEmissionPlan BuildTrailPulseEmissionPlan(
         return plan;
     }
 
-    if (totalDistance > std::max(200.0, config.teleportSkipDistancePx)) {
+    if (totalDistance > std::max(400.0, config.teleportSkipDistancePx)) {
         plan.dropAsTeleport = true;
         return plan;
     }

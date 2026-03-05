@@ -40,6 +40,7 @@ void CommandHandler::HandleApplySettings(const std::string& jsonCmd) {
 
     command_handler_apply_settings::ApplyTrailTuningSettings(payload, controller_);
     command_handler_apply_settings::ApplyEffectSizeScaleSettings(payload, controller_);
+    command_handler_apply_settings::ApplyEffectConflictPolicySettings(payload, controller_);
 
     // Theme last (recreates themed effects).
     if (payload.contains("theme") && payload["theme"].is_string()) {

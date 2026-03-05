@@ -311,6 +311,15 @@ private final class MfxLineTrailState: NSObject {
         return (dx * dx + dy * dy) >= (24.0 * 24.0)
     }
 
+    private static func isSegmentBreak(from: Point, to: Point) -> Bool {
+        if isOriginConnector(from: from, toX: to.x, toY: to.y) {
+            return true
+        }
+        let dx = Double(to.x - from.x)
+        let dy = Double(to.y - from.y)
+        return (dx * dx + dy * dy) > (1600.0 * 1600.0)
+    }
+
     private func localPoint(_ point: Point) -> CGPoint {
         return CGPoint(
             x: CGFloat(point.x - windowOriginX),
@@ -1056,6 +1065,9 @@ private final class MfxLineTrailState: NSObject {
         for i in 0..<segmentCount {
             let startPoint = points[i]
             let endPoint = points[i + 1]
+            if Self.isSegmentBreak(from: startPoint, to: endPoint) {
+                continue
+            }
             let life = segmentLife(nowMs: nowMs, point: startPoint, durationMs: durationMs, idleFactor: idleFactor)
             if life <= 0.0 {
                 continue
@@ -1479,14 +1491,10 @@ private final class MfxLineTrailState: NSObject {
         lastInputMs = nowMs
 
         if let last = points.last {
-            if Self.isOriginConnector(from: last, toX: x, toY: y) {
-                points.removeAll(keepingCapacity: true)
-            }
             let dx = Double(x - last.x)
             let dy = Double(y - last.y)
-            if (dx * dx + dy * dy) > (1600.0 * 1600.0) {
-                points.removeAll(keepingCapacity: true)
-            }
+            // Keep history and let per-segment break filtering skip large jumps
+            // instead of hard-resetting the full trail state.
             if (dx * dx + dy * dy) < 1.0 {
                 return
             }
@@ -1511,8 +1519,11 @@ private final class MfxLineTrailState: NSObject {
             points.removeFirst()
         }
 
-        rebuildPath(nowMs: nowMs)
+        let hadTimer = (timer != nil)
         ensureTimerOnMain(x: x, y: y)
+        if !hadTimer {
+            rebuildPath(nowMs: nowMs)
+        }
     }
 
     func reset() {

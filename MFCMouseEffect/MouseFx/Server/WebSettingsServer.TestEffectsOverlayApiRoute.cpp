@@ -11,6 +11,7 @@
 #include "MouseFx/Core/Protocol/InputTypes.h"
 #include "MouseFx/Core/Control/EffectFactory.h"
 #include "MouseFx/Core/Effects/ClickEffectCompute.h"
+#include "MouseFx/Core/Effects/HoldEffectCompute.h"
 #include "MouseFx/Core/Effects/HoverEffectCompute.h"
 #include "MouseFx/Core/Effects/ScrollEffectCompute.h"
 #include "MouseFx/Core/Effects/TrailEffectCompute.h"
@@ -342,8 +343,21 @@ bool HandleWebSettingsTestEffectsOverlayApiRoute(
         macos_scroll_pulse::ShowScrollPulseOverlay(command, "");
     }
     if (emitHold) {
-        macos_hold_pulse::StartHoldPulseOverlay(overlayPoint, ParseMouseButton(button), holdType, "");
-        macos_hold_pulse::UpdateHoldPulseOverlay(overlayPoint, 280);
+        const HoldEffectProfile holdProfile =
+            macos_effect_compute_profile::BuildHoldProfile(macos_effect_profile::DefaultHoldRenderProfile());
+        const HoldEffectStartCommand startCommand = ComputeHoldEffectStartCommand(
+            overlayPoint,
+            ParseMouseButton(button),
+            holdType,
+            holdProfile);
+        const HoldEffectUpdateCommand updateCommand = ComputeHoldEffectUpdateCommand(
+            overlayPoint,
+            280,
+            280,
+            HoldEffectFollowMode::Precise,
+            nullptr);
+        macos_hold_pulse::StartHoldPulseOverlay(startCommand, "");
+        macos_hold_pulse::UpdateHoldPulseOverlay(updateCommand);
     }
     if (emitHover) {
         const HoverEffectRenderCommand command = ComputeHoverEffectRenderCommand(

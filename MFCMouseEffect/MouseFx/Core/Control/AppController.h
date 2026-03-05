@@ -103,6 +103,7 @@ public:
     // Set trail line width (persisted).
     void SetTrailLineWidth(float lineWidth);
     void SetEffectSizeScales(const EffectSizeScaleConfig& scales);
+    void SetEffectConflictPolicy(const EffectConflictPolicyConfig& policy);
 
     // Get the current effect for a category (may be null).
     IMouseEffect* GetEffect(EffectCategory category) const;
@@ -151,10 +152,15 @@ public:
     void EndHoldTracking();
     void ArmHoldTimer();
     void DisarmHoldTimer();
+    void ArmHoldUpdateTimer();
+    void DisarmHoldUpdateTimer();
     void ClearPendingHold();
     void CancelPendingHold();
     bool ConsumePendingHold(ScreenPoint* outPt, int* outButton);
     void MarkIgnoreNextClick();
+    bool IsHoldButtonDown() const { return holdButtonDown_; }
+    int HoldTrackingButton() const { return holdTrackingButton_; }
+    bool IsHovering() const { return hovering_; }
     bool TryEnterHover(ScreenPoint* outPt);
     bool QueryCursorScreenPoint(ScreenPoint* outPt) const;
     void RememberLastPointerPoint(const ScreenPoint& pt);
@@ -168,6 +174,7 @@ public:
     wasm::WasmEffectHost* WasmHost() const { return wasmEffectHost_.get(); }
     static constexpr uintptr_t HoverTimerId() { return kHoverTimerId; }
     static constexpr uintptr_t HoldTimerId() { return kHoldTimerId; }
+    static constexpr uintptr_t HoldUpdateTimerId() { return kHoldUpdateTimerId; }
     static constexpr uint32_t HoldDelayMs() { return kHoldDelayMs; }
 #ifdef _DEBUG
     void LogDebugClick(const ClickEvent& ev);
@@ -245,6 +252,8 @@ private:
     // Hold delay logic
     static constexpr uintptr_t kHoldTimerId = 5;
     static constexpr uint32_t kHoldDelayMs = 350; // Increased to 350ms to distinguish from click
+    static constexpr uintptr_t kHoldUpdateTimerId = 9;
+    static constexpr uint32_t kHoldUpdateIntervalMs = 16; // ~60fps periodic hold overlay update
     struct PendingHold {
         ScreenPoint pt{};
         int button;
@@ -253,9 +262,13 @@ private:
     bool ignoreNextClick_ = false; // If hold triggered, ignore the subsequent click
 
     bool holdButtonDown_ = false;
+    int holdTrackingButton_ = 0;
     uint64_t holdDownTick_ = 0;
     uint64_t lastInputCaptureRestartAttemptTickMs_ = 0;
     static constexpr uint32_t kInputCaptureRestartRetryMs = 1000;
+    uint32_t inputCaptureTransientErrorCode_ = 0;
+    uint64_t inputCaptureTransientErrorSinceTickMs_ = 0;
+    static constexpr uint32_t kInputCaptureTransientErrorGraceMs = 1200;
     bool gpuFallbackNotifiedThisSession_ = false;
     std::unique_ptr<CommandHandler> commandHandler_;
     std::unique_ptr<DispatchRouter> dispatchRouter_;

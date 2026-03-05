@@ -47,6 +47,7 @@ private:
     void UpdateClonePlacement(HWND hwnd, const std::string& monitorId, bool isKeyboard);
     void SyncCloneWindows(bool isKeyboard);
     void DestroyClones();
+    void UpdateFrameTimerForPoint(POINT anchorPt, bool force);
 
     static int ClampInt(int v, int lo, int hi);
     static bool IsRelativeMode(const std::string& mode);
@@ -80,6 +81,8 @@ private:
     std::wstring eventLabel_{};
     int renderWidthPx_ = 72;
     int renderHeightPx_ = 72;
+    UINT frameTimerIntervalMs_ = 16;
+    bool frameTimerArmed_ = false;
 
     // Multi-monitor clone windows (monitorId -> HWND)
     std::map<std::string, HWND> cloneWindows_;

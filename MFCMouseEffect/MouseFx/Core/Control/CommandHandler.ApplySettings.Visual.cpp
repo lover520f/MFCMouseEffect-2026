@@ -383,4 +383,26 @@ void ApplyEffectSizeScaleSettings(const json& payload, AppController* controller
     controller->SetEffectSizeScales(config_internal::SanitizeEffectSizeScaleConfig(scales));
 }
 
+void ApplyEffectConflictPolicySettings(const json& payload, AppController* controller) {
+    if (!controller) {
+        return;
+    }
+    if (!payload.contains("effect_conflict_policy") || !payload["effect_conflict_policy"].is_object()) {
+        return;
+    }
+
+    EffectConflictPolicyConfig policy = controller->Config().effectConflictPolicy;
+    const json& source = payload["effect_conflict_policy"];
+    auto applyString = [&](const char* key, std::string* dst) {
+        if (!key || !dst || !source.contains(key) || !source[key].is_string()) {
+            return;
+        }
+        *dst = source[key].get<std::string>();
+    };
+
+    applyString("hold_move_policy", &policy.holdMovePolicy);
+    applyString("hold_move", &policy.holdMovePolicy);
+    controller->SetEffectConflictPolicy(config_internal::SanitizeEffectConflictPolicyConfig(policy));
+}
+
 } // namespace mousefx::command_handler_apply_settings

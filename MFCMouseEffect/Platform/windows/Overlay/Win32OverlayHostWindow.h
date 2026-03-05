@@ -53,6 +53,7 @@ private:
     void SyncBoundsWithVirtualScreen(bool forceMove);
     void StartFrameLoop();
     void StopFrameLoop();
+    void UpdateFrameTimerForCursor(bool force);
     void EnsureTopmostZOrder(bool force = false);
     void RegisterForegroundHook();
     void UnregisterForegroundHook();
@@ -64,13 +65,14 @@ private:
     int virtualW_ = 0;
     int virtualH_ = 0;
     bool ticking_ = false;
+    UINT frameTimerIntervalMs_ = 16;
+    bool frameTimerArmed_ = false;
     uint64_t lastTopmostEnsureMs_ = 0;
     HWINEVENTHOOK foregroundHook_ = nullptr;
     std::vector<std::unique_ptr<IOverlayLayer>> layers_{};
 };
 
 } // namespace mousefx
-
 
 
 

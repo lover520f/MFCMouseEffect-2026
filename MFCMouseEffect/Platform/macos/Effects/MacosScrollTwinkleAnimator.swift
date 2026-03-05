@@ -41,6 +41,9 @@ private func mfx_twinkle_get_particle(
     _ trailB: UnsafeMutablePointer<Float>, _ trailAlpha: UnsafeMutablePointer<Float>,
     _ glowAlpha: UnsafeMutablePointer<Float>)
 
+@_silgen_name("mfx_macos_overlay_timer_interval_ms_v1")
+private func mfx_macos_overlay_timer_interval_ms_v1(_ x: Int32, _ y: Int32) -> Int32
+
 // MARK: - Swift draw data
 
 private struct TwinkleParticleDraw {
@@ -103,6 +106,7 @@ final class MfxScrollTwinkleAnimator {
     private let drawLayer: MfxTwinkleDrawLayer
     private nonisolated(unsafe) var timer: Timer?
     private var startTime: CFTimeInterval = 0.0
+    private let timerIntervalSec: Double
 
     init(
         parent: CALayer,
@@ -114,7 +118,9 @@ final class MfxScrollTwinkleAnimator {
         baseOpacity: CGFloat,
         intensity: CGFloat,
         strokeWidth: CGFloat,
-        durationSec: Double
+        durationSec: Double,
+        overlayX: Int32,
+        overlayY: Int32
     ) {
         self.dirRad = Float(atan2(direction.dy, direction.dx))
         self.intensity = Float(max(0, min(1, intensity)))
@@ -122,6 +128,8 @@ final class MfxScrollTwinkleAnimator {
         self.durationSec = max(0.08, durationSec)
         self.cx = Float(center.x)
         self.cy = Float(center.y)
+        let intervalMs = max(4, min(1000, Int(mfx_macos_overlay_timer_interval_ms_v1(overlayX, overlayY))))
+        self.timerIntervalSec = Double(intervalMs) / 1000.0
 
         let sc = Self.colorComponents(strokeArgb)
         self.strokeR = Float(sc.r); self.strokeG = Float(sc.g); self.strokeB = Float(sc.b)
@@ -141,7 +149,7 @@ final class MfxScrollTwinkleAnimator {
 
     func start() {
         startTime = CACurrentMediaTime()
-        let t = Timer(timeInterval: 1.0 / 60.0, repeats: true) { [weak self] _ in
+        let t = Timer(timeInterval: timerIntervalSec, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }
         RunLoop.main.add(t, forMode: .common)
@@ -206,6 +214,7 @@ public func mfx_macos_scroll_twinkle_animator_create_v1(
     _ parentHandle: UnsafeMutableRawPointer,
     _ centerX: Double, _ centerY: Double,
     _ dirDx: Double, _ dirDy: Double,
+    _ overlayX: Int32, _ overlayY: Int32,
     _ size: Double,
     _ strokeArgb: UInt32, _ fillArgb: UInt32,
     _ baseOpacity: Double, _ intensity: Double,
@@ -217,6 +226,7 @@ public func mfx_macos_scroll_twinkle_animator_create_v1(
         let bits = MainActor.assumeIsolated {
             UInt(bitPattern: mfxCreateTwinkleAnimator(
                 pBits, centerX, centerY, dirDx, dirDy,
+                overlayX, overlayY,
                 size, strokeArgb, fillArgb, baseOpacity, intensity,
                 strokeWidth, durationSec))
         }
@@ -227,6 +237,7 @@ public func mfx_macos_scroll_twinkle_animator_create_v1(
         bits = MainActor.assumeIsolated {
             UInt(bitPattern: mfxCreateTwinkleAnimator(
                 pBits, centerX, centerY, dirDx, dirDy,
+                overlayX, overlayY,
                 size, strokeArgb, fillArgb, baseOpacity, intensity,
                 strokeWidth, durationSec))
         }
@@ -239,6 +250,7 @@ private func mfxCreateTwinkleAnimator(
     _ parentBits: Int,
     _ centerX: Double, _ centerY: Double,
     _ dirDx: Double, _ dirDy: Double,
+    _ overlayX: Int32, _ overlayY: Int32,
     _ size: Double,
     _ strokeArgb: UInt32, _ fillArgb: UInt32,
     _ baseOpacity: Double, _ intensity: Double,
@@ -257,7 +269,9 @@ private func mfxCreateTwinkleAnimator(
         baseOpacity: CGFloat(baseOpacity),
         intensity: CGFloat(intensity),
         strokeWidth: CGFloat(strokeWidth),
-        durationSec: durationSec)
+        durationSec: durationSec,
+        overlayX: overlayX,
+        overlayY: overlayY)
     animator.start()
     return Unmanaged.passRetained(animator).toOpaque()
 }

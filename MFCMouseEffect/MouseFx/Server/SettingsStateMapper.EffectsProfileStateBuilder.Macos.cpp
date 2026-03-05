@@ -104,6 +104,7 @@ nlohmann::json BuildHoldStartCommandJson(const HoldEffectStartCommand& command) 
         {"rotate_duration_sec", command.rotateDurationSec},
         {"rotate_duration_fast_sec", command.rotateDurationFastSec},
         {"base_opacity", command.baseOpacity},
+        {"stroke_argb", command.strokeArgb},
         {"left_base_stroke_argb", command.colors.leftBaseStrokeArgb},
         {"right_base_stroke_argb", command.colors.rightBaseStrokeArgb},
         {"middle_base_stroke_argb", command.colors.middleBaseStrokeArgb},

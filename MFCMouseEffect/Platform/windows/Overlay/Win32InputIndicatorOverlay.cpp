@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Platform/windows/Overlay/Win32InputIndicatorOverlay.h"
+#include "Platform/windows/Overlay/Win32OverlayTimerSupport.h"
 
 #include <algorithm>
 #include <cmath>
@@ -118,6 +119,7 @@ void Win32InputIndicatorOverlay::Shutdown() {
     DestroyClones();
     if (hwnd_) {
         KillTimer(hwnd_, kIndicatorTimerId);
+        frameTimerArmed_ = false;
         DestroyWindow(hwnd_);
         hwnd_ = nullptr;
     }
@@ -130,6 +132,7 @@ void Win32InputIndicatorOverlay::Hide() {
     eventKind_ = IndicatorEventKind::None;
     if (hwnd_) {
         KillTimer(hwnd_, kIndicatorTimerId);
+        frameTimerArmed_ = false;
         ShowWindow(hwnd_, SW_HIDE);
     }
     // Hide all clone windows
@@ -312,6 +315,7 @@ LRESULT Win32InputIndicatorOverlay::OnWndProc(HWND hwnd, UINT msg, WPARAM wParam
     switch (msg) {
     case WM_TIMER:
         if (wParam == kIndicatorTimerId) {
+            UpdateFrameTimerForPoint(anchorPt_, false);
             if (!active_) {
                 Hide();
                 return 0;
@@ -404,7 +408,7 @@ void Win32InputIndicatorOverlay::Trigger(IndicatorEventKind kind, POINT anchorPt
     if (!EnsureWindow()) return;
     UpdatePlacement(anchorPt, isKeyboard);
     ShowWindow(hwnd_, SW_SHOWNOACTIVATE);
-    SetTimer(hwnd_, kIndicatorTimerId, 16, nullptr);
+    UpdateFrameTimerForPoint(anchorPt, true);
     Render();
 }
 
@@ -498,7 +502,7 @@ void Win32InputIndicatorOverlay::TriggerOnEnabledMonitors(
     ShowWindow(hwnd_, SW_HIDE);
 
     // Set timer on main window to drive animation
-    SetTimer(hwnd_, kIndicatorTimerId, 16, nullptr);
+    UpdateFrameTimerForPoint(anchorPt, true);
 
     // Show and position each clone
     for (auto& [monId, clone] : cloneWindows_) {
@@ -585,6 +589,23 @@ void Win32InputIndicatorOverlay::DestroyClones() {
     customModeActive_ = false;
 }
 
+void Win32InputIndicatorOverlay::UpdateFrameTimerForPoint(POINT anchorPt, bool force) {
+    if (!hwnd_) {
+        return;
+    }
+    int desiredIntervalMs = win32_overlay_timer_support::ResolveTimerIntervalMsForScreenPoint(
+        anchorPt.x,
+        anchorPt.y);
+    desiredIntervalMs = std::clamp(desiredIntervalMs, 4, 1000);
+    const UINT desiredTimerMs = static_cast<UINT>(desiredIntervalMs);
+    if (!force && frameTimerArmed_ && frameTimerIntervalMs_ == desiredTimerMs) {
+        return;
+    }
+    SetTimer(hwnd_, kIndicatorTimerId, desiredTimerMs, nullptr);
+    frameTimerIntervalMs_ = desiredTimerMs;
+    frameTimerArmed_ = true;
+}
+
 void Win32InputIndicatorOverlay::UpdatePlacement(POINT anchorPt, bool isKeyboard) {
     if (!hwnd_) return;
 
@@ -652,4 +673,3 @@ bool Win32InputIndicatorOverlay::IsRelativeMode(const std::string& mode) {
 }
 
 } // namespace mousefx
-

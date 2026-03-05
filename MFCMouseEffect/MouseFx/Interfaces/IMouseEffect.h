@@ -62,7 +62,16 @@ public:
     virtual void OnHoldUpdate(const ScreenPoint& pt, uint32_t durationMs) { (void)pt; (void)durationMs; }
     virtual void OnHoldEnd() {}
     virtual void OnEdgeHit(const EdgeEvent& event) { (void)event; }
-    
+
+    // Called on button-down to reset trail anchor point so the next move
+    // does not trigger the gap-reset logic (kTrailInputGapResetMs).
+    virtual void OnTrailAnchorReset(const ScreenPoint& pt) { (void)pt; }
+
+    // Returns true if this effect is currently active/running (e.g. hold overlay
+    // is visible).  Used by the dispatch timer to detect whether a hold effect
+    // needs to be restarted after being temporarily ended by policy.
+    virtual bool IsEffectActive() const { return false; }
+
     // Interaction interface
     virtual void OnCommand(const std::string& cmd, const std::string& args) {}
 };

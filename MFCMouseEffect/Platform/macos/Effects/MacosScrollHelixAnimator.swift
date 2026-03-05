@@ -47,6 +47,9 @@ private func mfx_helix_get_head(
     _ strokeR: UnsafeMutablePointer<Float>, _ strokeG: UnsafeMutablePointer<Float>,
     _ strokeB: UnsafeMutablePointer<Float>)
 
+@_silgen_name("mfx_macos_overlay_timer_interval_ms_v1")
+private func mfx_macos_overlay_timer_interval_ms_v1(_ x: Int32, _ y: Int32) -> Int32
+
 // MARK: - Swift draw data (value types, safe for deferred CA draw)
 
 private struct HelixSegmentDraw {
@@ -118,6 +121,7 @@ final class MfxScrollHelixAnimator {
     private nonisolated(unsafe) var timer: Timer?
     private var startTime: CFTimeInterval = 0.0
     private nonisolated(unsafe) var cppState: UnsafeMutableRawPointer?
+    private let timerIntervalSec: Double
 
     init(
         parent: CALayer,
@@ -131,7 +135,9 @@ final class MfxScrollHelixAnimator {
         fillArgb: UInt32,
         baseOpacity: CGFloat,
         intensity: CGFloat,
-        durationSec: Double
+        durationSec: Double,
+        overlayX: Int32,
+        overlayY: Int32
     ) {
         self.directionRad = Float(atan2(direction.dy, direction.dx)) + Float.pi
         self.intensity = Float(max(0, min(1, intensity)))
@@ -140,6 +146,8 @@ final class MfxScrollHelixAnimator {
         self.strokeWidth = Float(max(0.6, strokeWidth))
         self.sizePx = Int32(max(1, size))
         self.durationSec = max(0.08, durationSec)
+        let intervalMs = max(4, min(1000, Int(mfx_macos_overlay_timer_interval_ms_v1(overlayX, overlayY))))
+        self.timerIntervalSec = Double(intervalMs) / 1000.0
 
         let sc = Self.colorComponents(strokeArgb)
         self.strokeR = Float(sc.r); self.strokeG = Float(sc.g); self.strokeB = Float(sc.b)
@@ -158,7 +166,7 @@ final class MfxScrollHelixAnimator {
 
     func start() {
         startTime = CACurrentMediaTime()
-        let t = Timer(timeInterval: 1.0 / 60.0, repeats: true) { [weak self] _ in
+        let t = Timer(timeInterval: timerIntervalSec, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }
         RunLoop.main.add(t, forMode: .common)
@@ -229,6 +237,7 @@ public func mfx_macos_scroll_helix_animator_create_v1(
     _ parentHandle: UnsafeMutableRawPointer,
     _ centerX: Double, _ centerY: Double,
     _ dirDx: Double, _ dirDy: Double,
+    _ overlayX: Int32, _ overlayY: Int32,
     _ size: Double,
     _ startRadius: Double, _ endRadius: Double, _ strokeWidth: Double,
     _ strokeArgb: UInt32, _ fillArgb: UInt32,
@@ -240,6 +249,7 @@ public func mfx_macos_scroll_helix_animator_create_v1(
         let bits = MainActor.assumeIsolated {
             UInt(bitPattern: mfxCreateHelixAnimator(
                 pBits, centerX, centerY, dirDx, dirDy,
+                overlayX, overlayY,
                 size, startRadius, endRadius, strokeWidth,
                 strokeArgb, fillArgb, baseOpacity, intensity, durationSec))
         }
@@ -250,6 +260,7 @@ public func mfx_macos_scroll_helix_animator_create_v1(
         bits = MainActor.assumeIsolated {
             UInt(bitPattern: mfxCreateHelixAnimator(
                 pBits, centerX, centerY, dirDx, dirDy,
+                overlayX, overlayY,
                 size, startRadius, endRadius, strokeWidth,
                 strokeArgb, fillArgb, baseOpacity, intensity, durationSec))
         }
@@ -262,6 +273,7 @@ private func mfxCreateHelixAnimator(
     _ parentBits: Int,
     _ centerX: Double, _ centerY: Double,
     _ dirDx: Double, _ dirDy: Double,
+    _ overlayX: Int32, _ overlayY: Int32,
     _ size: Double,
     _ startRadius: Double, _ endRadius: Double, _ strokeWidth: Double,
     _ strokeArgb: UInt32, _ fillArgb: UInt32,
@@ -282,7 +294,9 @@ private func mfxCreateHelixAnimator(
         fillArgb: fillArgb,
         baseOpacity: CGFloat(baseOpacity),
         intensity: CGFloat(intensity),
-        durationSec: durationSec)
+        durationSec: durationSec,
+        overlayX: overlayX,
+        overlayY: overlayY)
     animator.start()
     return Unmanaged.passRetained(animator).toOpaque()
 }

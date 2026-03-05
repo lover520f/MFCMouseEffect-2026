@@ -338,6 +338,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Effects\ParticleTrailEffect.h" />
     <ClInclude Include="Platform\windows\Effects\ParticleTrailWindow.h" />
     <ClInclude Include="Platform\windows\Overlay\Win32OverlayHostWindow.h" />
+    <ClInclude Include="Platform\windows\Overlay\Win32OverlayTimerSupport.h" />
     <ClInclude Include="MouseFx\Effects\ScrollEffect.h" />
     <ClInclude Include="MouseFx\Effects\HoldEffect.h" />
     <ClInclude Include="MouseFx\Effects\HoverEffect.h" />
@@ -480,6 +481,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\windows\Shell\Win32UserNotificationService.cpp" />
     <ClCompile Include="Platform\windows\Overlay\Win32OverlayCoordSpaceService.cpp" />
     <ClCompile Include="Platform\windows\Overlay\Win32OverlayHostWindow.cpp" />
+    <ClCompile Include="Platform\windows\Overlay\Win32OverlayTimerSupport.cpp" />
     <ClCompile Include="Platform\windows\Overlay\Win32OverlayHostBackend.cpp" />
     <ClCompile Include="Platform\windows\Overlay\Win32InputIndicatorOverlay.cpp" />
     <ClCompile Include="Platform\windows\Effects\Win32TextEffectFallback.cpp" />

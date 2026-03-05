@@ -68,6 +68,7 @@ uint32_t AppController::CurrentHoldDurationMs() const {
 
 void AppController::BeginHoldTracking(const ScreenPoint& pt, int button) {
     holdButtonDown_ = true;
+    holdTrackingButton_ = button;
     holdDownTick_ = CurrentTickMs();
     pendingHold_.pt = pt;
     pendingHold_.button = button;
@@ -77,6 +78,7 @@ void AppController::BeginHoldTracking(const ScreenPoint& pt, int button) {
 
 void AppController::EndHoldTracking() {
     holdButtonDown_ = false;
+    holdTrackingButton_ = 0;
     holdDownTick_ = 0;
 }
 
@@ -89,6 +91,18 @@ void AppController::ArmHoldTimer() {
 void AppController::DisarmHoldTimer() {
     if (dispatchMessageHost_ && dispatchMessageHost_->IsCreated()) {
         dispatchMessageHost_->KillTimer(kHoldTimerId);
+    }
+}
+
+void AppController::ArmHoldUpdateTimer() {
+    if (dispatchMessageHost_ && dispatchMessageHost_->IsCreated()) {
+        dispatchMessageHost_->SetTimer(kHoldUpdateTimerId, kHoldUpdateIntervalMs);
+    }
+}
+
+void AppController::DisarmHoldUpdateTimer() {
+    if (dispatchMessageHost_ && dispatchMessageHost_->IsCreated()) {
+        dispatchMessageHost_->KillTimer(kHoldUpdateTimerId);
     }
 }
 

@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "AppController.h"
+#if MFX_PLATFORM_MACOS
+#include "Platform/macos/System/MacosInputPermissionState.h"
+#endif
 
 namespace mousefx {
 namespace {
@@ -76,6 +79,8 @@ void AppController::RefreshInputCaptureRuntimeState() {
         }
     }
     if (hookError == 0) {
+        inputCaptureTransientErrorCode_ = 0;
+        inputCaptureTransientErrorSinceTickMs_ = 0;
         if (captureActive) {
             return;
         }
@@ -88,9 +93,12 @@ void AppController::RefreshInputCaptureRuntimeState() {
         inputCaptureActive_.store(true, std::memory_order_release);
         inputCaptureError_.store(0, std::memory_order_release);
         effectsSuspendedByInputCapture_.store(false, std::memory_order_release);
+        inputCaptureTransientErrorCode_ = 0;
+        inputCaptureTransientErrorSinceTickMs_ = 0;
         hovering_ = false;
         pendingHold_.active = false;
         holdButtonDown_ = false;
+        holdTrackingButton_ = 0;
         holdDownTick_ = 0;
         lastInputCaptureRestartAttemptTickMs_ = 0;
         ignoreNextClick_ = false;
@@ -121,6 +129,36 @@ void AppController::RefreshInputCaptureRuntimeState() {
         return;
     }
 
+    if (hookError == kPosixPermissionDeniedError) {
+        const std::string simulationFilePath = macos_input_permission::ReadPermissionSimulationFilePath();
+        const bool runtimeTrusted =
+            macos_input_permission::IsRuntimeInputTrusted(simulationFilePath);
+        if (!runtimeTrusted) {
+            EnterInputCaptureDegradedMode(hookError);
+            return;
+        }
+        // Guard against false permission-denied blips while runtime permission
+        // is still trusted (for example transient event-tap state churn).
+        inputCaptureTransientErrorCode_ = 0;
+        inputCaptureTransientErrorSinceTickMs_ = 0;
+        return;
+    }
+
+    const uint64_t nowTickMs = CurrentTickMs();
+    if (inputCaptureTransientErrorCode_ != hookError) {
+        inputCaptureTransientErrorCode_ = hookError;
+        inputCaptureTransientErrorSinceTickMs_ = nowTickMs;
+        return;
+    }
+    if (inputCaptureTransientErrorSinceTickMs_ == 0) {
+        inputCaptureTransientErrorSinceTickMs_ = nowTickMs;
+        return;
+    }
+    if (nowTickMs == 0 ||
+        nowTickMs < inputCaptureTransientErrorSinceTickMs_ + kInputCaptureTransientErrorGraceMs) {
+        return;
+    }
+
     EnterInputCaptureDegradedMode(hookError);
 #endif
 }
@@ -129,11 +167,14 @@ void AppController::EnterInputCaptureDegradedMode(uint32_t error) {
     inputCaptureActive_.store(false, std::memory_order_release);
     inputCaptureError_.store(error, std::memory_order_release);
     effectsSuspendedByInputCapture_.store(true, std::memory_order_release);
+    inputCaptureTransientErrorCode_ = 0;
+    inputCaptureTransientErrorSinceTickMs_ = 0;
     NotifyInputCaptureStatusChanged();
     lastInputCaptureRestartAttemptTickMs_ = 0;
     if (dispatchMessageHost_ && dispatchMessageHost_->IsCreated()) {
         dispatchMessageHost_->KillTimer(kHoverTimerId);
         dispatchMessageHost_->KillTimer(kHoldTimerId);
+        dispatchMessageHost_->KillTimer(kHoldUpdateTimerId);
     }
     if (hook_) {
         hook_->SetKeyboardCaptureExclusive(false);
@@ -141,6 +182,7 @@ void AppController::EnterInputCaptureDegradedMode(uint32_t error) {
     pendingHold_.active = false;
     ignoreNextClick_ = false;
     holdButtonDown_ = false;
+    holdTrackingButton_ = 0;
     holdDownTick_ = 0;
     hovering_ = false;
     inputIndicatorOverlay_->Hide();

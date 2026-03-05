@@ -2,7 +2,6 @@
 
 #include "MouseFx/Core/Effects/HoldEffectCompute.h"
 #include "MouseFx/Styles/RippleStyle.h"
-#include "MouseFx/Utils/StringUtils.h"
 
 #include <algorithm>
 #include <cmath>
@@ -19,43 +18,6 @@ inline uint32_t ApplyOpacityScale(uint32_t argb, double opacityScale) {
     const int alpha = static_cast<int>((argb >> 24) & 0xFFu);
     const int scaled = static_cast<int>(std::lround(static_cast<double>(alpha) * ClampOpacityScale(opacityScale)));
     return (static_cast<uint32_t>(std::clamp(scaled, 0, 255)) << 24) | rgb;
-}
-
-inline bool ContainsToken(const std::string& value, const char* token) {
-    return value.find(token) != std::string::npos;
-}
-
-inline uint32_t ResolveStrokeColor(const HoldEffectStartCommand& command) {
-    const std::string type = ToLowerAscii(command.normalizedType);
-    if (ContainsToken(type, "lightning")) {
-        return command.colors.lightningStrokeArgb;
-    }
-    if (ContainsToken(type, "hex")) {
-        return command.colors.hexStrokeArgb;
-    }
-    if (ContainsToken(type, "hologram") || ContainsToken(type, "scifi3d")) {
-        return command.colors.hologramStrokeArgb;
-    }
-    if (ContainsToken(type, "hold_quantum_halo_gpu_v2") ||
-        ContainsToken(type, "hold_neon3d_gpu_v2") ||
-        ContainsToken(type, "quantum_halo")) {
-        return command.colors.quantumHaloStrokeArgb;
-    }
-    if (ContainsToken(type, "fluxfield") ||
-        ContainsToken(type, "flux_field") ||
-        ContainsToken(type, "hold_flux_field")) {
-        return command.colors.fluxFieldStrokeArgb;
-    }
-    if (ContainsToken(type, "tech") || ContainsToken(type, "neon")) {
-        return command.colors.techNeonStrokeArgb;
-    }
-    if (command.button == MouseButton::Right) {
-        return command.colors.rightBaseStrokeArgb;
-    }
-    if (command.button == MouseButton::Middle) {
-        return command.colors.middleBaseStrokeArgb;
-    }
-    return command.colors.leftBaseStrokeArgb;
 }
 
 inline uint32_t ResolveGlowColor(uint32_t strokeArgb, uint32_t templateGlowArgb) {
@@ -108,7 +70,7 @@ inline RippleStyle BuildRuntimeStyleFromStartCommand(
         0.1,
         64.0));
 
-    const uint32_t strokeArgb = ResolveStrokeColor(command);
+    const uint32_t strokeArgb = command.strokeArgb;
     style.fill.value = ApplyOpacityScale(styleTemplate.fill.value, command.baseOpacity);
     style.stroke.value = ApplyOpacityScale(strokeArgb, command.baseOpacity);
     style.glow.value = ApplyOpacityScale(ResolveGlowColor(strokeArgb, styleTemplate.glow.value), command.baseOpacity);

@@ -1,18 +1,22 @@
 #include "pch.h"
 
-#include "MouseFx/Core/Effects/HoldEffectCompute.h"
-#include "Platform/macos/Effects/MacosEffectComputeProfileAdapter.h"
 #include "Platform/macos/Effects/MacosHoldPulseOverlayRenderer.h"
 #include "Platform/macos/Effects/MacosHoldPulseOverlayRendererCore.h"
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
 
 #include <memory>
+#include <mutex>
 
 namespace mousefx::macos_hold_pulse {
 
 namespace {
 
 #if defined(__APPLE__)
+std::mutex gUpdateMutex{};
+bool gUpdateDrainScheduled = false;
+bool gUpdatePending = false;
+HoldEffectUpdateCommand gLatestUpdateCommand{};
+
 struct StartHoldPulseContext final {
     HoldEffectStartCommand command{};
     std::string themeName{};
@@ -24,23 +28,47 @@ void StartHoldPulseOverlayCallback(void* opaque) {
     if (!context) {
         return;
     }
+    {
+        std::lock_guard<std::mutex> lock(gUpdateMutex);
+        gUpdatePending = false;
+        gUpdateDrainScheduled = false;
+    }
     StartHoldPulseOverlayOnMain(context->command, context->themeName);
 }
 
-struct UpdateHoldPulseContext final {
+void DrainHoldPulseOverlayUpdatesCallback(void*) {
     HoldEffectUpdateCommand command{};
-};
-
-void UpdateHoldPulseOverlayCallback(void* opaque) {
-    std::unique_ptr<UpdateHoldPulseContext> context(
-        static_cast<UpdateHoldPulseContext*>(opaque));
-    if (!context) {
-        return;
+    {
+        std::lock_guard<std::mutex> lock(gUpdateMutex);
+        if (!gUpdatePending) {
+            gUpdateDrainScheduled = false;
+            return;
+        }
+        command = gLatestUpdateCommand;
+        gUpdatePending = false;
     }
-    UpdateHoldPulseOverlayOnMain(context->command);
+    UpdateHoldPulseOverlayOnMain(command);
+
+    bool needScheduleNextDrain = false;
+    {
+        std::lock_guard<std::mutex> lock(gUpdateMutex);
+        if (gUpdatePending) {
+            needScheduleNextDrain = true;
+        } else {
+            gUpdateDrainScheduled = false;
+        }
+    }
+    if (needScheduleNextDrain) {
+        macos_overlay_support::RunOnMainThreadAsync(&DrainHoldPulseOverlayUpdatesCallback, nullptr);
+    }
 }
 
 void StopHoldPulseOverlayCallback(void*) {
+    {
+        std::lock_guard<std::mutex> lock(gUpdateMutex);
+        gUpdatePending = false;
+        gUpdateDrainScheduled = false;
+    }
     CloseHoldPulseOverlayOnMain();
 }
 
@@ -73,70 +101,25 @@ void StartHoldPulseOverlay(const HoldEffectStartCommand& command, const std::str
 #endif
 }
 
-void UpdateHoldPulseOverlay(const HoldEffectUpdateCommand& command, const macos_effect_profile::HoldRenderProfile& profile) {
+void UpdateHoldPulseOverlay(const HoldEffectUpdateCommand& command) {
 #if !defined(__APPLE__)
     (void)command;
-    (void)profile;
     return;
 #else
-    (void)profile;
-    auto* context = new UpdateHoldPulseContext{command};
-    macos_overlay_support::RunOnMainThreadAsync(&UpdateHoldPulseOverlayCallback, context);
+    bool needScheduleDrain = false;
+    {
+        std::lock_guard<std::mutex> lock(gUpdateMutex);
+        gLatestUpdateCommand = command;
+        gUpdatePending = true;
+        if (!gUpdateDrainScheduled) {
+            gUpdateDrainScheduled = true;
+            needScheduleDrain = true;
+        }
+    }
+    if (needScheduleDrain) {
+        macos_overlay_support::RunOnMainThreadAsync(&DrainHoldPulseOverlayUpdatesCallback, nullptr);
+    }
 #endif
-}
-
-void StartHoldPulseOverlay(
-    const ScreenPoint& overlayPt,
-    MouseButton button,
-    const std::string& effectType,
-    const std::string& themeName,
-    const macos_effect_profile::HoldRenderProfile& profile) {
-#if !defined(__APPLE__)
-    (void)overlayPt;
-    (void)button;
-    (void)effectType;
-    (void)themeName;
-    (void)profile;
-    return;
-#else
-    const HoldEffectStartCommand command =
-        ComputeHoldEffectStartCommand(
-            overlayPt,
-            button,
-            effectType,
-            macos_effect_compute_profile::BuildHoldProfile(profile));
-    StartHoldPulseOverlay(command, themeName);
-#endif
-}
-
-void UpdateHoldPulseOverlay(
-    const ScreenPoint& overlayPt,
-    uint32_t holdMs,
-    const macos_effect_profile::HoldRenderProfile& profile) {
-#if !defined(__APPLE__)
-    (void)overlayPt;
-    (void)holdMs;
-    (void)profile;
-    return;
-#else
-    HoldEffectUpdateCommand command{};
-    command.emit = true;
-    command.overlayPoint = overlayPt;
-    command.holdMs = holdMs;
-    UpdateHoldPulseOverlay(command, profile);
-#endif
-}
-
-void StartHoldPulseOverlay(
-    const ScreenPoint& overlayPt,
-    MouseButton button,
-    const std::string& effectType,
-    const std::string& themeName) {
-    StartHoldPulseOverlay(overlayPt, button, effectType, themeName, macos_effect_profile::DefaultHoldRenderProfile());
-}
-
-void UpdateHoldPulseOverlay(const ScreenPoint& overlayPt, uint32_t holdMs) {
-    UpdateHoldPulseOverlay(overlayPt, holdMs, macos_effect_profile::DefaultHoldRenderProfile());
 }
 
 void StopHoldPulseOverlay() {

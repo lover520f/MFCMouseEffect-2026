@@ -51,6 +51,7 @@ out/
 cmake_stage*/
 cmake-stage*/
 cmake_build/
+build-macos/
 
 # WebUI Svelte workspace
 MFCMouseEffect/WebUIWorkspace/node_modules/
