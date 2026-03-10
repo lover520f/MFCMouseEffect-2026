@@ -13,8 +13,14 @@ void mfx_macos_input_indicator_panel_present_v1(
     int y,
     int sizePx,
     const char* textUtf8);
+void mfx_macos_input_indicator_panel_present_v2(
+    void* panelHandle,
+    int x,
+    int y,
+    int sizePx,
+    const char* textUtf8,
+    int durationMs);
 
 #ifdef __cplusplus
 }
 #endif
-

@@ -49,6 +49,7 @@ private:
     mutable std::mutex debugMutex_{};
     std::string lastAppliedLabel_{};
     uint64_t applyCount_ = 0;
+    InputIndicatorMouseStreakState mouseStreakState_{};
     InputIndicatorKeyStreakState keyStreakState_{};
 
     void* panel_ = nullptr;

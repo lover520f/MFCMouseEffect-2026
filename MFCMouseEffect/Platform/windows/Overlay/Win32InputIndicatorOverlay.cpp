@@ -150,24 +150,19 @@ void Win32InputIndicatorOverlay::OnClick(const ClickEvent& ev) {
 
     const uint64_t now = TickNow();
     const uint64_t threshold = static_cast<uint64_t>(std::max<DWORD>(::GetDoubleClickTime(), 240) + 120);
-    if (ev.button == lastClickButton_ && (now >= lastClickTickMs_) && (now - lastClickTickMs_ <= threshold)) {
-        clickStreak_ = std::min(clickStreak_ + 1, 3);
-    } else {
-        clickStreak_ = 1;
-    }
-    lastClickButton_ = ev.button;
-    lastClickTickMs_ = now;
+    const int clickStreak = AdvanceInputIndicatorClickStreak(
+        &mouseStreakState_, ev.button, now, threshold, 3);
 
     IndicatorEventKind kind = IndicatorEventKind::None;
     switch (ev.button) {
     case MouseButton::Left:
-        kind = (clickStreak_ == 1) ? IndicatorEventKind::Left1 : (clickStreak_ == 2 ? IndicatorEventKind::Left2 : IndicatorEventKind::Left3);
+        kind = (clickStreak == 1) ? IndicatorEventKind::Left1 : (clickStreak == 2 ? IndicatorEventKind::Left2 : IndicatorEventKind::Left3);
         break;
     case MouseButton::Right:
-        kind = (clickStreak_ == 1) ? IndicatorEventKind::Right1 : (clickStreak_ == 2 ? IndicatorEventKind::Right2 : IndicatorEventKind::Right3);
+        kind = (clickStreak == 1) ? IndicatorEventKind::Right1 : (clickStreak == 2 ? IndicatorEventKind::Right2 : IndicatorEventKind::Right3);
         break;
     case MouseButton::Middle:
-        kind = (clickStreak_ == 1) ? IndicatorEventKind::Middle1 : (clickStreak_ == 2 ? IndicatorEventKind::Middle2 : IndicatorEventKind::Middle3);
+        kind = (clickStreak == 1) ? IndicatorEventKind::Middle1 : (clickStreak == 2 ? IndicatorEventKind::Middle2 : IndicatorEventKind::Middle3);
         break;
     default:
         return;
@@ -181,27 +176,16 @@ void Win32InputIndicatorOverlay::OnScroll(const ScrollEvent& ev) {
     if (ev.delta == 0) return;
 
     // Reset click streak so scrolling doesn't carry over click counts.
-    clickStreak_ = 0;
+    mouseStreakState_.clickStreak = 0;
 
     // Accumulate streak if same direction and within timeout
     const uint64_t now = TickNow();
-    const bool sameDir = (ev.delta > 0 && lastScrollDelta_ > 0) || (ev.delta < 0 && lastScrollDelta_ < 0);
     // Use system double-click time (usually 500ms) as a reasonable streak timeout
     const UINT timeout = GetDoubleClickTime();
+    const int scrollStreak = AdvanceInputIndicatorScrollStreak(
+        &mouseStreakState_, ev.delta, now, timeout);
 
-    if (sameDir && (now >= lastScrollTickMs_) && (now - lastScrollTickMs_ < static_cast<uint64_t>(timeout))) {
-        scrollStreak_++;
-    } else {
-        scrollStreak_ = 1;
-    }
-    lastScrollTickMs_ = now;
-    lastScrollDelta_ = ev.delta;
-
-    // Build label: "W+ 3" or "W-"
-    std::wstring label = (ev.delta > 0) ? L"W+" : L"W-";
-    if (scrollStreak_ > 1) {
-        label += L" " + std::to_wstring(scrollStreak_);
-    }
+    std::wstring label = Utf8ToWString(BuildInputIndicatorScrollLabel(ev.delta, scrollStreak));
 
     const IndicatorEventKind kind = (ev.delta > 0) ? IndicatorEventKind::WheelUp : IndicatorEventKind::WheelDown;
     // Pass the label to Trigger (which sets eventLabel_, used by Render)

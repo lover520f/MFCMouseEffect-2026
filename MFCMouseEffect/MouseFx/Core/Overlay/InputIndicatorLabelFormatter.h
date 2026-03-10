@@ -22,6 +22,15 @@ struct InputIndicatorKeyStreakState {
     uint64_t lastTickMs = 0;
 };
 
+struct InputIndicatorMouseStreakState {
+    MouseButton lastClickButton = MouseButton::Left;
+    uint64_t lastClickTickMs = 0;
+    int clickStreak = 0;
+    int scrollStreak = 0;
+    int lastScrollDelta = 0;
+    uint64_t lastScrollTickMs = 0;
+};
+
 inline uint32_t PackInputIndicatorModifierMask(const KeyEvent& ev) {
     return (ev.ctrl ? 1u : 0u) |
            (ev.shift ? 2u : 0u) |
@@ -138,6 +147,73 @@ inline std::string AppendInputIndicatorKeyStreak(std::string label, int streak) 
         label += " x" + std::to_string(streak);
     }
     return label;
+}
+
+inline int AdvanceInputIndicatorClickStreak(
+    InputIndicatorMouseStreakState* state,
+    MouseButton button,
+    uint64_t nowMs,
+    uint64_t timeoutMs,
+    int maxStreak) {
+    if (!state) {
+        return 1;
+    }
+
+    if (button == state->lastClickButton &&
+        nowMs >= state->lastClickTickMs &&
+        nowMs - state->lastClickTickMs <= timeoutMs) {
+        state->clickStreak = std::min(state->clickStreak + 1, maxStreak);
+    } else {
+        state->clickStreak = 1;
+    }
+
+    state->lastClickButton = button;
+    state->lastClickTickMs = nowMs;
+    return state->clickStreak;
+}
+
+inline int AdvanceInputIndicatorScrollStreak(
+    InputIndicatorMouseStreakState* state,
+    int delta,
+    uint64_t nowMs,
+    uint64_t timeoutMs) {
+    if (!state) {
+        return 1;
+    }
+    const bool sameDir = (delta > 0 && state->lastScrollDelta > 0) ||
+                         (delta < 0 && state->lastScrollDelta < 0);
+    if (sameDir &&
+        nowMs >= state->lastScrollTickMs &&
+        nowMs - state->lastScrollTickMs <= timeoutMs) {
+        state->scrollStreak = std::min(state->scrollStreak + 1, 9);
+    } else {
+        state->scrollStreak = 1;
+    }
+    state->lastScrollDelta = delta;
+    state->lastScrollTickMs = nowMs;
+    return state->scrollStreak;
+}
+
+inline std::string BuildInputIndicatorClickLabel(MouseButton button, int streak) {
+    const int clamped = std::min(std::max(streak, 1), 3);
+    switch (button) {
+    case MouseButton::Left:
+        return clamped == 1 ? "L" : "L" + std::to_string(clamped);
+    case MouseButton::Right:
+        return clamped == 1 ? "R" : "R" + std::to_string(clamped);
+    case MouseButton::Middle:
+        return clamped == 1 ? "M" : "M" + std::to_string(clamped);
+    default:
+        return "?";
+    }
+}
+
+inline std::string BuildInputIndicatorScrollLabel(int delta, int streak) {
+    const std::string base = delta >= 0 ? "W+" : "W-";
+    if (streak > 1) {
+        return base + " " + std::to_string(streak);
+    }
+    return base;
 }
 
 } // namespace mousefx

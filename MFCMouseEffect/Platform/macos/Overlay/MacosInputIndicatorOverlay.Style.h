@@ -8,7 +8,7 @@ namespace mousefx::macos_input_indicator_style {
 void* CreatePanel(int sizePx);
 void ReleasePanel(void* panelHandle);
 void HidePanel(void* panelHandle);
-void ApplyPanelPresentation(void* panelHandle, int x, int y, int sizePx, const std::string& text);
+void ApplyPanelPresentation(void* panelHandle, int x, int y, int sizePx, int durationMs, const std::string& text);
 #endif
 
 } // namespace mousefx::macos_input_indicator_style

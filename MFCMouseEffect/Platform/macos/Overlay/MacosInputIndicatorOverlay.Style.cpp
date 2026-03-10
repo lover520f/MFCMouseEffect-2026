@@ -20,12 +20,11 @@ void HidePanel(void* panelHandle) {
     mfx_macos_input_indicator_panel_hide_v1(panelHandle);
 }
 
-void ApplyPanelPresentation(void* panelHandle, int x, int y, int sizePx, const std::string& text) {
+void ApplyPanelPresentation(void* panelHandle, int x, int y, int sizePx, int durationMs, const std::string& text) {
     const char* textUtf8 = text.empty() ? "" : text.c_str();
-    mfx_macos_input_indicator_panel_present_v1(panelHandle, x, y, sizePx, textUtf8);
+    mfx_macos_input_indicator_panel_present_v2(panelHandle, x, y, sizePx, textUtf8, durationMs);
 }
 
 #endif
 
 } // namespace mousefx::macos_input_indicator_style
-

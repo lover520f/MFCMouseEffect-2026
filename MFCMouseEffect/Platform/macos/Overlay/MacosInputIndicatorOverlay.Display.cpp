@@ -40,7 +40,7 @@ void MacosInputIndicatorOverlay::ShowAt(ScreenPoint pt, const std::string& label
           return;
       }
       macos_input_indicator_style::ApplyPanelPresentation(
-          panel_, plan.x, plan.y, plan.sizePx, labelCopy);
+          panel_, plan.x, plan.y, plan.sizePx, plan.durationMs, labelCopy);
       {
           std::lock_guard<std::mutex> debugLock(debugMutex_);
           lastAppliedLabel_ = labelCopy;

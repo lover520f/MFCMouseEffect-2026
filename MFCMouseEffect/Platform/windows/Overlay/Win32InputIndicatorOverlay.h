@@ -65,13 +65,7 @@ private:
     uint64_t eventStartMs_ = 0;
     POINT anchorPt_{};
 
-    MouseButton lastClickButton_ = MouseButton::Left;
-    uint64_t lastClickTickMs_ = 0;
-    int clickStreak_ = 0;
-
-    int scrollStreak_ = 0;
-    uint64_t lastScrollTickMs_ = 0;
-    int lastScrollDelta_ = 0;
+    InputIndicatorMouseStreakState mouseStreakState_{};
 
     InputIndicatorKeyStreakState keyStreakState_{};
 

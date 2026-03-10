@@ -18,11 +18,25 @@ uint64_t TickNowMs() {
 } // namespace
 
 void MacosInputIndicatorOverlay::OnClick(const ClickEvent& ev) {
-    ShowAt(ev.pt, macos_input_indicator::MouseButtonLabel(ev.button));
+    const uint64_t now = TickNowMs();
+    const uint64_t timeoutMs = 620;
+    const int streak = AdvanceInputIndicatorClickStreak(
+        &mouseStreakState_, ev.button, now, timeoutMs, 3);
+    const std::string label = BuildInputIndicatorClickLabel(ev.button, streak);
+    ShowAt(ev.pt, label);
 }
 
 void MacosInputIndicatorOverlay::OnScroll(const ScrollEvent& ev) {
-    ShowAt(ev.pt, macos_input_indicator::ScrollLabel(ev.delta));
+    if (ev.delta == 0) {
+        return;
+    }
+    mouseStreakState_.clickStreak = 0;
+    const uint64_t now = TickNowMs();
+    const uint64_t timeoutMs = 500;
+    const int streak = AdvanceInputIndicatorScrollStreak(
+        &mouseStreakState_, ev.delta, now, timeoutMs);
+    const std::string label = BuildInputIndicatorScrollLabel(ev.delta, streak);
+    ShowAt(ev.pt, label);
 }
 
 void MacosInputIndicatorOverlay::OnKey(const KeyEvent& ev) {
