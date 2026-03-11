@@ -14,7 +14,17 @@ char QuantizeDirection(const ScreenPoint& from, const ScreenPoint& to) {
     if (dx == 0 && dy == 0) {
         return '\0';
     }
-    if (AbsInt(dx) >= AbsInt(dy)) {
+    const int absDx = AbsInt(dx);
+    const int absDy = AbsInt(dy);
+    const int major = (absDx > absDy) ? absDx : absDy;
+    const int minor = (absDx > absDy) ? absDy : absDx;
+    if (minor * 5 >= major * 2) {
+        if (dx >= 0 && dy >= 0) return 'E';
+        if (dx >= 0) return 'A';
+        if (dy >= 0) return 'C';
+        return 'Q';
+    }
+    if (absDx >= absDy) {
         return (dx >= 0) ? 'R' : 'L';
     }
     return (dy >= 0) ? 'D' : 'U';
@@ -26,6 +36,10 @@ const char* DirectionWord(char dir) {
     case 'R': return "right";
     case 'U': return "up";
     case 'D': return "down";
+    case 'Q': return "diag_up_left";
+    case 'A': return "diag_up_right";
+    case 'C': return "diag_down_left";
+    case 'E': return "diag_down_right";
     default: return "";
     }
 }

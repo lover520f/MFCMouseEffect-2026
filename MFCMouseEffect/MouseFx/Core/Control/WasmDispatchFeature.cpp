@@ -8,8 +8,45 @@
 #include "MouseFx/Interfaces/IMouseEffect.h"
 
 #include <algorithm>
+#include <array>
 
 namespace mousefx {
+namespace {
+
+constexpr const char* kEffectsChannelClick = "click";
+constexpr const char* kEffectsChannelTrail = "trail";
+constexpr const char* kEffectsChannelScroll = "scroll";
+constexpr const char* kEffectsChannelHold = "hold";
+constexpr const char* kEffectsChannelHover = "hover";
+constexpr std::array<const char*, 5> kEffectsChannels = {
+    kEffectsChannelClick,
+    kEffectsChannelTrail,
+    kEffectsChannelScroll,
+    kEffectsChannelHold,
+    kEffectsChannelHover,
+};
+
+const char* ChannelForEventKind(wasm::EventKind kind) {
+    switch (kind) {
+    case wasm::EventKind::Click:
+        return kEffectsChannelClick;
+    case wasm::EventKind::Move:
+        return kEffectsChannelTrail;
+    case wasm::EventKind::Scroll:
+        return kEffectsChannelScroll;
+    case wasm::EventKind::HoldStart:
+    case wasm::EventKind::HoldUpdate:
+    case wasm::EventKind::HoldEnd:
+        return kEffectsChannelHold;
+    case wasm::EventKind::HoverStart:
+    case wasm::EventKind::HoverEnd:
+        return kEffectsChannelHover;
+    default:
+        return kEffectsChannelClick;
+    }
+}
+
+} // namespace
 
 uint8_t WasmDispatchFeature::ToWasmButton(MouseButton button) {
     switch (button) {
@@ -37,8 +74,8 @@ uint8_t WasmDispatchFeature::ToWasmButtonFromCode(int button) {
     }
 }
 
-bool WasmDispatchFeature::IsRouteActive(const AppController& controller) const {
-    auto* wasmHost = controller.WasmHost();
+bool WasmDispatchFeature::IsRouteActive(const AppController& controller, const char* channel) const {
+    auto* wasmHost = controller.WasmEffectsHostForChannel(channel ? channel : "");
     return wasmHost && wasmHost->Enabled() && wasmHost->IsPluginLoaded();
 }
 
@@ -54,7 +91,8 @@ bool WasmDispatchFeature::TryInvokeAndRender(
         *outInvokeOk = false;
     }
 
-    auto* wasmHost = controller.WasmHost();
+    const char* channel = ChannelForEventKind(input.kind);
+    auto* wasmHost = controller.WasmEffectsHostForChannel(channel);
     if (!wasmHost || !wasmHost->Enabled() || !wasmHost->IsPluginLoaded()) {
         return false;
     }
@@ -103,7 +141,7 @@ bool WasmDispatchFeature::RouteClick(AppController& controller, const ClickEvent
     if (outRenderedByWasm) {
         *outRenderedByWasm = false;
     }
-    if (!IsRouteActive(controller)) {
+    if (!IsRouteActive(controller, kEffectsChannelClick)) {
         return false;
     }
 
@@ -121,7 +159,7 @@ bool WasmDispatchFeature::RouteMove(AppController& controller, const ScreenPoint
     if (outRenderedByWasm) {
         *outRenderedByWasm = false;
     }
-    if (!IsRouteActive(controller)) {
+    if (!IsRouteActive(controller, kEffectsChannelTrail)) {
         return false;
     }
 
@@ -138,7 +176,7 @@ bool WasmDispatchFeature::RouteScroll(AppController& controller, const ScrollEve
     if (outRenderedByWasm) {
         *outRenderedByWasm = false;
     }
-    if (!IsRouteActive(controller)) {
+    if (!IsRouteActive(controller, kEffectsChannelScroll)) {
         return false;
     }
 
@@ -157,7 +195,7 @@ bool WasmDispatchFeature::RouteHoverStart(AppController& controller, const Scree
     if (outRenderedByWasm) {
         *outRenderedByWasm = false;
     }
-    if (!IsRouteActive(controller)) {
+    if (!IsRouteActive(controller, kEffectsChannelHover)) {
         return false;
     }
 
@@ -174,7 +212,7 @@ bool WasmDispatchFeature::RouteHoverEnd(AppController& controller, const ScreenP
     if (outRenderedByWasm) {
         *outRenderedByWasm = false;
     }
-    if (!IsRouteActive(controller)) {
+    if (!IsRouteActive(controller, kEffectsChannelHover)) {
         return false;
     }
 
@@ -191,7 +229,19 @@ bool WasmDispatchFeature::RouteFrameTick(AppController& controller, bool* outRen
     if (outRenderedByWasm) {
         *outRenderedByWasm = false;
     }
-    if (!IsRouteActive(controller)) {
+    bool hasFrameTickLane = false;
+    for (const char* channel : kEffectsChannels) {
+        auto* host = controller.WasmEffectsHostForChannel(channel);
+        if (!host || !host->Enabled() || !host->IsPluginLoaded()) {
+            continue;
+        }
+        if (!host->SupportsFrameTick()) {
+            continue;
+        }
+        hasFrameTickLane = true;
+        break;
+    }
+    if (!hasFrameTickLane) {
         lastFrameTickMs_ = 0;
         return false;
     }
@@ -224,18 +274,21 @@ bool WasmDispatchFeature::RouteFrameTick(AppController& controller, bool* outRen
     invoke.holdActive = controller.IsHoldButtonDown();
     invoke.frameTickMs = nowTickMs;
 
-    auto* wasmHost = controller.WasmHost();
-    if (!wasmHost || !wasmHost->Enabled() || !wasmHost->IsPluginLoaded()) {
-        return false;
+    bool renderedAny = false;
+    for (const char* channel : kEffectsChannels) {
+        auto* wasmHost = controller.WasmEffectsHostForChannel(channel);
+        if (!wasmHost || !wasmHost->Enabled() || !wasmHost->IsPluginLoaded()) {
+            continue;
+        }
+        if (!wasmHost->SupportsFrameTick()) {
+            continue;
+        }
+        const wasm::EventDispatchExecutionResult dispatchResult =
+            wasm::InvokeFrameAndRender(*wasmHost, invoke, controller.Config());
+        renderedAny = renderedAny || dispatchResult.render.renderedAny;
     }
-    if (!wasmHost->SupportsFrameTick()) {
-        lastFrameTickMs_ = 0;
-        return false;
-    }
-    const wasm::EventDispatchExecutionResult dispatchResult =
-        wasm::InvokeFrameAndRender(*wasmHost, invoke, controller.Config());
     if (outRenderedByWasm) {
-        *outRenderedByWasm = dispatchResult.render.renderedAny;
+        *outRenderedByWasm = renderedAny;
     }
     return true;
 }
@@ -249,7 +302,7 @@ bool WasmDispatchFeature::RouteHoldStart(
     if (outRenderedByWasm) {
         *outRenderedByWasm = false;
     }
-    if (!IsRouteActive(controller)) {
+    if (!IsRouteActive(controller, kEffectsChannelHold)) {
         ResetHoldState();
         return false;
     }
@@ -273,11 +326,11 @@ void WasmDispatchFeature::RouteHoldUpdateIfActive(AppController& controller, con
     if (!holdEventActive_) {
         return;
     }
-    if (!IsRouteActive(controller)) {
+    if (!IsRouteActive(controller, kEffectsChannelHold)) {
         ResetHoldState();
         return;
     }
-    auto* wasmHost = controller.WasmHost();
+    auto* wasmHost = controller.WasmEffectsHostForChannel(kEffectsChannelHold);
     if (!wasmHost) {
         ResetHoldState();
         return;

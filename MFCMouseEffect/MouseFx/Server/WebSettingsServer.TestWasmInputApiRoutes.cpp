@@ -48,6 +48,26 @@ std::string FormatU32Hex(uint32_t value) {
     return std::string(buffer);
 }
 
+json BuildInputIndicatorWasmRouteStatusJson(
+    const AppController::InputIndicatorWasmRouteStatus& status) {
+    return json({
+        {"event_kind", status.eventKind},
+        {"render_mode", status.renderMode},
+        {"reason", status.reason},
+        {"event_tick_ms", status.eventTickMs},
+        {"route_attempted", status.routeAttempted},
+        {"anchors_resolved", status.anchorsResolved},
+        {"host_present", status.hostPresent},
+        {"host_enabled", status.hostEnabled},
+        {"plugin_loaded", status.pluginLoaded},
+        {"event_supported", status.eventSupported},
+        {"invoke_attempted", status.invokeAttempted},
+        {"rendered_by_wasm", status.renderedByWasm},
+        {"wasm_fallback_enabled", status.wasmFallbackEnabled},
+        {"native_fallback_applied", status.nativeFallbackApplied},
+    });
+}
+
 } // namespace
 
 bool HandleWebSettingsTestWasmInputApiRoute(
@@ -233,6 +253,154 @@ bool HandleWebSettingsTestWasmInputApiRoute(
             {"lifetime_executed_group_pass_commands", diag.lifetimeExecutedGroupPassCommands},
             {"lifetime_throttled_render_commands", diag.lifetimeThrottledRenderCommands},
             {"lifetime_dropped_render_commands", diag.lifetimeDroppedRenderCommands},
+        }).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/test-dispatch-indicator-key") {
+        if (!IsWasmTestDispatchApiEnabled()) {
+            SetPlainResponse(resp, 404, "not found");
+            return true;
+        }
+
+        if (!controller || !controller->WasmIndicatorHost()) {
+            SetJsonResponse(resp, json({
+                {"ok", false},
+                {"error", "wasm host unavailable"},
+            }).dump());
+            return true;
+        }
+
+        const json payload = ParseObjectOrEmpty(req.body);
+        wasm::EventInvokeInput invoke{};
+        invoke.kind = wasm::EventKind::IndicatorKey;
+        invoke.x = ParseInt32OrDefault(payload, "x", 640);
+        invoke.y = ParseInt32OrDefault(payload, "y", 360);
+        invoke.eventTickMs = controller->CurrentTickMs();
+        const uint32_t sizePx = ParseUInt32OrDefault(payload, "size_px", 48u);
+        const uint32_t durationMs = ParseUInt32OrDefault(payload, "duration_ms", 220u);
+        const uint32_t vkCode = ParseUInt32OrDefault(payload, "vk_code", 0x58u);
+        const uint32_t streak = ParseUInt32OrDefault(payload, "streak", 2u);
+        invoke.indicatorMetrics.sizePx =
+            static_cast<uint16_t>(sizePx > 0xFFFFu ? 0xFFFFu : sizePx);
+        invoke.indicatorMetrics.durationMs =
+            static_cast<uint16_t>(durationMs > 0xFFFFu ? 0xFFFFu : durationMs);
+        invoke.hasIndicatorMetrics = true;
+        std::string label = "X x2";
+        if (payload.contains("label") && payload["label"].is_string()) {
+            label = payload["label"].get<std::string>();
+        }
+        invoke.indicatorContext.primaryCode = vkCode;
+        invoke.indicatorContext.streak =
+            static_cast<uint16_t>(streak > 0xFFFFu ? 0xFFFFu : streak);
+        invoke.indicatorContext.modifierMask = ParseBooleanOrDefault(payload, "ctrl", false)
+            ? wasm::kIndicatorModifierCtrl
+            : 0u;
+        if (ParseBooleanOrDefault(payload, "shift", false)) {
+            invoke.indicatorContext.modifierMask |= wasm::kIndicatorModifierShift;
+        }
+        if (ParseBooleanOrDefault(payload, "alt", false)) {
+            invoke.indicatorContext.modifierMask |= wasm::kIndicatorModifierAlt;
+        }
+        if (ParseBooleanOrDefault(payload, "meta", false)) {
+            invoke.indicatorContext.modifierMask |= wasm::kIndicatorModifierMeta;
+        }
+        invoke.indicatorContext.detailFlags = ParseBooleanOrDefault(payload, "system_key", false)
+            ? wasm::kIndicatorDetailFlagKeySystem
+            : 0u;
+        invoke.hasIndicatorContext = true;
+        invoke.dynamicTextLabelUtf8 = label;
+
+        wasm::WasmEffectHost* host = controller->WasmIndicatorHost();
+        const wasm::EventDispatchExecutionResult dispatchResult =
+            wasm::InvokeEventAndRender(*host, invoke, controller->Config());
+        const wasm::HostDiagnostics& diag = host->Diagnostics();
+
+        SetJsonResponse(resp, json({
+            {"ok", true},
+            {"route_active", dispatchResult.routeActive},
+            {"invoke_ok", dispatchResult.invokeOk},
+            {"rendered_any", dispatchResult.render.renderedAny},
+            {"executed_text_commands", dispatchResult.render.executedTextCommands},
+            {"executed_image_commands", dispatchResult.render.executedImageCommands},
+            {"render_error", dispatchResult.render.lastError},
+            {"supports_indicator_key", host->SupportsInputEvent(wasm::EventKind::IndicatorKey)},
+            {"label", label},
+            {"vk_code", invoke.indicatorContext.primaryCode},
+            {"streak", invoke.indicatorContext.streak},
+            {"modifier_mask", invoke.indicatorContext.modifierMask},
+            {"detail_flags", invoke.indicatorContext.detailFlags},
+            {"size_px", invoke.indicatorMetrics.sizePx},
+            {"duration_ms", invoke.indicatorMetrics.durationMs},
+            {"plugin_loaded", diag.pluginLoaded},
+            {"runtime_backend", diag.runtimeBackend},
+            {"last_error", diag.lastError},
+            {"last_render_error", diag.lastRenderError},
+            {"last_output_bytes", diag.lastOutputBytes},
+            {"last_command_count", diag.lastCommandCount},
+        }).dump());
+        return true;
+    }
+
+    if (req.method == "POST" && path == "/api/wasm/test-dispatch-app-indicator-key") {
+        if (!IsWasmTestDispatchApiEnabled()) {
+            SetPlainResponse(resp, 404, "not found");
+            return true;
+        }
+        if (!controller) {
+            SetJsonResponse(resp, json({
+                {"ok", false},
+                {"error", "no controller"},
+            }).dump());
+            return true;
+        }
+
+        const json payload = ParseObjectOrEmpty(req.body);
+        const EffectConfig beforeConfig = controller->GetConfigSnapshot();
+        InputIndicatorConfig routeConfig = beforeConfig.inputIndicator;
+        routeConfig.enabled = ParseBooleanOrDefault(payload, "enabled", true);
+        routeConfig.keyboardEnabled = ParseBooleanOrDefault(payload, "keyboard_enabled", true);
+        routeConfig.wasmFallbackToNative =
+            ParseBooleanOrDefault(payload, "wasm_fallback_to_native", true);
+        if (payload.contains("key_display_mode") && payload["key_display_mode"].is_string()) {
+            routeConfig.keyDisplayMode = payload["key_display_mode"].get<std::string>();
+        } else {
+            routeConfig.keyDisplayMode = "all";
+        }
+        if (payload.contains("render_mode") && payload["render_mode"].is_string()) {
+            routeConfig.renderMode = payload["render_mode"].get<std::string>();
+        } else {
+            routeConfig.renderMode = "wasm";
+        }
+
+        controller->SetInputIndicatorConfig(routeConfig);
+
+        KeyEvent ev{};
+        ev.pt.x = ParseInt32OrDefault(payload, "x", 640);
+        ev.pt.y = ParseInt32OrDefault(payload, "y", 360);
+        ev.vkCode = ParseUInt32OrDefault(payload, "vk_code", 0x58u);
+        ev.systemKey = ParseBooleanOrDefault(payload, "system_key", false);
+        ev.ctrl = ParseBooleanOrDefault(payload, "ctrl", false);
+        ev.shift = ParseBooleanOrDefault(payload, "shift", false);
+        ev.alt = ParseBooleanOrDefault(payload, "alt", false);
+        ev.meta = ParseBooleanOrDefault(payload, "meta", false);
+        ev.win = ev.meta;
+        controller->DispatchInputIndicatorKey(ev);
+
+        const AppController::InputIndicatorWasmRouteStatus status =
+            controller->ReadInputIndicatorWasmRouteStatus();
+
+        InputIndicatorDebugState debugState{};
+        const bool overlayDebugStateOk = controller->IndicatorOverlay().ReadDebugState(&debugState);
+
+        controller->SetInputIndicatorConfig(beforeConfig.inputIndicator);
+
+        SetJsonResponse(resp, json({
+            {"ok", true},
+            {"status", BuildInputIndicatorWasmRouteStatusJson(status)},
+            {"overlay_debug_state_available", overlayDebugStateOk},
+            {"overlay_apply_count", overlayDebugStateOk ? debugState.applyCount : 0},
+            {"overlay_last_applied_label", overlayDebugStateOk ? debugState.lastAppliedLabel : std::string{}},
         }).dump());
         return true;
     }

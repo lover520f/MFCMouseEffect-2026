@@ -127,6 +127,12 @@ struct PerMonitorPosOverride {
 struct InputIndicatorConfig {
     bool enabled = true;
     bool keyboardEnabled = true;
+    // Renderer backend: "native" | "wasm".
+    std::string renderMode = "native";
+    // When renderMode == "wasm", fallback to native overlay if wasm does not render.
+    bool wasmFallbackToNative = true;
+    // Selected indicator plugin manifest path (UTF-8 path string).
+    std::string wasmManifestPath;
 
     // --- Position settings (shared by mouse and keyboard) ---
     // Cross-platform contract uses top-left screen-space semantics:
@@ -154,8 +160,31 @@ struct InputIndicatorConfig {
 };
 
 struct AutomationKeyBinding {
+    struct GesturePoint {
+        int x = 0;
+        int y = 0;
+    };
+
+    struct GesturePattern {
+        std::string mode = "preset";
+        int matchThresholdPercent = 75;
+        std::vector<GesturePoint> customPoints;
+        std::vector<std::vector<GesturePoint>> customStrokes;
+    };
+
+    struct ModifierCondition {
+        // any  = ignore modifier state
+        // none = require no primary/shift/alt modifier
+        // exact = exact-match selected modifiers
+        std::string mode = "any";
+        bool primary = false;
+        bool shift = false;
+        bool alt = false;
+    };
+
     bool enabled = true;
     std::string trigger;
+    std::string triggerButton = "left";
     // Scope list format:
     // - "all"
     // - "process:<process_name>" (for example "process:code", "process:code.exe", "process:safari.app")
@@ -165,12 +194,14 @@ struct AutomationKeyBinding {
     // - process scopes are OR-matched (any listed app can trigger this binding).
     // - if "all" exists, process scopes are ignored.
     std::vector<std::string> appScopes = {"all"};
+    GesturePattern gesturePattern{};
+    ModifierCondition modifiers{};
     std::string keys;
 };
 
 struct GestureAutomationConfig {
     bool enabled = false;
-    std::string triggerButton = "right";
+    std::string triggerButton = "left";
     int minStrokeDistancePx = 80;
     int sampleStepPx = 10;
     int maxDirections = 4;
@@ -190,6 +221,13 @@ struct WasmConfig {
     bool fallbackToBuiltinClick = true;
     // Selected plugin manifest path (UTF-8 path string).
     std::string manifestPath;
+    // Optional per-category plugin manifest paths (UTF-8 path string).
+    // Empty value falls back to `manifestPath`.
+    std::string manifestPathClick;
+    std::string manifestPathTrail;
+    std::string manifestPathScroll;
+    std::string manifestPathHold;
+    std::string manifestPathHover;
     // Optional extra catalog root path (UTF-8 path string) for plugin discovery.
     std::string catalogRootPath;
     // WASM execution budget policy.

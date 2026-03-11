@@ -185,7 +185,7 @@ inline int AdvanceInputIndicatorScrollStreak(
     if (sameDir &&
         nowMs >= state->lastScrollTickMs &&
         nowMs - state->lastScrollTickMs <= timeoutMs) {
-        state->scrollStreak = std::min(state->scrollStreak + 1, 9);
+        state->scrollStreak = std::min(state->scrollStreak + 1, 99);
     } else {
         state->scrollStreak = 1;
     }
@@ -196,22 +196,30 @@ inline int AdvanceInputIndicatorScrollStreak(
 
 inline std::string BuildInputIndicatorClickLabel(MouseButton button, int streak) {
     const int clamped = std::min(std::max(streak, 1), 3);
+    std::string base;
     switch (button) {
     case MouseButton::Left:
-        return clamped == 1 ? "L" : "L" + std::to_string(clamped);
+        base = "L";
+        break;
     case MouseButton::Right:
-        return clamped == 1 ? "R" : "R" + std::to_string(clamped);
+        base = "R";
+        break;
     case MouseButton::Middle:
-        return clamped == 1 ? "M" : "M" + std::to_string(clamped);
+        base = "M";
+        break;
     default:
         return "?";
     }
+    if (clamped > 1) {
+        base += " x" + std::to_string(clamped);
+    }
+    return base;
 }
 
 inline std::string BuildInputIndicatorScrollLabel(int delta, int streak) {
-    const std::string base = delta >= 0 ? "W+" : "W-";
+    std::string base = delta >= 0 ? "W+" : "W-";
     if (streak > 1) {
-        return base + " " + std::to_string(streak);
+        base += " x" + std::to_string(streak);
     }
     return base;
 }

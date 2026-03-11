@@ -5,6 +5,9 @@
   "api_version": 2,
   "entry": "effect.wasm",
   "image_assets": [],
+  "surfaces": [
+    "effects"
+  ],
   "input_kinds": [
     "click"
   ],

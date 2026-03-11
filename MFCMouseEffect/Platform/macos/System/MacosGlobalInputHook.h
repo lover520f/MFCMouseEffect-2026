@@ -54,6 +54,8 @@ private:
     void HandleMouseDownEvent(CGEventRef event);
     void HandleMouseUpEvent(CGEventRef event);
     CGEventRef HandleKeyDownEvent(CGEventRef event);
+    CGEventRef HandleKeyUpEvent(CGEventRef event);
+    CGEventRef HandleModifierEvent(CGEventRef event);
     ScreenPoint SanitizeMouseMovePoint(const ScreenPoint& rawPt);
     void RememberStableMovePoint(const ScreenPoint& pt);
     bool TryReadStableMovePoint(ScreenPoint* outPt) const;

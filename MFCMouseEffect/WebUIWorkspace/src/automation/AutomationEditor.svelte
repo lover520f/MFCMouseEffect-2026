@@ -2,7 +2,9 @@
   import MappingPanel from './MappingPanel.svelte';
   import {
     DEFAULT_GESTURE_MAX_DIRECTIONS,
+    DEFAULT_GESTURE_MATCH_THRESHOLD_PERCENT,
     DEFAULT_GESTURE_MIN_DISTANCE,
+    DEFAULT_GESTURE_PATTERN_MODE,
     DEFAULT_GESTURE_SAMPLE_STEP,
     DEFAULT_GESTURE_TRIGGER_BUTTON,
   } from './defaults.js';
@@ -36,7 +38,6 @@
 
   let automationEnabled = false;
   let gestureEnabled = false;
-  let gestureTriggerButton = DEFAULT_GESTURE_TRIGGER_BUTTON;
   let gestureMinDistance = DEFAULT_GESTURE_MIN_DISTANCE;
   let gestureSampleStep = DEFAULT_GESTURE_SAMPLE_STEP;
   let gestureMaxDirections = DEFAULT_GESTURE_MAX_DIRECTIONS;
@@ -53,13 +54,139 @@
   let mouseTemplateOptions = [];
   let gestureTemplateOptions = [];
 
-  let lastSchemaRef = null;
-  let lastPayloadRef = null;
+  const AUTOMATION_DRAFT_VERSION = 1;
+  const AUTOMATION_DRAFT_STORAGE_KEY = 'mfx.automation.editor.draft.v1';
+
+  let lastIncomingSignature = '';
   let lastI18nRef = null;
+  let skipDraftPersist = false;
   let uiText = {};
   let mousePanelTexts = {};
   let gesturePanelTexts = {};
   let runtimePlatform = 'windows';
+
+  function safeStringify(value) {
+    try {
+      return JSON.stringify(value);
+    } catch (_error) {
+      return '';
+    }
+  }
+
+  function normalizeDraftRows(rows) {
+    const out = [];
+    const sourceRows = Array.isArray(rows) ? rows : [];
+    for (const row of sourceRows) {
+      const source = row || {};
+      out.push({
+        enabled: source.enabled !== false,
+        trigger: `${source.trigger || ''}`.trim(),
+        triggerChain: Array.isArray(source.triggerChain) ? source.triggerChain : `${source.trigger || ''}`.trim(),
+        appScopeMode: scopeMode(source.appScopeMode || source.appScopeType || 'all'),
+        appScopeApps: Array.isArray(source.appScopeApps) ? source.appScopeApps : [],
+        appScopeDraft: `${source.appScopeDraft || ''}`,
+        triggerButton: `${source.triggerButton || ''}`.trim(),
+        gesturePattern: source.gesturePattern || {},
+        keys: `${source.keys || ''}`.trim(),
+      });
+    }
+    return out;
+  }
+
+  function readDraftSnapshot() {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return null;
+    }
+    try {
+      const raw = window.localStorage.getItem(AUTOMATION_DRAFT_STORAGE_KEY);
+      if (!raw) {
+        return null;
+      }
+      const parsed = JSON.parse(raw);
+      if (!parsed || parsed.version !== AUTOMATION_DRAFT_VERSION) {
+        return null;
+      }
+      return parsed;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function removeDraftSnapshot() {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return;
+    }
+    try {
+      window.localStorage.removeItem(AUTOMATION_DRAFT_STORAGE_KEY);
+    } catch (_error) {
+      // Ignore local cache write failures.
+    }
+  }
+
+  function writeDraftSnapshot() {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return;
+    }
+    if (!lastIncomingSignature || skipDraftPersist) {
+      return;
+    }
+    const snapshot = {
+      version: AUTOMATION_DRAFT_VERSION,
+      baseSignature: lastIncomingSignature,
+      platform: runtimePlatform,
+      state: {
+        enabled: !!automationEnabled,
+        gestureEnabled: !!gestureEnabled,
+        gestureMinDistance: numberOr(gestureMinDistance, DEFAULT_GESTURE_MIN_DISTANCE),
+        gestureSampleStep: numberOr(gestureSampleStep, DEFAULT_GESTURE_SAMPLE_STEP),
+        gestureMaxDirections: numberOr(gestureMaxDirections, DEFAULT_GESTURE_MAX_DIRECTIONS),
+        mouseTemplate: `${mouseTemplate || ''}`.trim(),
+        gestureTemplate: `${gestureTemplate || ''}`.trim(),
+        mouseRows: normalizeDraftRows(mouseRows),
+        gestureRows: normalizeDraftRows(gestureRows),
+      },
+    };
+
+    try {
+      window.localStorage.setItem(AUTOMATION_DRAFT_STORAGE_KEY, safeStringify(snapshot));
+    } catch (_error) {
+      // Ignore local cache write failures.
+    }
+  }
+
+  function restoreRowsFromDraft(rows, kind) {
+    const options = optionsForKind(kind);
+    const fallback = defaultTriggerForKind(kind);
+    const source = Array.isArray(rows) ? rows : [];
+    return source.map((item) => createRow(item, fallback, options));
+  }
+
+  function tryRestoreDraftSnapshot(signature) {
+    const draft = readDraftSnapshot();
+    if (!draft) {
+      return;
+    }
+
+    if (draft.baseSignature !== signature) {
+      removeDraftSnapshot();
+      return;
+    }
+    if (draft.platform && draft.platform !== runtimePlatform) {
+      removeDraftSnapshot();
+      return;
+    }
+
+    const state = draft.state || {};
+    automationEnabled = state.enabled === true;
+    gestureEnabled = state.gestureEnabled === true;
+    gestureMinDistance = numberOr(state.gestureMinDistance, DEFAULT_GESTURE_MIN_DISTANCE);
+    gestureSampleStep = numberOr(state.gestureSampleStep, DEFAULT_GESTURE_SAMPLE_STEP);
+    gestureMaxDirections = numberOr(state.gestureMaxDirections, DEFAULT_GESTURE_MAX_DIRECTIONS);
+    mouseRows = restoreRowsFromDraft(state.mouseRows, 'mouse');
+    gestureRows = restoreRowsFromDraft(state.gestureRows, 'gesture');
+    mouseTemplate = `${state.mouseTemplate || ''}`.trim();
+    gestureTemplate = `${state.gestureTemplate || ''}`.trim();
+  }
 
   function t(key, fallback) {
     return textOf(i18n, key, fallback);
@@ -143,12 +270,39 @@
       binding?.app_scopes || binding?.appScopes || binding?.app_scope || binding?.appScope,
       runtimePlatform);
     const scopeState = buildScopeState(scope.mode, scope.apps, binding?.appScopeDraft || '');
+    const sourceModifiers = binding?.modifiers || {};
+    const sourceModifierMode = `${sourceModifiers?.mode || ''}`.trim().toLowerCase();
+    const sourcePrimary = !!sourceModifiers?.primary;
+    const sourceShift = !!sourceModifiers?.shift;
+    const sourceAlt = !!sourceModifiers?.alt;
+    const normalizedModifierMode = sourceModifierMode === 'exact'
+      ? 'exact'
+      : sourceModifierMode === 'none'
+        ? 'none'
+        : ((sourcePrimary || sourceShift || sourceAlt) ? 'exact' : 'none');
+    const normalizedPrimary = normalizedModifierMode === 'exact' ? sourcePrimary : false;
+    const normalizedShift = normalizedModifierMode === 'exact' ? sourceShift : false;
+    const normalizedAlt = normalizedModifierMode === 'exact' ? sourceAlt : false;
+
     return {
       id: nextRowId(),
       enabled: binding?.enabled !== false,
       triggerChain,
       trigger: triggerChain.join('>'),
       ...scopeState,
+      triggerButton: binding?.triggerButton || binding?.trigger_button || defaultGestureButton || DEFAULT_GESTURE_TRIGGER_BUTTON,
+      gesturePattern: binding?.gesturePattern || binding?.gesture_pattern || {
+        mode: DEFAULT_GESTURE_PATTERN_MODE,
+        matchThresholdPercent: DEFAULT_GESTURE_MATCH_THRESHOLD_PERCENT,
+        customPoints: [],
+        customStrokes: [],
+      },
+      modifiers: {
+        mode: normalizedModifierMode,
+        primary: normalizedPrimary,
+        shift: normalizedShift,
+        alt: normalizedAlt,
+      },
       keys: `${binding?.keys || ''}`.trim(),
       note: '',
       hasConflict: false,
@@ -190,7 +344,7 @@
   }
 
   function localizeOptions(options, group) {
-    return (options || []).map((option) => {
+    const localized = (options || []).map((option) => {
       const source = option || {};
       const value = `${source.value || ''}`.trim();
       if (!value) {
@@ -202,6 +356,26 @@
         ...source,
         label: key ? t(key, fallback) : fallback,
       };
+    });
+    if (group !== 'gesture_button') {
+      return localized;
+    }
+
+    const weight = {
+      left: 0,
+      middle: 1,
+      right: 2,
+    };
+
+    return localized.slice().sort((a, b) => {
+      const av = `${a?.value || ''}`.trim().toLowerCase();
+      const bv = `${b?.value || ''}`.trim().toLowerCase();
+      const aw = Object.prototype.hasOwnProperty.call(weight, av) ? weight[av] : Number.MAX_SAFE_INTEGER;
+      const bw = Object.prototype.hasOwnProperty.call(weight, bv) ? weight[bv] : Number.MAX_SAFE_INTEGER;
+      if (aw !== bw) {
+        return aw - bw;
+      }
+      return av.localeCompare(bv);
     });
   }
 
@@ -215,7 +389,6 @@
   function validationMessages() {
     const isMac = runtimePlatform === 'macos';
     return {
-      missing: t('auto_missing_shortcut', 'Shortcut is required for enabled mapping.'),
       duplicate: t('auto_conflict_trigger', 'Duplicate trigger chain + app scope. Keep only one enabled mapping per key.'),
       invalidScope: isMac
         ? t('auto_missing_scope_app_macos', 'Please add at least one target app name when selected-app scope is enabled.')
@@ -252,6 +425,15 @@
       return {
         ...row,
         keys: `${value || ''}`,
+      };
+    }
+    if (key === 'gesturePattern') {
+      return {
+        ...row,
+        gesturePattern: {
+          ...(row.gesturePattern || {}),
+          ...(value || {}),
+        },
       };
     }
     if (key === 'appScopeMode') {
@@ -320,8 +502,8 @@
     const provider = resolveTemplateProvider();
     const translate = (key, fallback) => t(key, fallback);
 
-    mouseTemplateOptions = listTemplateOptions(provider, 'mouse', translate);
-    gestureTemplateOptions = listTemplateOptions(provider, 'gesture', translate);
+    mouseTemplateOptions = listTemplateOptions(provider, 'mouse', translate, runtimePlatform);
+    gestureTemplateOptions = listTemplateOptions(provider, 'gesture', translate, runtimePlatform);
 
     if (!isTemplateValid(mouseTemplate, mouseTemplateOptions)) {
       mouseTemplate = '';
@@ -340,7 +522,14 @@
 
     const options = optionsForKind(kind);
     const fallback = defaultTriggerForKind(kind);
-    const bindings = readTemplateBindings(provider, kind, selected, options, fallback, runtimePlatform);
+    const bindings = readTemplateBindings(
+      provider,
+      kind,
+      selected,
+      options,
+      fallback,
+      runtimePlatform,
+      defaultGestureButton || DEFAULT_GESTURE_TRIGGER_BUTTON);
     if (bindings.length === 0) {
       return;
     }
@@ -357,12 +546,32 @@
     runValidation(kind);
   }
 
-  function hydrateFromPayload() {
+  function buildIncomingSignature(normalized) {
+    return safeStringify({
+      platform: normalized.platform || 'windows',
+      enabled: !!normalized.enabled,
+      gestureEnabled: !!normalized.gestureEnabled,
+      gestureMinDistance: numberOr(normalized.gestureMinDistance, DEFAULT_GESTURE_MIN_DISTANCE),
+      gestureSampleStep: numberOr(normalized.gestureSampleStep, DEFAULT_GESTURE_SAMPLE_STEP),
+      gestureMaxDirections: numberOr(normalized.gestureMaxDirections, DEFAULT_GESTURE_MAX_DIRECTIONS),
+      defaultMouseTrigger: normalized.defaultMouseTrigger || '',
+      defaultGestureTrigger: normalized.defaultGestureTrigger || '',
+      defaultGestureButton: normalized.defaultGestureButton || DEFAULT_GESTURE_TRIGGER_BUTTON,
+      mouseOptions: normalized.mouseOptions || [],
+      appScopeOptions: normalized.appScopeOptions || [],
+      gestureOptions: normalized.gestureOptions || [],
+      gestureButtonOptions: normalized.gestureButtonOptions || [],
+      mouseMappings: normalized.mouseMappings || [],
+      gestureMappings: normalized.gestureMappings || [],
+    });
+  }
+
+  function hydrateFromPayload(normalized, signature) {
+    skipDraftPersist = true;
     rowSeq = 1;
     mouseTemplate = '';
     gestureTemplate = '';
 
-    const normalized = normalizeAutomationPayload(schema, payloadState);
     runtimePlatform = normalized.platform || 'windows';
     mouseOptions = normalized.mouseOptions;
     appScopeOptions = normalized.appScopeOptions;
@@ -376,7 +585,6 @@
 
     automationEnabled = normalized.enabled;
     gestureEnabled = normalized.gestureEnabled;
-    gestureTriggerButton = normalized.gestureTriggerButton;
     gestureMinDistance = normalized.gestureMinDistance;
     gestureSampleStep = normalized.gestureSampleStep;
     gestureMaxDirections = normalized.gestureMaxDirections;
@@ -386,9 +594,12 @@
     gestureRows = normalized.gestureMappings.map((item) =>
       createRow(item, defaultGestureTrigger, gestureOptions));
 
+    tryRestoreDraftSnapshot(signature);
     runValidation('mouse');
     runValidation('gesture');
     syncTemplateOptions();
+    lastIncomingSignature = signature;
+    skipDraftPersist = false;
   }
 
   function panelTextsForKind(kind) {
@@ -398,7 +609,10 @@
         ? t('auto_empty_gesture', 'No gesture mappings yet. Click "Add mapping".')
         : t('auto_empty_mouse', 'No mouse mappings yet. Click "Add mapping".'),
       enabledTitle: t('label_auto_mapping_enabled', 'Enabled'),
-      shortcutPlaceholder: t('placeholder_shortcut', 'Ctrl+Shift+S'),
+      shortcutPlaceholder: isMac
+        ? t('placeholder_shortcut_macos', 'Cmd+Shift+S')
+        : t('placeholder_shortcut', 'Ctrl+Shift+S'),
+      shortcutLabel: t('label_auto_output_shortcut', 'Output shortcut'),
       record: t('btn_record_shortcut', 'Record'),
       recordStop: t('btn_record_stop_save', 'Stop / Save'),
       recording: t('btn_recording', 'Press keys...'),
@@ -408,6 +622,26 @@
       captureHintActive: t(
         'hint_shortcut_capture_active',
         'Recording mode: native capture is active (page shortcuts are blocked). Press combo, Esc to cancel, Backspace to clear.'),
+      captureHintModifierActive: t(
+        'hint_shortcut_capture_active_modifier',
+        'Recording gesture trigger modifiers. Press Ctrl/Cmd/Shift/Alt(Option), Esc to cancel, Backspace to clear to no modifier.'),
+      gestureTriggerShortcutLabel: t('label_auto_gesture_trigger_shortcut', 'Gesture trigger modifiers'),
+      gestureTriggerShortcutPlaceholder: isMac
+        ? t('placeholder_auto_gesture_trigger_shortcut_macos', 'Cmd / Cmd+Shift')
+        : t('placeholder_auto_gesture_trigger_shortcut', 'Ctrl / Ctrl+Shift'),
+      gestureTriggerModifiersAny: t('text_auto_gesture_trigger_any', 'Any modifier'),
+      gestureTriggerModifiersNonePlaceholder: t(
+        'text_auto_gesture_trigger_none_placeholder',
+        'Optional (empty means no modifier)'),
+      gestureTriggerModifiersNone: t('text_auto_gesture_trigger_none', 'No modifier'),
+      gestureOutputShortcutLabel: t('label_auto_output_shortcut', 'Output shortcut'),
+      modifierPrimary: t(
+        isMac ? 'auto_modifier_primary_short_macos' : 'auto_modifier_primary_windows',
+        isMac ? 'Cmd' : 'Ctrl'),
+      modifierShift: t('auto_modifier_shift', 'Shift'),
+      modifierAlt: t(
+        isMac ? 'auto_modifier_alt_macos' : 'auto_modifier_alt_windows',
+        isMac ? 'Option' : 'Alt'),
       scopeRefreshCatalog: t('btn_scope_refresh_catalog', 'Refresh app list'),
       scopeRefreshingCatalog: t('btn_scope_refreshing_catalog', 'Refreshing...'),
       scopePickFromFile: isMac
@@ -442,6 +676,23 @@
       addChainNode: t('btn_add_chain_node', 'Add chain node'),
       removeChainNode: t('btn_remove_chain_node', 'Remove node'),
       chainJoiner: t('label_chain_joiner', 'Then'),
+      gestureTriggerButtonLabel: t('label_auto_gesture_trigger_button', 'Gesture trigger button'),
+      gestureModePreset: t('auto_gesture_mode_preset', 'Preset'),
+      gestureModeCustom: t('auto_gesture_mode_custom', 'Custom Draw'),
+      gesturePatternTitle: t('label_auto_gesture_pattern', 'Gesture shape'),
+      gesturePatternPreset: t('label_auto_gesture_pattern_preset', 'Preset gesture'),
+      gesturePatternCustom: t('label_auto_gesture_pattern_custom', 'Custom drawing'),
+      gestureThreshold: t('label_auto_gesture_threshold', 'Similarity threshold'),
+      gestureCanvasEmpty: t('text_auto_gesture_canvas_empty', 'No custom stroke yet'),
+      gestureCanvasClear: t('btn_auto_gesture_canvas_clear', 'Clear'),
+      gestureCanvasUndo: t('btn_auto_gesture_canvas_undo', 'Undo'),
+      gestureCanvasGuide: t('hint_auto_gesture_canvas', 'Press and drag to draw a custom gesture template.'),
+      gestureCanvasLimitHint: t('hint_auto_gesture_canvas_max_strokes', 'Supports up to 4 strokes. Each stroke keeps index and direction.'),
+      gestureCanvasLimitBadge: t('text_auto_gesture_canvas_limit_badge', '!'),
+      gestureCanvasLimitReached: t('text_auto_gesture_canvas_limit_reached', 'Stroke limit reached (max 4).'),
+      gestureCanvasStrokeCount: t('label_auto_gesture_canvas_strokes', 'Strokes'),
+      gestureCanvasPointUnit: t('text_auto_gesture_canvas_point_unit', 'pt'),
+      gestureCanvasNoDirection: t('text_auto_gesture_canvas_no_direction', 'No direction'),
       templateNone: t('auto_template_none', 'Select quick template'),
       templateTitle: kind === 'gesture'
         ? t('label_auto_gesture_template', 'Gesture quick template')
@@ -455,11 +706,12 @@
       autoEnabled: t('label_auto_enabled', 'Enable automation'),
       mouseMappings: t('label_auto_mouse_mappings', 'Mouse action mappings'),
       gestureEnabled: t('label_auto_gesture_enabled', 'Enable gesture mapping'),
-      gestureTriggerButton: t('label_auto_gesture_trigger_button', 'Gesture trigger button'),
       gestureMinDistance: t('label_auto_gesture_min_distance', 'Min stroke distance (px)'),
       gestureSampleStep: t('label_auto_gesture_sample_step', 'Sampling step (px)'),
       gestureMaxDirections: t('label_auto_gesture_max_dirs', 'Max direction segments'),
       gestureMappings: t('label_auto_gesture_mappings', 'Gesture mappings'),
+      gestureSetup: t('label_auto_gesture_setup', 'Gesture recognizer'),
+      gestureDrawHint: t('hint_auto_gesture_draw', 'Each gesture can use a preset shape or your own drawing. Custom drawings will later match by similarity threshold.'),
       hint: t(
         'hint_automation',
         'Action chain trigger format: action1>action2 (for example left_click>scroll_down).'),
@@ -503,10 +755,7 @@
       mouse_mappings: readMappings(mouseRows, mouseOptions, defaultMouseTrigger, runtimePlatform),
       gesture: {
         enabled: !!gestureEnabled,
-        trigger_button: sanitizeOptionValue(
-          gestureTriggerButton,
-          gestureButtonOptions,
-          defaultGestureButton || DEFAULT_GESTURE_TRIGGER_BUTTON),
+        trigger_button: defaultGestureButton || DEFAULT_GESTURE_TRIGGER_BUTTON,
         min_stroke_distance_px: numberOr(gestureMinDistance, DEFAULT_GESTURE_MIN_DISTANCE),
         sample_step_px: numberOr(gestureSampleStep, DEFAULT_GESTURE_SAMPLE_STEP),
         max_directions: numberOr(gestureMaxDirections, DEFAULT_GESTURE_MAX_DIRECTIONS),
@@ -522,12 +771,6 @@
 
     if (!automationEnabled) {
       return { ok: true };
-    }
-    if (mouseValidation.hasMissingShortcut) {
-      return {
-        ok: false,
-        message: t('auto_validation_missing_shortcut', 'At least one enabled mapping has empty shortcut text.'),
-      };
     }
     if (mouseValidation.hasInvalidScope) {
       return {
@@ -545,12 +788,6 @@
     }
     if (!gestureEnabled) {
       return { ok: true };
-    }
-    if (gestureValidation.hasMissingShortcut) {
-      return {
-        ok: false,
-        message: t('auto_validation_missing_shortcut', 'At least one enabled mapping has empty shortcut text.'),
-      };
     }
     if (gestureValidation.hasInvalidScope) {
       return {
@@ -571,10 +808,12 @@
 
   refreshLocalizedText();
 
-  $: if (schema !== lastSchemaRef || payloadState !== lastPayloadRef) {
-    lastSchemaRef = schema;
-    lastPayloadRef = payloadState;
-    hydrateFromPayload();
+  $: {
+    const normalized = normalizeAutomationPayload(schema, payloadState);
+    const signature = buildIncomingSignature(normalized);
+    if (signature && signature !== lastIncomingSignature) {
+      hydrateFromPayload(normalized, signature);
+    }
   }
 
   $: if (i18n !== lastI18nRef) {
@@ -585,66 +824,90 @@
     runValidation('gesture');
     syncTemplateOptions();
   }
+
+  $: if (!skipDraftPersist && lastIncomingSignature) {
+    writeDraftSnapshot();
+  }
 </script>
 
-<div class="grid automation-grid">
-  <label for="auto_enabled">{uiText.autoEnabled}</label>
-  <input id="auto_enabled" type="checkbox" bind:checked={automationEnabled} />
+<div class="automation-flow">
+  <section class="automation-card automation-card--master">
+    <div class="automation-card-head">
+      <h3 class="automation-card-title">{uiText.autoEnabled}</h3>
+      <label class="automation-inline-toggle" for="auto_enabled">
+        <span>{automationEnabled ? 'ON' : 'OFF'}</span>
+        <input id="auto_enabled" type="checkbox" bind:checked={automationEnabled} />
+      </label>
+    </div>
+    <p class="automation-card-hint">{uiText.hint}</p>
+  </section>
 
-  <div class="automation-field-label">{uiText.mouseMappings}</div>
-  <MappingPanel
-    kind="mouse"
-    platform={runtimePlatform}
-    rows={mouseRows}
-    options={mouseOptions}
-    scopeOptions={appScopeOptions}
-    templateValue={mouseTemplate}
-    templateOptions={mouseTemplateOptions}
-    texts={mousePanelTexts}
-    on:rowchange={onPanelRowChange}
-    on:remove={onPanelRemove}
-    on:add={onPanelAdd}
-    on:templatechange={onPanelTemplateChange}
-    on:applytemplate={onPanelApplyTemplate}
-  />
+  <section class="automation-card automation-card--mouse">
+    <div class="automation-card-head">
+      <h3 class="automation-card-title">{uiText.mouseMappings}</h3>
+    </div>
+    <div class="automation-card-body">
+      <div class="automation-mapping-shell automation-mapping-shell--mouse">
+        <MappingPanel
+          kind="mouse"
+          platform={runtimePlatform}
+          rows={mouseRows}
+          options={mouseOptions}
+          scopeOptions={appScopeOptions}
+          templateValue={mouseTemplate}
+          templateOptions={mouseTemplateOptions}
+          texts={mousePanelTexts}
+          on:rowchange={onPanelRowChange}
+          on:remove={onPanelRemove}
+          on:add={onPanelAdd}
+          on:templatechange={onPanelTemplateChange}
+          on:applytemplate={onPanelApplyTemplate}
+        />
+      </div>
+    </div>
+  </section>
 
-  <label for="auto_gesture_enabled">{uiText.gestureEnabled}</label>
-  <input id="auto_gesture_enabled" type="checkbox" bind:checked={gestureEnabled} />
+  <section class="automation-card automation-card--gesture-map">
+    <div class="automation-card-head">
+      <h3 class="automation-card-title">{uiText.gestureMappings}</h3>
+      <label class="automation-inline-toggle" for="auto_gesture_enabled">
+        <span>{gestureEnabled ? 'ON' : 'OFF'}</span>
+        <input id="auto_gesture_enabled" type="checkbox" bind:checked={gestureEnabled} />
+      </label>
+    </div>
+    <div class="automation-card-body">
+      <div class="automation-gesture-shell">
+        <div class="automation-gesture-setup-title">{uiText.gestureSetup}</div>
+        <div class="automation-gesture-intro">{uiText.gestureDrawHint}</div>
+        <div class="automation-gesture-settings">
+          <label for="auto_gesture_min_distance">{uiText.gestureMinDistance}</label>
+          <input id="auto_gesture_min_distance" type="number" min="10" max="4000" bind:value={gestureMinDistance} />
 
-  <label for="auto_gesture_trigger_button">{uiText.gestureTriggerButton}</label>
-  <select id="auto_gesture_trigger_button" bind:value={gestureTriggerButton}>
-    {#each gestureButtonOptions as option (option.value)}
-      <option value={option.value}>{option.label}</option>
-    {/each}
-  </select>
+          <label for="auto_gesture_sample_step">{uiText.gestureSampleStep}</label>
+          <input id="auto_gesture_sample_step" type="number" min="2" max="256" bind:value={gestureSampleStep} />
 
-  <label for="auto_gesture_min_distance">{uiText.gestureMinDistance}</label>
-  <input id="auto_gesture_min_distance" type="number" min="10" max="4000" bind:value={gestureMinDistance} />
-
-  <label for="auto_gesture_sample_step">{uiText.gestureSampleStep}</label>
-  <input id="auto_gesture_sample_step" type="number" min="2" max="256" bind:value={gestureSampleStep} />
-
-  <label for="auto_gesture_max_dirs">{uiText.gestureMaxDirections}</label>
-  <input id="auto_gesture_max_dirs" type="number" min="1" max="8" bind:value={gestureMaxDirections} />
-
-  <div class="automation-field-label">{uiText.gestureMappings}</div>
-  <MappingPanel
-    kind="gesture"
-    platform={runtimePlatform}
-    rows={gestureRows}
-    options={gestureOptions}
-    scopeOptions={appScopeOptions}
-    templateValue={gestureTemplate}
-    templateOptions={gestureTemplateOptions}
-    texts={gesturePanelTexts}
-    on:rowchange={onPanelRowChange}
-    on:remove={onPanelRemove}
-    on:add={onPanelAdd}
-    on:templatechange={onPanelTemplateChange}
-    on:applytemplate={onPanelApplyTemplate}
-  />
-
-  <div class="hint span2">
-    {uiText.hint}
-  </div>
+          <label for="auto_gesture_max_dirs">{uiText.gestureMaxDirections}</label>
+          <input id="auto_gesture_max_dirs" type="number" min="1" max="8" bind:value={gestureMaxDirections} />
+        </div>
+      </div>
+      <div class="automation-mapping-shell automation-mapping-shell--gesture">
+        <MappingPanel
+          kind="gesture"
+          platform={runtimePlatform}
+          rows={gestureRows}
+          options={gestureOptions}
+          scopeOptions={appScopeOptions}
+          gestureButtonOptions={gestureButtonOptions}
+          templateValue={gestureTemplate}
+          templateOptions={gestureTemplateOptions}
+          texts={gesturePanelTexts}
+          on:rowchange={onPanelRowChange}
+          on:remove={onPanelRemove}
+          on:add={onPanelAdd}
+          on:templatechange={onPanelTemplateChange}
+          on:applytemplate={onPanelApplyTemplate}
+        />
+      </div>
+    </div>
+  </section>
 </div>

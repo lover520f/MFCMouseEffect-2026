@@ -29,6 +29,12 @@ This document is intentionally compact. Historical per-phase details are kept in
 
 Core rule: WASM computes; C++ executes.
 
+Surface host routing rule:
+- Host maintains two independent wasm host lanes under one shared runtime policy:
+  - `effects` lane for click/move/scroll/hold/hover effect plugins.
+  - `indicator` lane for `indicator_*` input-indicator plugins.
+- `POST /api/wasm/load-manifest` must route by `surface` and validate against the target lane diagnostics.
+
 ## Plugin Contract (ABI v2)
 Required exports:
 
@@ -47,11 +53,34 @@ uint32_t mfx_plugin_on_frame(
 void mfx_plugin_reset(void); // optional but recommended
 ```
 
-Event kinds follow normalized host semantics (`click/move/scroll/hold*/hover*`).
+Event kinds follow normalized host semantics (`click/move/scroll/hold*/hover*`) plus indicator lanes
+(`indicator_click/indicator_scroll/indicator_key`) for input-indicator styling.
+
+Indicator event notes:
+- `indicator_*` events still use `EventInputV2` as the base payload.
+- The host appends an optional `IndicatorEventTailV1` after `EventInputV2` to expose
+  `size_px` and `duration_ms` for indicator styling (4 bytes total).
+- When present, the host also appends `IndicatorEventContextTailV2` after
+  `IndicatorEventTailV1` to expose richer style context:
+  `primary_code`, `streak`, `modifier_mask`, and `detail_flags`.
+  `primary_code` maps to button / wheel-magnitude / `vkCode` depending on event kind.
+- When spawning text for indicator labels, use `text_id = kTextIdEventLabel` to receive the
+  per-event label (e.g., `L x2`, `W+ x3`, `Cmd+Tab`).
 
 Manifest-level route hints (optional):
 - `input_kinds` narrows which normalized input lanes call `on_input`.
+- `surfaces` declares which host surface the plugin is intended for (`effects` / `indicator` / `all`).
 - `enable_frame_tick` controls whether host drives periodic `on_frame`.
+
+Indicator route observability (test/runtime):
+- `POST /api/wasm/test-dispatch-app-indicator-key` dispatches a key event through the real app route
+  (`DispatchInputIndicatorKey`) and returns the latest route snapshot.
+- Snapshot fields include branch booleans (`route_attempted`, `event_supported`,
+  `rendered_by_wasm`, `native_fallback_applied`) and a reason code
+  (`wasm_rendered`, `fallback_disabled`, `event_not_supported`, `plugin_unloaded`,
+  `anchor_unavailable`, `invoke_failed_no_output`).
+- `/api/state` also exposes the same latest snapshot under
+  `input_indicator_wasm_route_status` after a wasm-route attempt.
 
 ## Command Contract (Current)
 Supported render commands (current production path):

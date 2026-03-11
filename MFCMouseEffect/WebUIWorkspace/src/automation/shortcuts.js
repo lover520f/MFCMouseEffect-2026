@@ -32,9 +32,33 @@ const SYMBOL_KEYS = {
 
 const ALNUM_RE = /^[a-z0-9]$/i;
 const FUNCTION_KEY_RE = /^f([1-9]|1\d|2[0-4])$/i;
+function primaryMetaLabel(platform = 'windows') {
+  return `${platform || ''}`.trim().toLowerCase() === 'macos' ? 'Cmd' : 'Win';
+}
 
-export function shortcutFromKeyboardEvent(event) {
+function altModifierLabel(platform = 'windows') {
+  return `${platform || ''}`.trim().toLowerCase() === 'macos' ? 'Option' : 'Alt';
+}
+
+function modifierKeyLabels(platform = 'windows') {
+  const metaLabel = primaryMetaLabel(platform);
+  const altLabel = altModifierLabel(platform);
+  return {
+    control: 'Ctrl',
+    ctrl: 'Ctrl',
+    shift: 'Shift',
+    alt: altLabel,
+    option: altLabel,
+    meta: metaLabel,
+    os: metaLabel,
+    command: metaLabel,
+  };
+}
+
+export function shortcutFromKeyboardEvent(event, platform = 'windows') {
   const modifiers = [];
+  const metaLabel = primaryMetaLabel(platform);
+  const altLabel = altModifierLabel(platform);
   if (event.ctrlKey) {
     modifiers.push('Ctrl');
   }
@@ -42,10 +66,10 @@ export function shortcutFromKeyboardEvent(event) {
     modifiers.push('Shift');
   }
   if (event.altKey) {
-    modifiers.push('Alt');
+    modifiers.push(altLabel);
   }
   if (event.metaKey) {
-    modifiers.push('Win');
+    modifiers.push(metaLabel);
   }
 
   const key = `${event.key || ''}`;
@@ -73,6 +97,11 @@ export function shortcutFromKeyboardEvent(event) {
     main = 'NumDivide';
   } else if (code === 'NumpadDecimal') {
     main = 'NumDecimal';
+  }
+
+  const modifierLabels = modifierKeyLabels(platform);
+  if (!main && modifierLabels[lowered]) {
+    main = modifierLabels[lowered];
   }
 
   if (!main) {

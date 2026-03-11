@@ -53,6 +53,12 @@ uint32_t InputKindBitForEventKind(EventKind kind) {
         return kManifestInputKindHoverStartBit;
     case EventKind::HoverEnd:
         return kManifestInputKindHoverEndBit;
+    case EventKind::IndicatorClick:
+        return kManifestInputKindIndicatorClickBit;
+    case EventKind::IndicatorScroll:
+        return kManifestInputKindIndicatorScrollBit;
+    case EventKind::IndicatorKey:
+        return kManifestInputKindIndicatorKeyBit;
     default:
         return 0u;
     }

@@ -156,6 +156,12 @@ bool TryReadInputKindsField(
             mask |= kManifestInputKindHoverStartBit;
         } else if (token == "hover_end" || token == "hoverend") {
             mask |= kManifestInputKindHoverEndBit;
+        } else if (token == "indicator_click" || token == "indicatorclick") {
+            mask |= kManifestInputKindIndicatorClickBit;
+        } else if (token == "indicator_scroll" || token == "indicatorscroll") {
+            mask |= kManifestInputKindIndicatorScrollBit;
+        } else if (token == "indicator_key" || token == "indicatorkey") {
+            mask |= kManifestInputKindIndicatorKeyBit;
         } else {
             if (outError) {
                 *outError = std::string("Manifest field 'input_kinds' contains unsupported value: ") + token;
@@ -172,6 +178,73 @@ bool TryReadInputKindsField(
         return false;
     }
     *outMask = mask;
+    return true;
+}
+
+bool TryReadSurfaceKindsField(
+    const json& node,
+    uint32_t* outMask,
+    bool* outHasExplicitMask,
+    std::string* outError) {
+    if (!outMask || !outHasExplicitMask) {
+        return false;
+    }
+    if (!node.contains("surfaces")) {
+        *outHasExplicitMask = false;
+        return true;
+    }
+    if (!node["surfaces"].is_array()) {
+        if (outError) {
+            *outError = "Manifest field 'surfaces' must be string array.";
+        }
+        return false;
+    }
+
+    uint32_t mask = 0u;
+    bool hasSurface = false;
+    for (const auto& item : node["surfaces"]) {
+        if (!item.is_string()) {
+            if (outError) {
+                *outError = "Manifest field 'surfaces' must be string array.";
+            }
+            return false;
+        }
+        const std::string token = NormalizeInputKindToken(item.get<std::string>());
+        if (token.empty()) {
+            if (outError) {
+                *outError = "Manifest field 'surfaces' must not contain empty item.";
+            }
+            return false;
+        }
+        if (token == "all") {
+            mask = kManifestSurfaceAllBits;
+            hasSurface = true;
+            break;
+        }
+        if (token == "effects" || token == "effect") {
+            mask |= kManifestSurfaceEffectsBit;
+        } else if (
+            token == "indicator" ||
+            token == "input_indicator" ||
+            token == "inputindicator") {
+            mask |= kManifestSurfaceIndicatorBit;
+        } else {
+            if (outError) {
+                *outError = std::string("Manifest field 'surfaces' contains unsupported value: ") + token;
+            }
+            return false;
+        }
+        hasSurface = true;
+    }
+
+    if (!hasSurface || mask == 0u) {
+        if (outError) {
+            *outError = "Manifest field 'surfaces' must include at least one surface.";
+        }
+        return false;
+    }
+    *outMask = mask;
+    *outHasExplicitMask = true;
     return true;
 }
 
@@ -245,6 +318,13 @@ PluginManifestLoadResult WasmPluginManifest::LoadFromFile(const std::wstring& ma
         return result;
     }
     if (!TryReadInputKindsField(root, &manifest.inputKindsMask, &result.error)) {
+        return result;
+    }
+    if (!TryReadSurfaceKindsField(
+            root,
+            &manifest.surfaceKindsMask,
+            &manifest.hasExplicitSurfaceKinds,
+            &result.error)) {
         return result;
     }
     if (!TryReadEnableFrameTickField(root, &manifest.enableFrameTick, &result.error)) {

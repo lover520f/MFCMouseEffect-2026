@@ -29,6 +29,11 @@ json BuildWasmResponse(AppController* controller, bool ok) {
     body["configured_enabled"] = cfg.wasm.enabled;
     body["fallback_to_builtin_click"] = cfg.wasm.fallbackToBuiltinClick;
     body["configured_manifest_path"] = cfg.wasm.manifestPath;
+    body["configured_manifest_path_click"] = cfg.wasm.manifestPathClick;
+    body["configured_manifest_path_trail"] = cfg.wasm.manifestPathTrail;
+    body["configured_manifest_path_scroll"] = cfg.wasm.manifestPathScroll;
+    body["configured_manifest_path_hold"] = cfg.wasm.manifestPathHold;
+    body["configured_manifest_path_hover"] = cfg.wasm.manifestPathHover;
     body["configured_catalog_root_path"] = cfg.wasm.catalogRootPath;
     body["configured_output_buffer_bytes"] = cfg.wasm.outputBufferBytes;
     body["configured_max_commands"] = cfg.wasm.maxCommands;

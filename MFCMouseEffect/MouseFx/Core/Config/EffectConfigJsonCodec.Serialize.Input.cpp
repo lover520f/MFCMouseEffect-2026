@@ -21,6 +21,9 @@ nlohmann::json BuildInputIndicatorJson(const InputIndicatorConfig& source) {
     return {
         {keys::input::kEnabled, input.enabled},
         {keys::input::kKeyboardEnabled, input.keyboardEnabled},
+        {keys::input::kRenderMode, input.renderMode},
+        {keys::input::kWasmFallbackToNative, input.wasmFallbackToNative},
+        {keys::input::kWasmManifestPath, input.wasmManifestPath},
         {keys::input::kPositionMode, input.positionMode},
         {keys::input::kOffsetX, input.offsetX},
         {keys::input::kOffsetY, input.offsetY},

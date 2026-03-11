@@ -29,6 +29,10 @@ std::string BuildSettingsStateJson(const EffectConfig& cfg, const AppController*
     if (routeNotice.is_object() && !routeNotice.empty()) {
         out["gpu_route_notice"] = routeNotice;
     }
+    const json inputIndicatorWasmRouteStatus = BuildInputIndicatorWasmRouteStatusState(controller);
+    if (inputIndicatorWasmRouteStatus.is_object() && !inputIndicatorWasmRouteStatus.empty()) {
+        out["input_indicator_wasm_route_status"] = inputIndicatorWasmRouteStatus;
+    }
 
     const json wasmState = BuildWasmState(cfg, controller);
     if (wasmState.is_object() && !wasmState.empty()) {

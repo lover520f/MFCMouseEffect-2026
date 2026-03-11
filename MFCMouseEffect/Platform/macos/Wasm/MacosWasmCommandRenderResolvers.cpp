@@ -2,6 +2,8 @@
 
 #include "Platform/macos/Wasm/MacosWasmCommandRenderResolvers.h"
 
+#include "MouseFx/Core/Wasm/WasmDynamicTextLabelScope.h"
+#include "MouseFx/Core/Wasm/WasmPluginAbi.h"
 #include "MouseFx/Core/Wasm/WasmRenderValueResolver.h"
 #include "MouseFx/Core/Wasm/WasmPluginImageAssetCatalog.h"
 
@@ -30,6 +32,12 @@ std::wstring ResolveImageAssetPath(
 }
 
 std::wstring ResolveTextById(const mousefx::EffectConfig& config, uint32_t textId) {
+    if (textId == mousefx::wasm::kTextIdEventLabel) {
+        const std::wstring dynamicLabel = mousefx::wasm::ResolveWasmDynamicTextLabel();
+        if (!dynamicLabel.empty()) {
+            return dynamicLabel;
+        }
+    }
     return mousefx::wasm::render_values::ResolveTextById(config.textClick, textId);
 }
 

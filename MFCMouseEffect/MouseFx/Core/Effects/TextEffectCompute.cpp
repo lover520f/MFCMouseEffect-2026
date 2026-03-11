@@ -50,6 +50,14 @@ double ResolveAlpha(double progress) {
     return 1.0;
 }
 
+double ResolveStaticLabelAlpha(double progress) {
+    const double t = Clamp01(progress);
+    if (t < 0.82) {
+        return 1.0;
+    }
+    return Clamp01(1.0 - ((t - 0.82) / 0.18));
+}
+
 } // namespace
 
 TextEffectRenderCommand ComputeTextEffectRenderCommand(
@@ -67,9 +75,15 @@ TextEffectRenderCommand ComputeTextEffectRenderCommand(
     command.floatDistancePx = ResolveFloatDistancePx(config);
     command.baseFontSizePx = ResolveFontSizePx(config);
     command.panelSizePx = ResolvePanelSize(command.baseFontSizePx);
-    command.driftX = static_cast<double>(randomSamples.driftX);
-    command.swayFreq = 1.0 + static_cast<double>(randomSamples.swayFreqCenti) / 100.0;
-    command.swayAmp = 5.0 + static_cast<double>(randomSamples.swayAmpDeci) / 10.0;
+    if (command.floatDistancePx <= 0.0) {
+        command.driftX = 0.0;
+        command.swayFreq = 0.0;
+        command.swayAmp = 0.0;
+    } else {
+        command.driftX = static_cast<double>(randomSamples.driftX);
+        command.swayFreq = 1.0 + static_cast<double>(randomSamples.swayFreqCenti) / 100.0;
+        command.swayAmp = 5.0 + static_cast<double>(randomSamples.swayAmpDeci) / 10.0;
+    }
     return command;
 }
 
@@ -77,6 +91,18 @@ TextEffectRenderFrame ComputeTextEffectRenderFrame(
     const TextEffectRenderCommand& command,
     double progress01) {
     const double t = Clamp01(progress01);
+    const bool staticLabel = command.floatDistancePx <= 0.0;
+    if (staticLabel) {
+        TextEffectRenderFrame frame{};
+        frame.offsetXPx = 0.0;
+        frame.offsetYUpPx = 0.0;
+        frame.scale = 1.0;
+        frame.alpha = ResolveStaticLabelAlpha(t);
+        frame.rotationDeg = 0.0;
+        frame.fontSizePx = std::max(6.0, command.baseFontSizePx);
+        return frame;
+    }
+
     const double eased = EaseOutCubic(t);
     const double yOffset = eased * command.floatDistancePx;
     const double xOffset = (t * command.driftX) + std::sin(t * 3.1415926 * command.swayFreq) * command.swayAmp;
@@ -94,4 +120,3 @@ TextEffectRenderFrame ComputeTextEffectRenderFrame(
 }
 
 } // namespace mousefx
-

@@ -49,9 +49,18 @@ enum class InputEventKind : uint8_t {
     HoldEnd = 6,
     HoverStart = 7,
     HoverEnd = 8,
+    IndicatorClick = 9,
+    IndicatorScroll = 10,
+    IndicatorKey = 11,
 };
 
 constexpr uint8_t kEventFlagScrollHorizontal = 0x01u;
+constexpr uint32_t kTextIdEventLabel = 0xFFFFFFFFu;
+constexpr uint8_t kIndicatorModifierCtrl = 0x01u;
+constexpr uint8_t kIndicatorModifierShift = 0x02u;
+constexpr uint8_t kIndicatorModifierAlt = 0x04u;
+constexpr uint8_t kIndicatorModifierMeta = 0x08u;
+constexpr uint8_t kIndicatorDetailFlagKeySystem = 0x01u;
 
 enum class SpawnPulseKind : uint32_t {
     Ripple = 0,
@@ -186,6 +195,24 @@ struct EventInputV2 final {
     uint8_t flags = 0;
     uint8_t reserved0 = 0;
     uint64_t eventTickMs = 0;
+};
+
+// Optional tail for indicator events (append after EventInputV2).
+struct IndicatorEventTailV1 final {
+    uint16_t sizePx = 0;
+    uint16_t durationMs = 0;
+};
+
+// Optional indicator context tail (append after IndicatorEventTailV1 when available).
+// - Click: primaryCode mirrors button, streak carries click streak.
+// - Scroll: primaryCode carries absolute wheel magnitude, streak carries wheel streak.
+// - Key: primaryCode carries vkCode, modifierMask carries Ctrl/Shift/Alt/Meta bits,
+//        detailFlags exposes key-specific flags like systemKey.
+struct IndicatorEventContextTailV2 final {
+    uint32_t primaryCode = 0;
+    uint16_t streak = 0;
+    uint8_t modifierMask = 0;
+    uint8_t detailFlags = 0;
 };
 
 // Frame tick input for mfx_plugin_on_frame.
@@ -755,6 +782,8 @@ struct CommandClipRectTailV1 final {
 #pragma pack(pop)
 
 static_assert(sizeof(EventInputV2) == 28, "EventInputV2 layout drifted.");
+static_assert(sizeof(IndicatorEventTailV1) == 4, "IndicatorEventTailV1 layout drifted.");
+static_assert(sizeof(IndicatorEventContextTailV2) == 8, "IndicatorEventContextTailV2 layout drifted.");
 static_assert(sizeof(FrameInputV2) == 24, "FrameInputV2 layout drifted.");
 static_assert(sizeof(CommandHeaderV1) == 4, "CommandHeaderV1 layout drifted.");
 static_assert(sizeof(SpawnImageAffineCommandV1) == 88, "SpawnImageAffineCommandV1 layout drifted.");

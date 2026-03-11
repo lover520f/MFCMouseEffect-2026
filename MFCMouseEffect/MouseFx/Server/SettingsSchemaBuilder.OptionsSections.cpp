@@ -99,6 +99,10 @@ void AppendSettingsSchemaOptionsSections(const EffectConfig& config, json* out) 
         {{"value","relative"},{"label", LabelByLang(L"\u76f8\u5bf9\u5149\u6807", L"Relative To Cursor", lang)}},
         {{"value","absolute"},{"label", LabelByLang(L"\u5c4f\u5e55\u7edd\u5bf9\u5750\u6807", L"Absolute Screen Position", lang)}}
     });
+    (*out)["input_indicator_render_modes"] = json::array({
+        {{"value","native"},{"label", LabelByLang(L"\u539f\u751f\u6307\u793a\u5668\uff08\u63a8\u8350\uff09", L"Native Indicator (Recommended)", lang)}},
+        {{"value","wasm"},{"label", LabelByLang(L"WASM \u6307\u793a\u5668\uff08\u81ea\u5b9a\u4e49\u6837\u5f0f\uff09", L"WASM Indicator (Custom Style)", lang)}}
+    });
     (*out)["key_display_modes"] = json::array({
         {{"value","all"},{"label", LabelByLang(L"\u663e\u793a\u5168\u90e8", L"Display All", lang)}},
         {{"value","significant"},{"label", LabelByLang(L"\u4ec5\u91cd\u8981\u6309\u952e (\u63a8\u8350)", L"Significant Keys Only (Recommended)", lang)}},
@@ -119,12 +123,23 @@ void AppendSettingsSchemaOptionsSections(const EffectConfig& config, json* out) 
         {{"value","all"},{"label", LabelByLang(L"\u5168\u90e8\u5e94\u7528", L"All Apps", lang)}},
         {{"value","selected"},{"label", LabelByLang(L"\u6307\u5b9a\u5e94\u7528\uff08\u591a\u9009\uff09", L"Selected Apps (Multi)", lang)}},
     });
+    (*out)["automation_modifier_modes"] = json::array({
+        {{"value","any"},{"label", LabelByLang(L"\u4e0d\u9650\u4fee\u9970\u952e", L"Any Modifier State", lang)}},
+        {{"value","none"},{"label", LabelByLang(L"\u65e0\u4fee\u9970\u952e", L"No Modifier", lang)}},
+        {{"value","exact"},{"label", LabelByLang(L"\u6307\u5b9a\u4fee\u9970\u952e\u7ec4\u5408", L"Exact Modifier Combo", lang)}},
+    });
     (*out)["automation_gesture_buttons"] = json::array({
         {{"value","right"},{"label", LabelByLang(L"\u53f3\u952e\u62d6\u62fd (\u63a8\u8350)", L"Right Drag (Recommended)", lang)}},
         {{"value","middle"},{"label", LabelByLang(L"\u4e2d\u952e\u62d6\u62fd", L"Middle Drag", lang)}},
         {{"value","left"},{"label", LabelByLang(L"\u5de6\u952e\u62d6\u62fd", L"Left Drag", lang)}},
     });
     (*out)["automation_gesture_patterns"] = json::array({
+        {{"value","line_right"},{"label", LabelByLang(L"\u4e00 / \u5411\u53f3", L"Line Right", lang)}},
+        {{"value","line_left"},{"label", LabelByLang(L"\u4e00 / \u5411\u5de6", L"Line Left", lang)}},
+        {{"value","v"},{"label", LabelByLang(L"V \u5f62", L"V Shape", lang)}},
+        {{"value","w"},{"label", LabelByLang(L"W \u5f62", L"W Shape", lang)}},
+        {{"value","slash"},{"label", LabelByLang(L"\u659c\u7ebf /", L"Slash /", lang)}},
+        {{"value","backslash"},{"label", LabelByLang(L"\u659c\u7ebf \\\\", L"Backslash \\\\", lang)}},
         {{"value","up"},{"label", LabelByLang(L"\u5411\u4e0a", L"Up", lang)}},
         {{"value","down"},{"label", LabelByLang(L"\u5411\u4e0b", L"Down", lang)}},
         {{"value","left"},{"label", LabelByLang(L"\u5411\u5de6", L"Left", lang)}},

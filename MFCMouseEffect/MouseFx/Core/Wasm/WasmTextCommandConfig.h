@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Core/Wasm/WasmDynamicTextLabelScope.h"
 #include "MouseFx/Core/Wasm/WasmPluginAbi.h"
 
 #include <algorithm>
@@ -18,7 +19,14 @@ inline TextConfig BuildSpawnTextConfig(const TextConfig& baseConfig, const Spawn
     const float predictedDy = (cmd.vy * lifeSeconds) + (0.5f * cmd.ay * lifeSeconds * lifeSeconds);
     const float fallbackDy = std::abs(cmd.vy) * 0.55f;
     const float distance = std::max(std::abs(predictedDy), fallbackDy);
-    cfg.floatDistance = std::clamp<int>(static_cast<int>(std::lround(distance)), 16, 420);
+    const bool indicatorEventLabel =
+        cmd.textId == kTextIdEventLabel &&
+        IsWasmDynamicTextLabelFromIndicatorEvent();
+    const int minFloatDistance = indicatorEventLabel ? 0 : 16;
+    cfg.floatDistance = std::clamp<int>(
+        static_cast<int>(std::lround(distance)),
+        minFloatDistance,
+        420);
 
     if (cmd.scale > 0.0f) {
         const float scaledSize = cfg.fontSize * cmd.scale;

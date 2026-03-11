@@ -3,4 +3,4 @@ export {
   mfx_plugin_on_input,
   mfx_plugin_on_frame,
   mfx_plugin_reset,
-} from "./samples/text-rise";
+} from "./samples/effects/text-rise";

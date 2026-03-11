@@ -20,32 +20,36 @@ examples/wasm-plugin-template/
       abi.ts                  # ABI 常量与读写辅助
       random.ts               # 确定性随机辅助
     samples/
-      text-rise.ts
-      text-burst.ts
-      text-spiral.ts
-      text-wave-chain.ts
-      image-pulse.ts
-      image-burst.ts
-      image-lift.ts
-      mixed-text-image.ts
-      mixed-emoji-celebrate.ts
-      button-adaptive.ts
-      click-pulse-dual.ts
-      click-polyline-zigzag.ts
-      click-path-fill-clip-window.ts
-      click-path-clip-lanes.ts
-      click-ribbon-trace.ts
-      click-glow-burst.ts
-      click-sprite-burst.ts
-      click-quad-atlas-burst.ts
-      click-retained-quad-field.ts
-      click-retained-ribbon-trail.ts
-      click-retained-group-pass.ts
-      move-stream-sparks.ts
-      scroll-particle-burst.ts
-      scroll-neon-burst.ts
-      hold-orbit-pulse.ts
-      hover-spark-ring.ts
+      effects/
+        text-rise.ts
+        text-burst.ts
+        text-spiral.ts
+        text-wave-chain.ts
+        image-pulse.ts
+        image-burst.ts
+        image-lift.ts
+        mixed-text-image.ts
+        mixed-emoji-celebrate.ts
+        button-adaptive.ts
+        click-pulse-dual.ts
+        click-polyline-zigzag.ts
+        click-path-fill-clip-window.ts
+        click-path-clip-lanes.ts
+        click-ribbon-trace.ts
+        click-glow-burst.ts
+        click-sprite-burst.ts
+        click-quad-atlas-burst.ts
+        click-retained-quad-field.ts
+        click-retained-ribbon-trail.ts
+        click-retained-group-pass.ts
+        move-stream-sparks.ts
+        scroll-particle-burst.ts
+        scroll-neon-burst.ts
+        hold-orbit-pulse.ts
+        hover-spark-ring.ts
+      indicator/
+        input-indicator-basic.ts
+        input-indicator-keyviz.ts
     index.ts                  # 默认入口（当前导出 text-rise）
   scripts/
     build-lib.mjs             # 构建公共能力
@@ -132,6 +136,8 @@ pnpm run sync:runtime-samples
 | `mixed-text-image` | 混合 | 1 文本 + 1 图片 | 是 |
 | `mixed-emoji-celebrate` | 混合 | 2 文本 + 2 图片庆祝效果 | 是 |
 | `button-adaptive` | 混合 | 根据鼠标键位选择文本/图片资源 | 是 |
+| `indicator-basic` | 指示器 | 键盘通道使用专门的 key-cap panel，鼠标/滚轮通道使用专门的 pointer shell + button zone + wheel slot helper，并消费 `indicator_*` 尾部中的 streak / modifier 上下文（不再额外发 `pulse/ripple` 命令；滚轮事件不会激活点击按键高亮） | 否 |
+| `indicator-keyviz-style` | 指示器 | keyviz 风格指示器：键盘通道使用分层 keycap 卡片，鼠标/滚轮通道使用深色 pointer 卡片与着色强调区域，同时复用共享 `indicator_*` 尾部语义（不再额外发 `pulse/ripple` 命令） | 否 |
 | `click-pulse-dual` | 脉冲 | 仅使用 `spawn_pulse` 组合 ripple + star 双层脉冲 | 否 |
 | `click-polyline-zigzag` | 折线 | 仅使用 `spawn_polyline` 组合 3 条延迟锯齿闪电线 | 否 |
 | `click-path-stroke-ribbon` | path stroke | 使用 `spawn_path_stroke` + 可选共享渲染尾部组合 2 条延迟曲线丝带描边 | 否 |
@@ -193,6 +199,7 @@ pnpm run sync:runtime-samples
   "version": "0.1.0",
   "api_version": 2,
   "entry": "effect.wasm",
+  "surfaces": ["effects"],
   "input_kinds": ["click"],
   "enable_frame_tick": false
 }
@@ -215,7 +222,13 @@ pnpm run sync:runtime-samples
 - `imageId` 按数组下标映射（越界取模）
 - 文件缺失/无效时，宿主自动回退到内置渲染资源
 - 可选 `input_kinds` 用于限制插件接收的输入通道
+- 可选 `surfaces` 用于声明插件面向的宿主表面
 - 可选 `enable_frame_tick` 用于控制宿主是否驱动 `mfx_plugin_on_frame`
+
+`surfaces` 可选值：
+- `effects`
+- `indicator`
+- `all`（旧清单省略字段时默认按全量处理；新清单建议显式声明）
 
 `input_kinds` 可选值：
 - `click`
@@ -226,7 +239,17 @@ pnpm run sync:runtime-samples
 - `hold_end`
 - `hover_start`
 - `hover_end`
+- `indicator_click`
+- `indicator_scroll`
+- `indicator_key`
 - `all`（省略字段时默认值）
+
+指示器载荷补充：
+- `indicator_*` 仍以 `EventInputV2` 开头
+- 可选 `IndicatorEventTailV1` 提供 `size_px` 与 `duration_ms`
+- 可选 `IndicatorEventContextTailV2` 提供 `primary_code`、`streak`、`modifier_mask`、`detail_flags`
+- `assembly/common/abi.ts` 已提供 `hasIndicatorContextTail(...)`、`readIndicatorStreak(...)` 等辅助函数
+- `assembly/common/` 下的 motif/helper 可以按效果需要复用；当前指示器样式也已有自己的专用 helper：`assembly/common/input-indicator-style.ts`
 
 ## 运行时放置路径
 

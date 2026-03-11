@@ -1,4 +1,6 @@
 import WorkspaceSidebar from '../WorkspaceSidebar.svelte';
+import WorkspaceContext from '../WorkspaceContext.svelte';
+import { readUiState, writeUiState } from './ui-state-storage.js';
 
 const state = {
   initialized: false,
@@ -7,10 +9,21 @@ const state = {
   activeId: '',
   i18n: null,
   component: null,
+  contextComponent: null,
 };
+
+const WORKSPACE_STATE_STORAGE_NS = 'workspace.v1';
 
 function el(id) {
   return document.getElementById(id);
+}
+
+function readWorkspaceStorage() {
+  return readUiState(WORKSPACE_STATE_STORAGE_NS);
+}
+
+function writeWorkspaceStorage(nextState) {
+  writeUiState(WORKSPACE_STATE_STORAGE_NS, nextState);
 }
 
 function currentHashId() {
@@ -60,13 +73,48 @@ function firstSectionId() {
   return state.sections.length > 0 ? state.sections[0].id : '';
 }
 
-function pickAvailableSectionId(candidate) {
-  if (candidate && sectionById(candidate)) {
-    return candidate;
+function resolveLegacySectionAlias(candidate) {
+  const id = `${candidate || ''}`.trim().toLowerCase();
+  if (id === 'wasm') {
+    return {
+      sectionId: 'active',
+      effectsTabId: 'plugin',
+    };
   }
-  const byHash = currentHashId();
-  if (byHash && sectionById(byHash)) {
-    return byHash;
+  return {
+    sectionId: `${candidate || ''}`.trim(),
+    effectsTabId: '',
+  };
+}
+
+function applyLegacySectionAliasEffects(alias) {
+  if (!alias || alias.effectsTabId !== 'plugin') {
+    return;
+  }
+  const effectsSection = window.MfxEffectsSection || null;
+  if (effectsSection && typeof effectsSection.setActiveTab === 'function') {
+    effectsSection.setActiveTab(alias.effectsTabId);
+  }
+}
+
+function pickAvailableSectionId(candidate) {
+  const directAlias = resolveLegacySectionAlias(candidate);
+  if (directAlias.sectionId && sectionById(directAlias.sectionId)) {
+    applyLegacySectionAliasEffects(directAlias);
+    return directAlias.sectionId;
+  }
+
+  const persisted = readWorkspaceStorage();
+  const persistedAlias = resolveLegacySectionAlias(persisted?.activeSectionId || '');
+  if (persistedAlias.sectionId && sectionById(persistedAlias.sectionId)) {
+    applyLegacySectionAliasEffects(persistedAlias);
+    return persistedAlias.sectionId;
+  }
+
+  const hashAlias = resolveLegacySectionAlias(currentHashId());
+  if (hashAlias.sectionId && sectionById(hashAlias.sectionId)) {
+    applyLegacySectionAliasEffects(hashAlias);
+    return hashAlias.sectionId;
   }
   return firstSectionId();
 }
@@ -131,6 +179,15 @@ function updateSidebarView() {
   }
   state.component.$set({
     sections: sectionsViewModel(),
+    texts: workspaceTexts(),
+  });
+}
+
+function updateContextView() {
+  if (!state.contextComponent) {
+    return;
+  }
+  state.contextComponent.$set({
     summary: activeSectionSummary(),
     texts: workspaceTexts(),
   });
@@ -143,9 +200,14 @@ function render(options) {
     return;
   }
 
+  writeWorkspaceStorage({
+    activeSectionId: state.activeId,
+  });
+
   ensureSectionTexts();
   applyCardsVisibility();
   updateSidebarView();
+  updateContextView();
 
   if (opts.updateHash !== false) {
     updateHashIfNeeded(state.activeId);
@@ -155,6 +217,11 @@ function render(options) {
 function setActive(sectionId, options) {
   const opts = options || {};
   state.activeId = pickAvailableSectionId(sectionId);
+  if (state.activeId) {
+    writeWorkspaceStorage({
+      activeSectionId: state.activeId,
+    });
+  }
   render({
     updateHash: opts.updateHash !== false,
   });
@@ -190,7 +257,6 @@ function ensureSidebarComponent() {
     target: mountNode,
     props: {
       sections: [],
-      summary: { title: '', description: '' },
       texts: workspaceTexts(),
     },
   });
@@ -203,12 +269,31 @@ function ensureSidebarComponent() {
   state.component = component;
 }
 
+function ensureContextComponent() {
+  if (state.contextComponent) {
+    return;
+  }
+  const mountNode = el('workspace_context_mount');
+  if (!mountNode) {
+    return;
+  }
+
+  state.contextComponent = new WorkspaceContext({
+    target: mountNode,
+    props: {
+      summary: activeSectionSummary(),
+      texts: workspaceTexts(),
+    },
+  });
+}
+
 function init() {
   collectSections();
   ensureSidebarComponent();
+  ensureContextComponent();
   bindHashChange();
 
-  state.activeId = pickAvailableSectionId(currentHashId());
+  state.activeId = pickAvailableSectionId(state.activeId);
 
   render({ updateHash: true });
   state.initialized = true;
@@ -222,9 +307,10 @@ function refresh() {
 
   collectSections();
   ensureSidebarComponent();
+  ensureContextComponent();
   bindHashChange();
 
-  state.activeId = pickAvailableSectionId(state.activeId || currentHashId());
+  state.activeId = pickAvailableSectionId(state.activeId);
   render({ updateHash: false });
 }
 
@@ -232,6 +318,7 @@ function syncI18n(i18n) {
   state.i18n = i18n || null;
   ensureSectionTexts();
   updateSidebarView();
+  updateContextView();
 }
 
 window.MfxSectionWorkspace = {

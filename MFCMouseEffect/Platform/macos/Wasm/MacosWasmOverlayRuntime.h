@@ -9,6 +9,7 @@ namespace mousefx::platform::macos {
 enum class WasmOverlayKind : uint8_t {
     Image = 0,
     Text = 1,
+    IndicatorText = 2,
 };
 
 enum class WasmOverlayAdmissionResult : uint8_t {

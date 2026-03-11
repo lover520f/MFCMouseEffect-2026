@@ -59,7 +59,8 @@ npm run sync:runtime-samples
 - 缺失或非法资源会回退内置图片渲染器
 
 `plugin.json` 还可声明路由与帧调度提示：
-- `input_kinds`：可选字符串数组，限制宿主输入通道（`click/move/scroll/hold_start/hold_update/hold_end/hover_start/hover_end/all`）
+- `input_kinds`：可选字符串数组，限制宿主输入通道
+  （`click/move/scroll/hold_start/hold_update/hold_end/hover_start/hover_end/indicator_click/indicator_scroll/indicator_key/all`）
 - `enable_frame_tick`：可选布尔值，控制宿主是否按帧调用 `mfx_plugin_on_frame`
 
 ## 3. 放置插件

@@ -383,13 +383,19 @@
     setNum('k_idle_fade_end', params.idle_fade_end_ms);
   }
 
-  function renderInputIndicator(schema, appState, texts) {
+  function renderInputIndicator(schema, appState, texts, wasmAction) {
     const indicator = appState.input_indicator || appState.mouse_indicator || {};
+    const indicatorRouteStatus = appState.input_indicator_wasm_route_status || {};
     const section = inputIndicatorSection();
     if (section && typeof section.render === 'function') {
       section.render({
         schema,
         indicator,
+        wasmState: {
+          ...(appState.wasm || {}),
+          input_indicator_wasm_route_status: indicatorRouteStatus,
+        },
+        onWasmAction: wasmAction,
         texts,
       });
       return;
@@ -399,6 +405,10 @@
       'ii_position_mode',
       schema.input_indicator_position_modes,
       indicator.position_mode || 'relative');
+    fillSelect(
+      'ii_render_mode',
+      schema.input_indicator_render_modes,
+      indicator.render_mode || 'native');
     fillSelect('ii_target_monitor', schema.target_monitor_options, indicator.target_monitor || 'cursor');
     fillSelect('ii_key_display_mode', schema.key_display_modes, indicator.key_display_mode || 'all');
     fillSelect(
@@ -410,6 +420,7 @@
 
     setChecked('ii_enabled', indicator.enabled !== false);
     setChecked('ii_keyboard_enabled', indicator.keyboard_enabled !== false);
+    setChecked('ii_wasm_fallback', indicator.wasm_fallback_to_native !== false);
     setNum('ii_offset_x', indicator.offset_x);
     setNum('ii_offset_y', indicator.offset_y);
     setNum('ii_absolute_x', indicator.absolute_x);
@@ -463,7 +474,7 @@
     renderEffects(schema, appState);
     renderText(appState);
     renderTrail(appState);
-    renderInputIndicator(schema, appState, texts);
+    renderInputIndicator(schema, appState, texts, wasmAction);
     renderWasm(schema, appState, texts, wasmAction, wasmStatus);
     bindIndicatorEvents();
   }
@@ -548,6 +559,9 @@
       : {
         enabled: getChecked('ii_enabled'),
         keyboard_enabled: getChecked('ii_keyboard_enabled'),
+        render_mode: getText('ii_render_mode') || 'native',
+        wasm_fallback_to_native: getChecked('ii_wasm_fallback'),
+        wasm_manifest_path: '',
         position_mode: getText('ii_position_mode') || 'relative',
         offset_x: getNum('ii_offset_x'),
         offset_y: getNum('ii_offset_y'),

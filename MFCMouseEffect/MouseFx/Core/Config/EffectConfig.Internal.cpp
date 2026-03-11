@@ -117,6 +117,11 @@ TrailRendererParamsConfig SanitizeTrailParams(TrailRendererParamsConfig params) 
 
 InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig config) {
     config.positionMode = (config.positionMode == "absolute") ? "absolute" : "relative";
+    config.renderMode = ToLowerAscii(TrimAscii(config.renderMode));
+    if (config.renderMode != "native" && config.renderMode != "wasm") {
+        config.renderMode = "native";
+    }
+    config.wasmManifestPath = TrimAscii(config.wasmManifestPath);
     config.offsetX = ClampInt(config.offsetX, -2000, 2000);
     config.offsetY = ClampInt(config.offsetY, -2000, 2000);
     config.absoluteX = ClampInt(config.absoluteX, -20000, 20000);
@@ -219,6 +224,28 @@ std::string NormalizeGestureButton(std::string value) {
     return value;
 }
 
+std::string NormalizeModifierMode(std::string value) {
+    value = NormalizeId(std::move(value));
+    if (value == "ignore" || value == "optional") return "any";
+    if (value == "off" || value == "plain") return "none";
+    if (value == "match" || value == "specified" || value == "require") return "exact";
+    if (value != "any" && value != "none" && value != "exact") {
+        return "any";
+    }
+    return value;
+}
+
+std::string NormalizeGesturePatternMode(std::string value) {
+    value = NormalizeId(std::move(value));
+    if (value == "draw" || value == "drawn" || value == "freehand") {
+        return "custom";
+    }
+    if (value != "preset" && value != "custom") {
+        return "preset";
+    }
+    return value;
+}
+
 } // namespace
 
 InputAutomationConfig SanitizeInputAutomationConfig(InputAutomationConfig config) {
@@ -231,6 +258,55 @@ InputAutomationConfig SanitizeInputAutomationConfig(InputAutomationConfig config
                 ? automation_chain::NormalizeChainText(binding.trigger, NormalizeGestureId)
                 : automation_chain::NormalizeChainText(binding.trigger, NormalizeMouseActionId);
             binding.appScopes = NormalizeAutomationAppScopes(std::move(binding.appScopes));
+            binding.gesturePattern.mode = NormalizeGesturePatternMode(std::move(binding.gesturePattern.mode));
+            binding.gesturePattern.matchThresholdPercent =
+                ClampInt(binding.gesturePattern.matchThresholdPercent, 50, 95);
+            if (binding.gesturePattern.mode != "custom") {
+                binding.gesturePattern.customPoints.clear();
+                binding.gesturePattern.customStrokes.clear();
+            } else {
+                for (AutomationKeyBinding::GesturePoint& point : binding.gesturePattern.customPoints) {
+                    point.x = ClampInt(point.x, 0, 100);
+                    point.y = ClampInt(point.y, 0, 100);
+                }
+
+                std::vector<std::vector<AutomationKeyBinding::GesturePoint>> normalizedStrokes;
+                normalizedStrokes.reserve(binding.gesturePattern.customStrokes.size());
+                for (auto& stroke : binding.gesturePattern.customStrokes) {
+                    std::vector<AutomationKeyBinding::GesturePoint> normalizedStroke;
+                    normalizedStroke.reserve(stroke.size());
+                    for (AutomationKeyBinding::GesturePoint point : stroke) {
+                        point.x = ClampInt(point.x, 0, 100);
+                        point.y = ClampInt(point.y, 0, 100);
+                        normalizedStroke.push_back(point);
+                    }
+                    if (!normalizedStroke.empty()) {
+                        normalizedStrokes.push_back(std::move(normalizedStroke));
+                    }
+                }
+                if (normalizedStrokes.empty() && !binding.gesturePattern.customPoints.empty()) {
+                    normalizedStrokes.push_back(binding.gesturePattern.customPoints);
+                }
+                if (!normalizedStrokes.empty()) {
+                    std::vector<AutomationKeyBinding::GesturePoint> flattenedPoints;
+                    for (const auto& stroke : normalizedStrokes) {
+                        flattenedPoints.insert(flattenedPoints.end(), stroke.begin(), stroke.end());
+                    }
+                    binding.gesturePattern.customStrokes = std::move(normalizedStrokes);
+                    binding.gesturePattern.customPoints = std::move(flattenedPoints);
+                }
+            }
+            if (gestureBinding) {
+                binding.triggerButton = NormalizeGestureButton(std::move(binding.triggerButton));
+            } else {
+                binding.triggerButton.clear();
+            }
+            binding.modifiers.mode = NormalizeModifierMode(std::move(binding.modifiers.mode));
+            if (binding.modifiers.mode != "exact") {
+                binding.modifiers.primary = false;
+                binding.modifiers.shift = false;
+                binding.modifiers.alt = false;
+            }
             binding.keys = TrimAscii(binding.keys);
         }
     };
@@ -240,12 +316,22 @@ InputAutomationConfig SanitizeInputAutomationConfig(InputAutomationConfig config
     config.gesture.minStrokeDistancePx = ClampInt(config.gesture.minStrokeDistancePx, 10, 4000);
     config.gesture.sampleStepPx = ClampInt(config.gesture.sampleStepPx, 2, 256);
     config.gesture.maxDirections = ClampInt(config.gesture.maxDirections, 1, 8);
+    for (AutomationKeyBinding& binding : config.gesture.mappings) {
+        if (TrimAscii(binding.triggerButton).empty()) {
+            binding.triggerButton = config.gesture.triggerButton;
+        }
+    }
     sanitizeBindingList(&config.gesture.mappings, true);
     return config;
 }
 
 WasmConfig SanitizeWasmConfig(WasmConfig config) {
     config.manifestPath = TrimAscii(config.manifestPath);
+    config.manifestPathClick = TrimAscii(config.manifestPathClick);
+    config.manifestPathTrail = TrimAscii(config.manifestPathTrail);
+    config.manifestPathScroll = TrimAscii(config.manifestPathScroll);
+    config.manifestPathHold = TrimAscii(config.manifestPathHold);
+    config.manifestPathHover = TrimAscii(config.manifestPathHover);
     config.catalogRootPath = TrimAscii(config.catalogRootPath);
     config.outputBufferBytes = static_cast<uint32_t>(ClampInt(
         static_cast<int>(config.outputBufferBytes),

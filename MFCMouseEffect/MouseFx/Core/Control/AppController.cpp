@@ -168,7 +168,8 @@ void AppController::OnDispatchActivity(DispatchMessageKind kind, uint32_t timerI
 
     bool hoverEndRenderedByWasm = false;
     bool hoverWasmRouteActive = false;
-    if (wasmEffectHost_ && wasmEffectHost_->Enabled() && wasmEffectHost_->IsPluginLoaded()) {
+    if (auto* hoverHost = WasmEffectsHostForChannel("hover");
+        hoverHost && hoverHost->Enabled() && hoverHost->IsPluginLoaded()) {
         ScreenPoint pt{};
         if (QueryCursorScreenPoint(&pt)) {
             RememberLastPointerPoint(pt);

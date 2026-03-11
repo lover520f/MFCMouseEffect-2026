@@ -55,6 +55,12 @@ CGEventRef MacosGlobalInputHook::EventTapCallback(CGEventTapProxy proxy,
     if (type == kCGEventKeyDown) {
         return self->HandleKeyDownEvent(event);
     }
+    if (type == kCGEventKeyUp) {
+        return self->HandleKeyUpEvent(event);
+    }
+    if (type == kCGEventFlagsChanged) {
+        return self->HandleModifierEvent(event);
+    }
 
     return event;
 }

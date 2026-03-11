@@ -304,14 +304,14 @@ void IndicatorRenderer::RenderPointerAction(Gdiplus::Graphics& g, int sizePx,
     if (labelText.empty()) {
         switch (kind) {
         case IndicatorEventKind::Left1:    labelText = L"L";  break;
-        case IndicatorEventKind::Left2:    labelText = L"L2"; break;
-        case IndicatorEventKind::Left3:    labelText = L"L3"; break;
+        case IndicatorEventKind::Left2:    labelText = L"L x2"; break;
+        case IndicatorEventKind::Left3:    labelText = L"L x3"; break;
         case IndicatorEventKind::Right1:   labelText = L"R";  break;
-        case IndicatorEventKind::Right2:   labelText = L"R2"; break;
-        case IndicatorEventKind::Right3:   labelText = L"R3"; break;
+        case IndicatorEventKind::Right2:   labelText = L"R x2"; break;
+        case IndicatorEventKind::Right3:   labelText = L"R x3"; break;
         case IndicatorEventKind::Middle1:  labelText = L"M";  break;
-        case IndicatorEventKind::Middle2:  labelText = L"M2"; break;
-        case IndicatorEventKind::Middle3:  labelText = L"M3"; break;
+        case IndicatorEventKind::Middle2:  labelText = L"M x2"; break;
+        case IndicatorEventKind::Middle3:  labelText = L"M x3"; break;
         case IndicatorEventKind::WheelUp:  labelText = L"W+"; break;
         case IndicatorEventKind::WheelDown:labelText = L"W-"; break;
         default: break;

@@ -1,6 +1,8 @@
 import {
   DEFAULT_GESTURE_MAX_DIRECTIONS,
+  DEFAULT_GESTURE_MATCH_THRESHOLD_PERCENT,
   DEFAULT_GESTURE_MIN_DISTANCE,
+  DEFAULT_GESTURE_PATTERN_MODE,
   DEFAULT_GESTURE_SAMPLE_STEP,
   DEFAULT_GESTURE_TRIGGER_BUTTON,
 } from './defaults.js';
@@ -15,6 +17,7 @@ const APP_SCOPE_ALL = 'all';
 const APP_SCOPE_SELECTED = 'selected';
 const APP_SCOPE_PROCESS = 'process';
 const PROCESS_SCOPE_PREFIX = 'process:';
+const MAX_CUSTOM_GESTURE_STROKES = 4;
 
 function asObject(value) {
   return value && typeof value === 'object' ? value : {};
@@ -165,6 +168,130 @@ function canonicalScopeKey(scope) {
   return scope.appScopes.slice().sort().join('|');
 }
 
+function clampNumber(value, min, max, fallback) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+  return Math.min(max, Math.max(min, Math.round(parsed)));
+}
+
+function normalizeModifierMode(value) {
+  const mode = asText(value).toLowerCase();
+  if (mode === 'none' || mode === 'exact') {
+    return mode;
+  }
+  return 'any';
+}
+
+function normalizeModifierFlags(source) {
+  const obj = asObject(source);
+  return {
+    mode: normalizeModifierMode(obj.mode),
+    primary: !!obj.primary,
+    shift: !!obj.shift,
+    alt: !!obj.alt,
+  };
+}
+
+function canonicalModifierKey(modifiers) {
+  const normalized = normalizeModifierFlags(modifiers);
+  if (normalized.mode !== 'exact') {
+    return normalized.mode;
+  }
+  return [
+    normalized.primary ? 'primary' : '',
+    normalized.shift ? 'shift' : '',
+    normalized.alt ? 'alt' : '',
+  ].filter(Boolean).join('+');
+}
+
+function normalizeGesturePatternMode(value) {
+  const mode = asText(value).toLowerCase();
+  return mode === 'custom' ? 'custom' : DEFAULT_GESTURE_PATTERN_MODE;
+}
+
+function normalizeGestureTriggerButton(value, fallback = DEFAULT_GESTURE_TRIGGER_BUTTON) {
+  const button = asText(value).toLowerCase();
+  if (button === 'left' || button === 'middle' || button === 'right') {
+    return button;
+  }
+  return fallback;
+}
+
+function normalizeGestureCustomPoints(value) {
+  const points = [];
+  for (const item of asArray(value)) {
+    const source = asObject(item);
+    const x = clampNumber(source.x, 0, 100, 0);
+    const y = clampNumber(source.y, 0, 100, 0);
+    points.push({ x, y });
+  }
+  return points;
+}
+
+function normalizeGestureCustomStrokes(value) {
+  const out = [];
+  for (const stroke of asArray(value)) {
+    const points = normalizeGestureCustomPoints(Array.isArray(stroke) ? stroke : stroke?.points);
+    if (points.length === 0) {
+      continue;
+    }
+    out.push(points);
+    if (out.length >= MAX_CUSTOM_GESTURE_STROKES) {
+      break;
+    }
+  }
+  return out;
+}
+
+function flattenGestureCustomStrokes(strokes) {
+  const out = [];
+  for (const stroke of asArray(strokes)) {
+    for (const point of asArray(stroke)) {
+      out.push(point);
+    }
+  }
+  return out;
+}
+
+function normalizeGesturePattern(source) {
+  const obj = asObject(source);
+  const customStrokes = normalizeGestureCustomStrokes(
+    obj.customStrokes !== undefined
+      ? obj.customStrokes
+      : obj.custom_strokes);
+  const legacyCustomPoints = normalizeGestureCustomPoints(
+    obj.customPoints !== undefined
+      ? obj.customPoints
+      : obj.custom_points);
+  const normalizedStrokes = customStrokes.length > 0
+    ? customStrokes
+    : (legacyCustomPoints.length > 0 ? [legacyCustomPoints] : []);
+  const customPoints = flattenGestureCustomStrokes(normalizedStrokes);
+  return {
+    mode: normalizeGesturePatternMode(obj.mode),
+    matchThresholdPercent: clampNumber(
+      obj.matchThresholdPercent !== undefined ? obj.matchThresholdPercent : obj.match_threshold_percent,
+      50,
+      95,
+      DEFAULT_GESTURE_MATCH_THRESHOLD_PERCENT),
+    customPoints,
+    customStrokes: normalizedStrokes,
+  };
+}
+
+function canonicalGesturePatternKey(pattern, trigger) {
+  const normalized = normalizeGesturePattern(pattern);
+  if (normalized.mode !== 'custom') {
+    return `preset:${asText(trigger).toLowerCase()}`;
+  }
+  const strokesKey = normalized.customStrokes
+    .map((stroke) => stroke.map((point) => `${point.x},${point.y}`).join(';'))
+    .join('|');
+  return `custom:${normalized.matchThresholdPercent}:${strokesKey}`;
+}
+
 export function parseAppScopes(value, platform = PLATFORM_WINDOWS) {
   return parseScopeTokens(value, platform);
 }
@@ -253,10 +380,11 @@ export function sanitizeOptionValue(value, options, fallback) {
   return fallback || '';
 }
 
-function normalizeBinding(item, options, fallbackTrigger, platform = PLATFORM_WINDOWS) {
+function normalizeBinding(item, options, fallbackTrigger, platform = PLATFORM_WINDOWS, gestureTriggerButtonFallback = DEFAULT_GESTURE_TRIGGER_BUTTON) {
   const source = asObject(item);
   const triggerChain = normalizeTriggerChain(source.triggerChain || source.trigger, options, fallbackTrigger);
   const scope = parseBindingScope(source, platform);
+  const gesturePattern = normalizeGesturePattern(source.gesturePattern !== undefined ? source.gesturePattern : source.gesture_pattern);
   return {
     enabled: source.enabled !== false,
     triggerChain,
@@ -266,14 +394,19 @@ function normalizeBinding(item, options, fallbackTrigger, platform = PLATFORM_WI
     appScopes: scope.appScopes,
     appScope: scope.appScopes[0] || APP_SCOPE_ALL,
     appScopeDraft: asText(source.appScopeDraft),
+    triggerButton: normalizeGestureTriggerButton(
+      source.triggerButton !== undefined ? source.triggerButton : source.trigger_button,
+      gestureTriggerButtonFallback),
+    gesturePattern,
+    modifiers: normalizeModifierFlags(source.modifiers),
     keys: asText(source.keys),
   };
 }
 
-export function normalizeBindings(items, options, fallbackTrigger, platform = PLATFORM_WINDOWS) {
+export function normalizeBindings(items, options, fallbackTrigger, platform = PLATFORM_WINDOWS, gestureTriggerButtonFallback = DEFAULT_GESTURE_TRIGGER_BUTTON) {
   const out = [];
   for (const item of asArray(items)) {
-    out.push(normalizeBinding(item, options, fallbackTrigger, platform));
+    out.push(normalizeBinding(item, options, fallbackTrigger, platform, gestureTriggerButtonFallback));
   }
   return out;
 }
@@ -286,6 +419,7 @@ export function normalizeAutomationPayload(schema, payloadState) {
 
   const mouseOptions = normalizeOptions(schemaObj.automation_mouse_actions);
   const appScopeOptions = normalizeAppScopeOptions(schemaObj.automation_app_scopes);
+  const modifierModeOptions = normalizeOptions(schemaObj.automation_modifier_modes);
   const gestureOptions = normalizeOptions(schemaObj.automation_gesture_patterns);
   const gestureButtonOptions = normalizeOptions(schemaObj.automation_gesture_buttons);
 
@@ -296,6 +430,7 @@ export function normalizeAutomationPayload(schema, payloadState) {
   return {
     mouseOptions,
     appScopeOptions,
+    modifierModeOptions,
     gestureOptions,
     gestureButtonOptions,
     platform: runtimePlatform,
@@ -309,7 +444,12 @@ export function normalizeAutomationPayload(schema, payloadState) {
     gestureMinDistance: asNumber(gesture.min_stroke_distance_px, DEFAULT_GESTURE_MIN_DISTANCE),
     gestureSampleStep: asNumber(gesture.sample_step_px, DEFAULT_GESTURE_SAMPLE_STEP),
     gestureMaxDirections: asNumber(gesture.max_directions, DEFAULT_GESTURE_MAX_DIRECTIONS),
-    gestureMappings: normalizeBindings(gesture.mappings, gestureOptions, defaultGestureTrigger, runtimePlatform),
+    gestureMappings: normalizeBindings(
+      gesture.mappings,
+      gestureOptions,
+      defaultGestureTrigger,
+      runtimePlatform,
+      sanitizeOptionValue(gesture.trigger_button, gestureButtonOptions, defaultGestureButton)),
     defaultMouseTrigger,
     defaultGestureTrigger,
     defaultGestureButton,
@@ -321,10 +461,6 @@ export function readMappings(rows, options, fallbackTrigger, platform = PLATFORM
   const out = [];
   for (const row of asArray(rows)) {
     const source = asObject(row);
-    const keys = asText(source.keys);
-    if (!keys) {
-      continue;
-    }
 
     const triggerChain = normalizeTriggerChain(
       source.triggerChain || source.trigger,
@@ -339,7 +475,10 @@ export function readMappings(rows, options, fallbackTrigger, platform = PLATFORM
       trigger: serializeTriggerChain(triggerChain, options, normalizedFallback),
       app_scope: serializeLegacyAppScope(scopeMode, scopeApps, platform),
       app_scopes: appScopes,
-      keys,
+      trigger_button: normalizeGestureTriggerButton(source.triggerButton),
+      gesture_pattern: normalizeGesturePattern(source.gesturePattern),
+      modifiers: normalizeModifierFlags(source.modifiers),
+      keys: asText(source.keys),
     });
   }
   return out;
@@ -347,7 +486,6 @@ export function readMappings(rows, options, fallbackTrigger, platform = PLATFORM
 
 export function evaluateRows(rows, options, fallbackTrigger, messages, platform = PLATFORM_WINDOWS) {
   const normalizedFallback = defaultOptionValue(options, fallbackTrigger || '');
-  const missingMessage = asText(messages?.missing);
   const duplicateMessage = asText(messages?.duplicate);
   const invalidScopeMessage = asText(messages?.invalidScope);
 
@@ -375,6 +513,9 @@ export function evaluateRows(rows, options, fallbackTrigger, messages, platform 
       appScopes: scope.appScopes,
       appScope: scope.appScopes[0] || APP_SCOPE_ALL,
       appScopeDraft: asText(source.appScopeDraft),
+      triggerButton: normalizeGestureTriggerButton(source.triggerButton),
+      gesturePattern: normalizeGesturePattern(source.gesturePattern),
+      modifiers: normalizeModifierFlags(source.modifiers),
       keys: asText(source.keys),
       note: '',
       hasConflict: false,
@@ -384,22 +525,19 @@ export function evaluateRows(rows, options, fallbackTrigger, messages, platform 
     if (!next.enabled) {
       continue;
     }
-    if (!next.keys) {
-      hasMissingShortcut = true;
-      next.hasConflict = true;
-      next.note = missingMessage;
-      continue;
-    }
     if (next.appScopeMode === APP_SCOPE_SELECTED && next.appScopeApps.length === 0) {
       hasInvalidScope = true;
       next.hasConflict = true;
       next.note = invalidScopeMessage;
       continue;
     }
+    if (!next.keys) {
+      continue;
+    }
 
     if (next.appScopeMode === APP_SCOPE_SELECTED) {
       for (const app of next.appScopeApps) {
-        const bucketKey = `${next.trigger}|${PROCESS_SCOPE_PREFIX}${app}`;
+        const bucketKey = `${canonicalGesturePatternKey(next.gesturePattern, next.trigger)}|${normalizeGestureTriggerButton(next.triggerButton)}|${PROCESS_SCOPE_PREFIX}${app}|${canonicalModifierKey(next.modifiers)}`;
         if (!buckets.has(bucketKey)) {
           buckets.set(bucketKey, []);
         }
@@ -408,7 +546,7 @@ export function evaluateRows(rows, options, fallbackTrigger, messages, platform 
       continue;
     }
 
-    const bucketKey = `${next.trigger}|all`;
+    const bucketKey = `${canonicalGesturePatternKey(next.gesturePattern, next.trigger)}|${normalizeGestureTriggerButton(next.triggerButton)}|all|${canonicalModifierKey(next.modifiers)}`;
     if (!buckets.has(bucketKey)) {
       buckets.set(bucketKey, []);
     }
@@ -434,11 +572,11 @@ export function evaluateRows(rows, options, fallbackTrigger, messages, platform 
   };
 }
 
-export function listTemplateOptions(provider, kind, translate) {
+export function listTemplateOptions(provider, kind, translate, platform = PLATFORM_WINDOWS) {
   if (!provider || typeof provider.list !== 'function') {
     return [];
   }
-  const raw = provider.list(kind, translate);
+  const raw = provider.list(kind, translate, normalizeRuntimePlatform(platform));
   const out = [];
   for (const item of asArray(raw)) {
     const source = asObject(item);
@@ -452,7 +590,7 @@ export function listTemplateOptions(provider, kind, translate) {
   return out;
 }
 
-export function readTemplateBindings(provider, kind, templateId, options, fallbackTrigger, platform = PLATFORM_WINDOWS) {
+export function readTemplateBindings(provider, kind, templateId, options, fallbackTrigger, platform = PLATFORM_WINDOWS, gestureTriggerButtonFallback = DEFAULT_GESTURE_TRIGGER_BUTTON) {
   if (!provider || typeof provider.mappings !== 'function') {
     return [];
   }
@@ -461,7 +599,7 @@ export function readTemplateBindings(provider, kind, templateId, options, fallba
     return [];
   }
   const raw = provider.mappings(kind, id);
-  return normalizeBindings(raw, options, fallbackTrigger, platform);
+  return normalizeBindings(raw, options, fallbackTrigger, platform, gestureTriggerButtonFallback);
 }
 
 export function upsertRowsByTrigger(rows, templateBindings, options, fallbackTrigger, createRow, platform = PLATFORM_WINDOWS) {
@@ -476,6 +614,9 @@ export function upsertRowsByTrigger(rows, templateBindings, options, fallbackTri
     const trigger = serializeTriggerChain(triggerChain, options, normalizedFallback);
     const scope = parseBindingScope(binding, platform);
     const scopeKey = canonicalScopeKey(scope);
+    const modifierKey = canonicalModifierKey(binding.modifiers);
+    const gesturePatternKey = canonicalGesturePatternKey(binding.gesturePattern, trigger);
+    const triggerButtonKey = normalizeGestureTriggerButton(binding.triggerButton);
     const keys = asText(binding.keys);
     if (!trigger || !keys) {
       continue;
@@ -488,7 +629,11 @@ export function upsertRowsByTrigger(rows, templateBindings, options, fallbackTri
         options,
         normalizedFallback);
       const rowScope = parseBindingScope(source, platform);
-      return text === trigger && canonicalScopeKey(rowScope) === scopeKey;
+      return text === trigger &&
+        canonicalScopeKey(rowScope) === scopeKey &&
+        canonicalGesturePatternKey(source.gesturePattern, text) === gesturePatternKey &&
+        normalizeGestureTriggerButton(source.triggerButton) === triggerButtonKey &&
+        canonicalModifierKey(source.modifiers) === modifierKey;
     });
     if (index >= 0) {
       nextRows[index] = {
@@ -500,6 +645,9 @@ export function upsertRowsByTrigger(rows, templateBindings, options, fallbackTri
         appScopeApps: scope.apps,
         appScopes: scope.appScopes,
         appScope: scope.appScopes[0] || APP_SCOPE_ALL,
+        triggerButton: triggerButtonKey,
+        gesturePattern: normalizeGesturePattern(binding.gesturePattern),
+        modifiers: normalizeModifierFlags(binding.modifiers),
         keys,
       };
       continue;

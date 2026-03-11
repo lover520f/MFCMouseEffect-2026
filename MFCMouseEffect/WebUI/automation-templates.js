@@ -26,6 +26,7 @@
         id: 'window_snap',
         i18nKey: 'auto_template_gesture_window',
         fallback: 'Window snap (Win+Arrow)',
+        platforms: ['windows'],
         bindings: [
           { enabled: true, trigger: 'left', keys: 'Win+Left' },
           { enabled: true, trigger: 'right', keys: 'Win+Right' },
@@ -47,13 +48,48 @@
     ],
   };
 
-  function list(kind, translate) {
+  function normalizePlatform(value) {
+    const text = `${value || ''}`.trim().toLowerCase();
+    if (!text) return '';
+    if (text === 'windows' || text.startsWith('win')) return 'windows';
+    if (
+      text === 'macos' ||
+      text === 'mac' ||
+      text === 'darwin' ||
+      text === 'osx' ||
+      text === 'macosx' ||
+      text.includes('mac') ||
+      text.includes('darwin')
+    ) {
+      return 'macos';
+    }
+    if (text === 'linux' || text.includes('linux') || text.includes('x11')) return 'linux';
+    return '';
+  }
+
+  function supportsPlatform(item, platform) {
+    const target = normalizePlatform(platform);
+    const platforms = Array.isArray(item?.platforms) ? item.platforms : [];
+    if (!target || platforms.length === 0) {
+      return true;
+    }
+    for (const entry of platforms) {
+      if (normalizePlatform(entry) === target) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function list(kind, translate, platform) {
     const t = typeof translate === 'function' ? translate : (key, fallback) => fallback || key || '';
     const items = catalog[kind] || [];
-    return items.map((item) => ({
-      id: item.id,
-      label: t(item.i18nKey, item.fallback),
-    }));
+    return items
+      .filter((item) => supportsPlatform(item, platform))
+      .map((item) => ({
+        id: item.id,
+        label: t(item.i18nKey, item.fallback),
+      }));
   }
 
   function mappings(kind, id) {

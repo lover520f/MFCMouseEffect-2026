@@ -4,6 +4,9 @@ namespace mousefx::config_json::keys::input {
 
 inline constexpr const char kEnabled[] = "enabled";
 inline constexpr const char kKeyboardEnabled[] = "keyboard_enabled";
+inline constexpr const char kRenderMode[] = "render_mode";
+inline constexpr const char kWasmFallbackToNative[] = "wasm_fallback_to_native";
+inline constexpr const char kWasmManifestPath[] = "wasm_manifest_path";
 inline constexpr const char kPositionMode[] = "position_mode";
 inline constexpr const char kOffsetX[] = "offset_x";
 inline constexpr const char kOffsetY[] = "offset_y";

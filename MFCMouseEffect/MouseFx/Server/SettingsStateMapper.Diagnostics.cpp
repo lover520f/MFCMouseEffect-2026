@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
+#include "MouseFx/Core/Control/AppController.h"
 
 using json = nlohmann::json;
 
@@ -81,6 +82,35 @@ json BuildGpuRouteNotice(
     notice["requested"] = requestedNorm;
     notice["effective"] = effective;
     return notice;
+}
+
+json BuildInputIndicatorWasmRouteStatusState(const AppController* controller) {
+    if (!controller) {
+        return {};
+    }
+
+    const AppController::InputIndicatorWasmRouteStatus status =
+        controller->ReadInputIndicatorWasmRouteStatus();
+    if (!status.routeAttempted) {
+        return {};
+    }
+
+    json out = json::object();
+    out["event_kind"] = status.eventKind;
+    out["render_mode"] = status.renderMode;
+    out["reason"] = status.reason;
+    out["event_tick_ms"] = status.eventTickMs;
+    out["route_attempted"] = status.routeAttempted;
+    out["anchors_resolved"] = status.anchorsResolved;
+    out["host_present"] = status.hostPresent;
+    out["host_enabled"] = status.hostEnabled;
+    out["plugin_loaded"] = status.pluginLoaded;
+    out["event_supported"] = status.eventSupported;
+    out["invoke_attempted"] = status.invokeAttempted;
+    out["rendered_by_wasm"] = status.renderedByWasm;
+    out["wasm_fallback_enabled"] = status.wasmFallbackEnabled;
+    out["native_fallback_applied"] = status.nativeFallbackApplied;
+    return out;
 }
 
 } // namespace mousefx

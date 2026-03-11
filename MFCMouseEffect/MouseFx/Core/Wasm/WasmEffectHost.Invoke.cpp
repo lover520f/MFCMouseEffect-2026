@@ -56,9 +56,36 @@ void ResetInvokeDiagnostics(HostDiagnostics* diagnostics) {
 bool WasmEffectHost::InvokeInput(const EventInvokeInput& input, std::vector<uint8_t>* outCommandBuffer) {
     const EventInputV2 payload = BuildEventInputV2(input);
     const auto payloadBytes = SerializeEventInputV2(payload);
+    if (!input.hasIndicatorMetrics) {
+        return InvokePayload(
+            payloadBytes.data(),
+            static_cast<uint32_t>(payloadBytes.size()),
+            false,
+            outCommandBuffer);
+    }
+
+    std::vector<uint8_t> payloadWithTail;
+    payloadWithTail.reserve(
+        payloadBytes.size() +
+        sizeof(IndicatorEventTailV1) +
+        (input.hasIndicatorContext ? sizeof(IndicatorEventContextTailV2) : 0u));
+    payloadWithTail.insert(payloadWithTail.end(), payloadBytes.begin(), payloadBytes.end());
+
+    const IndicatorEventTailV1 tail = input.indicatorMetrics;
+    const auto* tailPtr = reinterpret_cast<const uint8_t*>(&tail);
+    payloadWithTail.insert(payloadWithTail.end(), tailPtr, tailPtr + sizeof(IndicatorEventTailV1));
+    if (input.hasIndicatorContext) {
+        const IndicatorEventContextTailV2 contextTail = input.indicatorContext;
+        const auto* contextPtr = reinterpret_cast<const uint8_t*>(&contextTail);
+        payloadWithTail.insert(
+            payloadWithTail.end(),
+            contextPtr,
+            contextPtr + sizeof(IndicatorEventContextTailV2));
+    }
+
     return InvokePayload(
-        payloadBytes.data(),
-        static_cast<uint32_t>(payloadBytes.size()),
+        payloadWithTail.data(),
+        static_cast<uint32_t>(payloadWithTail.size()),
         false,
         outCommandBuffer);
 }

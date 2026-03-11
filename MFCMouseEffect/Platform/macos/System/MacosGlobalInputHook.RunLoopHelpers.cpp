@@ -48,7 +48,9 @@ CGEventMask MacosGlobalInputHook::ComputeEventTapMask() const {
            CGEventMaskBit(kCGEventRightMouseDragged) |
            CGEventMaskBit(kCGEventOtherMouseDragged) |
            CGEventMaskBit(kCGEventScrollWheel) |
-           CGEventMaskBit(kCGEventKeyDown);
+           CGEventMaskBit(kCGEventKeyDown) |
+           CGEventMaskBit(kCGEventKeyUp) |
+           CGEventMaskBit(kCGEventFlagsChanged);
 }
 
 } // namespace mousefx

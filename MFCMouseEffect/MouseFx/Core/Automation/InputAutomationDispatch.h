@@ -17,6 +17,7 @@ bool DispatchAction(
     size_t historyCap,
     const automation_match::ChainTimingLimit& timingLimit,
     const std::string& rawActionId,
+    const InputModifierState& modifiers,
     automation_match::NormalizeActionIdFn normalizeActionId,
     IForegroundProcessService* foregroundProcessService,
     IKeyboardInjector* keyboardInjector);

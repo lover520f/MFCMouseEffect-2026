@@ -59,7 +59,8 @@ Managed cleanup scope:
 - invalid/missing assets fallback to built-in image renderer
 
 `plugin.json` can also include route/cadence hints:
-- `input_kinds`: optional string array to limit host input lanes (`click/move/scroll/hold_start/hold_update/hold_end/hover_start/hover_end/all`)
+- `input_kinds`: optional string array to limit host input lanes
+  (`click/move/scroll/hold_start/hold_update/hold_end/hover_start/hover_end/indicator_click/indicator_scroll/indicator_key/all`)
 - `enable_frame_tick`: optional boolean to control host-driven `mfx_plugin_on_frame` calls
 
 ## 3. Place Plugin

@@ -42,6 +42,8 @@ private:
     bool active_{false};
     bool captured_{false};
     std::string capturedShortcut_{};
+    uint64_t pendingModifierAtMs_{0};
+    std::string pendingModifierShortcut_{};
     const IMonotonicClockService* clockService_{nullptr};
 };
 

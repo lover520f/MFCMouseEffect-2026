@@ -17,7 +17,7 @@ _mfx_core_http_automation_contract_shortcut_checks() {
     mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"ok\":true" "core shortcut-map cmd+v ok"
     mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"supported\":true" "core shortcut-map cmd+v supported"
     mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"vk_code\":86" "core shortcut-map cmd+v vk"
-    mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"shortcut\":\"Win+V\"" "core shortcut-map cmd+v text"
+    mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-v.out" "\"shortcut\":\"Cmd+V\"" "core shortcut-map cmd+v text"
 
     local code_shortcut_map_cmd_tab
     code_shortcut_map_cmd_tab="$(mfx_http_code "$tmp_dir/shortcut-map-cmd-tab.out" "$base_url/api/automation/test-shortcut-from-mac-keycode" \
@@ -29,7 +29,7 @@ _mfx_core_http_automation_contract_shortcut_checks() {
     mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"ok\":true" "core shortcut-map cmd+tab ok"
     mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"supported\":true" "core shortcut-map cmd+tab supported"
     mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"vk_code\":9" "core shortcut-map cmd+tab vk"
-    mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"shortcut\":\"Win+Tab\"" "core shortcut-map cmd+tab text"
+    mfx_assert_file_contains "$tmp_dir/shortcut-map-cmd-tab.out" "\"shortcut\":\"Cmd+Tab\"" "core shortcut-map cmd+tab text"
 
     local code_shortcut_map_invalid
     code_shortcut_map_invalid="$(mfx_http_code "$tmp_dir/shortcut-map-invalid.out" "$base_url/api/automation/test-shortcut-from-mac-keycode" \

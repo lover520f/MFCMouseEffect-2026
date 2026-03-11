@@ -21,9 +21,16 @@ struct ClickEvent {
     MouseButton button{MouseButton::Left};
 };
 
+struct InputModifierState {
+    bool primary{false};
+    bool shift{false};
+    bool alt{false};
+};
+
 struct KeyEvent {
     ScreenPoint pt{};
     uint32_t vkCode{0};
+    bool keyDown{true};
     bool systemKey{false};
     bool ctrl{false};
     bool shift{false};

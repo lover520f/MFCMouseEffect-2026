@@ -25,6 +25,10 @@ constexpr const char* kErrorCodeWasmHostUnavailable = "wasm_host_unavailable";
 constexpr const char* kErrorCodeManifestPathRequired = "manifest_path_required";
 constexpr const char* kErrorCodeLoadManifestFailed = "load_manifest_failed";
 
+bool IsIndicatorSurface(const std::string& surface) {
+    return ToLowerAscii(TrimAscii(surface)) == "indicator";
+}
+
 } // namespace
 
 bool HandleWebSettingsWasmLoadManifestApiRoute(
@@ -39,17 +43,43 @@ bool HandleWebSettingsWasmLoadManifestApiRoute(
     bool ok = false;
     std::string error = "no controller";
     std::string errorCode = kErrorCodeNoController;
-    if (controller && controller->WasmHost()) {
+    if (controller) {
         error.clear();
         errorCode.clear();
         const json payload = ParseObjectOrEmpty(req.body);
         const std::string manifestPathUtf8 = ParseManifestPathUtf8(payload);
+        std::string surface;
+        std::string effectChannel;
+        if (payload.contains("surface") && payload["surface"].is_string()) {
+            surface = TrimAscii(payload["surface"].get<std::string>());
+        }
+        if (payload.contains("effect_channel") && payload["effect_channel"].is_string()) {
+            effectChannel = TrimAscii(payload["effect_channel"].get<std::string>());
+        }
+        wasm::WasmEffectHost* host = nullptr;
+        if (IsIndicatorSurface(surface)) {
+            host = controller->WasmHostForSurface(surface);
+        } else {
+            host = controller->WasmEffectsHostForChannel(effectChannel);
+        }
+        if (!host) {
+            error = "wasm host unavailable";
+            errorCode = kErrorCodeWasmHostUnavailable;
+            SetJsonResponse(resp, BuildWasmActionResponse(controller, false, error, errorCode).dump());
+            return true;
+        }
         if (!manifestPathUtf8.empty()) {
             json cmd;
             cmd["cmd"] = "wasm_load_manifest";
             cmd["manifest_path"] = manifestPathUtf8;
+            if (!surface.empty()) {
+                cmd["surface"] = surface;
+            }
+            if (!effectChannel.empty()) {
+                cmd["effect_channel"] = effectChannel;
+            }
             controller->HandleCommand(cmd.dump());
-            const wasm::HostDiagnostics& diag = controller->WasmHost()->Diagnostics();
+            const wasm::HostDiagnostics& diag = host->Diagnostics();
             ok = diag.pluginLoaded &&
                 IsSameManifestPath(Utf8ToWString(manifestPathUtf8), diag.activeManifestPath);
             if (!ok) {
@@ -66,9 +96,6 @@ bool HandleWebSettingsWasmLoadManifestApiRoute(
             error = "manifest_path required";
             errorCode = kErrorCodeManifestPathRequired;
         }
-    } else if (controller) {
-        error = "wasm host unavailable";
-        errorCode = kErrorCodeWasmHostUnavailable;
     }
     SetJsonResponse(resp, BuildWasmActionResponse(controller, ok, error, errorCode).dump());
     return true;

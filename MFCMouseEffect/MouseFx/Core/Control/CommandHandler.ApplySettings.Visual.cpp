@@ -97,6 +97,13 @@ void ApplyInputIndicatorFields(const json& source, InputIndicatorConfig* dst, bo
 
     if (source.contains("enabled") && source["enabled"].is_boolean()) dst->enabled = source["enabled"].get<bool>();
     if (source.contains("keyboard_enabled") && source["keyboard_enabled"].is_boolean()) dst->keyboardEnabled = source["keyboard_enabled"].get<bool>();
+    if (source.contains("render_mode") && source["render_mode"].is_string()) dst->renderMode = source["render_mode"].get<std::string>();
+    if (source.contains("wasm_fallback_to_native") && source["wasm_fallback_to_native"].is_boolean()) {
+        dst->wasmFallbackToNative = source["wasm_fallback_to_native"].get<bool>();
+    }
+    if (source.contains("wasm_manifest_path") && source["wasm_manifest_path"].is_string()) {
+        dst->wasmManifestPath = source["wasm_manifest_path"].get<std::string>();
+    }
     if (source.contains("position_mode") && source["position_mode"].is_string()) dst->positionMode = source["position_mode"].get<std::string>();
     if (source.contains("offset_x") && source["offset_x"].is_number_integer()) dst->offsetX = source["offset_x"].get<int>();
     if (source.contains("offset_y") && source["offset_y"].is_number_integer()) dst->offsetY = source["offset_y"].get<int>();

@@ -34,7 +34,7 @@
     for (const item of source) {
       const value = item || {};
       const manifestPath = `${value.manifest_path || ''}`.trim();
-      if (!manifestPath) {
+      if (!manifestPath || !supportsEffectsCatalogItem(value.input_kinds, value.surfaces, value.has_explicit_surfaces)) {
         continue;
       }
       out.push({
@@ -42,6 +42,10 @@
         name: `${value.name || ''}`.trim(),
         version: `${value.version || ''}`.trim(),
         api_version: Number(value.api_version) || 0,
+        surfaces: Array.isArray(value.surfaces)
+          ? value.surfaces.map((item) => `${item || ''}`.trim()).filter((item) => item.length > 0)
+          : [],
+        has_explicit_surfaces: !!value.has_explicit_surfaces,
         input_kinds: Array.isArray(value.input_kinds)
           ? value.input_kinds.map((item) => `${item || ''}`.trim()).filter((item) => item.length > 0)
           : [],
@@ -51,6 +55,58 @@
       });
     }
     return out;
+  }
+
+  function supportsEffectsCatalogItem(inputKinds, surfaces, hasExplicitSurfaces) {
+    const normalizedSurfaces = Array.isArray(surfaces)
+      ? surfaces.map((entry) => `${entry || ''}`.trim()).filter((entry) => entry.length > 0)
+      : [];
+    if (hasExplicitSurfaces) {
+      return normalizedSurfaces.includes('effects');
+    }
+    const kinds = Array.isArray(inputKinds)
+      ? inputKinds.map((entry) => `${entry || ''}`.trim()).filter((entry) => entry.length > 0)
+      : [];
+    if (kinds.length === 0) {
+      return true;
+    }
+    return kinds.some((entry) => !entry.startsWith('indicator_'));
+  }
+
+  function supportsEffectsChannelKinds(channelId, inputKinds) {
+    const id = sanitizeChannelId(channelId);
+    const kinds = Array.isArray(inputKinds)
+      ? inputKinds.map((entry) => `${entry || ''}`.trim().toLowerCase()).filter((entry) => entry.length > 0)
+      : [];
+    if (kinds.length === 0) {
+      return true;
+    }
+    if (id === 'click') {
+      return kinds.includes('click');
+    }
+    if (id === 'trail') {
+      return kinds.includes('move') || kinds.includes('trail');
+    }
+    if (id === 'scroll') {
+      return kinds.includes('scroll');
+    }
+    if (id === 'hold') {
+      return kinds.includes('hold') || kinds.some((entry) => entry.startsWith('hold_'));
+    }
+    if (id === 'hover') {
+      return kinds.includes('hover') || kinds.some((entry) => entry.startsWith('hover_'));
+    }
+    return true;
+  }
+
+  function buildChannelCatalogMap(items) {
+    const source = Array.isArray(items) ? items : [];
+    const grouped = createEmptyChannelCatalogMap();
+    for (const channelId of EFFECT_CHANNEL_IDS) {
+      const matches = source.filter((item) => supportsEffectsChannelKinds(channelId, item?.input_kinds));
+      grouped[channelId] = matches.length > 0 ? matches : source;
+    }
+    return grouped;
   }
 
   function normalizeCatalogErrors(input) {
@@ -95,11 +151,14 @@
   }
 
   function pluginRouteLabel(plugin) {
+    const surfaces = Array.isArray(plugin?.surfaces) && plugin.surfaces.length > 0
+      ? plugin.surfaces.join('/')
+      : (plugin?.has_explicit_surfaces ? 'none' : 'auto');
     const kinds = Array.isArray(plugin?.input_kinds) && plugin.input_kinds.length > 0
       ? plugin.input_kinds.join('/')
       : 'all';
     const frame = plugin?.enable_frame_tick === false ? 'frame:off' : 'frame:on';
-    return ` [${kinds}; ${frame}]`;
+    return ` [surface:${surfaces}; ${kinds}; ${frame}]`;
   }
 
   function normalizeManifestPathForCompare(path) {
@@ -166,14 +225,101 @@
       : text('tip_wasm_toggle_enable', 'Currently disabled. Click to enable plugin runtime path.');
   }
 
+  const EFFECT_CHANNELS = [
+    { id: 'click', labelKey: 'label_click', fallback: 'Click' },
+    { id: 'trail', labelKey: 'label_trail', fallback: 'Trail' },
+    { id: 'scroll', labelKey: 'label_scroll', fallback: 'Scroll' },
+    { id: 'hold', labelKey: 'label_hold', fallback: 'Hold' },
+    { id: 'hover', labelKey: 'label_hover', fallback: 'Hover' },
+  ];
+  const EFFECT_CHANNEL_IDS = EFFECT_CHANNELS.map((entry) => entry.id);
+
+  function createEmptyChannelManifestMap() {
+    return {
+      click: '',
+      trail: '',
+      scroll: '',
+      hold: '',
+      hover: '',
+    };
+  }
+
+  function createEmptyChannelCatalogMap() {
+    return {
+      click: [],
+      trail: [],
+      scroll: [],
+      hold: [],
+      hover: [],
+    };
+  }
+
+  function channelPolicyKey(channelId) {
+    return `manifest_path_${channelId}`;
+  }
+
+  function sanitizeChannelId(channelId) {
+    const id = `${channelId || ''}`.trim().toLowerCase();
+    return EFFECT_CHANNEL_IDS.includes(id) ? id : 'click';
+  }
+
+  function channelLabel(channelId) {
+    const id = sanitizeChannelId(channelId);
+    const entry = EFFECT_CHANNELS.find((item) => item.id === id);
+    return text(entry?.labelKey || '', entry?.fallback || id);
+  }
+
+  function configuredManifestPathForChannel(snapshot, channelId) {
+    const s = snapshot || {};
+    const id = sanitizeChannelId(channelId);
+    if (id === 'click') {
+      return `${s.configured_manifest_path_click || ''}`.trim() || `${s.configured_manifest_path || ''}`.trim();
+    }
+    if (id === 'trail') {
+      return `${s.configured_manifest_path_trail || ''}`.trim() || `${s.configured_manifest_path || ''}`.trim();
+    }
+    if (id === 'scroll') {
+      return `${s.configured_manifest_path_scroll || ''}`.trim() || `${s.configured_manifest_path || ''}`.trim();
+    }
+    if (id === 'hold') {
+      return `${s.configured_manifest_path_hold || ''}`.trim() || `${s.configured_manifest_path || ''}`.trim();
+    }
+    if (id === 'hover') {
+      return `${s.configured_manifest_path_hover || ''}`.trim() || `${s.configured_manifest_path || ''}`.trim();
+    }
+    return `${s.configured_manifest_path || ''}`.trim();
+  }
+
+  function activeManifestPathForChannel(snapshot, channelId) {
+    const s = snapshot || {};
+    const id = sanitizeChannelId(channelId);
+    if (id === 'click') {
+      return `${s.active_manifest_path_click || ''}`.trim() || `${s.active_manifest_path || ''}`.trim();
+    }
+    if (id === 'trail') {
+      return `${s.active_manifest_path_trail || ''}`.trim();
+    }
+    if (id === 'scroll') {
+      return `${s.active_manifest_path_scroll || ''}`.trim();
+    }
+    if (id === 'hold') {
+      return `${s.active_manifest_path_hold || ''}`.trim();
+    }
+    if (id === 'hover') {
+      return `${s.active_manifest_path_hover || ''}`.trim();
+    }
+    return `${s.active_manifest_path || ''}`.trim();
+  }
+
   let current = normalizeWasmState(payloadState);
   let currentRanges = normalizePolicyRanges(schemaState?.policy_ranges || {});
   let lastSchemaRef = schemaState;
   let lastPayloadRef = payloadState;
   let catalog = [];
+  let catalogByChannel = createEmptyChannelCatalogMap();
   let catalogErrors = [];
   let catalogSearchRoots = [];
-  let selectedManifestPath = '';
+  let selectedManifestPathByChannel = createEmptyChannelManifestMap();
   let busy = false;
   let statusTone = '';
   let statusMessage = '';
@@ -197,12 +343,21 @@
   let manifestPathDisplay = current.active_manifest_path || current.configured_manifest_path || '-';
   let showConfiguredManifestPath = false;
 
-  function findCatalogItemByManifestPath(path) {
+  function setSelectedManifestPath(channelId, manifestPath) {
+    const id = sanitizeChannelId(channelId);
+    selectedManifestPathByChannel = {
+      ...selectedManifestPathByChannel,
+      [id]: `${manifestPath || ''}`.trim(),
+    };
+  }
+
+  function findCatalogItemByManifestPath(path, channelId = '') {
     const expected = normalizeManifestPathForCompare(path);
     if (!expected) {
       return null;
     }
-    for (const item of catalog) {
+    const source = channelId ? (catalogByChannel[sanitizeChannelId(channelId)] || catalog) : catalog;
+    for (const item of source) {
       if (normalizeManifestPathForCompare(item.manifest_path) === expected) {
         return item;
       }
@@ -210,22 +365,59 @@
     return null;
   }
 
+  function resolveBestManifestForChannel(channelId, preferredPath) {
+    const id = sanitizeChannelId(channelId);
+    const scopedCatalog = catalogByChannel[id] || catalog;
+    if (scopedCatalog.length === 0) {
+      return '';
+    }
+    const selectedMatch = findCatalogItemByManifestPath(preferredPath, id);
+    if (selectedMatch) {
+      return selectedMatch.manifest_path;
+    }
+    const activeMatch = findCatalogItemByManifestPath(activeManifestPathForChannel(current, id), id);
+    if (activeMatch) {
+      return activeMatch.manifest_path;
+    }
+    const configuredMatch = findCatalogItemByManifestPath(configuredManifestPathForChannel(current, id), id);
+    if (configuredMatch) {
+      return configuredMatch.manifest_path;
+    }
+    return scopedCatalog[0].manifest_path;
+  }
+
+  function syncChannelSelectionsFromCurrent() {
+    if (catalog.length === 0) {
+      return;
+    }
+    let changed = false;
+    const next = { ...selectedManifestPathByChannel };
+    for (const channelId of EFFECT_CHANNEL_IDS) {
+      if (findCatalogItemByManifestPath(next[channelId], channelId)) {
+        continue;
+      }
+      const resolved = resolveBestManifestForChannel(channelId, next[channelId]);
+      if (resolved !== next[channelId]) {
+        next[channelId] = resolved;
+        changed = true;
+      }
+    }
+    if (changed) {
+      selectedManifestPathByChannel = next;
+    }
+  }
+
   function setCatalogFromResponse(response) {
-    const previousSelected = selectedManifestPath;
+    const previousSelected = { ...selectedManifestPathByChannel };
     catalog = normalizeCatalogItems(response?.plugins);
+    catalogByChannel = buildChannelCatalogMap(catalog);
     catalogErrors = normalizeCatalogErrors(response?.errors);
     catalogSearchRoots = normalizeCatalogRoots(response?.search_roots);
-    const selectedMatch = findCatalogItemByManifestPath(previousSelected);
-    if (selectedMatch) {
-      selectedManifestPath = selectedMatch.manifest_path;
-      return;
+    const nextSelected = createEmptyChannelManifestMap();
+    for (const channelId of EFFECT_CHANNEL_IDS) {
+      nextSelected[channelId] = resolveBestManifestForChannel(channelId, previousSelected[channelId]);
     }
-    const activeMatch = findCatalogItemByManifestPath(current.active_manifest_path);
-    if (activeMatch) {
-      selectedManifestPath = activeMatch.manifest_path;
-      return;
-    }
-    selectedManifestPath = catalog.length > 0 ? catalog[0].manifest_path : '';
+    selectedManifestPathByChannel = nextSelected;
   }
 
   function resolveActionError(response) {
@@ -293,30 +485,61 @@
   }
 
   async function requestCatalog(forceRefresh) {
-    const response = await runAction('catalog', { force: !!forceRefresh });
+    const response = await runAction('catalog', {
+      force: !!forceRefresh,
+      surface: 'effects',
+    });
     if (!response || response.ok === false) {
       return;
     }
   }
 
-  async function loadSelectedManifest() {
-    if (!selectedManifestPath) {
+  async function loadSelectedManifest(channelId) {
+    const normalizedChannel = sanitizeChannelId(channelId);
+    const manifestPath = `${selectedManifestPathByChannel[normalizedChannel] || ''}`.trim();
+    if (!manifestPath) {
       statusTone = 'error';
       statusMessage = text('wasm_manifest_required', 'Please select a plugin manifest first.');
       return;
     }
     const response = await runAction('loadManifest', {
-      manifest_path: selectedManifestPath,
+      manifest_path: manifestPath,
+      surface: 'effects',
+      effect_channel: normalizedChannel,
     });
     if (!response || response.ok === false) {
       return;
     }
-    const activeManifestPath = `${response.active_manifest_path || ''}`.trim();
+    const activeManifestPath = `${response[`active_manifest_path_${normalizedChannel}`] || ''}`.trim() || manifestPath;
     await requestCatalog(true);
-    const match = findCatalogItemByManifestPath(activeManifestPath || selectedManifestPath);
+    const match = findCatalogItemByManifestPath(activeManifestPath);
     if (match) {
-      selectedManifestPath = match.manifest_path;
+      setSelectedManifestPath(normalizedChannel, match.manifest_path);
     }
+  }
+
+  async function persistSelectedManifestPath(channelId) {
+    const normalizedChannel = sanitizeChannelId(channelId);
+    const manifestPath = `${selectedManifestPathByChannel[normalizedChannel] || ''}`.trim();
+    if (!manifestPath) {
+      return;
+    }
+    const payload = {};
+    payload[channelPolicyKey(normalizedChannel)] = manifestPath;
+    const response = await runAction('setPolicy', {
+      ...payload,
+    });
+    if (!response || response.ok === false) {
+      return;
+    }
+    statusTone = 'ok';
+    statusMessage = `${channelLabel(normalizedChannel)} ${text('status_wasm_manifest_selected_prefix', 'Selected plugin saved: ')}${manifestPath}`;
+  }
+
+  async function handleChannelManifestSelection(channelId, event) {
+    const value = `${event?.currentTarget?.value || ''}`.trim();
+    setSelectedManifestPath(channelId, value);
+    await persistSelectedManifestPath(channelId);
   }
 
   async function importFromFolderDialog() {
@@ -332,7 +555,7 @@
     await requestCatalog(true);
     const importedManifestPath = `${response.manifest_path || ''}`.trim();
     if (importedManifestPath) {
-      selectedManifestPath = importedManifestPath;
+      setSelectedManifestPath('click', importedManifestPath);
       statusTone = 'ok';
       statusMessage = `${text('wasm_import_success_prefix', 'Imported to primary root: ')}${importedManifestPath}`;
     }
@@ -415,14 +638,22 @@
       current.configured_max_execution_ms,
       currentRanges.max_execution_ms,
     );
+    syncChannelSelectionsFromCurrent();
   }
 
   $: activePluginTitle = current.active_plugin_name || current.active_plugin_id || text('wasm_text_no_active_plugin', 'Not loaded');
 
-  $: manifestPathDisplay = current.active_manifest_path || current.configured_manifest_path || '-';
+  $: manifestPathDisplay =
+    current.active_manifest_path_click
+    || current.active_manifest_path
+    || current.configured_manifest_path_click
+    || current.configured_manifest_path
+    || '-';
 
-  $: showConfiguredManifestPath = !!current.configured_manifest_path
-    && current.configured_manifest_path !== current.active_manifest_path;
+  $: showConfiguredManifestPath =
+    !!(current.configured_manifest_path_click || current.configured_manifest_path)
+    && (current.configured_manifest_path_click || current.configured_manifest_path)
+      !== (current.active_manifest_path_click || current.active_manifest_path);
 
   $: if (!initialCatalogRequested && typeof onAction === 'function') {
     initialCatalogRequested = true;
@@ -493,28 +724,36 @@
           Refresh Plugin List
         </button>
       </div>
-      <div class="wasm-catalog-controls">
-        <select bind:value={selectedManifestPath} disabled={busy || catalog.length === 0}>
-          {#if catalog.length === 0}
-            <option value="">{text('text_wasm_catalog_empty', 'No plugins discovered.')}</option>
-          {:else}
-            {#each catalog as plugin}
-              <option value={plugin.manifest_path}>{pluginLabel(plugin)}</option>
-            {/each}
-          {/if}
-        </select>
-        <button
-          type="button"
-          class="btn-soft"
-          on:click={loadSelectedManifest}
-          disabled={busy || !selectedManifestPath}
-          data-i18n="btn_wasm_load_selected"
-          data-i18n-title="tip_wasm_load_selected"
-          title="Load selected plugin into runtime."
-        >
-          Load Selected
-        </button>
-      </div>
+      {#each EFFECT_CHANNELS as channel}
+        {@const channelCatalog = catalogByChannel[channel.id] || catalog}
+        <div class="wasm-catalog-controls wasm-catalog-controls--channel">
+          <span class="wasm-catalog-channel-label">{text(channel.labelKey, channel.fallback)}</span>
+          <select
+            value={selectedManifestPathByChannel[channel.id] || ''}
+            disabled={busy || channelCatalog.length === 0}
+            on:change={(event) => handleChannelManifestSelection(channel.id, event)}
+          >
+            {#if channelCatalog.length === 0}
+              <option value="">{text('text_wasm_catalog_empty', 'No plugins discovered.')}</option>
+            {:else}
+              {#each channelCatalog as plugin}
+                <option value={plugin.manifest_path}>{pluginLabel(plugin)}</option>
+              {/each}
+            {/if}
+          </select>
+          <button
+            type="button"
+            class="btn-soft"
+            on:click={() => loadSelectedManifest(channel.id)}
+            disabled={busy || channelCatalog.length === 0 || !(selectedManifestPathByChannel[channel.id] || '')}
+            data-i18n="btn_wasm_load_selected"
+            data-i18n-title="tip_wasm_load_selected"
+            title="Load selected plugin into runtime."
+          >
+            Load Selected
+          </button>
+        </div>
+      {/each}
       <div class="wasm-catalog-controls">
         <button
           type="button"
@@ -573,8 +812,15 @@
 
       {#if showConfiguredManifestPath}
         <div class="wasm-label" data-i18n="label_wasm_configured_manifest_path">Plugin config path</div>
-        <div class="wasm-value wasm-text-block">{current.configured_manifest_path}</div>
+        <div class="wasm-value wasm-text-block">{current.configured_manifest_path_click || current.configured_manifest_path}</div>
       {/if}
+
+      <div class="wasm-label">Per-category plugin paths</div>
+      <div class="wasm-value wasm-text-block">
+        {#each EFFECT_CHANNELS as channel}
+          <div>{text(channel.labelKey, channel.fallback)}: {configuredManifestPathForChannel(current, channel.id) || '-'}</div>
+        {/each}
+      </div>
 
       <div class="wasm-label" data-i18n="label_wasm_wasm_path">WASM path</div>
       <div class="wasm-value wasm-text-block">{current.active_wasm_path || '-'}</div>

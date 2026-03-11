@@ -1,7 +1,9 @@
-export const DEFAULT_GESTURE_TRIGGER_BUTTON = 'right';
+export const DEFAULT_GESTURE_TRIGGER_BUTTON = 'left';
 export const DEFAULT_GESTURE_MIN_DISTANCE = 80;
 export const DEFAULT_GESTURE_SAMPLE_STEP = 10;
 export const DEFAULT_GESTURE_MAX_DIRECTIONS = 4;
+export const DEFAULT_GESTURE_PATTERN_MODE = 'preset';
+export const DEFAULT_GESTURE_MATCH_THRESHOLD_PERCENT = 75;
 
 export function createDefaultAutomationState() {
   return {

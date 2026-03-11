@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Platform/macos/Wasm/MacosWasmTransientOverlay.h"
+#include "Platform/macos/Wasm/MacosWasmOverlayPolicy.h"
 #include "Platform/macos/Wasm/MacosWasmOverlayRuntime.h"
 #include "Platform/macos/Wasm/MacosWasmTextOverlayFallback.h"
 
@@ -40,12 +41,14 @@ WasmOverlayRenderResult ShowWasmTextOverlay(
     const ScreenPoint& screenPt,
     const std::wstring& text,
     uint32_t argb,
-    const TextConfig& textConfig) {
+    const TextConfig& textConfig,
+    WasmTextOverlayChannel channel) {
 #if !defined(__APPLE__)
     (void)screenPt;
     (void)text;
     (void)argb;
     (void)textConfig;
+    (void)channel;
     return WasmOverlayRenderResult::Failed;
 #else
     if (text.empty()) {
@@ -54,7 +57,11 @@ WasmOverlayRenderResult ShowWasmTextOverlay(
 
     const TextConfig resolvedConfig = ResolveWasmTextConfig(textConfig);
     const uint32_t durationMs = ResolveWasmTextDurationMs(resolvedConfig);
-    const WasmOverlayAdmissionResult admission = TryAcquireWasmOverlaySlot(WasmOverlayKind::Text);
+    const MacosWasmOverlayPolicy& policy = GetMacosWasmOverlayPolicy();
+    const bool indicatorLabel = channel == WasmTextOverlayChannel::IndicatorLabel;
+    const WasmOverlayKind overlayKind = indicatorLabel ? WasmOverlayKind::IndicatorText : WasmOverlayKind::Text;
+    const size_t windowCap = indicatorLabel ? policy.maxIndicatorTextWindows : policy.maxTextWindows;
+    const WasmOverlayAdmissionResult admission = TryAcquireWasmOverlaySlot(overlayKind);
     if (admission != WasmOverlayAdmissionResult::Accepted) {
         return (admission == WasmOverlayAdmissionResult::RejectedByCapacity)
             ? WasmOverlayRenderResult::ThrottledByCapacity
@@ -63,7 +70,7 @@ WasmOverlayRenderResult ShowWasmTextOverlay(
 
     RunWasmOverlayOnMainThreadAsync([=] {
         auto& fallback = wasm_text_overlay::SharedFallback();
-        fallback.EnsureInitialized(8);
+        fallback.EnsureInitialized(windowCap);
         fallback.ShowText(screenPt, text, Argb{argb}, resolvedConfig);
 
         dispatch_after_f(

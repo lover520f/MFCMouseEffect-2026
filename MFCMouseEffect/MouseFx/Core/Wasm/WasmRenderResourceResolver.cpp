@@ -1,10 +1,12 @@
 #include "pch.h"
 
 #include "WasmRenderResourceResolver.h"
+#include "WasmDynamicTextLabelScope.h"
 
 #include "WasmRenderValueResolver.h"
 #include "WasmImageFileRenderer.h"
 #include "WasmPluginImageAssetCatalog.h"
+#include "WasmPluginAbi.h"
 #include "MouseFx/Renderers/RendererRegistry.h"
 
 #include <array>
@@ -24,6 +26,12 @@ const std::array<const char*, 2>& BuiltinImageRendererKeys() {
 } // namespace
 
 std::wstring WasmRenderResourceResolver::ResolveTextById(const EffectConfig& config, uint32_t textId) {
+    if (textId == kTextIdEventLabel) {
+        const std::wstring label = ResolveWasmDynamicTextLabel();
+        if (!label.empty()) {
+            return label;
+        }
+    }
     return render_values::ResolveTextById(config.textClick, textId);
 }
 

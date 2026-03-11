@@ -69,6 +69,111 @@ _mfx_core_http_wasm_contract_dispatch_checks() {
 
     if [[ -n "$repo_root" ]]; then
         local latest_state_snapshot_file="$tmp_dir/state-after-wasm-dispatch.out"
+        local indicator_manifest_path="$repo_root/examples/wasm-plugin-template/dist/samples/indicator-basic/plugin.json"
+        if [[ ! -f "$indicator_manifest_path" ]] && command -v npm >/dev/null 2>&1; then
+            npm --prefix "$repo_root/examples/wasm-plugin-template" run build:sample -- --sample indicator-basic >/dev/null
+        fi
+        if [[ -f "$indicator_manifest_path" ]]; then
+            local indicator_manifest_path_escaped
+            indicator_manifest_path_escaped="$(_mfx_core_http_wasm_json_escape "$indicator_manifest_path")"
+            local code_load_indicator_manifest
+            code_load_indicator_manifest="$(_mfx_core_http_wasm_load_manifest_payload_http_code \
+                "$tmp_dir/wasm-load-manifest-indicator-sample.out" \
+                "$base_url" \
+                "$token" \
+                "{\"manifest_path\":\"$indicator_manifest_path_escaped\",\"surface\":\"indicator\"}")"
+            mfx_assert_eq "$code_load_indicator_manifest" "200" "core wasm load-manifest indicator sample status"
+            mfx_assert_file_contains "$tmp_dir/wasm-load-manifest-indicator-sample.out" "\"ok\":true" "core wasm load-manifest indicator sample ok"
+            mfx_assert_eq \
+                "$(_mfx_core_http_wasm_parse_string_field "$tmp_dir/wasm-load-manifest-indicator-sample.out" "indicator_active_manifest_path")" \
+                "$indicator_manifest_path" \
+                "core wasm load-manifest indicator sample active manifest path"
+
+            local code_indicator_dispatch
+            code_indicator_dispatch="$(_mfx_core_http_wasm_test_dispatch_indicator_key_http_code "$tmp_dir/wasm-test-dispatch-indicator-key.out" "$base_url" "$token")"
+            mfx_assert_eq "$code_indicator_dispatch" "200" "core wasm test-dispatch indicator-key status"
+            mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-indicator-key.out" "\"ok\":true" "core wasm indicator-key response ok"
+            mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-indicator-key.out" "\"route_active\":true" "core wasm indicator-key route active"
+            mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-indicator-key.out" "\"invoke_ok\":true" "core wasm indicator-key invoke ok"
+            mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-indicator-key.out" "\"supports_indicator_key\":true" "core wasm indicator-key route support"
+
+            local code_indicator_app_dispatch_wasm
+            code_indicator_app_dispatch_wasm="$(_mfx_core_http_wasm_test_dispatch_app_indicator_key_http_code \
+                "$tmp_dir/wasm-test-dispatch-app-indicator-key-wasm.out" \
+                "$base_url" \
+                "$token" \
+                '{"render_mode":"wasm","enabled":true,"keyboard_enabled":true,"wasm_fallback_to_native":false,"key_display_mode":"all","x":640,"y":360,"vk_code":88}')"
+            mfx_assert_eq "$code_indicator_app_dispatch_wasm" "200" "core wasm app indicator dispatch wasm status"
+            mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-app-indicator-key-wasm.out" "\"ok\":true" "core wasm app indicator dispatch wasm ok"
+            mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-app-indicator-key-wasm.out" "\"event_kind\":\"key\"" "core wasm app indicator dispatch wasm event kind"
+            mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-app-indicator-key-wasm.out" "\"route_attempted\":true" "core wasm app indicator dispatch wasm route attempted"
+            mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-app-indicator-key-wasm.out" "\"event_supported\":true" "core wasm app indicator dispatch wasm event supported"
+            mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-app-indicator-key-wasm.out" "\"rendered_by_wasm\":true" "core wasm app indicator dispatch wasm rendered"
+            mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-app-indicator-key-wasm.out" "\"native_fallback_applied\":false" "core wasm app indicator dispatch wasm no native fallback"
+            mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-app-indicator-key-wasm.out" "\"reason\":\"wasm_rendered\"" "core wasm app indicator dispatch wasm reason"
+
+            local indicator_fallback_manifest_path="$repo_root/examples/wasm-plugin-template/dist/samples/click-polyline-zigzag/plugin.json"
+            if [[ ! -f "$indicator_fallback_manifest_path" ]] && command -v npm >/dev/null 2>&1; then
+                npm --prefix "$repo_root/examples/wasm-plugin-template" run build:sample -- --sample click-polyline-zigzag >/dev/null
+            fi
+            if [[ -f "$indicator_fallback_manifest_path" ]]; then
+                local indicator_fallback_manifest_path_escaped
+                indicator_fallback_manifest_path_escaped="$(_mfx_core_http_wasm_json_escape "$indicator_fallback_manifest_path")"
+                local code_load_indicator_fallback_manifest
+                code_load_indicator_fallback_manifest="$(_mfx_core_http_wasm_load_manifest_payload_http_code \
+                    "$tmp_dir/wasm-load-manifest-indicator-fallback-sample.out" \
+                    "$base_url" \
+                    "$token" \
+                    "{\"manifest_path\":\"$indicator_fallback_manifest_path_escaped\",\"surface\":\"indicator\"}")"
+                mfx_assert_eq "$code_load_indicator_fallback_manifest" "200" "core wasm load-manifest indicator fallback sample status"
+                mfx_assert_file_contains "$tmp_dir/wasm-load-manifest-indicator-fallback-sample.out" "\"ok\":true" "core wasm load-manifest indicator fallback sample ok"
+                mfx_assert_eq \
+                    "$(_mfx_core_http_wasm_parse_string_field "$tmp_dir/wasm-load-manifest-indicator-fallback-sample.out" "indicator_active_manifest_path")" \
+                    "$indicator_fallback_manifest_path" \
+                    "core wasm load-manifest indicator fallback sample active manifest path"
+
+                local code_indicator_app_dispatch_fallback
+                code_indicator_app_dispatch_fallback="$(_mfx_core_http_wasm_test_dispatch_app_indicator_key_http_code \
+                    "$tmp_dir/wasm-test-dispatch-app-indicator-key-fallback.out" \
+                    "$base_url" \
+                    "$token" \
+                    '{"render_mode":"wasm","enabled":true,"keyboard_enabled":true,"wasm_fallback_to_native":true,"key_display_mode":"all","x":640,"y":360,"vk_code":88}')"
+                mfx_assert_eq "$code_indicator_app_dispatch_fallback" "200" "core wasm app indicator dispatch fallback status"
+                mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-app-indicator-key-fallback.out" "\"ok\":true" "core wasm app indicator dispatch fallback ok"
+                mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-app-indicator-key-fallback.out" "\"rendered_by_wasm\":false" "core wasm app indicator dispatch fallback not rendered"
+                mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-app-indicator-key-fallback.out" "\"event_supported\":false" "core wasm app indicator dispatch fallback unsupported event"
+                mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-app-indicator-key-fallback.out" "\"native_fallback_applied\":true" "core wasm app indicator dispatch fallback applied"
+                mfx_assert_file_contains "$tmp_dir/wasm-test-dispatch-app-indicator-key-fallback.out" "\"reason\":\"event_not_supported\"" "core wasm app indicator dispatch fallback reason"
+                local code_state_after_indicator_fallback
+                code_state_after_indicator_fallback="$(mfx_http_code "$tmp_dir/state-after-indicator-fallback.out" "$base_url/api/state" -H "x-mfcmouseeffect-token: $token")"
+                mfx_assert_eq "$code_state_after_indicator_fallback" "200" "core wasm state after indicator fallback status"
+                mfx_assert_file_contains "$tmp_dir/state-after-indicator-fallback.out" "\"input_indicator_wasm_route_status\"" "core wasm indicator fallback route status exported"
+                mfx_assert_file_contains "$tmp_dir/state-after-indicator-fallback.out" "\"reason\":\"event_not_supported\"" "core wasm indicator fallback route status reason"
+
+                local code_load_indicator_manifest_restore
+                code_load_indicator_manifest_restore="$(_mfx_core_http_wasm_load_manifest_payload_http_code \
+                    "$tmp_dir/wasm-load-manifest-indicator-sample-restore.out" \
+                    "$base_url" \
+                    "$token" \
+                    "{\"manifest_path\":\"$indicator_manifest_path_escaped\",\"surface\":\"indicator\"}")"
+                mfx_assert_eq "$code_load_indicator_manifest_restore" "200" "core wasm load-manifest indicator sample restore status"
+                mfx_assert_file_contains "$tmp_dir/wasm-load-manifest-indicator-sample-restore.out" "\"ok\":true" "core wasm load-manifest indicator sample restore ok"
+                mfx_assert_eq \
+                    "$(_mfx_core_http_wasm_parse_string_field "$tmp_dir/wasm-load-manifest-indicator-sample-restore.out" "indicator_active_manifest_path")" \
+                    "$indicator_manifest_path" \
+                    "core wasm load-manifest indicator sample restore active manifest path"
+            fi
+
+            if [[ -n "$default_manifest_path" && -f "$default_manifest_path" ]]; then
+                _mfx_core_http_assert_wasm_load_manifest_ok \
+                    "$tmp_dir/wasm-load-manifest-after-indicator-sample.out" \
+                    "$base_url" \
+                    "$token" \
+                    "$default_manifest_path" \
+                    "core wasm load-manifest restore after indicator sample"
+            fi
+        fi
+
         local polyline_manifest_path="$repo_root/examples/wasm-plugin-template/dist/samples/click-polyline-zigzag/plugin.json"
         if [[ ! -f "$polyline_manifest_path" ]] && command -v npm >/dev/null 2>&1; then
             npm --prefix "$repo_root/examples/wasm-plugin-template" run build:sample -- --sample click-polyline-zigzag >/dev/null

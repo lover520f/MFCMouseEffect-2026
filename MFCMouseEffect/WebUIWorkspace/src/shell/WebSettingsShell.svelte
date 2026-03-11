@@ -32,6 +32,7 @@
     <aside class="workspace-sidebar" id="workspace_sidebar_mount"></aside>
 
     <main class="workspace-main">
+      <div id="workspace_context_mount"></div>
       <SettingsGrid />
     </main>
   </div>

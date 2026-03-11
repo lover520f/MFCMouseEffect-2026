@@ -53,9 +53,15 @@ void TextOverlayLayer::ShowText(const ScreenPoint& pt, const std::wstring& text,
     instance.color = color;
     instance.config = config;
     instance.startTick = NowMs();
-    instance.driftX = (float)(rand() % 100 - 50);
-    instance.swayFreq = 1.0f + (float)(rand() % 200) / 100.0f;
-    instance.swayAmp = 5.0f + (float)(rand() % 100) / 10.0f;
+    if (instance.config.floatDistance <= 0) {
+        instance.driftX = 0.0f;
+        instance.swayFreq = 0.0f;
+        instance.swayAmp = 0.0f;
+    } else {
+        instance.driftX = (float)(rand() % 100 - 50);
+        instance.swayFreq = 1.0f + (float)(rand() % 200) / 100.0f;
+        instance.swayAmp = 5.0f + (float)(rand() % 100) / 10.0f;
+    }
     instance.active = true;
     instances_.push_back(std::move(instance));
 }
@@ -95,10 +101,12 @@ void TextOverlayLayer::Render(Gdiplus::Graphics& graphics) {
         const float xOffset = (t * instance.driftX) + std::sin(t * 3.1415926f * instance.swayFreq) * instance.swayAmp;
 
         float scale = 1.0f;
-        if (t < 0.3f) {
-            scale = 0.8f + (t / 0.3f) * 0.4f;
-        } else {
-            scale = 1.2f - ((t - 0.3f) / 0.7f) * 0.2f;
+        if (instance.config.floatDistance > 0) {
+            if (t < 0.3f) {
+                scale = 0.8f + (t / 0.3f) * 0.4f;
+            } else {
+                scale = 1.2f - ((t - 0.3f) / 0.7f) * 0.2f;
+            }
         }
 
         float alphaFactor = 1.0f;

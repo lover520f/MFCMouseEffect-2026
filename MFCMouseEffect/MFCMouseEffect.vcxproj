@@ -223,6 +223,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Control\AppController.h" />
     <ClInclude Include="MouseFx\Core\Control\AutomationDispatchFeature.h" />
     <ClInclude Include="MouseFx\Core\Control\InputIndicatorDispatchFeature.h" />
+    <ClInclude Include="MouseFx\Core\Control\InputIndicatorWasmDispatchFeature.h" />
     <ClInclude Include="MouseFx\Core\Control\WasmDispatchFeature.h" />
     <ClInclude Include="MouseFx\Core\Diagnostics\TextEffectRuntimeDiagnostics.h" />
     <ClInclude Include="MouseFx\Core\Automation\InputAutomationEngine.h" />
@@ -237,7 +238,9 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Overlay\IOverlayHostBackend.h" />
     <ClInclude Include="MouseFx\Core\Overlay\OverlayHostService.h" />
     <ClInclude Include="MouseFx\Core\Overlay\IInputIndicatorOverlay.h" />
+    <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorKeyFilter.h" />
     <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorLabelFormatter.h" />
+    <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorPositionResolver.h" />
     <ClInclude Include="MouseFx\Core\Overlay\NullInputIndicatorOverlay.h" />
     <ClInclude Include="MouseFx\Core\Shell\IAppShellHost.h" />
     <ClInclude Include="MouseFx\Core\Shell\AppShellCore.h" />
@@ -382,6 +385,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Wasm\WasmRuntimeFactory.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmEffectHost.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmEventInvokeExecutor.h" />
+    <ClInclude Include="MouseFx\Core\Wasm\WasmDynamicTextLabelScope.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmCommandExecutionResult.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmCommandRenderer.h" />
     <ClInclude Include="MouseFx\Core\Wasm\WasmClickCommandExecutor.h" />
@@ -448,6 +452,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Control\AppController.Lifecycle.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AutomationDispatchFeature.cpp" />
     <ClCompile Include="MouseFx\Core\Control\InputIndicatorDispatchFeature.cpp" />
+    <ClCompile Include="MouseFx\Core\Control\InputIndicatorWasmDispatchFeature.cpp" />
     <ClCompile Include="MouseFx\Core\Control\WasmDispatchFeature.cpp" />
     <ClCompile Include="MouseFx\Core\Diagnostics\TextEffectRuntimeDiagnostics.cpp" />
     <ClCompile Include="MouseFx\Core\Automation\InputAutomationEngine.cpp" />
@@ -464,6 +469,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Effects\HoldEffectCompute.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp" />
     <ClCompile Include="MouseFx\Core\Overlay\OverlayHostService.cpp" />
+    <ClCompile Include="MouseFx\Core\Overlay\InputIndicatorPositionResolver.cpp" />
     <ClCompile Include="MouseFx\Core\System\GdiPlusSession.cpp" />
     <ClCompile Include="MouseFx\Core\System\CursorPositionProvider.cpp" />
     <ClCompile Include="Platform\PlatformApplicationCatalog.cpp" />
@@ -591,6 +597,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Wasm\Wasm3Runtime.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmRuntimeFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmEffectHost.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmDynamicTextLabelScope.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmEventInvokeExecutor.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmCommandRenderer.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmClickCommandExecutor.cpp" />

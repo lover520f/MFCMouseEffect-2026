@@ -14,6 +14,7 @@
   const TAB_TRAIL = "trail";
   const TAB_SIZE = "size";
   const TAB_CONFLICT = "conflict";
+  const TAB_PLUGIN = "plugin";
 
   function normalizeTab(tabId) {
     if (tabId === TAB_TEXT) {
@@ -27,6 +28,9 @@
     }
     if (tabId === TAB_CONFLICT) {
       return TAB_CONFLICT;
+    }
+    if (tabId === TAB_PLUGIN) {
+      return TAB_PLUGIN;
     }
     return TAB_ACTIVE;
   }
@@ -52,6 +56,7 @@
   $: isTrailTab = selectedTab === TAB_TRAIL;
   $: isSizeTab = selectedTab === TAB_SIZE;
   $: isConflictTab = selectedTab === TAB_CONFLICT;
+  $: isPluginTab = selectedTab === TAB_PLUGIN;
 
   function handleActiveEffectChange(event) {
     dispatch("activeChange", event?.detail || {});
@@ -147,6 +152,17 @@
     >
       Hold-Move Policy
     </button>
+    <button
+      type="button"
+      role="tab"
+      class="effects-subtab-btn"
+      class:is-active={isPluginTab}
+      aria-selected={isPluginTab ? "true" : "false"}
+      data-i18n="tab_effects_plugin"
+      on:click={() => selectTab(TAB_PLUGIN)}
+    >
+      Effect Plugins
+    </button>
   </div>
 
   <div
@@ -210,6 +226,15 @@
       options={normalizedEffectProps.effectConflictPolicyOptions}
       on:change={handleConflictPolicyChange}
     />
+  </div>
+
+  <div
+    class="effects-subtab-panel"
+    role="tabpanel"
+    style:display={isPluginTab ? "" : "none"}
+    aria-label="effect-plugin"
+  >
+    <div id="wasm_settings_mount"></div>
   </div>
 </div>
 

@@ -1,7 +1,7 @@
 export const SAMPLE_PRESETS = [
   {
     key: "text-rise",
-    source: "assembly/samples/text-rise.ts",
+    source: "assembly/samples/effects/text-rise.ts",
     id: "demo.click.text-rise.v2",
     name: "Demo Click Text Rise",
     version: "0.1.0",
@@ -9,8 +9,28 @@ export const SAMPLE_PRESETS = [
     enableFrameTick: false,
   },
   {
+    key: "indicator-basic",
+    source: "assembly/samples/indicator/input-indicator-basic.ts",
+    id: "demo.indicator.basic.v2",
+    name: "Demo Indicator Basic",
+    version: "0.1.0",
+    surfaces: ["indicator"],
+    inputKinds: ["indicator_click", "indicator_scroll", "indicator_key"],
+    enableFrameTick: false,
+  },
+  {
+    key: "indicator-keyviz-style",
+    source: "assembly/samples/indicator/input-indicator-keyviz.ts",
+    id: "demo.indicator.keyviz.v2",
+    name: "Demo Indicator Keyviz Style",
+    version: "0.1.0",
+    surfaces: ["indicator"],
+    inputKinds: ["indicator_click", "indicator_scroll", "indicator_key"],
+    enableFrameTick: false,
+  },
+  {
     key: "text-burst",
-    source: "assembly/samples/text-burst.ts",
+    source: "assembly/samples/effects/text-burst.ts",
     id: "demo.click.text-burst.v2",
     name: "Demo Click Text Burst",
     version: "0.1.0",
@@ -19,7 +39,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "text-spiral",
-    source: "assembly/samples/text-spiral.ts",
+    source: "assembly/samples/effects/text-spiral.ts",
     id: "demo.click.text-spiral.v2",
     name: "Demo Click Text Spiral",
     version: "0.1.0",
@@ -28,7 +48,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "text-wave-chain",
-    source: "assembly/samples/text-wave-chain.ts",
+    source: "assembly/samples/effects/text-wave-chain.ts",
     id: "demo.click.text-wave-chain.v2",
     name: "Demo Click Text Wave Chain",
     version: "0.1.0",
@@ -37,7 +57,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "image-pulse",
-    source: "assembly/samples/image-pulse.ts",
+    source: "assembly/samples/effects/image-pulse.ts",
     id: "demo.click.image-pulse.v2",
     name: "Demo Click Image Pulse",
     version: "0.1.0",
@@ -52,7 +72,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "image-burst",
-    source: "assembly/samples/image-burst.ts",
+    source: "assembly/samples/effects/image-burst.ts",
     id: "demo.click.image-burst.v2",
     name: "Demo Click Image Burst",
     version: "0.1.0",
@@ -66,7 +86,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "image-lift",
-    source: "assembly/samples/image-lift.ts",
+    source: "assembly/samples/effects/image-lift.ts",
     id: "demo.click.image-lift.v2",
     name: "Demo Click Image Lift",
     version: "0.1.0",
@@ -79,7 +99,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "mixed-text-image",
-    source: "assembly/samples/mixed-text-image.ts",
+    source: "assembly/samples/effects/mixed-text-image.ts",
     id: "demo.click.mixed-text-image.v2",
     name: "Demo Click Mixed Text Image",
     version: "0.1.0",
@@ -92,7 +112,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "mixed-emoji-celebrate",
-    source: "assembly/samples/mixed-emoji-celebrate.ts",
+    source: "assembly/samples/effects/mixed-emoji-celebrate.ts",
     id: "demo.click.mixed-emoji-celebrate.v2",
     name: "Demo Click Mixed Emoji Celebrate",
     version: "0.1.0",
@@ -106,7 +126,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "button-adaptive",
-    source: "assembly/samples/button-adaptive.ts",
+    source: "assembly/samples/effects/button-adaptive.ts",
     id: "demo.click.button-adaptive.v2",
     name: "Demo Click Button Adaptive",
     version: "0.1.0",
@@ -120,7 +140,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-pulse-dual",
-    source: "assembly/samples/click-pulse-dual.ts",
+    source: "assembly/samples/effects/click-pulse-dual.ts",
     id: "demo.click.pulse-dual.v2",
     name: "Demo Click Pulse Dual",
     version: "0.1.0",
@@ -129,7 +149,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-polyline-zigzag",
-    source: "assembly/samples/click-polyline-zigzag.ts",
+    source: "assembly/samples/effects/click-polyline-zigzag.ts",
     id: "demo.click.polyline-zigzag.v2",
     name: "Demo Click Polyline Zigzag",
     version: "0.1.0",
@@ -138,7 +158,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-path-stroke-ribbon",
-    source: "assembly/samples/click-path-stroke-ribbon.ts",
+    source: "assembly/samples/effects/click-path-stroke-ribbon.ts",
     id: "demo.click.path-stroke-ribbon.v2",
     name: "Demo Click Path Stroke Ribbon",
     version: "0.1.0",
@@ -147,7 +167,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-path-fill-badge",
-    source: "assembly/samples/click-path-fill-badge.ts",
+    source: "assembly/samples/effects/click-path-fill-badge.ts",
     id: "demo.click.path-fill-badge.v2",
     name: "Demo Click Path Fill Badge",
     version: "0.1.0",
@@ -156,7 +176,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-path-fill-clip-window",
-    source: "assembly/samples/click-path-fill-clip-window.ts",
+    source: "assembly/samples/effects/click-path-fill-clip-window.ts",
     id: "demo.click.path-fill-clip-window.v2",
     name: "Demo Click Path Fill Clip Window",
     version: "0.1.0",
@@ -165,7 +185,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-path-clip-lanes",
-    source: "assembly/samples/click-path-clip-lanes.ts",
+    source: "assembly/samples/effects/click-path-clip-lanes.ts",
     id: "demo.click.path-clip-lanes.v2",
     name: "Demo Click Path Clip Lanes",
     version: "0.1.0",
@@ -174,7 +194,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-ribbon-trace",
-    source: "assembly/samples/click-ribbon-trace.ts",
+    source: "assembly/samples/effects/click-ribbon-trace.ts",
     id: "demo.click.ribbon-trace.v2",
     name: "Demo Click Ribbon Trace",
     version: "0.1.0",
@@ -183,7 +203,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-ribbon-trail",
-    source: "assembly/samples/click-retained-ribbon-trail.ts",
+    source: "assembly/samples/effects/click-retained-ribbon-trail.ts",
     id: "demo.click.retained-ribbon-trail.v2",
     name: "Demo Click Retained Ribbon Trail",
     version: "0.1.0",
@@ -192,7 +212,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-glow-burst",
-    source: "assembly/samples/click-glow-burst.ts",
+    source: "assembly/samples/effects/click-glow-burst.ts",
     id: "demo.click.glow-burst.v2",
     name: "Demo Click Glow Burst",
     version: "0.1.0",
@@ -201,7 +221,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-sprite-burst",
-    source: "assembly/samples/click-sprite-burst.ts",
+    source: "assembly/samples/effects/click-sprite-burst.ts",
     id: "demo.click.sprite-burst.v2",
     name: "Demo Click Sprite Burst",
     version: "0.1.0",
@@ -215,7 +235,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-quad-atlas-burst",
-    source: "assembly/samples/click-quad-atlas-burst.ts",
+    source: "assembly/samples/effects/click-quad-atlas-burst.ts",
     id: "demo.click.quad-atlas-burst.v2",
     name: "Demo Click Quad Atlas Burst",
     version: "0.1.0",
@@ -229,7 +249,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-glow-field",
-    source: "assembly/samples/click-retained-glow-field.ts",
+    source: "assembly/samples/effects/click-retained-glow-field.ts",
     id: "demo.click.retained-glow-field.v2",
     name: "Demo Click Retained Glow Field",
     version: "0.1.0",
@@ -238,7 +258,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-sprite-fountain",
-    source: "assembly/samples/click-retained-sprite-fountain.ts",
+    source: "assembly/samples/effects/click-retained-sprite-fountain.ts",
     id: "demo.click.retained-sprite-fountain.v2",
     name: "Demo Click Retained Sprite Fountain",
     version: "0.1.0",
@@ -252,7 +272,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-particle-field",
-    source: "assembly/samples/click-retained-particle-field.ts",
+    source: "assembly/samples/effects/click-retained-particle-field.ts",
     id: "demo.click.retained-particle-field.v2",
     name: "Demo Click Retained Particle Field",
     version: "0.1.0",
@@ -261,7 +281,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-quad-field",
-    source: "assembly/samples/click-retained-quad-field.ts",
+    source: "assembly/samples/effects/click-retained-quad-field.ts",
     id: "demo.click.retained-quad-field.v2",
     name: "Demo Click Retained Quad Field",
     version: "0.1.0",
@@ -275,7 +295,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-group-clear",
-    source: "assembly/samples/click-retained-group-clear.ts",
+    source: "assembly/samples/effects/click-retained-group-clear.ts",
     id: "demo.click.retained-group-clear.v2",
     name: "Demo Click Retained Group Clear",
     version: "0.1.0",
@@ -289,7 +309,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-group-alpha",
-    source: "assembly/samples/click-retained-group-alpha.ts",
+    source: "assembly/samples/effects/click-retained-group-alpha.ts",
     id: "demo.click.retained-group-alpha.v2",
     name: "Demo Click Retained Group Alpha",
     version: "0.1.0",
@@ -303,7 +323,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-group-clip",
-    source: "assembly/samples/click-retained-group-clip.ts",
+    source: "assembly/samples/effects/click-retained-group-clip.ts",
     id: "demo.click.retained-group-clip.v2",
     name: "Demo Click Retained Group Clip",
     version: "0.1.0",
@@ -317,7 +337,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-group-layer",
-    source: "assembly/samples/click-retained-group-layer.ts",
+    source: "assembly/samples/effects/click-retained-group-layer.ts",
     id: "demo.click.retained-group-layer.v2",
     name: "Demo Click Retained Group Layer",
     version: "0.1.0",
@@ -331,7 +351,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-group-mask",
-    source: "assembly/samples/click-retained-group-mask.ts",
+    source: "assembly/samples/effects/click-retained-group-mask.ts",
     id: "demo.click.retained-group-mask.v2",
     name: "Demo Click Retained Group Mask",
     version: "0.1.0",
@@ -345,7 +365,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-group-transform",
-    source: "assembly/samples/click-retained-group-transform.ts",
+    source: "assembly/samples/effects/click-retained-group-transform.ts",
     id: "demo.click.retained-group-transform.v2",
     name: "Demo Click Retained Group Transform",
     version: "0.1.0",
@@ -359,7 +379,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-group-local-origin",
-    source: "assembly/samples/click-retained-group-local-origin.ts",
+    source: "assembly/samples/effects/click-retained-group-local-origin.ts",
     id: "demo.click.retained-group-local-origin.v2",
     name: "Demo Click Retained Group Local Origin",
     version: "0.1.0",
@@ -373,7 +393,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-group-material",
-    source: "assembly/samples/click-retained-group-material.ts",
+    source: "assembly/samples/effects/click-retained-group-material.ts",
     id: "demo.click.retained-group-material.v2",
     name: "Demo Click Retained Group Material",
     version: "0.1.0",
@@ -387,7 +407,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "click-retained-group-pass",
-    source: "assembly/samples/click-retained-group-pass.ts",
+    source: "assembly/samples/effects/click-retained-group-pass.ts",
     id: "demo.click.retained-group-pass.v2",
     name: "Demo Click Retained Group Pass",
     version: "0.1.0",
@@ -401,7 +421,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "move-stream-sparks",
-    source: "assembly/samples/move-stream-sparks.ts",
+    source: "assembly/samples/effects/move-stream-sparks.ts",
     id: "demo.event.move-stream-sparks.v2",
     name: "Demo Event Move Stream Sparks",
     version: "0.1.0",
@@ -410,7 +430,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "scroll-particle-burst",
-    source: "assembly/samples/scroll-particle-burst.ts",
+    source: "assembly/samples/effects/scroll-particle-burst.ts",
     id: "demo.event.scroll-particle-burst.v2",
     name: "Demo Event Scroll Particle Burst",
     version: "0.1.0",
@@ -425,7 +445,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "scroll-neon-burst",
-    source: "assembly/samples/scroll-neon-burst.ts",
+    source: "assembly/samples/effects/scroll-neon-burst.ts",
     id: "demo.event.scroll-neon-burst.v2",
     name: "Demo Event Scroll Neon Burst",
     version: "0.1.0",
@@ -437,7 +457,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "hold-orbit-pulse",
-    source: "assembly/samples/hold-orbit-pulse.ts",
+    source: "assembly/samples/effects/hold-orbit-pulse.ts",
     id: "demo.event.hold-orbit-pulse.v2",
     name: "Demo Event Hold Orbit Pulse",
     version: "0.1.0",
@@ -446,7 +466,7 @@ export const SAMPLE_PRESETS = [
   },
   {
     key: "hover-spark-ring",
-    source: "assembly/samples/hover-spark-ring.ts",
+    source: "assembly/samples/effects/hover-spark-ring.ts",
     id: "demo.event.hover-spark-ring.v2",
     name: "Demo Event Hover Spark Ring",
     version: "0.1.0",

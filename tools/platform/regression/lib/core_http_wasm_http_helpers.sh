@@ -101,6 +101,29 @@ _mfx_core_http_wasm_test_dispatch_http_code() {
         -d '{"x":640,"y":360,"button":1}'
 }
 
+_mfx_core_http_wasm_test_dispatch_indicator_key_http_code() {
+    local output_file="$1"
+    local base_url="$2"
+    local token="$3"
+    mfx_http_code "$output_file" "$base_url/api/wasm/test-dispatch-indicator-key" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{"x":640,"y":360,"size_px":48,"duration_ms":220,"label":"X x2"}'
+}
+
+_mfx_core_http_wasm_test_dispatch_app_indicator_key_http_code() {
+    local output_file="$1"
+    local base_url="$2"
+    local token="$3"
+    local payload_json="$4"
+    mfx_http_code "$output_file" "$base_url/api/wasm/test-dispatch-app-indicator-key" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d "$payload_json"
+}
+
 _mfx_core_http_wasm_test_resolve_image_affine_http_code() {
     local output_file="$1"
     local base_url="$2"

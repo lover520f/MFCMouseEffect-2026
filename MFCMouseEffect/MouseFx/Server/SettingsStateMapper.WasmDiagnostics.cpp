@@ -24,9 +24,29 @@ json BuildWasmState(const EffectConfig& cfg, const AppController* controller) {
     if (!controller) {
         return {};
     }
-    const wasm::WasmEffectHost* host = controller->WasmHost();
-    if (!host) {
+    const wasm::WasmEffectHost* host = controller->WasmEffectsHostForChannel("click");
+    const wasm::WasmEffectHost* indicatorHost = controller->WasmIndicatorHost();
+    if (!host || !host->IsPluginLoaded()) {
+        static constexpr const char* kEffectsChannels[] = {
+            "click",
+            "trail",
+            "scroll",
+            "hold",
+            "hover",
+        };
+        for (const char* channel : kEffectsChannels) {
+            const wasm::WasmEffectHost* laneHost = controller->WasmEffectsHostForChannel(channel);
+            if (laneHost && laneHost->IsPluginLoaded()) {
+                host = laneHost;
+                break;
+            }
+        }
+    }
+    if (!host && !indicatorHost) {
         return {};
+    }
+    if (!host) {
+        host = indicatorHost;
     }
 
     const wasm::HostDiagnostics& diag = host->Diagnostics();
@@ -42,6 +62,12 @@ json BuildWasmState(const EffectConfig& cfg, const AppController* controller) {
     out["configured_enabled"] = cfg.wasm.enabled;
     out["fallback_to_builtin_click"] = cfg.wasm.fallbackToBuiltinClick;
     out["configured_manifest_path"] = cfg.wasm.manifestPath;
+    out["configured_manifest_path_click"] = cfg.wasm.manifestPathClick;
+    out["configured_manifest_path_trail"] = cfg.wasm.manifestPathTrail;
+    out["configured_manifest_path_scroll"] = cfg.wasm.manifestPathScroll;
+    out["configured_manifest_path_hold"] = cfg.wasm.manifestPathHold;
+    out["configured_manifest_path_hover"] = cfg.wasm.manifestPathHover;
+    out["configured_indicator_manifest_path"] = cfg.inputIndicator.wasmManifestPath;
     out["configured_catalog_root_path"] = cfg.wasm.catalogRootPath;
     out["configured_output_buffer_bytes"] = cfg.wasm.outputBufferBytes;
     out["configured_max_commands"] = cfg.wasm.maxCommands;
@@ -135,6 +161,56 @@ json BuildWasmState(const EffectConfig& cfg, const AppController* controller) {
     out["last_load_failure_stage"] = diag.lastLoadFailureStage;
     out["last_load_failure_code"] = diag.lastLoadFailureCode;
     out["last_error"] = diag.lastError;
+
+    const struct EffectsLaneDiagMapping {
+        const char* channel;
+        const char* pluginLoadedKey;
+        const char* activePluginIdKey;
+        const char* activePluginNameKey;
+        const char* activeManifestPathKey;
+        const char* activeWasmPathKey;
+        const char* lastLoadFailureStageKey;
+        const char* lastLoadFailureCodeKey;
+        const char* lastErrorKey;
+        const char* lastRenderErrorKey;
+    } kLaneMappings[] = {
+        {"click", "plugin_loaded_click", "active_plugin_id_click", "active_plugin_name_click", "active_manifest_path_click", "active_wasm_path_click", "last_load_failure_stage_click", "last_load_failure_code_click", "last_error_click", "last_render_error_click"},
+        {"trail", "plugin_loaded_trail", "active_plugin_id_trail", "active_plugin_name_trail", "active_manifest_path_trail", "active_wasm_path_trail", "last_load_failure_stage_trail", "last_load_failure_code_trail", "last_error_trail", "last_render_error_trail"},
+        {"scroll", "plugin_loaded_scroll", "active_plugin_id_scroll", "active_plugin_name_scroll", "active_manifest_path_scroll", "active_wasm_path_scroll", "last_load_failure_stage_scroll", "last_load_failure_code_scroll", "last_error_scroll", "last_render_error_scroll"},
+        {"hold", "plugin_loaded_hold", "active_plugin_id_hold", "active_plugin_name_hold", "active_manifest_path_hold", "active_wasm_path_hold", "last_load_failure_stage_hold", "last_load_failure_code_hold", "last_error_hold", "last_render_error_hold"},
+        {"hover", "plugin_loaded_hover", "active_plugin_id_hover", "active_plugin_name_hover", "active_manifest_path_hover", "active_wasm_path_hover", "last_load_failure_stage_hover", "last_load_failure_code_hover", "last_error_hover", "last_render_error_hover"},
+    };
+    for (const auto& lane : kLaneMappings) {
+        const wasm::WasmEffectHost* laneHost = controller->WasmEffectsHostForChannel(lane.channel);
+        if (!laneHost) {
+            continue;
+        }
+        const wasm::HostDiagnostics& laneDiag = laneHost->Diagnostics();
+        out[lane.pluginLoadedKey] = laneDiag.pluginLoaded;
+        out[lane.activePluginIdKey] = laneDiag.activePluginId;
+        out[lane.activePluginNameKey] = laneDiag.activePluginName;
+        out[lane.activeManifestPathKey] = Utf16ToUtf8(laneDiag.activeManifestPath.c_str());
+        out[lane.activeWasmPathKey] = Utf16ToUtf8(laneDiag.activeWasmPath.c_str());
+        out[lane.lastLoadFailureStageKey] = laneDiag.lastLoadFailureStage;
+        out[lane.lastLoadFailureCodeKey] = laneDiag.lastLoadFailureCode;
+        out[lane.lastErrorKey] = laneDiag.lastError;
+        out[lane.lastRenderErrorKey] = laneDiag.lastRenderError;
+    }
+
+    if (indicatorHost) {
+        const wasm::HostDiagnostics& indicatorDiag = indicatorHost->Diagnostics();
+        out["indicator_enabled"] = indicatorDiag.enabled;
+        out["indicator_plugin_loaded"] = indicatorDiag.pluginLoaded;
+        out["indicator_plugin_api_version"] = indicatorDiag.pluginApiVersion;
+        out["indicator_active_plugin_id"] = indicatorDiag.activePluginId;
+        out["indicator_active_plugin_name"] = indicatorDiag.activePluginName;
+        out["indicator_active_manifest_path"] = Utf16ToUtf8(indicatorDiag.activeManifestPath.c_str());
+        out["indicator_active_wasm_path"] = Utf16ToUtf8(indicatorDiag.activeWasmPath.c_str());
+        out["indicator_last_load_failure_stage"] = indicatorDiag.lastLoadFailureStage;
+        out["indicator_last_load_failure_code"] = indicatorDiag.lastLoadFailureCode;
+        out["indicator_last_error"] = indicatorDiag.lastError;
+        out["indicator_last_render_error"] = indicatorDiag.lastRenderError;
+    }
     const wasm::RetainedGlowEmitterRuntimeCounters retainedGlowEmitterCounters =
         wasm::GetRetainedGlowEmitterRuntimeCounters();
     out["retained_glow_emitter_upsert_requests"] = retainedGlowEmitterCounters.upsertRequests;

@@ -119,28 +119,47 @@ void CommandHandler::HandleWasmDisableCommand(const std::string&) {
 }
 
 void CommandHandler::HandleWasmReloadCommand(const std::string&) {
-    if (auto* host = controller_->WasmHost()) {
-        host->ReloadPlugin();
+    static constexpr const char* kEffectsChannels[] = {
+        "click",
+        "trail",
+        "scroll",
+        "hold",
+        "hover",
+    };
+    for (const char* channel : kEffectsChannels) {
+        if (auto* host = controller_->WasmEffectsHostForChannel(channel)) {
+            host->ReloadPlugin();
+        }
+    }
+    if (auto* indicatorHost = controller_->WasmIndicatorHost()) {
+        indicatorHost->ReloadPlugin();
     }
 }
 
 void CommandHandler::HandleWasmLoadManifestCommand(const std::string& jsonCmd) {
-    if (!controller_->WasmHost()) {
-        return;
-    }
     std::string pathUtf8;
+    std::string surface;
+    std::string effectChannel;
     try {
         const nlohmann::json root = nlohmann::json::parse(jsonCmd);
         if (root.contains("manifest_path") && root["manifest_path"].is_string()) {
             pathUtf8 = root["manifest_path"].get<std::string>();
         }
+        if (root.contains("surface") && root["surface"].is_string()) {
+            surface = root["surface"].get<std::string>();
+        }
+        if (root.contains("effect_channel") && root["effect_channel"].is_string()) {
+            effectChannel = root["effect_channel"].get<std::string>();
+        }
     } catch (...) {
         pathUtf8 = ExtractJsonStringValue(jsonCmd, "manifest_path");
+        surface = ExtractJsonStringValue(jsonCmd, "surface");
+        effectChannel = ExtractJsonStringValue(jsonCmd, "effect_channel");
     }
     if (pathUtf8.empty()) {
         return;
     }
-    controller_->LoadWasmPluginFromManifestPath(pathUtf8);
+    controller_->LoadWasmPluginFromManifestPath(pathUtf8, surface, effectChannel);
 }
 
 void CommandHandler::HandleWasmSetPolicyCommand(const std::string& jsonCmd) {
@@ -156,6 +175,21 @@ void CommandHandler::HandleWasmSetPolicyCommand(const std::string& jsonCmd) {
     }
     if (root.contains("manifest_path") && root["manifest_path"].is_string()) {
         controller_->SetWasmManifestPath(root["manifest_path"].get<std::string>());
+    }
+    if (root.contains("manifest_path_click") && root["manifest_path_click"].is_string()) {
+        controller_->SetWasmManifestPathForChannel("click", root["manifest_path_click"].get<std::string>());
+    }
+    if (root.contains("manifest_path_trail") && root["manifest_path_trail"].is_string()) {
+        controller_->SetWasmManifestPathForChannel("trail", root["manifest_path_trail"].get<std::string>());
+    }
+    if (root.contains("manifest_path_scroll") && root["manifest_path_scroll"].is_string()) {
+        controller_->SetWasmManifestPathForChannel("scroll", root["manifest_path_scroll"].get<std::string>());
+    }
+    if (root.contains("manifest_path_hold") && root["manifest_path_hold"].is_string()) {
+        controller_->SetWasmManifestPathForChannel("hold", root["manifest_path_hold"].get<std::string>());
+    }
+    if (root.contains("manifest_path_hover") && root["manifest_path_hover"].is_string()) {
+        controller_->SetWasmManifestPathForChannel("hover", root["manifest_path_hover"].get<std::string>());
     }
     if (root.contains("catalog_root_path") && root["catalog_root_path"].is_string()) {
         controller_->SetWasmCatalogRootPath(root["catalog_root_path"].get<std::string>());

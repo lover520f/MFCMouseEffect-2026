@@ -278,9 +278,15 @@ void MacosTextEffectFallback::ShowText(
     std::uniform_int_distribution<int> swayAmpDist(0, 99);
 
     TextEffectRandomSamples randomSamples{};
-    randomSamples.driftX = driftXDist(rng);
-    randomSamples.swayFreqCenti = swayFreqDist(rng);
-    randomSamples.swayAmpDeci = swayAmpDist(rng);
+    if (config.floatDistance <= 0) {
+        randomSamples.driftX = 0;
+        randomSamples.swayFreqCenti = 0;
+        randomSamples.swayAmpDeci = 0;
+    } else {
+        randomSamples.driftX = driftXDist(rng);
+        randomSamples.swayFreqCenti = swayFreqDist(rng);
+        randomSamples.swayAmpDeci = swayAmpDist(rng);
+    }
 
     const TextEffectRenderCommand command = ComputeTextEffectRenderCommand(
         text,

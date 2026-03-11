@@ -20,6 +20,7 @@
 #include "MouseFx/Core/System/IGlobalMouseHook.h"
 #include "MouseFx/Core/System/IKeyboardInjector.h"
 #include "MouseFx/Core/Overlay/IInputIndicatorOverlay.h"
+#include "MouseFx/Core/Control/InputIndicatorWasmDispatchFeature.h"
 #include "MouseFx/Core/Automation/InputAutomationEngine.h"
 #include "MouseFx/Core/Automation/ShortcutCaptureSession.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
@@ -67,6 +68,23 @@ public:
         bool active{false};
         uint32_t error{0};
         InputCaptureFailureReason reason{InputCaptureFailureReason::None};
+    };
+    
+    struct InputIndicatorWasmRouteStatus {
+        std::string eventKind;
+        std::string renderMode;
+        std::string reason;
+        uint64_t eventTickMs{0};
+        bool routeAttempted{false};
+        bool anchorsResolved{false};
+        bool hostPresent{false};
+        bool hostEnabled{false};
+        bool pluginLoaded{false};
+        bool eventSupported{false};
+        bool invokeAttempted{false};
+        bool renderedByWasm{false};
+        bool wasmFallbackEnabled{false};
+        bool nativeFallbackApplied{false};
     };
 
     bool Start();
@@ -131,10 +149,15 @@ public:
     void SetWasmEnabled(bool enabled);
     void SetWasmFallbackToBuiltinClick(bool enabled);
     void SetWasmManifestPath(const std::string& manifestPath);
+    void SetWasmManifestPathForChannel(const std::string& channel, const std::string& manifestPath);
+    std::string ResolveWasmManifestPathForChannel(const std::string& channel) const;
     void SetWasmCatalogRootPath(const std::string& catalogRootPath);
     void SetThemeCatalogRootPath(const std::string& rootPath);
     void SetWasmExecutionBudget(uint32_t outputBufferBytes, uint32_t maxCommands, double maxExecutionMs);
-    bool LoadWasmPluginFromManifestPath(const std::string& manifestPath);
+    bool LoadWasmPluginFromManifestPath(
+        const std::string& manifestPath,
+        const std::string& surface = {},
+        const std::string& effectChannel = {});
     bool ShouldFallbackToBuiltinClickWhenWasmActive() const;
     
     // --- Methods exposed for DispatchRouter delegation ---
@@ -143,6 +166,10 @@ public:
     uint64_t VmForegroundSuppressionCheckIntervalMs() const;
     bool ConsumeIgnoreNextClick();
     void OnGlobalKey(const KeyEvent& ev);
+    void DispatchInputIndicatorClick(const ClickEvent& ev);
+    void DispatchInputIndicatorScroll(const ScrollEvent& ev);
+    void DispatchInputIndicatorKey(const KeyEvent& ev);
+    InputIndicatorWasmRouteStatus ReadInputIndicatorWasmRouteStatus() const;
     IInputIndicatorOverlay& IndicatorOverlay() { return *inputIndicatorOverlay_; }
     InputAutomationEngine& InputAutomation() { return inputAutomationEngine_; }
     bool ConsumeLatestMove(ScreenPoint* outPt);
@@ -173,7 +200,10 @@ public:
     std::string StartShortcutCaptureSession(uint64_t timeoutMs);
     void StopShortcutCaptureSession(const std::string& sessionId);
     ShortcutCaptureSession::PollResult PollShortcutCaptureSession(const std::string& sessionId);
-    wasm::WasmEffectHost* WasmHost() const { return wasmEffectHost_.get(); }
+    wasm::WasmEffectHost* WasmHost() const;
+    wasm::WasmEffectHost* WasmIndicatorHost() const { return wasmIndicatorHost_.get(); }
+    wasm::WasmEffectHost* WasmEffectsHostForChannel(const std::string& channel) const;
+    wasm::WasmEffectHost* WasmHostForSurface(const std::string& surface) const;
     static constexpr uintptr_t HoverTimerId() { return kHoverTimerId; }
     static constexpr uintptr_t HoldTimerId() { return kHoldTimerId; }
     static constexpr uintptr_t HoldUpdateTimerId() { return kHoldUpdateTimerId; }
@@ -209,6 +239,7 @@ private:
     void InitializeWasmHost();
     void ShutdownWasmHost();
     void ApplyWasmConfigToHost(bool tryLoadManifest);
+    bool EnsureInputIndicatorWasmBudgetFloor();
 
 
     void NotifyGpuFallbackIfNeeded(const std::string& reason);
@@ -221,6 +252,12 @@ private:
     void SuspendEffectsForVm();
     void ResumeEffectsAfterVm();
     static InputCaptureFailureReason ClassifyInputCaptureFailure(bool active, uint32_t error);
+    void RecordInputIndicatorWasmRouteStatus(
+        const char* eventKind,
+        const InputIndicatorWasmRouteTrace& trace,
+        bool renderedByWasm,
+        bool wasmFallbackEnabled,
+        bool nativeFallbackApplied);
 
     std::unique_ptr<GdiPlusSession> gdiplus_{};
     std::unique_ptr<IDispatchMessageHost> dispatchMessageHost_{};
@@ -278,9 +315,14 @@ private:
     std::unique_ptr<CommandHandler> commandHandler_;
     std::unique_ptr<DispatchRouter> dispatchRouter_;
     std::unique_ptr<IInputIndicatorOverlay> inputIndicatorOverlay_{};
+    InputIndicatorWasmDispatchFeature inputIndicatorWasmDispatch_{};
+    mutable std::mutex inputIndicatorWasmRouteStatusMutex_{};
+    InputIndicatorWasmRouteStatus inputIndicatorWasmRouteStatus_{};
     InputAutomationEngine inputAutomationEngine_{};
     mutable ShortcutCaptureSession shortcutCaptureSession_{};
-    std::unique_ptr<wasm::WasmEffectHost> wasmEffectHost_{};
+    static constexpr size_t kWasmEffectsHostCount = 5;
+    std::array<std::unique_ptr<wasm::WasmEffectHost>, kWasmEffectsHostCount> wasmEffectHosts_{};
+    std::unique_ptr<wasm::WasmEffectHost> wasmIndicatorHost_{};
     bool vmEffectsSuppressed_ = false;
 
 #ifdef _DEBUG

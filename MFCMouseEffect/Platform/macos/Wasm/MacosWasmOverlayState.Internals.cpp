@@ -19,6 +19,11 @@ SteadyClock::time_point& LastTextAdmitTime() {
     return last;
 }
 
+SteadyClock::time_point& LastIndicatorTextAdmitTime() {
+    static SteadyClock::time_point last;
+    return last;
+}
+
 } // namespace
 
 std::mutex& WindowSetMutex() {
@@ -37,7 +42,15 @@ size_t& PendingOverlayCount() {
 }
 
 std::chrono::steady_clock::time_point& LastAdmitTime(WasmOverlayKind kind) {
-    return (kind == WasmOverlayKind::Image) ? LastImageAdmitTime() : LastTextAdmitTime();
+    switch (kind) {
+    case WasmOverlayKind::Image:
+        return LastImageAdmitTime();
+    case WasmOverlayKind::IndicatorText:
+        return LastIndicatorTextAdmitTime();
+    case WasmOverlayKind::Text:
+    default:
+        return LastTextAdmitTime();
+    }
 }
 
 WasmOverlayThrottleCounters& ThrottleCounters() {
@@ -50,7 +63,15 @@ size_t InFlightOverlayCountLocked() {
 }
 
 uint32_t MinIntervalMs(const MacosWasmOverlayPolicy& policy, WasmOverlayKind kind) {
-    return (kind == WasmOverlayKind::Image) ? policy.minImageIntervalMs : policy.minTextIntervalMs;
+    switch (kind) {
+    case WasmOverlayKind::Image:
+        return policy.minImageIntervalMs;
+    case WasmOverlayKind::IndicatorText:
+        return policy.minIndicatorTextIntervalMs;
+    case WasmOverlayKind::Text:
+    default:
+        return policy.minTextIntervalMs;
+    }
 }
 #endif
 

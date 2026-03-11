@@ -14,6 +14,9 @@ inline constexpr uint32_t kManifestInputKindHoldUpdateBit = 1u << 4;
 inline constexpr uint32_t kManifestInputKindHoldEndBit = 1u << 5;
 inline constexpr uint32_t kManifestInputKindHoverStartBit = 1u << 6;
 inline constexpr uint32_t kManifestInputKindHoverEndBit = 1u << 7;
+inline constexpr uint32_t kManifestInputKindIndicatorClickBit = 1u << 8;
+inline constexpr uint32_t kManifestInputKindIndicatorScrollBit = 1u << 9;
+inline constexpr uint32_t kManifestInputKindIndicatorKeyBit = 1u << 10;
 inline constexpr uint32_t kManifestInputKindAllBits =
     kManifestInputKindClickBit |
     kManifestInputKindMoveBit |
@@ -22,7 +25,16 @@ inline constexpr uint32_t kManifestInputKindAllBits =
     kManifestInputKindHoldUpdateBit |
     kManifestInputKindHoldEndBit |
     kManifestInputKindHoverStartBit |
-    kManifestInputKindHoverEndBit;
+    kManifestInputKindHoverEndBit |
+    kManifestInputKindIndicatorClickBit |
+    kManifestInputKindIndicatorScrollBit |
+    kManifestInputKindIndicatorKeyBit;
+
+inline constexpr uint32_t kManifestSurfaceEffectsBit = 1u << 0;
+inline constexpr uint32_t kManifestSurfaceIndicatorBit = 1u << 1;
+inline constexpr uint32_t kManifestSurfaceAllBits =
+    kManifestSurfaceEffectsBit |
+    kManifestSurfaceIndicatorBit;
 
 struct PluginManifest final {
     std::string id{};
@@ -32,6 +44,8 @@ struct PluginManifest final {
     std::wstring entryWasm{};
     std::vector<std::wstring> imageAssets{};
     uint32_t inputKindsMask = kManifestInputKindAllBits;
+    uint32_t surfaceKindsMask = kManifestSurfaceAllBits;
+    bool hasExplicitSurfaceKinds = false;
     bool enableFrameTick = true;
 };
 

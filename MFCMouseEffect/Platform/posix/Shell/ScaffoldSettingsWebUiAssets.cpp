@@ -4,6 +4,7 @@
 #include "Platform/posix/Shell/ScaffoldSettingsWebUiAssets.Internal.h"
 
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <utility>
 
@@ -49,6 +50,17 @@ bool TryReadWebUiFile(const std::filesystem::path& filePath, std::vector<uint8_t
     return input.good();
 }
 
+void AddSourceTreeWebUiDir(std::vector<std::filesystem::path>* outDirs) {
+    const std::filesystem::path sourcePath(__FILE__);
+    if (!sourcePath.is_absolute()) {
+        return;
+    }
+
+    const std::filesystem::path projectDir =
+        sourcePath.parent_path().parent_path().parent_path().parent_path();
+    AddWebUiDirIfExists(projectDir / "WebUI", outDirs);
+}
+
 } // namespace
 
 std::vector<std::filesystem::path> BuildWebUiBaseDirs() {
@@ -59,6 +71,9 @@ std::vector<std::filesystem::path> BuildWebUiBaseDirs() {
         AddWebUiDirIfExists(std::filesystem::path(overrideDir), &dirs);
         return dirs;
     }
+
+    // Keep dev runtime stable: prefer source-tree WebUI over accidental stale cwd copies.
+    AddSourceTreeWebUiDir(&dirs);
 
     std::error_code ec;
     const std::filesystem::path cwd = std::filesystem::current_path(ec);

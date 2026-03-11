@@ -37,13 +37,4 @@ export const CARD_SECTIONS = [
     wrapperClass: 'grid',
     mountClass: 'span2',
   },
-  {
-    id: 'wasm',
-    cardClass: 'card-wasm',
-    titleKey: 'section_wasm_plugin',
-    titleDefault: 'Effect Plugins',
-    descKey: 'desc_wasm_plugin',
-    descDefault: 'Manage effect plugins and runtime diagnostics.',
-    mountId: 'wasm_settings_mount',
-  },
 ];

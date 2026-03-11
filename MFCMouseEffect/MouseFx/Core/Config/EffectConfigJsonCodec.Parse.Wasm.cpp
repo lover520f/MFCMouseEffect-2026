@@ -21,6 +21,26 @@ void ParseWasm(const nlohmann::json& root, EffectConfig& config) {
         wasmObj,
         keys::wasm::kManifestPath,
         config.wasm.manifestPath);
+    config.wasm.manifestPathClick = GetOr<std::string>(
+        wasmObj,
+        keys::wasm::kManifestPathClick,
+        config.wasm.manifestPathClick);
+    config.wasm.manifestPathTrail = GetOr<std::string>(
+        wasmObj,
+        keys::wasm::kManifestPathTrail,
+        config.wasm.manifestPathTrail);
+    config.wasm.manifestPathScroll = GetOr<std::string>(
+        wasmObj,
+        keys::wasm::kManifestPathScroll,
+        config.wasm.manifestPathScroll);
+    config.wasm.manifestPathHold = GetOr<std::string>(
+        wasmObj,
+        keys::wasm::kManifestPathHold,
+        config.wasm.manifestPathHold);
+    config.wasm.manifestPathHover = GetOr<std::string>(
+        wasmObj,
+        keys::wasm::kManifestPathHover,
+        config.wasm.manifestPathHover);
     config.wasm.catalogRootPath = GetOr<std::string>(
         wasmObj,
         keys::wasm::kCatalogRootPath,

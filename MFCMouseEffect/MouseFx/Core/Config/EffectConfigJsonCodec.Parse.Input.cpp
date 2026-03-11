@@ -10,6 +10,11 @@ namespace {
 void ApplyCommonInputIndicatorFields(const nlohmann::json& input, InputIndicatorConfig& config) {
     config.enabled = GetOr<bool>(input, keys::input::kEnabled, config.enabled);
     config.keyboardEnabled = GetOr<bool>(input, keys::input::kKeyboardEnabled, config.keyboardEnabled);
+    config.renderMode = GetOr<std::string>(input, keys::input::kRenderMode, config.renderMode);
+    config.wasmFallbackToNative =
+        GetOr<bool>(input, keys::input::kWasmFallbackToNative, config.wasmFallbackToNative);
+    config.wasmManifestPath =
+        GetOr<std::string>(input, keys::input::kWasmManifestPath, config.wasmManifestPath);
     config.positionMode = GetOr<std::string>(input, keys::input::kPositionMode, config.positionMode);
     config.offsetX = GetOr<int>(input, keys::input::kOffsetX, config.offsetX);
     config.offsetY = GetOr<int>(input, keys::input::kOffsetY, config.offsetY);

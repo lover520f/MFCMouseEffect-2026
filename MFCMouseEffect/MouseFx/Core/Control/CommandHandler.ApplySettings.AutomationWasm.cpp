@@ -27,6 +27,9 @@ void ApplyAutomationBindings(const json& source, std::vector<AutomationKeyBindin
         if (item.contains("trigger") && item["trigger"].is_string()) {
             binding.trigger = item["trigger"].get<std::string>();
         }
+        if (item.contains("trigger_button") && item["trigger_button"].is_string()) {
+            binding.triggerButton = item["trigger_button"].get<std::string>();
+        }
         binding.appScopes.clear();
         if (item.contains("app_scopes") && item["app_scopes"].is_array()) {
             for (const auto& scope : item["app_scopes"]) {
@@ -39,6 +42,98 @@ void ApplyAutomationBindings(const json& source, std::vector<AutomationKeyBindin
             item.contains("app_scope") &&
             item["app_scope"].is_string()) {
             binding.appScopes.push_back(item["app_scope"].get<std::string>());
+        }
+        if (item.contains("gesture_pattern") && item["gesture_pattern"].is_object()) {
+            const auto& gesturePattern = item["gesture_pattern"];
+            binding.gesturePattern.mode = gesturePattern.value("mode", binding.gesturePattern.mode);
+            if (gesturePattern.contains("match_threshold_percent") &&
+                gesturePattern["match_threshold_percent"].is_number_integer()) {
+                binding.gesturePattern.matchThresholdPercent = gesturePattern["match_threshold_percent"].get<int>();
+            } else if (gesturePattern.contains("matchThresholdPercent") &&
+                       gesturePattern["matchThresholdPercent"].is_number_integer()) {
+                binding.gesturePattern.matchThresholdPercent = gesturePattern["matchThresholdPercent"].get<int>();
+            }
+            binding.gesturePattern.customPoints.clear();
+            binding.gesturePattern.customStrokes.clear();
+            if (gesturePattern.contains("custom_points") &&
+                gesturePattern["custom_points"].is_array()) {
+                for (const auto& point : gesturePattern["custom_points"]) {
+                    if (!point.is_object()) {
+                        continue;
+                    }
+                    AutomationKeyBinding::GesturePoint gesturePoint;
+                    if (point.contains("x") && point["x"].is_number_integer()) {
+                        gesturePoint.x = point["x"].get<int>();
+                    }
+                    if (point.contains("y") && point["y"].is_number_integer()) {
+                        gesturePoint.y = point["y"].get<int>();
+                    }
+                    binding.gesturePattern.customPoints.push_back(gesturePoint);
+                }
+            } else if (gesturePattern.contains("customPoints") &&
+                       gesturePattern["customPoints"].is_array()) {
+                for (const auto& point : gesturePattern["customPoints"]) {
+                    if (!point.is_object()) {
+                        continue;
+                    }
+                    AutomationKeyBinding::GesturePoint gesturePoint;
+                    if (point.contains("x") && point["x"].is_number_integer()) {
+                        gesturePoint.x = point["x"].get<int>();
+                    }
+                    if (point.contains("y") && point["y"].is_number_integer()) {
+                        gesturePoint.y = point["y"].get<int>();
+                    }
+                    binding.gesturePattern.customPoints.push_back(gesturePoint);
+                }
+            }
+            const auto parseStrokes = [&](const char* key) {
+                if (!gesturePattern.contains(key) || !gesturePattern[key].is_array()) {
+                    return;
+                }
+                for (const auto& stroke : gesturePattern[key]) {
+                    if (!stroke.is_array()) {
+                        continue;
+                    }
+                    std::vector<AutomationKeyBinding::GesturePoint> strokePoints;
+                    for (const auto& point : stroke) {
+                        if (!point.is_object()) {
+                            continue;
+                        }
+                        AutomationKeyBinding::GesturePoint gesturePoint;
+                        if (point.contains("x") && point["x"].is_number_integer()) {
+                            gesturePoint.x = point["x"].get<int>();
+                        }
+                        if (point.contains("y") && point["y"].is_number_integer()) {
+                            gesturePoint.y = point["y"].get<int>();
+                        }
+                        strokePoints.push_back(gesturePoint);
+                    }
+                    if (!strokePoints.empty()) {
+                        binding.gesturePattern.customStrokes.push_back(std::move(strokePoints));
+                    }
+                }
+            };
+            parseStrokes("custom_strokes");
+            parseStrokes("customStrokes");
+            if (binding.gesturePattern.customStrokes.empty() &&
+                !binding.gesturePattern.customPoints.empty()) {
+                binding.gesturePattern.customStrokes.push_back(binding.gesturePattern.customPoints);
+            }
+        }
+        if (item.contains("modifiers") && item["modifiers"].is_object()) {
+            const auto& modifiers = item["modifiers"];
+            if (modifiers.contains("mode") && modifiers["mode"].is_string()) {
+                binding.modifiers.mode = modifiers["mode"].get<std::string>();
+            }
+            if (modifiers.contains("primary") && modifiers["primary"].is_boolean()) {
+                binding.modifiers.primary = modifiers["primary"].get<bool>();
+            }
+            if (modifiers.contains("shift") && modifiers["shift"].is_boolean()) {
+                binding.modifiers.shift = modifiers["shift"].get<bool>();
+            }
+            if (modifiers.contains("alt") && modifiers["alt"].is_boolean()) {
+                binding.modifiers.alt = modifiers["alt"].get<bool>();
+            }
         }
         if (item.contains("keys") && item["keys"].is_string()) {
             binding.keys = item["keys"].get<std::string>();

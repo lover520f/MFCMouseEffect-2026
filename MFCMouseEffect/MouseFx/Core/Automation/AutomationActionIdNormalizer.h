@@ -35,7 +35,35 @@ inline std::string NormalizeMouseActionId(std::string value) {
 }
 
 inline std::string NormalizeGestureId(std::string value) {
-    return NormalizeTextId(std::move(value));
+    value = NormalizeTextId(std::move(value));
+    if (value == "line_right" || value == "line" || value == "hline") {
+        return "right";
+    }
+    if (value == "line_left") {
+        return "left";
+    }
+    if (value == "line_down" || value == "vline") {
+        return "down";
+    }
+    if (value == "line_up") {
+        return "up";
+    }
+    if (value == "slash") {
+        return "diag_down_right";
+    }
+    if (value == "backslash") {
+        return "diag_down_left";
+    }
+    if (value == "v") {
+        return "diag_down_right_diag_up_right";
+    }
+    if (value == "caret" || value == "inverted_v") {
+        return "diag_up_right_diag_down_right";
+    }
+    if (value == "w") {
+        return "diag_down_right_diag_up_right_diag_down_right";
+    }
+    return value;
 }
 
 } // namespace mousefx::automation_ids

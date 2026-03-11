@@ -59,7 +59,10 @@ void AppController::SetTextEffectFontSize(float sizePt) {
 }
 
 void AppController::SetInputIndicatorConfig(const InputIndicatorConfig& cfg) {
-    config_.inputIndicator = cfg;
+    config_.inputIndicator = config_internal::SanitizeInputIndicatorConfig(cfg);
+    if (config_.inputIndicator.renderMode == "wasm") {
+        EnsureInputIndicatorWasmBudgetFloor();
+    }
     inputIndicatorOverlay_->UpdateConfig(config_.inputIndicator);
     PersistConfig();
 }

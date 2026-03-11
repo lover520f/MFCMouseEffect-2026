@@ -83,6 +83,9 @@ void AppendBaseSettingsState(const EffectConfig& cfg, json* out) {
     (*out)["input_indicator"] = {
         {"enabled", cfg.inputIndicator.enabled},
         {"keyboard_enabled", cfg.inputIndicator.keyboardEnabled},
+        {"render_mode", EnsureUtf8(cfg.inputIndicator.renderMode)},
+        {"wasm_fallback_to_native", cfg.inputIndicator.wasmFallbackToNative},
+        {"wasm_manifest_path", EnsureUtf8(cfg.inputIndicator.wasmManifestPath)},
         {"position_mode", EnsureUtf8(cfg.inputIndicator.positionMode)},
         {"offset_x", cfg.inputIndicator.offsetX},
         {"offset_y", cfg.inputIndicator.offsetY},
@@ -123,6 +126,26 @@ void AppendBaseSettingsState(const EffectConfig& cfg, json* out) {
                     {"trigger", EnsureUtf8(binding.trigger)},
                     {"app_scope", legacyScope},
                     {"app_scopes", scopes},
+                    {"gesture_pattern", {
+                        {"mode", EnsureUtf8(binding.gesturePattern.mode)},
+                        {"match_threshold_percent", binding.gesturePattern.matchThresholdPercent},
+                        {"custom_points", [&]() {
+                            json points = json::array();
+                            for (const auto& point : binding.gesturePattern.customPoints) {
+                                points.push_back({
+                                    {"x", point.x},
+                                    {"y", point.y},
+                                });
+                            }
+                            return points;
+                        }()},
+                    }},
+                    {"modifiers", {
+                        {"mode", EnsureUtf8(binding.modifiers.mode)},
+                        {"primary", binding.modifiers.primary},
+                        {"shift", binding.modifiers.shift},
+                        {"alt", binding.modifiers.alt},
+                    }},
                     {"keys", EnsureUtf8(binding.keys)},
                 });
             }
@@ -147,8 +170,29 @@ void AppendBaseSettingsState(const EffectConfig& cfg, json* out) {
                     arr.push_back({
                         {"enabled", binding.enabled},
                         {"trigger", EnsureUtf8(binding.trigger)},
+                        {"trigger_button", EnsureUtf8(binding.triggerButton)},
                         {"app_scope", legacyScope},
                         {"app_scopes", scopes},
+                        {"gesture_pattern", {
+                            {"mode", EnsureUtf8(binding.gesturePattern.mode)},
+                            {"match_threshold_percent", binding.gesturePattern.matchThresholdPercent},
+                            {"custom_points", [&]() {
+                                json points = json::array();
+                                for (const auto& point : binding.gesturePattern.customPoints) {
+                                    points.push_back({
+                                        {"x", point.x},
+                                        {"y", point.y},
+                                    });
+                                }
+                                return points;
+                            }()},
+                        }},
+                        {"modifiers", {
+                            {"mode", EnsureUtf8(binding.modifiers.mode)},
+                            {"primary", binding.modifiers.primary},
+                            {"shift", binding.modifiers.shift},
+                            {"alt", binding.modifiers.alt},
+                        }},
                         {"keys", EnsureUtf8(binding.keys)},
                     });
                 }

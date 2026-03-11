@@ -3,6 +3,7 @@
 #include "MouseFx/Core/Automation/AppScopeUtils.h"
 #include "MouseFx/Core/Automation/TriggerChainUtils.h"
 #include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Core/Protocol/InputTypes.h"
 
 #include <chrono>
 #include <cstddef>
@@ -62,11 +63,30 @@ inline bool IsChainTimingMatched(
     return true;
 }
 
+inline bool ModifierConditionMatches(
+    const AutomationKeyBinding::ModifierCondition& condition,
+    const InputModifierState& modifiers) {
+    const std::string mode = TrimAscii(condition.mode);
+    if (mode.empty() || mode == "any") {
+        return true;
+    }
+    if (mode == "none") {
+        return !modifiers.primary && !modifiers.shift && !modifiers.alt;
+    }
+    if (mode == "exact") {
+        return modifiers.primary == condition.primary &&
+               modifiers.shift == condition.shift &&
+               modifiers.alt == condition.alt;
+    }
+    return true;
+}
+
 inline BindingMatchResult FindBestEnabledBinding(
     const std::vector<AutomationKeyBinding>& mappings,
     const std::vector<ActionHistoryEntry>& actionHistory,
     const std::string& processBaseName,
     const ChainTimingLimit& timingLimit,
+    const InputModifierState& modifiers,
     NormalizeActionIdFn normalizeActionId) {
     BindingMatchResult best;
     if (!normalizeActionId || actionHistory.empty()) {
@@ -80,6 +100,9 @@ inline BindingMatchResult FindBestEnabledBinding(
             continue;
         }
         if (!automation_scope::AppScopeMatchesProcess(binding.appScopes, processBaseName)) {
+            continue;
+        }
+        if (!ModifierConditionMatches(binding.modifiers, modifiers)) {
             continue;
         }
 
@@ -127,6 +150,21 @@ inline BindingMatchResult FindBestEnabledBinding(
     }
 
     return best;
+}
+
+inline BindingMatchResult FindBestEnabledBinding(
+    const std::vector<AutomationKeyBinding>& mappings,
+    const std::vector<ActionHistoryEntry>& actionHistory,
+    const std::string& processBaseName,
+    const ChainTimingLimit& timingLimit,
+    NormalizeActionIdFn normalizeActionId) {
+    return FindBestEnabledBinding(
+        mappings,
+        actionHistory,
+        processBaseName,
+        timingLimit,
+        InputModifierState{},
+        normalizeActionId);
 }
 
 } // namespace mousefx::automation_match

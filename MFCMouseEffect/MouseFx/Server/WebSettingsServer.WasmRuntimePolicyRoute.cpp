@@ -58,6 +58,21 @@ bool HandleWebSettingsWasmRuntimePolicyApiRoute(
         if (payload.contains("manifest_path") && payload["manifest_path"].is_string()) {
             cmd["manifest_path"] = payload["manifest_path"].get<std::string>();
         }
+        if (payload.contains("manifest_path_click") && payload["manifest_path_click"].is_string()) {
+            cmd["manifest_path_click"] = payload["manifest_path_click"].get<std::string>();
+        }
+        if (payload.contains("manifest_path_trail") && payload["manifest_path_trail"].is_string()) {
+            cmd["manifest_path_trail"] = payload["manifest_path_trail"].get<std::string>();
+        }
+        if (payload.contains("manifest_path_scroll") && payload["manifest_path_scroll"].is_string()) {
+            cmd["manifest_path_scroll"] = payload["manifest_path_scroll"].get<std::string>();
+        }
+        if (payload.contains("manifest_path_hold") && payload["manifest_path_hold"].is_string()) {
+            cmd["manifest_path_hold"] = payload["manifest_path_hold"].get<std::string>();
+        }
+        if (payload.contains("manifest_path_hover") && payload["manifest_path_hover"].is_string()) {
+            cmd["manifest_path_hover"] = payload["manifest_path_hover"].get<std::string>();
+        }
         if (payload.contains("catalog_root_path") && payload["catalog_root_path"].is_string()) {
             cmd["catalog_root_path"] = payload["catalog_root_path"].get<std::string>();
         }

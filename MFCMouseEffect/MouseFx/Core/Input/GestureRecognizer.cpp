@@ -8,22 +8,13 @@
 
 namespace mousefx {
 namespace {
-
 constexpr int kButtonLeft = 1;
 constexpr int kButtonRight = 2;
 constexpr int kButtonMiddle = 3;
-
-int ButtonFromName(const std::string& name) {
-    if (name == "left") return kButtonLeft;
-    if (name == "middle") return kButtonMiddle;
-    return kButtonRight;
-}
-
 } // namespace
 
 void GestureRecognizer::UpdateConfig(const GestureRecognitionConfig& config) {
     config_ = config;
-    config_.triggerButton = NormalizeButtonName(config_.triggerButton);
     config_.minStrokeDistancePx = ClampInt(config_.minStrokeDistancePx, 10, 4000);
     config_.sampleStepPx = ClampInt(config_.sampleStepPx, 2, 256);
     config_.maxDirections = ClampInt(config_.maxDirections, 1, 8);
@@ -44,7 +35,7 @@ void GestureRecognizer::OnButtonDown(const ScreenPoint& pt, int button) {
     if (!config_.enabled) {
         return;
     }
-    if (!IsTrackedButton(config_.triggerButton, button)) {
+    if (!IsTrackedButton(button)) {
         return;
     }
 
@@ -74,7 +65,7 @@ void GestureRecognizer::OnMouseMove(const ScreenPoint& pt) {
     lastSamplePt_ = pt;
 }
 
-std::string GestureRecognizer::OnButtonUp(const ScreenPoint& pt, int button) {
+GestureRecognizer::Result GestureRecognizer::OnButtonUp(const ScreenPoint& pt, int button) {
     if (!active_ || button != activeButton_) {
         Reset();
         return {};
@@ -82,24 +73,16 @@ std::string GestureRecognizer::OnButtonUp(const ScreenPoint& pt, int button) {
 
     OnMouseMove(pt);
     const std::vector<char> dirs = QuantizeDirections();
-    const std::string gesture = BuildGestureId(dirs);
+    Result result;
+    result.gestureId = BuildGestureId(dirs);
+    result.button = button;
+    result.samplePoints = samples_;
     Reset();
-    return gesture;
+    return result;
 }
 
-std::string GestureRecognizer::NormalizeButtonName(std::string button) {
-    button = ToLowerAscii(TrimAscii(button));
-    if (button == "l" || button == "left_button") return "left";
-    if (button == "m" || button == "middle_button") return "middle";
-    if (button == "r" || button == "right_button") return "right";
-    if (button != "left" && button != "middle" && button != "right") {
-        return "right";
-    }
-    return button;
-}
-
-bool GestureRecognizer::IsTrackedButton(const std::string& triggerButton, int button) {
-    return ButtonFromName(triggerButton) == button;
+bool GestureRecognizer::IsTrackedButton(int button) {
+    return button == kButtonLeft || button == kButtonMiddle || button == kButtonRight;
 }
 
 } // namespace mousefx

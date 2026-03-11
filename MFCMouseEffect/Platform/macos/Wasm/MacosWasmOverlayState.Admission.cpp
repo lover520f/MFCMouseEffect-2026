@@ -46,6 +46,7 @@ void ResetWasmOverlayStateLocked() {
     PendingOverlayCount() = 0;
     LastAdmitTime(WasmOverlayKind::Image) = SteadyClock::time_point{};
     LastAdmitTime(WasmOverlayKind::Text) = SteadyClock::time_point{};
+    LastAdmitTime(WasmOverlayKind::IndicatorText) = SteadyClock::time_point{};
     ThrottleCounters() = WasmOverlayThrottleCounters{};
 }
 

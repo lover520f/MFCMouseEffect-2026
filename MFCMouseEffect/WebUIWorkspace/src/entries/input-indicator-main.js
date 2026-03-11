@@ -1,9 +1,15 @@
 import InputIndicatorFields from '../input-indicator/InputIndicatorFields.svelte';
 import { createLazyMountBridge } from './lazy-mount.js';
+import { readUiState, writeUiState } from './ui-state-storage.js';
+
+const INPUT_INDICATOR_UI_STATE_STORAGE_NS = 'input-indicator.v1';
 
 let currentState = {
   enabled: true,
   keyboard_enabled: true,
+  render_mode: 'native',
+  wasm_fallback_to_native: true,
+  wasm_manifest_path: '',
   position_mode: 'relative',
   offset_x: 40,
   offset_y: 40,
@@ -16,6 +22,28 @@ let currentState = {
   size_px: 110,
   duration_ms: 320,
 };
+let currentWasmState = {};
+let currentWasmAction = null;
+let currentActiveTab = 'basic';
+
+function normalizeActiveTab(value) {
+  return `${value || ''}`.trim().toLowerCase() === 'plugin' ? 'plugin' : 'basic';
+}
+
+function readInputIndicatorUiState() {
+  return readUiState(INPUT_INDICATOR_UI_STATE_STORAGE_NS);
+}
+
+function writeInputIndicatorUiState(nextState) {
+  writeUiState(INPUT_INDICATOR_UI_STATE_STORAGE_NS, nextState);
+}
+
+{
+  const persisted = readInputIndicatorUiState();
+  if (persisted?.activeTab) {
+    currentActiveTab = normalizeActiveTab(persisted.activeTab);
+  }
+}
 
 function toNumber(value, fallback) {
   const parsed = Number(value);
@@ -28,6 +56,9 @@ function normalizeIndicator(input) {
   return {
     enabled: value.enabled !== false,
     keyboard_enabled: value.keyboard_enabled !== false,
+    render_mode: value.render_mode || 'native',
+    wasm_fallback_to_native: value.wasm_fallback_to_native !== false,
+    wasm_manifest_path: `${value.wasm_manifest_path || ''}`.trim(),
     position_mode: value.position_mode || 'relative',
     offset_x: toNumber(value.offset_x, 40),
     offset_y: toNumber(value.offset_y, 40),
@@ -52,6 +83,9 @@ const bridge = createLazyMountBridge({
     monitors: [],
     monitorOverrides: {},
     indicator: currentState,
+    wasmState: currentWasmState,
+    onWasmAction: currentWasmAction,
+    activeTab: currentActiveTab,
     texts: {},
   },
   createComponent: (mountNode, props) => {
@@ -63,6 +97,10 @@ const bridge = createLazyMountBridge({
       const detail = event?.detail || {};
       currentState = normalizeIndicator(detail);
     });
+    instance.$on('tabChange', (event) => {
+      currentActiveTab = normalizeActiveTab(event?.detail?.tabId);
+      writeInputIndicatorUiState({ activeTab: currentActiveTab });
+    });
     return instance;
   },
 });
@@ -71,8 +109,14 @@ function render(payload) {
   const schema = payload?.schema || {};
   const indicator = normalizeIndicator(payload?.indicator || {});
   const texts = payload?.texts || {};
+  const wasmState = payload?.wasmState || {};
+  const onWasmAction = (typeof payload?.onWasmAction === 'function')
+    ? payload.onWasmAction
+    : null;
 
   currentState = indicator;
+  currentWasmState = wasmState;
+  currentWasmAction = onWasmAction;
   bridge.updateProps({
     positionModes: schema.input_indicator_position_modes || [],
     targetMonitorOptions: schema.target_monitor_options || [],
@@ -81,6 +125,9 @@ function render(payload) {
     monitors: schema.monitors || [],
     monitorOverrides: indicator.per_monitor_overrides || {},
     indicator,
+    wasmState,
+    onWasmAction,
+    activeTab: currentActiveTab,
     texts,
   });
 }

@@ -1,6 +1,9 @@
 import EffectsSectionTabs from '../effects/EffectsSectionTabs.svelte';
 import { normalizeEffectsProfile } from '../effects/profile-model.js';
 import { createLazyMountBridge } from './lazy-mount.js';
+import { readUiState, writeUiState } from './ui-state-storage.js';
+
+const EFFECTS_UI_STATE_STORAGE_NS = 'effects.v1';
 
 let currentActiveState = {
   click: '',
@@ -27,6 +30,11 @@ let currentCapabilities = {
 let currentEffectsProfile = {};
 let currentActiveTab = 'active';
 let showEffectsProfile = false;
+let currentClickOptions = [];
+let currentTrailOptions = [];
+let currentScrollOptions = [];
+let currentHoldOptions = [];
+let currentHoverOptions = [];
 let currentEffectConflictPolicy = {
   hold_move_policy: 'hold_only',
 };
@@ -48,7 +56,25 @@ function normalizeActiveTab(input) {
   if (value === 'conflict') {
     return 'conflict';
   }
+  if (value === 'plugin' || value === 'wasm') {
+    return 'plugin';
+  }
   return 'active';
+}
+
+function readEffectsUiState() {
+  return readUiState(EFFECTS_UI_STATE_STORAGE_NS);
+}
+
+function writeEffectsUiState(nextState) {
+  writeUiState(EFFECTS_UI_STATE_STORAGE_NS, nextState);
+}
+
+{
+  const persisted = readEffectsUiState();
+  if (persisted?.activeTab) {
+    currentActiveTab = normalizeActiveTab(persisted.activeTab);
+  }
 }
 
 function normalizeDebugFlag(value) {
@@ -160,6 +186,7 @@ const bridge = createLazyMountBridge({
     });
     instance.$on('tabChange', (event) => {
       currentActiveTab = normalizeActiveTab(event?.detail?.tabId);
+      writeEffectsUiState({ activeTab: currentActiveTab });
     });
     instance.$on('conflictPolicyChange', (event) => {
       const detail = event?.detail || {};
@@ -187,14 +214,19 @@ function render(payload) {
   currentEffectConflictPolicy = effectConflictPolicy;
   currentEffectConflictPolicyOptions = effectConflictPolicyOptions;
   currentEffectsProfile = effectsProfile;
+  currentClickOptions = schema.effects?.click || [];
+  currentTrailOptions = schema.effects?.trail || [];
+  currentScrollOptions = schema.effects?.scroll || [];
+  currentHoldOptions = schema.effects?.hold || [];
+  currentHoverOptions = schema.effects?.hover || [];
   bridge.updateProps({
     activeTab: currentActiveTab,
     effectProps: {
-      clickOptions: schema.effects?.click || [],
-      trailOptions: schema.effects?.trail || [],
-      scrollOptions: schema.effects?.scroll || [],
-      holdOptions: schema.effects?.hold || [],
-      hoverOptions: schema.effects?.hover || [],
+      clickOptions: currentClickOptions,
+      trailOptions: currentTrailOptions,
+      scrollOptions: currentScrollOptions,
+      holdOptions: currentHoldOptions,
+      hoverOptions: currentHoverOptions,
       effectCapabilities,
       active,
       effectSizeScales,
@@ -214,7 +246,30 @@ function read() {
   };
 }
 
+function setActiveTab(tabId) {
+  currentActiveTab = normalizeActiveTab(tabId);
+  writeEffectsUiState({ activeTab: currentActiveTab });
+  bridge.updateProps({
+    activeTab: currentActiveTab,
+    effectProps: {
+      clickOptions: currentClickOptions,
+      trailOptions: currentTrailOptions,
+      scrollOptions: currentScrollOptions,
+      holdOptions: currentHoldOptions,
+      hoverOptions: currentHoverOptions,
+      effectCapabilities: currentCapabilities,
+      active: currentActiveState,
+      effectSizeScales: currentSizeScales,
+      effectConflictPolicy: currentEffectConflictPolicy,
+      effectConflictPolicyOptions: currentEffectConflictPolicyOptions,
+      effectsProfile: currentEffectsProfile,
+      showEffectsProfile,
+    },
+  });
+}
+
 window.MfxEffectsSection = {
   render,
   read,
+  setActiveTab,
 };

@@ -20,17 +20,22 @@ struct GestureRecognitionConfig {
 // Output format: "left", "up_right", "down_left_up", etc.
 class GestureRecognizer final {
 public:
+    struct Result {
+        std::string gestureId;
+        int button = 0;
+        std::vector<ScreenPoint> samplePoints;
+    };
+
     GestureRecognizer() = default;
 
     void UpdateConfig(const GestureRecognitionConfig& config);
     void Reset();
     void OnButtonDown(const ScreenPoint& pt, int button);
     void OnMouseMove(const ScreenPoint& pt);
-    std::string OnButtonUp(const ScreenPoint& pt, int button);
+    Result OnButtonUp(const ScreenPoint& pt, int button);
 
 private:
-    static std::string NormalizeButtonName(std::string button);
-    static bool IsTrackedButton(const std::string& triggerButton, int button);
+    static bool IsTrackedButton(int button);
     static std::string BuildGestureId(const std::vector<char>& dirs);
 
     std::vector<char> QuantizeDirections() const;

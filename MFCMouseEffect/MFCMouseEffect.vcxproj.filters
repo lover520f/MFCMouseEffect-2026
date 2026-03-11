@@ -57,6 +57,12 @@
     <ClInclude Include="MouseFx\Core\Control\InputIndicatorDispatchFeature.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Control\InputIndicatorWasmDispatchFeature.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Wasm\WasmDynamicTextLabelScope.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\Control\WasmDispatchFeature.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
@@ -216,7 +222,13 @@
     <ClInclude Include="MouseFx\Core\Overlay\IInputIndicatorOverlay.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
+    <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorKeyFilter.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
     <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorLabelFormatter.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Core\Overlay\InputIndicatorPositionResolver.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Core\Overlay\NullInputIndicatorOverlay.h">
@@ -590,6 +602,9 @@
     <ClCompile Include="MouseFx\Core\Control\InputIndicatorDispatchFeature.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Core\Control\InputIndicatorWasmDispatchFeature.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Core\Control\WasmDispatchFeature.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
@@ -606,6 +621,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Overlay\OverlayHostService.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Overlay\InputIndicatorPositionResolver.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Overlay\OverlayCoordSpace.cpp">
@@ -891,6 +909,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\WasmEffectHost.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmDynamicTextLabelScope.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\WasmEventInvokeExecutor.cpp">

@@ -29,6 +29,12 @@
 
 核心原则：WASM 计算，C++ 渲染。
 
+Surface 宿主路由规则：
+- 宿主在同一套运行时策略（`enabled/budget`）下维护两条独立 wasm host 通道：
+  - `effects` 通道：处理 click/move/scroll/hold/hover 特效插件。
+  - `indicator` 通道：处理 `indicator_*` 键鼠指示插件。
+- `POST /api/wasm/load-manifest` 必须按 `surface` 路由到目标通道，并基于该通道诊断状态做成功判定。
+
 ## ABI v2 契约
 插件导出（前两项必选）：
 
@@ -47,11 +53,34 @@ uint32_t mfx_plugin_on_frame(
 void mfx_plugin_reset(void); // 推荐实现
 ```
 
-事件类型遵循宿主标准语义（`click/move/scroll/hold*/hover*`）。
+事件类型遵循宿主标准语义（`click/move/scroll/hold*/hover*`），并新增指示器通道
+`indicator_click/indicator_scroll/indicator_key` 供键鼠指示器样式使用。
+
+指示器事件补充说明：
+- `indicator_*` 仍以 `EventInputV2` 作为基础输入。
+- 宿主会在 `EventInputV2` 后追加 `IndicatorEventTailV1`（4 字节），携带
+  `size_px` 与 `duration_ms`。
+- 若宿主带有更完整的指示器上下文，还会继续在 `IndicatorEventTailV1` 之后追加
+  `IndicatorEventContextTailV2`，提供 `primary_code`、`streak`、
+  `modifier_mask` 与 `detail_flags`。其中 `primary_code` 会按事件类型映射为
+  按键编号 / 滚轮幅度 / `vkCode`。
+- 若需要显示键鼠标签，使用 `text_id = kTextIdEventLabel` 即可取到当前事件标签
+  （例如 `L x2`、`W+ x3`、`Cmd+Tab`）。
 
 Manifest 路由提示（可选）：
 - `input_kinds` 用于收窄触发 `on_input` 的输入通道。
+- `surfaces` 用于声明插件面向的宿主表面（`effects` / `indicator` / `all`）。
 - `enable_frame_tick` 用于控制宿主是否周期性驱动 `on_frame`。
+
+指示器路由可观测性（测试/运行时）：
+- `POST /api/wasm/test-dispatch-app-indicator-key` 会走真实应用分发路径
+  （`DispatchInputIndicatorKey`）并返回最新路由快照。
+- 快照同时给出分支布尔位（`route_attempted`、`event_supported`、
+  `rendered_by_wasm`、`native_fallback_applied`）和原因码
+  （`wasm_rendered`、`fallback_disabled`、`event_not_supported`、
+  `plugin_unloaded`、`anchor_unavailable`、`invoke_failed_no_output`）。
+- 在出现至少一次 wasm 路由尝试后，`/api/state` 也会在
+  `input_indicator_wasm_route_status` 输出同一份最新快照。
 
 ## 命令契约（当前）
 当前生产路径支持：

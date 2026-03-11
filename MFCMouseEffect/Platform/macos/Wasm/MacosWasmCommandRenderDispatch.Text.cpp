@@ -26,8 +26,13 @@ bool HandleSpawnTextCommand(
     const std::wstring text = wasm_render_resolver::ResolveTextById(config, cmd.textId);
     const uint32_t color = wasm_render_resolver::ResolveTextColorArgb(config, cmd.textId, cmd.colorRgba);
     const TextConfig textConfig = mousefx::wasm::BuildSpawnTextConfig(config.textClick, cmd);
+    const bool indicatorEventLabel =
+        cmd.textId == mousefx::wasm::kTextIdEventLabel &&
+        mousefx::wasm::IsWasmDynamicTextLabelFromIndicatorEvent();
+    const WasmTextOverlayChannel channel =
+        indicatorEventLabel ? WasmTextOverlayChannel::IndicatorLabel : WasmTextOverlayChannel::Effects;
     const WasmOverlayRenderResult renderResult =
-        ShowWasmTextOverlay(pt, text, color, textConfig);
+        ShowWasmTextOverlay(pt, text, color, textConfig, channel);
     if (renderResult == WasmOverlayRenderResult::Rendered) {
         outResult->executedTextCommands += 1;
         outResult->renderedAny = true;

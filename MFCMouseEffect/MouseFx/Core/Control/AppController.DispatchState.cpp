@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "MouseFx/Core/Overlay/InputIndicatorKeyFilter.h"
 #include "Platform/PlatformTarget.h"
 #if MFX_PLATFORM_MACOS
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
@@ -13,6 +14,35 @@
 #endif
 
 namespace mousefx {
+namespace {
+
+std::string ResolveInputIndicatorWasmRouteReason(
+    const InputIndicatorWasmRouteTrace& trace,
+    bool renderedByWasm,
+    bool wasmFallbackEnabled,
+    bool nativeFallbackApplied) {
+    if (renderedByWasm) {
+        return "wasm_rendered";
+    }
+    if (!wasmFallbackEnabled) {
+        return "fallback_disabled";
+    }
+    if (!trace.anchorsResolved) {
+        return "anchor_unavailable";
+    }
+    if (!trace.hostPresent || !trace.hostEnabled || !trace.pluginLoaded) {
+        return "plugin_unloaded";
+    }
+    if (!trace.eventSupported) {
+        return "event_not_supported";
+    }
+    if (trace.invokeAttempted) {
+        return nativeFallbackApplied ? "invoke_failed_no_output" : "invoke_no_output";
+    }
+    return nativeFallbackApplied ? "invoke_failed_no_output" : "unknown";
+}
+
+} // namespace
 
 bool AppController::ConsumeIgnoreNextClick() {
     if (!ignoreNextClick_) {
@@ -23,6 +53,10 @@ bool AppController::ConsumeIgnoreNextClick() {
 }
 
 void AppController::OnGlobalKey(const KeyEvent& ev) {
+    InputAutomation().OnKey(ev);
+    if (!ev.keyDown) {
+        return;
+    }
     const bool captureActiveBefore = shortcutCaptureSession_.IsActive();
     shortcutCaptureSession_.OnKeyDown(ev);
     const bool captureActiveAfter = shortcutCaptureSession_.IsActive();
@@ -30,7 +64,102 @@ void AppController::OnGlobalKey(const KeyEvent& ev) {
     if (captureActiveBefore || captureActiveAfter) {
         return;
     }
+    DispatchInputIndicatorKey(ev);
+}
+
+void AppController::DispatchInputIndicatorClick(const ClickEvent& ev) {
+    const InputIndicatorConfig& cfg = config_.inputIndicator;
+    if (!cfg.enabled) {
+        return;
+    }
+
+    if (cfg.renderMode == "wasm") {
+        InputIndicatorWasmRouteTrace trace{};
+        bool renderedByWasm = false;
+        inputIndicatorWasmDispatch_.RouteClick(*this, ev, &renderedByWasm, &trace);
+        const bool nativeFallbackApplied = !renderedByWasm && cfg.wasmFallbackToNative;
+        RecordInputIndicatorWasmRouteStatus(
+            "click", trace, renderedByWasm, cfg.wasmFallbackToNative, nativeFallbackApplied);
+        if (renderedByWasm || !cfg.wasmFallbackToNative) {
+            return;
+        }
+    }
+    inputIndicatorOverlay_->OnClick(ev);
+}
+
+void AppController::DispatchInputIndicatorScroll(const ScrollEvent& ev) {
+    const InputIndicatorConfig& cfg = config_.inputIndicator;
+    if (!cfg.enabled) {
+        return;
+    }
+
+    if (cfg.renderMode == "wasm") {
+        InputIndicatorWasmRouteTrace trace{};
+        bool renderedByWasm = false;
+        inputIndicatorWasmDispatch_.RouteScroll(*this, ev, &renderedByWasm, &trace);
+        const bool nativeFallbackApplied = !renderedByWasm && cfg.wasmFallbackToNative;
+        RecordInputIndicatorWasmRouteStatus(
+            "scroll", trace, renderedByWasm, cfg.wasmFallbackToNative, nativeFallbackApplied);
+        if (renderedByWasm || !cfg.wasmFallbackToNative) {
+            return;
+        }
+    }
+    inputIndicatorOverlay_->OnScroll(ev);
+}
+
+void AppController::DispatchInputIndicatorKey(const KeyEvent& ev) {
+    const InputIndicatorConfig& cfg = config_.inputIndicator;
+    if (!ShouldShowInputIndicatorKey(cfg, ev)) {
+        return;
+    }
+
+    if (cfg.renderMode == "wasm") {
+        InputIndicatorWasmRouteTrace trace{};
+        bool renderedByWasm = false;
+        inputIndicatorWasmDispatch_.RouteKey(*this, ev, &renderedByWasm, &trace);
+        const bool nativeFallbackApplied = !renderedByWasm && cfg.wasmFallbackToNative;
+        RecordInputIndicatorWasmRouteStatus(
+            "key", trace, renderedByWasm, cfg.wasmFallbackToNative, nativeFallbackApplied);
+        if (renderedByWasm || !cfg.wasmFallbackToNative) {
+            return;
+        }
+    }
     inputIndicatorOverlay_->OnKey(ev);
+}
+
+AppController::InputIndicatorWasmRouteStatus AppController::ReadInputIndicatorWasmRouteStatus() const {
+    std::lock_guard<std::mutex> guard(inputIndicatorWasmRouteStatusMutex_);
+    return inputIndicatorWasmRouteStatus_;
+}
+
+void AppController::RecordInputIndicatorWasmRouteStatus(
+    const char* eventKind,
+    const InputIndicatorWasmRouteTrace& trace,
+    bool renderedByWasm,
+    bool wasmFallbackEnabled,
+    bool nativeFallbackApplied) {
+    InputIndicatorWasmRouteStatus next{};
+    next.eventKind = eventKind ? eventKind : "";
+    next.renderMode = config_.inputIndicator.renderMode;
+    next.eventTickMs = CurrentTickMs();
+    next.routeAttempted = trace.routeAttempted;
+    next.anchorsResolved = trace.anchorsResolved;
+    next.hostPresent = trace.hostPresent;
+    next.hostEnabled = trace.hostEnabled;
+    next.pluginLoaded = trace.pluginLoaded;
+    next.eventSupported = trace.eventSupported;
+    next.invokeAttempted = trace.invokeAttempted;
+    next.renderedByWasm = renderedByWasm || trace.renderedAny;
+    next.wasmFallbackEnabled = wasmFallbackEnabled;
+    next.nativeFallbackApplied = nativeFallbackApplied;
+    next.reason = ResolveInputIndicatorWasmRouteReason(
+        trace,
+        next.renderedByWasm,
+        wasmFallbackEnabled,
+        nativeFallbackApplied);
+
+    std::lock_guard<std::mutex> guard(inputIndicatorWasmRouteStatusMutex_);
+    inputIndicatorWasmRouteStatus_ = std::move(next);
 }
 
 std::string AppController::StartShortcutCaptureSession(uint64_t timeoutMs) {

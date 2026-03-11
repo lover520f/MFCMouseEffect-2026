@@ -20,32 +20,36 @@ examples/wasm-plugin-template/
       abi.ts                  # ABI constants + read/write helpers
       random.ts               # deterministic pseudo-random helpers
     samples/
-      text-rise.ts
-      text-burst.ts
-      text-spiral.ts
-      text-wave-chain.ts
-      image-pulse.ts
-      image-burst.ts
-      image-lift.ts
-      mixed-text-image.ts
-      mixed-emoji-celebrate.ts
-      button-adaptive.ts
-      click-pulse-dual.ts
-      click-polyline-zigzag.ts
-      click-path-fill-clip-window.ts
-      click-path-clip-lanes.ts
-      click-ribbon-trace.ts
-      click-glow-burst.ts
-      click-sprite-burst.ts
-      click-quad-atlas-burst.ts
-      click-retained-quad-field.ts
-      click-retained-ribbon-trail.ts
-      click-retained-group-pass.ts
-      move-stream-sparks.ts
-      scroll-particle-burst.ts
-      scroll-neon-burst.ts
-      hold-orbit-pulse.ts
-      hover-spark-ring.ts
+      effects/
+        text-rise.ts
+        text-burst.ts
+        text-spiral.ts
+        text-wave-chain.ts
+        image-pulse.ts
+        image-burst.ts
+        image-lift.ts
+        mixed-text-image.ts
+        mixed-emoji-celebrate.ts
+        button-adaptive.ts
+        click-pulse-dual.ts
+        click-polyline-zigzag.ts
+        click-path-fill-clip-window.ts
+        click-path-clip-lanes.ts
+        click-ribbon-trace.ts
+        click-glow-burst.ts
+        click-sprite-burst.ts
+        click-quad-atlas-burst.ts
+        click-retained-quad-field.ts
+        click-retained-ribbon-trail.ts
+        click-retained-group-pass.ts
+        move-stream-sparks.ts
+        scroll-particle-burst.ts
+        scroll-neon-burst.ts
+        hold-orbit-pulse.ts
+        hover-spark-ring.ts
+      indicator/
+        input-indicator-basic.ts
+        input-indicator-keyviz.ts
     index.ts                  # default entry (currently exports text-rise)
   scripts/
     build-lib.mjs             # shared build helper
@@ -132,6 +136,8 @@ Managed cleanup scope:
 | `mixed-text-image` | mixed | one text + one image | yes |
 | `mixed-emoji-celebrate` | mixed | 2 texts + 2 images celebration | yes |
 | `button-adaptive` | mixed | text/image ids adapt by mouse button | yes |
+| `indicator-basic` | indicator | input-indicator style sample: keyboard uses a dedicated key-cap panel, pointer lanes use a dedicated pointer shell + button zone + wheel slot helper, and all lanes consume `indicator_*` tails for streak/modifier-aware styling (no extra pulse/ripple command; scroll lane keeps click-zone inactive) | no |
+| `indicator-keyviz-style` | indicator | keyviz-inspired indicator style: keyboard lane uses layered keycap cards and pointer/scroll lanes use dark pointer cards with tinted accent zones, while preserving shared `indicator_*` tail semantics (no extra pulse/ripple command) | no |
 | `click-pulse-dual` | pulse | layered ripple + star pulse stack using `spawn_pulse` only | no |
 | `click-polyline-zigzag` | polyline | 3 delayed zigzag bolt strokes using `spawn_polyline` only | no |
 | `click-path-stroke-ribbon` | path-stroke | 2 delayed curved ribbon strokes using `spawn_path_stroke` plus the optional shared render-semantics tail | no |
@@ -194,6 +200,7 @@ Minimal fields:
   "version": "0.1.0",
   "api_version": 2,
   "entry": "effect.wasm",
+  "surfaces": ["effects"],
   "input_kinds": ["click"],
   "enable_frame_tick": false
 }
@@ -216,7 +223,13 @@ Rules:
 - `imageId` maps to array index (modulo)
 - invalid/missing assets fallback to built-in host renderers
 - optional `input_kinds` limits which input lanes invoke the plugin
+- optional `surfaces` declares which host surface the plugin targets
 - optional `enable_frame_tick` controls whether host drives `mfx_plugin_on_frame`
+
+`surfaces` values:
+- `effects`
+- `indicator`
+- `all` (legacy manifests default to this when omitted, but new manifests should declare it explicitly)
 
 `input_kinds` values:
 - `click`
@@ -227,7 +240,17 @@ Rules:
 - `hold_end`
 - `hover_start`
 - `hover_end`
+- `indicator_click`
+- `indicator_scroll`
+- `indicator_key`
 - `all` (default when field is omitted)
+
+Indicator payload notes:
+- `indicator_*` still starts with `EventInputV2`
+- optional `IndicatorEventTailV1` adds `size_px` + `duration_ms`
+- optional `IndicatorEventContextTailV2` adds `primary_code` + `streak` + `modifier_mask` + `detail_flags`
+- `assembly/common/abi.ts` exposes helpers such as `hasIndicatorContextTail(...)` and `readIndicatorStreak(...)`
+- template motif helpers under `assembly/common/` can be reused when that improves the result, but indicator styling now also has its own dedicated helper at `assembly/common/input-indicator-style.ts`
 
 ## Runtime Placement
 

@@ -26,6 +26,9 @@ enum class EventKind : uint8_t {
     HoldEnd = 6,
     HoverStart = 7,
     HoverEnd = 8,
+    IndicatorClick = 9,
+    IndicatorScroll = 10,
+    IndicatorKey = 11,
 };
 
 struct EventInvokeInput final {
@@ -37,6 +40,11 @@ struct EventInvokeInput final {
     uint8_t button = 0;
     uint8_t flags = 0;
     uint64_t eventTickMs = 0;
+    IndicatorEventTailV1 indicatorMetrics{};
+    bool hasIndicatorMetrics = false;
+    IndicatorEventContextTailV2 indicatorContext{};
+    bool hasIndicatorContext = false;
+    std::string dynamicTextLabelUtf8{};
 };
 
 struct FrameInvokeInput final {

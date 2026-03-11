@@ -32,6 +32,7 @@ try {
       api_version: 2,
       entry: "effect.wasm",
       image_assets: Array.isArray(preset.imageAssets) ? preset.imageAssets : [],
+      surfaces: Array.isArray(preset.surfaces) ? preset.surfaces : ["effects"],
       input_kinds: Array.isArray(preset.inputKinds) ? preset.inputKinds : undefined,
       enable_frame_tick: typeof preset.enableFrameTick === "boolean" ? preset.enableFrameTick : undefined,
     });

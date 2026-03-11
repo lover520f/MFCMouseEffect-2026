@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "MouseFx/Core/Overlay/InputIndicatorKeyFilter.h"
 #include "MouseFx/Utils/StringUtils.h"
 #include "Platform/windows/Protocol/Win32InputTypes.h"
 #include "Platform/PlatformDisplayTopology.h"
@@ -168,7 +169,8 @@ void Win32InputIndicatorOverlay::OnClick(const ClickEvent& ev) {
         return;
     }
 
-    Trigger(kind, ToNativePoint(ev.pt));
+    std::wstring label = Utf8ToWString(BuildInputIndicatorClickLabel(ev.button, clickStreak));
+    Trigger(kind, ToNativePoint(ev.pt), std::move(label));
 }
 
 void Win32InputIndicatorOverlay::OnScroll(const ScrollEvent& ev) {
@@ -193,34 +195,8 @@ void Win32InputIndicatorOverlay::OnScroll(const ScrollEvent& ev) {
 }
 
 void Win32InputIndicatorOverlay::OnKey(const KeyEvent& ev) {
-    if (!config_.enabled || !config_.keyboardEnabled) return;
-
-    // Filter based on Display Mode
-    if (config_.keyDisplayMode == "shortcut") {
-        // Only show if modifier is held (Ctrl/Alt/Win)
-        if (!ev.ctrl && !ev.alt && !ev.win) return;
-    } 
-    else if (config_.keyDisplayMode == "significant") {
-        // ... (existing filtering logic) ...
-        // Hide standard typing keys if no modifier is held
-        const bool hasModifier = (ev.ctrl || ev.alt || ev.win);
-        if (!hasModifier) {
-            bool isTyping = false;
-            // A-Z
-            if (ev.vkCode >= 0x41 && ev.vkCode <= 0x5A) isTyping = true;
-            // 0-9
-            else if (ev.vkCode >= 0x30 && ev.vkCode <= 0x39) isTyping = true;
-            // Numpad 0-9
-            else if (ev.vkCode >= 0x60 && ev.vkCode <= 0x69) isTyping = true;
-            // Space
-            else if (ev.vkCode == VK_SPACE) isTyping = true;
-            // OEM Punctuation
-            else if (ev.vkCode >= 0xBA && ev.vkCode <= 0xC0) isTyping = true;
-            else if (ev.vkCode >= 0xDB && ev.vkCode <= 0xDE) isTyping = true;
-            else if (ev.vkCode == 0xE2) isTyping = true;
-            
-            if (isTyping) return;
-        }
+    if (!ShouldShowInputIndicatorKey(config_, ev)) {
+        return;
     }
 
     const uint64_t now = TickNow();

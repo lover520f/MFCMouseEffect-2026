@@ -155,6 +155,11 @@ struct WasmSpriteBatchOverlayRequest final {
     RenderSemantics semantics{};
 };
 
+enum class WasmTextOverlayChannel : uint8_t {
+    Effects = 0,
+    IndicatorLabel = 1,
+};
+
 WasmOverlayRenderResult ShowWasmImageOverlay(const WasmImageOverlayRequest& request);
 WasmOverlayRenderResult ShowWasmPulseOverlay(const WasmPulseOverlayRequest& request);
 WasmOverlayRenderResult ShowWasmPolylineOverlay(const WasmPolylineOverlayRequest& request);
@@ -174,7 +179,8 @@ WasmOverlayRenderResult ShowWasmTextOverlay(
     const ScreenPoint& screenPt,
     const std::wstring& text,
     uint32_t argb,
-    const TextConfig& textConfig);
+    const TextConfig& textConfig,
+    WasmTextOverlayChannel channel = WasmTextOverlayChannel::Effects);
 
 void CloseAllWasmOverlays();
 

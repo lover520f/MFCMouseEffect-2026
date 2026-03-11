@@ -8,11 +8,11 @@
 namespace mousefx {
 
 void InputIndicatorDispatchFeature::OnClick(AppController& controller, const ClickEvent& ev) const {
-    controller.IndicatorOverlay().OnClick(ev);
+    controller.DispatchInputIndicatorClick(ev);
 }
 
 void InputIndicatorDispatchFeature::OnScroll(AppController& controller, const ScrollEvent& ev) const {
-    controller.IndicatorOverlay().OnScroll(ev);
+    controller.DispatchInputIndicatorScroll(ev);
 }
 
 } // namespace mousefx

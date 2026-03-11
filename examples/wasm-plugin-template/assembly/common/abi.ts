@@ -2,6 +2,9 @@ export const API_VERSION: u32 = 2;
 
 export const EVENT_INPUT_BYTES: u32 = 28;
 export const FRAME_INPUT_BYTES: u32 = 24;
+export const INDICATOR_EVENT_TAIL_BYTES: u32 = 4;
+export const INDICATOR_EVENT_CONTEXT_TAIL_BYTES: u32 = 8;
+export const EVENT_TEXT_ID_INPUT_LABEL: u32 = 0xFFFFFFFF;
 
 export const COMMAND_KIND_SPAWN_TEXT: u16 = 1;
 export const COMMAND_KIND_SPAWN_IMAGE: u16 = 2;
@@ -364,11 +367,27 @@ export const EVENT_KIND_HOLD_UPDATE: u8 = 5;
 export const EVENT_KIND_HOLD_END: u8 = 6;
 export const EVENT_KIND_HOVER_START: u8 = 7;
 export const EVENT_KIND_HOVER_END: u8 = 8;
+export const EVENT_KIND_INDICATOR_CLICK: u8 = 9;
+export const EVENT_KIND_INDICATOR_SCROLL: u8 = 10;
+export const EVENT_KIND_INDICATOR_KEY: u8 = 11;
 
 export const EVENT_FLAG_SCROLL_HORIZONTAL: u8 = 0x01;
+export const INDICATOR_MODIFIER_CTRL: u8 = 0x01;
+export const INDICATOR_MODIFIER_SHIFT: u8 = 0x02;
+export const INDICATOR_MODIFIER_ALT: u8 = 0x04;
+export const INDICATOR_MODIFIER_META: u8 = 0x08;
+export const INDICATOR_DETAIL_FLAG_KEY_SYSTEM: u8 = 0x01;
 
 export function canHandleEvent(inputLen: u32, outputCap: u32, minOutputBytes: u32): bool {
   return inputLen >= EVENT_INPUT_BYTES && outputCap >= minOutputBytes;
+}
+
+export function hasIndicatorTail(inputLen: u32): bool {
+  return inputLen >= (EVENT_INPUT_BYTES + INDICATOR_EVENT_TAIL_BYTES);
+}
+
+export function hasIndicatorContextTail(inputLen: u32): bool {
+  return inputLen >= (EVENT_INPUT_BYTES + INDICATOR_EVENT_TAIL_BYTES + INDICATOR_EVENT_CONTEXT_TAIL_BYTES);
 }
 
 export function canHandleFrameInput(inputLen: u32, outputCap: u32, minOutputBytes: u32): bool {
@@ -415,6 +434,30 @@ export function readEventFlags(inputPtr: usize): u8 {
 
 export function readEventTickMs(inputPtr: usize): u64 {
   return load<u64>(inputPtr + 20);
+}
+
+export function readIndicatorSizePx(inputPtr: usize): u16 {
+  return load<u16>(inputPtr + EVENT_INPUT_BYTES + 0);
+}
+
+export function readIndicatorDurationMs(inputPtr: usize): u16 {
+  return load<u16>(inputPtr + EVENT_INPUT_BYTES + 2);
+}
+
+export function readIndicatorPrimaryCode(inputPtr: usize): u32 {
+  return load<u32>(inputPtr + EVENT_INPUT_BYTES + INDICATOR_EVENT_TAIL_BYTES + 0);
+}
+
+export function readIndicatorStreak(inputPtr: usize): u16 {
+  return load<u16>(inputPtr + EVENT_INPUT_BYTES + INDICATOR_EVENT_TAIL_BYTES + 4);
+}
+
+export function readIndicatorModifierMask(inputPtr: usize): u8 {
+  return load<u8>(inputPtr + EVENT_INPUT_BYTES + INDICATOR_EVENT_TAIL_BYTES + 6);
+}
+
+export function readIndicatorDetailFlags(inputPtr: usize): u8 {
+  return load<u8>(inputPtr + EVENT_INPUT_BYTES + INDICATOR_EVENT_TAIL_BYTES + 7);
 }
 
 export function readFrameCursorX(inputPtr: usize): i32 {

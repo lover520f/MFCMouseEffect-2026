@@ -5,6 +5,9 @@
 #include <memory>
 #include <vector>
 
+#include "MouseFx/Utils/StringUtils.h"
+#include "WasmDynamicTextLabelScope.h"
+
 namespace mousefx::wasm {
 
 namespace {
@@ -32,6 +35,17 @@ EventDispatchExecutionResult InvokeEventAndRender(
     result.routeActive = host.Enabled() && host.IsPluginLoaded();
     if (!result.routeActive) {
         return result;
+    }
+
+    std::unique_ptr<ScopedWasmDynamicTextLabel> scopedLabel;
+    if (!input.dynamicTextLabelUtf8.empty()) {
+        const bool fromIndicatorEvent =
+            input.kind == EventKind::IndicatorClick ||
+            input.kind == EventKind::IndicatorScroll ||
+            input.kind == EventKind::IndicatorKey;
+        scopedLabel = std::make_unique<ScopedWasmDynamicTextLabel>(
+            Utf8ToWString(input.dynamicTextLabelUtf8),
+            fromIndicatorEvent);
     }
 
     std::vector<uint8_t> commandBuffer;

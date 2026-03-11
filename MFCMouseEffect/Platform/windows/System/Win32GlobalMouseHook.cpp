@@ -303,7 +303,7 @@ LRESULT CALLBACK Win32GlobalMouseHook::KeyboardHookProc(int nCode, WPARAM wParam
                 instance_->keyboardModifierMask_.store(mask, std::memory_order_release);
             }
 
-            if (keyDown) {
+            if (keyDown || keyUp) {
                 const uint32_t mask = instance_->keyboardModifierMask_.load(std::memory_order_acquire);
                 auto* ev = new (std::nothrow) KeyEvent();
                 if (ev) {
@@ -314,7 +314,8 @@ LRESULT CALLBACK Win32GlobalMouseHook::KeyboardHookProc(int nCode, WPARAM wParam
                     }
                     ev->pt = ToScreenPoint(NormalizeScreenPoint(cursor));
                     ev->vkCode = static_cast<uint32_t>(kbd->vkCode);
-                    ev->systemKey = (wParam == WM_SYSKEYDOWN);
+                    ev->keyDown = keyDown;
+                    ev->systemKey = (wParam == WM_SYSKEYDOWN || wParam == WM_SYSKEYUP);
                     ev->ctrl = (mask & kModCtrl) != 0;
                     ev->shift = (mask & kModShift) != 0;
                     ev->alt = (mask & kModAlt) != 0 || (kbd->flags & LLKHF_ALTDOWN) != 0;

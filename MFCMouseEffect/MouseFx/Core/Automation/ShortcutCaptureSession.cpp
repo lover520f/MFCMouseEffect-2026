@@ -15,6 +15,7 @@ namespace {
 constexpr uint64_t kDefaultTimeoutMs = 10000;
 constexpr uint64_t kMinTimeoutMs = 1000;
 constexpr uint64_t kMaxTimeoutMs = 30000;
+constexpr uint64_t kModifierOnlyCaptureGraceMs = 240;
 
 } // namespace
 
@@ -50,6 +51,8 @@ std::string ShortcutCaptureSession::Start(uint64_t timeoutMs) {
     active_ = true;
     captured_ = false;
     capturedShortcut_.clear();
+    pendingModifierAtMs_ = 0;
+    pendingModifierShortcut_.clear();
     expireAtMs_ = NowMs() + boundedTimeout;
     return sessionId_;
 }
@@ -65,6 +68,8 @@ bool ShortcutCaptureSession::Stop(const std::string& sessionId) {
     active_ = false;
     captured_ = false;
     capturedShortcut_.clear();
+    pendingModifierAtMs_ = 0;
+    pendingModifierShortcut_.clear();
     return true;
 }
 
@@ -75,6 +80,16 @@ ShortcutCaptureSession::PollResult ShortcutCaptureSession::Poll(const std::strin
     }
 
     const uint64_t now = NowMs();
+    if (!captured_ &&
+        !pendingModifierShortcut_.empty() &&
+        pendingModifierAtMs_ > 0 &&
+        (now - pendingModifierAtMs_ >= kModifierOnlyCaptureGraceMs)) {
+        capturedShortcut_ = pendingModifierShortcut_;
+        captured_ = true;
+        pendingModifierAtMs_ = 0;
+        pendingModifierShortcut_.clear();
+    }
+
     if (captured_) {
         PollResult out{};
         out.state = PollState::Captured;
@@ -84,6 +99,8 @@ ShortcutCaptureSession::PollResult ShortcutCaptureSession::Poll(const std::strin
         active_ = false;
         captured_ = false;
         capturedShortcut_.clear();
+        pendingModifierAtMs_ = 0;
+        pendingModifierShortcut_.clear();
         return out;
     }
 
@@ -108,6 +125,8 @@ void ShortcutCaptureSession::OnKeyDown(const KeyEvent& ev) {
     if (NowMs() >= expireAtMs_) {
         active_ = false;
         captured_ = false;
+        pendingModifierAtMs_ = 0;
+        pendingModifierShortcut_.clear();
         return;
     }
 
@@ -116,8 +135,16 @@ void ShortcutCaptureSession::OnKeyDown(const KeyEvent& ev) {
         return;
     }
 
+    if (shortcut_text::IsModifierVirtualKey(ev.vkCode)) {
+        pendingModifierAtMs_ = NowMs();
+        pendingModifierShortcut_ = shortcut;
+        return;
+    }
+
     capturedShortcut_ = shortcut;
     captured_ = true;
+    pendingModifierAtMs_ = 0;
+    pendingModifierShortcut_.clear();
 }
 
 bool ShortcutCaptureSession::IsActive() const {

@@ -86,11 +86,33 @@ inline std::string JoinTokens(const std::vector<std::string>& tokens) {
 }
 
 inline std::string FormatShortcutText(const KeyEvent& ev) {
-    if (IsModifierVirtualKey(ev.vkCode)) {
-        return {};
-    }
+    const std::string metaLabel =
+#if defined(__APPLE__)
+        "Cmd";
+#else
+        "Win";
+#endif
+    const std::string altLabel =
+#if defined(__APPLE__)
+        "Option";
+#else
+        "Alt";
+#endif
 
-    const std::string keyToken = KeyTokenFromVirtualKey(ev.vkCode);
+    const bool primaryMetaPressed = ev.win || ev.meta;
+
+    std::string keyToken = KeyTokenFromVirtualKey(ev.vkCode);
+    if (keyToken.empty() && IsModifierVirtualKey(ev.vkCode)) {
+        if (primaryMetaPressed) {
+            keyToken = metaLabel;
+        } else if (ev.ctrl) {
+            keyToken = "Ctrl";
+        } else if (ev.shift) {
+            keyToken = "Shift";
+        } else if (ev.alt) {
+            keyToken = altLabel;
+        }
+    }
     if (keyToken.empty()) {
         return {};
     }
@@ -98,9 +120,11 @@ inline std::string FormatShortcutText(const KeyEvent& ev) {
     std::vector<std::string> tokens;
     if (ev.ctrl) tokens.emplace_back("Ctrl");
     if (ev.shift) tokens.emplace_back("Shift");
-    if (ev.alt) tokens.emplace_back("Alt");
-    if (ev.win) tokens.emplace_back("Win");
-    tokens.push_back(keyToken);
+    if (ev.alt) tokens.emplace_back(altLabel);
+    if (primaryMetaPressed) tokens.emplace_back(metaLabel);
+    if (std::find(tokens.begin(), tokens.end(), keyToken) == tokens.end()) {
+        tokens.push_back(keyToken);
+    }
     return JoinTokens(tokens);
 }
 
