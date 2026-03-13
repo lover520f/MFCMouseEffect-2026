@@ -11,7 +11,8 @@
   let gestureDebugPollTimer = 0;
   let gestureDebugPollInFlight = false;
 
-  const GESTURE_DEBUG_POLL_MS = 200;
+  const GESTURE_DEBUG_POLL_MS_IDLE = 180;
+  const GESTURE_DEBUG_POLL_MS_ACTIVE = 66;
 
   const I18N = window.MfxWebI18n || {};
 
@@ -190,7 +191,18 @@
       clearGestureDebugPollTimer();
       return;
     }
-    gestureDebugPollTimer = window.setTimeout(runGestureDebugPollLoop, GESTURE_DEBUG_POLL_MS);
+    const routeStatus = cachedState && cachedState.input_automation_gesture_route_status;
+    const stage = `${(routeStatus && routeStatus.last_stage) || ''}`.trim();
+    const activeStage =
+      stage === 'gesture_drag_snapshot' ||
+      stage === 'buttonless_arm' ||
+      stage === 'buttonless_snapshot' ||
+      stage === 'gesture_trigger' ||
+      stage === 'custom_trigger';
+    gestureDebugPollTimer = window.setTimeout(
+      runGestureDebugPollLoop,
+      activeStage ? GESTURE_DEBUG_POLL_MS_ACTIVE : GESTURE_DEBUG_POLL_MS_IDLE,
+    );
   }
 
   function refreshGestureDebugPolling() {
@@ -201,7 +213,7 @@
     if (gestureDebugPollTimer) {
       return;
     }
-    gestureDebugPollTimer = window.setTimeout(runGestureDebugPollLoop, GESTURE_DEBUG_POLL_MS);
+    gestureDebugPollTimer = window.setTimeout(runGestureDebugPollLoop, GESTURE_DEBUG_POLL_MS_IDLE);
   }
 
   function setActionButtonsEnabled(enabled) {

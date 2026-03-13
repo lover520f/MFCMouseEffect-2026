@@ -6,10 +6,11 @@
     normalizeGestureRouteStatus,
     recentGestureRouteEvents,
     selectLatestGestureEvent,
+    selectLatestMatchedGestureEvent,
     selectLatestRecognizedGestureEvent,
   } from './automation/gesture-route-debug-model.js';
   import {
-    buildGesturePreviewFromId,
+    buildGesturePreviewFromPoints,
     gestureIdDirectionHint,
   } from './automation/gesture-id-preview.js';
 
@@ -21,27 +22,96 @@
   let recentEvents = [];
   let latestGestureEvent = null;
   let latestRecognizedGestureEvent = null;
+  let latestMatchedGestureEvent = null;
   let recognizedGestureId = '';
   let matchedGestureId = '';
   let recognizedGesturePreview = null;
   let matchedGesturePreview = null;
+  let recognizedGesturePreviewDisplay = null;
+  let lastRecognizedPreviewPoints = [];
+  let lastMatchedPreviewPoints = [];
   let recognizedGestureHint = '';
   let matchedGestureHint = '';
+  let shouldResetRecognizedPreview = false;
 
   function t(key, fallback) {
     const value = `${i18n?.[key] || ''}`.trim();
     return value || fallback;
   }
 
+  function shouldResetPreviewByRouteStatus(status) {
+    const stage = `${status?.lastStage || ''}`.trim();
+    const reason = `${status?.lastReason || ''}`.trim();
+    if (stage === 'buttonless_move_skipped') {
+      return reason === 'awaiting_first_motion_arm';
+    }
+    if (stage === 'buttonless_idle_reset' && reason === 'idle_timeout') {
+      return true;
+    }
+    return false;
+  }
+
+  function samplePointsEvenly(points, maxPoints = 220) {
+    if (!Array.isArray(points) || points.length <= 0) {
+      return [];
+    }
+    const cap = Math.max(24, Math.min(320, Math.trunc(maxPoints)));
+    if (points.length <= cap) {
+      return points;
+    }
+    const out = [];
+    const step = (points.length - 1) / (cap - 1);
+    for (let i = 0; i < cap; i += 1) {
+      const index = Math.min(points.length - 1, Math.round(step * i));
+      out.push(points[index]);
+    }
+    return out;
+  }
+
   $: routeStatus = normalizeGestureRouteStatus(payloadState);
   $: recentEvents = recentGestureRouteEvents(routeStatus, 8);
   $: latestGestureEvent = selectLatestGestureEvent(routeStatus);
   $: latestRecognizedGestureEvent = selectLatestRecognizedGestureEvent(routeStatus);
+  $: latestMatchedGestureEvent = selectLatestMatchedGestureEvent(routeStatus);
+  $: shouldResetRecognizedPreview = shouldResetPreviewByRouteStatus(routeStatus);
   $: recognizedGestureId = `${routeStatus?.lastRecognizedGestureId || latestRecognizedGestureEvent?.recognizedGestureId || latestGestureEvent?.gestureId || ''}`.trim();
-  $: matchedGestureId = `${routeStatus?.lastMatchedGestureId || ''}`.trim();
-  $: recognizedGesturePreview = buildGesturePreviewFromId(recognizedGestureId, { width: 82, height: 34, padding: 4, fitRatio: 0.86 });
-  $: matchedGesturePreview = buildGesturePreviewFromId(matchedGestureId, { width: 82, height: 34, padding: 4, fitRatio: 0.86 });
-  $: recognizedGestureHint = gestureIdDirectionHint(recognizedGestureId);
+  $: matchedGestureId = `${routeStatus?.lastMatchedGestureId || latestMatchedGestureEvent?.matchedGestureId || ''}`.trim();
+  $: {
+    const current = routeStatus?.lastPreviewPoints?.length >= 2
+      ? routeStatus.lastPreviewPoints
+      : (latestRecognizedGestureEvent?.previewPoints?.length >= 2
+        ? latestRecognizedGestureEvent.previewPoints
+        : []);
+    if (shouldResetRecognizedPreview) {
+      lastRecognizedPreviewPoints = [];
+    } else if (current.length >= 2) {
+      lastRecognizedPreviewPoints = current;
+    }
+  }
+  $: {
+    const current = latestMatchedGestureEvent?.previewPoints?.length >= 2
+      ? latestMatchedGestureEvent.previewPoints
+      : [];
+    if (current.length >= 2) {
+      lastMatchedPreviewPoints = current;
+    }
+  }
+  $: recognizedGesturePreview = shouldResetRecognizedPreview
+    ? null
+    : buildGesturePreviewFromPoints(
+      samplePointsEvenly(lastRecognizedPreviewPoints, 220),
+      { width: 108, height: 52, padding: 5, fitRatio: 0.9 },
+    );
+  $: matchedGesturePreview = buildGesturePreviewFromPoints(
+    samplePointsEvenly(lastMatchedPreviewPoints, 220),
+    { width: 108, height: 52, padding: 5, fitRatio: 0.9 },
+  );
+  $: {
+    recognizedGesturePreviewDisplay =
+      recognizedGesturePreview ||
+      matchedGesturePreview;
+  }
+  $: recognizedGestureHint = shouldResetRecognizedPreview ? '' : gestureIdDirectionHint(recognizedGestureId);
   $: matchedGestureHint = gestureIdDirectionHint(matchedGestureId);
 
   function displayGestureLabel(gestureHint, gestureId) {
@@ -83,10 +153,10 @@
       <div class="workspace-debug-item">
         <span>{t('label_auto_gesture_debug_last_gesture', '识别手势')}</span>
         <div class="workspace-debug-gesture">
-          {#if recognizedGesturePreview}
+          {#if recognizedGesturePreviewDisplay}
             <svg
               class="workspace-debug-gesture__svg"
-              viewBox={`0 0 ${recognizedGesturePreview.width} ${recognizedGesturePreview.height}`}
+              viewBox={`0 0 ${recognizedGesturePreviewDisplay.width} ${recognizedGesturePreviewDisplay.height}`}
               aria-hidden="true"
             >
               <path
@@ -95,7 +165,7 @@
                 stroke="rgba(157, 186, 219, 0.45)"
                 stroke-width="1"
                 stroke-dasharray="2 2"
-                d={`M 4 ${(recognizedGesturePreview.height / 2).toFixed(1)} H ${(recognizedGesturePreview.width - 4).toFixed(1)} M ${(recognizedGesturePreview.width / 2).toFixed(1)} 3 V ${(recognizedGesturePreview.height - 3).toFixed(1)}`}
+                d={`M 4 ${(recognizedGesturePreviewDisplay.height / 2).toFixed(1)} H ${(recognizedGesturePreviewDisplay.width - 4).toFixed(1)} M ${(recognizedGesturePreviewDisplay.width / 2).toFixed(1)} 3 V ${(recognizedGesturePreviewDisplay.height - 3).toFixed(1)}`}
               />
               <path
                 class="workspace-debug-gesture__path"
@@ -104,28 +174,28 @@
                 stroke-width="2.1"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                d={recognizedGesturePreview.path}
+                d={recognizedGesturePreviewDisplay.path}
               />
-              {#if recognizedGesturePreview.startPoint}
+              {#if recognizedGesturePreviewDisplay.startPoint}
                 <circle
                   class="workspace-debug-gesture__start"
-                  cx={recognizedGesturePreview.startPoint.x}
-                  cy={recognizedGesturePreview.startPoint.y}
+                  cx={recognizedGesturePreviewDisplay.startPoint.x}
+                  cy={recognizedGesturePreviewDisplay.startPoint.y}
                   r="2.3"
                   fill="#ebf4ff"
                   stroke="#2f7ed8"
                   stroke-width="1.5"
                 />
               {/if}
-              {#if recognizedGesturePreview.arrowPath}
+              {#if recognizedGesturePreviewDisplay.arrowPath}
                 <path
                   class="workspace-debug-gesture__arrow"
-                  fill="none"
+                  fill="#ebf4ff"
                   stroke="#2f7ed8"
-                  stroke-width="2.2"
+                  stroke-width="1.8"
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  d={recognizedGesturePreview.arrowPath}
+                  d={recognizedGesturePreviewDisplay.arrowPath}
                 />
               {/if}
             </svg>
@@ -175,9 +245,9 @@
               {#if matchedGesturePreview.arrowPath}
                 <path
                   class="workspace-debug-gesture__arrow"
-                  fill="none"
+                  fill="#ebf4ff"
                   stroke="#2f7ed8"
-                  stroke-width="2.2"
+                  stroke-width="1.8"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   d={matchedGesturePreview.arrowPath}
@@ -319,8 +389,8 @@
   }
 
   .workspace-debug-gesture__svg {
-    width: 82px;
-    height: 34px;
+    width: 108px;
+    height: 52px;
     flex: 0 0 auto;
     border: 1px solid #c9dff5;
     border-radius: 8px;

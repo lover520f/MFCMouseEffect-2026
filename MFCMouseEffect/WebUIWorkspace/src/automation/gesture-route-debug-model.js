@@ -17,6 +17,26 @@ function asBool(value) {
   return value === true;
 }
 
+function asPreviewPoints(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const out = [];
+  for (const item of value) {
+    const point = asObject(item);
+    if (!point) {
+      continue;
+    }
+    const x = Number(point.x);
+    const y = Number(point.y);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      continue;
+    }
+    out.push({ x, y });
+  }
+  return out;
+}
+
 function normalizeGestureRouteEvent(value) {
   const source = asObject(value);
   if (!source) {
@@ -48,6 +68,8 @@ function normalizeGestureRouteEvent(value) {
     bestWindowStart: asNumber(source.best_window_start, -1),
     bestWindowEnd: asNumber(source.best_window_end, -1),
     runnerUpScore: asNumber(source.runner_up_score, -1),
+    previewPathHash: asNumber(source.preview_path_hash, 0),
+    previewPoints: asPreviewPoints(source.preview_points),
     modifiers: {
       primary: asBool(modifiers.primary),
       shift: asBool(modifiers.shift),
@@ -84,6 +106,8 @@ export function normalizeGestureRouteStatus(state) {
     lastBestWindowStart: asNumber(source.last_best_window_start, -1),
     lastBestWindowEnd: asNumber(source.last_best_window_end, -1),
     lastRunnerUpScore: asNumber(source.last_runner_up_score, -1),
+    lastPreviewPathHash: asNumber(source.last_preview_path_hash, 0),
+    lastPreviewPoints: asPreviewPoints(source.last_preview_points),
     lastEventSeq: asNumber(source.last_event_seq, 0),
     modifiers: {
       primary: modifiers.primary === true,
