@@ -4,8 +4,10 @@
 #include "MouseFx/Utils/StringUtils.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cmath>
 #include <limits>
+#include <unordered_set>
 
 namespace mousefx {
 namespace {
@@ -32,6 +34,8 @@ struct StrokeStructureFeature final {
     std::vector<double> segmentFractions;
     std::vector<StrokeTurnFeature> turns;
     std::vector<int> turnSigns;
+    std::vector<double> turnAngles;
+    std::vector<double> turnRhythmFractions;
     double startSegmentFraction = 0.0;
     double endSegmentFraction = 0.0;
     double chordToPathRatio = 0.0;
@@ -308,44 +312,89 @@ void DouglasPeuckerCollect(
     DouglasPeuckerCollect(stroke, farthestIndex, end, epsilon, outIndices);
 }
 
+double TurnAngleDegrees(
+    const NormalizedPoint& a,
+    const NormalizedPoint& b,
+    const NormalizedPoint& c) {
+    const double abx = b.x - a.x;
+    const double aby = b.y - a.y;
+    const double bcx = c.x - b.x;
+    const double bcy = c.y - b.y;
+    const double abLen = std::sqrt(abx * abx + aby * aby);
+    const double bcLen = std::sqrt(bcx * bcx + bcy * bcy);
+    if (abLen <= 1e-6 || bcLen <= 1e-6) {
+        return 0.0;
+    }
+    const double dot = std::clamp((abx * bcx + aby * bcy) / (abLen * bcLen), -1.0, 1.0);
+    return std::acos(dot) * (180.0 / 3.14159265358979323846);
+}
+
 std::vector<NormalizedPoint> SimplifyStrokeAnchors(const std::vector<NormalizedPoint>& stroke) {
     if (stroke.size() <= 2) {
         return stroke;
     }
 
-    const size_t sampleCount = std::clamp<size_t>(stroke.size(), 18, 42);
+    const size_t sampleCount = std::clamp<size_t>(stroke.size(), 16, 56);
     const std::vector<NormalizedPoint> sampled = ResampleStroke(stroke, sampleCount);
     if (sampled.size() <= 2) {
         return sampled;
     }
 
+    std::vector<bool> protectedTurn(sampled.size(), false);
+    for (size_t i = 1; i + 1 < sampled.size(); ++i) {
+        const double prevLen = PointDistance(sampled[i - 1], sampled[i]);
+        const double nextLen = PointDistance(sampled[i], sampled[i + 1]);
+        if (prevLen <= 1.8 || nextLen <= 1.8) {
+            continue;
+        }
+        const double turnAngle = TurnAngleDegrees(sampled[i - 1], sampled[i], sampled[i + 1]);
+        const double middleDistance = PointToSegmentDistance(sampled[i], sampled[i - 1], sampled[i + 1]);
+        // Preserve meaningful direction changes so zig-zag families (W/M/complex) are not flattened.
+        if (turnAngle >= 34.0 && middleDistance >= 1.4) {
+            protectedTurn[i] = true;
+        }
+    }
+
     std::vector<size_t> anchorIndices{0};
-    DouglasPeuckerCollect(sampled, 0, sampled.size() - 1, 5.5, &anchorIndices);
+    DouglasPeuckerCollect(sampled, 0, sampled.size() - 1, 3.8, &anchorIndices);
     anchorIndices.push_back(sampled.size() - 1);
+    for (size_t i = 1; i + 1 < sampled.size(); ++i) {
+        if (protectedTurn[i]) {
+            anchorIndices.push_back(i);
+        }
+    }
     std::sort(anchorIndices.begin(), anchorIndices.end());
     anchorIndices.erase(std::unique(anchorIndices.begin(), anchorIndices.end()), anchorIndices.end());
+
+    bool changed = true;
+    while (changed && anchorIndices.size() >= 3) {
+        changed = false;
+        for (size_t i = 1; i + 1 < anchorIndices.size(); ++i) {
+            const size_t currentIndex = anchorIndices[i];
+            if (protectedTurn[currentIndex]) {
+                continue;
+            }
+            const size_t prevIndex = anchorIndices[i - 1];
+            const size_t nextIndex = anchorIndices[i + 1];
+            const double middleDistance =
+                PointToSegmentDistance(sampled[currentIndex], sampled[prevIndex], sampled[nextIndex]);
+            const double prevLength = PointDistance(sampled[prevIndex], sampled[currentIndex]);
+            const double nextLength = PointDistance(sampled[currentIndex], sampled[nextIndex]);
+            const double turnAngle =
+                TurnAngleDegrees(sampled[prevIndex], sampled[currentIndex], sampled[nextIndex]);
+            if (middleDistance <= 3.2 &&
+                (prevLength <= 10.5 || nextLength <= 10.5 || turnAngle <= 24.0)) {
+                anchorIndices.erase(anchorIndices.begin() + static_cast<std::ptrdiff_t>(i));
+                changed = true;
+                break;
+            }
+        }
+    }
 
     std::vector<NormalizedPoint> anchors;
     anchors.reserve(anchorIndices.size());
     for (const size_t index : anchorIndices) {
         anchors.push_back(sampled[index]);
-    }
-
-    bool changed = true;
-    while (changed && anchors.size() >= 3) {
-        changed = false;
-        for (size_t i = 1; i + 1 < anchors.size(); ++i) {
-            const double middleDistance =
-                PointToSegmentDistance(anchors[i], anchors[i - 1], anchors[i + 1]);
-            const double prevLength = PointDistance(anchors[i - 1], anchors[i]);
-            const double nextLength = PointDistance(anchors[i], anchors[i + 1]);
-            if (middleDistance <= 4.0 &&
-                (prevLength <= 12.0 || nextLength <= 12.0 || middleDistance <= 2.6)) {
-                anchors.erase(anchors.begin() + static_cast<std::ptrdiff_t>(i));
-                changed = true;
-                break;
-            }
-        }
     }
     return anchors;
 }
@@ -401,6 +450,20 @@ StrokeStructureFeature BuildStrokeStructureFeature(const std::vector<NormalizedP
         const UnitVector& next = feature.segmentDirections[i];
         const double cross = prev.x * next.y - prev.y * next.x;
         feature.turnSigns.push_back((cross > 0.08) ? 1 : ((cross < -0.08) ? -1 : 0));
+        const double dot = std::clamp(prev.x * next.x + prev.y * next.y, -1.0, 1.0);
+        feature.turnAngles.push_back(
+            std::acos(dot) * (180.0 / 3.14159265358979323846));
+    }
+    if (!feature.turns.empty()) {
+        feature.turnRhythmFractions.reserve(feature.turns.size() + 1);
+        double prevProgress = 0.0;
+        for (const StrokeTurnFeature& turn : feature.turns) {
+            const double clampedProgress = std::clamp(turn.progress, 0.0, 1.0);
+            feature.turnRhythmFractions.push_back(
+                std::max(0.0, clampedProgress - prevProgress));
+            prevProgress = clampedProgress;
+        }
+        feature.turnRhythmFractions.push_back(std::max(0.0, 1.0 - prevProgress));
     }
     return feature;
 }
@@ -676,6 +739,83 @@ double TurnSignScore(
     return std::clamp(1.0 - (static_cast<double>(mismatches) / static_cast<double>(maxLen)), 0.0, 1.0) * 100.0;
 }
 
+double TurnAngleProfileScore(
+    const StrokeStructureFeature& lhs,
+    const StrokeStructureFeature& rhs) {
+    if (lhs.turnAngles.empty() && rhs.turnAngles.empty()) {
+        return 100.0;
+    }
+    if (lhs.turnAngles.empty() || rhs.turnAngles.empty()) {
+        return 20.0;
+    }
+
+    const size_t pairCount = std::min(lhs.turnAngles.size(), rhs.turnAngles.size());
+    double scoreSum = 0.0;
+    for (size_t i = 0; i < pairCount; ++i) {
+        const double angleDiff = std::abs(lhs.turnAngles[i] - rhs.turnAngles[i]);
+        double turnScore = std::clamp(100.0 - angleDiff * 0.85, 0.0, 100.0);
+        if (i < lhs.turnSigns.size() && i < rhs.turnSigns.size() &&
+            lhs.turnSigns[i] != 0 && rhs.turnSigns[i] != 0 &&
+            lhs.turnSigns[i] != rhs.turnSigns[i]) {
+            turnScore *= 0.72;
+        }
+        scoreSum += turnScore;
+    }
+
+    const double meanScore = scoreSum / static_cast<double>(pairCount);
+    const double countRatio =
+        static_cast<double>(pairCount) /
+        static_cast<double>(std::max(lhs.turnAngles.size(), rhs.turnAngles.size()));
+    return std::clamp(meanScore * countRatio, 0.0, 100.0);
+}
+
+double TurnRhythmScore(
+    const StrokeStructureFeature& lhs,
+    const StrokeStructureFeature& rhs) {
+    if (lhs.turnRhythmFractions.empty() && rhs.turnRhythmFractions.empty()) {
+        return 100.0;
+    }
+    if (lhs.turnRhythmFractions.empty() || rhs.turnRhythmFractions.empty()) {
+        return 20.0;
+    }
+
+    const size_t pairCount =
+        std::min(lhs.turnRhythmFractions.size(), rhs.turnRhythmFractions.size());
+    double diffSum = 0.0;
+    for (size_t i = 0; i < pairCount; ++i) {
+        diffSum += std::abs(lhs.turnRhythmFractions[i] - rhs.turnRhythmFractions[i]);
+    }
+    diffSum /= static_cast<double>(pairCount);
+
+    const double countRatio =
+        static_cast<double>(pairCount) /
+        static_cast<double>(std::max(lhs.turnRhythmFractions.size(), rhs.turnRhythmFractions.size()));
+    return std::clamp((100.0 - diffSum * 160.0) * countRatio, 0.0, 100.0);
+}
+
+double TurnAlternationRatio(const StrokeStructureFeature& feature) {
+    if (feature.turnSigns.size() < 2) {
+        return 0.0;
+    }
+    size_t alternations = 0;
+    size_t comparable = 0;
+    for (size_t i = 1; i < feature.turnSigns.size(); ++i) {
+        const int prev = feature.turnSigns[i - 1];
+        const int curr = feature.turnSigns[i];
+        if (prev == 0 || curr == 0) {
+            continue;
+        }
+        ++comparable;
+        if ((prev > 0 && curr < 0) || (prev < 0 && curr > 0)) {
+            ++alternations;
+        }
+    }
+    if (comparable == 0) {
+        return 0.0;
+    }
+    return static_cast<double>(alternations) / static_cast<double>(comparable);
+}
+
 double TurnLayoutScore(
     const StrokeStructureFeature& lhs,
     const StrokeStructureFeature& rhs) {
@@ -762,23 +902,28 @@ double StructureScore(
     const size_t lhsSegments = lhsFeature.segmentDirections.size();
     const size_t rhsSegments = rhsFeature.segmentDirections.size();
     const double segmentCountScore = std::clamp(
-        100.0 - static_cast<double>(std::max(lhsSegments, rhsSegments) - std::min(lhsSegments, rhsSegments)) * 36.0,
+        100.0 - static_cast<double>(std::max(lhsSegments, rhsSegments) - std::min(lhsSegments, rhsSegments)) * 28.0,
         0.0,
         100.0);
     const double segmentDirectionScore = SegmentDirectionScore(lhsFeature, rhsFeature);
     const double segmentCodeScore = SegmentCodeSequenceScore(lhsFeature, rhsFeature);
     const double turnLayoutScore = TurnLayoutScore(lhsFeature, rhsFeature);
     const double turnSignScore = TurnSignScore(lhsFeature, rhsFeature);
+    const double turnAngleProfileScore = TurnAngleProfileScore(lhsFeature, rhsFeature);
+    const double turnRhythmScore = TurnRhythmScore(lhsFeature, rhsFeature);
     const double segmentBalanceScore = SegmentBalanceScore(lhsFeature, rhsFeature);
     const double singleTurnSymmetryScore = SingleTurnSymmetryScore(lhsFeature, rhsFeature);
     return std::clamp(
-        segmentCountScore * 0.10 +
-        segmentDirectionScore * 0.16 +
-        segmentCodeScore * 0.18 +
-        turnLayoutScore * 0.24 +
-        turnSignScore * 0.14 +
+        segmentCountScore * 0.08 +
+        segmentDirectionScore * 0.14 +
+        segmentCodeScore * 0.16 +
+        turnLayoutScore * 0.18 +
+        turnSignScore * 0.10 +
+        turnAngleProfileScore * 0.10 +
+        turnRhythmScore * 0.06 +
         segmentBalanceScore * 0.10 +
-        singleTurnSymmetryScore * 0.08,
+        singleTurnSymmetryScore * 0.08 +
+        std::max(turnSignScore, turnAngleProfileScore) * 0.10,
         0.0,
         100.0);
 }
@@ -837,11 +982,22 @@ double MultiTurnPatternBonus(
     }
     const double turnScore = TurnSignScore(lhsFeature, rhsFeature);
     const double segmentCodeScore = SegmentCodeSequenceScore(lhsFeature, rhsFeature);
-    const double consistency = turnScore * 0.58 + segmentCodeScore * 0.42;
-    if (consistency <= 68.0) {
+    const double turnAngleScore = TurnAngleProfileScore(lhsFeature, rhsFeature);
+    const double lhsAlternation = TurnAlternationRatio(lhsFeature);
+    const double rhsAlternation = TurnAlternationRatio(rhsFeature);
+    const double alternationScore = std::clamp(
+        100.0 - std::abs(lhsAlternation - rhsAlternation) * 100.0,
+        0.0,
+        100.0);
+    const double consistency =
+        turnScore * 0.36 +
+        segmentCodeScore * 0.28 +
+        turnAngleScore * 0.24 +
+        alternationScore * 0.12;
+    if (consistency <= 64.0) {
         return 0.0;
     }
-    return std::clamp((consistency - 68.0) * 0.55, 0.0, 16.0);
+    return std::clamp((consistency - 64.0) * 0.62, 0.0, 20.0);
 }
 
 double MultiSegmentIntentBonus(
@@ -858,6 +1014,201 @@ double MultiSegmentIntentBonus(
         return 0.0;
     }
     return std::clamp((directionScore - 72.0) * 0.42, 0.0, 9.0);
+}
+
+double DiagonalSegmentRatio(const StrokeStructureFeature& feature);
+
+double ZigZagFamilyIntentBonus(
+    const StrokeStructureFeature& lhsFeature,
+    const StrokeStructureFeature& rhsFeature) {
+    if (lhsFeature.turnSigns.size() < 2 || rhsFeature.turnSigns.size() < 2) {
+        return 0.0;
+    }
+    if (lhsFeature.segmentDirections.size() < 3 || rhsFeature.segmentDirections.size() < 3) {
+        return 0.0;
+    }
+    const double lhsAlternation = TurnAlternationRatio(lhsFeature);
+    const double rhsAlternation = TurnAlternationRatio(rhsFeature);
+    if (lhsAlternation < 0.85 || rhsAlternation < 0.85) {
+        return 0.0;
+    }
+
+    const double segmentCodeScore = SegmentCodeSequenceScore(lhsFeature, rhsFeature);
+    const double turnAngleProfileScore = TurnAngleProfileScore(lhsFeature, rhsFeature);
+    const double turnRhythmScore = TurnRhythmScore(lhsFeature, rhsFeature);
+    const double consistency =
+        segmentCodeScore * 0.42 +
+        turnAngleProfileScore * 0.34 +
+        turnRhythmScore * 0.24;
+    if (consistency <= 62.0) {
+        return 0.0;
+    }
+    return std::clamp((consistency - 62.0) * 0.40, 0.0, 12.0);
+}
+
+double ZigZagStrongMultiTurnBonus(
+    const StrokeStructureFeature& lhsFeature,
+    const StrokeStructureFeature& rhsFeature) {
+    if (lhsFeature.turns.size() < 3 || rhsFeature.turns.size() < 3) {
+        return 0.0;
+    }
+    if (lhsFeature.segmentDirections.size() < 4 || rhsFeature.segmentDirections.size() < 4) {
+        return 0.0;
+    }
+
+    const double lhsAlternation = TurnAlternationRatio(lhsFeature);
+    const double rhsAlternation = TurnAlternationRatio(rhsFeature);
+    if (lhsAlternation < 0.90 || rhsAlternation < 0.90) {
+        return 0.0;
+    }
+    const double lhsDiagonalRatio = DiagonalSegmentRatio(lhsFeature);
+    const double rhsDiagonalRatio = DiagonalSegmentRatio(rhsFeature);
+    if (lhsDiagonalRatio < 0.85 || rhsDiagonalRatio < 0.85) {
+        return 0.0;
+    }
+
+    const double segmentCodeScore = SegmentCodeSequenceScore(lhsFeature, rhsFeature);
+    const double turnAngleProfileScore = TurnAngleProfileScore(lhsFeature, rhsFeature);
+    const double turnLayoutScore = TurnLayoutScore(lhsFeature, rhsFeature);
+    const double turnRhythmScore = TurnRhythmScore(lhsFeature, rhsFeature);
+    const double consistency =
+        segmentCodeScore * 0.30 +
+        turnAngleProfileScore * 0.28 +
+        turnLayoutScore * 0.24 +
+        turnRhythmScore * 0.18;
+    if (consistency <= 48.0) {
+        return 0.0;
+    }
+    return std::clamp((consistency - 48.0) * 0.58, 0.0, 18.0);
+}
+
+double DiagonalSegmentRatio(const StrokeStructureFeature& feature);
+
+double SingleTurnDiagonalIntentBonus(
+    const StrokeStructureFeature& lhsFeature,
+    const StrokeStructureFeature& rhsFeature,
+    double segmentCodeScore,
+    double turnAngleProfileScore,
+    double singleTurnSymmetryScore) {
+    if (lhsFeature.segmentDirections.size() != 2 ||
+        rhsFeature.segmentDirections.size() != 2 ||
+        lhsFeature.turns.size() != 1 ||
+        rhsFeature.turns.size() != 1) {
+        return 0.0;
+    }
+
+    const double lhsDiagonalRatio = DiagonalSegmentRatio(lhsFeature);
+    const double rhsDiagonalRatio = DiagonalSegmentRatio(rhsFeature);
+    if (lhsDiagonalRatio < 0.95 || rhsDiagonalRatio < 0.95) {
+        return 0.0;
+    }
+    if (segmentCodeScore < 62.0 || turnAngleProfileScore < 58.0) {
+        return 0.0;
+    }
+
+    const double consistency =
+        segmentCodeScore * 0.42 +
+        turnAngleProfileScore * 0.34 +
+        singleTurnSymmetryScore * 0.24;
+    if (consistency <= 64.0) {
+        return 0.0;
+    }
+    return std::clamp((consistency - 64.0) * 0.20, 0.0, 8.5);
+}
+
+double DiagonalSegmentRatio(const StrokeStructureFeature& feature) {
+    if (feature.segmentCodes.empty()) {
+        return 0.0;
+    }
+    size_t diagonalCount = 0;
+    for (const char code : feature.segmentCodes) {
+        if (code == 'Q' || code == 'A' || code == 'C' || code == 'E') {
+            ++diagonalCount;
+        }
+    }
+    return static_cast<double>(diagonalCount) /
+        static_cast<double>(feature.segmentCodes.size());
+}
+
+double StructuralMismatchPenalty(
+    const StrokeStructureFeature& lhsFeature,
+    const StrokeStructureFeature& rhsFeature,
+    double segmentCodeScore,
+    double turnSignScore,
+    double turnAngleProfileScore,
+    double singleTurnSymmetryScore) {
+    const size_t lhsSegments = lhsFeature.segmentDirections.size();
+    const size_t rhsSegments = rhsFeature.segmentDirections.size();
+    const size_t lhsTurns = lhsFeature.turns.size();
+    const size_t rhsTurns = rhsFeature.turns.size();
+
+    double penalty = 0.0;
+    const size_t segmentGap =
+        (lhsSegments > rhsSegments) ? (lhsSegments - rhsSegments) : (rhsSegments - lhsSegments);
+    const size_t turnGap =
+        (lhsTurns > rhsTurns) ? (lhsTurns - rhsTurns) : (rhsTurns - lhsTurns);
+
+    if (segmentGap >= 2) {
+        penalty += std::min(28.0, 12.0 + static_cast<double>(segmentGap - 1) * 8.0);
+    } else if (segmentGap == 1 && segmentCodeScore < 72.0) {
+        penalty += 7.0;
+    }
+
+    if (turnGap >= 2) {
+        penalty += std::min(26.0, 12.0 + static_cast<double>(turnGap - 1) * 7.0);
+    } else if (turnGap == 1 && turnSignScore < 70.0) {
+        penalty += 8.0;
+    }
+
+    // Separate single-turn families (V/corners/check-like shapes) from multi-turn zig-zag families.
+    if ((lhsTurns == 1 && rhsTurns >= 2) || (rhsTurns == 1 && lhsTurns >= 2)) {
+        penalty += 16.0;
+    }
+
+    // Keep straight lines distinct from corner/zig-zag shapes unless direction evidence is very strong.
+    if ((lhsTurns == 0) != (rhsTurns == 0)) {
+        penalty += 12.0;
+    }
+
+    // For two-segment families, asymmetry mismatch is a strong signal that V-like intent differs.
+    if (lhsSegments == 2 && rhsSegments == 2 &&
+        lhsTurns == 1 && rhsTurns == 1 &&
+        singleTurnSymmetryScore < 78.0) {
+        penalty += (78.0 - singleTurnSymmetryScore) * 0.16;
+    }
+
+    // If directional codes already disagree heavily, do not let shape DTW pull the score back up.
+    if (segmentCodeScore < 58.0) {
+        penalty += (58.0 - segmentCodeScore) * 0.34;
+    }
+
+    const double diagonalRatioGap =
+        std::abs(DiagonalSegmentRatio(lhsFeature) - DiagonalSegmentRatio(rhsFeature));
+    if (diagonalRatioGap > 0.34) {
+        penalty += std::min(16.0, diagonalRatioGap * 20.0);
+    }
+
+    // Distinguish diagonal V-like families from orthogonal corner families.
+    if (lhsSegments == 2 && rhsSegments == 2 &&
+        lhsTurns == 1 && rhsTurns == 1 &&
+        turnAngleProfileScore < 82.0) {
+        penalty += (82.0 - turnAngleProfileScore) * 0.12;
+    }
+
+    // For zig-zag families (W-like), allow one-segment simplification drift when alternation remains strong.
+    if (lhsTurns >= 2 && rhsTurns >= 2 &&
+        std::abs(static_cast<int>(lhsSegments) - static_cast<int>(rhsSegments)) == 1) {
+        const double lhsAlternation = TurnAlternationRatio(lhsFeature);
+        const double rhsAlternation = TurnAlternationRatio(rhsFeature);
+        const double alternationMin = std::min(lhsAlternation, rhsAlternation);
+        if (alternationMin >= 0.85 &&
+            turnAngleProfileScore >= 72.0 &&
+            segmentCodeScore >= 58.0) {
+            penalty -= 7.0;
+        }
+    }
+
+    return std::clamp(penalty, 0.0, 42.0);
 }
 
 double StrokeSimilarityScore(
@@ -883,6 +1234,9 @@ double StrokeSimilarityScore(
         0.0,
         100.0);
     const double singleTurnSymmetryScore = SingleTurnSymmetryScore(lhsStructure, rhsStructure);
+    const double segmentCodeScore = SegmentCodeSequenceScore(lhsStructure, rhsStructure);
+    const double turnSignScore = TurnSignScore(lhsStructure, rhsStructure);
+    const double turnAngleProfileScore = TurnAngleProfileScore(lhsStructure, rhsStructure);
     if (lhsStructure.segmentDirections.size() == 2 &&
         rhsStructure.segmentDirections.size() == 2 &&
         lhsStructure.turns.size() == 1 &&
@@ -897,6 +1251,21 @@ double StrokeSimilarityScore(
     }
     finalScore += MultiTurnPatternBonus(lhsStructure, rhsStructure);
     finalScore += MultiSegmentIntentBonus(lhsStructure, rhsStructure, directionScore);
+    finalScore += ZigZagFamilyIntentBonus(lhsStructure, rhsStructure);
+    finalScore += ZigZagStrongMultiTurnBonus(lhsStructure, rhsStructure);
+    finalScore += SingleTurnDiagonalIntentBonus(
+        lhsStructure,
+        rhsStructure,
+        segmentCodeScore,
+        turnAngleProfileScore,
+        singleTurnSymmetryScore);
+    finalScore -= StructuralMismatchPenalty(
+        lhsStructure,
+        rhsStructure,
+        segmentCodeScore,
+        turnSignScore,
+        turnAngleProfileScore,
+        singleTurnSymmetryScore);
     return std::clamp(finalScore, 0.0, 100.0);
 }
 
@@ -926,6 +1295,290 @@ double GestureSimilarityScore(
         return -1.0;
     }
     return weightedScore / totalWeight;
+}
+
+double StrokeLengthPx(const std::vector<ScreenPoint>& stroke) {
+    if (stroke.size() < 2) {
+        return 0.0;
+    }
+    double length = 0.0;
+    for (size_t i = 1; i < stroke.size(); ++i) {
+        length += PointDistance(stroke[i - 1], stroke[i]);
+    }
+    return length;
+}
+
+struct StrokeWindowMatch final {
+    double bestScore = -1.0;
+    double runnerUpScore = -1.0;
+    size_t bestWindowStart = 0;
+    size_t bestWindowEnd = 0;
+    size_t candidateCount = 0;
+};
+
+std::vector<ScreenPoint> SliceStroke(
+    const std::vector<ScreenPoint>& stroke,
+    size_t beginIndex,
+    size_t endIndex) {
+    if (beginIndex >= endIndex || endIndex > stroke.size()) {
+        return {};
+    }
+    return std::vector<ScreenPoint>(stroke.begin() + static_cast<std::ptrdiff_t>(beginIndex),
+                                    stroke.begin() + static_cast<std::ptrdiff_t>(endIndex));
+}
+
+bool HasAlignedStrokeTimes(
+    const std::vector<ScreenPoint>& stroke,
+    const std::vector<uint32_t>* strokeTimesMs) {
+    return strokeTimesMs != nullptr &&
+        strokeTimesMs->size() == stroke.size() &&
+        strokeTimesMs->size() >= 2;
+}
+
+std::pair<size_t, size_t> TimeWindowToPointWindow(
+    const std::vector<uint32_t>& strokeTimesMs,
+    uint32_t windowStartMs,
+    uint32_t windowEndMs) {
+    if (strokeTimesMs.empty() || windowStartMs >= windowEndMs) {
+        return {0, 0};
+    }
+    const auto first = strokeTimesMs.begin();
+    const auto last = strokeTimesMs.end();
+    const auto beginIt = std::lower_bound(first, last, windowStartMs);
+    const auto endIt = std::upper_bound(first, last, windowEndMs);
+    if (beginIt == last || endIt == first || beginIt >= endIt) {
+        return {0, 0};
+    }
+    const size_t beginIndex = static_cast<size_t>(std::distance(first, beginIt));
+    const size_t endIndex = static_cast<size_t>(std::distance(first, endIt));
+    return {beginIndex, endIndex};
+}
+
+StrokeWindowMatch MatchSingleStroke(
+    const std::vector<AutomationKeyBinding::GesturePoint>& templateStroke,
+    const std::vector<ScreenPoint>& capturedStroke,
+    const std::vector<uint32_t>* capturedStrokeTimesMs,
+    const GestureMatchOptions& options) {
+    StrokeWindowMatch match{};
+    if (templateStroke.size() < 2 || capturedStroke.size() < 2) {
+        return match;
+    }
+    if (options.minEffectiveStrokeLengthPx > 0.0 &&
+        StrokeLengthPx(capturedStroke) + 1e-6 < options.minEffectiveStrokeLengthPx) {
+        return match;
+    }
+
+    const std::vector<std::vector<NormalizedPoint>> normalizedTemplate =
+        NormalizeTemplateStrokes({templateStroke});
+    if (normalizedTemplate.size() != 1 || normalizedTemplate[0].size() < 2) {
+        return match;
+    }
+    const StrokeStructureFeature templateStructure = BuildStrokeStructureFeature(normalizedTemplate[0]);
+    const std::vector<std::vector<NormalizedPoint>> normalizedCapturedFull =
+        NormalizeCapturedStrokes({capturedStroke});
+    const StrokeStructureFeature capturedFullStructure =
+        (normalizedCapturedFull.size() == 1 && normalizedCapturedFull[0].size() >= 2)
+            ? BuildStrokeStructureFeature(normalizedCapturedFull[0])
+            : StrokeStructureFeature{};
+
+    std::unordered_set<uint64_t> visitedWindows;
+    auto evaluateCandidate = [&](size_t beginIndex, size_t endIndex) {
+        if (beginIndex >= endIndex || endIndex > capturedStroke.size()) {
+            return;
+        }
+        const uint64_t windowKey =
+            (static_cast<uint64_t>(beginIndex) << 32) |
+            static_cast<uint64_t>(endIndex);
+        if (!visitedWindows.insert(windowKey).second) {
+            return;
+        }
+        const std::vector<ScreenPoint> sliced = SliceStroke(capturedStroke, beginIndex, endIndex);
+        if (sliced.size() < 2) {
+            return;
+        }
+        const std::vector<std::vector<NormalizedPoint>> normalizedCaptured =
+            NormalizeCapturedStrokes({sliced});
+        if (normalizedCaptured.size() != 1 || normalizedCaptured[0].size() < 2) {
+            return;
+        }
+        double score = GestureSimilarityScore(normalizedTemplate, normalizedCaptured);
+        if (score < 0.0) {
+            return;
+        }
+        const double coverageRatio =
+            static_cast<double>(sliced.size()) / static_cast<double>(capturedStroke.size());
+        const size_t templateTurns = templateStructure.turns.size();
+        const size_t capturedFullTurns = capturedFullStructure.turns.size();
+        if (capturedFullTurns >= templateTurns + 2 && coverageRatio < 0.85) {
+            const size_t extraTurns = capturedFullTurns - templateTurns;
+            const double complexityPenalty =
+                static_cast<double>(std::max<size_t>(1, extraTurns - 1)) * 6.0 +
+                (0.85 - coverageRatio) * 20.0;
+            score -= std::clamp(complexityPenalty, 0.0, 24.0);
+        }
+
+        ++match.candidateCount;
+        if (score > match.bestScore + 1e-6) {
+            match.runnerUpScore = match.bestScore;
+            match.bestScore = score;
+            match.bestWindowStart = beginIndex;
+            match.bestWindowEnd = endIndex;
+        } else if (score > match.runnerUpScore + 1e-6) {
+            match.runnerUpScore = score;
+        }
+    };
+
+    if (!options.enableWindowSearch || capturedStroke.size() <= 10) {
+        evaluateCandidate(0, capturedStroke.size());
+        return match;
+    }
+
+    if (options.enableTimeWindowSearch && HasAlignedStrokeTimes(capturedStroke, capturedStrokeTimesMs)) {
+        const std::vector<uint32_t>& strokeTimes = *capturedStrokeTimesMs;
+        const uint32_t totalDurationMs = strokeTimes.back();
+        const uint32_t minWindowMs = static_cast<uint32_t>(std::max(60, options.timeWindowMinMs));
+        const uint32_t maxWindowMs = static_cast<uint32_t>(std::max(
+            static_cast<int>(minWindowMs),
+            std::min<int>(options.timeWindowMaxMs, static_cast<int>(totalDurationMs))));
+        const uint32_t durationSpanMs = (maxWindowMs > minWindowMs) ? (maxWindowMs - minWindowMs) : 0;
+        const uint32_t durationStepMs = static_cast<uint32_t>(std::max(
+            options.timeWindowStepMs,
+            static_cast<int>(durationSpanMs / 6 + 1)));
+        const uint32_t anchorStepMs = static_cast<uint32_t>(std::max(
+            options.timeWindowAnchorStepMs,
+            static_cast<int>(totalDurationMs / 14 + 1)));
+        const size_t maxTimeCandidates = static_cast<size_t>(std::max(8, options.timeWindowMaxCandidates));
+        size_t emittedTimeCandidates = 0;
+        for (uint32_t windowMs = minWindowMs; windowMs <= maxWindowMs; windowMs += durationStepMs) {
+            if (emittedTimeCandidates >= maxTimeCandidates) {
+                break;
+            }
+            uint32_t startMs = 0;
+            for (;; startMs += anchorStepMs) {
+                if (emittedTimeCandidates >= maxTimeCandidates) {
+                    break;
+                }
+                uint32_t endMs = startMs + windowMs;
+                if (endMs > totalDurationMs) {
+                    endMs = totalDurationMs;
+                    startMs = (endMs > windowMs) ? (endMs - windowMs) : 0;
+                }
+                const auto [beginIndex, endIndex] = TimeWindowToPointWindow(strokeTimes, startMs, endMs);
+                if (endIndex > beginIndex + 1) {
+                    evaluateCandidate(beginIndex, endIndex);
+                    ++emittedTimeCandidates;
+                }
+                if (endMs >= totalDurationMs) {
+                    break;
+                }
+            }
+        }
+    }
+
+    const size_t totalPoints = capturedStroke.size();
+    const int minCoverage = std::clamp(options.windowCoverageMinPercent, 10, 100);
+    const int maxCoverage = std::clamp(options.windowCoverageMaxPercent, minCoverage, 100);
+    const int coverageStep = std::clamp(options.windowCoverageStepPercent, 1, 30);
+    const int slideDivisor = std::clamp(options.windowSlideDivisor, 1, 8);
+    for (int coverage = minCoverage; coverage <= maxCoverage; coverage += coverageStep) {
+        size_t windowSize = static_cast<size_t>(std::round(
+            static_cast<double>(totalPoints) * static_cast<double>(coverage) / 100.0));
+        windowSize = std::clamp(windowSize, static_cast<size_t>(6), totalPoints);
+        const size_t step = std::max<size_t>(1, windowSize / static_cast<size_t>(slideDivisor));
+        size_t start = 0;
+        for (; start + windowSize <= totalPoints; start += step) {
+            evaluateCandidate(start, start + windowSize);
+        }
+        const size_t tailStart = totalPoints - windowSize;
+        if (start == 0 || tailStart + windowSize > start) {
+            evaluateCandidate(tailStart, tailStart + windowSize);
+        }
+    }
+    if (maxCoverage < 100) {
+        evaluateCandidate(0, totalPoints);
+    }
+    if (match.candidateCount == 0) {
+        evaluateCandidate(0, capturedStroke.size());
+    }
+    return match;
+}
+
+GestureMatchResult MatchMultiStroke(
+    const std::vector<std::vector<AutomationKeyBinding::GesturePoint>>& templateStrokes,
+    const std::vector<std::vector<ScreenPoint>>& capturedStrokes,
+    const std::vector<std::vector<uint32_t>>* capturedStrokeTimesMs,
+    const GestureMatchOptions& options) {
+    GestureMatchResult out{};
+    if (templateStrokes.empty() || capturedStrokes.empty()) {
+        return out;
+    }
+    if (options.strictStrokeCount && templateStrokes.size() != capturedStrokes.size()) {
+        return out;
+    }
+    if (options.strictStrokeOrder && templateStrokes.size() != capturedStrokes.size()) {
+        return out;
+    }
+    if (templateStrokes.size() != capturedStrokes.size()) {
+        return out;
+    }
+
+    std::vector<size_t> strokeOffsets;
+    strokeOffsets.reserve(capturedStrokes.size());
+    size_t offset = 0;
+    for (const auto& stroke : capturedStrokes) {
+        strokeOffsets.push_back(offset);
+        offset += stroke.size();
+    }
+
+    double weightedBest = 0.0;
+    double totalWeight = 0.0;
+    std::vector<double> strokeBestScores;
+    std::vector<double> strokeRunnerUpScores;
+    std::vector<double> strokeWeights;
+    strokeBestScores.reserve(templateStrokes.size());
+    strokeRunnerUpScores.reserve(templateStrokes.size());
+    strokeWeights.reserve(templateStrokes.size());
+
+    for (size_t i = 0; i < templateStrokes.size(); ++i) {
+        const StrokeWindowMatch strokeMatch = MatchSingleStroke(
+            templateStrokes[i],
+            capturedStrokes[i],
+            (capturedStrokeTimesMs && i < capturedStrokeTimesMs->size()) ? &(*capturedStrokeTimesMs)[i] : nullptr,
+            options);
+        out.candidateCount += strokeMatch.candidateCount;
+        if (strokeMatch.bestScore < 0.0) {
+            return GestureMatchResult{};
+        }
+        const double weight = std::max(1.0, StrokeLengthPx(capturedStrokes[i]));
+        weightedBest += strokeMatch.bestScore * weight;
+        totalWeight += weight;
+        strokeBestScores.push_back(strokeMatch.bestScore);
+        strokeRunnerUpScores.push_back(strokeMatch.runnerUpScore);
+        strokeWeights.push_back(weight);
+        if (i == 0) {
+            out.bestWindow.start = strokeOffsets[i] + strokeMatch.bestWindowStart;
+        }
+        if (i + 1 == templateStrokes.size()) {
+            out.bestWindow.end = strokeOffsets[i] + strokeMatch.bestWindowEnd;
+        }
+    }
+
+    if (!(totalWeight > 0.0)) {
+        return GestureMatchResult{};
+    }
+    out.bestScore = weightedBest / totalWeight;
+
+    double bestAlt = -1.0;
+    for (size_t i = 0; i < strokeBestScores.size(); ++i) {
+        if (strokeRunnerUpScores[i] < 0.0) {
+            continue;
+        }
+        const double altWeighted =
+            weightedBest - strokeBestScores[i] * strokeWeights[i] + strokeRunnerUpScores[i] * strokeWeights[i];
+        bestAlt = std::max(bestAlt, altWeighted / totalWeight);
+    }
+    out.runnerUpScore = bestAlt;
+    return out;
 }
 
 std::vector<std::vector<AutomationKeyBinding::GesturePoint>> PresetTemplateStrokesForActionId(
@@ -1003,26 +1656,104 @@ GestureSimilarityMetrics MeasureCapturedGesture(
     return metrics;
 }
 
+GestureTemplateProfile MeasureGestureTemplateProfile(
+    const std::vector<std::vector<AutomationKeyBinding::GesturePoint>>& templateStrokes) {
+    GestureTemplateProfile profile;
+    const std::vector<std::vector<NormalizedPoint>> normalized =
+        NormalizeTemplateStrokes(templateStrokes);
+    profile.strokeCount = normalized.size();
+    for (const auto& stroke : normalized) {
+        profile.pointCount += stroke.size();
+        const StrokeStructureFeature structure = BuildStrokeStructureFeature(stroke);
+        profile.segmentCount += structure.segmentDirections.size();
+        profile.turnCount += structure.turns.size();
+    }
+    return profile;
+}
+
+GestureTemplateProfile MeasurePresetGestureProfile(
+    const std::string& normalizedActionId) {
+    const std::vector<std::vector<AutomationKeyBinding::GesturePoint>> templateStrokes =
+        PresetTemplateStrokesForActionId(normalizedActionId);
+    if (templateStrokes.empty()) {
+        return {};
+    }
+    return MeasureGestureTemplateProfile(templateStrokes);
+}
+
 double ScoreGestureTemplateSimilarity(
     const std::vector<std::vector<AutomationKeyBinding::GesturePoint>>& templateStrokes,
     const std::vector<std::vector<ScreenPoint>>& capturedStrokes) {
-    return GestureSimilarityScore(
-        NormalizeTemplateStrokes(templateStrokes),
-        NormalizeCapturedStrokes(capturedStrokes));
+    return MatchGestureTemplateSimilarity(templateStrokes, capturedStrokes).bestScore;
+}
+
+GestureMatchResult MatchGestureTemplateSimilarity(
+    const std::vector<std::vector<AutomationKeyBinding::GesturePoint>>& templateStrokes,
+    const std::vector<std::vector<ScreenPoint>>& capturedStrokes,
+    const GestureMatchOptions& options) {
+    return MatchGestureTemplateSimilarity(templateStrokes, capturedStrokes, {}, options);
+}
+
+GestureMatchResult MatchGestureTemplateSimilarity(
+    const std::vector<std::vector<AutomationKeyBinding::GesturePoint>>& templateStrokes,
+    const std::vector<std::vector<ScreenPoint>>& capturedStrokes,
+    const std::vector<std::vector<uint32_t>>& capturedStrokeTimesMs,
+    const GestureMatchOptions& options) {
+    GestureMatchResult out{};
+    if (templateStrokes.empty() || capturedStrokes.empty()) {
+        return out;
+    }
+    const std::vector<std::vector<uint32_t>>* strokeTimes = nullptr;
+    if (!capturedStrokeTimesMs.empty() && capturedStrokeTimesMs.size() == capturedStrokes.size()) {
+        strokeTimes = &capturedStrokeTimesMs;
+    }
+    if (templateStrokes.size() == 1 && capturedStrokes.size() == 1) {
+        const StrokeWindowMatch match = MatchSingleStroke(
+            templateStrokes[0],
+            capturedStrokes[0],
+            (strokeTimes != nullptr) ? &(*strokeTimes)[0] : nullptr,
+            options);
+        out.bestScore = match.bestScore;
+        out.runnerUpScore = match.runnerUpScore;
+        out.bestWindow.start = match.bestWindowStart;
+        out.bestWindow.end = match.bestWindowEnd;
+        out.candidateCount = match.candidateCount;
+        return out;
+    }
+    return MatchMultiStroke(templateStrokes, capturedStrokes, strokeTimes, options);
 }
 
 double ScorePresetGestureSimilarity(
     const std::string& normalizedActionId,
     const std::vector<ScreenPoint>& capturedStroke) {
-    if (capturedStroke.size() < 2) {
-        return -1.0;
-    }
+    return MatchPresetGestureSimilarity(normalizedActionId, capturedStroke).bestScore;
+}
+
+GestureMatchResult MatchPresetGestureSimilarity(
+    const std::string& normalizedActionId,
+    const std::vector<ScreenPoint>& capturedStroke,
+    const GestureMatchOptions& options) {
+    return MatchPresetGestureSimilarity(normalizedActionId, capturedStroke, {}, options);
+}
+
+GestureMatchResult MatchPresetGestureSimilarity(
+    const std::string& normalizedActionId,
+    const std::vector<ScreenPoint>& capturedStroke,
+    const std::vector<uint32_t>& capturedStrokeTimesMs,
+    const GestureMatchOptions& options) {
     const std::vector<std::vector<AutomationKeyBinding::GesturePoint>> templateStrokes =
         PresetTemplateStrokesForActionId(normalizedActionId);
-    if (templateStrokes.empty()) {
-        return -1.0;
+    if (templateStrokes.empty() || capturedStroke.size() < 2) {
+        return {};
     }
-    return ScoreGestureTemplateSimilarity(templateStrokes, {capturedStroke});
+    if (!capturedStrokeTimesMs.empty() && capturedStrokeTimesMs.size() == capturedStroke.size()) {
+        return MatchGestureTemplateSimilarity(
+            templateStrokes,
+            {capturedStroke},
+            {capturedStrokeTimesMs},
+            options);
+    }
+    return MatchGestureTemplateSimilarity(templateStrokes, {capturedStroke}, options);
 }
 
 } // namespace mousefx

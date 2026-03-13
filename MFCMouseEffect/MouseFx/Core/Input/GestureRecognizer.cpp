@@ -4,6 +4,7 @@
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace mousefx {
@@ -27,8 +28,12 @@ void GestureRecognizer::Reset() {
     activeButton_ = 0;
     totalDistancePx_ = 0;
     samples_.clear();
+    sampleTimesMs_.clear();
     lastRawPt_ = ScreenPoint{};
     lastSamplePt_ = ScreenPoint{};
+    startedAt_ = {};
+    lastRawAt_ = {};
+    lastSampleAt_ = {};
 }
 
 void GestureRecognizer::OnButtonDown(const ScreenPoint& pt, int button) {
@@ -40,22 +45,29 @@ void GestureRecognizer::OnButtonDown(const ScreenPoint& pt, int button) {
         return;
     }
 
+    const auto now = std::chrono::steady_clock::now();
     active_ = true;
     activeButton_ = button;
     lastRawPt_ = pt;
     lastSamplePt_ = pt;
+    startedAt_ = now;
+    lastRawAt_ = now;
+    lastSampleAt_ = now;
     samples_.push_back(pt);
+    sampleTimesMs_.push_back(0);
 }
 
 void GestureRecognizer::OnMouseMove(const ScreenPoint& pt) {
     if (!active_) {
         return;
     }
+    const auto now = std::chrono::steady_clock::now();
 
     const long long dxRaw = static_cast<long long>(pt.x) - static_cast<long long>(lastRawPt_.x);
     const long long dyRaw = static_cast<long long>(pt.y) - static_cast<long long>(lastRawPt_.y);
     totalDistancePx_ += static_cast<int>(std::sqrt(static_cast<double>(dxRaw * dxRaw + dyRaw * dyRaw)));
     lastRawPt_ = pt;
+    lastRawAt_ = now;
 
     const int stepSq = config_.sampleStepPx * config_.sampleStepPx;
     if (DistanceSquared(lastSamplePt_, pt) < stepSq) {
@@ -63,7 +75,10 @@ void GestureRecognizer::OnMouseMove(const ScreenPoint& pt) {
     }
 
     samples_.push_back(pt);
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - startedAt_).count();
+    sampleTimesMs_.push_back(static_cast<uint32_t>(std::max<long long>(0, elapsed)));
     lastSamplePt_ = pt;
+    lastSampleAt_ = now;
 }
 
 GestureRecognizer::Result GestureRecognizer::OnButtonUp(const ScreenPoint& pt, int button) {
@@ -78,6 +93,7 @@ GestureRecognizer::Result GestureRecognizer::OnButtonUp(const ScreenPoint& pt, i
     result.gestureId = BuildGestureId(dirs);
     result.button = button;
     result.samplePoints = BuildEvaluationSamples();
+    result.sampleTimesMs = BuildEvaluationSampleTimesMs();
     Reset();
     return result;
 }
@@ -90,6 +106,7 @@ GestureRecognizer::Result GestureRecognizer::Snapshot() const {
     result.gestureId = BuildGestureId(QuantizeDirections());
     result.button = activeButton_;
     result.samplePoints = BuildEvaluationSamples();
+    result.sampleTimesMs = BuildEvaluationSampleTimesMs();
     return result;
 }
 
@@ -114,6 +131,25 @@ std::vector<ScreenPoint> GestureRecognizer::BuildEvaluationSamples() const {
         points.push_back(lastRawPt_);
     }
     return points;
+}
+
+std::vector<uint32_t> GestureRecognizer::BuildEvaluationSampleTimesMs() const {
+    std::vector<uint32_t> values = sampleTimesMs_;
+    if (!active_) {
+        return values;
+    }
+    if (values.empty()) {
+        values.push_back(0);
+        return values;
+    }
+    const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(lastRawAt_ - startedAt_).count();
+    const uint32_t tailMs = static_cast<uint32_t>(std::max<long long>(0, elapsed));
+    if (values.size() < samples_.size()) {
+        values.push_back(tailMs);
+    } else if (!values.empty()) {
+        values.back() = std::max(values.back(), tailMs);
+    }
+    return values;
 }
 
 } // namespace mousefx

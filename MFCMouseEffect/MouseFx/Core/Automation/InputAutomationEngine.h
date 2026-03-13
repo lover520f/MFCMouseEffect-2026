@@ -6,6 +6,7 @@
 #include "MouseFx/Core/System/IForegroundProcessService.h"
 #include "MouseFx/Core/System/IKeyboardInjector.h"
 #include "MouseFx/Core/Input/GestureRecognizer.h"
+#include "MouseFx/Core/Input/GestureSimilarity.h"
 
 #include <atomic>
 #include <chrono>
@@ -18,6 +19,27 @@ namespace mousefx {
 // Maps mouse actions and recognized gestures to keyboard shortcuts.
 class InputAutomationEngine final {
 public:
+    struct GestureRouteEvent final {
+        uint64_t seq = 0;
+        uint64_t timestampMs = 0;
+        std::string stage{};
+        std::string reason{};
+        std::string gestureId{};
+        std::string recognizedGestureId{};
+        std::string matchedGestureId{};
+        std::string triggerButton{};
+        bool matched = false;
+        bool injected = false;
+        bool usedCustom = false;
+        bool usedPreset = false;
+        int samplePointCount = 0;
+        int candidateCount = 0;
+        int bestWindowStart = -1;
+        int bestWindowEnd = -1;
+        double runnerUpScore = -1.0;
+        InputModifierState modifiers{};
+    };
+
     struct Diagnostics final {
         bool automationEnabled = false;
         bool gestureEnabled = false;
@@ -28,13 +50,21 @@ public:
         std::string lastStage{};
         std::string lastReason{};
         std::string lastGestureId{};
+        std::string lastRecognizedGestureId{};
+        std::string lastMatchedGestureId{};
         std::string lastTriggerButton{};
         bool lastMatched = false;
         bool lastInjected = false;
         bool lastUsedCustom = false;
         bool lastUsedPreset = false;
         int lastSamplePointCount = 0;
+        int lastCandidateCount = 0;
+        int lastBestWindowStart = -1;
+        int lastBestWindowEnd = -1;
+        double lastRunnerUpScore = -1.0;
         InputModifierState lastModifiers{};
+        uint64_t lastEventSeq = 0;
+        std::vector<GestureRouteEvent> recentEvents{};
     };
 
     InputAutomationEngine() = default;
@@ -62,6 +92,7 @@ private:
     struct CustomGestureStrokeEntry final {
         int button = 0;
         std::vector<ScreenPoint> points;
+        std::vector<uint32_t> pointTimesMs;
         std::chrono::steady_clock::time_point timestamp{};
     };
 
@@ -79,12 +110,17 @@ private:
     bool TriggerGesture(
         const std::string& gestureId,
         int button,
-        const std::vector<ScreenPoint>* currentStroke = nullptr);
+        const std::vector<ScreenPoint>* currentStroke = nullptr,
+        const std::vector<uint32_t>* currentStrokeTimesMs = nullptr);
     bool TriggerCustomGesture(
         int button,
         const std::string& triggerButton,
-        const std::vector<ScreenPoint>* currentStroke = nullptr);
-    void AppendCustomGestureStroke(int button, const std::vector<ScreenPoint>& points);
+        const std::vector<ScreenPoint>* currentStroke = nullptr,
+        const std::vector<uint32_t>* currentStrokeTimesMs = nullptr);
+    void AppendCustomGestureStroke(
+        int button,
+        const std::vector<ScreenPoint>& points,
+        const std::vector<uint32_t>* pointTimesMs = nullptr);
     void ConsumeRecentCustomGestureStrokes(int button, size_t count);
     void SetButtonState(int button, bool down);
     bool AnyPointerButtonDown() const;
@@ -97,13 +133,18 @@ private:
     void UpdateGestureDiagnostics(
         const char* stage,
         const char* reason,
-        const std::string& gestureId,
+        const std::string& recognizedGestureId,
+        const std::string& matchedGestureId,
         const std::string& triggerButton,
         bool matched,
         bool injected,
         bool usedCustom,
         bool usedPreset,
-        size_t samplePointCount);
+        size_t samplePointCount,
+        size_t candidateCount = 0,
+        const GestureMatchWindow* bestWindow = nullptr,
+        double runnerUpScore = -1.0);
+    bool ShouldAppendGestureRouteEventLocked(const GestureRouteEvent& event) const;
 
     InputAutomationConfig config_{};
     GestureRecognizer gestureRecognizer_{};
@@ -126,10 +167,14 @@ private:
     bool buttonlessGestureEnabled_ = false;
     bool buttonlessGestureTriggered_ = false;
     std::string buttonlessLastGestureId_{};
+    bool buttonlessHasLastMovePoint_ = false;
+    ScreenPoint buttonlessLastMovePoint_{};
     std::chrono::steady_clock::time_point buttonlessLastMoveAt_{};
+    std::chrono::steady_clock::time_point lastPressedGestureResultAt_{};
     std::atomic<bool> diagnosticsEnabled_{false};
     mutable std::mutex diagnosticsMutex_{};
     Diagnostics diagnostics_{};
+    uint64_t diagnosticsEventSeq_ = 0;
 };
 
 } // namespace mousefx
