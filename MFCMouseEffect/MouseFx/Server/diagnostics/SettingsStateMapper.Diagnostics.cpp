@@ -121,6 +121,17 @@ json BuildInputAutomationGestureRouteStatusState(const AppController* controller
     const InputAutomationEngine::Diagnostics diag =
         controller->InputAutomation().ReadDiagnostics();
 
+    auto buildPreviewPoints = [](const std::vector<InputAutomationEngine::GestureRouteEvent::PreviewPoint>& points) {
+        json out = json::array();
+        for (const auto& point : points) {
+            out.push_back({
+                {"x", point.x},
+                {"y", point.y},
+            });
+        }
+        return out;
+    };
+
     json out = json::object();
     out["automation_enabled"] = diag.automationEnabled;
     out["gesture_enabled"] = diag.gestureEnabled;
@@ -143,6 +154,8 @@ json BuildInputAutomationGestureRouteStatusState(const AppController* controller
     out["last_best_window_start"] = diag.lastBestWindowStart;
     out["last_best_window_end"] = diag.lastBestWindowEnd;
     out["last_runner_up_score"] = diag.lastRunnerUpScore;
+    out["last_preview_path_hash"] = diag.lastPreviewPathHash;
+    out["last_preview_points"] = buildPreviewPoints(diag.lastPreviewPoints);
     out["last_event_seq"] = diag.lastEventSeq;
     out["last_modifiers"] = {
         {"primary", diag.lastModifiers.primary},
@@ -169,6 +182,8 @@ json BuildInputAutomationGestureRouteStatusState(const AppController* controller
             {"best_window_start", event.bestWindowStart},
             {"best_window_end", event.bestWindowEnd},
             {"runner_up_score", event.runnerUpScore},
+            {"preview_path_hash", event.previewPathHash},
+            {"preview_points", buildPreviewPoints(event.previewPoints)},
             {"modifiers", {
                 {"primary", event.modifiers.primary},
                 {"shift", event.modifiers.shift},

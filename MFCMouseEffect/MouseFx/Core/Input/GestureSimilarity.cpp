@@ -1327,6 +1327,90 @@ std::vector<ScreenPoint> SliceStroke(
                                     stroke.begin() + static_cast<std::ptrdiff_t>(endIndex));
 }
 
+ScreenPoint InterpolateScreenPointByTime(
+    const std::vector<ScreenPoint>& stroke,
+    const std::vector<uint32_t>& timesMs,
+    uint32_t targetMs) {
+    if (stroke.empty() || timesMs.empty() || stroke.size() != timesMs.size()) {
+        return {};
+    }
+    if (targetMs <= timesMs.front()) {
+        return stroke.front();
+    }
+    if (targetMs >= timesMs.back()) {
+        return stroke.back();
+    }
+    auto upper = std::lower_bound(timesMs.begin(), timesMs.end(), targetMs);
+    if (upper == timesMs.begin()) {
+        return stroke.front();
+    }
+    if (upper == timesMs.end()) {
+        return stroke.back();
+    }
+    const size_t upperIndex = static_cast<size_t>(std::distance(timesMs.begin(), upper));
+    const size_t lowerIndex = upperIndex - 1;
+    const uint32_t lowerMs = timesMs[lowerIndex];
+    const uint32_t upperMs = timesMs[upperIndex];
+    if (upperMs <= lowerMs) {
+        return stroke[upperIndex];
+    }
+    const double t = static_cast<double>(targetMs - lowerMs) /
+        static_cast<double>(upperMs - lowerMs);
+    const double x = static_cast<double>(stroke[lowerIndex].x) +
+        (static_cast<double>(stroke[upperIndex].x) - static_cast<double>(stroke[lowerIndex].x)) * t;
+    const double y = static_cast<double>(stroke[lowerIndex].y) +
+        (static_cast<double>(stroke[upperIndex].y) - static_cast<double>(stroke[lowerIndex].y)) * t;
+    return ScreenPoint{
+        static_cast<int>(std::lround(x)),
+        static_cast<int>(std::lround(y)),
+    };
+}
+
+bool BuildTimeResampledStroke(
+    const std::vector<ScreenPoint>& inputStroke,
+    const std::vector<uint32_t>& inputTimesMs,
+    int stepMs,
+    int maxPoints,
+    std::vector<ScreenPoint>* outStroke,
+    std::vector<uint32_t>* outTimesMs) {
+    if (!outStroke || !outTimesMs) {
+        return false;
+    }
+    outStroke->clear();
+    outTimesMs->clear();
+    if (inputStroke.size() < 2 || inputTimesMs.size() != inputStroke.size()) {
+        return false;
+    }
+    const uint32_t totalMs = inputTimesMs.back();
+    if (totalMs < 30) {
+        return false;
+    }
+    const uint32_t sampleStepMs = static_cast<uint32_t>(std::max(8, stepMs));
+    const size_t cappedMaxPoints = static_cast<size_t>(std::max(8, maxPoints));
+
+    outStroke->push_back(inputStroke.front());
+    outTimesMs->push_back(0);
+    for (uint32_t t = sampleStepMs; t < totalMs; t += sampleStepMs) {
+        if (outStroke->size() + 1 >= cappedMaxPoints) {
+            break;
+        }
+        outStroke->push_back(InterpolateScreenPointByTime(inputStroke, inputTimesMs, t));
+        outTimesMs->push_back(t);
+    }
+    if (outStroke->empty() ||
+        outStroke->back().x != inputStroke.back().x ||
+        outStroke->back().y != inputStroke.back().y) {
+        if (outStroke->size() >= cappedMaxPoints) {
+            outStroke->back() = inputStroke.back();
+            outTimesMs->back() = totalMs;
+        } else {
+            outStroke->push_back(inputStroke.back());
+            outTimesMs->push_back(totalMs);
+        }
+    }
+    return outStroke->size() >= 2 && outTimesMs->size() == outStroke->size();
+}
+
 bool HasAlignedStrokeTimes(
     const std::vector<ScreenPoint>& stroke,
     const std::vector<uint32_t>* strokeTimesMs) {
@@ -1363,8 +1447,30 @@ StrokeWindowMatch MatchSingleStroke(
     if (templateStroke.size() < 2 || capturedStroke.size() < 2) {
         return match;
     }
+
+    std::vector<ScreenPoint> effectiveStroke;
+    std::vector<uint32_t> effectiveStrokeTimesMs;
+    const std::vector<ScreenPoint>* strokeForMatch = &capturedStroke;
+    const std::vector<uint32_t>* timesForMatch = nullptr;
+    if (HasAlignedStrokeTimes(capturedStroke, capturedStrokeTimesMs)) {
+        timesForMatch = capturedStrokeTimesMs;
+    }
+    if (options.enableTimeResampleFallback &&
+        timesForMatch &&
+        capturedStroke.size() < 20) {
+        if (BuildTimeResampledStroke(
+                capturedStroke,
+                *timesForMatch,
+                options.timeResampleStepMs,
+                options.timeResampleMaxPoints,
+                &effectiveStroke,
+                &effectiveStrokeTimesMs)) {
+            strokeForMatch = &effectiveStroke;
+            timesForMatch = &effectiveStrokeTimesMs;
+        }
+    }
     if (options.minEffectiveStrokeLengthPx > 0.0 &&
-        StrokeLengthPx(capturedStroke) + 1e-6 < options.minEffectiveStrokeLengthPx) {
+        StrokeLengthPx(*strokeForMatch) + 1e-6 < options.minEffectiveStrokeLengthPx) {
         return match;
     }
 
@@ -1375,7 +1481,7 @@ StrokeWindowMatch MatchSingleStroke(
     }
     const StrokeStructureFeature templateStructure = BuildStrokeStructureFeature(normalizedTemplate[0]);
     const std::vector<std::vector<NormalizedPoint>> normalizedCapturedFull =
-        NormalizeCapturedStrokes({capturedStroke});
+        NormalizeCapturedStrokes({*strokeForMatch});
     const StrokeStructureFeature capturedFullStructure =
         (normalizedCapturedFull.size() == 1 && normalizedCapturedFull[0].size() >= 2)
             ? BuildStrokeStructureFeature(normalizedCapturedFull[0])
@@ -1383,7 +1489,7 @@ StrokeWindowMatch MatchSingleStroke(
 
     std::unordered_set<uint64_t> visitedWindows;
     auto evaluateCandidate = [&](size_t beginIndex, size_t endIndex) {
-        if (beginIndex >= endIndex || endIndex > capturedStroke.size()) {
+        if (beginIndex >= endIndex || endIndex > strokeForMatch->size()) {
             return;
         }
         const uint64_t windowKey =
@@ -1392,7 +1498,7 @@ StrokeWindowMatch MatchSingleStroke(
         if (!visitedWindows.insert(windowKey).second) {
             return;
         }
-        const std::vector<ScreenPoint> sliced = SliceStroke(capturedStroke, beginIndex, endIndex);
+        const std::vector<ScreenPoint> sliced = SliceStroke(*strokeForMatch, beginIndex, endIndex);
         if (sliced.size() < 2) {
             return;
         }
@@ -1406,7 +1512,7 @@ StrokeWindowMatch MatchSingleStroke(
             return;
         }
         const double coverageRatio =
-            static_cast<double>(sliced.size()) / static_cast<double>(capturedStroke.size());
+            static_cast<double>(sliced.size()) / static_cast<double>(strokeForMatch->size());
         const size_t templateTurns = templateStructure.turns.size();
         const size_t capturedFullTurns = capturedFullStructure.turns.size();
         if (capturedFullTurns >= templateTurns + 2 && coverageRatio < 0.85) {
@@ -1428,13 +1534,15 @@ StrokeWindowMatch MatchSingleStroke(
         }
     };
 
-    if (!options.enableWindowSearch || capturedStroke.size() <= 10) {
-        evaluateCandidate(0, capturedStroke.size());
+    if (!options.enableWindowSearch || strokeForMatch->size() <= 10) {
+        evaluateCandidate(0, strokeForMatch->size());
         return match;
     }
 
-    if (options.enableTimeWindowSearch && HasAlignedStrokeTimes(capturedStroke, capturedStrokeTimesMs)) {
-        const std::vector<uint32_t>& strokeTimes = *capturedStrokeTimesMs;
+    if (options.enableTimeWindowSearch &&
+        timesForMatch &&
+        timesForMatch->size() == strokeForMatch->size()) {
+        const std::vector<uint32_t>& strokeTimes = *timesForMatch;
         const uint32_t totalDurationMs = strokeTimes.back();
         const uint32_t minWindowMs = static_cast<uint32_t>(std::max(60, options.timeWindowMinMs));
         const uint32_t maxWindowMs = static_cast<uint32_t>(std::max(
@@ -1475,30 +1583,43 @@ StrokeWindowMatch MatchSingleStroke(
         }
     }
 
-    const size_t totalPoints = capturedStroke.size();
+    const size_t totalPoints = strokeForMatch->size();
     const int minCoverage = std::clamp(options.windowCoverageMinPercent, 10, 100);
     const int maxCoverage = std::clamp(options.windowCoverageMaxPercent, minCoverage, 100);
     const int coverageStep = std::clamp(options.windowCoverageStepPercent, 1, 30);
     const int slideDivisor = std::clamp(options.windowSlideDivisor, 1, 8);
+    const size_t maxSpatialCandidates = static_cast<size_t>(std::max(8, options.spatialWindowMaxCandidates));
+    size_t emittedSpatialCandidates = 0;
     for (int coverage = minCoverage; coverage <= maxCoverage; coverage += coverageStep) {
+        if (emittedSpatialCandidates >= maxSpatialCandidates) {
+            break;
+        }
         size_t windowSize = static_cast<size_t>(std::round(
             static_cast<double>(totalPoints) * static_cast<double>(coverage) / 100.0));
         windowSize = std::clamp(windowSize, static_cast<size_t>(6), totalPoints);
         const size_t step = std::max<size_t>(1, windowSize / static_cast<size_t>(slideDivisor));
         size_t start = 0;
         for (; start + windowSize <= totalPoints; start += step) {
+            if (emittedSpatialCandidates >= maxSpatialCandidates) {
+                break;
+            }
             evaluateCandidate(start, start + windowSize);
+            ++emittedSpatialCandidates;
+        }
+        if (emittedSpatialCandidates >= maxSpatialCandidates) {
+            break;
         }
         const size_t tailStart = totalPoints - windowSize;
         if (start == 0 || tailStart + windowSize > start) {
             evaluateCandidate(tailStart, tailStart + windowSize);
+            ++emittedSpatialCandidates;
         }
     }
     if (maxCoverage < 100) {
         evaluateCandidate(0, totalPoints);
     }
     if (match.candidateCount == 0) {
-        evaluateCandidate(0, capturedStroke.size());
+        evaluateCandidate(0, strokeForMatch->size());
     }
     return match;
 }
@@ -1583,7 +1704,10 @@ GestureMatchResult MatchMultiStroke(
 
 std::vector<std::vector<AutomationKeyBinding::GesturePoint>> PresetTemplateStrokesForActionId(
     const std::string& normalizedActionId) {
-    const std::string id = TrimAscii(normalizedActionId);
+    std::string id = TrimAscii(normalizedActionId);
+    if (id == "diag_down_right_diag_up_right_diag_down_right_diag_up_right") {
+        id = "diag_down_right_diag_up_right_diag_down_right";
+    }
     if (id == "right") {
         return {{{10, 50}, {90, 50}}};
     }
@@ -1621,6 +1745,90 @@ std::vector<std::vector<AutomationKeyBinding::GesturePoint>> PresetTemplateStrok
         return {{{66, 18}, {66, 78}, {20, 78}}};
     }
     return {};
+}
+
+std::vector<std::vector<AutomationKeyBinding::GesturePoint>> ReverseTemplateStrokes(
+    const std::vector<std::vector<AutomationKeyBinding::GesturePoint>>& strokes) {
+    std::vector<std::vector<AutomationKeyBinding::GesturePoint>> out = strokes;
+    for (auto& stroke : out) {
+        std::reverse(stroke.begin(), stroke.end());
+    }
+    return out;
+}
+
+std::vector<std::vector<AutomationKeyBinding::GesturePoint>> MirrorTemplateStrokesHorizontally(
+    const std::vector<std::vector<AutomationKeyBinding::GesturePoint>>& strokes) {
+    std::vector<std::vector<AutomationKeyBinding::GesturePoint>> out = strokes;
+    for (auto& stroke : out) {
+        for (auto& point : stroke) {
+            point.x = 100 - point.x;
+        }
+    }
+    return out;
+}
+
+bool EnablePresetBidirectionalVariants(const std::string& normalizedActionId) {
+    const std::string id = TrimAscii(normalizedActionId);
+    return
+        id == "diag_down_right" ||
+        id == "diag_down_left" ||
+        id == "diag_up_right" ||
+        id == "diag_up_left" ||
+        id == "diag_down_right_diag_up_right" ||
+        id == "diag_up_right_diag_down_right" ||
+        id == "diag_down_right_diag_up_right_diag_down_right";
+}
+
+std::vector<std::vector<std::vector<AutomationKeyBinding::GesturePoint>>> PresetTemplateVariantsForActionId(
+    const std::string& normalizedActionId) {
+    const std::vector<std::vector<AutomationKeyBinding::GesturePoint>> base =
+        PresetTemplateStrokesForActionId(normalizedActionId);
+    if (base.empty()) {
+        return {};
+    }
+    std::vector<std::vector<std::vector<AutomationKeyBinding::GesturePoint>>> variants;
+    variants.push_back(base);
+    if (!EnablePresetBidirectionalVariants(normalizedActionId)) {
+        return variants;
+    }
+
+    const auto reversed = ReverseTemplateStrokes(base);
+    const auto mirrored = MirrorTemplateStrokesHorizontally(base);
+    const auto mirroredReversed = ReverseTemplateStrokes(mirrored);
+    auto isSameTemplate = [](
+        const std::vector<std::vector<AutomationKeyBinding::GesturePoint>>& lhs,
+        const std::vector<std::vector<AutomationKeyBinding::GesturePoint>>& rhs) {
+        if (lhs.size() != rhs.size()) {
+            return false;
+        }
+        for (size_t s = 0; s < lhs.size(); ++s) {
+            if (lhs[s].size() != rhs[s].size()) {
+                return false;
+            }
+            for (size_t i = 0; i < lhs[s].size(); ++i) {
+                if (lhs[s][i].x != rhs[s][i].x || lhs[s][i].y != rhs[s][i].y) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+    auto pushUnique = [&variants, &isSameTemplate](
+        const std::vector<std::vector<AutomationKeyBinding::GesturePoint>>& candidate) {
+        if (candidate.empty()) {
+            return;
+        }
+        for (const auto& existing : variants) {
+            if (isSameTemplate(existing, candidate)) {
+                return;
+            }
+        }
+        variants.push_back(candidate);
+    };
+    pushUnique(reversed);
+    pushUnique(mirrored);
+    pushUnique(mirroredReversed);
+    return variants;
 }
 
 } // namespace
@@ -1673,12 +1881,19 @@ GestureTemplateProfile MeasureGestureTemplateProfile(
 
 GestureTemplateProfile MeasurePresetGestureProfile(
     const std::string& normalizedActionId) {
-    const std::vector<std::vector<AutomationKeyBinding::GesturePoint>> templateStrokes =
-        PresetTemplateStrokesForActionId(normalizedActionId);
-    if (templateStrokes.empty()) {
+    const auto templateVariants = PresetTemplateVariantsForActionId(normalizedActionId);
+    if (templateVariants.empty()) {
         return {};
     }
-    return MeasureGestureTemplateProfile(templateStrokes);
+    GestureTemplateProfile best{};
+    for (const auto& variant : templateVariants) {
+        const GestureTemplateProfile profile = MeasureGestureTemplateProfile(variant);
+        if (profile.segmentCount > best.segmentCount ||
+            (profile.segmentCount == best.segmentCount && profile.turnCount > best.turnCount)) {
+            best = profile;
+        }
+    }
+    return best;
 }
 
 double ScoreGestureTemplateSimilarity(
@@ -1741,19 +1956,34 @@ GestureMatchResult MatchPresetGestureSimilarity(
     const std::vector<ScreenPoint>& capturedStroke,
     const std::vector<uint32_t>& capturedStrokeTimesMs,
     const GestureMatchOptions& options) {
-    const std::vector<std::vector<AutomationKeyBinding::GesturePoint>> templateStrokes =
-        PresetTemplateStrokesForActionId(normalizedActionId);
-    if (templateStrokes.empty() || capturedStroke.size() < 2) {
+    const auto templateVariants = PresetTemplateVariantsForActionId(normalizedActionId);
+    if (templateVariants.empty() || capturedStroke.size() < 2) {
         return {};
     }
-    if (!capturedStrokeTimesMs.empty() && capturedStrokeTimesMs.size() == capturedStroke.size()) {
-        return MatchGestureTemplateSimilarity(
-            templateStrokes,
-            {capturedStroke},
-            {capturedStrokeTimesMs},
-            options);
+
+    GestureMatchResult best{};
+    size_t totalCandidateCount = 0;
+    for (const auto& templateStrokes : templateVariants) {
+        GestureMatchResult current{};
+        if (!capturedStrokeTimesMs.empty() && capturedStrokeTimesMs.size() == capturedStroke.size()) {
+            current = MatchGestureTemplateSimilarity(
+                templateStrokes,
+                {capturedStroke},
+                {capturedStrokeTimesMs},
+                options);
+        } else {
+            current = MatchGestureTemplateSimilarity(templateStrokes, {capturedStroke}, options);
+        }
+        totalCandidateCount += current.candidateCount;
+        if (current.bestScore > best.bestScore + 1e-6) {
+            best = current;
+        } else if (std::abs(current.bestScore - best.bestScore) <= 1e-6 &&
+                   current.runnerUpScore > best.runnerUpScore) {
+            best.runnerUpScore = current.runnerUpScore;
+        }
     }
-    return MatchGestureTemplateSimilarity(templateStrokes, {capturedStroke}, options);
+    best.candidateCount = totalCandidateCount;
+    return best;
 }
 
 } // namespace mousefx

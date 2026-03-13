@@ -20,6 +20,10 @@ namespace mousefx {
 class InputAutomationEngine final {
 public:
     struct GestureRouteEvent final {
+        struct PreviewPoint final {
+            int x = 0;
+            int y = 0;
+        };
         uint64_t seq = 0;
         uint64_t timestampMs = 0;
         std::string stage{};
@@ -37,6 +41,8 @@ public:
         int bestWindowStart = -1;
         int bestWindowEnd = -1;
         double runnerUpScore = -1.0;
+        uint64_t previewPathHash = 0;
+        std::vector<PreviewPoint> previewPoints{};
         InputModifierState modifiers{};
     };
 
@@ -62,6 +68,8 @@ public:
         int lastBestWindowStart = -1;
         int lastBestWindowEnd = -1;
         double lastRunnerUpScore = -1.0;
+        uint64_t lastPreviewPathHash = 0;
+        std::vector<GestureRouteEvent::PreviewPoint> lastPreviewPoints{};
         InputModifierState lastModifiers{};
         uint64_t lastEventSeq = 0;
         std::vector<GestureRouteEvent> recentEvents{};
@@ -111,12 +119,15 @@ private:
         const std::string& gestureId,
         int button,
         const std::vector<ScreenPoint>* currentStroke = nullptr,
-        const std::vector<uint32_t>* currentStrokeTimesMs = nullptr);
+        const std::vector<uint32_t>* currentStrokeTimesMs = nullptr,
+        const std::vector<ScreenPoint>* previewStroke = nullptr);
     bool TriggerCustomGesture(
+        const std::string& recognizedGestureId,
         int button,
         const std::string& triggerButton,
         const std::vector<ScreenPoint>* currentStroke = nullptr,
-        const std::vector<uint32_t>* currentStrokeTimesMs = nullptr);
+        const std::vector<uint32_t>* currentStrokeTimesMs = nullptr,
+        const std::vector<ScreenPoint>* previewStroke = nullptr);
     void AppendCustomGestureStroke(
         int button,
         const std::vector<ScreenPoint>& points,
@@ -143,7 +154,8 @@ private:
         size_t samplePointCount,
         size_t candidateCount = 0,
         const GestureMatchWindow* bestWindow = nullptr,
-        double runnerUpScore = -1.0);
+        double runnerUpScore = -1.0,
+        const std::vector<ScreenPoint>* previewPoints = nullptr);
     bool ShouldAppendGestureRouteEventLocked(const GestureRouteEvent& event) const;
 
     InputAutomationConfig config_{};
@@ -167,6 +179,7 @@ private:
     bool buttonlessGestureEnabled_ = false;
     bool buttonlessGestureTriggered_ = false;
     std::string buttonlessLastGestureId_{};
+    std::vector<ScreenPoint> buttonlessPreviewTrail_{};
     bool buttonlessHasLastMovePoint_ = false;
     ScreenPoint buttonlessLastMovePoint_{};
     std::chrono::steady_clock::time_point buttonlessLastMoveAt_{};

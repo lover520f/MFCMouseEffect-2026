@@ -26,6 +26,7 @@ public:
         int button = 0;
         std::vector<ScreenPoint> samplePoints;
         std::vector<uint32_t> sampleTimesMs;
+        std::vector<ScreenPoint> previewPoints;
     };
 
     GestureRecognizer() = default;
@@ -43,6 +44,7 @@ private:
     static std::string BuildGestureId(const std::vector<char>& dirs);
 
     std::vector<ScreenPoint> BuildEvaluationSamples() const;
+    std::vector<ScreenPoint> BuildPreviewSamples() const;
     std::vector<uint32_t> BuildEvaluationSampleTimesMs() const;
     std::vector<char> QuantizeDirections() const;
     long long DistanceSquared(const ScreenPoint& a, const ScreenPoint& b) const;
@@ -54,6 +56,7 @@ private:
     ScreenPoint lastRawPt_{};
     ScreenPoint lastSamplePt_{};
     std::vector<ScreenPoint> samples_{};
+    std::vector<ScreenPoint> previewPoints_{};
     std::chrono::steady_clock::time_point startedAt_{};
     std::chrono::steady_clock::time_point lastRawAt_{};
     std::chrono::steady_clock::time_point lastSampleAt_{};

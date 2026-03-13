@@ -37,11 +37,15 @@ struct GestureMatchOptions final {
     int windowCoverageMaxPercent = 100;
     int windowCoverageStepPercent = 12;
     int windowSlideDivisor = 4;
+    int spatialWindowMaxCandidates = 96;
     int timeWindowMinMs = 200;
     int timeWindowMaxMs = 1200;
     int timeWindowStepMs = 160;
     int timeWindowAnchorStepMs = 90;
     int timeWindowMaxCandidates = 72;
+    bool enableTimeResampleFallback = true;
+    int timeResampleStepMs = 24;
+    int timeResampleMaxPoints = 96;
 };
 
 struct GestureMatchResult final {

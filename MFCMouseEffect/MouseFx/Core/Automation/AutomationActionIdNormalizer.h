@@ -63,6 +63,9 @@ inline std::string NormalizeGestureId(std::string value) {
     if (value == "w") {
         return "diag_down_right_diag_up_right_diag_down_right";
     }
+    if (value == "diag_down_right_diag_up_right_diag_down_right_diag_up_right") {
+        return "diag_down_right_diag_up_right_diag_down_right";
+    }
     return value;
 }
 

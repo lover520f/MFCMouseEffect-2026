@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <cstdint>
 
 namespace mousefx {
 namespace {
@@ -35,7 +36,13 @@ constexpr size_t kButtonlessNoisyMinPoints = 18;
 constexpr double kButtonlessNoisyMaxStartEndRatio = 0.16;
 constexpr double kButtonlessNoisyHighTurnDensity = 3.1;
 constexpr double kButtonlessNoisyFastPxPerMs = 2.8;
+constexpr size_t kPressedNoisyMinPoints = 26;
+constexpr double kPressedNoisyMaxStartEndRatio = 0.12;
+constexpr double kPressedNoisyHighTurnDensity = 3.8;
+constexpr double kPressedNoisyFastPxPerMs = 3.4;
 constexpr size_t kDiagnosticsGestureEventCap = 30;
+constexpr int kDefaultDebugPreviewMaxPoints = 180;
+constexpr size_t kButtonlessPreviewTrailCap = 96;
 constexpr double kDefaultCustomMinEffectiveStrokeLengthPx = 18.0;
 constexpr int kButtonNone = 0;
 constexpr int kButtonLeft = 1;
@@ -79,6 +86,122 @@ double CustomMinEffectiveStrokeLengthPx() {
     return kDefaultCustomMinEffectiveStrokeLengthPx;
 }
 
+int EnvIntClamped(const char* key, int fallback, int minValue, int maxValue) {
+    const char* env = std::getenv(key);
+    if (env == nullptr) {
+        return fallback;
+    }
+    try {
+        const int parsed = std::stoi(std::string(env));
+        if (parsed < minValue || parsed > maxValue) {
+            return fallback;
+        }
+        return parsed;
+    } catch (...) {
+        return fallback;
+    }
+}
+
+int DebugPreviewPointCap() {
+    return EnvIntClamped(
+        "MFX_GESTURE_DEBUG_PREVIEW_MAX_POINTS",
+        kDefaultDebugPreviewMaxPoints,
+        32,
+        512);
+}
+
+GestureMatchOptions BuildGestureMatchOptions(bool buttonlessRoute) {
+    GestureMatchOptions options{};
+    if (buttonlessRoute) {
+        // Buttonless route benefits from tighter windows to reduce accidental triggers.
+        options.windowCoverageMinPercent = 22;
+        options.windowCoverageStepPercent = 8;
+        options.windowSlideDivisor = 5;
+        options.spatialWindowMaxCandidates = 88;
+        options.timeWindowMinMs = 160;
+        options.timeWindowMaxMs = 1450;
+        options.timeWindowStepMs = 120;
+        options.timeWindowAnchorStepMs = 70;
+        options.timeWindowMaxCandidates = 72;
+        options.timeResampleStepMs = 26;
+        options.timeResampleMaxPoints = 88;
+    } else {
+        options.windowCoverageMinPercent = 18;
+        options.windowCoverageStepPercent = 7;
+        options.windowSlideDivisor = 5;
+        options.spatialWindowMaxCandidates = 132;
+        options.timeWindowMinMs = 140;
+        options.timeWindowMaxMs = 1750;
+        options.timeWindowStepMs = 110;
+        options.timeWindowAnchorStepMs = 60;
+        options.timeWindowMaxCandidates = 96;
+        options.timeResampleStepMs = 22;
+        options.timeResampleMaxPoints = 108;
+    }
+
+    options.windowCoverageMinPercent = EnvIntClamped(
+        "MFX_GESTURE_WINDOW_COVERAGE_MIN_PERCENT",
+        options.windowCoverageMinPercent,
+        10,
+        90);
+    options.windowCoverageMaxPercent = EnvIntClamped(
+        "MFX_GESTURE_WINDOW_COVERAGE_MAX_PERCENT",
+        options.windowCoverageMaxPercent,
+        options.windowCoverageMinPercent,
+        100);
+    options.windowCoverageStepPercent = EnvIntClamped(
+        "MFX_GESTURE_WINDOW_COVERAGE_STEP_PERCENT",
+        options.windowCoverageStepPercent,
+        1,
+        30);
+    options.windowSlideDivisor = EnvIntClamped(
+        "MFX_GESTURE_WINDOW_SLIDE_DIVISOR",
+        options.windowSlideDivisor,
+        1,
+        10);
+    options.spatialWindowMaxCandidates = EnvIntClamped(
+        "MFX_GESTURE_WINDOW_SPATIAL_MAX_CANDIDATES",
+        options.spatialWindowMaxCandidates,
+        16,
+        400);
+    options.timeWindowMinMs = EnvIntClamped(
+        "MFX_GESTURE_WINDOW_TIME_MIN_MS",
+        options.timeWindowMinMs,
+        60,
+        4000);
+    options.timeWindowMaxMs = EnvIntClamped(
+        "MFX_GESTURE_WINDOW_TIME_MAX_MS",
+        options.timeWindowMaxMs,
+        options.timeWindowMinMs,
+        8000);
+    options.timeWindowStepMs = EnvIntClamped(
+        "MFX_GESTURE_WINDOW_TIME_STEP_MS",
+        options.timeWindowStepMs,
+        10,
+        1200);
+    options.timeWindowAnchorStepMs = EnvIntClamped(
+        "MFX_GESTURE_WINDOW_TIME_ANCHOR_STEP_MS",
+        options.timeWindowAnchorStepMs,
+        10,
+        800);
+    options.timeWindowMaxCandidates = EnvIntClamped(
+        "MFX_GESTURE_WINDOW_TIME_MAX_CANDIDATES",
+        options.timeWindowMaxCandidates,
+        8,
+        400);
+    options.timeResampleStepMs = EnvIntClamped(
+        "MFX_GESTURE_TIME_RESAMPLE_STEP_MS",
+        options.timeResampleStepMs,
+        8,
+        120);
+    options.timeResampleMaxPoints = EnvIntClamped(
+        "MFX_GESTURE_TIME_RESAMPLE_MAX_POINTS",
+        options.timeResampleMaxPoints,
+        16,
+        300);
+    return options;
+}
+
 GestureRecognitionConfig BuildGestureConfig(const InputAutomationConfig& config) {
     GestureRecognitionConfig out;
     out.enabled = config.enabled && config.gesture.enabled;
@@ -94,6 +217,155 @@ std::string ButtonNameFromCode(int button) {
     if (button == kButtonRight) return "right";
     if (button == kButtonMiddle) return "middle";
     return {};
+}
+
+std::string CanonicalGestureId(const std::string& value) {
+    return automation_ids::NormalizeGestureId(value);
+}
+
+size_t CountGestureDirectionUnits(const std::string& gestureId) {
+    const std::string normalized = CanonicalGestureId(gestureId);
+    if (normalized.empty()) {
+        return 0;
+    }
+    std::vector<std::string> tokens;
+    size_t from = 0;
+    while (from < normalized.size()) {
+        const size_t pos = normalized.find('_', from);
+        if (pos == std::string::npos) {
+            tokens.push_back(normalized.substr(from));
+            break;
+        }
+        tokens.push_back(normalized.substr(from, pos - from));
+        from = pos + 1;
+    }
+    size_t count = 0;
+    for (size_t i = 0; i < tokens.size();) {
+        const std::string& token = tokens[i];
+        if (token == "diag") {
+            // diag_<vertical>_<horizontal> counts as one direction unit.
+            ++count;
+            if (i + 2 < tokens.size()) {
+                i += 3;
+            } else {
+                ++i;
+            }
+            continue;
+        }
+        ++count;
+        ++i;
+    }
+    return count;
+}
+
+double MatchCoverageRatio(const GestureMatchWindow& window, size_t capturedPointCount) {
+    if (capturedPointCount == 0) {
+        return 1.0;
+    }
+    const size_t start = std::min(window.start, capturedPointCount);
+    const size_t end = std::min(window.end, capturedPointCount);
+    if (end <= start) {
+        return 1.0;
+    }
+    return std::clamp(
+        static_cast<double>(end - start) / static_cast<double>(capturedPointCount),
+        0.0,
+        1.0);
+}
+
+bool ShouldRejectContainedSimpleCandidate(
+    size_t recognizedDirectionUnits,
+    size_t candidateDirectionUnits,
+    double coverageRatio) {
+    if (recognizedDirectionUnits < 4 || candidateDirectionUnits == 0) {
+        return false;
+    }
+    if (recognizedDirectionUnits < candidateDirectionUnits + 2) {
+        return false;
+    }
+    // Generic containment suppression:
+    // if recognizer sees a much more complex chain but this candidate only
+    // explains a partial local window, treat it as likely sub-shape hijack.
+    return coverageRatio < 0.84;
+}
+
+std::vector<InputAutomationEngine::GestureRouteEvent::PreviewPoint> BuildPreviewPoints(
+    const std::vector<ScreenPoint>* points) {
+    std::vector<InputAutomationEngine::GestureRouteEvent::PreviewPoint> out;
+    if (!points || points->empty()) {
+        return out;
+    }
+    const size_t kMaxPreviewPoints = static_cast<size_t>(DebugPreviewPointCap());
+    const size_t count = points->size();
+    if (count <= kMaxPreviewPoints) {
+        out.reserve(count);
+        for (const ScreenPoint& pt : *points) {
+            out.push_back({pt.x, pt.y});
+        }
+        return out;
+    }
+    out.reserve(kMaxPreviewPoints);
+    const double step = static_cast<double>(count - 1) / static_cast<double>(kMaxPreviewPoints - 1);
+    for (size_t i = 0; i < kMaxPreviewPoints; ++i) {
+        const size_t index = static_cast<size_t>(std::round(step * static_cast<double>(i)));
+        const size_t safeIndex = std::min(index, count - 1);
+        const ScreenPoint& pt = (*points)[safeIndex];
+        out.push_back({pt.x, pt.y});
+    }
+    return out;
+}
+
+std::vector<ScreenPoint> FlattenStrokePreviewPoints(
+    const std::vector<std::vector<ScreenPoint>>& strokes) {
+    std::vector<ScreenPoint> out;
+    size_t reserveCount = 0;
+    for (const auto& stroke : strokes) {
+        reserveCount += stroke.size();
+    }
+    if (reserveCount == 0) {
+        return out;
+    }
+    out.reserve(reserveCount);
+    for (const auto& stroke : strokes) {
+        if (stroke.empty()) {
+            continue;
+        }
+        out.insert(out.end(), stroke.begin(), stroke.end());
+    }
+    return out;
+}
+
+std::vector<AutomationKeyBinding::GesturePoint> FlattenTemplateStrokePoints(
+    const std::vector<std::vector<AutomationKeyBinding::GesturePoint>>& strokes) {
+    std::vector<AutomationKeyBinding::GesturePoint> out;
+    size_t reserveCount = 0;
+    for (const auto& stroke : strokes) {
+        reserveCount += stroke.size();
+    }
+    if (reserveCount == 0) {
+        return out;
+    }
+    out.reserve(reserveCount);
+    for (const auto& stroke : strokes) {
+        out.insert(out.end(), stroke.begin(), stroke.end());
+    }
+    return out;
+}
+
+uint64_t HashPreviewPoints(
+    const std::vector<InputAutomationEngine::GestureRouteEvent::PreviewPoint>& points) {
+    // FNV-1a 64-bit
+    uint64_t hash = 1469598103934665603ull;
+    const auto mix = [&hash](uint64_t value) {
+        hash ^= value;
+        hash *= 1099511628211ull;
+    };
+    for (const auto& pt : points) {
+        mix(static_cast<uint64_t>(static_cast<uint32_t>(pt.x)));
+        mix(static_cast<uint64_t>(static_cast<uint32_t>(pt.y)));
+    }
+    mix(static_cast<uint64_t>(points.size()));
+    return hash;
 }
 
 bool IsCustomGestureMode(const AutomationKeyBinding& binding) {
@@ -142,10 +414,15 @@ ButtonlessDispatchGuard EvaluateButtonlessGestureGuard(
     return {};
 }
 
-bool IsButtonlessNoisyMotion(
+bool IsNoisyMotion(
     const std::vector<ScreenPoint>& points,
-    const std::vector<uint32_t>* sampleTimesMs) {
-    if (points.size() < kButtonlessNoisyMinPoints) {
+    const std::vector<uint32_t>* sampleTimesMs,
+    bool buttonlessRoute) {
+    const size_t minPoints = buttonlessRoute ? kButtonlessNoisyMinPoints : kPressedNoisyMinPoints;
+    const double noisyMaxStartEndRatio = buttonlessRoute ? kButtonlessNoisyMaxStartEndRatio : kPressedNoisyMaxStartEndRatio;
+    const double noisyHighTurnDensity = buttonlessRoute ? kButtonlessNoisyHighTurnDensity : kPressedNoisyHighTurnDensity;
+    const double noisyFastPxPerMs = buttonlessRoute ? kButtonlessNoisyFastPxPerMs : kPressedNoisyFastPxPerMs;
+    if (points.size() < minPoints) {
         return false;
     }
     double pathLength = 0.0;
@@ -183,11 +460,11 @@ bool IsButtonlessNoisyMotion(
     if (sampleTimesMs && sampleTimesMs->size() == points.size() && sampleTimesMs->back() > 0) {
         const double durationMs = static_cast<double>(sampleTimesMs->back());
         const double avgPxPerMs = pathLength / durationMs;
-        fastAndChaotic = (avgPxPerMs >= kButtonlessNoisyFastPxPerMs && turnDensity >= 1.6);
+        fastAndChaotic = (avgPxPerMs >= noisyFastPxPerMs && turnDensity >= (buttonlessRoute ? 1.6 : 2.1));
     }
-    const bool denseChaos = (turnDensity >= kButtonlessNoisyHighTurnDensity && turnCount >= 7);
-    const bool closedScribble = (startEndRatio <= kButtonlessNoisyMaxStartEndRatio && turnCount >= 6);
-    return denseChaos || closedScribble || fastAndChaotic;
+    const bool denseChaos = (turnDensity >= noisyHighTurnDensity && turnCount >= (buttonlessRoute ? 7 : 10));
+    const bool closedScribble = (startEndRatio <= noisyMaxStartEndRatio && turnCount >= (buttonlessRoute ? 6 : 9));
+    return denseChaos || closedScribble || (buttonlessRoute && fastAndChaotic);
 }
 
 } // namespace
@@ -271,17 +548,22 @@ void InputAutomationEngine::OnMouseMove(const ScreenPoint& pt) {
     gestureRecognizer_.OnMouseMove(pt);
     if (DiagnosticsEnabled() && AnyPointerButtonDown()) {
         const GestureRecognizer::Result snapshot = gestureRecognizer_.Snapshot();
+        const std::string recognizedId = CanonicalGestureId(snapshot.gestureId);
         UpdateGestureDiagnostics(
             "gesture_drag_snapshot",
-            snapshot.gestureId.empty() ? "collecting" : "gesture_id_ready",
-            snapshot.gestureId,
+            recognizedId.empty() ? "collecting" : "gesture_id_ready",
+            recognizedId,
             {},
             ButtonNameFromCode(snapshot.button),
             false,
             false,
             false,
             false,
-            snapshot.samplePoints.size());
+            snapshot.samplePoints.size(),
+            0,
+            nullptr,
+            -1.0,
+            snapshot.previewPoints.empty() ? nullptr : &snapshot.previewPoints);
     }
     HandleButtonlessGestureMove(pt);
 }
@@ -305,7 +587,8 @@ void InputAutomationEngine::OnButtonUp(const ScreenPoint& pt, int button) {
             gesture.gestureId,
             gesture.button,
             gesture.samplePoints.empty() ? nullptr : &gesture.samplePoints,
-            gesture.sampleTimesMs.empty() ? nullptr : &gesture.sampleTimesMs);
+            gesture.sampleTimesMs.empty() ? nullptr : &gesture.sampleTimesMs,
+            gesture.previewPoints.empty() ? nullptr : &gesture.previewPoints);
     if (gesture.button > 0 && !gesture.samplePoints.empty()) {
         lastPressedGestureResultAt_ = std::chrono::steady_clock::now();
     }
@@ -438,7 +721,8 @@ void InputAutomationEngine::UpdateGestureDiagnostics(
     size_t samplePointCount,
     size_t candidateCount,
     const GestureMatchWindow* bestWindow,
-    double runnerUpScore) {
+    double runnerUpScore,
+    const std::vector<ScreenPoint>* previewPoints) {
     if (!DiagnosticsEnabled()) {
         return;
     }
@@ -464,6 +748,8 @@ void InputAutomationEngine::UpdateGestureDiagnostics(
     diagnostics_.lastBestWindowStart = bestWindow ? static_cast<int>(bestWindow->start) : -1;
     diagnostics_.lastBestWindowEnd = bestWindow ? static_cast<int>(bestWindow->end) : -1;
     diagnostics_.lastRunnerUpScore = runnerUpScore;
+    diagnostics_.lastPreviewPoints = BuildPreviewPoints(previewPoints);
+    diagnostics_.lastPreviewPathHash = HashPreviewPoints(diagnostics_.lastPreviewPoints);
     diagnostics_.lastModifiers = currentModifiers_;
 
     GestureRouteEvent event{};
@@ -486,6 +772,8 @@ void InputAutomationEngine::UpdateGestureDiagnostics(
     event.bestWindowStart = diagnostics_.lastBestWindowStart;
     event.bestWindowEnd = diagnostics_.lastBestWindowEnd;
     event.runnerUpScore = diagnostics_.lastRunnerUpScore;
+    event.previewPoints = diagnostics_.lastPreviewPoints;
+    event.previewPathHash = diagnostics_.lastPreviewPathHash;
     event.modifiers = diagnostics_.lastModifiers;
 
     if (ShouldAppendGestureRouteEventLocked(event)) {
@@ -521,6 +809,7 @@ bool InputAutomationEngine::ShouldAppendGestureRouteEventLocked(const GestureRou
         last.bestWindowStart != event.bestWindowStart ||
         last.bestWindowEnd != event.bestWindowEnd ||
         std::abs(last.runnerUpScore - event.runnerUpScore) > 1e-6 ||
+        last.previewPathHash != event.previewPathHash ||
         last.modifiers.primary != event.modifiers.primary ||
         last.modifiers.shift != event.modifiers.shift ||
         last.modifiers.alt != event.modifiers.alt;
@@ -541,6 +830,7 @@ void InputAutomationEngine::ResetButtonlessGestureState() {
     buttonlessGestureRecognizer_.Reset();
     buttonlessGestureTriggered_ = false;
     buttonlessLastGestureId_.clear();
+    buttonlessPreviewTrail_.clear();
     buttonlessHasLastMovePoint_ = false;
     buttonlessLastMovePoint_ = {};
     buttonlessLastMoveAt_ = {};
@@ -549,6 +839,14 @@ void InputAutomationEngine::ResetButtonlessGestureState() {
 
 void InputAutomationEngine::HandleButtonlessGestureMove(const ScreenPoint& pt) {
     const auto now = std::chrono::steady_clock::now();
+    if (buttonlessPreviewTrail_.empty() ||
+        buttonlessPreviewTrail_.back().x != pt.x ||
+        buttonlessPreviewTrail_.back().y != pt.y) {
+        buttonlessPreviewTrail_.push_back(pt);
+        if (buttonlessPreviewTrail_.size() > kButtonlessPreviewTrailCap) {
+            buttonlessPreviewTrail_.erase(buttonlessPreviewTrail_.begin());
+        }
+    }
     if (AnyPointerButtonDown()) {
         ResetButtonlessGestureState();
         return;
@@ -584,6 +882,30 @@ void InputAutomationEngine::HandleButtonlessGestureMove(const ScreenPoint& pt) {
         ResetButtonlessGestureState();
     }
 
+    // Once buttonless gesture already triggered, keep the idle arm state fresh
+    // but stop feeding new points into recognizer to avoid endless preview growth.
+    if (buttonlessGestureTriggered_) {
+        UpdateGestureDiagnostics(
+            "buttonless_move_skipped",
+            "post_trigger_hold",
+            buttonlessLastGestureId_,
+            {},
+            "none",
+            false,
+            false,
+            false,
+            false,
+            buttonlessPreviewTrail_.size(),
+            0,
+            nullptr,
+            -1.0,
+            buttonlessPreviewTrail_.empty() ? nullptr : &buttonlessPreviewTrail_);
+        buttonlessLastMovePoint_ = pt;
+        buttonlessHasLastMovePoint_ = true;
+        buttonlessLastMoveAt_ = now;
+        return;
+    }
+
     if (!buttonlessGestureRecognizer_.IsActive()) {
         if (!buttonlessHasLastMovePoint_) {
             UpdateGestureDiagnostics(
@@ -616,7 +938,11 @@ void InputAutomationEngine::HandleButtonlessGestureMove(const ScreenPoint& pt) {
                 false,
                 false,
                 false,
-                0);
+                buttonlessPreviewTrail_.size(),
+                0,
+                nullptr,
+                -1.0,
+                buttonlessPreviewTrail_.empty() ? nullptr : &buttonlessPreviewTrail_);
             buttonlessLastMovePoint_ = pt;
             buttonlessHasLastMovePoint_ = true;
             buttonlessLastMoveAt_ = now;
@@ -644,12 +970,9 @@ void InputAutomationEngine::HandleButtonlessGestureMove(const ScreenPoint& pt) {
         buttonlessHasLastMovePoint_ = true;
         buttonlessLastMoveAt_ = now;
     }
-
-    if (buttonlessGestureTriggered_) {
-        return;
-    }
     const GestureRecognizer::Result snapshot = buttonlessGestureRecognizer_.Snapshot();
-    if (snapshot.gestureId.empty()) {
+    const std::string recognizedGestureId = CanonicalGestureId(snapshot.gestureId);
+    if (recognizedGestureId.empty()) {
         UpdateGestureDiagnostics(
             "buttonless_snapshot",
             "gesture_id_empty",
@@ -660,37 +983,43 @@ void InputAutomationEngine::HandleButtonlessGestureMove(const ScreenPoint& pt) {
             false,
             false,
             false,
-            snapshot.samplePoints.size());
+            snapshot.samplePoints.size(),
+            0,
+            nullptr,
+            -1.0,
+            snapshot.samplePoints.empty() ? nullptr : &snapshot.samplePoints);
         buttonlessLastGestureId_.clear();
         return;
     }
-    if (!buttonlessLastGestureId_.empty() &&
-        snapshot.gestureId == buttonlessLastGestureId_) {
-        return;
-    }
-    if (IsButtonlessNoisyMotion(
+    if (IsNoisyMotion(
             snapshot.samplePoints,
-            snapshot.sampleTimesMs.empty() ? nullptr : &snapshot.sampleTimesMs)) {
+            snapshot.sampleTimesMs.empty() ? nullptr : &snapshot.sampleTimesMs,
+            true)) {
         UpdateGestureDiagnostics(
             "buttonless_snapshot",
             "buttonless_noisy_motion_filtered",
-            snapshot.gestureId,
+            recognizedGestureId,
             {},
             "none",
             false,
             false,
             false,
             false,
-            snapshot.samplePoints.size());
-        buttonlessLastGestureId_ = snapshot.gestureId;
+            snapshot.samplePoints.size(),
+            0,
+            nullptr,
+            -1.0,
+            snapshot.samplePoints.empty() ? nullptr : &snapshot.samplePoints);
+        buttonlessLastGestureId_ = recognizedGestureId;
         return;
     }
     if (TriggerGesture(
-            snapshot.gestureId,
+            recognizedGestureId,
             kButtonNone,
             snapshot.samplePoints.empty() ? nullptr : &snapshot.samplePoints,
-            snapshot.sampleTimesMs.empty() ? nullptr : &snapshot.sampleTimesMs)) {
-        buttonlessLastGestureId_ = snapshot.gestureId;
+            snapshot.sampleTimesMs.empty() ? nullptr : &snapshot.sampleTimesMs,
+            snapshot.previewPoints.empty() ? nullptr : &snapshot.previewPoints)) {
+        buttonlessLastGestureId_ = recognizedGestureId;
         buttonlessGestureTriggered_ = true;
     } else {
         buttonlessLastGestureId_.clear();
@@ -766,12 +1095,16 @@ bool InputAutomationEngine::TriggerGesture(
     const std::string& gestureId,
     int button,
     const std::vector<ScreenPoint>* currentStroke,
-    const std::vector<uint32_t>* currentStrokeTimesMs) {
+    const std::vector<uint32_t>* currentStrokeTimesMs,
+    const std::vector<ScreenPoint>* previewStroke) {
+    const std::vector<ScreenPoint>* previewForDiagnostics =
+        (previewStroke && !previewStroke->empty()) ? previewStroke : currentStroke;
     if (!config_.enabled || !config_.gesture.enabled) {
+        const std::string recognizedGestureId = CanonicalGestureId(gestureId);
         UpdateGestureDiagnostics(
             "gesture_trigger",
             !config_.enabled ? "automation_disabled" : "gesture_disabled",
-            gestureId,
+            recognizedGestureId,
             {},
             {},
             false,
@@ -782,11 +1115,12 @@ bool InputAutomationEngine::TriggerGesture(
         return false;
     }
     const std::string triggerButton = ButtonNameFromCode(button);
+    const std::string recognizedGestureId = CanonicalGestureId(gestureId);
     if (triggerButton.empty()) {
         UpdateGestureDiagnostics(
             "gesture_trigger",
             "unknown_button_code",
-            gestureId,
+            recognizedGestureId,
             {},
             {},
             false,
@@ -796,7 +1130,38 @@ bool InputAutomationEngine::TriggerGesture(
             currentStroke ? currentStroke->size() : 0);
         return false;
     }
-    if (TriggerCustomGesture(button, triggerButton, currentStroke, currentStrokeTimesMs)) {
+    if (triggerButton != "none" && currentStroke && !currentStroke->empty()) {
+        if (IsNoisyMotion(
+                *currentStroke,
+                (currentStrokeTimesMs && currentStrokeTimesMs->size() == currentStroke->size())
+                    ? currentStrokeTimesMs
+                    : nullptr,
+                false)) {
+            UpdateGestureDiagnostics(
+                "gesture_trigger",
+                "pressed_noisy_motion_filtered",
+                recognizedGestureId,
+                {},
+                triggerButton,
+                false,
+                false,
+                false,
+                false,
+                currentStroke->size(),
+                0,
+                nullptr,
+                -1.0,
+                previewForDiagnostics);
+            return false;
+        }
+    }
+    if (TriggerCustomGesture(
+            recognizedGestureId,
+            button,
+            triggerButton,
+            currentStroke,
+            currentStrokeTimesMs,
+            previewForDiagnostics)) {
         return true;
     }
     std::vector<AutomationKeyBinding> filteredMappings;
@@ -810,19 +1175,23 @@ bool InputAutomationEngine::TriggerGesture(
         UpdateGestureDiagnostics(
             "gesture_trigger",
             "no_preset_mapping_for_button",
-            gestureId,
+            recognizedGestureId,
             {},
             triggerButton,
             false,
             false,
             false,
             true,
-            currentStroke ? currentStroke->size() : 0);
+            currentStroke ? currentStroke->size() : 0,
+            0,
+            nullptr,
+            -1.0,
+            previewForDiagnostics);
         return false;
     }
 
     std::vector<AutomationKeyBinding> dispatchMappings = filteredMappings;
-    std::string dispatchGestureId = gestureId;
+    std::string dispatchGestureId = recognizedGestureId;
     bool usedPresetSimilarity = false;
     double bestSimilarityScore = -1.0;
     double runnerUpSimilarityScore = -1.0;
@@ -836,6 +1205,8 @@ bool InputAutomationEngine::TriggerGesture(
         (currentStroke && !currentStroke->empty())
             ? MeasureCapturedGesture({*currentStroke})
             : GestureSimilarityMetrics{};
+    const size_t recognizedDirectionUnits = CountGestureDirectionUnits(recognizedGestureId);
+    const GestureMatchOptions matchOptions = BuildGestureMatchOptions(triggerButton == "none");
 
     if (currentStroke && !currentStroke->empty()) {
         struct PresetSimilarityCandidate final {
@@ -863,13 +1234,21 @@ bool InputAutomationEngine::TriggerGesture(
 
             const GestureMatchResult result =
                 (currentStrokeTimesMs && currentStrokeTimesMs->size() == currentStroke->size())
-                ? MatchPresetGestureSimilarity(actionId, *currentStroke, *currentStrokeTimesMs)
-                : MatchPresetGestureSimilarity(actionId, *currentStroke);
+                ? MatchPresetGestureSimilarity(actionId, *currentStroke, *currentStrokeTimesMs, matchOptions)
+                : MatchPresetGestureSimilarity(actionId, *currentStroke, matchOptions);
             if (result.bestScore < 0.0) {
                 continue;
             }
             const int threshold = std::clamp(binding.gesturePattern.matchThresholdPercent, 50, 95);
             if (result.bestScore + 1e-6 < static_cast<double>(threshold)) {
+                continue;
+            }
+            const size_t candidateDirectionUnits = CountGestureDirectionUnits(actionId);
+            const double coverageRatio = MatchCoverageRatio(result.bestWindow, currentStroke->size());
+            if (ShouldRejectContainedSimpleCandidate(
+                    recognizedDirectionUnits,
+                    candidateDirectionUnits,
+                    coverageRatio)) {
                 continue;
             }
 
@@ -982,7 +1361,7 @@ bool InputAutomationEngine::TriggerGesture(
         UpdateGestureDiagnostics(
             "gesture_trigger",
             similarityRejectReason.c_str(),
-            gestureId,
+            recognizedGestureId,
             {},
             triggerButton,
             false,
@@ -992,7 +1371,8 @@ bool InputAutomationEngine::TriggerGesture(
             currentStroke ? currentStroke->size() : 0,
             bestSimilarityCandidateCount,
             bestSimilarityScore >= 0.0 ? &bestSimilarityWindow : nullptr,
-            runnerUpSimilarityScore);
+            runnerUpSimilarityScore,
+            previewForDiagnostics);
         return false;
     }
 
@@ -1030,7 +1410,7 @@ bool InputAutomationEngine::TriggerGesture(
     UpdateGestureDiagnostics(
         "gesture_trigger",
         reason.c_str(),
-        gestureId,
+        recognizedGestureId,
         trace.bindingMatched ? dispatchGestureId : std::string{},
         triggerButton,
         trace.bindingMatched,
@@ -1040,27 +1420,37 @@ bool InputAutomationEngine::TriggerGesture(
         currentStroke ? currentStroke->size() : 0,
         bestSimilarityCandidateCount,
         bestSimilarityScore >= 0.0 ? &bestSimilarityWindow : nullptr,
-        runnerUpSimilarityScore);
+        runnerUpSimilarityScore,
+        previewForDiagnostics);
     return injected;
 }
 
 bool InputAutomationEngine::TriggerCustomGesture(
+    const std::string& recognizedGestureId,
     int button,
     const std::string& triggerButton,
     const std::vector<ScreenPoint>* currentStroke,
-    const std::vector<uint32_t>* currentStrokeTimesMs) {
+    const std::vector<uint32_t>* currentStrokeTimesMs,
+    const std::vector<ScreenPoint>* previewStroke) {
+    const std::vector<ScreenPoint>* previewForDiagnostics =
+        (previewStroke && !previewStroke->empty()) ? previewStroke : currentStroke;
+    const std::string diagnosticsMatchedGestureId = recognizedGestureId;
     if (!keyboardInjector_) {
         UpdateGestureDiagnostics(
             "custom_trigger",
             "keyboard_injector_unavailable",
-            {},
+            recognizedGestureId,
             {},
             triggerButton,
             false,
             false,
             true,
             false,
-            currentStroke ? currentStroke->size() : 0);
+            currentStroke ? currentStroke->size() : 0,
+            0,
+            nullptr,
+            -1.0,
+            previewForDiagnostics);
         return false;
     }
 
@@ -1072,6 +1462,7 @@ bool InputAutomationEngine::TriggerCustomGesture(
         int scopeSpecificity = -1;
         int threshold = 75;
         size_t capturedPointCount = 0;
+        std::vector<ScreenPoint> previewPoints{};
     };
 
     const std::string processBaseName = foregroundProcessService_
@@ -1095,6 +1486,8 @@ bool InputAutomationEngine::TriggerCustomGesture(
         if (templateStrokes.empty()) {
             continue;
         }
+        std::vector<std::vector<AutomationKeyBinding::GesturePoint>> templateStrokesForMatch =
+            templateStrokes;
 
         std::vector<std::vector<ScreenPoint>> capturedStrokes;
         std::vector<std::vector<uint32_t>> capturedStrokeTimesMs;
@@ -1102,8 +1495,18 @@ bool InputAutomationEngine::TriggerCustomGesture(
         const bool buttonlessCurrentStrokeMode =
             (triggerButton == "none" && currentStroke && !currentStroke->empty());
         if (buttonlessCurrentStrokeMode) {
-            // Without mouse-button boundaries, we match the current live stroke.
-            if (templateStrokes.size() != 1) {
+            // For buttonless mode there is no physical stroke boundary; for multi-stroke
+            // templates flatten into a single ordered polyline to keep matching generic.
+            if (templateStrokesForMatch.size() > 1) {
+                std::vector<AutomationKeyBinding::GesturePoint> flattenedTemplate =
+                    FlattenTemplateStrokePoints(templateStrokesForMatch);
+                if (flattenedTemplate.size() < 2) {
+                    continue;
+                }
+                templateStrokesForMatch.clear();
+                templateStrokesForMatch.push_back(std::move(flattenedTemplate));
+            }
+            if (templateStrokesForMatch.size() != 1) {
                 continue;
             }
             capturedStrokes.push_back(*currentStroke);
@@ -1125,7 +1528,7 @@ bool InputAutomationEngine::TriggerCustomGesture(
                 }
             }
         }
-        if (capturedStrokes.size() != templateStrokes.size()) {
+        if (capturedStrokes.size() != templateStrokesForMatch.size()) {
             continue;
         }
         std::reverse(capturedStrokes.begin(), capturedStrokes.end());
@@ -1155,7 +1558,7 @@ bool InputAutomationEngine::TriggerCustomGesture(
             }
         }
 
-        GestureMatchOptions options{};
+        GestureMatchOptions options = BuildGestureMatchOptions(triggerButton == "none");
         options.enableWindowSearch = true;
         options.strictStrokeCount = true;
         options.strictStrokeOrder = true;
@@ -1171,8 +1574,8 @@ bool InputAutomationEngine::TriggerCustomGesture(
             }
         }
         const GestureMatchResult result = hasAlignedStrokeTimes
-            ? MatchGestureTemplateSimilarity(templateStrokes, capturedStrokes, capturedStrokeTimesMs, options)
-            : MatchGestureTemplateSimilarity(templateStrokes, capturedStrokes, options);
+            ? MatchGestureTemplateSimilarity(templateStrokesForMatch, capturedStrokes, capturedStrokeTimesMs, options)
+            : MatchGestureTemplateSimilarity(templateStrokesForMatch, capturedStrokes, options);
         if (result.bestScore < 0.0) {
             continue;
         }
@@ -1191,10 +1594,11 @@ bool InputAutomationEngine::TriggerCustomGesture(
             &binding,
             templateStrokes.size(),
             result,
-            MeasureGestureTemplateProfile(templateStrokes),
+            MeasureGestureTemplateProfile(templateStrokesForMatch),
             scopeSpecificity,
             threshold,
             capturedPointCount,
+            FlattenStrokePreviewPoints(capturedStrokes),
         });
     }
 
@@ -1229,16 +1633,24 @@ bool InputAutomationEngine::TriggerCustomGesture(
         UpdateGestureDiagnostics(
             "custom_trigger",
             "custom_window_not_matched",
-            {},
+            recognizedGestureId,
             {},
             triggerButton,
             false,
             false,
             true,
             false,
-            currentStroke ? currentStroke->size() : 0);
+            currentStroke ? currentStroke->size() : 0,
+            0,
+            nullptr,
+            -1.0,
+            previewForDiagnostics);
         return false;
     }
+    const std::vector<ScreenPoint>* selectedPreviewForDiagnostics =
+        !best.previewPoints.empty()
+            ? &best.previewPoints
+            : previewForDiagnostics;
 
     std::vector<Candidate> rankedCandidates;
     rankedCandidates.reserve(matches.size());
@@ -1275,7 +1687,7 @@ bool InputAutomationEngine::TriggerCustomGesture(
             UpdateGestureDiagnostics(
                 "custom_trigger",
                 "custom_window_ambiguous",
-                {},
+                recognizedGestureId,
                 {},
                 triggerButton,
                 false,
@@ -1285,7 +1697,8 @@ bool InputAutomationEngine::TriggerCustomGesture(
                 currentStroke ? currentStroke->size() : 0,
                 best.result.candidateCount,
                 &best.result.bestWindow,
-                runnerUpScore);
+                runnerUpScore,
+                selectedPreviewForDiagnostics);
             return false;
         }
     }
@@ -1301,7 +1714,7 @@ bool InputAutomationEngine::TriggerCustomGesture(
             UpdateGestureDiagnostics(
                 "custom_trigger",
                 guard.reason,
-                {},
+                recognizedGestureId,
                 {},
                 triggerButton,
                 false,
@@ -1311,7 +1724,8 @@ bool InputAutomationEngine::TriggerCustomGesture(
                 currentStroke ? currentStroke->size() : 0,
                 best.result.candidateCount,
                 &best.result.bestWindow,
-                runnerUpScore);
+                runnerUpScore,
+                previewForDiagnostics);
             return false;
         }
     }
@@ -1321,8 +1735,8 @@ bool InputAutomationEngine::TriggerCustomGesture(
         UpdateGestureDiagnostics(
             "custom_trigger",
             "custom_mapping_missing_keys",
-            {},
-            {},
+            recognizedGestureId,
+            diagnosticsMatchedGestureId,
             triggerButton,
             true,
             false,
@@ -1331,15 +1745,16 @@ bool InputAutomationEngine::TriggerCustomGesture(
             currentStroke ? currentStroke->size() : 0,
             best.result.candidateCount,
             &best.result.bestWindow,
-            runnerUpScore);
+            runnerUpScore,
+            selectedPreviewForDiagnostics);
         return false;
     }
     if (!keyboardInjector_->SendChord(keys)) {
         UpdateGestureDiagnostics(
             "custom_trigger",
             "custom_mapping_inject_failed",
-            {},
-            {},
+            recognizedGestureId,
+            diagnosticsMatchedGestureId,
             triggerButton,
             true,
             false,
@@ -1348,7 +1763,8 @@ bool InputAutomationEngine::TriggerCustomGesture(
             currentStroke ? currentStroke->size() : 0,
             best.result.candidateCount,
             &best.result.bestWindow,
-            runnerUpScore);
+            runnerUpScore,
+            selectedPreviewForDiagnostics);
         return false;
     }
     if (triggerButton != "none") {
@@ -1357,8 +1773,8 @@ bool InputAutomationEngine::TriggerCustomGesture(
     UpdateGestureDiagnostics(
         "custom_trigger",
         "custom_window_injected",
-        {},
-        {},
+        recognizedGestureId,
+        diagnosticsMatchedGestureId,
         triggerButton,
         true,
         true,
@@ -1367,7 +1783,8 @@ bool InputAutomationEngine::TriggerCustomGesture(
         currentStroke ? currentStroke->size() : 0,
         best.result.candidateCount,
         &best.result.bestWindow,
-        runnerUpScore);
+        runnerUpScore,
+        selectedPreviewForDiagnostics);
     return true;
 }
 

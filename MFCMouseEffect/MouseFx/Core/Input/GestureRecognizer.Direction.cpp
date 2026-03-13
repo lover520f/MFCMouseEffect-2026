@@ -54,6 +54,40 @@ bool IsCardinalDirection(char dir) {
     return dir == 'L' || dir == 'R' || dir == 'U' || dir == 'D';
 }
 
+bool IsDiagonalDirection(char dir) {
+    return dir == 'Q' || dir == 'A' || dir == 'C' || dir == 'E';
+}
+
+int HorizontalSign(char dir) {
+    switch (dir) {
+    case 'L':
+    case 'Q':
+    case 'C':
+        return -1;
+    case 'R':
+    case 'A':
+    case 'E':
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+int VerticalSign(char dir) {
+    switch (dir) {
+    case 'U':
+    case 'Q':
+    case 'A':
+        return -1;
+    case 'D':
+    case 'C':
+    case 'E':
+        return 1;
+    default:
+        return 0;
+    }
+}
+
 void SimplifyDirectionChain(std::vector<char>* dirs) {
     if (!dirs) {
         return;
@@ -71,6 +105,25 @@ void SimplifyDirectionChain(std::vector<char>* dirs) {
                     dirs->begin() + static_cast<std::ptrdiff_t>(i + 2));
                 changed = true;
                 break;
+            }
+            // Remove short cardinal jitter between diagonals that keep the same
+            // major intent axis, e.g. E-R-A => E-A (common W/V micro-jitter).
+            if (IsDiagonalDirection(prev) && IsDiagonalDirection(next) && IsCardinalDirection(mid)) {
+                const int prevHx = HorizontalSign(prev);
+                const int nextHx = HorizontalSign(next);
+                const int prevVy = VerticalSign(prev);
+                const int nextVy = VerticalSign(next);
+                const int midHx = HorizontalSign(mid);
+                const int midVy = VerticalSign(mid);
+                const bool horizontalBridge =
+                    (midHx != 0 && prevHx == nextHx && prevHx == midHx);
+                const bool verticalBridge =
+                    (midVy != 0 && prevVy == nextVy && prevVy == midVy);
+                if (horizontalBridge || verticalBridge) {
+                    dirs->erase(dirs->begin() + static_cast<std::ptrdiff_t>(i));
+                    changed = true;
+                    break;
+                }
             }
         }
     }
@@ -97,11 +150,18 @@ std::vector<char> GestureRecognizer::QuantizeDirections() const {
         }
         dirs.push_back(dir);
         prev = dir;
-        if (static_cast<int>(dirs.size()) >= config_.maxDirections) {
+        if (dirs.size() >= 64) {
             break;
         }
     }
     SimplifyDirectionChain(&dirs);
+    if (static_cast<int>(dirs.size()) > config_.maxDirections) {
+        // Prefer keeping the latest simplified segments so late-stage intent is
+        // not lost by early jitter when user finishes the gesture.
+        dirs.erase(
+            dirs.begin(),
+            dirs.end() - static_cast<std::ptrdiff_t>(config_.maxDirections));
+    }
     return dirs;
 }
 

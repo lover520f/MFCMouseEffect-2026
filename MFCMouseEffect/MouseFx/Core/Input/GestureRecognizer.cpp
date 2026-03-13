@@ -28,6 +28,7 @@ void GestureRecognizer::Reset() {
     activeButton_ = 0;
     totalDistancePx_ = 0;
     samples_.clear();
+    previewPoints_.clear();
     sampleTimesMs_.clear();
     lastRawPt_ = ScreenPoint{};
     lastSamplePt_ = ScreenPoint{};
@@ -54,6 +55,7 @@ void GestureRecognizer::OnButtonDown(const ScreenPoint& pt, int button) {
     lastRawAt_ = now;
     lastSampleAt_ = now;
     samples_.push_back(pt);
+    previewPoints_.push_back(pt);
     sampleTimesMs_.push_back(0);
 }
 
@@ -66,6 +68,11 @@ void GestureRecognizer::OnMouseMove(const ScreenPoint& pt) {
     const long long dxRaw = static_cast<long long>(pt.x) - static_cast<long long>(lastRawPt_.x);
     const long long dyRaw = static_cast<long long>(pt.y) - static_cast<long long>(lastRawPt_.y);
     totalDistancePx_ += static_cast<int>(std::sqrt(static_cast<double>(dxRaw * dxRaw + dyRaw * dyRaw)));
+    if (previewPoints_.empty() ||
+        previewPoints_.back().x != pt.x ||
+        previewPoints_.back().y != pt.y) {
+        previewPoints_.push_back(pt);
+    }
     lastRawPt_ = pt;
     lastRawAt_ = now;
 
@@ -94,6 +101,7 @@ GestureRecognizer::Result GestureRecognizer::OnButtonUp(const ScreenPoint& pt, i
     result.button = button;
     result.samplePoints = BuildEvaluationSamples();
     result.sampleTimesMs = BuildEvaluationSampleTimesMs();
+    result.previewPoints = BuildPreviewSamples();
     Reset();
     return result;
 }
@@ -107,6 +115,7 @@ GestureRecognizer::Result GestureRecognizer::Snapshot() const {
     result.button = activeButton_;
     result.samplePoints = BuildEvaluationSamples();
     result.sampleTimesMs = BuildEvaluationSampleTimesMs();
+    result.previewPoints = BuildPreviewSamples();
     return result;
 }
 
@@ -119,6 +128,22 @@ bool GestureRecognizer::IsTrackedButton(int button) {
 
 std::vector<ScreenPoint> GestureRecognizer::BuildEvaluationSamples() const {
     std::vector<ScreenPoint> points = samples_;
+    if (!active_) {
+        return points;
+    }
+    if (points.empty()) {
+        points.push_back(lastRawPt_);
+        return points;
+    }
+    const ScreenPoint& tail = points.back();
+    if (tail.x != lastRawPt_.x || tail.y != lastRawPt_.y) {
+        points.push_back(lastRawPt_);
+    }
+    return points;
+}
+
+std::vector<ScreenPoint> GestureRecognizer::BuildPreviewSamples() const {
+    std::vector<ScreenPoint> points = previewPoints_;
     if (!active_) {
         return points;
     }
