@@ -1,12 +1,16 @@
 #pragma once
 
-#include "MouseFx/Server/HttpServer.h"
 #include "Platform/posix/Shell/ScaffoldSettingsApi.h"
 #include "Platform/posix/Shell/ScaffoldSettingsRouteConfig.h"
 
 #include <filesystem>
 #include <mutex>
 #include <vector>
+
+namespace mousefx {
+struct HttpRequest;
+struct HttpResponse;
+}
 
 namespace mousefx::platform::scaffold {
 

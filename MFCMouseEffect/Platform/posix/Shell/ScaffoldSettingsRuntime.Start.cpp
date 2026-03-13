@@ -2,6 +2,8 @@
 
 #include "Platform/posix/Shell/ScaffoldSettingsRuntime.Internal.h"
 
+#include "MouseFx/Server/http/HttpServer.h"
+#include "Platform/posix/Shell/ScaffoldSettingsRequestHandler.h"
 #include "Platform/posix/Shell/ScaffoldSettingsWebUiAssets.h"
 
 #include <memory>

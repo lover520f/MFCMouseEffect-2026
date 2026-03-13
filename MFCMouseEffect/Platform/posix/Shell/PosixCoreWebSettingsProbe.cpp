@@ -3,7 +3,7 @@
 #include "Platform/posix/Shell/PosixCoreWebSettingsProbe.h"
 #include "Platform/posix/Shell/PosixKeyValueCaptureFile.h"
 
-#include "MouseFx/Server/WebSettingsServer.h"
+#include "MouseFx/Server/core/WebSettingsServer.h"
 
 #include <cstdlib>
 #include <string_view>

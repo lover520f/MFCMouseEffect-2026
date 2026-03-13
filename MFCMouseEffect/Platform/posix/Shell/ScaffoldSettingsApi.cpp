@@ -2,7 +2,9 @@
 
 #include "Platform/posix/Shell/ScaffoldSettingsApi.h"
 
+#include "MouseFx/Server/http/HttpServer.h"
 #include "Platform/PlatformTarget.h"
+#include "Platform/posix/Shell/ScaffoldSettingsRouteConfig.h"
 
 namespace mousefx::platform::scaffold {
 namespace {

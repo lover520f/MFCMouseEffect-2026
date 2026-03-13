@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Platform/posix/Shell/ScaffoldSettingsRequestHandler.h"
+#include "MouseFx/Server/http/HttpServer.h"
 
 namespace mousefx::platform::scaffold {
 

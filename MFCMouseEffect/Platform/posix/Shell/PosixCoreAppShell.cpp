@@ -5,6 +5,7 @@
 #if MFX_PLATFORM_MACOS || MFX_PLATFORM_LINUX
 
 #include "MouseFx/Core/Control/AppController.h"
+#include "MouseFx/Server/core/WebSettingsServer.h"
 
 #include <string>
 #include <utility>
@@ -31,6 +32,8 @@ std::string BuildInputCaptureDegradedWarning(const AppController::InputCaptureRu
 PosixCoreAppShell::PosixCoreAppShell(ShellPlatformServices services)
     : services_(std::move(services)) {
 }
+
+PosixCoreAppShell::~PosixCoreAppShell() = default;
 
 bool PosixCoreAppShell::Initialize(const AppShellStartOptions& options) {
     if (initialized_) {

@@ -1,13 +1,17 @@
 #pragma once
 
 #include "MouseFx/Core/Json/JsonFacade.h"
-#include "MouseFx/Server/HttpServer.h"
-#include "Platform/posix/Shell/ScaffoldSettingsRouteConfig.h"
 
 #include <cstdint>
 #include <string>
 
+namespace mousefx {
+struct HttpResponse;
+}
+
 namespace mousefx::platform::scaffold {
+
+struct SettingsRoute;
 
 struct RuntimeState {
     std::string uiLanguage = "zh-CN";

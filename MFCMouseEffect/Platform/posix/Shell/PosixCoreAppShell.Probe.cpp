@@ -5,7 +5,7 @@
 #if MFX_PLATFORM_MACOS || MFX_PLATFORM_LINUX
 
 #include "Platform/posix/Shell/PosixCoreWebSettingsProbe.h"
-#include "MouseFx/Server/WebSettingsServer.h"
+#include "MouseFx/Server/core/WebSettingsServer.h"
 
 #include <sstream>
 #include <string>

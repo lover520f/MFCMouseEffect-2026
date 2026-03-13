@@ -1,9 +1,7 @@
 #pragma once
 
-#include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Core/Shell/IAppShellHost.h"
 #include "MouseFx/Core/Shell/ShellPlatformServices.h"
-#include "MouseFx/Server/WebSettingsServer.h"
 #include "Platform/IPlatformAppShell.h"
 #include "Platform/PlatformTarget.h"
 
@@ -11,12 +9,18 @@
 #include <memory>
 #include <string>
 
+namespace mousefx {
+class AppController;
+class WebSettingsServer;
+}
+
 namespace mousefx::platform {
 
 #if MFX_PLATFORM_MACOS || MFX_PLATFORM_LINUX
 class PosixCoreAppShell final : public IPlatformAppShell, private IAppShellHost {
 public:
     explicit PosixCoreAppShell(ShellPlatformServices services);
+    ~PosixCoreAppShell() override;
 
     bool Initialize(const AppShellStartOptions& options) override;
     int RunMessageLoop() override;

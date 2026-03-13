@@ -1,10 +1,16 @@
 #pragma once
 
-#include "MouseFx/Server/HttpServer.h"
-#include "Platform/posix/Shell/ScaffoldSettingsRequestHandler.h"
 #include "Platform/posix/Shell/ScaffoldSettingsRuntime.h"
 
 #include <memory>
+
+namespace mousefx {
+class HttpServer;
+}
+
+namespace mousefx::platform::scaffold {
+class SettingsRequestHandler;
+}
 
 namespace mousefx::platform::scaffold::runtime_internal {
 

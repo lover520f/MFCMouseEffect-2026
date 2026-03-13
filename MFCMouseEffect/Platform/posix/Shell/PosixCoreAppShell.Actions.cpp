@@ -4,12 +4,13 @@
 
 #if MFX_PLATFORM_MACOS || MFX_PLATFORM_LINUX
 
+#include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Core/Effects/ClickEffectCompute.h"
 #include "MouseFx/Core/Effects/HoldEffectCompute.h"
 #include "MouseFx/Core/Effects/HoverEffectCompute.h"
 #include "MouseFx/Core/Effects/ScrollEffectCompute.h"
 #include "MouseFx/Core/Effects/TrailEffectCompute.h"
-#include "MouseFx/Server/WebSettingsServer.h"
+#include "MouseFx/Server/core/WebSettingsServer.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/StringUtils.h"
 #include "Settings/SettingsOptions.h"
