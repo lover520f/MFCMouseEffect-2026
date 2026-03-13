@@ -10,6 +10,7 @@ Keep project docs high-signal, searchable, and token-efficient for AI-IDE and hu
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/agent-context/current.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
 - `P2` Capability docs:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/agent-context/p2-capability-index.md`
   - one targeted issue/refactoring doc per task.
 - `P3` Archive/low-priority:
   - long process records and obsolete execution details.
@@ -67,3 +68,21 @@ rg --files docs/refactoring | sort | tail -n 20
 # Find target docs by keyword
 rg -n "permission|wasm|automation|app_scope" docs/refactoring docs/issues
 ```
+
+## Context Router (mandatory upkeep)
+- Generate index artifacts after doc updates:
+  - `./tools/docs/ai-context.sh index`
+- Validate index freshness before commit/CI:
+  - `./tools/docs/ai-context.sh check --strict`
+- Optional line-limit hard gate:
+  - `./tools/docs/ai-context.sh check --strict --enforce-line-limits`
+- Build task-scoped minimal read set:
+  - `./tools/docs/ai-context.sh route --task "<task keywords>"`
+- Optional local realtime update while editing docs:
+  - `./tools/docs/ai-context.sh watch`
+- Optional pre-commit auto-refresh/install:
+  - `./tools/docs/install-git-hook.sh`
+
+Generated artifacts:
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/.ai/context-index.json`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/.ai/context-map.md`

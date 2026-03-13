@@ -321,7 +321,7 @@ pnpm run sync:runtime-samples
 
 ## 相关文档
 
-- `docs/architecture/wasm-plugin-template-quickstart.md`
-- `docs/architecture/wasm-plugin-template-quickstart.zh-CN.md`
+- `examples/wasm-plugin-template/README.md`
+- `examples/wasm-plugin-template/README.zh-CN.md`
 - `docs/architecture/wasm-plugin-compatibility.zh-CN.md`
-- `docs/architecture/wasm-plugin-troubleshooting.zh-CN.md`
+- `docs/architecture/custom-effects-wasm-route.zh-CN.md`

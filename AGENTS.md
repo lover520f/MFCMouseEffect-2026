@@ -7,7 +7,7 @@ Repository-level collaboration and engineering rules for AI agents and developer
 1. `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/AGENTS.md`
 2. `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/agent-context/current.md`
 3. `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
-4. Targeted docs for the touched capability (single issue/refactoring doc, not bulk-read)
+4. Targeted docs for the touched capability (single issue/refactoring doc, not bulk-read; prefer starting from `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/agent-context/p2-capability-index.md`)
 
 ## Global Collaboration Rules
 1. Keep each file focused (single responsibility). Split logic instead of continuously inflating old files.
@@ -17,6 +17,16 @@ Repository-level collaboration and engineering rules for AI agents and developer
 5. Every behavior/interface change must sync docs under `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs` in the same iteration.
 6. Small-step delivery: split commits by single capability; include scope, risks, validation, and docs.
 7. If accumulated changes span many capability points/files, propose and execute staged commits to control regression/review cost.
+
+## Collaboration Split (Macro/Micro)
+- User owns macro direction:
+  - architecture boundaries
+  - design tradeoffs
+  - priorities and acceptance criteria
+- Codex owns micro execution loop:
+  - implementation/refactor/debug
+  - local diagnostics collection + analysis
+  - regression validation + docs/index synchronization
 
 ## Issue Triage Contract
 Before modifying behavior for reported anomalies, classify first:
@@ -90,6 +100,17 @@ Goal: reduce low-value token consumption and keep docs continuously usable for A
 - Read only P0 -> P1 -> targeted P2.
 - Avoid bulk-reading `/docs/issues` or `/docs/refactoring` directories.
 - Use `rg --files` + targeted open to load minimal needed context.
+
+### AI context router tooling
+- Build/update index artifacts: `./tools/docs/ai-context.sh index`
+- Route minimal read set by task: `./tools/docs/ai-context.sh route --task "<keywords>"`
+- Validate index freshness (gate): `./tools/docs/ai-context.sh check --strict`
+- Optional line-limit hard gate: `./tools/docs/ai-context.sh check --strict --enforce-line-limits`
+- Optional local realtime update: `./tools/docs/ai-context.sh watch`
+- Optional pre-commit installer: `./tools/docs/install-git-hook.sh`
+- Generated artifacts:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/.ai/context-index.json`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/.ai/context-map.md`
 
 ## Tech Stack
 - C++ (MFC/Win32, cross-platform Platform package)

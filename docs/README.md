@@ -9,7 +9,8 @@ Compact AI-first index for fast navigation. This file is intentionally short and
 1. `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/AGENTS.md`
 2. `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/agent-context/current.md`
 3. `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
-4. One targeted capability doc in `docs/refactoring/` or `docs/issues/`
+4. `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/agent-context/p2-capability-index.md`
+5. One targeted capability doc
 
 ## Priority Layers
 - `P0` global contract:
@@ -18,8 +19,8 @@ Compact AI-first index for fast navigation. This file is intentionally short and
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/agent-context/current.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
 - `P2` capability docs:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/agent-context/p2-capability-index.md`
   - targeted docs under `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/`
-  - targeted docs under `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/issues/`
 - `P3` archive:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/archive/README.md`
 
@@ -30,7 +31,6 @@ Compact AI-first index for fast navigation. This file is intentionally short and
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-core-lane-smoke-workflow.md`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-core-automation-contract-workflow.md`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-linux-compile-gate-workflow.md`
-- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/trail-profiles-config.md`
 
 ## Targeted Architecture Docs
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/custom-effects-wasm-route.md`
@@ -42,11 +42,36 @@ Compact AI-first index for fast navigation. This file is intentionally short and
 rg --files docs/refactoring | sort | tail -n 30
 
 # find docs by capability
-rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/issues docs/architecture
+rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/automation docs/architecture
 
 # doc hygiene gate
 ./tools/docs/doc-hygiene-check.sh --strict
 ```
+
+## AI Context Router
+```bash
+# regenerate machine index + human map
+./tools/docs/ai-context.sh index
+
+# get minimal read set for one task
+./tools/docs/ai-context.sh route --task "automation gesture debug"
+
+# enforce index freshness
+./tools/docs/ai-context.sh check --strict
+# optional hard gate for line limits
+./tools/docs/ai-context.sh check --strict --enforce-line-limits
+
+# local realtime refresh while editing docs
+./tools/docs/ai-context.sh watch
+# optional: install pre-commit auto-refresh gate
+./tools/docs/install-git-hook.sh
+```
+- Generated files:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/.ai/context-index.json`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/.ai/context-map.md`
+- Contract:
+  - `route` always keeps first-read baseline (P0 + P1) and adds keyword-matched P2 docs under token budget.
+  - `check` fails when markdown/AGENTS changed but index was not refreshed.
 
 ## macOS Local Commands
 ```bash

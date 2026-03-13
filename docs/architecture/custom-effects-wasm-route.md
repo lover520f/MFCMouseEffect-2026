@@ -307,11 +307,11 @@ Observable runtime state:
   - `examples/wasm-plugin-template`
 
 ## Source of Truth Docs
-- Template quickstart:
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-template-quickstart.md`
+- Template authoring guide:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/examples/wasm-plugin-template/README.md`
 - Compatibility:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-compatibility.md`
-- Troubleshooting:
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-troubleshooting.md`
+- Troubleshooting entry:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/examples/wasm-plugin-template/README.md`
 - Historical phase-by-phase notes were intentionally removed from active docs to reduce token load.
 - For deep implementation chronology, use git history on this file and related WASM commits.

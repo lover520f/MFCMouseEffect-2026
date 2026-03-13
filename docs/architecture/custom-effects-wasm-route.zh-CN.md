@@ -306,11 +306,11 @@ Manifest 路由提示（可选）：
   - `examples/wasm-plugin-template`
 
 ## 关联文档（权威入口）
-- 快速开始：
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-template-quickstart.zh-CN.md`
+- 模板开发指南：
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/examples/wasm-plugin-template/README.zh-CN.md`
 - 兼容策略：
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-compatibility.zh-CN.md`
-- 排错手册：
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-troubleshooting.zh-CN.md`
+- 排错入口：
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/examples/wasm-plugin-template/README.zh-CN.md`
 - 历史阶段拆分文档已从活跃文档层移除，以降低 token 成本。
 - 如需追溯细节，请直接查看本文件及相关 WASM 提交的 git 历史。

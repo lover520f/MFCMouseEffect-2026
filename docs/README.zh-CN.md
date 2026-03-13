@@ -9,7 +9,8 @@
 1. `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/AGENTS.md`
 2. `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/agent-context/current.md`
 3. `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
-4. 仅按当前任务打开 1 篇目标文档（`refactoring` 或 `issues`）
+4. `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/agent-context/p2-capability-index.md`
+5. 仅按当前任务打开 1 篇目标文档
 
 ## 文档分层
 - `P0` 全局协作约束：
@@ -18,8 +19,9 @@
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/agent-context/current.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/phase-roadmap-macos-m1-status.md`
 - `P2` 能力文档（按需打开）：
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/agent-context/p2-capability-index.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/refactoring/`
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/issues/`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/automation/`
 - `P3` 归档区：
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/archive/README.md`
 
@@ -30,7 +32,6 @@
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-core-lane-smoke-workflow.md`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-core-automation-contract-workflow.md`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-linux-compile-gate-workflow.md`
-- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/trail-profiles-config.zh-CN.md`
 
 ## 定向架构文档
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/custom-effects-wasm-route.zh-CN.md`
@@ -42,11 +43,36 @@
 rg --files docs/refactoring | sort | tail -n 30
 
 # 按能力关键词查文档
-rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/issues docs/architecture
+rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/automation docs/architecture
 
 # 文档体积治理
 ./tools/docs/doc-hygiene-check.sh --strict
 ```
+
+## AI 上下文路由器
+```bash
+# 重新生成机器索引 + 人类导航图
+./tools/docs/ai-context.sh index
+
+# 按任务生成最小读取集
+./tools/docs/ai-context.sh route --task "automation gesture debug"
+
+# 校验索引是否与 AGENTS/docs 同步（门禁用）
+./tools/docs/ai-context.sh check --strict
+# 可选：同时开启文档行数硬门禁
+./tools/docs/ai-context.sh check --strict --enforce-line-limits
+
+# 本地实时监听并自动刷新索引
+./tools/docs/ai-context.sh watch
+# 可选：安装 pre-commit 自动刷新与校验
+./tools/docs/install-git-hook.sh
+```
+- 生成产物：
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/.ai/context-index.json`
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/.ai/context-map.md`
+- 约束：
+  - `route` 固定包含首读基线（P0 + P1），再按关键词和 token 预算补充 P2。
+  - `check` 在 AGENTS/docs 已变化但未刷新索引时失败。
 
 ## macOS 本地命令
 ```bash

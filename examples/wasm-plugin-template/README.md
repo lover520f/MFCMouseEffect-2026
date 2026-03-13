@@ -323,7 +323,7 @@ Template ABI helper also exposes:
 
 ## Related Docs
 
-- `docs/architecture/wasm-plugin-template-quickstart.md`
-- `docs/architecture/wasm-plugin-template-quickstart.zh-CN.md`
+- `examples/wasm-plugin-template/README.md`
+- `examples/wasm-plugin-template/README.zh-CN.md`
 - `docs/architecture/wasm-plugin-compatibility.md`
-- `docs/architecture/wasm-plugin-troubleshooting.md`
+- `docs/architecture/custom-effects-wasm-route.md`
