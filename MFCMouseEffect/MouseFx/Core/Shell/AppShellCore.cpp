@@ -18,7 +18,7 @@
 #include "MouseFx/Core/Effects/HoverEffectCompute.h"
 #include "MouseFx/Core/Effects/ScrollEffectCompute.h"
 #include "MouseFx/Core/Effects/TrailEffectCompute.h"
-#include "MouseFx/Server/WebSettingsServer.h"
+#include "MouseFx/Server/core/WebSettingsServer.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/StringUtils.h"
 #include "Settings/SettingsOptions.h"
