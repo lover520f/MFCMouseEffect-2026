@@ -61,6 +61,14 @@ export function normalizeManifestPathForCompare(path) {
   return value.replace(/\\/g, '/').replace(/\/+/g, '/').toLowerCase();
 }
 
+export function manifestPathForIndicatorLoad(selectedManifestPath, currentManifestPath) {
+  const selected = `${selectedManifestPath || ''}`.trim();
+  if (selected) {
+    return selected;
+  }
+  return `${currentManifestPath || ''}`.trim();
+}
+
 export function findCatalogItemByManifestPath(items, manifestPath) {
   const expected = normalizeManifestPathForCompare(manifestPath);
   if (!expected) {

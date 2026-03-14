@@ -113,6 +113,22 @@
       .toLowerCase();
   }
 
+  function mergeInputIndicatorState(dirtyState, freshState) {
+    const dirtyIndicator = (dirtyState && (dirtyState.input_indicator || dirtyState.mouse_indicator)) || null;
+    const freshIndicator = (freshState && (freshState.input_indicator || freshState.mouse_indicator)) || null;
+    if (!dirtyIndicator) {
+      return freshIndicator;
+    }
+    if (!freshIndicator) {
+      return dirtyIndicator;
+    }
+    const merged = { ...dirtyIndicator };
+    if (Object.prototype.hasOwnProperty.call(freshIndicator, 'wasm_manifest_path')) {
+      merged.wasm_manifest_path = freshIndicator.wasm_manifest_path;
+    }
+    return merged;
+  }
+
   async function ensureInputIndicatorRuntimeManifestSynced(stateSnapshot) {
     const current = stateSnapshot || {};
     const indicator = current.input_indicator || current.mouse_indicator || {};
@@ -391,7 +407,27 @@
 
   async function refreshAfterWasmAction() {
     try {
-      await refreshStateSnapshot(true);
+      const dirtyState = buildState();
+      const st = await apiGet('/api/state');
+      const mergedIndicator = mergeInputIndicatorState(dirtyState, st);
+      const mergedState = {
+        ...st,
+        ...dirtyState,
+        wasm: st.wasm, // Prefer fresh diagnostics and plugin states from backend
+        input_indicator_wasm_route_status: st.input_indicator_wasm_route_status,
+        input_automation_gesture_route_status: st.input_automation_gesture_route_status,
+        input_capture_notice: st.input_capture_notice,
+        gpu_route_notice: st.gpu_route_notice,
+      };
+
+      if (mergedIndicator) {
+        mergedState.input_indicator = mergedIndicator;
+      }
+
+      const uiLang = mergedState.ui_language || 'en-US';
+      const canReuseSchema = !!cachedSchema && cachedSchemaLang === uiLang;
+      const schema = canReuseSchema ? cachedSchema : await apiGet('/api/schema');
+      renderSettingsSnapshot(schema, mergedState);
     } catch (e) {
       if (e && e.code === 'unauthorized') {
         throw e;

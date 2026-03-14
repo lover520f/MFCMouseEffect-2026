@@ -6,6 +6,7 @@
     normalizeCatalogErrors,
     normalizeCatalogItems,
     normalizeManifestPathForCompare,
+    manifestPathForIndicatorLoad,
     normalizeRouteStatus,
     pluginLabel,
     routeEventText,
@@ -168,11 +169,11 @@
   }
 
   async function handleManifestSelection() {
-    if (!selectedManifestPath) {
+    const nextManifestPath = manifestPathForIndicatorLoad(selectedManifestPath, manifestPath);
+    if (!nextManifestPath) {
       return;
     }
     const previousManifestPath = `${manifestPath || ''}`.trim();
-    const nextManifestPath = selectedManifestPath;
     dispatch('change', {
       manifestPath: nextManifestPath,
     });
@@ -212,13 +213,6 @@
   $: if (!initialCatalogRequested && typeof onAction === 'function') {
     initialCatalogRequested = true;
     refreshCatalog(false);
-  }
-
-  $: if (
-    normalizeManifestPathForCompare(manifestPath) &&
-    normalizeManifestPathForCompare(manifestPath) !== normalizeManifestPathForCompare(selectedManifestPath)
-  ) {
-    selectedManifestPath = manifestPath;
   }
 
   $: selectBestManifest(catalog);

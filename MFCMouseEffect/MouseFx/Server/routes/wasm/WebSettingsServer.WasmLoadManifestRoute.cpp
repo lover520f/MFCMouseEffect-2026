@@ -95,6 +95,13 @@ bool HandleWebSettingsWasmLoadManifestApiRoute(
                 if (errorCode.empty()) {
                     errorCode = kErrorCodeLoadManifestFailed;
                 }
+            } else if (IsIndicatorSurface(surface)) {
+                // Keep indicator runtime route consistent with the selected manifest:
+                // successful indicator manifest load should immediately enable wasm render mode.
+                InputIndicatorConfig indicator = controller->Config().inputIndicator;
+                indicator.renderMode = "wasm";
+                indicator.wasmManifestPath = manifestPathUtf8;
+                controller->SetInputIndicatorConfig(indicator);
             }
         } else {
             error = "manifest_path required";
