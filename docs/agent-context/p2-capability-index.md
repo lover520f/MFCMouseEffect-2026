@@ -14,6 +14,10 @@ Use it when P1 (`current.md`) is not enough and you need targeted deep context.
 ## Automation / Gesture
 - Gesture matching logic, thresholds, and regression notes:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/automation/gesture-matching.md`
+- Gesture debug UI rendering and preview behavior:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/automation/gesture-debug-ui-notes.md`
+- Automation mapping behavior details:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/automation/automation-mapping-notes.md`
 - POSIX automation contract workflow:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-core-automation-contract-workflow.md`
 
@@ -25,6 +29,10 @@ Use it when P1 (`current.md`) is not enough and you need targeted deep context.
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-abi-v3-design.md`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-abi-v3-design.zh-CN.md`
 
+## Server / WebSettings
+- Server layer map and include boundaries:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/server-structure.md`
+
 ## Regression / Workflow
 - Unified regression workflow:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-regression-suite-workflow.md`
@@ -32,6 +40,10 @@ Use it when P1 (`current.md`) is not enough and you need targeted deep context.
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-core-lane-smoke-workflow.md`
 - Linux compile gate:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/posix-linux-compile-gate-workflow.md`
+
+## Ops / Manual
+- Manual command cheat sheet:
+  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/ops/manual-commands.md`
 
 ## Archive (Only When Needed)
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/archive/README.md`

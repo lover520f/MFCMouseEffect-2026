@@ -1,6 +1,6 @@
 # AI Context Map
 
-Generated: 2026-03-13T15:14:47.589Z
+Generated: 2026-03-14T12:13:47.805Z
 
 ## Goal
 Load minimal docs by task keyword while keeping AGENTS + current context as mandatory baseline.
@@ -13,7 +13,7 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 ## Topic Routes (Top Candidates)
 ### automation
 - `docs/agent-context/current.md` (P1, 1100 tok)
-- `docs/agent-context/p2-capability-index.md` (P2, 636 tok)
+- `docs/agent-context/p2-capability-index.md` (P2, 750 tok)
 - `docs/architecture/agent-doc-governance.md` (P2, 750 tok)
 - `docs/architecture/posix-core-automation-contract-workflow.md` (P2, 750 tok)
 
@@ -41,9 +41,9 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 - `docs/architecture/custom-effects-wasm-route.md` -> ~6707 tok
 - `docs/refactoring/phase-roadmap-macos-m1-status.md` -> ~5868 tok
 - `docs/automation/gesture-matching.md` -> ~4462 tok
-- `docs/agent-context/current.md` -> ~4258 tok
 - `docs/architecture/wasm-plugin-abi-v3-design.md` -> ~2078 tok
 - `docs/architecture/wasm-plugin-abi-v3-design.zh-CN.md` -> ~1996 tok
+- `docs/agent-context/current.md` -> ~1990 tok
 - `AGENTS.md` -> ~1918 tok
 
 ## Notes

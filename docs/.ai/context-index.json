@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-13T15:14:47.589Z",
+  "generated_at": "2026-03-14T12:13:47.805Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -83,14 +83,14 @@
       ],
       "summary": "This file is the compact P1 runtime truth for daily execution.",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 201,
-      "size_bytes": 17031,
-      "estimated_tokens": 4258,
+      "line_count": 111,
+      "size_bytes": 7960,
+      "estimated_tokens": 1990,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": false,
-      "hash_sha1": "177a21085eb7a1454a22b32e7e7a067c4453adc5",
-      "updated_at": "2026-03-13T15:04:03.757Z"
+      "hash_sha1": "74781aa8a1fc6244e7e4255ce19835ecb6ee3e6d",
+      "updated_at": "2026-03-14T12:04:42.596Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -119,14 +119,14 @@
       ],
       "summary": "This file is a P2 routing map.",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 46,
-      "size_bytes": 2064,
-      "estimated_tokens": 516,
-      "max_read_tokens": 636,
+      "line_count": 58,
+      "size_bytes": 2657,
+      "estimated_tokens": 665,
+      "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "9e4184491f5846ffb38e5ee026c31996e2e1618e",
-      "updated_at": "2026-03-12T13:41:54.121Z"
+      "hash_sha1": "98230751210f85e67b8c6bf3593f196727a94cdb",
+      "updated_at": "2026-03-14T12:04:58.515Z"
     },
     {
       "id": "docs/architecture/agent-doc-governance.md",
@@ -372,6 +372,33 @@
       "updated_at": "2026-03-02T10:26:04.774Z"
     },
     {
+      "id": "docs/architecture/server-structure.md",
+      "relative_path": "docs/architecture/server-structure.md",
+      "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/server-structure.md",
+      "priority": "P2",
+      "role": "architecture",
+      "topic": "automation",
+      "first_read_rank": 0,
+      "tags": [
+        "server",
+        "structure",
+        "automation",
+        "wasm",
+        "abi",
+        "routing"
+      ],
+      "summary": "Detailed server layout notes for WebSettings and route layering.",
+      "when_to_read": "Read when task touches automation mapping or gesture recognition.",
+      "line_count": 27,
+      "size_bytes": 1502,
+      "estimated_tokens": 376,
+      "max_read_tokens": 496,
+      "line_limit": 0,
+      "line_limit_exceeded": false,
+      "hash_sha1": "d2a977882053119dc0d4cb57f5115922e0a60c4a",
+      "updated_at": "2026-03-14T12:04:03.733Z"
+    },
+    {
       "id": "docs/architecture/wasm-plugin-abi-v3-design.md",
       "relative_path": "docs/architecture/wasm-plugin-abi-v3-design.md",
       "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-abi-v3-design.md",
@@ -536,6 +563,38 @@
       "updated_at": "2026-03-12T13:45:01.610Z"
     },
     {
+      "id": "docs/automation/automation-mapping-notes.md",
+      "relative_path": "docs/automation/automation-mapping-notes.md",
+      "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/automation/automation-mapping-notes.md",
+      "priority": "P2",
+      "role": "automation",
+      "topic": "automation",
+      "first_read_rank": 0,
+      "tags": [
+        "automation",
+        "mapping",
+        "notes",
+        "gesture",
+        "regression",
+        "workflow",
+        "windows",
+        "contract",
+        "abi",
+        "routing",
+        "debug"
+      ],
+      "summary": "Detailed behavior notes for automation mapping, gesture recognition, and calibration.",
+      "when_to_read": "Read when task touches automation mapping or gesture recognition.",
+      "line_count": 58,
+      "size_bytes": 4814,
+      "estimated_tokens": 1204,
+      "max_read_tokens": 750,
+      "line_limit": 0,
+      "line_limit_exceeded": false,
+      "hash_sha1": "284611868123b648f0b2de832f265cc5eebff075",
+      "updated_at": "2026-03-14T11:53:30.050Z"
+    },
+    {
       "id": "docs/automation/gesture-calibration-baseline.md",
       "relative_path": "docs/automation/gesture-calibration-baseline.md",
       "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/automation/gesture-calibration-baseline.md",
@@ -560,6 +619,34 @@
       "line_limit_exceeded": false,
       "hash_sha1": "927c28ac7c0efef0bddef364a2dd8deae875587e",
       "updated_at": "2026-03-13T10:58:34.946Z"
+    },
+    {
+      "id": "docs/automation/gesture-debug-ui-notes.md",
+      "relative_path": "docs/automation/gesture-debug-ui-notes.md",
+      "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/automation/gesture-debug-ui-notes.md",
+      "priority": "P2",
+      "role": "automation",
+      "topic": "automation",
+      "first_read_rank": 0,
+      "tags": [
+        "automation",
+        "gesture",
+        "debug",
+        "ui",
+        "notes",
+        "regression",
+        "abi"
+      ],
+      "summary": "Detailed implementation notes for gesture-route debug UI rendering and preview behavior.",
+      "when_to_read": "Read when task touches automation mapping or gesture recognition.",
+      "line_count": 44,
+      "size_bytes": 5482,
+      "estimated_tokens": 1371,
+      "max_read_tokens": 750,
+      "line_limit": 0,
+      "line_limit_exceeded": false,
+      "hash_sha1": "7dbc84bf263d7b9203fa87d5647adb71a8af1125",
+      "updated_at": "2026-03-14T11:49:35.892Z"
     },
     {
       "id": "docs/automation/gesture-matching.md",
@@ -591,6 +678,35 @@
       "line_limit_exceeded": false,
       "hash_sha1": "9e68e144d1447a38c57e817816bcf7d512c118f1",
       "updated_at": "2026-03-13T12:17:04.538Z"
+    },
+    {
+      "id": "docs/ops/manual-commands.md",
+      "relative_path": "docs/ops/manual-commands.md",
+      "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/ops/manual-commands.md",
+      "priority": "P2",
+      "role": "capability",
+      "topic": "automation",
+      "first_read_rank": 0,
+      "tags": [
+        "ops",
+        "manual",
+        "commands",
+        "automation",
+        "gesture",
+        "effects",
+        "macos",
+        "debug"
+      ],
+      "summary": "Common manual commands for local iteration and debugging.",
+      "when_to_read": "Read when task touches automation mapping or gesture recognition.",
+      "line_count": 19,
+      "size_bytes": 1032,
+      "estimated_tokens": 258,
+      "max_read_tokens": 378,
+      "line_limit": 0,
+      "line_limit_exceeded": false,
+      "hash_sha1": "318148b14e58e50e627547da26de3696d521252b",
+      "updated_at": "2026-03-14T12:04:16.047Z"
     },
     {
       "id": "docs/README.md",
