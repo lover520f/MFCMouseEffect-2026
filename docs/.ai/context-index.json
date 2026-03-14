@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-14T12:15:46.979Z",
+  "generated_at": "2026-03-14T15:53:59.889Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -83,14 +83,14 @@
       ],
       "summary": "This file is the compact P1 runtime truth for daily execution.",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 111,
-      "size_bytes": 7960,
-      "estimated_tokens": 1990,
+      "line_count": 115,
+      "size_bytes": 8759,
+      "estimated_tokens": 2190,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": false,
-      "hash_sha1": "74781aa8a1fc6244e7e4255ce19835ecb6ee3e6d",
-      "updated_at": "2026-03-14T12:04:42.596Z"
+      "hash_sha1": "32882e71d26640ac6bea5b31afa5f3e7d6bbc356",
+      "updated_at": "2026-03-14T15:46:22.857Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -699,14 +699,14 @@
       ],
       "summary": "Common manual commands for local iteration and debugging.",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 19,
-      "size_bytes": 1032,
-      "estimated_tokens": 258,
-      "max_read_tokens": 378,
+      "line_count": 22,
+      "size_bytes": 1174,
+      "estimated_tokens": 294,
+      "max_read_tokens": 414,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "318148b14e58e50e627547da26de3696d521252b",
-      "updated_at": "2026-03-14T12:04:16.047Z"
+      "hash_sha1": "09ca559e9b373cc5f382b7e034c1dfa3b9648ba2",
+      "updated_at": "2026-03-14T15:51:28.535Z"
     },
     {
       "id": "docs/README.md",
