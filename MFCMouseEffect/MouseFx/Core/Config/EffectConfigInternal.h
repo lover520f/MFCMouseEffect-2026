@@ -70,6 +70,7 @@ inline std::string NormalizeHoldFollowMode(std::string mode) {
     return "smooth";
 }
 std::string NormalizeHoldPresenterBackend(std::string backend);
+std::vector<std::string> SanitizeEffectsBlacklistApps(std::vector<std::string> apps);
 int SanitizeOverlayTargetFps(int targetFps);
 EffectSizeScaleConfig SanitizeEffectSizeScaleConfig(EffectSizeScaleConfig scales);
 EffectConflictPolicyConfig SanitizeEffectConflictPolicyConfig(EffectConflictPolicyConfig policy);

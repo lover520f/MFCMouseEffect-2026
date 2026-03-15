@@ -30,6 +30,14 @@ void AppendBaseSettingsState(const EffectConfig& cfg, json* out) {
     };
     (*out)["hold_follow_mode"] = EnsureUtf8(cfg.holdFollowMode);
     (*out)["hold_presenter_backend"] = EnsureUtf8(cfg.holdPresenterBackend);
+    {
+        json arr = json::array();
+        const auto apps = config_internal::SanitizeEffectsBlacklistApps(cfg.effectsBlacklistApps);
+        for (const auto& app : apps) {
+            arr.push_back(EnsureUtf8(app));
+        }
+        (*out)["effects_blacklist_apps"] = std::move(arr);
+    }
     (*out)["active"] = {
         {"click", EnsureUtf8(cfg.active.click)},
         {"trail", EnsureUtf8(cfg.active.trail)},

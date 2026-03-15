@@ -16,6 +16,7 @@ nlohmann::json BuildRootFromConfig(const EffectConfig& config) {
     root[keys::kUiLanguage] = config.uiLanguage;
     root[keys::kHoldFollowMode] = config_internal::NormalizeHoldFollowMode(config.holdFollowMode);
     root[keys::kHoldPresenterBackend] = config_internal::NormalizeHoldPresenterBackend(config.holdPresenterBackend);
+    root[keys::kEffectsBlacklistApps] = config_internal::SanitizeEffectsBlacklistApps(config.effectsBlacklistApps);
     root[keys::kTrailStyle] = config.trailStyle;
     root[keys::kInputIndicator] = serialize_internal::BuildInputIndicatorJson(config.inputIndicator);
     root[keys::kAutomation] = serialize_internal::BuildAutomationJson(config.automation);

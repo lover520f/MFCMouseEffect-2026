@@ -64,6 +64,17 @@ inline std::string KeyTokenFromVirtualKey(uint32_t vkCode) {
     case vk::kSnapshot: return "PrintScreen";
     case vk::kPause: return "Pause";
     case vk::kApps: return "Apps";
+    case vk::kOemBackquote: return "Backquote";
+    case vk::kOemMinus: return "Minus";
+    case vk::kOemPlus: return "Equals";
+    case vk::kOemLBracket: return "BracketLeft";
+    case vk::kOemRBracket: return "BracketRight";
+    case vk::kOemBackslash: return "Backslash";
+    case vk::kOemSemicolon: return "Semicolon";
+    case vk::kOemQuote: return "Quote";
+    case vk::kOemComma: return "Comma";
+    case vk::kOemPeriod: return "Period";
+    case vk::kOemSlash: return "Slash";
     default:
         break;
     }

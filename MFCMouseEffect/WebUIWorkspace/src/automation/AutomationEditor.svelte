@@ -359,27 +359,7 @@
         label: key ? t(key, fallback) : fallback,
       };
     });
-    if (group !== 'gesture_button') {
-      return localized;
-    }
-
-    const weight = {
-      none: 0,
-      left: 1,
-      middle: 2,
-      right: 3,
-    };
-
-    return localized.slice().sort((a, b) => {
-      const av = `${a?.value || ''}`.trim().toLowerCase();
-      const bv = `${b?.value || ''}`.trim().toLowerCase();
-      const aw = Object.prototype.hasOwnProperty.call(weight, av) ? weight[av] : Number.MAX_SAFE_INTEGER;
-      const bw = Object.prototype.hasOwnProperty.call(weight, bv) ? weight[bv] : Number.MAX_SAFE_INTEGER;
-      if (aw !== bw) {
-        return aw - bw;
-      }
-      return av.localeCompare(bv);
-    });
+    return localized;
   }
 
   function relocalizeOptionLabels() {

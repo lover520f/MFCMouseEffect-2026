@@ -412,4 +412,21 @@ void ApplyEffectConflictPolicySettings(const json& payload, AppController* contr
     controller->SetEffectConflictPolicy(config_internal::SanitizeEffectConflictPolicyConfig(policy));
 }
 
+void ApplyEffectsBlacklistSettings(const json& payload, AppController* controller) {
+    if (!controller) {
+        return;
+    }
+    if (!payload.contains("effects_blacklist_apps") || !payload["effects_blacklist_apps"].is_array()) {
+        return;
+    }
+
+    std::vector<std::string> apps;
+    for (const auto& item : payload["effects_blacklist_apps"]) {
+        if (item.is_string()) {
+            apps.push_back(item.get<std::string>());
+        }
+    }
+    controller->SetEffectsBlacklistApps(apps);
+}
+
 } // namespace mousefx::command_handler_apply_settings

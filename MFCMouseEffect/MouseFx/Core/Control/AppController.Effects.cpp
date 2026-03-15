@@ -3,6 +3,7 @@
 #include "AppController.h"
 
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
+#include "MouseFx/Core/Automation/AppScopeUtils.h"
 #include "MouseFx/Core/Config/EffectConfigInternal.h"
 #include "MouseFx/Core/Control/EffectFactory.h"
 #include "MouseFx/Effects/HoldRouteCatalog.h"
@@ -246,6 +247,32 @@ void AppController::SetHoldPresenterBackend(const std::string& backend) {
     if (IsActiveEffectEnabled(EffectCategory::Hold)) {
         ReapplyActiveEffect(EffectCategory::Hold);
     }
+}
+
+void AppController::SetEffectsBlacklistApps(const std::vector<std::string>& apps) {
+    const std::vector<std::string> normalized =
+        config_internal::SanitizeEffectsBlacklistApps(apps);
+    if (config_.effectsBlacklistApps == normalized) {
+        return;
+    }
+    config_.effectsBlacklistApps = normalized;
+    PersistConfig();
+}
+
+bool AppController::IsEffectsBlockedByAppBlacklist() {
+    if (config_.effectsBlacklistApps.empty()) {
+        return false;
+    }
+    const std::string currentProcess = CurrentForegroundProcessBaseName();
+    if (currentProcess.empty()) {
+        return false;
+    }
+    for (const auto& blocked : config_.effectsBlacklistApps) {
+        if (automation_scope::IsSameProcessName(blocked, currentProcess)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 IMouseEffect* AppController::GetEffect(EffectCategory category) const {

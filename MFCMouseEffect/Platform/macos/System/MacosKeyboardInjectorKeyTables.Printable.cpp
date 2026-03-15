@@ -89,6 +89,22 @@ bool ResolvePrintableKeyCode(uint32_t vkCode, uint16_t* outKeyCode) {
         return true;
     }
 
+    switch (vkCode) {
+    case vk::kOemBackquote: *outKeyCode = static_cast<uint16_t>(kVK_ANSI_Grave); return true;
+    case vk::kOemMinus: *outKeyCode = static_cast<uint16_t>(kVK_ANSI_Minus); return true;
+    case vk::kOemPlus: *outKeyCode = static_cast<uint16_t>(kVK_ANSI_Equal); return true;
+    case vk::kOemLBracket: *outKeyCode = static_cast<uint16_t>(kVK_ANSI_LeftBracket); return true;
+    case vk::kOemRBracket: *outKeyCode = static_cast<uint16_t>(kVK_ANSI_RightBracket); return true;
+    case vk::kOemBackslash: *outKeyCode = static_cast<uint16_t>(kVK_ANSI_Backslash); return true;
+    case vk::kOemSemicolon: *outKeyCode = static_cast<uint16_t>(kVK_ANSI_Semicolon); return true;
+    case vk::kOemQuote: *outKeyCode = static_cast<uint16_t>(kVK_ANSI_Quote); return true;
+    case vk::kOemComma: *outKeyCode = static_cast<uint16_t>(kVK_ANSI_Comma); return true;
+    case vk::kOemPeriod: *outKeyCode = static_cast<uint16_t>(kVK_ANSI_Period); return true;
+    case vk::kOemSlash: *outKeyCode = static_cast<uint16_t>(kVK_ANSI_Slash); return true;
+    default:
+        break;
+    }
+
     return false;
 #endif
 }

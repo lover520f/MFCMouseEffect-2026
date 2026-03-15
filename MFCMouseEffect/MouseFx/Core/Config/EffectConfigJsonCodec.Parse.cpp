@@ -20,6 +20,15 @@ void ApplyRootToConfig(const nlohmann::json& root, EffectConfig& config) {
         parse_internal::GetOr<std::string>(root, keys::kHoldFollowMode, config.holdFollowMode));
     config.holdPresenterBackend = config_internal::NormalizeHoldPresenterBackend(
         parse_internal::GetOr<std::string>(root, keys::kHoldPresenterBackend, config.holdPresenterBackend));
+    if (root.contains(keys::kEffectsBlacklistApps) && root[keys::kEffectsBlacklistApps].is_array()) {
+        std::vector<std::string> apps;
+        for (const auto& item : root[keys::kEffectsBlacklistApps]) {
+            if (item.is_string()) {
+                apps.push_back(item.get<std::string>());
+            }
+        }
+        config.effectsBlacklistApps = config_internal::SanitizeEffectsBlacklistApps(std::move(apps));
+    }
     config.trailStyle = parse_internal::GetOr<std::string>(root, keys::kTrailStyle, config.trailStyle);
 
     if (root.contains(keys::kActiveEffects) && root[keys::kActiveEffects].is_object()) {

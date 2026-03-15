@@ -12,7 +12,7 @@ export const CARD_SECTIONS = [
     id: 'active',
     cardClass: 'card-effects',
     titleKey: 'section_effects',
-    titleDefault: 'Visual Effects',
+    titleDefault: 'Cursor Effects',
     descKey: 'desc_effects',
     descDefault: 'Choose effects for each interaction, customize text content, and fine-tune trail rendering.',
     mountId: 'effects_settings_mount',
@@ -36,5 +36,14 @@ export const CARD_SECTIONS = [
     mountId: 'automation_editor_mount',
     wrapperClass: 'grid',
     mountClass: 'span2',
+  },
+  {
+    id: 'plugins',
+    cardClass: 'card-wasm',
+    titleKey: 'section_plugins',
+    titleDefault: 'Plugin Management',
+    descKey: 'desc_plugins',
+    descDefault: 'Import, export, and inspect plugin catalog for effects and input-indicator plugins.',
+    mountId: 'plugin_management_mount',
   },
 ];

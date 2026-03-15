@@ -3,6 +3,7 @@
   import ActiveEffectsFields from "./ActiveEffectsFields.svelte";
   import EffectSizeFields from "./EffectSizeFields.svelte";
   import EffectConflictPolicyFields from "./EffectConflictPolicyFields.svelte";
+  import EffectsBlacklistFields from "./EffectsBlacklistFields.svelte";
 
   export let effectProps = {};
   export let activeTab = "active";
@@ -14,6 +15,7 @@
   const TAB_TRAIL = "trail";
   const TAB_SIZE = "size";
   const TAB_CONFLICT = "conflict";
+  const TAB_BLACKLIST = "blacklist";
   const TAB_PLUGIN = "plugin";
 
   function normalizeTab(tabId) {
@@ -28,6 +30,9 @@
     }
     if (tabId === TAB_CONFLICT) {
       return TAB_CONFLICT;
+    }
+    if (tabId === TAB_BLACKLIST) {
+      return TAB_BLACKLIST;
     }
     if (tabId === TAB_PLUGIN) {
       return TAB_PLUGIN;
@@ -56,6 +61,7 @@
   $: isTrailTab = selectedTab === TAB_TRAIL;
   $: isSizeTab = selectedTab === TAB_SIZE;
   $: isConflictTab = selectedTab === TAB_CONFLICT;
+  $: isBlacklistTab = selectedTab === TAB_BLACKLIST;
   $: isPluginTab = selectedTab === TAB_PLUGIN;
 
   function handleActiveEffectChange(event) {
@@ -68,6 +74,10 @@
 
   function handleConflictPolicyChange(event) {
     dispatch("conflictPolicyChange", event?.detail || {});
+  }
+
+  function handleBlacklistChange(event) {
+    dispatch("blacklistChange", event?.detail || {});
   }
 
   function normalizeEffectProps(input) {
@@ -85,6 +95,8 @@
       effectSizeScales: value.effectSizeScales || {},
       effectConflictPolicy: value.effectConflictPolicy || {},
       effectConflictPolicyOptions: value.effectConflictPolicyOptions || {},
+      effectsBlacklistApps: value.effectsBlacklistApps || [],
+      platform: value.platform || 'windows',
     };
   }
 
@@ -151,6 +163,17 @@
       on:click={() => selectTab(TAB_CONFLICT)}
     >
       Hold-Move Policy
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="effects-subtab-btn"
+      class:is-active={isBlacklistTab}
+      aria-selected={isBlacklistTab ? "true" : "false"}
+      data-i18n="tab_effects_blacklist"
+      on:click={() => selectTab(TAB_BLACKLIST)}
+    >
+      Effect Blacklist
     </button>
     <button
       type="button"
@@ -225,6 +248,19 @@
       policy={normalizedEffectProps.effectConflictPolicy}
       options={normalizedEffectProps.effectConflictPolicyOptions}
       on:change={handleConflictPolicyChange}
+    />
+  </div>
+
+  <div
+    class="effects-subtab-panel"
+    role="tabpanel"
+    style:display={isBlacklistTab ? "" : "none"}
+    aria-label="effect-blacklist"
+  >
+    <EffectsBlacklistFields
+      apps={normalizedEffectProps.effectsBlacklistApps}
+      platform={normalizedEffectProps.platform}
+      on:change={handleBlacklistChange}
     />
   </div>
 

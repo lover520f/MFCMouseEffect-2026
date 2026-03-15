@@ -29,6 +29,19 @@ constexpr uint32_t kDelete = 0x2E;
 constexpr uint32_t kNumpad0 = 0x60;
 constexpr uint32_t kNumpad9 = 0x69;
 
+// Punctuation/OEM keys.
+constexpr uint32_t kOemSemicolon = 0xBA; // ;:
+constexpr uint32_t kOemPlus = 0xBB;      // =+
+constexpr uint32_t kOemComma = 0xBC;     // ,<
+constexpr uint32_t kOemMinus = 0xBD;     // -_
+constexpr uint32_t kOemPeriod = 0xBE;    // .>
+constexpr uint32_t kOemSlash = 0xBF;     // /?
+constexpr uint32_t kOemBackquote = 0xC0; // `~
+constexpr uint32_t kOemLBracket = 0xDB;  // [{
+constexpr uint32_t kOemBackslash = 0xDC; // \|
+constexpr uint32_t kOemRBracket = 0xDD;  // ]}
+constexpr uint32_t kOemQuote = 0xDE;     // '"
+
 constexpr uint32_t kF1 = 0x70;
 constexpr uint32_t kF24 = 0x87;
 

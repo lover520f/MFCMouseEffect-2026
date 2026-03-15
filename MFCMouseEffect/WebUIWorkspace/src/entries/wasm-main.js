@@ -1,4 +1,5 @@
 import WasmPluginFields from '../wasm/WasmPluginFields.svelte';
+import PluginManagerFields from '../wasm/PluginManagerFields.svelte';
 import { createLazyMountBridge } from './lazy-mount.js';
 import { normalizeWasmState } from '../wasm/state-model.js';
 import { normalizePolicyRanges } from '../wasm/policy-model.js';
@@ -18,7 +19,6 @@ let currentActionHandler = null;
 const bridge = createLazyMountBridge({
   mountId: 'wasm_settings_mount',
   initialProps: {
-    schemaState: currentSchema,
     payloadState: currentState,
     i18n: currentI18n,
     onAction: currentActionHandler,
@@ -29,8 +29,27 @@ const bridge = createLazyMountBridge({
   }),
 });
 
+const pluginManagerBridge = createLazyMountBridge({
+  mountId: 'plugin_management_mount',
+  initialProps: {
+    schemaState: currentSchema,
+    payloadState: currentState,
+    i18n: currentI18n,
+    onAction: currentActionHandler,
+  },
+  createComponent: (mountNode, props) => new PluginManagerFields({
+    target: mountNode,
+    props,
+  }),
+});
+
 function refreshView() {
   bridge.updateProps({
+    payloadState: currentState,
+    i18n: currentI18n,
+    onAction: currentActionHandler,
+  });
+  pluginManagerBridge.updateProps({
     schemaState: currentSchema,
     payloadState: currentState,
     i18n: currentI18n,

@@ -361,8 +361,18 @@ void AppController::SetWasmManifestPathForChannel(const std::string& channel, co
     if (!lanePath) {
         return;
     }
-    *lanePath = manifestPath;
+    const std::string normalizedManifestPath = TrimAscii(manifestPath);
+    *lanePath = normalizedManifestPath;
+    // Channel-specific bindings take ownership of effects routing.
+    // Clear legacy global fallback path to avoid hidden fallback mismatches.
+    next.manifestPath.clear();
     config_.wasm = config_internal::SanitizeWasmConfig(next);
+    if (config_.wasm.enabled && normalizedManifestPath.empty()) {
+        wasm::WasmEffectHost* host = WasmEffectsHostForChannel(channel);
+        if (host) {
+            host->UnloadPlugin();
+        }
+    }
     PersistConfig();
 }
 
@@ -453,6 +463,8 @@ bool AppController::LoadWasmPluginFromManifestPath(
             return false;
         }
         *lanePath = manifestPath;
+        // Channel-specific runtime load should not keep legacy global fallback.
+        next.manifestPath.clear();
         next = config_internal::SanitizeWasmConfig(next);
         const std::string resolvedManifestPath = ResolveEffectsConfiguredManifestPath(next, lane);
         if (resolvedManifestPath.empty()) {

@@ -367,6 +367,9 @@
       <div class="hint" data-i18n="hint_input_indicator_plugin_catalog">
         Indicator-compatible plugins are preferred by explicit `surfaces: ["indicator"]`; older manifests still fall back to `indicator_*` input kinds.
       </div>
+      <div class="hint" data-i18n="hint_input_indicator_plugin_manage_entry">
+        Import and export plugins from the unified Plugin Management section.
+      </div>
 
       {#if catalogErrors.length > 0}
         <div class="hint indicator-plugin-menu__catalog-error">

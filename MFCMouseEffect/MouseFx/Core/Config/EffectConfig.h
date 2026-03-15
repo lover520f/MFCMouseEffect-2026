@@ -280,6 +280,10 @@ struct EffectConfig {
     // Hold presenter backend strategy:
     // auto | <backend_id>
     std::string holdPresenterBackend = "auto";
+    // Process names where cursor effects should be disabled.
+    // Entries accept process base names with/without suffix,
+    // for example: "code", "code.exe", "safari.app".
+    std::vector<std::string> effectsBlacklistApps{};
     ActiveEffectConfig active;
     
     RippleConfig ripple;

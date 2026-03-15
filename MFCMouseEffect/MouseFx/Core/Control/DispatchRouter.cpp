@@ -96,10 +96,11 @@ intptr_t DispatchRouter::OnClick(const DispatchMessage& message) {
 
     if (ev) {
         ctrl_->RememberLastPointerPoint(ev->pt);
+        const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklist();
         const bool suppressClickEffectByPolicy = ShouldSuppressClickEffectForHoldPolicy(ctrl_);
         bool renderedByWasm = false;
         bool wasmRouteActive = false;
-        if (!suppressClickEffectByPolicy) {
+        if (!effectsBlockedByAppBlacklist && !suppressClickEffectByPolicy) {
             wasmRouteActive = wasmFeature_.RouteClick(*ctrl_, *ev, &renderedByWasm);
         }
         automationFeature_.OnClick(*ctrl_, *ev);
@@ -107,7 +108,8 @@ intptr_t DispatchRouter::OnClick(const DispatchMessage& message) {
         ctrl_->LogDebugClick(*ev);
         const bool shouldFallbackToBuiltin =
             ((!wasmRouteActive) || ctrl_->ShouldFallbackToBuiltinClickWhenWasmActive());
-        if (!suppressClickEffectByPolicy &&
+        if (!effectsBlockedByAppBlacklist &&
+            !suppressClickEffectByPolicy &&
             shouldFallbackToBuiltin &&
             !renderedByWasm) {
             if (auto* effect = ctrl_->GetEffect(EffectCategory::Click)) {

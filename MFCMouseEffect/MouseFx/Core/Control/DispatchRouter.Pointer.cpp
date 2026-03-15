@@ -119,6 +119,7 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
 #endif
 
     automationFeature_.OnMouseMove(*ctrl_, pt);
+    const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklist();
 
     const bool suppressTrailByPolicy = ShouldSuppressTrailWhileHold(ctrl_);
     const bool suppressHoldUpdateByPolicy = ShouldSuppressHoldUpdateWhileMove(ctrl_);
@@ -126,10 +127,11 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
     IMouseEffect* trailEffect = ctrl_->GetEffect(EffectCategory::Trail);
     bool moveRenderedByWasm = false;
     bool moveRouteActive = false;
-    if (!suppressTrailByPolicy) {
+    if (!effectsBlockedByAppBlacklist && !suppressTrailByPolicy) {
         moveRouteActive = wasmFeature_.RouteMove(*ctrl_, pt, &moveRenderedByWasm);
     }
-    if (!suppressTrailByPolicy &&
+    if (!effectsBlockedByAppBlacklist &&
+        !suppressTrailByPolicy &&
         (!moveRouteActive || !moveRenderedByWasm) &&
         (trailEffect != nullptr)) {
         if (auto* effect = trailEffect) {
@@ -137,7 +139,7 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
         }
     }
 
-    if (!suppressHoldUpdateByPolicy) {
+    if (!effectsBlockedByAppBlacklist && !suppressHoldUpdateByPolicy) {
         wasmFeature_.RouteHoldUpdateIfActive(*ctrl_, pt, static_cast<uint32_t>(ctrl_->CurrentHoldDurationMs()));
         if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
             effect->OnHoldUpdate(pt, ctrl_->CurrentHoldDurationMs());
@@ -169,12 +171,16 @@ intptr_t DispatchRouter::OnScroll(const DispatchMessage& message) {
 
     automationFeature_.OnScroll(*ctrl_, delta);
     indicatorFeature_.OnScroll(*ctrl_, ev);
+    const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklist();
 
     IMouseEffect* scrollEffect = ctrl_->GetEffect(EffectCategory::Scroll);
     bool scrollRenderedByWasm = false;
     bool scrollRouteActive = false;
-    scrollRouteActive = wasmFeature_.RouteScroll(*ctrl_, ev, &scrollRenderedByWasm);
-    if ((!scrollRouteActive || !scrollRenderedByWasm) &&
+    if (!effectsBlockedByAppBlacklist) {
+        scrollRouteActive = wasmFeature_.RouteScroll(*ctrl_, ev, &scrollRenderedByWasm);
+    }
+    if (!effectsBlockedByAppBlacklist &&
+        (!scrollRouteActive || !scrollRenderedByWasm) &&
         (scrollEffect != nullptr)) {
         scrollEffect->OnScroll(ev);
     }
@@ -198,9 +204,12 @@ intptr_t DispatchRouter::OnButtonDown(const DispatchMessage& message) {
     ctrl_->RememberLastPointerPoint(pt);
 #endif
 
+    const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklist();
     ctrl_->BeginHoldTracking(pt, button);
     automationFeature_.OnButtonDown(*ctrl_, pt, button);
-    ctrl_->ArmHoldTimer();
+    if (!effectsBlockedByAppBlacklist) {
+        ctrl_->ArmHoldTimer();
+    }
 
     return 0;
 }
@@ -226,10 +235,12 @@ intptr_t DispatchRouter::OnButtonUp(const DispatchMessage& message) {
     ctrl_->RememberLastPointerPoint(pt);
 #endif
     automationFeature_.OnButtonUp(*ctrl_, pt, static_cast<int>(message.button));
-    wasmFeature_.RouteHoldEndIfActive(*ctrl_, pt);
-
-    if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
-        effect->OnHoldEnd();
+    const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklist();
+    if (!effectsBlockedByAppBlacklist) {
+        wasmFeature_.RouteHoldEndIfActive(*ctrl_, pt);
+        if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
+            effect->OnHoldEnd();
+        }
     }
     return 0;
 }
@@ -240,6 +251,9 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
         if (ctrl_->IsVmEffectsSuppressed()) {
             return 0;
         }
+        if (ctrl_->IsEffectsBlockedByAppBlacklist()) {
+            return 0;
+        }
         bool renderedByWasm = false;
         wasmFeature_.RouteFrameTick(*ctrl_, &renderedByWasm);
         return 0;
@@ -247,6 +261,9 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
 
     if (timerId == AppController::HoverTimerId()) {
         if (ctrl_->IsVmEffectsSuppressed()) {
+            return 0;
+        }
+        if (ctrl_->IsEffectsBlockedByAppBlacklist()) {
             return 0;
         }
         if (IsHoldInteractionActive(ctrl_)) {
@@ -271,6 +288,10 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
     if (timerId == AppController::HoldTimerId()) {
         ctrl_->DisarmHoldTimer();
         if (ctrl_->IsVmEffectsSuppressed()) {
+            ctrl_->ClearPendingHold();
+            return 0;
+        }
+        if (ctrl_->IsEffectsBlockedByAppBlacklist()) {
             ctrl_->ClearPendingHold();
             return 0;
         }

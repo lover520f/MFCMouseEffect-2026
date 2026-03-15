@@ -33,11 +33,33 @@ function currentHashId() {
 }
 
 function readSectionTitle(card) {
+  const titleKey = `${card?.dataset?.sectionTitleKey || ''}`.trim();
+  const titleDefault = `${card?.dataset?.sectionTitleDefault || ''}`.trim();
+  if (titleKey) {
+    const fromI18n = `${state.i18n?.[titleKey] || ''}`.trim();
+    if (fromI18n) {
+      return fromI18n;
+    }
+  }
+  if (titleDefault) {
+    return titleDefault;
+  }
   const heading = card?.querySelector('h3');
   return heading ? (heading.textContent || '').trim() : '';
 }
 
 function readSectionDescription(card) {
+  const descKey = `${card?.dataset?.sectionDescKey || ''}`.trim();
+  const descDefault = `${card?.dataset?.sectionDescDefault || ''}`.trim();
+  if (descKey) {
+    const fromI18n = `${state.i18n?.[descKey] || ''}`.trim();
+    if (fromI18n) {
+      return fromI18n;
+    }
+  }
+  if (descDefault) {
+    return descDefault;
+  }
   const subtitle = card?.querySelector('.card-subtitle');
   return subtitle ? (subtitle.textContent || '').trim() : '';
 }
@@ -79,8 +101,8 @@ function resolveLegacySectionAlias(candidate) {
   const id = `${candidate || ''}`.trim().toLowerCase();
   if (id === 'wasm') {
     return {
-      sectionId: 'active',
-      effectsTabId: 'plugin',
+      sectionId: 'plugins',
+      effectsTabId: '',
     };
   }
   return {
@@ -150,7 +172,6 @@ function sectionsViewModel() {
 function workspaceTexts() {
   const i18n = state.i18n || {};
   return {
-    hint_view_focus: i18n.hint_view_focus || 'Focused view shows one section at a time to reduce noise.',
     workspace_current_label: i18n.workspace_current_label || 'Current Section',
     section_nav_aria: i18n.section_nav_aria || 'Settings sections',
   };

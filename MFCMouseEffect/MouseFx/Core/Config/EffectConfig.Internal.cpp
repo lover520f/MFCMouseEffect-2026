@@ -31,6 +31,28 @@ std::string NormalizeHoldPresenterBackend(std::string backend) {
     return backend;
 }
 
+std::vector<std::string> SanitizeEffectsBlacklistApps(std::vector<std::string> apps) {
+    std::vector<std::string> out;
+    out.reserve(apps.size());
+    for (std::string& app : apps) {
+        const std::string normalized = automation_scope::NormalizeProcessName(std::move(app));
+        if (normalized.empty()) {
+            continue;
+        }
+        bool duplicate = false;
+        for (const std::string& existing : out) {
+            if (automation_scope::IsSameProcessName(existing, normalized)) {
+                duplicate = true;
+                break;
+            }
+        }
+        if (!duplicate) {
+            out.push_back(normalized);
+        }
+    }
+    return out;
+}
+
 int SanitizeOverlayTargetFps(int targetFps) {
     return ClampInt(targetFps, 0, 360);
 }

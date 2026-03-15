@@ -124,6 +124,7 @@ public:
     void SetTrailLineWidth(float lineWidth);
     void SetEffectSizeScales(const EffectSizeScaleConfig& scales);
     void SetEffectConflictPolicy(const EffectConflictPolicyConfig& policy);
+    void SetEffectsBlacklistApps(const std::vector<std::string>& apps);
 
     // Get the current effect for a category (may be null).
     IMouseEffect* GetEffect(EffectCategory category) const;
@@ -199,6 +200,7 @@ public:
     bool TryGetLastPointerPoint(ScreenPoint* outPt) const;
     void KillDispatchTimer(uintptr_t timerId);
     std::string CurrentForegroundProcessBaseName();
+    bool IsEffectsBlockedByAppBlacklist();
     bool InjectShortcutForTest(const std::string& chordText);
     std::string StartShortcutCaptureSession(uint64_t timeoutMs);
     void StopShortcutCaptureSession(const std::string& sessionId);

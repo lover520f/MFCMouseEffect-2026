@@ -29,6 +29,19 @@ const SYMBOL_KEYS = {
   '.': 'Period',
   '/': 'Slash',
 };
+const CODE_SYMBOL_KEYS = {
+  Backquote: 'Backquote',
+  Minus: 'Minus',
+  Equal: 'Equals',
+  BracketLeft: 'BracketLeft',
+  BracketRight: 'BracketRight',
+  Backslash: 'Backslash',
+  Semicolon: 'Semicolon',
+  Quote: 'Quote',
+  Comma: 'Comma',
+  Period: 'Period',
+  Slash: 'Slash',
+};
 
 const ALNUM_RE = /^[a-z0-9]$/i;
 const FUNCTION_KEY_RE = /^f([1-9]|1\d|2[0-4])$/i;
@@ -85,6 +98,9 @@ export function shortcutFromKeyboardEvent(event, platform = 'windows') {
     main = key.toUpperCase();
   } else if (SPECIAL_KEYS[lowered]) {
     main = SPECIAL_KEYS[lowered];
+  } else if (CODE_SYMBOL_KEYS[code]) {
+    // Fallback for layouts/IME where event.key is transformed (e.g. Cmd+]).
+    main = CODE_SYMBOL_KEYS[code];
   } else if (/^numpad[0-9]$/i.test(code)) {
     main = code.replace(/^numpad/i, 'Num');
   } else if (code === 'NumpadAdd') {
