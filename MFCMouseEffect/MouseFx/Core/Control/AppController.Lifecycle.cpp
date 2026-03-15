@@ -26,6 +26,7 @@ bool AppController::Start() {
     // Load config from the best available directory (AppData preferred)
     configDir_ = ResolveConfigDirectory();
     config_ = EffectConfig::Load(configDir_);
+    SyncLaunchAtStartupRegistration();
     ReloadThemeCatalogFromRootPath(config_.themeCatalogRootPath);
     const bool themeNormalized = NormalizeConfiguredThemeName();
     QuantumHaloPresenterSelection::SetConfiguredBackendPreference(config_.holdPresenterBackend);

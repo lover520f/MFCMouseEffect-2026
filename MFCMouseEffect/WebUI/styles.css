@@ -482,6 +482,71 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
+.startup-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  width: fit-content;
+  padding: 6px 14px 6px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(116, 156, 214, 0.42);
+  background: rgba(232, 245, 255, 0.52);
+  cursor: pointer;
+  user-select: none;
+}
+
+.startup-toggle .startup-toggle__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+
+.startup-toggle .startup-toggle__switch {
+  position: relative;
+  width: 56px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 156, 204, 0.45);
+  background: rgba(168, 187, 212, 0.5);
+  transition: background 0.22s ease, border-color 0.22s ease;
+}
+
+.startup-toggle .startup-toggle__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 3px 9px rgba(15, 37, 64, 0.22);
+  transition: transform 0.22s ease;
+}
+
+.startup-toggle .startup-toggle__text {
+  font-weight: 700;
+  color: #27405f;
+  letter-spacing: 0.01em;
+}
+
+.startup-toggle .startup-toggle__input:checked + .startup-toggle__switch {
+  background: linear-gradient(135deg, #28add8, #35c0ae);
+  border-color: rgba(39, 170, 156, 0.72);
+}
+
+.startup-toggle .startup-toggle__input:checked + .startup-toggle__switch .startup-toggle__thumb {
+  transform: translateX(24px);
+}
+
+.startup-toggle .startup-toggle__input:focus-visible + .startup-toggle__switch {
+  box-shadow: 0 0 0 3px rgba(71, 157, 255, 0.28);
+}
+
 textarea {
   min-height: 100px;
   resize: vertical;

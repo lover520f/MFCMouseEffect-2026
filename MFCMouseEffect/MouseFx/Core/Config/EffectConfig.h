@@ -265,6 +265,8 @@ struct ActiveEffectConfig {
 struct EffectConfig {
     std::string defaultEffect = "ripple";
     std::string theme = "neon";
+    // Launch app automatically when user logs in.
+    bool launchAtStartup = false;
     // Optional extra theme package root path (UTF-8 path string).
     std::string themeCatalogRootPath;
     // Overlay target FPS for effect windows.

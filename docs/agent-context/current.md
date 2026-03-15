@@ -93,6 +93,9 @@ Deep implementation details are intentionally moved to P2 docs to reduce context
 - macOS automation app catalog now scans `/System/Library/CoreServices` in addition to `/Applications` and `/System/Applications`, so core system apps (for example Finder) appear in scope/blacklist app pickers.
 - Workspace card bodies no longer repeat section title/description headers (single source of truth is the top workspace context header), while sidebar/context titles still resolve from section i18n metadata.
 - Workspace sidebar no longer renders the focused-view helper sentence; left panel keeps only section navigation plus automation debug card when active.
+- `General` section now includes a persisted `launch_at_startup` toggle (`开机启动`) in apply/read/state/config JSON flow, so startup preference no longer gets dropped on refresh.
+- macOS `launch_at_startup` now has native side effect via LaunchAgent (`~/Library/LaunchAgents/com.mfcmouseeffect.autostart.plist`): enabling writes/updates `ProgramArguments=[current_executable, "--mode=background"]`, disabling removes the plist.
+- `launch_at_startup` now applies immediately on macOS: toggle action also runs `launchctl bootout/bootstrap` for current user session (no need to wait for next login).
 
 ### Automation Mapping
 - App-scope normalization/parser contracts are stable; preset/custom mapping with similarity threshold remains.

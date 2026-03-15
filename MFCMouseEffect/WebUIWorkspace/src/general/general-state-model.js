@@ -3,6 +3,7 @@ const DEFAULT_GENERAL_STATE = Object.freeze({
   theme: '',
   theme_catalog_root_path: '',
   overlay_target_fps: 0,
+  launch_at_startup: false,
   hold_follow_mode: 'smooth',
   hold_presenter_backend: 'auto',
 });
@@ -25,6 +26,7 @@ export function normalizeGeneralState(input) {
     theme: value.theme || DEFAULT_GENERAL_STATE.theme,
     theme_catalog_root_path: value.theme_catalog_root_path || DEFAULT_GENERAL_STATE.theme_catalog_root_path,
     overlay_target_fps: normalizeOverlayTargetFps(value.overlay_target_fps),
+    launch_at_startup: !!value.launch_at_startup,
     hold_follow_mode: value.hold_follow_mode || DEFAULT_GENERAL_STATE.hold_follow_mode,
     hold_presenter_backend: value.hold_presenter_backend || DEFAULT_GENERAL_STATE.hold_presenter_backend,
   };

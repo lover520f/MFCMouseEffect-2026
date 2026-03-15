@@ -50,6 +50,32 @@
     {/each}
   </select>
 
+  <label for="launch_at_startup" class="label-with-tip">
+    <span data-i18n="label_launch_at_startup">Launch At Startup</span>
+    <span
+      class="info-badge"
+      data-i18n-title="tip_launch_at_startup"
+      title="Auto-launch app after user login."
+    >!</span>
+  </label>
+  <label class="startup-toggle" for="launch_at_startup">
+    <input
+      id="launch_at_startup"
+      class="startup-toggle__input"
+      type="checkbox"
+      bind:checked={form.launch_at_startup}
+    />
+    <span class="startup-toggle__switch" aria-hidden="true">
+      <span class="startup-toggle__thumb"></span>
+    </span>
+    <span
+      class="startup-toggle__text"
+      data-i18n={form.launch_at_startup ? 'text_launch_at_startup_on' : 'text_launch_at_startup_off'}
+    >
+      {form.launch_at_startup ? 'Enabled' : 'Disabled'}
+    </span>
+  </label>
+
   <label for="theme_catalog_root_path" class="label-with-tip">
     <span data-i18n="label_theme_catalog_root_path">Theme Catalog Root</span>
     <span

@@ -19,6 +19,9 @@ void CommandHandler::HandleApplySettings(const std::string& jsonCmd) {
     if (payload.contains("ui_language") && payload["ui_language"].is_string()) {
         controller_->SetUiLanguage(payload["ui_language"].get<std::string>());
     }
+    if (payload.contains("launch_at_startup") && payload["launch_at_startup"].is_boolean()) {
+        controller_->SetLaunchAtStartup(payload["launch_at_startup"].get<bool>());
+    }
 
     command_handler_apply_settings::ApplyTextSettings(payload, controller_);
     command_handler_apply_settings::ApplyInputIndicatorSettings(payload, controller_);

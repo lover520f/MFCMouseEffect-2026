@@ -16,6 +16,7 @@ void ApplyRootToConfig(const nlohmann::json& root, EffectConfig& config) {
     config.overlayTargetFps = config_internal::SanitizeOverlayTargetFps(
         parse_internal::GetOr<int>(root, keys::kOverlayTargetFps, config.overlayTargetFps));
     config.uiLanguage = parse_internal::GetOr<std::string>(root, keys::kUiLanguage, config.uiLanguage);
+    config.launchAtStartup = parse_internal::GetOr<bool>(root, keys::kLaunchAtStartup, config.launchAtStartup);
     config.holdFollowMode = config_internal::NormalizeHoldFollowMode(
         parse_internal::GetOr<std::string>(root, keys::kHoldFollowMode, config.holdFollowMode));
     config.holdPresenterBackend = config_internal::NormalizeHoldPresenterBackend(

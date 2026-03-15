@@ -182,6 +182,7 @@
       'hold_presenter_backend',
       schema.hold_presenter_backends,
       appState.hold_presenter_backend || 'auto');
+    setChecked('launch_at_startup', !!appState.launch_at_startup);
   }
 
   function renderEffects(schema, appState) {
@@ -316,6 +317,7 @@
         theme: getText('theme'),
         theme_catalog_root_path: getText('theme_catalog_root_path'),
         overlay_target_fps: getNum('overlay_target_fps'),
+        launch_at_startup: getChecked('launch_at_startup'),
         hold_follow_mode: getText('hold_follow_mode'),
         hold_presenter_backend: getText('hold_presenter_backend') || 'auto',
       };
@@ -410,6 +412,7 @@
       theme: generalState.theme,
       theme_catalog_root_path: generalState.theme_catalog_root_path || '',
       overlay_target_fps: Number(generalState.overlay_target_fps ?? 0),
+      launch_at_startup: !!generalState.launch_at_startup,
       hold_follow_mode: generalState.hold_follow_mode,
       hold_presenter_backend: generalState.hold_presenter_backend || 'auto',
       active: {

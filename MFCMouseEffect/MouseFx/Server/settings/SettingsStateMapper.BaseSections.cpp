@@ -19,6 +19,7 @@ void AppendBaseSettingsState(const EffectConfig& cfg, json* out) {
     (*out)["theme"] = EnsureUtf8(cfg.theme);
     (*out)["theme_catalog_root_path"] = EnsureUtf8(cfg.themeCatalogRootPath);
     (*out)["overlay_target_fps"] = config_internal::SanitizeOverlayTargetFps(cfg.overlayTargetFps);
+    (*out)["launch_at_startup"] = cfg.launchAtStartup;
     const ThemeCatalogRuntimeInfo themeCatalogRuntime = GetThemeCatalogRuntimeInfo();
     (*out)["theme_catalog_runtime"] = {
         {"configured_root_path", themeCatalogRuntime.configuredRootPath},

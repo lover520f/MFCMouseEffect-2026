@@ -21,6 +21,7 @@ runTest('empty input returns default general state', () => {
     theme: '',
     theme_catalog_root_path: '',
     overlay_target_fps: 0,
+    launch_at_startup: false,
     hold_follow_mode: 'smooth',
     hold_presenter_backend: 'auto',
   });
@@ -29,6 +30,7 @@ runTest('empty input returns default general state', () => {
     theme: '',
     theme_catalog_root_path: '',
     overlay_target_fps: 0,
+    launch_at_startup: false,
     hold_follow_mode: 'smooth',
     hold_presenter_backend: 'auto',
   });
@@ -40,6 +42,7 @@ runTest('normalizes known keys and preserves catalog root path', () => {
     theme: 'neon',
     theme_catalog_root_path: '/tmp/theme-catalog',
     overlay_target_fps: 144,
+    launch_at_startup: true,
     hold_follow_mode: 'precise',
     hold_presenter_backend: 'metal',
   }), {
@@ -47,6 +50,7 @@ runTest('normalizes known keys and preserves catalog root path', () => {
     theme: 'neon',
     theme_catalog_root_path: '/tmp/theme-catalog',
     overlay_target_fps: 144,
+    launch_at_startup: true,
     hold_follow_mode: 'precise',
     hold_presenter_backend: 'metal',
   });
@@ -65,6 +69,7 @@ runTest('falls back per field when values are empty', () => {
     theme: '',
     theme_catalog_root_path: '',
     overlay_target_fps: 0,
+    launch_at_startup: false,
     hold_follow_mode: 'smooth',
     hold_presenter_backend: 'auto',
   });

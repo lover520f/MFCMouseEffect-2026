@@ -102,6 +102,8 @@ public:
 
     // Set settings window UI language (persisted).
     void SetUiLanguage(const std::string& lang);
+    // Set launch-at-startup preference (persisted).
+    void SetLaunchAtStartup(bool enabled);
     
     // Set custom text content for Text Effect
     void SetTextEffectContent(const std::vector<std::wstring>& texts);
@@ -246,6 +248,7 @@ private:
     void ApplyWasmConfigToHost(bool tryLoadManifest);
     bool EnsureInputIndicatorWasmBudgetFloor();
     void SyncInputIndicatorWasmHostToConfig();
+    void SyncLaunchAtStartupRegistration();
 
 
     void NotifyGpuFallbackIfNeeded(const std::string& reason);

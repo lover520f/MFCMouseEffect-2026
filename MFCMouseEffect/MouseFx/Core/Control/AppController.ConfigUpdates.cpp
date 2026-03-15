@@ -9,6 +9,7 @@
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/MathUtils.h"
 #include "MouseFx/Utils/StringUtils.h"
+#include "Platform/PlatformLaunchAtStartup.h"
 #include "Platform/PlatformTarget.h"
 #if MFX_PLATFORM_MACOS
 #include "Platform/macos/Effects/MacosOverlayRenderSupport.h"
@@ -52,6 +53,20 @@ InputIndicatorConfig ResolveInputIndicatorManifestFallback(InputIndicatorConfig 
 
 } // namespace
 
+void AppController::SyncLaunchAtStartupRegistration() {
+    if (!platform::IsLaunchAtStartupSupported()) {
+        return;
+    }
+    std::string error;
+    if (platform::ConfigureLaunchAtStartup(config_.launchAtStartup, &error)) {
+        return;
+    }
+#ifdef _DEBUG
+    std::wstring errorWide = Utf8ToWString(error.empty() ? "launch_at_startup_apply_failed" : error);
+    OutputDebugStringW((L"MouseFx: launch-at-startup apply failed: " + errorWide + L"\n").c_str());
+#endif
+}
+
 void AppController::ApplyOverlayTargetFpsToPlatform() {
 #if MFX_PLATFORM_MACOS
     macos_overlay_support::SetOverlayTargetFps(config_.overlayTargetFps);
@@ -65,6 +80,15 @@ void AppController::SetUiLanguage(const std::string& lang) {
     if (lang.empty()) return;
     config_.uiLanguage = lang;
     PersistConfig();
+}
+
+void AppController::SetLaunchAtStartup(bool enabled) {
+    if (config_.launchAtStartup == enabled) {
+        return;
+    }
+    config_.launchAtStartup = enabled;
+    PersistConfig();
+    SyncLaunchAtStartupRegistration();
 }
 
 void AppController::SetTextEffectContent(const std::vector<std::wstring>& texts) {
@@ -207,6 +231,7 @@ void AppController::ResetConfig() {
 
     // 2. Save it to disk
     PersistConfig();
+    SyncLaunchAtStartupRegistration();
 
     // 3. Re-apply everything
     ApplyConfiguredEffects();
@@ -231,6 +256,7 @@ void AppController::ReloadConfigFromDisk() {
     ApplyOverlayTargetFpsToPlatform();
     inputAutomationEngine_.UpdateConfig(config_.automation);
     ApplyWasmConfigToHost(true);
+    SyncLaunchAtStartupRegistration();
 
     ApplyConfiguredEffects();
     if (NormalizeActiveEffectTypes() || themeNormalized) {
