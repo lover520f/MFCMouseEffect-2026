@@ -246,13 +246,6 @@ button.btn-danger:hover {
   color: #114f82;
 }
 
-.workspace-hint {
-  margin: 0;
-  font-size: 12px;
-  color: #627893;
-  line-height: 1.45;
-}
-
 .section-nav {
   display: flex;
   flex-direction: column;
@@ -587,6 +580,33 @@ textarea {
   gap: 10px;
 }
 
+.wasm-block--runtime-policy {
+  order: 1;
+}
+
+.wasm-block--plugin-info {
+  order: 2;
+}
+
+.wasm-block--diagnostics {
+  order: 3;
+}
+
+.wasm-policy-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.wasm-policy-top-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
 .wasm-summary-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -656,6 +676,39 @@ textarea {
 
 .wasm-grid {
   grid-template-columns: minmax(170px, 240px) minmax(0, 1fr);
+}
+
+.wasm-collapsible-block {
+  border: 1px solid rgba(186, 204, 228, 0.72);
+  border-radius: 12px;
+  background: rgba(248, 252, 255, 0.72);
+  padding: 0 10px 10px;
+}
+
+.wasm-collapsible-summary {
+  list-style: none;
+  cursor: pointer;
+  color: rgba(29, 46, 74, 0.9);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  padding: 10px 0;
+}
+
+.wasm-collapsible-summary::-webkit-details-marker {
+  display: none;
+}
+
+.wasm-collapsible-summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: 6px;
+  transform: translateY(-0.5px);
+  transition: transform 140ms ease;
+}
+
+.wasm-collapsible-block[open] .wasm-collapsible-summary::before {
+  transform: rotate(90deg) translateY(-0.5px);
 }
 
 .wasm-label {
@@ -789,6 +842,12 @@ textarea {
   text-align: center;
 }
 
+.wasm-catalog-controls--channel .wasm-toggle {
+  width: 100%;
+  min-height: 42px;
+  justify-content: center;
+}
+
 .wasm-catalog-controls input[type="text"] {
   flex: 1 1 auto;
   min-width: 0;
@@ -796,6 +855,109 @@ textarea {
 
 .wasm-catalog-errors {
   margin: 0;
+}
+
+.plugin-manager-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.plugin-manager-filter-label {
+  color: rgba(69, 86, 116, 0.92);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.plugin-manager-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  border: 1px solid rgba(188, 204, 224, 0.62);
+  border-radius: 12px;
+  background: rgba(246, 250, 255, 0.78);
+  padding: 8px;
+}
+
+.plugin-manager-list-head {
+  color: rgba(69, 86, 116, 0.92);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.plugin-manager-count {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(170, 192, 216, 0.72);
+  background: rgba(237, 245, 255, 0.86);
+  color: rgba(51, 74, 104, 0.96);
+  padding: 4px 10px;
+}
+
+.plugin-manager-list-body {
+  display: grid;
+  gap: 8px;
+  max-height: 380px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.plugin-manager-row {
+  display: grid;
+  gap: 6px;
+  border: 1px solid rgba(188, 204, 224, 0.54);
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.84);
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.plugin-manager-row:hover {
+  border-color: rgba(156, 183, 214, 0.78);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.plugin-manager-name {
+  color: rgba(29, 46, 74, 0.96);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.plugin-manager-meta {
+  display: grid;
+  gap: 2px;
+  color: rgba(69, 86, 116, 0.86);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.plugin-manager-surface-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.plugin-manager-path-line {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 4px;
+}
+
+.plugin-manager-surface-line strong,
+.plugin-manager-path-line strong {
+  color: rgba(69, 86, 116, 0.9);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.plugin-manager-path {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .wasm-actions {
@@ -873,6 +1035,17 @@ textarea {
 .wasm-actions input[type="number"] {
   width: 180px;
   max-width: 100%;
+}
+
+@media (max-width: 960px) {
+  .wasm-policy-header-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wasm-policy-top-actions {
+    justify-content: flex-start;
+  }
 }
 
 .check-inline {
@@ -1678,6 +1851,13 @@ textarea {
   min-height: 0;
 }
 
+.effects-scope-layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
 .automation-scope-chip-list {
   display: flex;
   flex-wrap: wrap;
@@ -2193,6 +2373,10 @@ textarea {
     align-items: stretch;
   }
 
+  .effects-scope-layout {
+    grid-template-columns: 1fr;
+  }
+
   .automation-shortcut-head {
     flex-wrap: wrap;
   }
@@ -2217,6 +2401,16 @@ textarea {
 
   .wasm-catalog-controls--channel {
     grid-template-columns: 1fr;
+  }
+
+  .plugin-manager-path-line {
+    grid-template-columns: 1fr;
+    row-gap: 2px;
+  }
+
+  .plugin-manager-path {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .wasm-summary-strip {

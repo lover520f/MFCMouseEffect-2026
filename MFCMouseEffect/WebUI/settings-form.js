@@ -152,6 +152,19 @@
     };
   }
 
+  function normalizeEffectsBlacklistAppsPayload(value) {
+    const source = Array.isArray(value) ? value : [];
+    const out = [];
+    for (const item of source) {
+      const normalized = `${item || ''}`.trim().toLowerCase();
+      if (!normalized || out.includes(normalized)) {
+        continue;
+      }
+      out.push(normalized);
+    }
+    return out;
+  }
+
   function renderGeneral(schema, appState, generalAction) {
     const section = generalSection();
     if (section && typeof section.render === 'function') {
@@ -325,6 +338,9 @@
     const effectConflictPolicy = normalizeEffectConflictPolicyPayload(
       effectsState?.effect_conflict_policy || {},
     );
+    const effectsBlacklistApps = normalizeEffectsBlacklistAppsPayload(
+      effectsState?.effects_blacklist_apps || [],
+    );
 
     const textState = (text && typeof text.read === 'function')
       ? text.read()
@@ -405,6 +421,7 @@
       },
       effect_size_scales: effectSizeScales,
       effect_conflict_policy: effectConflictPolicy,
+      effects_blacklist_apps: effectsBlacklistApps,
       text_content: textState.text_content,
       text_font_size: textState.text_font_size,
       trail_style: trailState.trail_style,

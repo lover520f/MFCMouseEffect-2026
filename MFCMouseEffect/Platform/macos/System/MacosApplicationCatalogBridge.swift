@@ -71,6 +71,7 @@ private func mfxBuildApplicationCatalogScanRoots() -> [MfxApplicationCatalogScan
 
     addRoot("/Applications", source: "applications")
     addRoot("/System/Applications", source: "system")
+    addRoot("/System/Library/CoreServices", source: "core_services")
     addRoot((NSHomeDirectory() as NSString).appendingPathComponent("Applications"), source: "home")
     return roots
 }

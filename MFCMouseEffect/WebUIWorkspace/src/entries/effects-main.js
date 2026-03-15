@@ -1,5 +1,6 @@
 import EffectsSectionTabs from '../effects/EffectsSectionTabs.svelte';
 import { normalizeEffectsProfile } from '../effects/profile-model.js';
+import { normalizeRuntimePlatform } from '../automation/platform.js';
 import { createLazyMountBridge } from './lazy-mount.js';
 import { readUiState, writeUiState } from './ui-state-storage.js';
 
@@ -41,6 +42,9 @@ let currentEffectConflictPolicy = {
 let currentEffectConflictPolicyOptions = {
   hold_move_policy: [],
 };
+let currentEffectsBlacklistApps = [];
+let pendingEffectsBlacklistApps = null;
+let currentRuntimePlatform = 'windows';
 
 function normalizeActiveTab(input) {
   const value = `${input || ''}`.trim().toLowerCase();
@@ -55,6 +59,9 @@ function normalizeActiveTab(input) {
   }
   if (value === 'conflict') {
     return 'conflict';
+  }
+  if (value === 'blacklist') {
+    return 'blacklist';
   }
   if (value === 'plugin' || value === 'wasm') {
     return 'plugin';
@@ -152,6 +159,33 @@ function normalizeEffectConflictPolicyOptions(input) {
   };
 }
 
+function normalizeEffectsBlacklistApps(input) {
+  const source = Array.isArray(input) ? input : [];
+  const out = [];
+  for (const item of source) {
+    const normalized = `${item || ''}`.trim().toLowerCase();
+    if (!normalized || out.includes(normalized)) {
+      continue;
+    }
+    out.push(normalized);
+  }
+  return out;
+}
+
+function sameStringList(left, right) {
+  const a = Array.isArray(left) ? left : [];
+  const b = Array.isArray(right) ? right : [];
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 const bridge = createLazyMountBridge({
   mountId: 'effects_settings_mount',
   initialProps: {
@@ -167,6 +201,8 @@ const bridge = createLazyMountBridge({
       effectSizeScales: currentSizeScales,
       effectConflictPolicy: currentEffectConflictPolicy,
       effectConflictPolicyOptions: currentEffectConflictPolicyOptions,
+      effectsBlacklistApps: currentEffectsBlacklistApps,
+      platform: currentRuntimePlatform,
       effectsProfile: currentEffectsProfile,
       showEffectsProfile,
     },
@@ -192,6 +228,31 @@ const bridge = createLazyMountBridge({
       const detail = event?.detail || {};
       currentEffectConflictPolicy = normalizeEffectConflictPolicy(detail);
     });
+    instance.$on('blacklistChange', (event) => {
+      const detail = event?.detail || {};
+      const localBlacklistApps = normalizeEffectsBlacklistApps(detail.effects_blacklist_apps);
+      currentEffectsBlacklistApps = localBlacklistApps;
+      pendingEffectsBlacklistApps = localBlacklistApps;
+      bridge.updateProps({
+        activeTab: currentActiveTab,
+        effectProps: {
+          clickOptions: currentClickOptions,
+          trailOptions: currentTrailOptions,
+          scrollOptions: currentScrollOptions,
+          holdOptions: currentHoldOptions,
+          hoverOptions: currentHoverOptions,
+          effectCapabilities: currentCapabilities,
+          active: currentActiveState,
+          effectSizeScales: currentSizeScales,
+          effectConflictPolicy: currentEffectConflictPolicy,
+          effectConflictPolicyOptions: currentEffectConflictPolicyOptions,
+          effectsBlacklistApps: currentEffectsBlacklistApps,
+          platform: currentRuntimePlatform,
+          effectsProfile: currentEffectsProfile,
+          showEffectsProfile,
+        },
+      });
+    });
     return instance;
   },
 });
@@ -206,13 +267,21 @@ function render(payload) {
   const effectConflictPolicyOptions = normalizeEffectConflictPolicyOptions(
     schema.effect_conflict_policy_options || {},
   );
+  const runtimePlatform = normalizeRuntimePlatform(schema?.capabilities?.platform);
   const effectsProfile = normalizeEffectsProfile(appState.effects_profile || {});
+  const backendBlacklistApps = normalizeEffectsBlacklistApps(appState.effects_blacklist_apps);
+  if (pendingEffectsBlacklistApps && sameStringList(pendingEffectsBlacklistApps, backendBlacklistApps)) {
+    pendingEffectsBlacklistApps = null;
+  }
+  const effectiveBlacklistApps = pendingEffectsBlacklistApps || backendBlacklistApps;
   showEffectsProfile = resolveEffectsProfileDebugFlag();
   currentActiveState = active;
   currentSizeScales = effectSizeScales;
   currentCapabilities = effectCapabilities;
   currentEffectConflictPolicy = effectConflictPolicy;
   currentEffectConflictPolicyOptions = effectConflictPolicyOptions;
+  currentEffectsBlacklistApps = effectiveBlacklistApps;
+  currentRuntimePlatform = runtimePlatform;
   currentEffectsProfile = effectsProfile;
   currentClickOptions = schema.effects?.click || [];
   currentTrailOptions = schema.effects?.trail || [];
@@ -232,6 +301,8 @@ function render(payload) {
       effectSizeScales,
       effectConflictPolicy,
       effectConflictPolicyOptions,
+      effectsBlacklistApps: effectiveBlacklistApps,
+      platform: runtimePlatform,
       effectsProfile,
       showEffectsProfile,
     },
@@ -243,6 +314,7 @@ function read() {
     active: normalizeActive(currentActiveState),
     effect_size_scales: normalizeEffectSizeScales(currentSizeScales),
     effect_conflict_policy: normalizeEffectConflictPolicy(currentEffectConflictPolicy),
+    effects_blacklist_apps: normalizeEffectsBlacklistApps(currentEffectsBlacklistApps),
   };
 }
 
@@ -262,6 +334,8 @@ function setActiveTab(tabId) {
       effectSizeScales: currentSizeScales,
       effectConflictPolicy: currentEffectConflictPolicy,
       effectConflictPolicyOptions: currentEffectConflictPolicyOptions,
+      effectsBlacklistApps: currentEffectsBlacklistApps,
+      platform: currentRuntimePlatform,
       effectsProfile: currentEffectsProfile,
       showEffectsProfile,
     },
