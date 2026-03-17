@@ -17,6 +17,10 @@
     return window.MfxEffectsSection || null;
   }
 
+  function mouseCompanionSection() {
+    return window.MfxMouseCompanionSection || null;
+  }
+
   function textSection() {
     return window.MfxTextSection || null;
   }
@@ -165,6 +169,37 @@
     return out;
   }
 
+  function normalizeMouseCompanionPayload(value) {
+    const source = value || {};
+    const parseIntSafe = (input, fallback) => {
+      const parsed = Number.parseInt(`${input ?? ''}`, 10);
+      return Number.isFinite(parsed) ? parsed : fallback;
+    };
+    const clamp = (input, min, max, fallback) => {
+      const valueInt = parseIntSafe(input, fallback);
+      return Math.min(max, Math.max(min, valueInt));
+    };
+    const modelPath = `${source.model_path || ''}`.trim();
+    const actionLibraryPath = `${source.action_library_path || ''}`.trim();
+    const appearanceProfilePath = `${source.appearance_profile_path || ''}`.trim();
+    return {
+      enabled: !!source.enabled,
+      model_path: modelPath || 'MFCMouseEffect/Assets/Pet3D/source/pet-main.glb',
+      action_library_path: actionLibraryPath || 'MFCMouseEffect/Assets/Pet3D/source/pet-actions.json',
+      appearance_profile_path: appearanceProfilePath || 'MFCMouseEffect/Assets/Pet3D/source/pet-appearance.json',
+      size_px: clamp(source.size_px, 48, 360, 112),
+      offset_x: clamp(source.offset_x, -1200, 1200, 18),
+      offset_y: clamp(source.offset_y, -1200, 1200, 26),
+      press_lift_px: clamp(source.press_lift_px, 0, 240, 24),
+      smoothing_percent: clamp(source.smoothing_percent, 0, 95, 68),
+      follow_threshold_px: clamp(source.follow_threshold_px, 0, 32, 2),
+      release_hold_ms: clamp(source.release_hold_ms, 0, 800, 120),
+      use_test_profile: !!source.use_test_profile,
+      test_press_lift_px: clamp(source.test_press_lift_px, 0, 320, 48),
+      test_smoothing_percent: clamp(source.test_smoothing_percent, 0, 95, 32),
+    };
+  }
+
   function renderGeneral(schema, appState, generalAction) {
     const section = generalSection();
     if (section && typeof section.render === 'function') {
@@ -287,6 +322,13 @@
 
     state.schema = schema;
     renderGeneral(schema, appState, generalAction);
+    const companion = mouseCompanionSection();
+    if (companion && typeof companion.render === 'function') {
+      companion.render({
+        schema: schema,
+        state: appState,
+      });
+    }
     renderEffects(schema, appState);
     renderText(appState);
     renderTrail(appState);
@@ -310,6 +352,7 @@
     const effects = effectsSection();
     const text = textSection();
     const trail = trailSection();
+    const companion = mouseCompanionSection();
     const generalState = (general && typeof general.read === 'function')
       ? general.read()
       : {
@@ -406,6 +449,24 @@
         size_px: getNum('ii_size_px'),
         duration_ms: getNum('ii_duration_ms'),
       };
+    const mouseCompanionState = (companion && typeof companion.read === 'function')
+      ? companion.read()
+      : {
+        enabled: getChecked('mc_enabled'),
+        model_path: getText('mc_model_path'),
+        action_library_path: getText('mc_action_library_path'),
+        appearance_profile_path: getText('mc_appearance_profile_path'),
+        size_px: getNum('mc_size_px'),
+        offset_x: getNum('mc_offset_x'),
+        offset_y: getNum('mc_offset_y'),
+        press_lift_px: getNum('mc_press_lift_px'),
+        smoothing_percent: getNum('mc_smoothing_percent'),
+        follow_threshold_px: getNum('mc_follow_threshold_px'),
+        release_hold_ms: getNum('mc_release_hold_ms'),
+        use_test_profile: getChecked('mc_use_test_profile'),
+        test_press_lift_px: getNum('mc_test_press_lift_px'),
+        test_smoothing_percent: getNum('mc_test_smoothing_percent'),
+      };
 
     return {
       ui_language: generalState.ui_language,
@@ -430,6 +491,7 @@
       trail_style: trailState.trail_style,
       trail_profiles: trailState.trail_profiles,
       trail_params: trailState.trail_params,
+      mouse_companion: normalizeMouseCompanionPayload(mouseCompanionState),
       input_indicator: indicatorState,
     };
   }

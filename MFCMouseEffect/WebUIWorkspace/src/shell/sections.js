@@ -9,6 +9,15 @@ export const CARD_SECTIONS = [
     mountId: 'general_settings_mount',
   },
   {
+    id: 'mouse-companion',
+    cardClass: 'card-mouse-companion',
+    titleKey: 'section_mouse_companion',
+    titleDefault: 'Mouse Companion',
+    descKey: 'desc_mouse_companion',
+    descDefault: 'Configure cursor companion model, follow profile, and test parameters.',
+    mountId: 'mouse_companion_settings_mount',
+  },
+  {
     id: 'active',
     cardClass: 'card-effects',
     titleKey: 'section_effects',

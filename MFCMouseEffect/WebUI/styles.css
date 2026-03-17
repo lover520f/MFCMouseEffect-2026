@@ -547,6 +547,71 @@ input[type="checkbox"] {
   box-shadow: 0 0 0 3px rgba(71, 157, 255, 0.28);
 }
 
+.mouse-companion-runtime {
+  grid-column: 1 / -1;
+  border: 1px solid rgba(156, 178, 205, 0.55);
+  border-radius: 12px;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(246, 250, 255, 0.88), rgba(239, 246, 253, 0.88));
+}
+
+.mouse-companion-runtime__title {
+  font-size: 12px;
+  font-weight: 760;
+  color: #3c5f87;
+  margin-bottom: 10px;
+}
+
+.mouse-companion-runtime__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mouse-companion-runtime__item {
+  border: 1px solid rgba(181, 199, 221, 0.72);
+  border-radius: 10px;
+  padding: 8px 9px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.mouse-companion-runtime__item--wide {
+  grid-column: 1 / -1;
+}
+
+.mouse-companion-runtime__label {
+  font-size: 11px;
+  color: #587598;
+  margin-bottom: 4px;
+}
+
+.mouse-companion-runtime__value {
+  font-size: 12px;
+  color: #21486f;
+  font-weight: 680;
+  line-height: 1.4;
+}
+
+.mouse-companion-runtime__value.is-true {
+  color: #0f766e;
+}
+
+.mouse-companion-runtime__value.is-false {
+  color: #8b2f21;
+}
+
+.mouse-companion-runtime__value--path {
+  font-family: "Consolas", "Cascadia Mono", "SFMono-Regular", monospace;
+  font-size: 11px;
+  color: #365b86;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.mouse-companion-runtime__value--path.is-error {
+  color: #a33120;
+}
+
 textarea {
   min-height: 100px;
   resize: vertical;
@@ -2351,6 +2416,10 @@ textarea {
   .grid {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+
+  .mouse-companion-runtime__grid {
+    grid-template-columns: 1fr;
   }
 
   .span2 {

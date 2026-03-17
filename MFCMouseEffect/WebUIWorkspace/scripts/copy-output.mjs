@@ -13,6 +13,7 @@ const generatedFiles = [
   'settings-shell.svelte.js',
   'section-workspace.svelte.js',
   'general-settings.svelte.js',
+  'mouse-companion-settings.svelte.js',
   'effects-settings.svelte.js',
   'text-settings.svelte.js',
   'trail-settings.svelte.js',

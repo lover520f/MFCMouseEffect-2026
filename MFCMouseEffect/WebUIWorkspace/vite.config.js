@@ -30,6 +30,11 @@ const TARGETS = {
     name: 'MfxGeneralSettingsBundle',
     fileName: 'general-settings.svelte.js',
   },
+  'mouse-companion': {
+    entry: 'mouse-companion-main.js',
+    name: 'MfxMouseCompanionSettingsBundle',
+    fileName: 'mouse-companion-settings.svelte.js',
+  },
   automation: {
     entry: 'automation-main.js',
     name: 'MfxAutomationUiBundle',
