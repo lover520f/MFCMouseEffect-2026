@@ -87,6 +87,128 @@ Deep implementation details are intentionally moved to P2 docs to reduce context
   - config/state key: `mouse_companion`
   - macOS runtime: Swift-first SceneKit bridge (`Platform/macos/Pet/MacosMouseCompanionBridge.swift`)
   - test profile switch is built in (`use_test_profile`) with dedicated test parameters for fast verification.
+- Mouse Companion 3D runtime blueprint P0 is now scaffolded in `MouseFx/Core/Pet` with canonical-format decision locked to `glb` (`glb` as internal runtime format; `gltf/usdz/vrm/fbx` as import inputs), and action pipeline baseline explicitly avoids model built-in frame animation:
+  - docs: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-3d-runtime-blueprint.zh-CN.md`
+- Mouse Companion P1 input-action bridge is now wired through `PetDispatchFeature` and `AppController`:
+  - `DispatchRouter` now forwards `click/move/button-down/button-up` to pet action routing (`ClickReact/Follow/Drag` baseline),
+  - P1 historical path used `CreateNullPetModelRuntime()` only as temporary non-rendering safety lane.
+- Mouse Companion P2 runtime path now mounts `CreateDefaultPetModelRuntime()` and includes a minimal `glb` skeleton loader (`skins/joints + nodes parent graph` from `glb` JSON chunk):
+  - startup tries default model `Assets/Pet3D/source/pet-main.glb` (with repo-prefixed fallback path),
+  - if model is absent or parse fails, companion path still degrades safely without affecting existing effects/automation lanes.
+  - pose ingestion now uses `boneIndex`-first resolution (with name fallback), reducing per-frame string lookup pressure and aligning with future render-bridge data flow.
+  - `IActionSynthesizer` now has explicit `BindSkeleton(const SkeletonDesc*)` contract; `PetCompanionRuntime` binds skeleton after model load.
+  - default synthesizer now emits procedural rig poses (`hips/spine/chest/neck/head`) by skeleton slot instead of relying on model built-in frame animation.
+- Mouse Companion P3 minimal visual path is active on macOS:
+  - Swift/SceneKit bridge C API is wired (`create/show/hide/load/update`),
+  - controller now forwards runtime action state (`cursor/action/intensity/boneCount`) to visual host,
+  - `mfx_entry_runtime_common` build gate passes with Swift 6 actor-safety constraints.
+- Mouse Companion P4 pose bridge is now in indexed mode:
+  - `PetCompanionRuntime::LastPose()` is exposed for controller-side bridge encoding,
+  - controller sends per-frame pose arrays (`boneIndex + position/rotation/scale`) through `mfx_macos_mouse_companion_apply_pose_v1`,
+  - pose binding is cached via `mfx_macos_mouse_companion_configure_pose_binding_v1` (skeleton index -> SceneKit node),
+  - Swift host now resets mapped bones to rest local transform before applying each frame, preventing stale pose carryover.
+- Mouse Companion P5 first slice (external action clips) is now wired:
+  - action asset contract is split into `ActionLibrary` (`MouseFx/Core/Pet/PetActionLibrary.h/.cpp`) with JSON loader,
+  - synthesizer now supports `SetActionLibrary(...)` and does clip sampling per action before procedural fallback,
+  - startup now attempts default clip library `Assets/Pet3D/source/pet-actions.json` (with repo-prefixed fallback),
+  - detailed clip schema/rules: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-action-clip-contract.zh-CN.md`.
+- Mouse Companion P6 first slice (appearance customization) is now wired:
+  - appearance profile loader added (`PetAppearanceProfile`, default path `pet-appearance.json`),
+  - runtime now persists current `AppearanceOverrides` and forwards it to macOS bridge,
+  - Swift bridge adds `mfx_macos_mouse_companion_apply_appearance_v1` for accessory visibility + texture override apply/rollback.
+- Mouse Companion P7 first slice (import pipeline decoupling) is now wired:
+  - importer conversion stage is abstracted to `IModelFormatConverter` (`ModelConversionResult`, `Supports`, `ConvertToCanonicalGlb`),
+  - default converter is a composite pipeline (`glb` passthrough + `vrm` real converter + `gltf` real converter + `usdz/fbx` tool-backed real converter + sidecar fallback resolver),
+  - VRM converter now validates binary glTF header and exports/reuses `canonical/<stem>.glb` with fallback-to-source behavior on copy/permission failures,
+  - GLTF converter now exports JSON-only canonical `.glb` and copies external resources into `canonical/` with cache reuse,
+  - USDZ/FBX converters now support command-template backend with env overrides (`MFX_PET_USDZ_TO_GLB_COMMAND`, `MFX_PET_FBX_TO_GLB_COMMAND`),
+  - converter diagnostics now include `converter.vrm.*` + `converter.gltf.*` + `converter.usdz.*` + `converter.fbx.*` categories for clearer triage,
+  - `CreateModelAssetImporter(std::unique_ptr<IModelFormatConverter>)` allows future real converter backend injection without touching controller/runtime contracts,
+  - detailed contract: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-model-import-pipeline-contract.zh-CN.md`.
+- Mouse Companion P8 first slice (WebSettings contract wiring) is now wired end-to-end:
+  - WebSettings sidebar adds `Mouse Companion` section (`section_mouse_companion`),
+  - web apply payload now includes `mouse_companion` and persists via `EffectConfig` (`model_path/size/offset/smoothing/test-profile` fields),
+  - settings schema/state now expose `mouse_companion` ranges + current values for UI read/write parity,
+  - controller now has `SetMouseCompanionConfig(...)`; runtime dispatch and visual host are gated by `mouse_companion.enabled`,
+  - macOS visual host creation now uses configured `mouse_companion.size_px`, and model loading now prefers configured `mouse_companion.model_path` before default fallback candidates.
+- Mouse Companion P8 second slice (runtime parameter activation) is now wired:
+  - dispatch runtime now consumes active profile (`production` or `test`): `smoothing_percent`, `follow_threshold_px`, `release_hold_ms`,
+  - follow routing now supports low-jitter throttling (`follow_threshold_px`) + smoothed cursor input (`smoothing_percent`) before action synth tick,
+  - primary button release now honors `release_hold_ms` by keeping a short drag tail before returning to follow action,
+  - macOS bridge now accepts follow profile sync (`offset_x/offset_y/press_lift_px`) and applies configured offsets/lift in window follow update.
+- Mouse Companion P9 first slice (asset-path runtime control) is now wired:
+  - `mouse_companion` config/schema/state/apply now includes `action_library_path` + `appearance_profile_path`,
+  - controller compare/apply path changes and performs targeted hot reload (without forcing model reload when unnecessary),
+  - action/appearance default resolver now prefers configured path first, then falls back to built-in candidate paths.
+- Mouse Companion runtime feasibility proof is validated on 2026-03-17 (macOS core host, local API readback):
+  - `mouse_companion_runtime.model_loaded=true`, `action_library_loaded=true`, `appearance_profile_loaded=true`,
+  - `mouse_companion_runtime.skeleton_bone_count=30`, `visual_host_active=true`, `model_load_error=""`,
+  - in constrained/no-tray sessions, use `--mode=background` with a kept-open stdin pipe for stable host lifetime before calling `/api/state`.
+- Mouse Companion P9 second slice (visual runtime observability + pose-binding readiness) is now wired:
+  - `mouse_companion_runtime` adds visual path/status fields: `visual_model_loaded`, `visual_model_path`, `visual_model_load_error`,
+  - macOS visual load now tries candidate chain (`configured/source model` -> `same-stem .usdz` -> `canonical .glb`) to avoid SceneKit format dead ends,
+  - pose binding is now pre-configured immediately after visual model load; readiness is observable without requiring first pointer event tick.
+- Mouse Companion WebSettings diagnostics panel is now wired in section UI:
+  - `Mouse Companion` card now renders runtime read-only diagnostics (`model/visual/action/appearance/pose-binding` booleans, `skeleton_bone_count`, runtime/visual model paths, load errors),
+  - diagnostics panel values are driven from `/api/state.mouse_companion_runtime`, enabling direct pass/fail checks without reading host logs.
+- Mouse Companion runtime proof script is now available for repeatable feasibility checks:
+  - command: `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-mouse-companion-proof.sh --skip-build --skip-webui-build`,
+  - assertion gate: `model_loaded && visual_model_loaded && action_library_loaded && appearance_profile_loaded && pose_binding_configured && skeleton_bone_count>0`.
+- Mouse Companion P9 third slice (action switch observability + regression route) is now wired:
+  - `mouse_companion_runtime` adds action snapshot fields: `last_action_code`, `last_action_name`, `last_action_intensity`, `last_action_tick_ms`,
+  - test-only route `/api/mouse-companion/test-dispatch` is available behind `MFX_ENABLE_MOUSE_COMPANION_TEST_API=1` for deterministic event injection (`status/move/button_down/button_up/click`),
+  - proof script now executes and asserts action sequence `idle -> follow -> drag -> follow -> click_react` in addition to model/action/appearance/pose readiness checks.
+- Mouse Companion P9 fourth slice (skeleton-action contract coverage report) is now wired:
+  - new analyzer module: `MouseFx/Core/Pet/PetActionCoverageAnalyzer.{h,cpp}` computes expected-action coverage (`idle/follow/click_react/drag`), mapped track counts, missing actions, and missing bone-track list,
+  - `/api/mouse-companion/test-dispatch` now returns `action_coverage` (ready/error + per-action coverage + missing bones),
+  - proof script now gates on coverage contract (`expected=4`, `missing_actions=0`, `mapped_track_count>0`) while preserving action-sequence assertions.
+- Mouse Companion P9 fifth slice (bone remap contract) is now wired:
+  - action library supports optional top-level `bone_remap` (`trackBone -> targetBone | [targetBones...]`),
+  - runtime clip binding and coverage analyzer share the same remap resolution logic, so diagnostics and runtime behavior stay consistent,
+  - sample `pet-actions.json` now includes `Chest -> Spine` remap and proof gate reaches full coverage (`overall_coverage_ratio=1.0`, `missing_bone_names=[]`).
+- Mouse Companion P9 sixth slice (coverage observability in `/api/state` + Web diagnostics) is now wired:
+  - `/api/state.mouse_companion_runtime.action_coverage` now includes `actions[]` (per-action `clip_present/track_count/mapped_track_count/coverage_ratio/missing_bone_tracks`),
+  - runtime caches coverage report at action-library load time and resets cache on model/action disable/failure paths to avoid stale diagnostics,
+  - Web `Mouse Companion` diagnostics panel now renders action-level coverage detail lines directly from `/api/state` (no test route dependency),
+  - proof script now consumes coverage gate from `/api/state.mouse_companion_runtime.action_coverage` (action sequence assertions remain on test route).
+- Mouse Companion visual follow coordinate regression fix is applied:
+  - macOS pet visual host update now converts runtime cursor point from Quartz to Cocoa before calling Swift window-position update,
+  - pet window origin is clamped to visible desktop bounds on every follow tick, and `show()` now starts from main-screen visible center as a safe anchor,
+  - this removes coordinate-space mismatch/off-screen drift that could make companion invisible while runtime diagnostics still reported `visual_model_loaded=true`.
+- Mouse Companion visual loader robustness is strengthened (macOS Swift bridge):
+  - visual model load now requires at least one renderable geometry node to avoid false-positive "loaded but invisible" states,
+  - normalization now clamps `baseScale` and applies a safe fallback when model bounds are invalid/degenerate.
+- Mouse Companion visual framing robustness is strengthened (macOS Swift bridge):
+  - model normalization now recenters X/Y/Z (not Y-only), reducing cases where assets stay outside camera frustum after load,
+  - camera placement now adapts to normalized model size (`scaledMaxDim`) to reduce "runtime loaded but viewport empty" risk across heterogeneous assets.
+- Mouse Companion visual host view-frame bug is fixed (macOS Swift bridge):
+  - `SCNView` and `contentView` now use content-local bounds (`0,0,width,height`) instead of window-positioned frame coordinates,
+  - this prevents SceneKit canvas from being laid out outside the window content area (a direct cause of "runtime loaded but nothing visible").
+- Mouse Companion visual presentation tuning is updated (macOS Swift bridge):
+  - default facing yaw is corrected to front-facing (`pi`) so companion no longer appears back-facing by default,
+  - canvas sizing now adds safe padding at small configured sizes (`max(160, size+48)`) to reduce cramped framing,
+  - lighting setup is retuned to a softer toon-style directional+ambient+rim stack (with shadows disabled) to reduce harsh/awkward shading,
+  - runtime sway now applies relative to normalized base position (no longer overwriting centered model offset each frame).
+- Mouse Companion visual framing/visibility tuning is refined (macOS Swift bridge):
+  - canvas minimum/padding is increased further (`max(240, size+128)`) to reduce top/bottom clipping on chibi proportions,
+  - model default pose is now front-facing immediately after load (before first mouse-move update),
+  - camera distance now uses FOV-based geometric fit for normalized model diameter (instead of fixed linear factor),
+  - material pass now forces double-sided rendering for pet meshes to avoid ears/feet disappearing under backface culling.
+- Mouse Companion camera zoom regression is corrected (macOS Swift bridge):
+  - camera FOV widened to `62` and fit-distance multiplier/min-distance increased, reducing close-up face cropping,
+  - normalization base scale lowered (`0.72/maxDim`) so default framing leaves more full-body headroom.
+- Mouse Companion edge-follow behavior is refined (macOS Swift bridge):
+  - window boundary clamp is now "soft edge" (allows partial out-of-screen overflow) instead of strict full-in-view clamp,
+  - this removes the near-edge "stuck" feeling when cursor keeps moving outward while companion previously saturated at desktop bounds.
+- Mouse Companion edge constraint asymmetry is fixed (macOS Swift bridge):
+  - follow anchor now tracks companion center on X (instead of left-edge origin), removing left/right boundary asymmetry near screen edges,
+  - desktop clamp bounds now use full `NSScreen.frame` union (not `visibleFrame`), so Dock/menu-bar safe-area no longer behaves like a hard motion boundary.
+- Mouse Companion edge saturation is further reduced (macOS Swift bridge):
+  - soft-edge overflow budget is widened to `>= max(1.25*window_size, 0.90*window_size + |offset|)`,
+  - this avoids early clamp saturation when cursor keeps moving outward near desktop boundaries.
+- Click effect regression guard is tightened:
+  - `DispatchRouter::OnClick` no longer suppresses click rendering via hold-policy gate,
+  - click lane now always attempts normal wasm/native rendering when effects are not blacklisted, preventing stale hold state from globally swallowing click effects.
 - Effects `none` behavior regression is fixed for all five categories (`click/trail/scroll/hold/hover`): selecting `none` and pressing `Apply` now persists and keeps runtime disabled, instead of being normalized back to default effects on refresh.
 - Cursor effects now include a secondary tab `Effect Blacklist` (`effects_blacklist_apps`): when foreground process matches the blacklist, click/trail/scroll/hold/hover rendering is skipped (native + WASM), while automation and input-indicator lanes remain active.
 - `Effect Blacklist` app selection now reuses automation scope catalog UI (`MappingScopePanel` + `/api/automation/app-catalog`): supports search, refresh, and pick-from-file; free-text manual add is disabled to keep scope entries consistent with catalog/file sources.

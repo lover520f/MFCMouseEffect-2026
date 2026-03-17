@@ -1,6 +1,6 @@
 # AI Context Map
 
-Generated: 2026-03-15T14:06:22.632Z
+Generated: 2026-03-17T11:49:01.372Z
 
 ## Goal
 Load minimal docs by task keyword while keeping AGENTS + current context as mandatory baseline.
@@ -28,6 +28,12 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 - `docs/architecture/posix-core-lane-smoke-workflow.md` (P2, 435 tok)
 - `docs/architecture/posix-linux-compile-gate-workflow.md` (P2, 490 tok)
 
+### general
+- `docs/architecture/mouse-companion-3d-runtime-blueprint.zh-CN.md` (P2, 750 tok)
+- `docs/architecture/mouse-companion-action-clip-contract.zh-CN.md` (P2, 750 tok)
+- `docs/architecture/mouse-companion-appearance-contract.zh-CN.md` (P2, 645 tok)
+- `docs/architecture/mouse-companion-model-import-pipeline-contract.zh-CN.md` (P2, 750 tok)
+
 ## Commands
 ```bash
 ./tools/docs/ai-context.sh index
@@ -37,14 +43,14 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 ```
 
 ## Largest Docs (Trim Candidates)
+- `docs/agent-context/current.md` -> ~8185 tok
 - `docs/architecture/custom-effects-wasm-route.zh-CN.md` -> ~6872 tok
 - `docs/architecture/custom-effects-wasm-route.md` -> ~6707 tok
 - `docs/refactoring/phase-roadmap-macos-m1-status.md` -> ~5868 tok
 - `docs/automation/gesture-matching.md` -> ~4462 tok
-- `docs/agent-context/current.md` -> ~4134 tok
+- `docs/architecture/mouse-companion-3d-runtime-blueprint.zh-CN.md` -> ~3104 tok
 - `docs/architecture/wasm-plugin-abi-v3-design.md` -> ~2078 tok
 - `docs/architecture/wasm-plugin-abi-v3-design.zh-CN.md` -> ~1996 tok
-- `AGENTS.md` -> ~1918 tok
 
 ## Notes
 - Index is machine-readable: `docs/.ai/context-index.json`.

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-15T14:06:22.632Z",
+  "generated_at": "2026-03-17T11:49:01.372Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -83,14 +83,14 @@
       ],
       "summary": "This file is the compact P1 runtime truth for daily execution.",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 158,
-      "size_bytes": 16535,
-      "estimated_tokens": 4134,
+      "line_count": 288,
+      "size_bytes": 32740,
+      "estimated_tokens": 8185,
       "max_read_tokens": 1100,
       "line_limit": 220,
-      "line_limit_exceeded": false,
-      "hash_sha1": "bb3defd347759f197cf8cdf55d514562672862bc",
-      "updated_at": "2026-03-15T13:29:36.325Z"
+      "line_limit_exceeded": true,
+      "hash_sha1": "b4158500fa5e34e9fbd42dc5078b903513af56de",
+      "updated_at": "2026-03-17T11:44:12.288Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -119,14 +119,14 @@
       ],
       "summary": "This file is a P2 routing map.",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 58,
-      "size_bytes": 2657,
-      "estimated_tokens": 665,
+      "line_count": 68,
+      "size_bytes": 3535,
+      "estimated_tokens": 884,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "98230751210f85e67b8c6bf3593f196727a94cdb",
-      "updated_at": "2026-03-14T12:04:58.515Z"
+      "hash_sha1": "09da8d5677b4e9fe3789cd4c535292a3da3f1690",
+      "updated_at": "2026-03-17T07:01:46.294Z"
     },
     {
       "id": "docs/architecture/agent-doc-governance.md",
@@ -222,6 +222,125 @@
       "line_limit_exceeded": false,
       "hash_sha1": "e0f3338fc6d73782b5b7002280d1a1886d58d12a",
       "updated_at": "2026-03-12T13:43:18.635Z"
+    },
+    {
+      "id": "docs/architecture/mouse-companion-3d-runtime-blueprint.zh-CN.md",
+      "relative_path": "docs/architecture/mouse-companion-3d-runtime-blueprint.zh-CN.md",
+      "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-3d-runtime-blueprint.zh-CN.md",
+      "priority": "P2",
+      "role": "architecture",
+      "topic": "general",
+      "first_read_rank": 0,
+      "tags": [
+        "mouse",
+        "companion",
+        "3d",
+        "runtime",
+        "blueprint",
+        "zh",
+        "cn",
+        "swift",
+        "macos",
+        "windows",
+        "contract"
+      ],
+      "summary": "1. 资产层（Import）",
+      "when_to_read": "Read only when task keywords match this capability area.",
+      "line_count": 214,
+      "size_bytes": 12413,
+      "estimated_tokens": 3104,
+      "max_read_tokens": 750,
+      "line_limit": 0,
+      "line_limit_exceeded": false,
+      "hash_sha1": "76ad610946890886b68a4df1996acbaf49d6f2d1",
+      "updated_at": "2026-03-17T08:10:54.786Z"
+    },
+    {
+      "id": "docs/architecture/mouse-companion-action-clip-contract.zh-CN.md",
+      "relative_path": "docs/architecture/mouse-companion-action-clip-contract.zh-CN.md",
+      "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-action-clip-contract.zh-CN.md",
+      "priority": "P2",
+      "role": "architecture",
+      "topic": "general",
+      "first_read_rank": 0,
+      "tags": [
+        "mouse",
+        "companion",
+        "action",
+        "clip",
+        "contract",
+        "zh",
+        "cn",
+        "macos"
+      ],
+      "summary": "1. `AppController` 启动时尝试加载默认动作库：",
+      "when_to_read": "Read only when task keywords match this capability area.",
+      "line_count": 120,
+      "size_bytes": 5405,
+      "estimated_tokens": 1352,
+      "max_read_tokens": 750,
+      "line_limit": 0,
+      "line_limit_exceeded": false,
+      "hash_sha1": "749989d6a85c11733575d091d5f2fea4b004bf54",
+      "updated_at": "2026-03-17T09:55:24.536Z"
+    },
+    {
+      "id": "docs/architecture/mouse-companion-appearance-contract.zh-CN.md",
+      "relative_path": "docs/architecture/mouse-companion-appearance-contract.zh-CN.md",
+      "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-appearance-contract.zh-CN.md",
+      "priority": "P2",
+      "role": "architecture",
+      "topic": "general",
+      "first_read_rank": 0,
+      "tags": [
+        "mouse",
+        "companion",
+        "appearance",
+        "contract",
+        "zh",
+        "cn",
+        "macos"
+      ],
+      "summary": "顶层支持两种模式：",
+      "when_to_read": "Read only when task keywords match this capability area.",
+      "line_count": 63,
+      "size_bytes": 2098,
+      "estimated_tokens": 525,
+      "max_read_tokens": 645,
+      "line_limit": 0,
+      "line_limit_exceeded": false,
+      "hash_sha1": "1c8adfb20cd70813e18867ebf7eae5f27bebfde0",
+      "updated_at": "2026-03-17T06:44:04.752Z"
+    },
+    {
+      "id": "docs/architecture/mouse-companion-model-import-pipeline-contract.zh-CN.md",
+      "relative_path": "docs/architecture/mouse-companion-model-import-pipeline-contract.zh-CN.md",
+      "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-model-import-pipeline-contract.zh-CN.md",
+      "priority": "P2",
+      "role": "architecture",
+      "topic": "general",
+      "first_read_rank": 0,
+      "tags": [
+        "mouse",
+        "companion",
+        "model",
+        "import",
+        "pipeline",
+        "contract",
+        "zh",
+        "cn",
+        "macos"
+      ],
+      "summary": "1. `GlbPassthroughFormatConverter`",
+      "when_to_read": "Read only when task keywords match this capability area.",
+      "line_count": 85,
+      "size_bytes": 4197,
+      "estimated_tokens": 1050,
+      "max_read_tokens": 750,
+      "line_limit": 0,
+      "line_limit_exceeded": false,
+      "hash_sha1": "d1c1595b9d063cfee8b7639126f0c2df3e5c3368",
+      "updated_at": "2026-03-17T07:21:03.059Z"
     },
     {
       "id": "docs/architecture/posix-core-automation-contract-workflow.md",
@@ -340,7 +459,7 @@
       "line_limit": 0,
       "line_limit_exceeded": false,
       "hash_sha1": "6742d3dd18560665a90ce263305d8f8ff7f0f19e",
-      "updated_at": "2026-03-02T14:33:49.398Z"
+      "updated_at": "2026-03-17T02:46:13.741Z"
     },
     {
       "id": "docs/architecture/posix-scaffold-regression-workflow.md",
@@ -706,7 +825,7 @@
       "line_limit": 0,
       "line_limit_exceeded": false,
       "hash_sha1": "09ca559e9b373cc5f382b7e034c1dfa3b9648ba2",
-      "updated_at": "2026-03-14T15:51:28.535Z"
+      "updated_at": "2026-03-17T02:46:13.741Z"
     },
     {
       "id": "docs/README.md",
