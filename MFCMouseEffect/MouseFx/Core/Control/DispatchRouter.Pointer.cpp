@@ -253,13 +253,13 @@ intptr_t DispatchRouter::OnButtonUp(const DispatchMessage& message) {
 intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
     const uintptr_t timerId = static_cast<uintptr_t>(message.timerId);
     if (timerId == AppController::WasmFrameTimerId()) {
+        ctrl_->TickPetVisualFrame();
         if (ctrl_->IsVmEffectsSuppressed()) {
             return 0;
         }
         if (ctrl_->IsEffectsBlockedByAppBlacklist()) {
             return 0;
         }
-        ctrl_->TickPetVisualFrame();
         bool renderedByWasm = false;
         wasmFeature_.RouteFrameTick(*ctrl_, &renderedByWasm);
         return 0;

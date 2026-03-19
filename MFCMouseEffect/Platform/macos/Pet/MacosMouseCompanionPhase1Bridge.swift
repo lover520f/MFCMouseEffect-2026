@@ -1467,6 +1467,28 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
                 width: measured.width * 1.5,
                 height: measured.height * 3.0))
         recenterModelInCanvas(modelNode)
+        ensureVerticalInsetsAfterFit(for: modelNode)
+    }
+
+    private func ensureVerticalInsetsAfterFit(for node: SCNNode) {
+        let minimumTopInset: CGFloat = 18.0
+        let minimumBottomInset: CGFloat = 14.0
+        for _ in 0..<2 {
+            guard let measured = measuredRenderableBounds(for: node) else {
+                return
+            }
+            let desiredHeight = max(
+                panelCanvasSize.height,
+                measured.height + minimumTopInset + minimumBottomInset)
+            if desiredHeight <= panelCanvasSize.height + 0.5 {
+                return
+            }
+            resizePanelCanvasIfNeeded(
+                CGSize(
+                    width: panelCanvasSize.width,
+                    height: desiredHeight))
+            recenterModelInCanvas(node)
+        }
     }
 
     private func recenterModelInCanvas(_ node: SCNNode) {

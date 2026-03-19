@@ -58,18 +58,20 @@
   - Enabled config creates native panel and supports `fixed_bottom_left` + `follow` position modes.
   - Visual host now tries `Assets/Pet3D/source/pet-main.*` first (`.usdz` preferred when SceneKit loads), then falls back to `phase1://placeholder/usagi`.
   - Visual host now loads `action_library_path` into a built-in clip sampler; `clickReact` is sampled from `pet-actions.json` (binary-search keyframe + quaternion slerp + bone_remap).
-  - SceneKit model path now has its own 60fps frame driver; click one-shot is no longer tied to sparse input-event ticks.
+  - SceneKit model path now has its own local frame driver; click one-shot is no longer tied to sparse input-event ticks.
   - Imported model animations are cleared on load to avoid built-in clip interference with click parity.
   - When SceneKit loads the `.usdz` fallback, anonymous skeleton nodes are hydrated from sibling `.glb` joint metadata so `head/chest/ear/arm/leg` mappings still resolve.
   - SceneKit framing work remains in-progress for Usagi full-body fit.
   - Current known regression (active): `projectedRenderableBounds` can under-report rendered height for the `.usdz` path, causing panel aspect to drift toward square and clipping ear/head-root/foot extents.
   - Load-time fit now avoids oversized multiplier compensation and runs once on the first rendered frame, preferring snapshot bounds with alpha filtering and falling back to projection bounds when snapshot is unavailable.
+  - Load-time fit now performs a narrow second-pass vertical inset check after the initial resize/recenter; if the measured top/bottom breathing room is still too small, it only increases panel height and recenters again without touching base model scale.
   - Keep panel debug border only as temporary observability aid while tuning framing.
   - Default facing pitch is now neutral (`x = 0.0`) so the pet is front-facing at rest (no baseline forward tilt).
   - Click smoothness tuning (active): model frame loop now runs at `120fps` local cadence (`1/120` timer), click `dt` cap is reduced to `0.05`, and click chest squash/rebound uses cubic smoothstep easing instead of linear interpolation.
   - Click trigger semantics (active): SceneKit click one-shot now restarts immediately on every incoming `clickReact` event instead of batching through a pending-trigger counter; the one-shot restarts from `t=0` so rapid clicks do not get visually merged away.
   - Head tint parity (active): SceneKit now mirrors tauri's click tint selection model by resolving head-tint target meshes first (name match, then upper-half fallback, then topmost mesh fallback) and blending only those materials toward a red tint color instead of applying a weak whole-body multiply.
   - Head tint decay parity (active): pet visual frame ticks now refresh `clickStreak.tintAmount` on the shared dispatch timer even without new mouse input, so redness fades continuously and the next click accumulates from the current remaining tint instead of snapping from stale event-only values.
+  - Pet visual frame ticks now run before wasm/effect suppression gates on the shared timer, so head-tint fade continues even when the foreground window blocks regular effects routing.
   - Click streak tint contract is now tauri-aligned: tint holds steady during the active streak window (`breakMs`), only starts decaying after the streak resets, and a new click after `breakMs` still adds on top of the current remaining tint instead of clearing tint back to zero first.
   - Runtime action updates are forwarded: `idle/follow/click_react/drag/hold_react/scroll_react`.
   - Click visual profile remains tauri-style `in-hold-out` envelope; SceneKit click pose is now press-down/squash-rebound (no click head-twist dominant pose).
