@@ -1201,14 +1201,41 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
     }
 
     private func resolveSemanticCoreBones() {
-        semanticChestNodes = resolveSemanticNodes(
-            exactCandidates: ["chest", "upperchest", "spine2", "spine.002", "spine", "torso", "body"],
-            fallbackContains: ["chest", "spine", "torso", "body"],
-            limit: 1)
         semanticHeadNodes = resolveSemanticNodes(
             exactCandidates: ["head", "face", "kao", "neck", "頭", "顔"],
             fallbackContains: ["head", "face", "kao", "neck", "頭", "顔"],
             limit: 1)
+        if let headNode = semanticHeadNodes.first,
+           let chestAncestor = findAncestorSemanticNode(
+            from: headNode,
+            exactCandidates: ["chest", "upperchest", "spine2", "spine.002", "spine", "torso", "body"],
+            fallbackContains: ["chest", "spine", "torso", "body"]) {
+            semanticChestNodes = [chestAncestor]
+            return
+        }
+        semanticChestNodes = resolveSemanticNodes(
+            exactCandidates: ["chest", "upperchest", "spine2", "spine.002", "spine", "torso", "body"],
+            fallbackContains: ["chest", "spine", "torso", "body"],
+            limit: 1)
+    }
+
+    private func findAncestorSemanticNode(
+        from node: SCNNode,
+        exactCandidates: [String],
+        fallbackContains: [String]
+    ) -> SCNNode? {
+        let exactKeys = Set(exactCandidates.compactMap { Self.normalizedBoneName($0) })
+        let containsKeys = fallbackContains.map { $0.lowercased() }
+        var current = node.parent
+        while let candidate = current {
+            if let key = Self.normalizedBoneName(candidate.name) {
+                if exactKeys.contains(key) || containsKeys.contains(where: { key.contains($0) }) {
+                    return candidate
+                }
+            }
+            current = candidate.parent
+        }
+        return nil
     }
 
     private func resolveSemanticNodes(
@@ -1255,6 +1282,27 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
     private func restoreAllPoseBindingNodesToRest() {
         for nodes in poseBindingNodesByIndex {
             restoreNodesToRest(nodes)
+        }
+    }
+
+    private func restoreClickActionClipNodesToRest() {
+        guard let clip = clickActionClip else {
+            return
+        }
+        var restoredNodeIds = Set<ObjectIdentifier>()
+        for track in clip.tracks {
+            let nodes = resolveActionTrackNodes(track.bone)
+            for node in nodes {
+                let nodeId = ObjectIdentifier(node)
+                if restoredNodeIds.contains(nodeId) {
+                    continue
+                }
+                restoredNodeIds.insert(nodeId)
+                guard let rest = restLocalTransformByNode[nodeId] else {
+                    continue
+                }
+                node.simdTransform = rest
+            }
         }
     }
 
@@ -1664,8 +1712,7 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         node.scale.y = modelBaseScale
         node.scale.z = modelBaseScale
 
-        restoreNodesToRest(semanticChestNodes)
-        restoreNodesToRest(semanticHeadNodes)
+        restoreClickActionClipNodesToRest()
         let clipApplied = clickOneShotActive && applyClickActionClipPose(localTime: clickTime)
         if !clipApplied && clickOneShotActive {
             let clickStrength = mfxClamp(max(0.72, resolvedIntensity), min: 0.0, max: 1.0)

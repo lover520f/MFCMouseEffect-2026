@@ -71,8 +71,12 @@
   - Head tint parity (active): SceneKit now mirrors tauri's click tint selection model by resolving head-tint target meshes first (name match, then upper-half fallback, then topmost mesh fallback) and blending only those materials toward a red tint color instead of applying a weak whole-body multiply.
   - Head tint decay parity (active): pet visual frame ticks now refresh `clickStreak.tintAmount` on the shared dispatch timer even without new mouse input, so redness fades continuously and the next click accumulates from the current remaining tint instead of snapping from stale event-only values.
   - Click streak tint contract is now tauri-aligned: tint holds steady during the active streak window (`breakMs`), only starts decaying after the streak resets, and a new click after `breakMs` still adds on top of the current remaining tint instead of clearing tint back to zero first.
+  - Pet visual frame ticks now run before wasm/effect suppression gates on the shared timer, so head-tint fade continues even when the foreground window blocks regular effects routing.
   - Runtime action updates are forwarded: `idle/follow/click_react/drag/hold_react/scroll_react`.
   - Click visual profile remains tauri-style `in-hold-out` envelope; SceneKit click pose is now press-down/squash-rebound (no click head-twist dominant pose).
+  - Click clip reset parity (active): SceneKit now restores all nodes touched by `clickReact` tracks back to their cached rest transforms on every frame before re-sampling the one-shot clip, reducing residual pose carry-over and making the press/rebound silhouette closer to tauri's per-frame `resetPose -> applyActionPose`.
+  - Click core-bone resolution is now closer to tauri: SceneKit resolves `Head` first, then prefers a matching chest/spine ancestor above generic name-only fallback so `clickReact` chest squash is less likely to hit a lower body/root node and lift the legs.
+  - Click eligibility no longer uses the legacy "missing release snapshot still accept click" compatibility fallback; native now requires a captured press/release snapshot before accepting `clickReact`, matching tauri's stricter gesture gate more closely.
   - SceneKit click window now hard-isolates semantic pose injection (`apply_pose` suppressed while click one-shot is active) to prevent legacy-style blended motion.
   - C++ semantic pose stream now drives `hold/scroll` only; click pose injection path is removed.
   - SceneKit drag yaw is intensity-scaled (no fixed large turn at low-intensity micro-move).

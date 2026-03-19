@@ -362,9 +362,8 @@ bool AppController::EvaluatePetPrimaryClickEligibility(uint64_t nowTickMs) const
         }
     }
 
-    // Compatibility fallback: some routes may emit click without press/release snapshot.
     if (!petPrimaryPress_.releaseReady) {
-        return true;
+        return false;
     }
 
     const uint64_t ageMs =
