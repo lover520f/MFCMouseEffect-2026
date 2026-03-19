@@ -51,7 +51,7 @@ inline const char* MouseCompanionPluginV1ActionName(MouseCompanionPetActionHint 
     }
 }
 
-class MouseCompanionNullPluginV1 final : public IMouseCompanionPluginV1 {
+class MouseCompanionBuiltinPluginV1 final : public IMouseCompanionPluginV1 {
 public:
     void Initialize(const MouseCompanionPetRuntimeConfig& config) override {
         config_ = config;
@@ -83,6 +83,10 @@ public:
         poseFrame_.Clear();
     }
 
+    void CommitResolvedFrame(const MouseCompanionPetPoseFrame& frame) {
+        poseFrame_ = frame;
+    }
+
 private:
     MouseCompanionPetRuntimeConfig config_{};
     MouseCompanionPetPoseFrame poseFrame_{};
@@ -98,15 +102,16 @@ public:
         config_ = config;
         diagnostics_ = MouseCompanionPluginV1Diagnostics{};
         diagnostics_.hostReady = true;
-        diagnostics_.hostPhase = "phase1_v1_skeleton";
-        diagnostics_.activePluginId = "mousefx.pet.native.v1.noop";
+        diagnostics_.hostPhase = "phase1_v1_builtin_parallel";
+        diagnostics_.activePluginId = "mousefx.pet.native.v1.builtin";
         diagnostics_.activePluginVersion = "0.1.0";
         diagnostics_.engineApiVersion = "pet-plugin-v1";
-        diagnostics_.compatibilityStatus = config.enabled ? "parallel_skeleton_ready" : "disabled_by_config";
-        diagnostics_.fallbackReason = config.enabled ? "builtin_noop_plugin" : "config_disabled";
+        diagnostics_.compatibilityStatus = config.enabled ? "parallel_builtin_ready" : "disabled_by_config";
+        diagnostics_.fallbackReason = config.enabled ? "builtin_native_plugin" : "config_disabled";
         diagnostics_.lastActionName = "idle";
         diagnostics_.lastTickMs = nowTickMs;
-        plugin_ = std::make_unique<detail::MouseCompanionNullPluginV1>();
+        plugin_ = std::make_unique<detail::MouseCompanionBuiltinPluginV1>();
+        builtinPlugin_ = static_cast<detail::MouseCompanionBuiltinPluginV1*>(plugin_.get());
         plugin_->Initialize(config_);
     }
 
@@ -116,8 +121,8 @@ public:
             Reset(config, nowTickMs);
             return;
         }
-        diagnostics_.compatibilityStatus = config.enabled ? "parallel_skeleton_ready" : "disabled_by_config";
-        diagnostics_.fallbackReason = config.enabled ? "builtin_noop_plugin" : "config_disabled";
+        diagnostics_.compatibilityStatus = config.enabled ? "parallel_builtin_ready" : "disabled_by_config";
+        diagnostics_.fallbackReason = config.enabled ? "builtin_native_plugin" : "config_disabled";
         diagnostics_.lastTickMs = nowTickMs;
         plugin_->OnConfigChanged(config_);
     }
@@ -159,17 +164,28 @@ public:
         return diagnostics_;
     }
 
+    void CommitResolvedFrame(const MouseCompanionPetPoseFrame& frame) {
+        if (!builtinPlugin_) {
+            return;
+        }
+        builtinPlugin_->CommitResolvedFrame(frame);
+        diagnostics_.lastActionName = frame.actionName;
+        diagnostics_.lastPoseSampleTickMs = frame.sampleTickMs;
+    }
+
     void Shutdown() {
         if (plugin_) {
             plugin_->Shutdown();
         }
         plugin_.reset();
+        builtinPlugin_ = nullptr;
     }
 
 private:
     MouseCompanionPetRuntimeConfig config_{};
     MouseCompanionPluginV1Diagnostics diagnostics_{};
     std::unique_ptr<IMouseCompanionPluginV1> plugin_{};
+    detail::MouseCompanionBuiltinPluginV1* builtinPlugin_{nullptr};
 };
 
 } // namespace mousefx

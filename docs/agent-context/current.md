@@ -46,8 +46,8 @@
 - Phase0 host scaffold is active:
   - `MouseCompanionPluginHostPhase0` integrated in controller dispatch/lifecycle.
   - Runtime diagnostics expose plugin-host fields (`plugin_host_ready`, `active_plugin_id`, `compatibility_status`, `plugin_event_count`).
-  - `MouseCompanionPluginHostV1` contract skeleton is now in-repo in parallel: typed `PetInputEvent / PetRuntimeConfig / PetPoseFrame` plus `Initialize / OnInput / Tick / SamplePose / OnConfigChanged / Shutdown` host surface are ready for the next `hold/scroll` migration.
-  - Current boundary: v1 host is fed in parallel from `DispatchPet*` and frame updates, but it does not drive visible pet rendering yet; Phase0 diagnostics remain the stable user-facing runtime contract until action migration starts.
+  - `MouseCompanionPluginHostV1` builtin plugin bridge is now active in parallel: typed `PetInputEvent / PetRuntimeConfig / PetPoseFrame` plus `Initialize / OnInput / Tick / SamplePose / OnConfigChanged / Shutdown` host surface are live, and the builtin native plugin now receives `AppController`'s resolved action/head-tint/pose-frame snapshot each frame.
+  - Current boundary: v1 builtin plugin is now a real unified snapshot sink, but it still does not drive visible pet rendering yet; Phase0 diagnostics remain the stable user-facing runtime contract until final render-path migration starts.
 - Phase1 click-first backend semantics are active:
   - click gate: `press<=220ms && travel<=10px` with scroll suppression window.
   - `fixed_bottom_left` move path stays `idle` (no follow transition).

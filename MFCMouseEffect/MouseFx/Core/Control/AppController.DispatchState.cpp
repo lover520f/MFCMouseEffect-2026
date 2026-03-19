@@ -781,6 +781,10 @@ void AppController::RecordMouseCompanionPluginInput(
     petPluginHostV1_.OnInput(event);
 }
 
+void AppController::CommitMouseCompanionPluginResolvedFrame(const MouseCompanionPetPoseFrame& frame) {
+    petPluginHostV1_.CommitResolvedFrame(frame);
+}
+
 void AppController::DispatchPetMove(const ScreenPoint& pt) {
     const MouseCompanionConfig activeConfig = ResolveActiveMouseCompanionConfig(config_.mouseCompanion);
     const uint64_t nowTickMs = CurrentTickMs();
@@ -1166,7 +1170,10 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
 
     petPluginHostV1_.Tick(nowTickMs, 0.0f);
     MouseCompanionPetPoseFrame pluginPoseFrame{};
-    petPluginHostV1_.SamplePose(&pluginPoseFrame);
+    pluginPoseFrame.sampleTickMs = nowTickMs;
+    pluginPoseFrame.actionName = ResolvePetActionName(actionCode);
+    pluginPoseFrame.actionIntensity = clampedIntensity;
+    pluginPoseFrame.headTintAmount = clampedTint;
 
 #if MFX_PLATFORM_MACOS
     if (petVisualHostHandle_ && config_.mouseCompanion.enabled) {
@@ -1318,6 +1325,25 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
             rotations[22] = q[2];
             rotations[23] = q[3];
 
+            pluginPoseFrame.samples.reserve(kPetPoseBoneCount);
+            for (int i = 0; i < kPetPoseBoneCount; ++i) {
+                MouseCompanionPetPoseSample sample{};
+                sample.boneIndex = boneIndices[static_cast<size_t>(i)];
+                const size_t pBase = static_cast<size_t>(i) * 3;
+                const size_t rBase = static_cast<size_t>(i) * 4;
+                sample.position[0] = positions[pBase + 0];
+                sample.position[1] = positions[pBase + 1];
+                sample.position[2] = positions[pBase + 2];
+                sample.rotation[0] = rotations[rBase + 0];
+                sample.rotation[1] = rotations[rBase + 1];
+                sample.rotation[2] = rotations[rBase + 2];
+                sample.rotation[3] = rotations[rBase + 3];
+                sample.scale[0] = scales[pBase + 0];
+                sample.scale[1] = scales[pBase + 1];
+                sample.scale[2] = scales[pBase + 2];
+                pluginPoseFrame.samples.push_back(sample);
+            }
+
             mfx_macos_mouse_companion_panel_apply_pose_v1(
                 petVisualHostHandle_,
                 boneIndices.data(),
@@ -1330,6 +1356,9 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
 #else
     (void)pt;
 #endif
+
+    CommitMouseCompanionPluginResolvedFrame(pluginPoseFrame);
+    petPluginHostV1_.SamplePose(&pluginPoseFrame);
 }
 
 bool AppController::EnsurePetVisualPoseBinding() {

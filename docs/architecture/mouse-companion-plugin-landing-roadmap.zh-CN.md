@@ -152,8 +152,8 @@
 - 已补充 `Phase 0.5` 契约收敛骨架：
   - 新增 `MouseCompanionPluginV1Types.h` 与 `MouseCompanionPluginHostV1.h`，
   - `PetInputEvent / PetRuntimeConfig / PetPoseFrame` 已有强类型定义，
-  - `Initialize / OnInput / Tick / SamplePose / OnConfigChanged / Shutdown` 已有空宿主骨架，
-  - 当前仅并行接收 `DispatchPet*` 与 frame tick，不改变现有 click/idle 可见行为，后续 `hold -> scroll` 直接在这层接口上接入。
+  - `Initialize / OnInput / Tick / SamplePose / OnConfigChanged / Shutdown` 已有 builtin native plugin 骨架，
+  - 当前 `DispatchPet*` 事件与 `AppController` 已解析出的 resolved action/headTint/pose frame 都会并行提交给 v1 builtin plugin，先把 v1 宿主变成统一快照源，但暂时还不切换现网渲染消费方。
 - 已进入 `Phase 2` 的第一步（hold 对齐首刀）：
   - 当前先不改 Phase0/现网可见宿主切换关系，仍保持 `click/idle` 稳定链路不动，
   - `hold` 先从“姿态对齐”切入：native semantic pose 已向 tauri `applyHoldProcedural` 收敛，重点补齐耳朵前压、手部收拢、腿部弯折、身体压扁，

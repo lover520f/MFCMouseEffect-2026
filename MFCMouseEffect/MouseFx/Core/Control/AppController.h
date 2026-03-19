@@ -376,6 +376,7 @@ private:
     void OnMouseCompanionPluginConfigChanged(const MouseCompanionConfig& cfg, uint64_t nowTickMs);
     void RecordMouseCompanionPluginPhase0Input(const char* eventName);
     void RecordMouseCompanionPluginInput(const char* eventName, const MouseCompanionPetInputEvent& event);
+    void CommitMouseCompanionPluginResolvedFrame(const MouseCompanionPetPoseFrame& frame);
     void EnterInputCaptureDegradedMode(uint32_t error);
     void UpdateVmSuppressionState();
     void ApplyVmSuppression(bool suppressed);
