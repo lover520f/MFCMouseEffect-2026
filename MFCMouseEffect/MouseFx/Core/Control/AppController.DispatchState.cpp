@@ -90,6 +90,9 @@ struct PetVisualMotionProfile {
     float scrollPulseFloor;
     float holdPoseGain;
     float scrollPoseGain;
+    float followPoseGain;
+    float followWalkRateMinHz;
+    float followWalkRateMaxHz;
 };
 
 // Production profile: tuned for tauri-like click burst with stable daily behavior.
@@ -103,6 +106,9 @@ constexpr PetVisualMotionProfile kPetVisualMotionProd = {
     0.30f, // scrollPulseFloor
     1.18f, // holdPoseGain
     1.0f,  // scrollPoseGain
+    0.62f, // followPoseGain
+    1.45f, // followWalkRateMinHz
+    2.60f, // followWalkRateMaxHz
 };
 
 // Test profile: faster and stronger feedback to reduce manual verification cycle time.
@@ -116,6 +122,9 @@ constexpr PetVisualMotionProfile kPetVisualMotionTest = {
     0.40f, // scrollPulseFloor
     1.30f, // holdPoseGain
     1.10f, // scrollPoseGain
+    0.74f, // followPoseGain
+    1.75f, // followWalkRateMinHz
+    3.00f, // followWalkRateMaxHz
 };
 
 const PetVisualMotionProfile& ResolvePetVisualMotionProfile(bool useTestProfile) {
@@ -702,14 +711,12 @@ void AppController::ResolvePetContinuousAction(
     float* outActionIntensity) const {
     int actionCode = kPetActionIdle;
     float actionIntensity = hovering_ ? ResolvePetHoverIdleIntensity(activeConfig.useTestProfile) : 0.0f;
-    if (activeConfig.positionMode == "follow" && activeConfig.facePointerEnabled) {
-        const double threshold = ResolvePetFollowSpeedThresholdPxPerSec(activeConfig.useTestProfile);
-        if (petPointerMotion_.moveSpeedPxPerSec > threshold) {
-            actionCode = kPetActionFollow;
-            const double speedAboveThreshold = petPointerMotion_.moveSpeedPxPerSec - threshold;
-            const double speedWindow = std::max(1.0, threshold * 2.5);
-            actionIntensity = std::max(0.35f, ClampUnit(static_cast<float>(speedAboveThreshold / speedWindow)));
-        }
+    const double threshold = ResolvePetFollowSpeedThresholdPxPerSec(activeConfig.useTestProfile);
+    if (petPointerMotion_.moveSpeedPxPerSec > threshold) {
+        actionCode = kPetActionFollow;
+        const double speedAboveThreshold = petPointerMotion_.moveSpeedPxPerSec - threshold;
+        const double speedWindow = std::max(1.0, threshold * 2.5);
+        actionIntensity = std::max(0.38f, ClampUnit(static_cast<float>(speedAboveThreshold / speedWindow)));
     }
     if (outActionCode) {
         *outActionCode = actionCode;
@@ -1233,12 +1240,10 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
         const MouseCompanionConfig activeConfig = ResolveActiveMouseCompanionConfig(config_.mouseCompanion);
         const PetVisualMotionProfile& visualProfile =
             ResolvePetVisualMotionProfile(activeConfig.useTestProfile);
-        if (activeConfig.positionMode == "follow") {
-            mfx_macos_mouse_companion_panel_move_follow_v1(
-                petVisualHostHandle_,
-                pt.x,
-                pt.y);
-        }
+        mfx_macos_mouse_companion_panel_move_follow_v1(
+            petVisualHostHandle_,
+            pt.x,
+            pt.y);
 
         if (EnsurePetVisualPoseBinding()) {
             if (petVisualPoseRuntime_.lastTickMs == 0 || nowTickMs <= petVisualPoseRuntime_.lastTickMs) {
@@ -1249,6 +1254,17 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
                 const float dt = static_cast<float>(std::clamp<uint64_t>(deltaMs, 0, 120)) / 1000.0f;
                 petVisualPoseRuntime_.holdPulse =
                     std::max(0.0f, petVisualPoseRuntime_.holdPulse - dt * visualProfile.holdDecayPerSecond);
+                if (actionCode == kPetActionFollow) {
+                    const float walkRateHz =
+                        visualProfile.followWalkRateMinHz +
+                        (visualProfile.followWalkRateMaxHz - visualProfile.followWalkRateMinHz) * clampedIntensity;
+                    petVisualPoseRuntime_.followWalkPhase += dt * std::max(0.0f, walkRateHz);
+                    if (petVisualPoseRuntime_.followWalkPhase >= 1.0f) {
+                        petVisualPoseRuntime_.followWalkPhase =
+                            petVisualPoseRuntime_.followWalkPhase -
+                            std::floor(petVisualPoseRuntime_.followWalkPhase);
+                    }
+                }
                 if (petVisualPoseRuntime_.scrollFlapProgress < 1.0f) {
                     petVisualPoseRuntime_.scrollFlapProgress +=
                         dt / std::max(0.001f, petVisualPoseRuntime_.scrollFlapDurationSec);
@@ -1290,6 +1306,10 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
             }
             const float holdTerm = ClampUnit(holdProfile * visualProfile.holdPoseGain);
             const float scrollTerm = ClampUnit(scrollProfile * visualProfile.scrollPoseGain);
+            const float followProfile = (actionCode == kPetActionFollow) ? clampedIntensity : 0.0f;
+            const float followTerm = ClampUnit(followProfile * visualProfile.followPoseGain);
+            const float walkPhase = ClampUnit(petVisualPoseRuntime_.followWalkPhase) * 6.2831853f;
+            const float walkSwing = std::sin(walkPhase);
             const float earWingOpen = ClampUnit(
                 scrollTerm * (0.72f + scrollAmpNorm * 0.12f) + std::abs(scrollFlap) * 0.10f);
             const float earLift = ClampUnit(
@@ -1332,15 +1352,15 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
             positions[3] = earWingOpen * 0.19f;
             positions[4] = earLift * 0.14f;
             positions[6] = handInward * 0.04f - handSpread * 0.10f;
-            positions[7] = handLift * 0.04f - holdTerm * 0.05f;
+            positions[7] = handLift * 0.04f - holdTerm * 0.05f + followTerm * std::max(0.0f, -walkSwing) * 0.020f;
             positions[8] = -holdTerm * 0.012f;
             positions[9] = -handInward * 0.04f + handSpread * 0.10f;
-            positions[10] = handLift * 0.04f - holdTerm * 0.05f;
+            positions[10] = handLift * 0.04f - holdTerm * 0.05f + followTerm * std::max(0.0f, walkSwing) * 0.020f;
             positions[11] = -holdTerm * 0.012f;
             positions[12] = legInward * 0.08f - legSpread * 0.17f;
-            positions[13] = holdTerm * 0.05f;
+            positions[13] = holdTerm * 0.05f + followTerm * std::max(0.0f, walkSwing) * 0.010f;
             positions[15] = -legInward * 0.08f + legSpread * 0.17f;
-            positions[16] = holdTerm * 0.05f;
+            positions[16] = holdTerm * 0.05f + followTerm * std::max(0.0f, -walkSwing) * 0.010f;
 
             float q[4]{};
             WriteQuaternionFromEuler(
@@ -1364,7 +1384,8 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
             WriteQuaternionFromEuler(
                 -0.42f * holdTerm,
                 0.44f * holdTerm,
-                0.30f * holdTerm + 0.20f * scrollProfile + 0.26f * scrollFlap + 0.08f * handSpread,
+                0.30f * holdTerm + 0.20f * scrollProfile + 0.26f * scrollFlap + 0.08f * handSpread +
+                    followTerm * (0.06f - 0.18f * walkSwing),
                 q);
             rotations[8] = q[0];
             rotations[9] = q[1];
@@ -1373,18 +1394,19 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
             WriteQuaternionFromEuler(
                 -0.42f * holdTerm,
                 -0.44f * holdTerm,
-                -(0.30f * holdTerm + 0.20f * scrollProfile - 0.26f * scrollFlap + 0.08f * handSpread),
+                -(0.30f * holdTerm + 0.20f * scrollProfile - 0.26f * scrollFlap + 0.08f * handSpread +
+                    followTerm * (0.06f + 0.18f * walkSwing)),
                 q);
             rotations[12] = q[0];
             rotations[13] = q[1];
             rotations[14] = q[2];
             rotations[15] = q[3];
-            WriteQuaternionFromEuler(0.0f, 0.0f, -0.42f * legCurl, q);
+            WriteQuaternionFromEuler(0.0f, 0.0f, -0.42f * legCurl + followTerm * (0.04f + 0.16f * walkSwing), q);
             rotations[16] = q[0];
             rotations[17] = q[1];
             rotations[18] = q[2];
             rotations[19] = q[3];
-            WriteQuaternionFromEuler(0.0f, 0.0f, 0.42f * legCurl, q);
+            WriteQuaternionFromEuler(0.0f, 0.0f, 0.42f * legCurl + followTerm * (0.04f - 0.16f * walkSwing), q);
             rotations[20] = q[0];
             rotations[21] = q[1];
             rotations[22] = q[2];

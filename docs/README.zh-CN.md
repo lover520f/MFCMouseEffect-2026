@@ -77,6 +77,7 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/autom
 ## macOS 本地命令
 ```bash
 ./mfx run
+# 跳过 core/WebUI 编译
 ./mfx run-no-build
 ./mfx run-no-build --seconds 30
 ./mfx effects
@@ -84,6 +85,7 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/autom
 ./mfx verify-full
 # 兼容旧命令
 ./mfx start
+# 等价于 run-no-build
 ./mfx fast
 ./tools/platform/manual/run-macos-core-websettings-manual.sh --auto-stop-seconds 60
 ./tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build

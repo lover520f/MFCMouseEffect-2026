@@ -87,7 +87,7 @@
 # 编译 + 启动 core host（默认 30 分钟自动退出）
 ./mfx run
 
-# 直接启动（跳过编译）
+# 直接启动（跳过 core/WebUI 编译）
 ./mfx run-no-build
 
 # 30 秒自动退出（便于快速手测）

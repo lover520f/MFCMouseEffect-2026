@@ -50,6 +50,11 @@ private struct MfxActionTrackSample {
     let scale: SIMD3<Float>?
 }
 
+private func mfxShouldRunActionPulse(_ actionCode: Int32) -> Bool {
+    actionCode == MfxMouseCompanionActionCode.holdReact.rawValue ||
+        actionCode == MfxMouseCompanionActionCode.scrollReact.rawValue
+}
+
 private func mfxNormalizedActionKey(_ action: String) -> String {
     action
         .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -331,14 +336,22 @@ private final class MfxMouseCompanionPanelView: NSView {
             ? CGFloat(sin(Double(scrollT) * Double.pi)) * scrollProfileBase * (0.28 + scrollAmpNorm * 0.16)
             : 0.0
         let idleProfile = (actionCode == .idle) ? actionIntensity : 0.0
-        let clickProfile = max(clickProfileBase, poseHandSpread, poseLegSpread, poseEarSpread * 0.9)
-        let holdProfile = max(holdProfileBase, poseHandLift * 0.7)
-        let scrollProfile = max(scrollProfileBase, poseEarSpread * 0.8, poseLegKick * 0.7)
+        let clickPoseProfile = (actionCode == .clickReact) ? max(poseHandSpread, poseLegSpread, poseEarSpread * 0.9) : 0.0
+        let holdPoseProfile = (actionCode == .holdReact) ? (poseHandLift * 0.7) : 0.0
+        let scrollPoseProfile = (actionCode == .scrollReact) ? max(poseEarSpread * 0.8, poseLegKick * 0.7) : 0.0
+        let clickProfile = max(clickProfileBase, clickPoseProfile)
+        let holdProfile = max(holdProfileBase, holdPoseProfile)
+        let scrollProfile = max(scrollProfileBase, scrollPoseProfile)
 
-        let bobOffset = sin(Double(bobTime * 2.1)) * Double(2.0 + holdProfile * 3.0 + idleProfile * 1.8)
+        let followProfile = (actionCode == .follow) ? actionIntensity : 0.0
+        let walkRate = 1.6 + followProfile * 1.8
+        let walkSwing = CGFloat(sin(Double(bobTime * walkRate * 3.1415926)))
+        let bobOffset = (actionCode == .follow)
+            ? 0.0
+            : sin(Double(bobTime * 2.1)) * Double(2.0 + holdProfile * 3.0 + idleProfile * 1.8)
         let followTiltBase = pointerNormalizedX * 4.0
         let dragTilt = (actionCode == .drag) ? (-actionIntensity * 4.0) : 0.0
-        let followTilt = (actionCode == .follow || actionCode == .drag) ? (followTiltBase + dragTilt) : 0.0
+        let followTilt = (actionCode == .drag) ? (followTiltBase + dragTilt) : 0.0
         let clickScale = 1.0 + clickProfile * 0.10
         let holdScale = 1.0 + holdProfile * 0.05
         let scrollScale = 1.0 + scrollProfile * 0.04
@@ -353,7 +366,7 @@ private final class MfxMouseCompanionPanelView: NSView {
         transform.concat()
 
         drawShadow(side: side, clickProfile: clickProfile)
-        drawLimbs(side: side, clickProfile: clickProfile, holdProfile: holdProfile, scrollProfile: scrollProfile, scrollFlap: scrollFlap, idleProfile: idleProfile)
+        drawLimbs(side: side, clickProfile: clickProfile, holdProfile: holdProfile, scrollProfile: scrollProfile, scrollFlap: scrollFlap, idleProfile: idleProfile, followProfile: followProfile, walkSwing: walkSwing)
         drawBody(side: side, clickProfile: clickProfile, holdProfile: holdProfile)
         drawHead(side: side, clickProfile: clickProfile, holdProfile: holdProfile, scrollProfile: scrollProfile, scrollFlap: scrollFlap, idleProfile: idleProfile)
         drawFace(side: side, clickProfile: clickProfile, scrollProfile: scrollProfile, holdProfile: holdProfile)
@@ -369,23 +382,28 @@ private final class MfxMouseCompanionPanelView: NSView {
         NSBezierPath(ovalIn: shadowRect).fill()
     }
 
-    private func drawLimbs(side: CGFloat, clickProfile: CGFloat, holdProfile: CGFloat, scrollProfile: CGFloat, scrollFlap: CGFloat, idleProfile: CGFloat) {
+    private func drawLimbs(side: CGFloat, clickProfile: CGFloat, holdProfile: CGFloat, scrollProfile: CGFloat, scrollFlap: CGFloat, idleProfile: CGFloat, followProfile: CGFloat, walkSwing: CGFloat) {
         let idleHandWave = sin(Double(bobTime * 3.1 + 0.8)) * Double(side * idleProfile * 0.03)
         let handSpread = side * (0.17 + clickProfile * 0.03 + scrollProfile * 0.02 - holdProfile * 0.09 + poseHandSpread * 0.005)
         let handBaseY = side * (0.01 - holdProfile * 0.06)
         let handLift = side * (clickProfile * 0.10 + scrollProfile * 0.10 - holdProfile * 0.01 + poseHandLift * 0.02 + abs(scrollFlap) * 0.04) + CGFloat(idleHandWave)
         let handTwist = 34.0 * clickProfile + 26.0 * scrollProfile + scrollFlap * 18.0 + 50.0 * holdProfile + 8.0 * poseHandSpread + idleProfile * 6.0
         let handRect = NSRect(x: -side * 0.06, y: -side * 0.05, width: side * 0.12, height: side * 0.14)
-
-        drawLimbOval(centerX: -handSpread, centerY: handBaseY + handLift, degrees: handTwist, rect: handRect)
-        drawLimbOval(centerX: handSpread, centerY: handBaseY + handLift, degrees: -handTwist, rect: handRect)
+        let leftHandY = handBaseY + handLift + followProfile * max(0.0, -walkSwing) * side * 0.05
+        let rightHandY = handBaseY + handLift + followProfile * max(0.0, walkSwing) * side * 0.05
+        let leftHandTwist = handTwist - followProfile * (6.0 + walkSwing * 18.0)
+        let rightHandTwist = -handTwist - followProfile * (6.0 - walkSwing * 18.0)
+        drawLimbOval(centerX: -handSpread, centerY: leftHandY, degrees: leftHandTwist, rect: handRect)
+        drawLimbOval(centerX: handSpread, centerY: rightHandY, degrees: rightHandTwist, rect: handRect)
 
         let legSpread = side * (0.10 + clickProfile * 0.03 + scrollProfile * 0.04 - holdProfile * 0.05 + poseLegSpread * 0.01)
         let legY = -side * (0.20 - holdProfile * 0.04)
         let legKick = 16.0 * clickProfile + 12.0 * scrollProfile + abs(scrollFlap) * 6.0 + 28.0 * holdProfile + 18.0 * poseLegKick
         let legRect = NSRect(x: -side * 0.055, y: -side * 0.025, width: side * 0.11, height: side * 0.09)
-        drawLimbOval(centerX: -legSpread, centerY: legY, degrees: -legKick, rect: legRect)
-        drawLimbOval(centerX: legSpread, centerY: legY, degrees: legKick, rect: legRect)
+        let leftLegKick = -legKick + followProfile * (4.0 - walkSwing * 18.0)
+        let rightLegKick = legKick + followProfile * (4.0 + walkSwing * 18.0)
+        drawLimbOval(centerX: -legSpread, centerY: legY, degrees: leftLegKick, rect: legRect)
+        drawLimbOval(centerX: legSpread, centerY: legY, degrees: rightLegKick, rect: legRect)
     }
 
     private func drawLimbOval(centerX: CGFloat, centerY: CGFloat, degrees: CGFloat, rect: NSRect) {
@@ -1193,14 +1211,14 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
     }
 
     func moveFollow(cursorX: Int32, cursorY: Int32) {
-        if positionMode != .follow {
-            return
-        }
         let desktop = resolveDesktopBounds()
         let width = max(1.0, desktop.width)
         let normalizedX = ((CGFloat(cursorX) - desktop.minX) / width) * 2.0 - 1.0
         pointerNormalizedX = mfxClamp(normalizedX, min: -1.0, max: 1.0)
         companionView.updatePointerNormalizedX(pointerNormalizedX)
+        if positionMode != .follow {
+            return
+        }
         let desired = NSPoint(
             x: CGFloat(cursorX) - panel.frame.width * 0.52 + offsetX,
             y: CGFloat(cursorY) - panel.frame.height * 0.48 + offsetY)
@@ -1664,9 +1682,9 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         }
     }
 
-    private func continuousClipKey(for actionCode: Int32) -> String {
+    private func continuousClipKey(for actionCode: Int32) -> String? {
         if actionCode == MfxMouseCompanionActionCode.follow.rawValue {
-            return mfxNormalizedActionKey("follow")
+            return nil
         }
         return mfxNormalizedActionKey("idle")
     }
@@ -1840,7 +1858,15 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
     }
 
     private func applyContinuousActionClipIfNeeded(actionCode: Int32, dt: CGFloat) {
-        let nextKey = continuousClipKey(for: actionCode)
+        guard let nextKey = continuousClipKey(for: actionCode) else {
+            if let previousKey = continuousActionKey,
+                let previousClip = actionClipsByName[previousKey] {
+                restoreActionClipNodesToRest(previousClip)
+            }
+            continuousActionKey = nil
+            continuousActionElapsed = 0.0
+            return
+        }
         guard let clip = actionClipsByName[nextKey] else {
             continuousActionKey = nil
             continuousActionElapsed = 0.0
@@ -1909,6 +1935,16 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         if nodes.isEmpty {
             return
         }
+        let proceduralNodes: [SCNNode]
+        switch binding {
+        case .leftEar, .rightEar:
+            // Idle ear sway should only drive the representative ear-root node.
+            // Replaying the same procedural delta on every matched ear segment compounds
+            // the motion and reads as visible jitter on multi-segment ears.
+            proceduralNodes = [nodes[0]]
+        default:
+            proceduralNodes = nodes
+        }
         let qx = rotationX * 0.5
         let qy = rotationY * 0.5
         let qz = rotationZ * 0.5
@@ -1934,7 +1970,7 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
             scaleX: 1.0,
             scaleY: 1.0,
             scaleZ: 1.0)
-        for node in nodes {
+        for node in proceduralNodes {
             let nodeId = ObjectIdentifier(node)
             guard let restLocal = restLocalTransformByNode[nodeId] else {
                 continue
@@ -2162,29 +2198,33 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
 
         if effectiveActionCode != lastModelActionCode {
             lastModelActionCode = effectiveActionCode
-            runActionPulse(node: node, actionCode: effectiveActionCode, intensity: actionIntensity)
+            if mfxShouldRunActionPulse(effectiveActionCode) {
+                runActionPulse(node: node, actionCode: effectiveActionCode, intensity: actionIntensity)
+            }
         }
 
         if clickOneShotActive {
             node.eulerAngles.x = 0.0
-            node.eulerAngles.y = modelFacingYaw - pointerNormalizedX * 0.28
+            node.eulerAngles.y = modelFacingYaw
             node.position = modelBasePosition
         } else {
             let dragLean = (effectiveActionCode == MfxMouseCompanionActionCode.drag.rawValue) ? (resolvedIntensity * 0.05) : 0.0
-            let followLean = (effectiveActionCode == MfxMouseCompanionActionCode.follow.rawValue) ? (resolvedIntensity * 0.006) : 0.0
+            let followProfile = (effectiveActionCode == MfxMouseCompanionActionCode.follow.rawValue) ? resolvedIntensity : 0.0
+            let followLean = 0.0 * followProfile
             let dragYaw = (effectiveActionCode == MfxMouseCompanionActionCode.drag.rawValue) ? (-0.20 * resolvedIntensity) : 0.0
-            let facingYaw = modelFacingYaw - pointerNormalizedX * 0.28
+            let facingYaw = modelFacingYaw
             node.eulerAngles.x = -dragLean - followLean
             node.eulerAngles.y = facingYaw + dragYaw
 
             let bobStrength =
                 (effectiveActionCode == MfxMouseCompanionActionCode.idle.rawValue)
                 ? (0.004 + resolvedIntensity * 0.006)
-                : (0.010 + resolvedIntensity * 0.012)
+                : (followProfile > 0.0 ? 0.0 : (0.010 + resolvedIntensity * 0.012))
             let sway = sin(Double(modelBobTime * 2.0)) * Double(bobStrength)
             let idleLift = cos(Double(modelBobTime * 2.4)) * Double(idleProfile * 0.014)
+            let walkBob = 0.0
             node.position.x = modelBasePosition.x + CGFloat(sway)
-            node.position.y = modelBasePosition.y + CGFloat(idleLift)
+            node.position.y = modelBasePosition.y + CGFloat(idleLift + walkBob)
             node.position.z = modelBasePosition.z
         }
         node.scale.x = modelBaseScale
@@ -2252,12 +2292,12 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
     }
 
     private func runActionPulse(node: SCNNode, actionCode: Int32, intensity: Float) {
-        if actionCode == MfxMouseCompanionActionCode.clickReact.rawValue {
+        if !mfxShouldRunActionPulse(actionCode) {
             return
         }
         node.removeAction(forKey: "mfx_action_pulse")
         let amp = CGFloat(max(0.02, min(0.12, intensity * 0.16)))
-        let upDuration = (actionCode == MfxMouseCompanionActionCode.clickReact.rawValue) ? 0.10 : 0.14
+        let upDuration = 0.14
         let up = SCNAction.scale(to: modelBaseScale * (1.0 + amp), duration: upDuration)
         let down = SCNAction.scale(to: modelBaseScale, duration: 0.16)
         up.timingMode = .easeOut

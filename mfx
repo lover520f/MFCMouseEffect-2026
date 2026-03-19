@@ -15,7 +15,7 @@ Commands:
       Default auto stop: 30 minutes.
 
   run-no-build [--minutes N | --seconds N] [--debug]
-      Run macOS core host without rebuilding.
+      Run macOS core host without rebuilding core/WebUI.
       Default auto stop: 30 minutes.
 
   effects [--skip-build] [--strict]
@@ -32,7 +32,7 @@ Commands:
 
 Compatibility aliases:
   start -> run
-  fast  -> run-no-build
+  fast  -> run-no-build (also skips core/WebUI rebuild)
 
   help
       Show this help.
@@ -51,6 +51,8 @@ to_positive_int() {
 
 run_start() {
     local skip_build="$1"
+    local skip_webui_build="$2"
+    shift
     shift
     local minutes=30
     local seconds=""
@@ -97,6 +99,9 @@ run_start() {
     args=(--auto-stop-seconds "$stop_seconds")
     if [[ "$skip_build" == "1" ]]; then
         args+=(--skip-build)
+    fi
+    if [[ "$skip_webui_build" == "1" ]]; then
+        args+=(--skip-webui-build)
     fi
     if [[ "$debug_mode" == "1" ]]; then
         args+=(--debug)
@@ -192,19 +197,19 @@ command="$1"
 case "$command" in
 run)
     shift
-    run_start 0 "$@"
+    run_start 0 0 "$@"
     ;;
 run-no-build)
     shift
-    run_start 1 "$@"
+    run_start 1 1 "$@"
     ;;
 start)
     shift
-    run_start 0 "$@"
+    run_start 0 0 "$@"
     ;;
 fast)
     shift
-    run_start 1 "$@"
+    run_start 1 1 "$@"
     ;;
 effects)
     run_effects "$@"

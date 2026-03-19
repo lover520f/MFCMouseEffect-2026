@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-19T10:40:59.361Z",
+  "generated_at": "2026-03-19T14:45:12.396Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -84,14 +84,14 @@
       ],
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 155,
-      "size_bytes": 17347,
-      "estimated_tokens": 4337,
+      "line_count": 158,
+      "size_bytes": 19500,
+      "estimated_tokens": 4875,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": false,
-      "hash_sha1": "a0774dde611e29098507c69c92e2c5be609afdea",
-      "updated_at": "2026-03-19T10:26:47.804Z"
+      "hash_sha1": "c8783c43bb00a896ced7ffeba2c675879dff805d",
+      "updated_at": "2026-03-19T14:45:04.075Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -128,7 +128,7 @@
       "line_limit": 0,
       "line_limit_exceeded": false,
       "hash_sha1": "0734c6ead9abcbae218e701719fbc50769b60583",
-      "updated_at": "2026-03-18T13:40:06.848Z"
+      "updated_at": "2026-03-19T12:56:21.968Z"
     },
     {
       "id": "docs/architecture/agent-doc-governance.md",
@@ -1045,14 +1045,14 @@
       ],
       "summary": "Language: [English](README.md) | [中文](README.zh-CN.md)",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 96,
-      "size_bytes": 4138,
-      "estimated_tokens": 1035,
+      "line_count": 98,
+      "size_bytes": 4188,
+      "estimated_tokens": 1047,
       "max_read_tokens": 750,
       "line_limit": 140,
       "line_limit_exceeded": false,
-      "hash_sha1": "aa72c90060af2eee49d355dc69fd3062b8546087",
-      "updated_at": "2026-03-12T13:12:57.242Z"
+      "hash_sha1": "bdbe1a5ea551a7f9d84bde8dc7377edb898481b4",
+      "updated_at": "2026-03-19T12:39:41.791Z"
     },
     {
       "id": "docs/README.zh-CN.md",
@@ -1081,14 +1081,14 @@
       ],
       "summary": "语言： [English](README.md) | [中文](README.zh-CN.md)",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 97,
-      "size_bytes": 4243,
-      "estimated_tokens": 1061,
+      "line_count": 99,
+      "size_bytes": 4295,
+      "estimated_tokens": 1074,
       "max_read_tokens": 750,
       "line_limit": 140,
       "line_limit_exceeded": false,
-      "hash_sha1": "62b0773fd91cd501ccd515862d24e376b471bd5e",
-      "updated_at": "2026-03-12T13:13:33.654Z"
+      "hash_sha1": "6d6fb2f193483d27fb6bc152883f18bce5289c14",
+      "updated_at": "2026-03-19T12:39:41.791Z"
     },
     {
       "id": "docs/refactoring/phase-roadmap-macos-m1-status.md",

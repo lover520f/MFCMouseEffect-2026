@@ -76,6 +76,7 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/autom
 ## macOS Local Commands
 ```bash
 ./mfx run
+# skips core/WebUI rebuild
 ./mfx run-no-build
 ./mfx run-no-build --seconds 30
 ./mfx effects
@@ -83,6 +84,7 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/autom
 ./mfx verify-full
 # backward-compatible aliases
 ./mfx start
+# same as run-no-build
 ./mfx fast
 ./tools/platform/manual/run-macos-core-websettings-manual.sh --auto-stop-seconds 60
 ./tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build

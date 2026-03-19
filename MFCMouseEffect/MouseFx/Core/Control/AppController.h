@@ -508,6 +508,7 @@ private:
     } petPointerMotion_{};
     struct PetVisualPoseRuntimeState {
         float holdPulse = 0.0f;
+        float followWalkPhase = 0.0f;
         float scrollFlapProgress = 1.0f;
         float scrollFlapDurationSec = 0.18f;
         float scrollFlapAmplitude = 0.35f;

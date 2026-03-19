@@ -87,7 +87,7 @@ The current settings page is split into focused modules:
 # Build + run core host (default auto-stop: 30 minutes)
 ./mfx start
 
-# Run without rebuild
+# Run without rebuilding core/WebUI
 ./mfx fast
 
 # Effects type parity selfcheck
