@@ -371,18 +371,18 @@ private final class MfxMouseCompanionPanelView: NSView {
 
     private func drawLimbs(side: CGFloat, clickProfile: CGFloat, holdProfile: CGFloat, scrollProfile: CGFloat, scrollFlap: CGFloat, idleProfile: CGFloat) {
         let idleHandWave = sin(Double(bobTime * 3.1 + 0.8)) * Double(side * idleProfile * 0.03)
-        let handSpread = side * (0.17 + clickProfile * 0.03 + scrollProfile * 0.02 + holdProfile * 0.02 + poseHandSpread * 0.03)
-        let handBaseY = side * (0.01 - holdProfile * 0.01)
-        let handLift = side * (clickProfile * 0.10 + scrollProfile * 0.10 + holdProfile * 0.02 + poseHandLift * 0.05 + abs(scrollFlap) * 0.04) + CGFloat(idleHandWave)
-        let handTwist = 34.0 * clickProfile + 26.0 * scrollProfile + scrollFlap * 18.0 + 26.0 * holdProfile + 24.0 * poseHandSpread + idleProfile * 6.0
+        let handSpread = side * (0.17 + clickProfile * 0.03 + scrollProfile * 0.02 - holdProfile * 0.09 + poseHandSpread * 0.005)
+        let handBaseY = side * (0.01 - holdProfile * 0.06)
+        let handLift = side * (clickProfile * 0.10 + scrollProfile * 0.10 - holdProfile * 0.01 + poseHandLift * 0.02 + abs(scrollFlap) * 0.04) + CGFloat(idleHandWave)
+        let handTwist = 34.0 * clickProfile + 26.0 * scrollProfile + scrollFlap * 18.0 + 50.0 * holdProfile + 8.0 * poseHandSpread + idleProfile * 6.0
         let handRect = NSRect(x: -side * 0.06, y: -side * 0.05, width: side * 0.12, height: side * 0.14)
 
         drawLimbOval(centerX: -handSpread, centerY: handBaseY + handLift, degrees: handTwist, rect: handRect)
         drawLimbOval(centerX: handSpread, centerY: handBaseY + handLift, degrees: -handTwist, rect: handRect)
 
-        let legSpread = side * (0.10 + clickProfile * 0.03 + scrollProfile * 0.04 + poseLegSpread * 0.03)
-        let legY = -side * (0.20 + holdProfile * 0.01)
-        let legKick = 16.0 * clickProfile + 12.0 * scrollProfile + abs(scrollFlap) * 6.0 + 16.0 * holdProfile + 14.0 * poseLegKick
+        let legSpread = side * (0.10 + clickProfile * 0.03 + scrollProfile * 0.04 - holdProfile * 0.05 + poseLegSpread * 0.01)
+        let legY = -side * (0.20 - holdProfile * 0.04)
+        let legKick = 16.0 * clickProfile + 12.0 * scrollProfile + abs(scrollFlap) * 6.0 + 28.0 * holdProfile + 18.0 * poseLegKick
         let legRect = NSRect(x: -side * 0.055, y: -side * 0.025, width: side * 0.11, height: side * 0.09)
         drawLimbOval(centerX: -legSpread, centerY: legY, degrees: -legKick, rect: legRect)
         drawLimbOval(centerX: legSpread, centerY: legY, degrees: legKick, rect: legRect)
@@ -404,8 +404,8 @@ private final class MfxMouseCompanionPanelView: NSView {
     }
 
     private func drawBody(side: CGFloat, clickProfile: CGFloat, holdProfile: CGFloat) {
-        let bodyWidth = side * (0.40 + holdProfile * 0.05)
-        let bodyHeight = side * (0.44 - holdProfile * 0.09)
+        let bodyWidth = side * (0.40 + holdProfile * 0.08)
+        let bodyHeight = side * (0.44 - holdProfile * 0.13)
         let bodyRect = NSRect(
             x: -bodyWidth * 0.5,
             y: -side * 0.30 - holdProfile * side * 0.02,
@@ -434,8 +434,8 @@ private final class MfxMouseCompanionPanelView: NSView {
         let earBaseY = side * 0.13 + earLift
         let earWidth = side * 0.12
         let earHeight = side * 0.36
-        let headWidth = side * (0.48 + holdProfile * 0.06)
-        let headHeight = side * (0.40 - holdProfile * 0.06)
+        let headWidth = side * (0.48 + holdProfile * 0.08)
+        let headHeight = side * (0.40 - holdProfile * 0.08)
         let headRect = NSRect(
             x: -headWidth * 0.5,
             y: -side * 0.02 - holdProfile * side * 0.018,
@@ -974,6 +974,8 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         switch key {
         case "left_ear", "right_ear":
             return collectPoseBindingChain(from: root, maxDepth: 3)
+        case "left_hand", "right_hand", "left_leg", "right_leg":
+            return collectPoseBindingChain(from: root, maxDepth: 2)
         default:
             return [root]
         }
@@ -1010,6 +1012,23 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
             cursor = next
         }
         return chain
+    }
+
+    private func poseBindingDeltaWeights(
+        poseBoneIndex: Int,
+        nodeIndex: Int
+    ) -> (position: Float, rotation: Float, scale: Float) {
+        guard nodeIndex > 0 else {
+            return (1.0, 1.0, 1.0)
+        }
+        switch poseBoneIndex {
+        case MfxPoseBindingBone.leftHand.rawValue, MfxPoseBindingBone.rightHand.rawValue:
+            return (0.0, 0.48, 1.0)
+        case MfxPoseBindingBone.leftLeg.rawValue, MfxPoseBindingBone.rightLeg.rawValue:
+            return (0.0, 0.62, 1.0)
+        default:
+            return (1.0, 1.0, 1.0)
+        }
     }
 
     private func isSemanticPoseBindingKey(_ key: String) -> Bool {
@@ -1146,18 +1165,24 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
             }
             let pBase = idx * 3
             let rBase = idx * 4
-            let localDelta = composeLocalDelta(
-                positionX: positions[pBase],
-                positionY: positions[pBase + 1],
-                positionZ: positions[pBase + 2],
-                rotationX: rotations[rBase],
-                rotationY: rotations[rBase + 1],
-                rotationZ: rotations[rBase + 2],
-                rotationW: rotations[rBase + 3],
-                scaleX: scales[pBase],
-                scaleY: scales[pBase + 1],
-                scaleZ: scales[pBase + 2])
-            for node in nodes {
+            for (nodeIndex, node) in nodes.enumerated() {
+                let deltaWeights = poseBindingDeltaWeights(
+                    poseBoneIndex: poseBoneIndex,
+                    nodeIndex: nodeIndex)
+                let localDelta = composeLocalDelta(
+                    positionX: positions[pBase],
+                    positionY: positions[pBase + 1],
+                    positionZ: positions[pBase + 2],
+                    rotationX: rotations[rBase],
+                    rotationY: rotations[rBase + 1],
+                    rotationZ: rotations[rBase + 2],
+                    rotationW: rotations[rBase + 3],
+                    scaleX: scales[pBase],
+                    scaleY: scales[pBase + 1],
+                    scaleZ: scales[pBase + 2],
+                    positionWeight: deltaWeights.position,
+                    rotationWeight: deltaWeights.rotation,
+                    scaleWeight: deltaWeights.scale)
                 let nodeId = ObjectIdentifier(node)
                 guard let restLocal = restLocalTransformByNode[nodeId] else {
                     continue
@@ -1593,6 +1618,11 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         for nodes in poseBindingNodesByIndex {
             restoreNodesToRest(nodes)
         }
+    }
+
+    private func restoreSemanticCoreNodesToRest() {
+        restoreNodesToRest(semanticChestNodes)
+        restoreNodesToRest(semanticHeadNodes)
     }
 
     private func restoreClickActionClipNodesToRest() {
@@ -2169,6 +2199,7 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         }
         let clipApplied = clickOneShotActive && applyClickActionClipPose(localTime: clickTime)
         if !clipApplied && clickOneShotActive {
+            restoreSemanticCoreNodesToRest()
             let clickStrength = mfxClamp(max(0.72, resolvedIntensity), min: 0.0, max: 1.0)
             var chestScaleX: CGFloat = 1.0
             var chestScaleY: CGFloat = 1.0
@@ -2190,6 +2221,20 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
                 chest.scale.x *= chestScaleX
                 chest.scale.y *= chestScaleY
                 chest.scale.z *= chestScaleZ
+            }
+        }
+        if !clickOneShotActive && effectiveActionCode == MfxMouseCompanionActionCode.holdReact.rawValue {
+            restoreSemanticCoreNodesToRest()
+            let holdStrength = mfxClamp(resolvedIntensity, min: 0.0, max: 1.0)
+            let squatEase = holdStrength * holdStrength * (3.0 - 2.0 * holdStrength)
+            for chest in semanticChestNodes {
+                chest.eulerAngles.x -= 0.008 * squatEase
+                chest.scale.x *= 1.0 + 0.05 * squatEase
+                chest.scale.y *= 1.0 - 0.08 * squatEase
+                chest.scale.z *= 1.0 + 0.04 * squatEase
+            }
+            for head in semanticHeadNodes {
+                head.eulerAngles.x += 0.008 * squatEase
             }
         }
 
@@ -2346,8 +2391,14 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         rotationW: Float,
         scaleX: Float,
         scaleY: Float,
-        scaleZ: Float
+        scaleZ: Float,
+        positionWeight: Float = 1.0,
+        rotationWeight: Float = 1.0,
+        scaleWeight: Float = 1.0
     ) -> simd_float4x4 {
+        let safePositionWeight = Swift.max(0.0, Swift.min(1.0, positionWeight))
+        let safeRotationWeight = Swift.max(0.0, Swift.min(1.0, rotationWeight))
+        let safeScaleWeight = Swift.max(0.0, Swift.min(1.0, scaleWeight))
         var rotation = simd_quatf(ix: rotationX, iy: rotationY, iz: rotationZ, r: rotationW)
         let rotationVector = rotation.vector
         if !rotationVector.x.isFinite ||
@@ -2359,6 +2410,10 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         } else {
             rotation = simd_normalize(rotation)
         }
+        if safeRotationWeight < 0.999 {
+            let identity = simd_quatf(angle: 0.0, axis: SIMD3<Float>(0.0, 1.0, 0.0))
+            rotation = simd_normalize(simd_slerp(identity, rotation, safeRotationWeight))
+        }
 
         var scale = SIMD3<Float>(
             scaleX.isFinite ? scaleX : 1.0,
@@ -2367,11 +2422,15 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         if scale.x == 0.0 { scale.x = 1.0 }
         if scale.y == 0.0 { scale.y = 1.0 }
         if scale.z == 0.0 { scale.z = 1.0 }
+        scale = SIMD3<Float>(
+            1.0 + (scale.x - 1.0) * safeScaleWeight,
+            1.0 + (scale.y - 1.0) * safeScaleWeight,
+            1.0 + (scale.z - 1.0) * safeScaleWeight)
 
         let translation = SIMD3<Float>(
-            positionX.isFinite ? positionX : 0.0,
-            positionY.isFinite ? positionY : 0.0,
-            positionZ.isFinite ? positionZ : 0.0)
+            (positionX.isFinite ? positionX : 0.0) * safePositionWeight,
+            (positionY.isFinite ? positionY : 0.0) * safePositionWeight,
+            (positionZ.isFinite ? positionZ : 0.0) * safePositionWeight)
 
         var scaleMatrix = matrix_identity_float4x4
         scaleMatrix.columns.0.x = scale.x
