@@ -131,6 +131,17 @@ constexpr float kPetHoverIdleIntensity = 0.42f;
 constexpr float kPetHoverIdleIntensityTest = 0.58f;
 constexpr float kPetScrollAmplitudeMin = 0.35f;
 constexpr float kPetScrollAmplitudeMax = 2.4f;
+constexpr uint32_t kPetScrollQueueMax = 8;
+constexpr uint32_t kPetScrollFastIntervalMs = 24;
+constexpr uint32_t kPetScrollSlowIntervalMs = 180;
+
+float ResolvePetScrollMotionDurationMaxSec(bool useTestProfile) {
+    return useTestProfile ? 0.20f : 0.26f;
+}
+
+float ResolvePetScrollMotionDurationMinSec(bool useTestProfile) {
+    return useTestProfile ? 0.08f : 0.10f;
+}
 
 double ResolvePetFollowSpeedThresholdPxPerSec(bool useTestProfile) {
     return useTestProfile ? kPetFollowSpeedThresholdTestPxPerSec : kPetFollowSpeedThresholdPxPerSec;
@@ -836,11 +847,48 @@ void AppController::DispatchPetScroll(const ScreenPoint& pt, int delta) {
     petLastScrollTickMs_ = nowTickMs;
     petReleaseHoldUntilTickMs_ = 0;
     UpdatePetClickStreakDecay(nowTickMs, activeConfig);
-    petVisualPoseRuntime_.scrollPulse = 1.0f;
-    petVisualPoseRuntime_.scrollAmplitude = std::clamp(
+    const float amplitude = std::clamp(
         static_cast<float>(std::abs(delta)) / 120.0f,
         kPetScrollAmplitudeMin,
         kPetScrollAmplitudeMax);
+    const float durationMaxSec = ResolvePetScrollMotionDurationMaxSec(activeConfig.useTestProfile);
+    const float durationMinSec = ResolvePetScrollMotionDurationMinSec(activeConfig.useTestProfile);
+    float durationSec = durationMaxSec;
+    if (petVisualPoseRuntime_.lastScrollEventTickMs != 0 && nowTickMs > petVisualPoseRuntime_.lastScrollEventTickMs) {
+        const uint64_t intervalMs = std::clamp<uint64_t>(
+            nowTickMs - petVisualPoseRuntime_.lastScrollEventTickMs,
+            kPetScrollFastIntervalMs,
+            kPetScrollSlowIntervalMs);
+        const float fastness =
+            ClampUnit(static_cast<float>(kPetScrollSlowIntervalMs - intervalMs) /
+                      static_cast<float>(kPetScrollSlowIntervalMs - kPetScrollFastIntervalMs));
+        durationSec = durationMaxSec - (durationMaxSec - durationMinSec) * fastness;
+    }
+    petVisualPoseRuntime_.lastScrollEventTickMs = nowTickMs;
+    if (petVisualPoseRuntime_.scrollFlapProgress >= 1.0f) {
+        petVisualPoseRuntime_.scrollFlapProgress = 0.0f;
+        petVisualPoseRuntime_.scrollFlapDurationSec = durationSec;
+        petVisualPoseRuntime_.scrollFlapAmplitude = amplitude;
+    } else {
+        petVisualPoseRuntime_.pendingScrollFlapCount =
+            std::min<uint32_t>(petVisualPoseRuntime_.pendingScrollFlapCount + 1, kPetScrollQueueMax);
+        petVisualPoseRuntime_.queuedScrollFlapDurationSec = durationSec;
+        petVisualPoseRuntime_.queuedScrollFlapAmplitude = std::max(
+            petVisualPoseRuntime_.queuedScrollFlapAmplitude,
+            amplitude);
+        const float currentProgress = ClampUnit(
+            petVisualPoseRuntime_.scrollFlapProgress);
+        const float currentElapsedSec =
+            currentProgress * std::max(0.001f, petVisualPoseRuntime_.scrollFlapDurationSec);
+        petVisualPoseRuntime_.scrollFlapDurationSec = std::min(
+            petVisualPoseRuntime_.scrollFlapDurationSec,
+            durationSec);
+        petVisualPoseRuntime_.scrollFlapAmplitude = std::max(
+            petVisualPoseRuntime_.scrollFlapAmplitude,
+            amplitude);
+        petVisualPoseRuntime_.scrollFlapProgress = ClampUnit(
+            currentElapsedSec / std::max(0.001f, petVisualPoseRuntime_.scrollFlapDurationSec));
+    }
     const float intensity = ClampUnit(static_cast<float>(std::abs(delta)) / 120.0f);
     UpdatePetVisualState(pt, kPetActionScrollReact, intensity, petClickStreak_.tintAmount);
     MouseCompanionPetInputEvent event{};
@@ -1201,35 +1249,45 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
                 const float dt = static_cast<float>(std::clamp<uint64_t>(deltaMs, 0, 120)) / 1000.0f;
                 petVisualPoseRuntime_.holdPulse =
                     std::max(0.0f, petVisualPoseRuntime_.holdPulse - dt * visualProfile.holdDecayPerSecond);
-                const float scrollDurationSeconds = static_cast<float>(
-                    activeConfig.useTestProfile ? kPetScrollImpulseDurationTestMs : kPetScrollImpulseDurationMs) / 1000.0f;
-                petVisualPoseRuntime_.scrollPulse =
-                    std::max(0.0f, petVisualPoseRuntime_.scrollPulse - dt / std::max(0.001f, scrollDurationSeconds));
+                if (petVisualPoseRuntime_.scrollFlapProgress < 1.0f) {
+                    petVisualPoseRuntime_.scrollFlapProgress +=
+                        dt / std::max(0.001f, petVisualPoseRuntime_.scrollFlapDurationSec);
+                    while (petVisualPoseRuntime_.scrollFlapProgress >= 1.0f &&
+                           petVisualPoseRuntime_.pendingScrollFlapCount > 0) {
+                        petVisualPoseRuntime_.pendingScrollFlapCount -= 1;
+                        petVisualPoseRuntime_.scrollFlapProgress = 0.0f;
+                        petVisualPoseRuntime_.scrollFlapDurationSec =
+                            petVisualPoseRuntime_.queuedScrollFlapDurationSec;
+                        petVisualPoseRuntime_.scrollFlapAmplitude =
+                            petVisualPoseRuntime_.queuedScrollFlapAmplitude;
+                    }
+                    if (petVisualPoseRuntime_.scrollFlapProgress >= 1.0f) {
+                        petVisualPoseRuntime_.scrollFlapProgress = 1.0f;
+                    }
+                }
             }
 
             if (actionCode == kPetActionHoldReact) {
                 petVisualPoseRuntime_.holdPulse =
                     std::max(petVisualPoseRuntime_.holdPulse, std::max(visualProfile.holdPulseFloor, clampedIntensity));
             }
-            if (actionCode == kPetActionScrollReact) {
-                petVisualPoseRuntime_.scrollPulse = 1.0f;
-                petVisualPoseRuntime_.scrollAmplitude = std::max(
-                    petVisualPoseRuntime_.scrollAmplitude,
-                    std::clamp(clampedIntensity, kPetScrollAmplitudeMin, 1.0f));
-            }
-
             const float holdProfile = std::max(
                 ClampUnit(petVisualPoseRuntime_.holdPulse),
                 (actionCode == kPetActionHoldReact) ? clampedIntensity : 0.0f);
-            const float scrollT = ClampUnit(1.0f - petVisualPoseRuntime_.scrollPulse);
-            const float scrollAmpNorm = ClampUnit(
-                (petVisualPoseRuntime_.scrollAmplitude - kPetScrollAmplitudeMin) /
-                (kPetScrollAmplitudeMax - kPetScrollAmplitudeMin));
-            const float scrollProfile = ClampUnit(
-                ImpulseProfile(scrollT, 0.42f, 0.16f) * (0.82f + scrollAmpNorm * 0.18f));
-            const float scrollFlap = std::sin(scrollT * 6.2831853f * 1.8f) *
-                                     scrollProfile *
-                                     (0.2f + scrollAmpNorm * 0.1f);
+            float scrollProfile = 0.0f;
+            float scrollFlap = 0.0f;
+            float scrollAmpNorm = 0.0f;
+            if (petVisualPoseRuntime_.scrollFlapProgress < 1.0f) {
+                const float scrollT = ClampUnit(petVisualPoseRuntime_.scrollFlapProgress);
+                scrollAmpNorm = ClampUnit(
+                    (petVisualPoseRuntime_.scrollFlapAmplitude - kPetScrollAmplitudeMin) /
+                    (kPetScrollAmplitudeMax - kPetScrollAmplitudeMin));
+                scrollProfile = ClampUnit(
+                    ImpulseProfile(scrollT, 0.42f, 0.16f) * (0.82f + scrollAmpNorm * 0.18f));
+                scrollFlap = std::sin(scrollT * 3.1415926f) *
+                             scrollProfile *
+                             (0.28f + scrollAmpNorm * 0.16f);
+            }
             const float holdTerm = ClampUnit(holdProfile * visualProfile.holdPoseGain);
             const float scrollTerm = ClampUnit(scrollProfile * visualProfile.scrollPoseGain);
             const float earWingOpen = ClampUnit(
@@ -1291,7 +1349,7 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
             WriteQuaternionFromEuler(
                 -1.02f * holdTerm - 0.04f * scrollTerm + 0.03f * std::abs(earWingFlap),
                 -0.04f * earWingOpen,
-                -(0.09f * holdTerm + 0.14f * scrollProfile - 0.20f * earWingFlap + 0.44f * earWingOpen),
+                -(0.09f * holdTerm + 0.14f * scrollProfile + 0.20f * earWingFlap + 0.44f * earWingOpen),
                 q);
             rotations[4] = q[0];
             rotations[5] = q[1];

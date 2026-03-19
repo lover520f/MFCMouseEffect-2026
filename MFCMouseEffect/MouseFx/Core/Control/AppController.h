@@ -508,8 +508,13 @@ private:
     } petPointerMotion_{};
     struct PetVisualPoseRuntimeState {
         float holdPulse = 0.0f;
-        float scrollPulse = 0.0f;
-        float scrollAmplitude = 0.35f;
+        float scrollFlapProgress = 1.0f;
+        float scrollFlapDurationSec = 0.18f;
+        float scrollFlapAmplitude = 0.35f;
+        float queuedScrollFlapDurationSec = 0.18f;
+        float queuedScrollFlapAmplitude = 0.35f;
+        uint32_t pendingScrollFlapCount = 0;
+        uint64_t lastScrollEventTickMs = 0;
         uint64_t lastTickMs = 0;
     } petVisualPoseRuntime_{};
     bool runtimeDiagnosticsEnabled_ = false;

@@ -104,8 +104,13 @@ private final class MfxMouseCompanionPanelView: NSView {
     private var pointerNormalizedX: CGFloat = 0.0
     private var clickPulse: CGFloat = 0.0
     private var holdPulse: CGFloat = 0.0
-    private var scrollPulse: CGFloat = 0.0
-    private var scrollAmplitude: CGFloat = 0.35
+    private var scrollFlapProgress: CGFloat = 1.0
+    private var scrollFlapDuration: CGFloat = 0.18
+    private var scrollFlapAmplitude: CGFloat = 0.35
+    private var queuedScrollFlapDuration: CGFloat = 0.18
+    private var queuedScrollFlapAmplitude: CGFloat = 0.35
+    private var pendingScrollFlapCount: Int = 0
+    private var lastScrollEventTick: CFTimeInterval = 0.0
     private var poseBindingConfigured = false
     private var poseEarSpread: CGFloat = 0.0
     private var poseEarLift: CGFloat = 0.0
@@ -150,8 +155,30 @@ private final class MfxMouseCompanionPanelView: NSView {
             holdPulse = max(holdPulse, max(0.35, resolvedIntensity))
         }
         if resolvedAction == .scrollReact {
-            scrollPulse = 1.0
-            scrollAmplitude = max(0.35, resolvedIntensity)
+            let now = CACurrentMediaTime()
+            let amplitude = mfxClamp(max(0.35, resolvedIntensity), min: 0.35, max: 2.4)
+            let maxDuration: CGFloat = 0.26
+            let minDuration: CGFloat = 0.10
+            var duration = maxDuration
+            if lastScrollEventTick > 0.0 {
+                let intervalMs = min(max((now - lastScrollEventTick) * 1000.0, 24.0), 180.0)
+                let fastness = mfxClamp((180.0 - intervalMs) / (180.0 - 24.0), min: 0.0, max: 1.0)
+                duration = maxDuration - (maxDuration - minDuration) * fastness
+            }
+            lastScrollEventTick = now
+            if scrollFlapProgress >= 1.0 {
+                scrollFlapProgress = 0.0
+                scrollFlapDuration = duration
+                scrollFlapAmplitude = amplitude
+            } else {
+                pendingScrollFlapCount = min(pendingScrollFlapCount + 1, 8)
+                queuedScrollFlapDuration = duration
+                queuedScrollFlapAmplitude = max(queuedScrollFlapAmplitude, amplitude)
+                let elapsed = mfxClamp(scrollFlapProgress, min: 0.0, max: 1.0) * max(0.001, scrollFlapDuration)
+                scrollFlapDuration = min(scrollFlapDuration, duration)
+                scrollFlapAmplitude = max(scrollFlapAmplitude, amplitude)
+                scrollFlapProgress = mfxClamp(elapsed / max(0.001, scrollFlapDuration), min: 0.0, max: 1.0)
+            }
         }
 
         self.actionCode = resolvedAction
@@ -263,7 +290,18 @@ private final class MfxMouseCompanionPanelView: NSView {
         bobTime += dt
         clickPulse = max(0.0, clickPulse - dt * 3.6)
         holdPulse = max(0.0, holdPulse - dt * 1.2)
-        scrollPulse = max(0.0, scrollPulse - dt / 0.72)
+        if scrollFlapProgress < 1.0 {
+            scrollFlapProgress += dt / max(0.001, scrollFlapDuration)
+            while scrollFlapProgress >= 1.0, pendingScrollFlapCount > 0 {
+                pendingScrollFlapCount -= 1
+                scrollFlapProgress = 0.0
+                scrollFlapDuration = queuedScrollFlapDuration
+                scrollFlapAmplitude = queuedScrollFlapAmplitude
+            }
+            if scrollFlapProgress >= 1.0 {
+                scrollFlapProgress = 1.0
+            }
+        }
 
         needsDisplay = true
     }
@@ -280,10 +318,18 @@ private final class MfxMouseCompanionPanelView: NSView {
         let clickT = mfxClamp(1.0 - clickPulse, min: 0.0, max: 1.0)
         let clickProfileBase = mfxImpulseProfile(clickT, inRatio: 0.42, holdRatio: 0.16)
         let holdProfileBase = mfxClamp(max(holdPulse, (actionCode == .holdReact ? actionIntensity : 0.0)), min: 0.0, max: 1.0)
-        let scrollT = mfxClamp(1.0 - scrollPulse, min: 0.0, max: 1.0)
-        let scrollAmpNorm = mfxClamp((scrollAmplitude - 0.35) / 0.65, min: 0.0, max: 1.0)
-        let scrollProfileBase = mfxImpulseProfile(scrollT, inRatio: 0.42, holdRatio: 0.16) * mfxClamp(0.82 + scrollAmpNorm * 0.18, min: 0.0, max: 1.0)
-        let scrollFlap = CGFloat(sin(Double(scrollT) * Double.pi * 2.0 * 1.8)) * scrollProfileBase * (0.2 + scrollAmpNorm * 0.1)
+        let scrollT = (scrollFlapProgress < 1.0)
+            ? mfxClamp(scrollFlapProgress, min: 0.0, max: 1.0)
+            : 0.0
+        let scrollAmpNorm = (scrollFlapProgress < 1.0)
+            ? mfxClamp((scrollFlapAmplitude - 0.35) / (2.4 - 0.35), min: 0.0, max: 1.0)
+            : 0.0
+        let scrollProfileBase = (scrollFlapProgress < 1.0)
+            ? mfxImpulseProfile(scrollT, inRatio: 0.42, holdRatio: 0.16) * mfxClamp(0.82 + scrollAmpNorm * 0.18, min: 0.0, max: 1.0)
+            : 0.0
+        let scrollFlap = (scrollFlapProgress < 1.0)
+            ? CGFloat(sin(Double(scrollT) * Double.pi)) * scrollProfileBase * (0.28 + scrollAmpNorm * 0.16)
+            : 0.0
         let idleProfile = (actionCode == .idle) ? actionIntensity : 0.0
         let clickProfile = max(clickProfileBase, poseHandSpread, poseLegSpread, poseEarSpread * 0.9)
         let holdProfile = max(holdProfileBase, poseHandLift * 0.7)
