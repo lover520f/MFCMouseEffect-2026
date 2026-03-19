@@ -1237,6 +1237,7 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
             const float earLift = ClampUnit(
                 scrollTerm * 0.36f + std::abs(scrollFlap) * 0.05f);
             const float earWingFlap = scrollFlap * (0.78f + scrollAmpNorm * 0.12f);
+            const float earWingDip = scrollTerm * (0.20f + scrollAmpNorm * 0.06f) + std::abs(scrollFlap) * 0.04f;
             const float handLift = ClampUnit(
                 holdTerm * 0.14f +
                 scrollTerm * 0.68f +
@@ -1280,7 +1281,7 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
 
             float q[4]{};
             WriteQuaternionFromEuler(
-                -1.02f * holdTerm - 0.04f * scrollTerm + 0.03f * std::abs(earWingFlap),
+                -1.02f * holdTerm - 0.18f * scrollTerm - 0.30f * earWingDip + 0.03f * std::abs(earWingFlap),
                 0.04f * earWingOpen,
                 (0.09f * holdTerm + 0.14f * scrollProfile + 0.20f * earWingFlap + 0.44f * earWingOpen),
                 q);
@@ -1289,7 +1290,7 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
             rotations[2] = q[2];
             rotations[3] = q[3];
             WriteQuaternionFromEuler(
-                -1.02f * holdTerm - 0.04f * scrollTerm + 0.03f * std::abs(earWingFlap),
+                -1.02f * holdTerm - 0.18f * scrollTerm - 0.30f * earWingDip + 0.03f * std::abs(earWingFlap),
                 -0.04f * earWingOpen,
                 -(0.09f * holdTerm + 0.14f * scrollProfile - 0.20f * earWingFlap + 0.44f * earWingOpen),
                 q);

@@ -1111,13 +1111,34 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
                 scaleX: scales[pBase],
                 scaleY: scales[pBase + 1],
                 scaleZ: scales[pBase + 2])
-            for node in nodes {
+            let semanticBone = MfxPoseBindingBone(rawValue: poseBoneIndex)
+            for (nodeOffset, node) in nodes.enumerated() {
                 let nodeId = ObjectIdentifier(node)
                 guard let restLocal = restLocalTransformByNode[nodeId] else {
                     continue
                 }
-                node.simdTransform = simd_mul(restLocal, localDelta)
+                let weightedDelta = scaledLocalDelta(
+                    localDelta,
+                    weight: poseBindingNodeWeight(binding: semanticBone, nodeOffset: nodeOffset, chainCount: nodes.count))
+                node.simdTransform = simd_mul(restLocal, weightedDelta)
             }
+        }
+    }
+
+    private func poseBindingNodeWeight(
+        binding: MfxPoseBindingBone?,
+        nodeOffset: Int,
+        chainCount: Int
+    ) -> Float {
+        guard let binding, chainCount > 1 else {
+            return 1.0
+        }
+        switch binding {
+        case .leftEar, .rightEar:
+            let earWeights: [Float] = [0.28, 0.64, 1.0]
+            return earWeights[min(nodeOffset, earWeights.count - 1)]
+        default:
+            return 1.0
         }
     }
 
@@ -2335,6 +2356,38 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         var translationMatrix = matrix_identity_float4x4
         translationMatrix.columns.3 = SIMD4<Float>(translation.x, translation.y, translation.z, 1.0)
         return simd_mul(simd_mul(translationMatrix, simd_float4x4(rotation)), scaleMatrix)
+    }
+
+    private func scaledLocalDelta(_ delta: simd_float4x4, weight: Float) -> simd_float4x4 {
+        let clampedWeight = max(0.0, min(1.0, weight))
+        if abs(clampedWeight - 1.0) < 0.0001 {
+            return delta
+        }
+        let fullRotation = simd_quatf(delta)
+        let weightedRotation = simd_slerp(
+            simd_quatf(angle: 0.0, axis: SIMD3<Float>(0.0, 1.0, 0.0)),
+            simd_normalize(fullRotation),
+            clampedWeight)
+
+        let translation = SIMD3<Float>(delta.columns.3.x, delta.columns.3.y, delta.columns.3.z) * clampedWeight
+        let scaleX = delta.columns.0.x
+        let scaleY = delta.columns.1.y
+        let scaleZ = delta.columns.2.z
+        let weightedScale = SIMD3<Float>(
+            1.0 + (scaleX - 1.0) * clampedWeight,
+            1.0 + (scaleY - 1.0) * clampedWeight,
+            1.0 + (scaleZ - 1.0) * clampedWeight)
+        return composeLocalDelta(
+            positionX: translation.x,
+            positionY: translation.y,
+            positionZ: translation.z,
+            rotationX: weightedRotation.vector.x,
+            rotationY: weightedRotation.vector.y,
+            rotationZ: weightedRotation.vector.z,
+            rotationW: weightedRotation.vector.w,
+            scaleX: weightedScale.x,
+            scaleY: weightedScale.y,
+            scaleZ: weightedScale.z)
     }
 }
 
