@@ -12,7 +12,11 @@
    - `MFCMouseEffect/Assets/Pet3D/source/pet-actions.json`
 2. `PetCompanionRuntime::LoadActionLibraryFromJson(...)` 读取并持有 `ActionLibrary`。
 3. `IActionSynthesizer::SetActionLibrary(...)` 接收动作库；`BindSkeleton(...)` 后构建轨道到骨骼索引映射。
-4. 每帧 `Update(...)`：
+4. macOS Swift SceneKit 宿主会并行读取同一动作库：
+   - `clickReact` 走 one-shot；
+   - `idle/follow` 走循环 clip；
+   - 然后再叠加宿主侧程序动作（例如 tauri 对齐的 idle 耳朵/手臂波动）。
+5. 每帧 `Update(...)`：
    - 当前 Action 存在 Clip：采样 Clip 输出 `BonePose`。
    - 当前 Action 无 Clip：回退程序动作（呼吸/头部跟随/点击脉冲）。
 
@@ -75,6 +79,12 @@
 - 该样例覆盖 `idle/follow/clickReact/drag/hoverReact/holdReact/scrollReact`，并包含 `bone_remap`（`Chest -> Spine`）示例，可直接验证重映射链路。
 - 2026-03-17 可见性调优：
   - `hoverReact/holdReact/scrollReact` 关键帧幅度已增强（更明显的头/躯干旋转与 hold 压缩），用于避免“运行时已切动作但体感像只有两种姿态”。
+- 2026-03-19 SceneKit 对齐补充：
+  - Swift 宿主不再只解析 `clickReact`；
+  - 真实模型已接入 `idle/follow` clip 采样；
+  - `idle` 下还会叠加 tauri 同款 ear/hand procedural，因此看到耳朵在 idle 轻摆是预期行为。
+  - pose binding 也已从“精确骨骼名”扩展到“语义映射”，例如 `left_ear/right_ear/left_hand/right_hand/left_leg/right_leg` 会匹配 `DEF-Ear.L`、`DEF-Arm.L.*`、`DEF-Leg.L.*` 这类 Blender 导出骨骼链，避免程序动作因为资产命名差异失效。
+  - 语义 pose binding 当前按“代表骨骼”落点：对于 `DEF-Ear.L/.001/.002` 这类导出骨骼链，不再把同一个 idle 程序旋转同时施加到整条链上，而是优先选根耳骨，避免 idle 耳朵出现链式叠加颤动。
 
 ## 回归检查
 - 编译：`cmake --build build-macos --target mfx_entry_runtime_common -j 6`

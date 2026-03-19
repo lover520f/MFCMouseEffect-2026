@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-19T07:11:33.407Z",
+  "generated_at": "2026-03-19T08:37:54.793Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -83,14 +83,14 @@
       ],
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 134,
-      "size_bytes": 10589,
-      "estimated_tokens": 2648,
+      "line_count": 149,
+      "size_bytes": 14907,
+      "estimated_tokens": 3727,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": false,
-      "hash_sha1": "efa90a0eca0f44dd708a62c0f8d0ff23f6e33cba",
-      "updated_at": "2026-03-19T07:11:27.415Z"
+      "hash_sha1": "51fd97e7f0f6e07da0fdc556dc8768cfc9a3c2de",
+      "updated_at": "2026-03-19T08:37:47.753Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -273,18 +273,19 @@
         "zh",
         "cn",
         "effects",
+        "swift",
         "macos"
       ],
       "summary": "1. `AppController` 启动时尝试加载默认动作库：",
       "when_to_read": "Read only when task keywords match this capability area.",
-      "line_count": 130,
-      "size_bytes": 6536,
-      "estimated_tokens": 1634,
+      "line_count": 140,
+      "size_bytes": 7560,
+      "estimated_tokens": 1890,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "d90d062a387f3135fee2fa71f2caaf854352ede1",
-      "updated_at": "2026-03-17T15:10:16.667Z"
+      "hash_sha1": "7aff17e2e2e5ef4f8a03d904b90ebb11f8f866db",
+      "updated_at": "2026-03-19T07:58:29.023Z"
     },
     {
       "id": "docs/architecture/mouse-companion-appearance-contract.zh-CN.md",
@@ -445,7 +446,7 @@
       "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-pointer-facing-click-streak-contract.zh-CN.md",
       "priority": "P2",
       "role": "architecture",
-      "topic": "general",
+      "topic": "wasm",
       "first_read_rank": 0,
       "tags": [
         "mouse",
@@ -457,19 +458,20 @@
         "contract",
         "zh",
         "cn",
+        "wasm",
         "swift",
         "macos"
       ],
       "summary": "1. 打开 `Mouse Companion -> Follow`，确认可见 `face_pointer_enabled` 与连击/红度参数（含测试档）。",
-      "when_to_read": "Read only when task keywords match this capability area.",
-      "line_count": 95,
-      "size_bytes": 3998,
-      "estimated_tokens": 1000,
+      "when_to_read": "Read when task touches wasm runtime, plugin ABI, or sample behavior.",
+      "line_count": 124,
+      "size_bytes": 5339,
+      "estimated_tokens": 1335,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "62df7a37de2dcd49440fd8892cfa6a85f58cc587",
-      "updated_at": "2026-03-18T12:20:20.233Z"
+      "hash_sha1": "6db319e18ec14d35cf61f93be7ba780580fecc3b",
+      "updated_at": "2026-03-19T07:30:53.491Z"
     },
     {
       "id": "docs/architecture/mouse-companion-position-mode-contract.zh-CN.md",

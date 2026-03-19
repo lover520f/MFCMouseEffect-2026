@@ -145,22 +145,29 @@ mfx_manual_assert_core_api_ready() {
     fi
 
     local state_url
-    local attempts="${MFX_MANUAL_API_READY_ATTEMPTS:-80}"
+    local attempts="${MFX_MANUAL_API_READY_ATTEMPTS:-30}"
     local sleep_seconds="${MFX_MANUAL_API_READY_SLEEP_SECONDS:-0.1}"
+    local curl_max_time_seconds="${MFX_MANUAL_API_READY_CURL_MAX_TIME_SECONDS:-1}"
     if ! [[ "$attempts" =~ ^[0-9]+$ ]] || [[ "$attempts" -le 0 ]]; then
-        attempts=80
+        attempts=30
+    fi
+    if [[ "$attempts" -gt 120 ]]; then
+        attempts=120
     fi
     if ! [[ "$sleep_seconds" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
         sleep_seconds=0.1
     fi
+    if ! [[ "$curl_max_time_seconds" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+        curl_max_time_seconds=1
+    fi
     state_url="$(mfx_manual_trim_trailing_slash "$base_url")/api/state"
     local http_code=""
-    for _ in $(seq 1 "$attempts"); do
+    for attempt in $(seq 1 "$attempts"); do
         if [[ -n "$host_pid" ]] && ! kill -0 "$host_pid" 2>/dev/null; then
             mfx_fail "$context failed: host exited before /api/state became ready (pid=$host_pid)"
         fi
         http_code="$(
-            curl -sS -m 2 -o /dev/null -w "%{http_code}" \
+            curl -sS -m "$curl_max_time_seconds" -o /dev/null -w "%{http_code}" \
                 -H "x-mfcmouseeffect-token: $token" \
                 "$state_url" 2>/dev/null || true
         )"
@@ -170,9 +177,26 @@ mfx_manual_assert_core_api_ready() {
         if [[ "$http_code" == "404" ]]; then
             mfx_fail "$context failed: /api/state returned 404 (host is likely scaffold lane). Rebuild without --skip-build or use a core-runtime build directory."
         fi
+        if (( attempt == 1 || attempt % 10 == 0 )); then
+            mfx_info "$context waiting for /api/state (attempt ${attempt}/${attempts}, http=${http_code:-<empty>})"
+        fi
         sleep "$sleep_seconds"
     done
 
+    if [[ -n "$host_pid" ]] && kill -0 "$host_pid" 2>/dev/null; then
+        mfx_info "$context timeout: attempt graceful stop for pid=$host_pid"
+        mfx_manual_try_stop_via_http "$base_url" "$token" || true
+        kill -TERM "$host_pid" 2>/dev/null || true
+        sleep 0.2
+    fi
+    if [[ -s "$MFX_MANUAL_STARTUP_DIAGNOSTICS_FILE" ]]; then
+        mfx_info "startup diagnostics tail:"
+        tail -n 40 "$MFX_MANUAL_STARTUP_DIAGNOSTICS_FILE" || true
+    fi
+    if [[ -n "$MFX_MANUAL_LOG_FILE" && -s "$MFX_MANUAL_LOG_FILE" ]]; then
+        mfx_info "host log tail:"
+        tail -n 80 "$MFX_MANUAL_LOG_FILE" || true
+    fi
     mfx_fail "$context failed: /api/state not ready (last_http_code=${http_code:-<empty>})"
 }
 
@@ -213,12 +237,25 @@ mfx_manual_start_core_host() {
         "$host_bin" "${host_args[@]}" >"$log_file" 2>&1 &
     local pid="$!"
 
-    for _ in $(seq 1 100); do
-        if [[ -s "$start_probe_file" ]]; then
+    local probe_wait_attempts="${MFX_MANUAL_PROBE_WAIT_ATTEMPTS:-120}"
+    if ! [[ "$probe_wait_attempts" =~ ^[0-9]+$ ]] || [[ "$probe_wait_attempts" -le 0 ]]; then
+        probe_wait_attempts=120
+    fi
+    if [[ "$probe_wait_attempts" -gt 300 ]]; then
+        probe_wait_attempts=300
+    fi
+
+    for attempt in $(seq 1 "$probe_wait_attempts"); do
+        if [[ -s "$start_probe_file" ]] && \
+            [[ -n "$(mfx_manual_probe_value "url" "$start_probe_file")" ]] && \
+            [[ -n "$(mfx_manual_probe_value "token" "$start_probe_file")" ]]; then
             break
         fi
         if ! kill -0 "$pid" 2>/dev/null; then
             break
+        fi
+        if (( attempt == 1 || attempt % 20 == 0 )); then
+            mfx_info "manual host waiting for startup probe (attempt ${attempt}/${probe_wait_attempts})"
         fi
         sleep 0.1
     done
@@ -347,9 +384,57 @@ mfx_manual_schedule_auto_stop() {
     ) >/dev/null 2>&1 &
 }
 
+_mfx_manual_try_preempt_lock_owner() {
+    local lock_name="$1"
+    local lock_dir="${TMPDIR:-/tmp}/mfx-regression-locks/${lock_name}.lock"
+    local owner_file="$lock_dir/owner.env"
+    if [[ ! -d "$lock_dir" || ! -f "$owner_file" ]]; then
+        return 0
+    fi
+
+    local owner_pid=""
+    owner_pid="$(mfx_read_lock_owner_pid "$owner_file")"
+    if [[ -z "$owner_pid" || ! "$owner_pid" =~ ^[0-9]+$ ]]; then
+        return 0
+    fi
+    if [[ "$owner_pid" == "$$" ]]; then
+        return 0
+    fi
+    if ! kill -0 "$owner_pid" 2>/dev/null; then
+        rm -rf "$lock_dir" || true
+        return 0
+    fi
+
+    local owner_cmd=""
+    owner_cmd="$(ps -p "$owner_pid" -o command= 2>/dev/null || true)"
+    if [[ "$owner_cmd" != *"run-macos-core-websettings-manual.sh"* ]]; then
+        return 0
+    fi
+
+    mfx_info "preempt stale manual runner lock owner: pid=$owner_pid"
+    kill -TERM "$owner_pid" 2>/dev/null || true
+    for _ in $(seq 1 20); do
+        if ! kill -0 "$owner_pid" 2>/dev/null; then
+            break
+        fi
+        sleep 0.1
+    done
+    if kill -0 "$owner_pid" 2>/dev/null; then
+        kill -KILL "$owner_pid" 2>/dev/null || true
+    fi
+    mfx_terminate_stale_entry_host "after manual lock preempt"
+    if ! kill -0 "$owner_pid" 2>/dev/null; then
+        rm -rf "$lock_dir" || true
+    fi
+}
+
 mfx_manual_acquire_entry_host_lock() {
-    local timeout_seconds="${MFX_ENTRY_LOCK_TIMEOUT_SECONDS:-180}"
+    local timeout_seconds="${MFX_MANUAL_ENTRY_LOCK_TIMEOUT_SECONDS:-30}"
+    if ! [[ "$timeout_seconds" =~ ^[0-9]+$ ]] || [[ "$timeout_seconds" -le 0 ]]; then
+        timeout_seconds=30
+    fi
     mfx_info "entry host lock: mfx-entry-posix-host"
+    _mfx_manual_try_preempt_lock_owner "mfx-entry-posix-host"
     mfx_acquire_lock "mfx-entry-posix-host" "$timeout_seconds"
 }
 

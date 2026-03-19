@@ -269,9 +269,6 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
         if (ctrl_->IsVmEffectsSuppressed()) {
             return 0;
         }
-        if (ctrl_->IsEffectsBlockedByAppBlacklist()) {
-            return 0;
-        }
         if (IsHoldInteractionActive(ctrl_)) {
             return 0;
         }
@@ -281,11 +278,13 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
         }
         if (ctrl_->TryEnterHover(&pt)) {
             petFeature_.OnHoverStart(*ctrl_, pt);
-            bool hoverRenderedByWasm = false;
-            const bool hoverRouteActive = wasmFeature_.RouteHoverStart(*ctrl_, pt, &hoverRenderedByWasm);
-            if (!hoverRouteActive || !hoverRenderedByWasm) {
-                if (auto* effect = ctrl_->GetEffect(EffectCategory::Hover)) {
-                    effect->OnHoverStart(pt);
+            if (!ctrl_->IsEffectsBlockedByAppBlacklist()) {
+                bool hoverRenderedByWasm = false;
+                const bool hoverRouteActive = wasmFeature_.RouteHoverStart(*ctrl_, pt, &hoverRenderedByWasm);
+                if (!hoverRouteActive || !hoverRenderedByWasm) {
+                    if (auto* effect = ctrl_->GetEffect(EffectCategory::Hover)) {
+                        effect->OnHoverStart(pt);
+                    }
                 }
             }
         }

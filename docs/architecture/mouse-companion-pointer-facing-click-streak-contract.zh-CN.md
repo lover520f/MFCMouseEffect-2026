@@ -40,6 +40,35 @@
   - 非拖拽结束态（如 `button_up/hover_end/hold_end`）回落为 `idle`。
 - `face_pointer_enabled=true`：
   - 可触发 `follow`，并允许朝向跟随。
+  - `follow` 不应在静止时锁住；应按指针速度自动回落到 `idle`。
+
+### hover -> idle 映射
+- `hover` 在 pet 语义里不再单独映射成独立动作名。
+- `hover_start/hover_end` 仍保留为输入与插件诊断事件。
+- 可见行为契约：
+  - 停止输入达到 hover 阈值后，pet 进入增强版 `idle`；
+  - 若开启 `face_pointer_enabled` 且移动速度重新超过 follow 阈值，则从 `idle` 自动切回 `follow`；
+  - `fixed_bottom_left` 模式始终停留在 `idle` 路径，不因普通 move 自动切 `follow`。
+
+### follow 速度选择与衰减
+- 生产档：
+  - `follow_speed_threshold_px_per_sec = 45`
+  - `pointer_speed_decay_per_second = 8.5`
+- 测试档（`use_test_profile=true`）：
+  - `follow_speed_threshold_px_per_sec = 30`
+  - `pointer_speed_decay_per_second = 6.0`
+- 运行时规则：
+  - 指针事件更新瞬时 `moveSpeed`
+  - 帧循环按指数衰减 `moveSpeed`
+  - `moveSpeed < 0.5` 直接归零
+  - 仅 `moveSpeed > threshold` 时选择 `follow`，否则选择 `idle`
+
+### 黑名单边界
+- 常规鼠标特效仍遵循 app blacklist。
+- `pet` 的 hover/idle 选择不应被该 blacklist 一起吞掉。
+- 具体要求：
+  - hover 定时器到达后，先进入 pet 的 `hover_start -> idle` 选择链；
+  - 然后再决定是否拦截 hover wasm/native effect。
 
 ### 连击发红
 - 仅主键点击进入连击统计。

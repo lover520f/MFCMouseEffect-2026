@@ -359,6 +359,9 @@ private:
     void SyncPetClickStreakRuntimeStatus(const MouseCompanionConfig& activeConfig);
     void UpdatePetClickStreakDecay(uint64_t nowTickMs, const MouseCompanionConfig& activeConfig);
     void RegisterPetClickStreakClick(uint64_t nowTickMs, const MouseCompanionConfig& activeConfig);
+    void UpdatePetPointerMotion(const ScreenPoint& pt, uint64_t nowTickMs);
+    void DecayPetPointerMotion(uint64_t nowTickMs, const MouseCompanionConfig& activeConfig);
+    void ResolvePetContinuousAction(const MouseCompanionConfig& activeConfig, int* outActionCode, float* outActionIntensity) const;
     void SyncMouseCompanionPluginPhase0Status();
     void RecordMouseCompanionPluginPhase0Input(const char* eventName);
     void EnterInputCaptureDegradedMode(uint32_t error);
@@ -475,6 +478,13 @@ private:
         uint64_t lastUpdateTickMs = 0;
         float tintAmount = 0.0f;
     } petClickStreak_{};
+    struct PetPointerMotionState {
+        bool hasSample = false;
+        ScreenPoint lastSamplePoint{};
+        uint64_t lastSampleTickMs = 0;
+        uint64_t lastEvalTickMs = 0;
+        double moveSpeedPxPerSec = 0.0;
+    } petPointerMotion_{};
     struct PetVisualPoseRuntimeState {
         float holdPulse = 0.0f;
         float scrollPulse = 0.0f;

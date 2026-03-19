@@ -122,6 +122,26 @@ const PetVisualMotionProfile& ResolvePetVisualMotionProfile(bool useTestProfile)
     return useTestProfile ? kPetVisualMotionTest : kPetVisualMotionProd;
 }
 
+constexpr double kPetFollowSpeedThresholdPxPerSec = 45.0;
+constexpr double kPetFollowSpeedThresholdTestPxPerSec = 30.0;
+constexpr double kPetPointerSpeedDecayPerSecond = 8.5;
+constexpr double kPetPointerSpeedDecayTestPerSecond = 6.0;
+constexpr double kPetPointerSpeedZeroFloorPxPerSec = 0.5;
+constexpr float kPetHoverIdleIntensity = 0.42f;
+constexpr float kPetHoverIdleIntensityTest = 0.58f;
+
+double ResolvePetFollowSpeedThresholdPxPerSec(bool useTestProfile) {
+    return useTestProfile ? kPetFollowSpeedThresholdTestPxPerSec : kPetFollowSpeedThresholdPxPerSec;
+}
+
+double ResolvePetPointerSpeedDecayPerSecond(bool useTestProfile) {
+    return useTestProfile ? kPetPointerSpeedDecayTestPerSecond : kPetPointerSpeedDecayPerSecond;
+}
+
+float ResolvePetHoverIdleIntensity(bool useTestProfile) {
+    return useTestProfile ? kPetHoverIdleIntensityTest : kPetHoverIdleIntensity;
+}
+
 float ClampUnit(float value) {
     return std::clamp(value, 0.0f, 1.0f);
 }
@@ -556,6 +576,59 @@ bool AppController::TryEnterHover(ScreenPoint* outPt) {
     return true;
 }
 
+void AppController::UpdatePetPointerMotion(const ScreenPoint& pt, uint64_t nowTickMs) {
+    if (petPointerMotion_.hasSample && nowTickMs > petPointerMotion_.lastSampleTickMs) {
+        const double dtSeconds =
+            static_cast<double>(nowTickMs - petPointerMotion_.lastSampleTickMs) / 1000.0;
+        if (dtSeconds > 0.0001) {
+            petPointerMotion_.moveSpeedPxPerSec =
+                Distance(pt, petPointerMotion_.lastSamplePoint) / dtSeconds;
+        }
+    }
+    petPointerMotion_.hasSample = true;
+    petPointerMotion_.lastSamplePoint = pt;
+    petPointerMotion_.lastSampleTickMs = nowTickMs;
+    petPointerMotion_.lastEvalTickMs = nowTickMs;
+}
+
+void AppController::DecayPetPointerMotion(uint64_t nowTickMs, const MouseCompanionConfig& activeConfig) {
+    if (!petPointerMotion_.hasSample || nowTickMs <= petPointerMotion_.lastEvalTickMs) {
+        return;
+    }
+    const double dtSeconds =
+        static_cast<double>(nowTickMs - petPointerMotion_.lastEvalTickMs) / 1000.0;
+    petPointerMotion_.lastEvalTickMs = nowTickMs;
+    const double pointerDecay =
+        std::exp(-ResolvePetPointerSpeedDecayPerSecond(activeConfig.useTestProfile) * dtSeconds);
+    petPointerMotion_.moveSpeedPxPerSec *= pointerDecay;
+    if (petPointerMotion_.moveSpeedPxPerSec < kPetPointerSpeedZeroFloorPxPerSec) {
+        petPointerMotion_.moveSpeedPxPerSec = 0.0;
+    }
+}
+
+void AppController::ResolvePetContinuousAction(
+    const MouseCompanionConfig& activeConfig,
+    int* outActionCode,
+    float* outActionIntensity) const {
+    int actionCode = kPetActionIdle;
+    float actionIntensity = hovering_ ? ResolvePetHoverIdleIntensity(activeConfig.useTestProfile) : 0.0f;
+    if (activeConfig.positionMode == "follow" && activeConfig.facePointerEnabled) {
+        const double threshold = ResolvePetFollowSpeedThresholdPxPerSec(activeConfig.useTestProfile);
+        if (petPointerMotion_.moveSpeedPxPerSec > threshold) {
+            actionCode = kPetActionFollow;
+            const double speedAboveThreshold = petPointerMotion_.moveSpeedPxPerSec - threshold;
+            const double speedWindow = std::max(1.0, threshold * 2.5);
+            actionIntensity = std::max(0.35f, ClampUnit(static_cast<float>(speedAboveThreshold / speedWindow)));
+        }
+    }
+    if (outActionCode) {
+        *outActionCode = actionCode;
+    }
+    if (outActionIntensity) {
+        *outActionIntensity = actionIntensity;
+    }
+}
+
 bool AppController::QueryCursorScreenPoint(ScreenPoint* outPt) const {
     if (!outPt || !cursorPositionService_) {
         return false;
@@ -594,24 +667,13 @@ void AppController::DispatchPetMove(const ScreenPoint& pt) {
     petLastTickMs_ = nowTickMs;
 
     const ScreenPoint runtimePt = ResolvePetRuntimeCursorPoint(pt, dtSeconds, activeConfig.smoothingPercent);
+    UpdatePetPointerMotion(runtimePt, nowTickMs);
     UpdatePetPrimaryPressTravel(pt);
     UpdatePetClickStreakDecay(nowTickMs, activeConfig);
 
     int actionCode = kPetActionIdle;
     float intensity = 0.0f;
-    if (activeConfig.positionMode == "follow") {
-        actionCode = kPetActionFollow;
-        intensity = 0.55f;
-        const int thresholdPx = std::max(0, activeConfig.followThresholdPx);
-        if (petHasLastDispatchPoint_ && thresholdPx > 0) {
-            const double moveDistance = Distance(runtimePt, petLastDispatchPoint_);
-            if (moveDistance < static_cast<double>(thresholdPx)) {
-                intensity = 0.0f;
-            }
-        }
-        petLastDispatchPoint_ = runtimePt;
-        petHasLastDispatchPoint_ = true;
-    }
+    ResolvePetContinuousAction(activeConfig, &actionCode, &intensity);
     if (holdButtonDown_ && petPrimaryPress_.active) {
         actionCode = kPetActionDrag;
         intensity = ClampUnit(static_cast<float>(petPrimaryPress_.maxTravelPx / 32.0));
@@ -652,8 +714,10 @@ void AppController::DispatchPetClick(const ClickEvent& ev) {
             ClampUnit(pulseBase),
             petClickStreak_.tintAmount);
     } else {
-        const int fallbackAction = (activeConfig.positionMode == "follow") ? kPetActionFollow : kPetActionIdle;
-        UpdatePetVisualState(ev.pt, fallbackAction, 0.0f, petClickStreak_.tintAmount);
+        int fallbackAction = kPetActionIdle;
+        float fallbackIntensity = 0.0f;
+        ResolvePetContinuousAction(activeConfig, &fallbackAction, &fallbackIntensity);
+        UpdatePetVisualState(ev.pt, fallbackAction, fallbackIntensity, petClickStreak_.tintAmount);
     }
     petPrimaryPress_.releaseReady = false;
     RecordMouseCompanionPluginPhase0Input(eligible ? "click_accept" : "click_reject");
@@ -662,15 +726,20 @@ void AppController::DispatchPetClick(const ClickEvent& ev) {
 void AppController::DispatchPetHoverStart(const ScreenPoint& pt) {
     const MouseCompanionConfig activeConfig = ResolveActiveMouseCompanionConfig(config_.mouseCompanion);
     UpdatePetClickStreakDecay(CurrentTickMs(), activeConfig);
-    UpdatePetVisualState(pt, kPetActionIdle, 0.0f, petClickStreak_.tintAmount);
+    int actionCode = kPetActionIdle;
+    float actionIntensity = 0.0f;
+    ResolvePetContinuousAction(activeConfig, &actionCode, &actionIntensity);
+    UpdatePetVisualState(pt, actionCode, actionIntensity, petClickStreak_.tintAmount);
     RecordMouseCompanionPluginPhase0Input("hover_start");
 }
 
 void AppController::DispatchPetHoverEnd(const ScreenPoint& pt) {
     const MouseCompanionConfig activeConfig = ResolveActiveMouseCompanionConfig(config_.mouseCompanion);
     UpdatePetClickStreakDecay(CurrentTickMs(), activeConfig);
-    const int actionCode = (activeConfig.positionMode == "follow") ? kPetActionFollow : kPetActionIdle;
-    UpdatePetVisualState(pt, actionCode, 0.0f, petClickStreak_.tintAmount);
+    int actionCode = kPetActionIdle;
+    float actionIntensity = 0.0f;
+    ResolvePetContinuousAction(activeConfig, &actionCode, &actionIntensity);
+    UpdatePetVisualState(pt, actionCode, actionIntensity, petClickStreak_.tintAmount);
     RecordMouseCompanionPluginPhase0Input("hover_end");
 }
 
@@ -678,16 +747,16 @@ void AppController::DispatchPetButtonDown(const ScreenPoint& pt, int button) {
     const MouseCompanionConfig activeConfig = ResolveActiveMouseCompanionConfig(config_.mouseCompanion);
     const uint64_t nowTickMs = CurrentTickMs();
     UpdatePetClickStreakDecay(nowTickMs, activeConfig);
-    int actionCode = (activeConfig.positionMode == "follow") ? kPetActionFollow : kPetActionIdle;
+    int actionCode = kPetActionIdle;
     float actionIntensity = 0.0f;
+    ResolvePetContinuousAction(activeConfig, &actionCode, &actionIntensity);
     if (button == static_cast<int>(MouseButton::Left)) {
         petPrimaryPress_ = PetPrimaryPressState{};
         petPrimaryPress_.active = true;
         petPrimaryPress_.downPoint = pt;
         petPrimaryPress_.downTickMs = nowTickMs;
         // Keep primary down neutral; drag should only begin after pointer travel.
-        actionCode = (activeConfig.positionMode == "follow") ? kPetActionFollow : kPetActionIdle;
-        actionIntensity = 0.0f;
+        ResolvePetContinuousAction(activeConfig, &actionCode, &actionIntensity);
     }
     UpdatePetVisualState(pt, actionCode, actionIntensity, petClickStreak_.tintAmount);
     RecordMouseCompanionPluginPhase0Input("button_down");
@@ -726,16 +795,20 @@ void AppController::DispatchPetButtonUp(const ScreenPoint& pt, int button) {
         petPrimaryPress_.releaseMaxTravelPx = petPrimaryPress_.maxTravelPx;
         petPrimaryPress_.active = false;
     }
-    const int actionCode = (activeConfig.positionMode == "follow") ? kPetActionFollow : kPetActionIdle;
-    UpdatePetVisualState(pt, actionCode, 0.0f, petClickStreak_.tintAmount);
+    int actionCode = kPetActionIdle;
+    float actionIntensity = 0.0f;
+    ResolvePetContinuousAction(activeConfig, &actionCode, &actionIntensity);
+    UpdatePetVisualState(pt, actionCode, actionIntensity, petClickStreak_.tintAmount);
     RecordMouseCompanionPluginPhase0Input("button_up");
 }
 
 void AppController::DispatchPetHoldEnd(const ScreenPoint& pt) {
     const MouseCompanionConfig activeConfig = ResolveActiveMouseCompanionConfig(config_.mouseCompanion);
     UpdatePetClickStreakDecay(CurrentTickMs(), activeConfig);
-    const int actionCode = (activeConfig.positionMode == "follow") ? kPetActionFollow : kPetActionIdle;
-    UpdatePetVisualState(pt, actionCode, 0.0f, petClickStreak_.tintAmount);
+    int actionCode = kPetActionIdle;
+    float actionIntensity = 0.0f;
+    ResolvePetContinuousAction(activeConfig, &actionCode, &actionIntensity);
+    UpdatePetVisualState(pt, actionCode, actionIntensity, petClickStreak_.tintAmount);
     RecordMouseCompanionPluginPhase0Input("hold_end");
 }
 
@@ -748,6 +821,7 @@ void AppController::TickPetVisualFrame() {
     const MouseCompanionConfig activeConfig = ResolveActiveMouseCompanionConfig(config_.mouseCompanion);
     const uint64_t nowTickMs = CurrentTickMs();
     UpdatePetClickStreakDecay(nowTickMs, activeConfig);
+    DecayPetPointerMotion(nowTickMs, activeConfig);
 
     ScreenPoint pt{};
     if (!QueryCursorScreenPoint(&pt) && !TryGetLastPointerPoint(&pt)) {
@@ -757,8 +831,9 @@ void AppController::TickPetVisualFrame() {
         RememberLastPointerPoint(pt);
     }
 
-    int actionCode = (activeConfig.positionMode == "follow") ? kPetActionFollow : kPetActionIdle;
+    int actionCode = kPetActionIdle;
     float actionIntensity = 0.0f;
+    ResolvePetContinuousAction(activeConfig, &actionCode, &actionIntensity);
     if (holdButtonDown_ && petPrimaryPress_.active) {
         actionCode = kPetActionDrag;
         actionIntensity = ClampUnit(static_cast<float>(petPrimaryPress_.maxTravelPx / 32.0));
@@ -813,6 +888,7 @@ void AppController::ResetPetDispatchRuntimeState() {
     petClickStreak_.lastClickTickMs = 0;
     petClickStreak_.lastUpdateTickMs = 0;
     petClickStreak_.tintAmount = 0.0f;
+    petPointerMotion_ = PetPointerMotionState{};
     petVisualPoseRuntime_ = PetVisualPoseRuntimeState{};
     petPrimaryPress_ = PetPrimaryPressState{};
     petLastScrollTickMs_ = 0;

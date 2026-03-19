@@ -13,6 +13,15 @@ private enum MfxMouseCompanionActionCode: Int32 {
     case scrollReact = 5
 }
 
+private enum MfxPoseBindingBone: Int {
+    case leftEar = 0
+    case rightEar = 1
+    case leftHand = 2
+    case rightHand = 3
+    case leftLeg = 4
+    case rightLeg = 5
+}
+
 private enum MfxMouseCompanionPositionMode: Int32 {
     case follow = 0
     case fixedBottomLeft = 1
@@ -39,6 +48,13 @@ private struct MfxActionClip {
 private struct MfxActionTrackSample {
     let rotation: simd_quatf?
     let scale: SIMD3<Float>?
+}
+
+private func mfxNormalizedActionKey(_ action: String) -> String {
+    action
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+        .replacingOccurrences(of: "_", with: "")
+        .lowercased()
 }
 
 private struct MfxGlbNodeMetadata {
@@ -257,16 +273,18 @@ private final class MfxMouseCompanionPanelView: NSView {
         let clickProfileBase = mfxImpulseProfile(clickT, inRatio: 0.42, holdRatio: 0.16)
         let holdProfileBase = mfxClamp(max(holdPulse, (actionCode == .holdReact ? actionIntensity : 0.0)), min: 0.0, max: 1.0)
         let scrollProfileBase = mfxClamp(scrollPulse, min: 0.0, max: 1.0)
+        let idleProfile = (actionCode == .idle) ? actionIntensity : 0.0
         let clickProfile = max(clickProfileBase, poseHandSpread, poseLegSpread, poseEarSpread * 0.9)
         let holdProfile = max(holdProfileBase, poseHandLift * 0.7)
         let scrollProfile = max(scrollProfileBase, poseEarSpread * 0.8, poseLegKick * 0.7)
 
-        let bobOffset = sin(Double(bobTime * 2.1)) * Double(2.0 + holdProfile * 3.0)
+        let bobOffset = sin(Double(bobTime * 2.1)) * Double(2.0 + holdProfile * 3.0 + idleProfile * 1.8)
         let followTilt = (actionCode == .follow || actionCode == .drag) ? (actionIntensity * 8.0) : 0.0
         let clickScale = 1.0 + clickProfile * 0.10
         let holdScale = 1.0 + holdProfile * 0.05
         let scrollScale = 1.0 + scrollProfile * 0.04
-        let actionScale = clickScale * holdScale * scrollScale
+        let idleScale = 1.0 + sin(Double(bobTime * 1.7)) * Double(idleProfile * 0.018)
+        let actionScale = clickScale * holdScale * scrollScale * CGFloat(idleScale)
 
         NSGraphicsContext.saveGraphicsState()
         let transform = NSAffineTransform()
@@ -276,9 +294,9 @@ private final class MfxMouseCompanionPanelView: NSView {
         transform.concat()
 
         drawShadow(side: side, clickProfile: clickProfile)
-        drawLimbs(side: side, clickProfile: clickProfile, holdProfile: holdProfile, scrollProfile: scrollProfile)
+        drawLimbs(side: side, clickProfile: clickProfile, holdProfile: holdProfile, scrollProfile: scrollProfile, idleProfile: idleProfile)
         drawBody(side: side, clickProfile: clickProfile, holdProfile: holdProfile)
-        drawHead(side: side, clickProfile: clickProfile, holdProfile: holdProfile, scrollProfile: scrollProfile)
+        drawHead(side: side, clickProfile: clickProfile, holdProfile: holdProfile, scrollProfile: scrollProfile, idleProfile: idleProfile)
         drawFace(side: side, clickProfile: clickProfile, scrollProfile: scrollProfile, holdProfile: holdProfile)
         drawActionAura(side: side, clickProfile: clickProfile, holdProfile: holdProfile, scrollProfile: scrollProfile)
 
@@ -292,11 +310,12 @@ private final class MfxMouseCompanionPanelView: NSView {
         NSBezierPath(ovalIn: shadowRect).fill()
     }
 
-    private func drawLimbs(side: CGFloat, clickProfile: CGFloat, holdProfile: CGFloat, scrollProfile: CGFloat) {
+    private func drawLimbs(side: CGFloat, clickProfile: CGFloat, holdProfile: CGFloat, scrollProfile: CGFloat, idleProfile: CGFloat) {
+        let idleHandWave = sin(Double(bobTime * 3.1 + 0.8)) * Double(side * idleProfile * 0.03)
         let handSpread = side * (0.17 + clickProfile * 0.03 + poseHandSpread * 0.03)
         let handBaseY = side * (0.01 + holdProfile * 0.01)
-        let handLift = side * (clickProfile * 0.10 + scrollProfile * 0.06 + holdProfile * 0.04 + poseHandLift * 0.08)
-        let handTwist = 34.0 * clickProfile + 18.0 * scrollProfile + 12.0 * holdProfile + 24.0 * poseHandSpread
+        let handLift = side * (clickProfile * 0.10 + scrollProfile * 0.06 + holdProfile * 0.04 + poseHandLift * 0.08) + CGFloat(idleHandWave)
+        let handTwist = 34.0 * clickProfile + 18.0 * scrollProfile + 12.0 * holdProfile + 24.0 * poseHandSpread + idleProfile * 6.0
         let handRect = NSRect(x: -side * 0.06, y: -side * 0.05, width: side * 0.12, height: side * 0.14)
 
         drawLimbOval(centerX: -handSpread, centerY: handBaseY + handLift, degrees: handTwist, rect: handRect)
@@ -339,9 +358,10 @@ private final class MfxMouseCompanionPanelView: NSView {
         bodyPath.stroke()
     }
 
-    private func drawHead(side: CGFloat, clickProfile: CGFloat, holdProfile: CGFloat, scrollProfile: CGFloat) {
-        let earLift = (clickProfile * 0.04 + scrollProfile * 0.03 + poseEarLift * 0.05) * side
-        let earSpread = (clickProfile * 0.03 + scrollProfile * 0.05 + poseEarSpread * 0.06) * side
+    private func drawHead(side: CGFloat, clickProfile: CGFloat, holdProfile: CGFloat, scrollProfile: CGFloat, idleProfile: CGFloat) {
+        let idleEarWave = CGFloat(sin(Double(bobTime * 3.4))) * side * idleProfile * 0.022
+        let earLift = (clickProfile * 0.04 + scrollProfile * 0.03 + poseEarLift * 0.05) * side + idleEarWave
+        let earSpread = (clickProfile * 0.03 + scrollProfile * 0.05 + poseEarSpread * 0.06) * side + abs(idleEarWave) * 0.4
         let leftEarRect = NSRect(x: -side * 0.17 - earSpread, y: side * 0.13 + earLift, width: side * 0.12, height: side * 0.36)
         let rightEarRect = NSRect(x: side * 0.05 + earSpread, y: side * 0.13 + earLift, width: side * 0.12, height: side * 0.36)
         let headRect = NSRect(x: -side * 0.24, y: -side * 0.02, width: side * 0.48, height: side * 0.40)
@@ -476,9 +496,11 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
     private var modelLoaded = false
     private var boneNodesByName: [String: [SCNNode]] = [:]
     private var poseBindingNodesByIndex: [[SCNNode]] = []
+    private var poseBindingHadMeaningfulDelta = false
     private var restLocalTransformByNode: [ObjectIdentifier: simd_float4x4] = [:]
     private var semanticChestNodes: [SCNNode] = []
     private var semanticHeadNodes: [SCNNode] = []
+    private var actionClipsByName: [String: MfxActionClip] = [:]
     private var clickActionClip: MfxActionClip?
     private var actionBoneRemapLower: [String: [String]] = [:]
     private var actionTrackNodeCache: [String: [SCNNode]] = [:]
@@ -495,6 +517,8 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
     private var clickOneShotActive = false
     private var clickOneShotElapsed: CGFloat = 0.0
     private var clickOneShotDuration: CGFloat = 0.30
+    private var continuousActionKey: String?
+    private var continuousActionElapsed: CGFloat = 0.0
     private var pendingInitialPanelFit = false
     private var modelFrameTimer: Timer?
     private var currentActionCode: Int32 = MfxMouseCompanionActionCode.idle.rawValue
@@ -661,6 +685,7 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         rebuildHeadTintTargets(root: container)
         actionTrackNodeCache.removeAll(keepingCapacity: true)
         poseBindingNodesByIndex.removeAll(keepingCapacity: true)
+        poseBindingHadMeaningfulDelta = false
         sceneView.isHidden = false
         companionView.isHidden = true
         normalizeModelTransform()
@@ -670,6 +695,8 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         lastModelActionCode = -1
         clickOneShotActive = false
         clickOneShotElapsed = 0.0
+        continuousActionKey = nil
+        continuousActionElapsed = 0.0
         updateLoadedModel(
             node: container,
             actionCode: currentActionCode,
@@ -684,6 +711,7 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
               let data = try? Data(contentsOf: url),
               let rootAny = try? JSONSerialization.jsonObject(with: data),
               let root = rootAny as? [String: Any] else {
+            actionClipsByName.removeAll(keepingCapacity: true)
             clickActionClip = nil
             actionBoneRemapLower.removeAll(keepingCapacity: true)
             actionTrackNodeCache.removeAll(keepingCapacity: true)
@@ -704,12 +732,11 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
             }
         }
 
-        var parsedClickClip: MfxActionClip?
+        var parsedClipsByName: [String: MfxActionClip] = [:]
         if let clips = root["clips"] as? [Any] {
             for clipAny in clips {
                 guard let clipDict = clipAny as? [String: Any],
-                      let action = clipDict["action"] as? String,
-                      action == "clickReact" else {
+                      let action = clipDict["action"] as? String else {
                     continue
                 }
                 guard let tracksAny = clipDict["tracks"] as? [Any] else {
@@ -768,16 +795,20 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
                 let durationValue = (clipDict["duration"] as? NSNumber)?.doubleValue ?? 0.30
                 let duration = mfxClamp(CGFloat(durationValue), min: 0.05, max: 5.0)
                 let loop = (clipDict["loop"] as? Bool) ?? true
-                parsedClickClip = MfxActionClip(action: action, duration: duration, loop: loop, tracks: tracks)
-                break
+                let clip = MfxActionClip(action: action, duration: duration, loop: loop, tracks: tracks)
+                parsedClipsByName[mfxNormalizedActionKey(action)] = clip
             }
         }
 
+        actionClipsByName = parsedClipsByName
+        let parsedClickClip = parsedClipsByName[mfxNormalizedActionKey("clickReact")]
         clickActionClip = parsedClickClip
         actionBoneRemapLower = remapLower
         actionTrackNodeCache.removeAll(keepingCapacity: true)
         clickOneShotDuration = parsedClickClip?.duration ?? 0.30
-        return parsedClickClip != nil
+        continuousActionKey = nil
+        continuousActionElapsed = 0.0
+        return !parsedClipsByName.isEmpty
     }
 
     func configurePoseBinding(names: [String]) -> Bool {
@@ -786,20 +817,147 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         }
         guard !names.isEmpty else {
             poseBindingNodesByIndex.removeAll(keepingCapacity: true)
+            poseBindingHadMeaningfulDelta = false
             return false
         }
         var mapping: [[SCNNode]] = []
         mapping.reserveCapacity(names.count)
         for name in names {
-            let key = Self.normalizedBoneName(name)
-            if let key, let nodes = boneNodesByName[key], !nodes.isEmpty {
-                mapping.append(nodes)
-            } else {
-                mapping.append([])
-            }
+            mapping.append(resolvePoseBindingNodes(for: name))
         }
         poseBindingNodesByIndex = mapping
-        return !poseBindingNodesByIndex.isEmpty
+        poseBindingHadMeaningfulDelta = false
+        return poseBindingNodesByIndex.contains { !$0.isEmpty }
+    }
+
+    private func resolvePoseBindingNodes(for name: String) -> [SCNNode] {
+        guard let key = Self.normalizedBoneName(name) else {
+            return []
+        }
+        let semanticBinding = isSemanticPoseBindingKey(key)
+        if let exact = boneNodesByName[key], !exact.isEmpty {
+            let sortedExact = sortPoseBindingMatches(exact, key: key, containsPatterns: [key])
+            return semanticBinding ? Array(sortedExact.prefix(1)) : sortedExact
+        }
+
+        let containsPatterns: [String]
+        switch key {
+        case "left_ear":
+            containsPatterns = ["ear.l", "earl", "left ear", "left_ear"]
+        case "right_ear":
+            containsPatterns = ["ear.r", "earr", "right ear", "right_ear"]
+        case "left_hand":
+            containsPatterns = ["arm.l", "hand.l", "left hand", "left_hand"]
+        case "right_hand":
+            containsPatterns = ["arm.r", "hand.r", "right hand", "right_hand"]
+        case "left_leg":
+            containsPatterns = ["leg.l", "left leg", "left_leg"]
+        case "right_leg":
+            containsPatterns = ["leg.r", "right leg", "right_leg"]
+        default:
+            containsPatterns = [key]
+        }
+
+        var matches: [SCNNode] = []
+        var seen = Set<ObjectIdentifier>()
+        for (candidateName, nodes) in boneNodesByName {
+            guard containsPatterns.contains(where: { candidateName.contains($0) }) else {
+                continue
+            }
+            for node in nodes {
+                let nodeId = ObjectIdentifier(node)
+                if seen.insert(nodeId).inserted {
+                    matches.append(node)
+                }
+            }
+        }
+
+        if matches.isEmpty {
+            return []
+        }
+        let sortedMatches = sortPoseBindingMatches(matches, key: key, containsPatterns: containsPatterns)
+        return semanticBinding ? Array(sortedMatches.prefix(1)) : sortedMatches
+    }
+
+    private func isSemanticPoseBindingKey(_ key: String) -> Bool {
+        switch key {
+        case "left_ear", "right_ear", "left_hand", "right_hand", "left_leg", "right_leg":
+            return true
+        default:
+            return false
+        }
+    }
+
+    private func sortPoseBindingMatches(
+        _ matches: [SCNNode],
+        key: String,
+        containsPatterns: [String]
+    ) -> [SCNNode] {
+        return matches.sorted { lhs, rhs in
+            let lhsName = Self.normalizedBoneName(lhs.name) ?? ""
+            let rhsName = Self.normalizedBoneName(rhs.name) ?? ""
+            let lhsScore = poseBindingMatchScore(name: lhsName, key: key, containsPatterns: containsPatterns)
+            let rhsScore = poseBindingMatchScore(name: rhsName, key: key, containsPatterns: containsPatterns)
+            if lhsScore != rhsScore {
+                return lhsScore < rhsScore
+            }
+            return lhsName < rhsName
+        }
+    }
+
+    private func poseBindingMatchScore(
+        name: String,
+        key: String,
+        containsPatterns: [String]
+    ) -> (Int, Int, Int, Int) {
+        let patternRank = containsPatterns.firstIndex(where: { name.contains($0) }) ?? containsPatterns.count
+        let dotCount = name.reduce(into: 0) { partialResult, character in
+            if character == "." {
+                partialResult += 1
+            }
+        }
+        let exactPrefixPenalty: Int
+        if name == key || name.hasPrefix(key) {
+            exactPrefixPenalty = 0
+        } else {
+            exactPrefixPenalty = 1
+        }
+        return (patternRank, exactPrefixPenalty, dotCount, name.count)
+    }
+
+    private func poseBindingHasMeaningfulDelta(
+        positions: [Float],
+        rotations: [Float],
+        scales: [Float],
+        poseCount: Int
+    ) -> Bool {
+        guard poseCount > 0 else {
+            return false
+        }
+        let positionThreshold: Float = 0.0001
+        let rotationThreshold: Float = 0.0001
+        let scaleThreshold: Float = 0.0001
+        for idx in 0..<poseCount {
+            let pBase = idx * 3
+            let rBase = idx * 4
+            if abs(positions[pBase]) > positionThreshold ||
+                abs(positions[pBase + 1]) > positionThreshold ||
+                abs(positions[pBase + 2]) > positionThreshold {
+                return true
+            }
+            if abs(rotations[rBase]) > rotationThreshold ||
+                abs(rotations[rBase + 1]) > rotationThreshold ||
+                abs(rotations[rBase + 2]) > rotationThreshold ||
+                abs(rotations[rBase + 3] - 1.0) > rotationThreshold {
+                return true
+            }
+            if abs(scales[pBase] - 1.0) > scaleThreshold ||
+                abs(scales[pBase + 1] - 1.0) > scaleThreshold ||
+                abs(scales[pBase + 2] - 1.0) > scaleThreshold {
+                return true
+            }
+        }
+        return false
     }
 
     func applyPose(indices: [Int32], positions: [Float], rotations: [Float], scales: [Float]) {
@@ -819,6 +977,20 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         if positions.count < poseCount * 3 || rotations.count < poseCount * 4 || scales.count < poseCount * 3 {
             return
         }
+
+        let hasMeaningfulDelta = poseBindingHasMeaningfulDelta(
+            positions: positions,
+            rotations: rotations,
+            scales: scales,
+            poseCount: poseCount)
+        if !hasMeaningfulDelta {
+            if poseBindingHadMeaningfulDelta {
+                restoreAllPoseBindingNodesToRest()
+                poseBindingHadMeaningfulDelta = false
+            }
+            return
+        }
+        poseBindingHadMeaningfulDelta = true
 
         for nodes in poseBindingNodesByIndex {
             for node in nodes {
@@ -1306,6 +1478,31 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         }
     }
 
+    private func restoreActionClipNodesToRest(_ clip: MfxActionClip) {
+        var restoredNodeIds = Set<ObjectIdentifier>()
+        for track in clip.tracks {
+            let nodes = resolveActionTrackNodes(track.bone)
+            for node in nodes {
+                let nodeId = ObjectIdentifier(node)
+                if restoredNodeIds.contains(nodeId) {
+                    continue
+                }
+                restoredNodeIds.insert(nodeId)
+                guard let rest = restLocalTransformByNode[nodeId] else {
+                    continue
+                }
+                node.simdTransform = rest
+            }
+        }
+    }
+
+    private func continuousClipKey(for actionCode: Int32) -> String {
+        if actionCode == MfxMouseCompanionActionCode.follow.rawValue {
+            return mfxNormalizedActionKey("follow")
+        }
+        return mfxNormalizedActionKey("idle")
+    }
+
     private func resolveActionTrackNodes(_ boneName: String) -> [SCNNode] {
         let key = boneName.lowercased()
         if let cached = actionTrackNodeCache[key] {
@@ -1435,6 +1632,10 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         guard let clip = clickActionClip else {
             return false
         }
+        return applyActionClipPose(clip, localTime: localTime)
+    }
+
+    private func applyActionClipPose(_ clip: MfxActionClip, localTime: CGFloat) -> Bool {
         let t = mfxClamp(localTime, min: 0.0, max: clip.duration)
         var anyApplied = false
 
@@ -1468,6 +1669,110 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         }
 
         return anyApplied
+    }
+
+    private func applyContinuousActionClipIfNeeded(actionCode: Int32, dt: CGFloat) {
+        let nextKey = continuousClipKey(for: actionCode)
+        guard let clip = actionClipsByName[nextKey] else {
+            continuousActionKey = nil
+            continuousActionElapsed = 0.0
+            return
+        }
+        if continuousActionKey != nextKey {
+            continuousActionKey = nextKey
+            continuousActionElapsed = 0.0
+        } else {
+            continuousActionElapsed += dt
+        }
+        let localTime: CGFloat
+        if clip.loop {
+            localTime =
+                clip.duration > 0.0001
+                ? continuousActionElapsed.truncatingRemainder(dividingBy: clip.duration)
+                : 0.0
+        } else {
+            localTime = mfxClamp(continuousActionElapsed, min: 0.0, max: clip.duration)
+        }
+        restoreActionClipNodesToRest(clip)
+        _ = applyActionClipPose(clip, localTime: localTime)
+    }
+
+    private func applyIdleProceduralToLoadedModel(idleProfile: CGFloat) {
+        guard idleProfile > 0.001 else {
+            return
+        }
+
+        let earWave = Float(sin(Double(modelBobTime * 5.2))) * 0.22
+        let handWave = Float(sin(Double(modelBobTime * 4.1 + 1.2))) * 0.16
+
+        applyProceduralBoneRotation(
+            binding: .leftEar,
+            rotationX: 0.0,
+            rotationY: 0.0,
+            rotationZ: earWave)
+        applyProceduralBoneRotation(
+            binding: .rightEar,
+            rotationX: 0.0,
+            rotationY: 0.0,
+            rotationZ: -earWave)
+        applyProceduralBoneRotation(
+            binding: .leftHand,
+            rotationX: -handWave * 0.7,
+            rotationY: 0.0,
+            rotationZ: handWave * 0.35)
+        applyProceduralBoneRotation(
+            binding: .rightHand,
+            rotationX: handWave * 0.7,
+            rotationY: 0.0,
+            rotationZ: -handWave * 0.35)
+    }
+
+    private func applyProceduralBoneRotation(
+        binding: MfxPoseBindingBone,
+        rotationX: Float,
+        rotationY: Float,
+        rotationZ: Float
+    ) {
+        let index = binding.rawValue
+        guard index >= 0, index < poseBindingNodesByIndex.count else {
+            return
+        }
+        let nodes = poseBindingNodesByIndex[index]
+        if nodes.isEmpty {
+            return
+        }
+        let qx = rotationX * 0.5
+        let qy = rotationY * 0.5
+        let qz = rotationZ * 0.5
+        let cx = cos(qx)
+        let sx = sin(qx)
+        let cy = cos(qy)
+        let sy = sin(qy)
+        let cz = cos(qz)
+        let sz = sin(qz)
+        let q = simd_quatf(
+            ix: sx * cy * cz - cx * sy * sz,
+            iy: cx * sy * cz + sx * cy * sz,
+            iz: cx * cy * sz - sx * sy * cz,
+            r: cx * cy * cz + sx * sy * sz)
+        let delta = composeLocalDelta(
+            positionX: 0.0,
+            positionY: 0.0,
+            positionZ: 0.0,
+            rotationX: q.vector.x,
+            rotationY: q.vector.y,
+            rotationZ: q.vector.z,
+            rotationW: q.vector.w,
+            scaleX: 1.0,
+            scaleY: 1.0,
+            scaleZ: 1.0)
+        for node in nodes {
+            let nodeId = ObjectIdentifier(node)
+            guard let restLocal = restLocalTransformByNode[nodeId] else {
+                continue
+            }
+            node.simdTransform = simd_mul(restLocal, delta)
+        }
     }
 
     private func normalizeModelTransform() {
@@ -1685,6 +1990,7 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         let effectiveActionCode = clickOneShotActive
             ? MfxMouseCompanionActionCode.clickReact.rawValue
             : actionCode
+        let idleProfile = (effectiveActionCode == MfxMouseCompanionActionCode.idle.rawValue) ? resolvedIntensity : 0.0
 
         if effectiveActionCode != lastModelActionCode {
             lastModelActionCode = effectiveActionCode
@@ -1702,17 +2008,26 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
             node.eulerAngles.x = -dragLean - followLean
             node.eulerAngles.y = modelFacingYaw + dragYaw
 
-            let bobStrength = (0.010 + resolvedIntensity * 0.012)
+            let bobStrength =
+                (effectiveActionCode == MfxMouseCompanionActionCode.idle.rawValue)
+                ? (0.004 + resolvedIntensity * 0.006)
+                : (0.010 + resolvedIntensity * 0.012)
             let sway = sin(Double(modelBobTime * 2.0)) * Double(bobStrength)
+            let idleLift = cos(Double(modelBobTime * 2.4)) * Double(idleProfile * 0.014)
             node.position.x = modelBasePosition.x + CGFloat(sway)
-            node.position.y = modelBasePosition.y
+            node.position.y = modelBasePosition.y + CGFloat(idleLift)
             node.position.z = modelBasePosition.z
         }
         node.scale.x = modelBaseScale
         node.scale.y = modelBaseScale
         node.scale.z = modelBaseScale
 
-        restoreClickActionClipNodesToRest()
+        if clickOneShotActive {
+            restoreClickActionClipNodesToRest()
+        } else {
+            applyContinuousActionClipIfNeeded(actionCode: effectiveActionCode, dt: dt)
+            applyIdleProceduralToLoadedModel(idleProfile: idleProfile)
+        }
         let clipApplied = clickOneShotActive && applyClickActionClipPose(localTime: clickTime)
         if !clipApplied && clickOneShotActive {
             let clickStrength = mfxClamp(max(0.72, resolvedIntensity), min: 0.0, max: 1.0)
@@ -1747,6 +2062,8 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         clickOneShotActive = true
         clickOneShotDuration = mfxClamp(clickActionClip?.duration ?? 0.30, min: 0.05, max: 5.0)
         clickOneShotElapsed = 0.0
+        continuousActionKey = nil
+        continuousActionElapsed = 0.0
         restoreAllPoseBindingNodesToRest()
     }
 
@@ -2241,6 +2558,23 @@ public func mfx_macos_mouse_companion_panel_apply_pose_v1(
     let rotationsArray = Array(UnsafeBufferPointer(start: rotations, count: count * 4))
     let scalesArray = Array(UnsafeBufferPointer(start: scales, count: count * 3))
 
+    if Thread.isMainThread {
+        MainActor.assumeIsolated {
+            mfxWithMouseCompanionPanelHandle(panelHandleBits) { handle in
+                handle.applyPose(
+                    indices: indicesArray,
+                    positions: positionsArray,
+                    rotations: rotationsArray,
+                    scales: scalesArray)
+            }
+        }
+        return
+    }
+
+    // Do not synchronously wait for main queue here.
+    // Startup can call into AppController::GetConfigSnapshot() on main thread
+    // while dispatch worker ticks pose updates. A sync hop would deadlock
+    // (main waits worker -> worker waits main).
     DispatchQueue.main.async {
         MainActor.assumeIsolated {
             mfxWithMouseCompanionPanelHandle(panelHandleBits) { handle in
