@@ -161,7 +161,7 @@
   - 普通鼠标 `hold effect` 的共享 timer 仍保留原值（prod `260ms` / test `120ms`）；后续若继续推进完全一致性，需要把 pet 与 effect 的 hold 状态机彻底拆成独立契约。
 - 已进入 `Phase 2` 的第二步（scroll 对齐首刀）：
   - `scrollReact` 不再只靠线性 `scrollPulse` 衰减，现已切到 tauri 风格的 impulse 包络：prod `0.72s` / test `0.56s`，`inRatio=0.42`、`holdRatio=0.16`，
-  - native semantic pose 与 placeholder fallback 都补了基于幅度的手部 lift/twist、腿部外开与轻微 flap 调制；scroll 耳朵方向已从“外展/翅膀感”修正为“向内夹”，
+  - native semantic pose 与 placeholder fallback 都补了基于幅度的手部 lift/twist、腿部外开与轻微 flap 调制；scroll 耳朵现按 tauri 的 `wingOpen + flap` 语义做翅膀式扇动，不再收成“向内夹”，
   - 当前仍未做“基于方向的额外滚动姿态偏置”；这一点若后续需要，再单独加在统一插件动作机上。
 - 已进入 `Phase 2` 的第三步（follow 对齐首刀）：
   - macOS 视觉宿主已开始记录 follow 模式下的指针归一化 X，并把 real-model yaw 对齐到 tauri 的 `baseYaw - normalizedX * 0.28`，

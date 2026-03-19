@@ -379,11 +379,15 @@ private final class MfxMouseCompanionPanelView: NSView {
 
     private func drawHead(side: CGFloat, clickProfile: CGFloat, holdProfile: CGFloat, scrollProfile: CGFloat, scrollFlap: CGFloat, idleProfile: CGFloat) {
         let idleEarWave = CGFloat(sin(Double(bobTime * 3.4))) * side * idleProfile * 0.022
-        let earLift = (clickProfile * 0.04 + scrollProfile * 0.02 - holdProfile * 0.04 + poseEarLift * 0.05) * side + idleEarWave
-        let earInset = (scrollProfile * 0.05 + abs(scrollFlap) * 0.02 + poseEarSpread * 0.04) * side
+        let earLift = (clickProfile * 0.04 + scrollProfile * 0.03 - holdProfile * 0.04 + poseEarLift * 0.05) * side + idleEarWave
+        let earWingOpen = (clickProfile * 0.03 + scrollProfile * 0.06 + abs(scrollFlap) * 0.03 + poseEarSpread * 0.06) * side + abs(idleEarWave) * 0.35
+        let earFlapDegrees = scrollFlap * 20.0
         let clickEarSpread = (clickProfile * 0.03) * side + abs(idleEarWave) * 0.4
-        let leftEarRect = NSRect(x: -side * 0.17 - clickEarSpread + earInset, y: side * 0.13 + earLift, width: side * 0.12, height: side * 0.36)
-        let rightEarRect = NSRect(x: side * 0.05 + clickEarSpread - earInset, y: side * 0.13 + earLift, width: side * 0.12, height: side * 0.36)
+        let leftEarBaseX = -side * 0.11 - clickEarSpread - earWingOpen
+        let rightEarBaseX = side * 0.11 + clickEarSpread + earWingOpen
+        let earBaseY = side * 0.13 + earLift
+        let earWidth = side * 0.12
+        let earHeight = side * 0.36
         let headWidth = side * (0.48 + holdProfile * 0.06)
         let headHeight = side * (0.40 - holdProfile * 0.06)
         let headRect = NSRect(
@@ -392,8 +396,8 @@ private final class MfxMouseCompanionPanelView: NSView {
             width: headWidth,
             height: headHeight)
 
-        drawEar(rect: leftEarRect, side: side, clickProfile: clickProfile)
-        drawEar(rect: rightEarRect, side: side, clickProfile: clickProfile)
+        drawEar(baseX: leftEarBaseX, baseY: earBaseY, width: earWidth, height: earHeight, degrees: -6.0 - scrollProfile * 18.0 - earFlapDegrees, side: side, clickProfile: clickProfile)
+        drawEar(baseX: rightEarBaseX, baseY: earBaseY, width: earWidth, height: earHeight, degrees: 6.0 + scrollProfile * 18.0 + earFlapDegrees, side: side, clickProfile: clickProfile)
 
         let headPath = NSBezierPath(ovalIn: headRect)
         let tint = headTintAmount
@@ -416,7 +420,14 @@ private final class MfxMouseCompanionPanelView: NSView {
         headPath.stroke()
     }
 
-    private func drawEar(rect: NSRect, side: CGFloat, clickProfile: CGFloat) {
+    private func drawEar(baseX: CGFloat, baseY: CGFloat, width: CGFloat, height: CGFloat, degrees: CGFloat, side: CGFloat, clickProfile: CGFloat) {
+        NSGraphicsContext.saveGraphicsState()
+        let tf = NSAffineTransform()
+        tf.translateX(by: baseX, yBy: baseY)
+        tf.rotate(byDegrees: degrees)
+        tf.concat()
+
+        let rect = NSRect(x: -width * 0.5, y: 0.0, width: width, height: height)
         let earPath = NSBezierPath(roundedRect: rect, xRadius: side * 0.06, yRadius: side * 0.06)
         NSColor(calibratedRed: 0.96, green: 0.98, blue: 1.0, alpha: 0.98).setFill()
         earPath.fill()
@@ -429,6 +440,7 @@ private final class MfxMouseCompanionPanelView: NSView {
         let innerRect = rect.insetBy(dx: innerInsetX, dy: innerInsetY)
         NSColor(calibratedRed: 1.0, green: 0.78, blue: 0.84, alpha: 0.66 + 0.20 * clickProfile).setFill()
         NSBezierPath(roundedRect: innerRect, xRadius: innerRect.width * 0.5, yRadius: innerRect.width * 0.5).fill()
+        NSGraphicsContext.restoreGraphicsState()
     }
 
     private func drawFace(side: CGFloat, clickProfile: CGFloat, scrollProfile: CGFloat, holdProfile: CGFloat) {
