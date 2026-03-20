@@ -54,7 +54,6 @@ inline constexpr const char kPressLiftPx[] = "press_lift_px";
 inline constexpr const char kSmoothingPercent[] = "smoothing_percent";
 inline constexpr const char kFollowThresholdPx[] = "follow_threshold_px";
 inline constexpr const char kReleaseHoldMs[] = "release_hold_ms";
-inline constexpr const char kFacePointerEnabled[] = "face_pointer_enabled";
 inline constexpr const char kClickStreakBreakMs[] = "click_streak_break_ms";
 inline constexpr const char kHeadTintPerClick[] = "head_tint_per_click";
 inline constexpr const char kHeadTintMax[] = "head_tint_max";

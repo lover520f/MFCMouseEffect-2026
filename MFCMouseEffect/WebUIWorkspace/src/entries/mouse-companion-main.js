@@ -44,7 +44,6 @@ const DEFAULT_SCHEMA = {
 
 const DEFAULT_STATE = {
   enabled: false,
-  face_pointer_enabled: false,
   model_path: 'MFCMouseEffect/Assets/Pet3D/source/pet-main.glb',
   action_library_path: 'MFCMouseEffect/Assets/Pet3D/source/pet-actions.json',
   appearance_profile_path: 'MFCMouseEffect/Assets/Pet3D/source/pet-appearance.json',
@@ -202,7 +201,6 @@ function normalizeState(value) {
   );
   return {
     enabled: !!source.enabled,
-    face_pointer_enabled: !!source.face_pointer_enabled,
     model_path: modelPath || DEFAULT_STATE.model_path,
     action_library_path: actionLibraryPath || DEFAULT_STATE.action_library_path,
     appearance_profile_path: appearanceProfilePath || DEFAULT_STATE.appearance_profile_path,
@@ -348,19 +346,6 @@ function syncEnabledText() {
   textNode.textContent = enabled ? 'Enabled' : 'Disabled';
 }
 
-function syncFacePointerText() {
-  const enabled = readChecked('mc_face_pointer_enabled', latestState.face_pointer_enabled);
-  const textNode = byId('mc_face_pointer_enabled_text');
-  if (!textNode) {
-    return;
-  }
-  textNode.setAttribute(
-    'data-i18n',
-    enabled ? 'text_mouse_companion_face_pointer_on' : 'text_mouse_companion_face_pointer_off',
-  );
-  textNode.textContent = enabled ? 'Enabled' : 'Disabled';
-}
-
 function isRelativePositionMode(mode) {
   return mode === 'relative' || mode === 'follow';
 }
@@ -417,10 +402,6 @@ function mountIfNeeded() {
   const enabledToggle = byId('mc_enabled');
   if (enabledToggle) {
     enabledToggle.addEventListener('change', syncEnabledText);
-  }
-  const facePointerToggle = byId('mc_face_pointer_enabled');
-  if (facePointerToggle) {
-    facePointerToggle.addEventListener('change', syncFacePointerText);
   }
   const positionMode = byId('mc_position_mode');
   if (positionMode) {
@@ -494,7 +475,6 @@ function writeToDom(state, schema) {
   }
 
   syncEnabledText();
-  syncFacePointerText();
   syncPositionFieldState();
 }
 

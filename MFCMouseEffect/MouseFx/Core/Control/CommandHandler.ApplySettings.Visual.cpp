@@ -282,9 +282,6 @@ void ApplyMouseCompanionSettings(const json& payload, AppController* controller)
     applyInt("smoothing_percent", &companion.smoothingPercent);
     applyInt("follow_threshold_px", &companion.followThresholdPx);
     applyInt("release_hold_ms", &companion.releaseHoldMs);
-    if (source.contains("face_pointer_enabled") && source["face_pointer_enabled"].is_boolean()) {
-        companion.facePointerEnabled = source["face_pointer_enabled"].get<bool>();
-    }
     applyInt("click_streak_break_ms", &companion.clickStreakBreakMs);
     applyDouble("head_tint_per_click", &companion.headTintPerClick);
     applyDouble("head_tint_max", &companion.headTintMax);

@@ -46,8 +46,6 @@ Use it when P1 (`current.md`) is not enough and you need targeted deep context.
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-appearance-contract.zh-CN.md`
 - Model import pipeline contract (converter abstraction + sidecar/default pipeline):
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-model-import-pipeline-contract.zh-CN.md`
-- Pointer-facing toggle + click-streak head-tint contract (config/runtime/webui/proof):
-  - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-pointer-facing-click-streak-contract.zh-CN.md`
 - Position mode contract (`fixed_bottom_left` / `follow`, macOS left-bottom anchor path):
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-position-mode-contract.zh-CN.md`
 - Click parity contract (tauri-aligned click gate + limb procedural linkage):

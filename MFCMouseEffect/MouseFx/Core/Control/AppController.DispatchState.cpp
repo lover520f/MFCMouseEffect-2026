@@ -739,7 +739,6 @@ MouseCompanionPetRuntimeConfig AppController::BuildMouseCompanionPluginRuntimeCo
     MouseCompanionPetRuntimeConfig out{};
     out.enabled = cfg.enabled;
     out.useTestProfile = cfg.useTestProfile;
-    out.facePointerEnabled = cfg.facePointerEnabled;
     out.sizePx = cfg.sizePx;
     out.offsetX = cfg.offsetX;
     out.offsetY = cfg.offsetY;

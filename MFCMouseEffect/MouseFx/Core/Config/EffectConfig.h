@@ -147,7 +147,6 @@ struct MouseCompanionConfig {
     int smoothingPercent = 68;
     int followThresholdPx = 2;
     int releaseHoldMs = 120;
-    bool facePointerEnabled = false;
     int clickStreakBreakMs = 650;
     double headTintPerClick = 0.11;
     double headTintMax = 0.70;

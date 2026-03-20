@@ -46,7 +46,6 @@ struct MouseCompanionPetInputEvent {
 struct MouseCompanionPetRuntimeConfig {
     bool enabled{false};
     bool useTestProfile{false};
-    bool facePointerEnabled{false};
     int sizePx{0};
     int offsetX{0};
     int offsetY{0};

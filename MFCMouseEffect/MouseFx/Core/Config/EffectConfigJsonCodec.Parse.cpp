@@ -135,10 +135,6 @@ void ApplyRootToConfig(const nlohmann::json& root, EffectConfig& config) {
             companion,
             keys::mouse_companion::kReleaseHoldMs,
             config.mouseCompanion.releaseHoldMs);
-        config.mouseCompanion.facePointerEnabled = parse_internal::GetOr<bool>(
-            companion,
-            keys::mouse_companion::kFacePointerEnabled,
-            config.mouseCompanion.facePointerEnabled);
         config.mouseCompanion.clickStreakBreakMs = parse_internal::GetOr<int>(
             companion,
             keys::mouse_companion::kClickStreakBreakMs,

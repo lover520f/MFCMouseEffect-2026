@@ -1,6 +1,5 @@
 export const MOUSE_COMPANION_CHECKBOX_FIELDS = [
   { key: 'enabled', id: 'mc_enabled' },
-  { key: 'face_pointer_enabled', id: 'mc_face_pointer_enabled' },
   { key: 'use_test_profile', id: 'mc_use_test_profile' },
 ];
 

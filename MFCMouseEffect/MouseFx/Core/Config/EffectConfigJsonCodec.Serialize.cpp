@@ -57,7 +57,6 @@ nlohmann::json BuildRootFromConfig(const EffectConfig& config) {
         {keys::mouse_companion::kSmoothingPercent, companion.smoothingPercent},
         {keys::mouse_companion::kFollowThresholdPx, companion.followThresholdPx},
         {keys::mouse_companion::kReleaseHoldMs, companion.releaseHoldMs},
-        {keys::mouse_companion::kFacePointerEnabled, companion.facePointerEnabled},
         {keys::mouse_companion::kClickStreakBreakMs, companion.clickStreakBreakMs},
         {keys::mouse_companion::kHeadTintPerClick, companion.headTintPerClick},
         {keys::mouse_companion::kHeadTintMax, companion.headTintMax},

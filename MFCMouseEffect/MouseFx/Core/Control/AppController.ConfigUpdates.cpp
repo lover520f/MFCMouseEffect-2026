@@ -132,7 +132,6 @@ void AppController::SetMouseCompanionConfig(const MouseCompanionConfig& cfg) {
         config_.mouseCompanion.smoothingPercent == normalized.smoothingPercent &&
         config_.mouseCompanion.followThresholdPx == normalized.followThresholdPx &&
         config_.mouseCompanion.releaseHoldMs == normalized.releaseHoldMs &&
-        config_.mouseCompanion.facePointerEnabled == normalized.facePointerEnabled &&
         config_.mouseCompanion.clickStreakBreakMs == normalized.clickStreakBreakMs &&
         std::fabs(config_.mouseCompanion.headTintPerClick - normalized.headTintPerClick) < 1e-6 &&
         std::fabs(config_.mouseCompanion.headTintMax - normalized.headTintMax) < 1e-6 &&

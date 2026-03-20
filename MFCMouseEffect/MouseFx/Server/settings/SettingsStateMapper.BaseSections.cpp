@@ -107,7 +107,6 @@ void AppendBaseSettingsState(const EffectConfig& cfg, json* out) {
         {"smoothing_percent", companion.smoothingPercent},
         {"follow_threshold_px", companion.followThresholdPx},
         {"release_hold_ms", companion.releaseHoldMs},
-        {"face_pointer_enabled", companion.facePointerEnabled},
         {"click_streak_break_ms", companion.clickStreakBreakMs},
         {"head_tint_per_click", companion.headTintPerClick},
         {"head_tint_max", companion.headTintMax},

@@ -21,7 +21,7 @@ export function getMouseCompanionSectionMarkup() {
     </section>
 
     <details class="mouse-companion-details" open>
-      <summary>Placement</summary>
+      <summary data-i18n="summary_mouse_companion_placement">Placement</summary>
       <div class="grid">
         <label for="mc_offset_x" data-i18n="label_mouse_companion_offset_x">Offset X</label>
         <div id="mc_relative_offset_pair" class="grid" style="grid-template-columns: 1fr 1fr; gap: 8px;">
@@ -29,10 +29,10 @@ export function getMouseCompanionSectionMarkup() {
           <input id="mc_offset_y" type="number" data-i18n-placeholder="label_mouse_companion_offset_y" placeholder="Offset Y" />
         </div>
 
-        <label for="mc_absolute_x">Absolute Position</label>
+        <label for="mc_absolute_x" data-i18n="label_mouse_companion_absolute_position">Absolute Position</label>
         <div id="mc_absolute_pair" class="grid" style="grid-template-columns: 1fr 1fr; gap: 8px;">
-          <input id="mc_absolute_x" type="number" placeholder="Absolute X" />
-          <input id="mc_absolute_y" type="number" placeholder="Absolute Y" />
+          <input id="mc_absolute_x" type="number" data-i18n-placeholder="placeholder_mouse_companion_absolute_x" placeholder="Absolute X" />
+          <input id="mc_absolute_y" type="number" data-i18n-placeholder="placeholder_mouse_companion_absolute_y" placeholder="Absolute Y" />
         </div>
 
         <label for="mc_target_monitor" data-i18n="label_mouse_companion_target_monitor">Target Monitor</label>
@@ -41,7 +41,7 @@ export function getMouseCompanionSectionMarkup() {
     </details>
 
     <details class="mouse-companion-details">
-      <summary>Asset Paths</summary>
+      <summary data-i18n="summary_mouse_companion_asset_paths">Asset Paths</summary>
       <div class="grid">
         <label for="mc_model_path" class="label-with-tip"><span data-i18n="label_mouse_companion_model_path">Model Path (USDZ/GLB)</span></label>
         <input id="mc_model_path" type="text" data-i18n-placeholder="placeholder_mouse_companion_model_path" placeholder="MFCMouseEffect/Assets/Pet3D/source/pet-main.glb" />
@@ -55,15 +55,8 @@ export function getMouseCompanionSectionMarkup() {
     </details>
 
     <details class="mouse-companion-details">
-      <summary>Advanced Motion</summary>
+      <summary data-i18n="summary_mouse_companion_advanced_motion">Advanced Motion</summary>
       <div class="grid">
-        <label for="mc_face_pointer_enabled" class="label-with-tip"><span data-i18n="label_mouse_companion_face_pointer_enabled">Pointer Facing Follow</span></label>
-        <label class="startup-toggle" for="mc_face_pointer_enabled">
-          <input id="mc_face_pointer_enabled" class="startup-toggle__input" type="checkbox" />
-          <span class="startup-toggle__switch" aria-hidden="true"><span class="startup-toggle__thumb"></span></span>
-          <span id="mc_face_pointer_enabled_text" class="startup-toggle__text" data-i18n="text_mouse_companion_face_pointer_off">Disabled</span>
-        </label>
-
         <label for="mc_press_lift_px" data-i18n="label_mouse_companion_press_lift_px">Press Lift (px)</label>
         <input id="mc_press_lift_px" type="number" />
 

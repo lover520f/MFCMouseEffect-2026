@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-20T04:34:39.654Z",
+  "generated_at": "2026-03-20T04:52:19.565Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -85,13 +85,13 @@
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
       "line_count": 164,
-      "size_bytes": 22209,
-      "estimated_tokens": 5553,
+      "size_bytes": 22290,
+      "estimated_tokens": 5573,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": false,
-      "hash_sha1": "a8f06c4b7a76ce07e92baa6e2a11cd9a4147c17e",
-      "updated_at": "2026-03-20T04:34:31.538Z"
+      "hash_sha1": "34c09731cc2a67f97310fa6f11b9b610c3c26db4",
+      "updated_at": "2026-03-20T04:51:11.615Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -121,14 +121,14 @@
       ],
       "summary": "This file is a P2 routing map.",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 78,
-      "size_bytes": 4656,
-      "estimated_tokens": 1164,
+      "line_count": 76,
+      "size_bytes": 4429,
+      "estimated_tokens": 1108,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "0734c6ead9abcbae218e701719fbc50769b60583",
-      "updated_at": "2026-03-20T04:18:41.311Z"
+      "hash_sha1": "5db62b4cb3d4cb99a32ac5ad4069d89a2bd71ec1",
+      "updated_at": "2026-03-20T04:51:11.615Z"
     },
     {
       "id": "docs/architecture/agent-doc-governance.md",
@@ -440,39 +440,6 @@
       "line_limit_exceeded": false,
       "hash_sha1": "5658083061a455ea14819cd872dd4ea1b49b606e",
       "updated_at": "2026-03-19T10:03:54.322Z"
-    },
-    {
-      "id": "docs/architecture/mouse-companion-pointer-facing-click-streak-contract.zh-CN.md",
-      "relative_path": "docs/architecture/mouse-companion-pointer-facing-click-streak-contract.zh-CN.md",
-      "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-pointer-facing-click-streak-contract.zh-CN.md",
-      "priority": "P2",
-      "role": "architecture",
-      "topic": "wasm",
-      "first_read_rank": 0,
-      "tags": [
-        "mouse",
-        "companion",
-        "pointer",
-        "facing",
-        "click",
-        "streak",
-        "contract",
-        "zh",
-        "cn",
-        "wasm",
-        "swift",
-        "macos"
-      ],
-      "summary": "1. 打开 `Mouse Companion -> Follow`，确认可见 `face_pointer_enabled` 与连击/红度参数（含测试档）。",
-      "when_to_read": "Read when task touches wasm runtime, plugin ABI, or sample behavior.",
-      "line_count": 124,
-      "size_bytes": 5339,
-      "estimated_tokens": 1335,
-      "max_read_tokens": 750,
-      "line_limit": 0,
-      "line_limit_exceeded": false,
-      "hash_sha1": "6db319e18ec14d35cf61f93be7ba780580fecc3b",
-      "updated_at": "2026-03-20T04:18:41.311Z"
     },
     {
       "id": "docs/architecture/mouse-companion-position-mode-contract.zh-CN.md",

@@ -200,7 +200,7 @@ payload="$(jq -n \
     --arg model "$model_path" \
     --arg action "$action_library_path" \
     --arg appearance "$appearance_profile_path" \
-    '{mouse_companion:{enabled:true,model_path:$model,action_library_path:$action,appearance_profile_path:$appearance,position_mode:"fixed_bottom_left",release_hold_ms:0,follow_threshold_px:0,face_pointer_enabled:false,use_test_profile:false}}')"
+    '{mouse_companion:{enabled:true,model_path:$model,action_library_path:$action,appearance_profile_path:$appearance,position_mode:"fixed_bottom_left",release_hold_ms:0,follow_threshold_px:0,use_test_profile:false}}')"
 
 curl -sS -X POST \
     -H "x-mfcmouseeffect-token: $token" \
