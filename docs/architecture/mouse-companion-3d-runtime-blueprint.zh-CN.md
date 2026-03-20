@@ -171,7 +171,8 @@
 - 控制器编排已支持基础运行时联动：
   - `AppController::SetMouseCompanionConfig(...)` 已接入；
   - `mouse_companion.enabled=false` 时停用 pet dispatch + 释放可视宿主；
-  - `mouse_companion.size_px` 直接影响 macOS 可视宿主创建尺寸；
+  - `mouse_companion.size_px` 现在既影响 macOS 可视宿主创建尺寸，也能通过 `mfx_macos_mouse_companion_panel_configure_v1(...)` 在宿主持续运行时即时重配；已加载模型会先把画板重置回新的 `size_px` 基线，再同步重跑 `normalizeModelTransform() + fitCanvasToModel()`，并在设置瞬间使用 live transform 的投影边界立刻缩放画板、随后再补两帧渲染态精修，避免只把模型缩小而外层画板仍停留在旧大尺寸，同时保证 `strict` 边界限制立即跟随新容器尺寸；
+  - SceneKit 运行时边界快照不再临时把可见 `SCNView` 刷成洋红色抠图，改为直接利用透明背景 + alpha 扫描，避免用户在设置尺寸时看到红紫色闪屏；
   - 模型加载优先使用 `mouse_companion.model_path`，缺失时回落默认候选路径。
 
 ## P8 增量（已完成第二版：参数真正生效）

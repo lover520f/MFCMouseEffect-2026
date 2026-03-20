@@ -13,9 +13,14 @@ void mfx_macos_mouse_companion_panel_show_v1(void* handle);
 void mfx_macos_mouse_companion_panel_hide_v1(void* handle);
 void mfx_macos_mouse_companion_panel_configure_v1(
     void* handle,
+    int32_t sizePx,
     int32_t positionModeCode,
+    int32_t edgeClampModeCode,
     int32_t offsetX,
-    int32_t offsetY);
+    int32_t offsetY,
+    int32_t absoluteX,
+    int32_t absoluteY,
+    const char* targetMonitorUtf8);
 void mfx_macos_mouse_companion_panel_update_v1(
     void* handle,
     int32_t actionCode,

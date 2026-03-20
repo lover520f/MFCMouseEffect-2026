@@ -1,29 +1,22 @@
 import {
   MOUSE_COMPANION_CHECKBOX_FIELDS,
-  MOUSE_COMPANION_DEFAULT_ACTIVE_TAB,
   MOUSE_COMPANION_FLOAT_FIELDS,
   MOUSE_COMPANION_NUMBER_FIELDS,
   MOUSE_COMPANION_RANGE_BINDINGS,
-  MOUSE_COMPANION_TAB_IDS,
   MOUSE_COMPANION_TEXT_FIELDS,
 } from '../mouse-companion/form-contract.js';
-import {
-  MOUSE_COMPANION_DEFAULT_RUNTIME_STATE,
-  normalizeMouseCompanionProbeRuntimeResponse,
-  normalizeMouseCompanionRuntimeState,
-  writeMouseCompanionRuntimeStateToDom,
-} from '../mouse-companion/runtime-diagnostics.js';
-import { createMouseCompanionProbeController } from '../mouse-companion/probe-controller.js';
-import { readUiState, writeUiState } from './ui-state-storage.js';
 import { getMouseCompanionSectionMarkup } from '../mouse-companion/section-template.js';
-import { createMouseCompanionTabController } from '../mouse-companion/tab-controller.js';
-
-const MOUSE_COMPANION_UI_STATE_STORAGE_NS = 'mouse-companion.v1';
 
 const DEFAULT_SCHEMA = {
   position_modes: [
-    { value: 'fixed_bottom_left', label: 'Fixed Bottom Left (Recommended For Click Tuning)' },
-    { value: 'follow', label: 'Follow Cursor' },
+    { value: 'relative', label: 'Relative To Cursor' },
+    { value: 'absolute', label: 'Absolute Screen Position' },
+    { value: 'fixed_bottom_left', label: 'Fixed Bottom Left (Legacy Compatibility)' },
+    { value: 'follow', label: 'Follow Cursor (Legacy Compatibility)' },
+  ],
+  target_monitor_options: [
+    { value: 'cursor', label: 'Follow Cursor Screen' },
+    { value: 'primary', label: 'Primary Monitor' },
   ],
   edge_clamp_modes: [
     { value: 'soft', label: 'Soft Edge (Recommended)' },
@@ -32,6 +25,7 @@ const DEFAULT_SCHEMA = {
   ],
   size_px_range: { min: 48, max: 360, step: 1 },
   offset_range: { min: -1200, max: 1200, step: 1 },
+  absolute_range: { min: -20000, max: 20000, step: 1 },
   press_lift_px_range: { min: 0, max: 240, step: 1 },
   smoothing_percent_range: { min: 0, max: 95, step: 1 },
   follow_threshold_px_range: { min: 0, max: 32, step: 1 },
@@ -59,6 +53,9 @@ const DEFAULT_STATE = {
   size_px: 112,
   offset_x: 18,
   offset_y: 26,
+  absolute_x: 40,
+  absolute_y: 40,
+  target_monitor: 'cursor',
   press_lift_px: 24,
   smoothing_percent: 68,
   follow_threshold_px: 2,
@@ -78,29 +75,10 @@ const DEFAULT_STATE = {
 
 let latestSchema = { ...DEFAULT_SCHEMA };
 let latestState = { ...DEFAULT_STATE };
-let latestRuntimeState = { ...MOUSE_COMPANION_DEFAULT_RUNTIME_STATE };
 
 function byId(id) {
   return document.getElementById(id);
 }
-
-function readMouseCompanionUiState() {
-  return readUiState(MOUSE_COMPANION_UI_STATE_STORAGE_NS);
-}
-
-function writeMouseCompanionUiState(nextState) {
-  writeUiState(MOUSE_COMPANION_UI_STATE_STORAGE_NS, nextState);
-}
-
-const tabController = createMouseCompanionTabController({
-  byId,
-  tabIds: MOUSE_COMPANION_TAB_IDS,
-  defaultTabId: MOUSE_COMPANION_DEFAULT_ACTIVE_TAB,
-  initialActiveTab: readMouseCompanionUiState()?.activeTab,
-  onActiveTabChange: (activeTab) => {
-    writeMouseCompanionUiState({ activeTab });
-  },
-});
 
 function clampInt(value, min, max, fallback) {
   const parsed = Number.parseInt(`${value ?? ''}`, 10);
@@ -132,40 +110,58 @@ function normalizeSchema(value) {
     const normalized = input
       .map((item) => {
         const sourceItem = item && typeof item === 'object' ? item : {};
-        const value = `${sourceItem.value ?? ''}`.trim().toLowerCase();
+        const optionValue = `${sourceItem.value ?? ''}`.trim().toLowerCase();
         const label = `${sourceItem.label ?? ''}`.trim();
-        if (!value) {
+        if (!optionValue) {
           return null;
         }
         return {
-          value,
-          label: label || value,
+          value: optionValue,
+          label: label || optionValue,
         };
       })
       .filter((item) => !!item);
-    if (normalized.length <= 0) {
-      return [...fallback];
-    }
-    return normalized;
+    return normalized.length > 0 ? normalized : [...fallback];
+  };
+  const normalizeTargetMonitorOptions = (input, fallback) => {
+    const normalized = normalizeModeOptions(input, fallback).filter((item) => item.value !== 'custom');
+    return normalized.length > 0 ? normalized : [...fallback];
   };
   return {
     position_modes: normalizeModeOptions(source.position_modes, DEFAULT_SCHEMA.position_modes),
+    target_monitor_options: normalizeTargetMonitorOptions(
+      source.target_monitor_options,
+      DEFAULT_SCHEMA.target_monitor_options,
+    ),
     edge_clamp_modes: normalizeModeOptions(source.edge_clamp_modes, DEFAULT_SCHEMA.edge_clamp_modes),
     size_px_range: normalizeRange(source.size_px_range, DEFAULT_SCHEMA.size_px_range),
     offset_range: normalizeRange(source.offset_range, DEFAULT_SCHEMA.offset_range),
+    absolute_range: normalizeRange(source.absolute_range, DEFAULT_SCHEMA.absolute_range),
     press_lift_px_range: normalizeRange(source.press_lift_px_range, DEFAULT_SCHEMA.press_lift_px_range),
     smoothing_percent_range: normalizeRange(source.smoothing_percent_range, DEFAULT_SCHEMA.smoothing_percent_range),
     follow_threshold_px_range: normalizeRange(source.follow_threshold_px_range, DEFAULT_SCHEMA.follow_threshold_px_range),
     release_hold_ms_range: normalizeRange(source.release_hold_ms_range, DEFAULT_SCHEMA.release_hold_ms_range),
-    click_streak_break_ms_range: normalizeRange(source.click_streak_break_ms_range, DEFAULT_SCHEMA.click_streak_break_ms_range),
-    head_tint_per_click_range: normalizeRange(source.head_tint_per_click_range, DEFAULT_SCHEMA.head_tint_per_click_range),
+    click_streak_break_ms_range: normalizeRange(
+      source.click_streak_break_ms_range,
+      DEFAULT_SCHEMA.click_streak_break_ms_range,
+    ),
+    head_tint_per_click_range: normalizeRange(
+      source.head_tint_per_click_range,
+      DEFAULT_SCHEMA.head_tint_per_click_range,
+    ),
     head_tint_max_range: normalizeRange(source.head_tint_max_range, DEFAULT_SCHEMA.head_tint_max_range),
     head_tint_decay_per_second_range: normalizeRange(
       source.head_tint_decay_per_second_range,
       DEFAULT_SCHEMA.head_tint_decay_per_second_range,
     ),
-    test_press_lift_px_range: normalizeRange(source.test_press_lift_px_range, DEFAULT_SCHEMA.test_press_lift_px_range),
-    test_smoothing_percent_range: normalizeRange(source.test_smoothing_percent_range, DEFAULT_SCHEMA.test_smoothing_percent_range),
+    test_press_lift_px_range: normalizeRange(
+      source.test_press_lift_px_range,
+      DEFAULT_SCHEMA.test_press_lift_px_range,
+    ),
+    test_smoothing_percent_range: normalizeRange(
+      source.test_smoothing_percent_range,
+      DEFAULT_SCHEMA.test_smoothing_percent_range,
+    ),
     test_click_streak_break_ms_range: normalizeRange(
       source.test_click_streak_break_ms_range,
       DEFAULT_SCHEMA.test_click_streak_break_ms_range,
@@ -211,7 +207,10 @@ function normalizeState(value) {
     action_library_path: actionLibraryPath || DEFAULT_STATE.action_library_path,
     appearance_profile_path: appearanceProfilePath || DEFAULT_STATE.appearance_profile_path,
     position_mode:
-      positionMode === 'follow' || positionMode === 'fixed_bottom_left'
+      positionMode === 'relative' ||
+      positionMode === 'absolute' ||
+      positionMode === 'follow' ||
+      positionMode === 'fixed_bottom_left'
         ? positionMode
         : DEFAULT_STATE.position_mode,
     edge_clamp_mode:
@@ -221,6 +220,9 @@ function normalizeState(value) {
     size_px: clampInt(source.size_px, 48, 360, DEFAULT_STATE.size_px),
     offset_x: clampInt(source.offset_x, -1200, 1200, DEFAULT_STATE.offset_x),
     offset_y: clampInt(source.offset_y, -1200, 1200, DEFAULT_STATE.offset_y),
+    absolute_x: clampInt(source.absolute_x, -20000, 20000, DEFAULT_STATE.absolute_x),
+    absolute_y: clampInt(source.absolute_y, -20000, 20000, DEFAULT_STATE.absolute_y),
+    target_monitor: `${source.target_monitor ?? ''}`.trim().toLowerCase() || DEFAULT_STATE.target_monitor,
     press_lift_px: clampInt(source.press_lift_px, 0, 240, DEFAULT_STATE.press_lift_px),
     smoothing_percent: clampInt(source.smoothing_percent, 0, 95, DEFAULT_STATE.smoothing_percent),
     follow_threshold_px: clampInt(source.follow_threshold_px, 0, 32, DEFAULT_STATE.follow_threshold_px),
@@ -232,12 +234,7 @@ function normalizeState(value) {
       DEFAULT_STATE.click_streak_break_ms,
     ),
     head_tint_per_click: prodTintPerClick,
-    head_tint_max: clampNumber(
-      source.head_tint_max,
-      prodTintPerClick,
-      1.0,
-      DEFAULT_STATE.head_tint_max,
-    ),
+    head_tint_max: clampNumber(source.head_tint_max, prodTintPerClick, 1.0, DEFAULT_STATE.head_tint_max),
     head_tint_decay_per_second: clampNumber(
       source.head_tint_decay_per_second,
       0.05,
@@ -246,7 +243,12 @@ function normalizeState(value) {
     ),
     use_test_profile: !!source.use_test_profile,
     test_press_lift_px: clampInt(source.test_press_lift_px, 0, 320, DEFAULT_STATE.test_press_lift_px),
-    test_smoothing_percent: clampInt(source.test_smoothing_percent, 0, 95, DEFAULT_STATE.test_smoothing_percent),
+    test_smoothing_percent: clampInt(
+      source.test_smoothing_percent,
+      0,
+      95,
+      DEFAULT_STATE.test_smoothing_percent,
+    ),
     test_click_streak_break_ms: clampInt(
       source.test_click_streak_break_ms,
       120,
@@ -269,45 +271,38 @@ function normalizeState(value) {
   };
 }
 
-function normalizeRuntimeState(value) {
-  return normalizeMouseCompanionRuntimeState(value);
+function readChecked(id, fallback) {
+  const node = byId(id);
+  return node ? !!node.checked : !!fallback;
 }
 
-function readChecked(id) {
+function readText(id, fallback) {
   const node = byId(id);
-  return !!(node && node.checked);
+  return node ? `${node.value || ''}`.trim() : `${fallback ?? ''}`;
 }
 
 function readNumber(id, fallback) {
   const node = byId(id);
-  if (!node) {
-    return fallback;
-  }
-  return clampInt(node.value, -20000, 20000, fallback);
+  return node ? clampInt(node.value, -20000, 20000, fallback) : fallback;
 }
 
 function readFloat(id, fallback) {
   const node = byId(id);
-  if (!node) {
-    return fallback;
-  }
-  return clampNumber(node.value, -20000, 20000, fallback);
+  return node ? clampNumber(node.value, -20000, 20000, fallback) : fallback;
 }
 
 function writeChecked(id, value) {
   const node = byId(id);
-  if (!node) {
-    return;
+  if (node) {
+    node.checked = !!value;
   }
-  node.checked = !!value;
 }
 
 function writeInputValue(id, value) {
   const node = byId(id);
-  if (!node) {
-    return;
+  if (node) {
+    node.value = `${value ?? ''}`;
   }
-  node.value = `${value ?? ''}`;
 }
 
 function applyRange(inputId, range) {
@@ -319,25 +314,6 @@ function applyRange(inputId, range) {
   node.max = `${range.max}`;
   node.step = `${range.step}`;
 }
-
-const probeController = createMouseCompanionProbeController({
-  byId,
-  clampInt,
-  resolveApiPost: () => {
-    const core = window.MfxAppCore;
-    if (!core || typeof core.apiPost !== 'function') {
-      return null;
-    }
-    return core.apiPost.bind(core);
-  },
-  normalizeRuntimeState,
-  normalizeProbeRuntimeResponse: normalizeMouseCompanionProbeRuntimeResponse,
-  onRuntimeState: (runtimeState) => {
-    latestRuntimeState = runtimeState;
-    writeRuntimeToDom(latestRuntimeState);
-  },
-  getRuntimeState: () => latestRuntimeState,
-});
 
 function applySelectOptions(selectId, options, selected, fallbackValue, fallbackOptions) {
   const node = byId(selectId);
@@ -362,45 +338,18 @@ function applySelectOptions(selectId, options, selected, fallbackValue, fallback
   node.value = selectedValue || `${fallbackValue ?? ''}`;
 }
 
-function syncTestFieldState() {
-  const useTestProfile = readChecked('mc_use_test_profile');
-  const testPressLift = byId('mc_test_press_lift_px');
-  const testSmoothing = byId('mc_test_smoothing_percent');
-  const testClickStreakBreak = byId('mc_test_click_streak_break_ms');
-  const testHeadTintPerClick = byId('mc_test_head_tint_per_click');
-  const testHeadTintMax = byId('mc_test_head_tint_max');
-  const testHeadTintDecayPerSecond = byId('mc_test_head_tint_decay_per_second');
-  if (testPressLift) {
-    testPressLift.disabled = !useTestProfile;
+function syncEnabledText() {
+  const enabled = readChecked('mc_enabled', latestState.enabled);
+  const textNode = byId('mc_enabled_text');
+  if (!textNode) {
+    return;
   }
-  if (testSmoothing) {
-    testSmoothing.disabled = !useTestProfile;
-  }
-  if (testClickStreakBreak) {
-    testClickStreakBreak.disabled = !useTestProfile;
-  }
-  if (testHeadTintPerClick) {
-    testHeadTintPerClick.disabled = !useTestProfile;
-  }
-  if (testHeadTintMax) {
-    testHeadTintMax.disabled = !useTestProfile;
-  }
-  if (testHeadTintDecayPerSecond) {
-    testHeadTintDecayPerSecond.disabled = !useTestProfile;
-  }
-
-  const textNode = byId('mc_use_test_profile_text');
-  if (textNode) {
-    textNode.setAttribute(
-      'data-i18n',
-      useTestProfile ? 'text_mouse_companion_test_on' : 'text_mouse_companion_test_off',
-    );
-    textNode.textContent = useTestProfile ? 'Testing' : 'Production';
-  }
+  textNode.setAttribute('data-i18n', enabled ? 'text_mouse_companion_on' : 'text_mouse_companion_off');
+  textNode.textContent = enabled ? 'Enabled' : 'Disabled';
 }
 
 function syncFacePointerText() {
-  const enabled = readChecked('mc_face_pointer_enabled');
+  const enabled = readChecked('mc_face_pointer_enabled', latestState.face_pointer_enabled);
   const textNode = byId('mc_face_pointer_enabled_text');
   if (!textNode) {
     return;
@@ -412,22 +361,46 @@ function syncFacePointerText() {
   textNode.textContent = enabled ? 'Enabled' : 'Disabled';
 }
 
-function syncEnabledText() {
-  const enabled = readChecked('mc_enabled');
-  const textNode = byId('mc_enabled_text');
-  if (!textNode) {
-    return;
-  }
-  textNode.setAttribute('data-i18n', enabled ? 'text_mouse_companion_on' : 'text_mouse_companion_off');
-  textNode.textContent = enabled ? 'Enabled' : 'Disabled';
+function isRelativePositionMode(mode) {
+  return mode === 'relative' || mode === 'follow';
 }
 
-function writeRuntimeToDom(runtimeState) {
-  writeMouseCompanionRuntimeStateToDom(
-    runtimeState,
-    byId,
-    MOUSE_COMPANION_DEFAULT_RUNTIME_STATE,
-  );
+function isAbsolutePositionMode(mode) {
+  return mode === 'absolute';
+}
+
+function syncPositionFieldState() {
+  const positionMode = `${byId('mc_position_mode')?.value || latestState.position_mode || ''}`.trim().toLowerCase();
+  const relativePair = byId('mc_relative_offset_pair');
+  const absolutePair = byId('mc_absolute_pair');
+  const targetMonitor = byId('mc_target_monitor');
+  const relativeActive = isRelativePositionMode(positionMode);
+  const absoluteActive = isAbsolutePositionMode(positionMode);
+
+  if (relativePair) {
+    relativePair.style.opacity = relativeActive ? '1' : '0.45';
+  }
+  for (const id of ['mc_offset_x', 'mc_offset_y']) {
+    const node = byId(id);
+    if (node) {
+      node.disabled = !relativeActive;
+    }
+  }
+
+  if (absolutePair) {
+    absolutePair.style.opacity = absoluteActive ? '1' : '0.45';
+  }
+  for (const id of ['mc_absolute_x', 'mc_absolute_y']) {
+    const node = byId(id);
+    if (node) {
+      node.disabled = !absoluteActive;
+    }
+  }
+
+  if (targetMonitor) {
+    targetMonitor.disabled = !absoluteActive;
+    targetMonitor.style.opacity = absoluteActive ? '1' : '0.45';
+  }
 }
 
 function mountIfNeeded() {
@@ -445,17 +418,14 @@ function mountIfNeeded() {
   if (enabledToggle) {
     enabledToggle.addEventListener('change', syncEnabledText);
   }
-  const testToggle = byId('mc_use_test_profile');
-  if (testToggle) {
-    testToggle.addEventListener('change', syncTestFieldState);
-  }
   const facePointerToggle = byId('mc_face_pointer_enabled');
   if (facePointerToggle) {
     facePointerToggle.addEventListener('change', syncFacePointerText);
   }
-  tabController.bindTabActions();
-  probeController.bindProbeActions();
-  tabController.syncTabUi();
+  const positionMode = byId('mc_position_mode');
+  if (positionMode) {
+    positionMode.addEventListener('change', syncPositionFieldState);
+  }
 
   mount.dataset.mfxMouseCompanionMounted = '1';
   return mount;
@@ -464,18 +434,22 @@ function mountIfNeeded() {
 function readFromDom() {
   const draft = {};
   for (const field of MOUSE_COMPANION_CHECKBOX_FIELDS) {
-    draft[field.key] = readChecked(field.id);
+    draft[field.key] = readChecked(field.id, latestState[field.key] ?? DEFAULT_STATE[field.key]);
   }
   for (const field of MOUSE_COMPANION_TEXT_FIELDS) {
-    draft[field.key] = `${byId(field.id)?.value || ''}`.trim();
+    draft[field.key] = readText(field.id, latestState[field.key] ?? DEFAULT_STATE[field.key]);
   }
   for (const field of MOUSE_COMPANION_NUMBER_FIELDS) {
-    draft[field.key] = readNumber(field.id, DEFAULT_STATE[field.key]);
+    draft[field.key] = readNumber(field.id, latestState[field.key] ?? DEFAULT_STATE[field.key]);
   }
   for (const field of MOUSE_COMPANION_FLOAT_FIELDS) {
-    draft[field.key] = readFloat(field.id, DEFAULT_STATE[field.key]);
+    draft[field.key] = readFloat(field.id, latestState[field.key] ?? DEFAULT_STATE[field.key]);
   }
-  draft.edge_clamp_mode = `${byId('mc_edge_clamp_mode')?.value || ''}`.trim();
+
+  draft.position_mode = readText('mc_position_mode', latestState.position_mode ?? DEFAULT_STATE.position_mode);
+  draft.target_monitor = readText('mc_target_monitor', latestState.target_monitor ?? DEFAULT_STATE.target_monitor);
+  draft.edge_clamp_mode = readText('mc_edge_clamp_mode', latestState.edge_clamp_mode ?? DEFAULT_STATE.edge_clamp_mode);
+
   return normalizeState(draft);
 }
 
@@ -492,12 +466,20 @@ function writeToDom(state, schema) {
   for (const field of MOUSE_COMPANION_FLOAT_FIELDS) {
     writeInputValue(field.id, state[field.key]);
   }
+
   applySelectOptions(
     'mc_position_mode',
     schema.position_modes,
     state.position_mode,
     DEFAULT_STATE.position_mode,
     DEFAULT_SCHEMA.position_modes,
+  );
+  applySelectOptions(
+    'mc_target_monitor',
+    schema.target_monitor_options,
+    state.target_monitor,
+    DEFAULT_STATE.target_monitor,
+    DEFAULT_SCHEMA.target_monitor_options,
   );
   applySelectOptions(
     'mc_edge_clamp_mode',
@@ -510,25 +492,26 @@ function writeToDom(state, schema) {
   for (const binding of MOUSE_COMPANION_RANGE_BINDINGS) {
     applyRange(binding.id, schema[binding.schemaKey]);
   }
-  probeController.writeProbeInput();
-  probeController.restoreProbeResult();
 
   syncEnabledText();
   syncFacePointerText();
-  syncTestFieldState();
-  tabController.syncTabUi();
+  syncPositionFieldState();
 }
 
 function render(payload) {
-  latestSchema = normalizeSchema(payload?.schema?.mouse_companion || payload?.schema || {});
+  const rootSchema = payload?.schema || {};
+  const companionSchema = rootSchema.mouse_companion || rootSchema || {};
+  latestSchema = normalizeSchema({
+    ...companionSchema,
+    target_monitor_options: rootSchema.target_monitor_options ?? companionSchema.target_monitor_options,
+    monitors: rootSchema.monitors ?? companionSchema.monitors,
+  });
   latestState = normalizeState(payload?.state?.mouse_companion || payload?.state || {});
-  latestRuntimeState = normalizeRuntimeState(payload?.state?.mouse_companion_runtime || {});
   const mount = mountIfNeeded();
   if (!mount) {
     return;
   }
   writeToDom(latestState, latestSchema);
-  writeRuntimeToDom(latestRuntimeState);
 }
 
 function read() {

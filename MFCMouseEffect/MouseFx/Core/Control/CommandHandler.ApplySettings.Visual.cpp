@@ -273,6 +273,11 @@ void ApplyMouseCompanionSettings(const json& payload, AppController* controller)
     applyInt("size_px", &companion.sizePx);
     applyInt("offset_x", &companion.offsetX);
     applyInt("offset_y", &companion.offsetY);
+    applyInt("absolute_x", &companion.absoluteX);
+    applyInt("absolute_y", &companion.absoluteY);
+    if (source.contains("target_monitor") && source["target_monitor"].is_string()) {
+        companion.targetMonitor = source["target_monitor"].get<std::string>();
+    }
     applyInt("press_lift_px", &companion.pressLiftPx);
     applyInt("smoothing_percent", &companion.smoothingPercent);
     applyInt("follow_threshold_px", &companion.followThresholdPx);

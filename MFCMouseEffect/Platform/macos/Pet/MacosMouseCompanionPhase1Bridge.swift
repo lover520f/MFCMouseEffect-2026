@@ -1,4 +1,5 @@
 @preconcurrency import AppKit
+@preconcurrency import ApplicationServices
 @preconcurrency import Foundation
 @preconcurrency import QuartzCore
 @preconcurrency import SceneKit
@@ -23,9 +24,18 @@ private enum MfxPoseBindingBone: Int {
 }
 
 private enum MfxMouseCompanionPositionMode: Int32 {
-    case follow = 0
-    case fixedBottomLeft = 1
+    case relative = 0
+    case absolute = 1
+    case fixedBottomLeftLegacy = 2
 }
+
+private enum MfxMouseCompanionEdgeClampMode: Int32 {
+    case strict = 0
+    case soft = 1
+    case free = 2
+}
+
+private let mfxPetScreenNumberKey = NSDeviceDescriptionKey("NSScreenNumber")
 
 private struct MfxActionKeyframe {
     let t: CGFloat
@@ -581,19 +591,30 @@ private final class MfxMouseCompanionPanelView: NSView {
 }
 
 @MainActor
+private final class MfxMouseCompanionPanelWindow: NSPanel {
+    override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
+        frameRect
+    }
+}
+
+@MainActor
 private final class MfxMouseCompanionPanelHandle: NSObject {
-    private let panel: NSPanel
+    private let panel: MfxMouseCompanionPanelWindow
     private let contentView: NSView
     private let companionView: MfxMouseCompanionPanelView
     private let sceneView: SCNView
     private let sceneRootNode = SCNNode()
     private let sceneCameraNode = SCNNode()
-    private let targetPetSizePx: CGFloat
+    private var targetPetSizePx: CGFloat
     private var panelCanvasSize: CGSize
     private let baseCameraPosition = SCNVector3(x: 0.0, y: 0.24, z: 3.2)
-    private var positionMode: MfxMouseCompanionPositionMode = .fixedBottomLeft
+    private var positionMode: MfxMouseCompanionPositionMode = .fixedBottomLeftLegacy
+    private var edgeClampMode: MfxMouseCompanionEdgeClampMode = .soft
     private var offsetX: CGFloat
     private var offsetY: CGFloat
+    private var absoluteX: CGFloat = 40.0
+    private var absoluteY: CGFloat = 40.0
+    private var targetMonitor: String = "cursor"
     private var modelNode: SCNNode?
     private var modelLoaded = false
     private var boneNodesByName: [String: [SCNNode]] = [:]
@@ -613,6 +634,7 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
     private var modelBaseScale: CGFloat = 1.0
     private var modelBasePosition = SCNVector3Zero
     private let modelFacingYaw: CGFloat = .pi
+    private let defaultPetReferenceSizePx: CGFloat = 112.0
     private var pointerNormalizedX: CGFloat = 0.0
     private var lastModelActionCode: Int32 = -1
     private var modelBobTime: CGFloat = 0.0
@@ -623,6 +645,7 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
     private var continuousActionKey: String?
     private var continuousActionElapsed: CGFloat = 0.0
     private var pendingInitialPanelFit = false
+    private var pendingRuntimePanelRefitPasses = 0
     private var modelFrameTimer: Timer?
     private var currentActionCode: Int32 = MfxMouseCompanionActionCode.idle.rawValue
     private var currentActionIntensity: Float = 0.0
@@ -632,7 +655,7 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         let side = CGFloat(max(96, sizePx))
         targetPetSizePx = side
         panelCanvasSize = CGSize(width: side, height: side)
-        panel = NSPanel(
+        panel = MfxMouseCompanionPanelWindow(
             contentRect: NSRect(x: 0, y: 0, width: side, height: side),
             styleMask: .borderless,
             backing: .buffered,
@@ -648,13 +671,6 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         contentView = NSView(frame: NSRect(x: 0, y: 0, width: side, height: side))
         contentView.wantsLayer = true
         contentView.layer?.backgroundColor = NSColor.clear.cgColor
-        contentView.layer?.borderWidth = 2.0
-        contentView.layer?.borderColor = NSColor(
-            calibratedRed: 0.12,
-            green: 0.68,
-            blue: 1.0,
-            alpha: 0.92).cgColor
-        contentView.layer?.cornerRadius = 6.0
 
         companionView = MfxMouseCompanionPanelView(frame: NSRect(x: 0, y: 0, width: side, height: side))
         companionView.wantsLayer = true
@@ -707,9 +723,7 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
     }
 
     func show() {
-        if positionMode == .fixedBottomLeft {
-            setFixedBottomLeftOrigin()
-        }
+        applyCurrentPosition()
         panel.orderFrontRegardless()
     }
 
@@ -726,13 +740,39 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         panel.close()
     }
 
-    func configure(positionModeCode: Int32, offsetX: Int32, offsetY: Int32) {
-        positionMode = MfxMouseCompanionPositionMode(rawValue: positionModeCode) ?? .fixedBottomLeft
+    func configure(
+        sizePx: Int32,
+        positionModeCode: Int32,
+        edgeClampModeCode: Int32,
+        offsetX: Int32,
+        offsetY: Int32,
+        absoluteX: Int32,
+        absoluteY: Int32,
+        targetMonitor: String
+    ) {
+        let resolvedSize = CGFloat(max(96, Int(sizePx)))
+        let sizeChanged = abs(resolvedSize - targetPetSizePx) >= 0.5
+        targetPetSizePx = resolvedSize
+        positionMode = MfxMouseCompanionPositionMode(rawValue: positionModeCode) ?? .fixedBottomLeftLegacy
+        edgeClampMode = MfxMouseCompanionEdgeClampMode(rawValue: edgeClampModeCode) ?? .soft
         self.offsetX = CGFloat(offsetX)
         self.offsetY = CGFloat(offsetY)
-        if positionMode == .fixedBottomLeft {
-            setFixedBottomLeftOrigin()
+        self.absoluteX = CGFloat(absoluteX)
+        self.absoluteY = CGFloat(absoluteY)
+        self.targetMonitor = targetMonitor.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if sizeChanged {
+            if modelLoaded {
+                resizePanelCanvasIfNeeded(CGSize(width: targetPetSizePx, height: targetPetSizePx))
+                normalizeModelTransform()
+                if !fitCanvasToModel(preferSnapshot: false, usePresentation: false) {
+                    resizePanelCanvasIfNeeded(CGSize(width: targetPetSizePx, height: targetPetSizePx))
+                }
+                pendingRuntimePanelRefitPasses = 2
+            } else {
+                resizePanelCanvasIfNeeded(CGSize(width: targetPetSizePx, height: targetPetSizePx))
+            }
         }
+        applyCurrentPosition()
     }
 
     func update(actionCode: Int32, actionIntensity: Float, headTintAmount: Float) {
@@ -1216,13 +1256,29 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         let normalizedX = ((CGFloat(cursorX) - desktop.minX) / width) * 2.0 - 1.0
         pointerNormalizedX = mfxClamp(normalizedX, min: -1.0, max: 1.0)
         companionView.updatePointerNormalizedX(pointerNormalizedX)
-        if positionMode != .follow {
+        if positionMode != .relative {
             return
         }
+        let cursor = NSEvent.mouseLocation
         let desired = NSPoint(
-            x: CGFloat(cursorX) - panel.frame.width * 0.52 + offsetX,
-            y: CGFloat(cursorY) - panel.frame.height * 0.48 + offsetY)
-        panel.setFrameOrigin(clampToDesktop(desired))
+            x: cursor.x - panel.frame.width * 0.52 + offsetX,
+            y: cursor.y - panel.frame.height * 0.48 + offsetY)
+        panel.setFrameOrigin(applyEdgeClamp(to: desired))
+    }
+
+    private func applyCurrentPosition() {
+        switch positionMode {
+        case .relative:
+            let cursor = NSEvent.mouseLocation
+            let desired = NSPoint(
+                x: cursor.x - panel.frame.width * 0.52 + offsetX,
+                y: cursor.y - panel.frame.height * 0.48 + offsetY)
+            panel.setFrameOrigin(applyEdgeClamp(to: desired))
+        case .absolute:
+            setAbsoluteOrigin()
+        case .fixedBottomLeftLegacy:
+            setFixedBottomLeftOrigin()
+        }
     }
 
     private func setFixedBottomLeftOrigin() {
@@ -1230,7 +1286,48 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         let desired = NSPoint(
             x: desktop.minX + offsetX,
             y: desktop.minY + offsetY)
-        panel.setFrameOrigin(clampToDesktop(desired))
+        panel.setFrameOrigin(applyEdgeClamp(to: desired))
+    }
+
+    private func setAbsoluteOrigin() {
+        let screen = resolveTargetScreen() ?? NSScreen.main
+        let desktop = resolveDesktopBounds()
+        let targetFrame = screen?.frame ?? desktop
+        let desired = NSPoint(
+            x: targetFrame.minX + absoluteX,
+            y: targetFrame.maxY - absoluteY - panel.frame.height)
+        panel.setFrameOrigin(applyEdgeClamp(to: desired))
+    }
+
+    private func resolveTargetScreen() -> NSScreen? {
+        let normalizedTarget = targetMonitor.isEmpty ? "cursor" : targetMonitor
+        let screens = NSScreen.screens
+        guard !screens.isEmpty else {
+            return nil
+        }
+        if normalizedTarget == "primary" {
+            let mainId = CGMainDisplayID()
+            return screens.first(where: { screen in
+                guard let screenNumber = screen.deviceDescription[mfxPetScreenNumberKey] as? NSNumber else {
+                    return false
+                }
+                return CGDirectDisplayID(screenNumber.uint32Value) == mainId
+            }) ?? screens.first
+        }
+        if normalizedTarget == "cursor" || normalizedTarget == "custom" {
+            let cursor = NSEvent.mouseLocation
+            return screens.first(where: { $0.frame.contains(cursor) }) ?? screens.first
+        }
+        if let exact = screens.first(where: { screen in
+            guard let screenNumber = screen.deviceDescription[mfxPetScreenNumberKey] as? NSNumber else {
+                return false
+            }
+            let rawId = String(screenNumber.uint32Value)
+            return normalizedTarget == rawId || normalizedTarget == "monitor_\(rawId)"
+        }) {
+            return exact
+        }
+        return screens.first
     }
 
     private func resolveDesktopBounds() -> NSRect {
@@ -1245,14 +1342,33 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         return union
     }
 
-    private func clampToDesktop(_ origin: NSPoint) -> NSPoint {
+    private func applyEdgeClamp(to origin: NSPoint, panelSize: CGSize? = nil) -> NSPoint {
+        switch edgeClampMode {
+        case .free:
+            return origin
+        case .strict:
+            return clampToDesktop(origin, visibleRatio: 1.0, minimumVisiblePx: 0.0, panelSize: panelSize)
+        case .soft:
+            return clampToDesktop(origin, visibleRatio: 0.40, minimumVisiblePx: 48.0, panelSize: panelSize)
+        }
+    }
+
+    private func clampToDesktop(
+        _ origin: NSPoint,
+        visibleRatio: CGFloat,
+        minimumVisiblePx: CGFloat,
+        panelSize: CGSize? = nil
+    ) -> NSPoint {
         let desktop = resolveDesktopBounds()
-        let width = panel.frame.width
-        let height = panel.frame.height
-        let minX = desktop.minX
-        let minY = desktop.minY
-        let maxX = max(minX, desktop.maxX - width)
-        let maxY = max(minY, desktop.maxY - height)
+        let size = panelSize ?? panel.frame.size
+        let width = size.width
+        let height = size.height
+        let requiredVisibleX = min(width, max(minimumVisiblePx, width * visibleRatio))
+        let requiredVisibleY = min(height, max(minimumVisiblePx, height * visibleRatio))
+        let minX = desktop.minX - width + requiredVisibleX
+        let minY = desktop.minY - height + requiredVisibleY
+        let maxX = desktop.maxX - requiredVisibleX
+        let maxY = desktop.maxY - requiredVisibleY
         return NSPoint(
             x: min(max(origin.x, minX), maxX),
             y: min(max(origin.y, minY), maxY))
@@ -1269,8 +1385,17 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
 
         let oldFrame = panel.frame
         let newOrigin: NSPoint
-        if positionMode == .fixedBottomLeft {
-            newOrigin = oldFrame.origin
+        if positionMode == .fixedBottomLeftLegacy {
+            newOrigin = NSPoint(
+                x: resolveDesktopBounds().minX + offsetX,
+                y: resolveDesktopBounds().minY + offsetY)
+        } else if positionMode == .absolute {
+            let screen = resolveTargetScreen() ?? NSScreen.main
+            let desktop = resolveDesktopBounds()
+            let targetFrame = screen?.frame ?? desktop
+            newOrigin = NSPoint(
+                x: targetFrame.minX + absoluteX,
+                y: targetFrame.maxY - absoluteY - snapped.height)
         } else {
             newOrigin = NSPoint(
                 x: oldFrame.midX - snapped.width * 0.5,
@@ -1280,7 +1405,9 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         panelCanvasSize = snapped
         updateCameraForCurrentCanvas()
         let bounds = NSRect(origin: .zero, size: snapped)
-        panel.setFrame(NSRect(origin: clampToDesktop(newOrigin), size: snapped), display: true)
+        panel.setFrame(
+            NSRect(origin: applyEdgeClamp(to: newOrigin, panelSize: snapped), size: snapped),
+            display: true)
         contentView.frame = bounds
         sceneView.frame = bounds
         companionView.frame = bounds
@@ -1329,6 +1456,10 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         if pendingInitialPanelFit {
             fitCanvasToModel()
             pendingInitialPanelFit = false
+        }
+        if pendingRuntimePanelRefitPasses > 0 {
+            fitCanvasToModel()
+            pendingRuntimePanelRefitPasses -= 1
         }
     }
 
@@ -2000,7 +2131,8 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
             return
         }
 
-        modelBaseScale = min(10.0, max(0.02, 0.70 / maxDim))
+        let targetSizeScale = max(0.20, targetPetSizePx / max(1.0, defaultPetReferenceSizePx))
+        modelBaseScale = min(10.0, max(0.02, (0.70 * targetSizeScale) / maxDim))
         modelNode.scale = SCNVector3(x: modelBaseScale, y: modelBaseScale, z: modelBaseScale)
         let cx = (minV.x + maxV.x) * 0.5
         let cy = (minV.y + maxV.y) * 0.5
@@ -2014,20 +2146,33 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         modelNode.eulerAngles = SCNVector3(x: 0.0, y: modelFacingYaw, z: 0.0)
     }
 
-    private func fitCanvasToModel() {
+    @discardableResult
+    private func fitCanvasToModel(
+        preferSnapshot: Bool = true,
+        usePresentation: Bool = true
+    ) -> Bool {
         guard let modelNode,
-              let measured = measuredRenderableBounds(for: modelNode) else {
-            return
+              let measured = measuredRenderableBounds(
+                for: modelNode,
+                preferSnapshot: preferSnapshot,
+                usePresentation: usePresentation)
+        else {
+            return false
         }
         resizePanelCanvasIfNeeded(
             CGSize(
                 width: measured.width * 1.5,
                 height: measured.height * 3.0))
-        recenterModelInCanvas(modelNode)
+        recenterModelInCanvas(modelNode, usePresentation: usePresentation)
+        return true
     }
 
-    private func recenterModelInCanvas(_ node: SCNNode) {
-        guard let projected = measuredRenderableBounds(for: node) else {
+    private func recenterModelInCanvas(_ node: SCNNode, usePresentation: Bool = true) {
+        guard let projected = measuredRenderableBounds(
+            for: node,
+            preferSnapshot: false,
+            usePresentation: usePresentation)
+        else {
             return
         }
         let deltaX = panelCanvasSize.width * 0.5 - projected.midX
@@ -2036,7 +2181,8 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
             return
         }
 
-        let anchor = sceneView.projectPoint(node.presentation.position)
+        let anchorPosition = usePresentation ? node.presentation.position : node.position
+        let anchor = sceneView.projectPoint(anchorPosition)
         let shifted = SCNVector3(
             x: anchor.x + deltaX,
             y: anchor.y - deltaY,
@@ -2049,14 +2195,18 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         modelBasePosition = node.position
     }
 
-    private func measuredRenderableBounds(for root: SCNNode) -> CGRect? {
-        if let snapshot = snapshotVisibleBounds() {
+    private func measuredRenderableBounds(
+        for root: SCNNode,
+        preferSnapshot: Bool = true,
+        usePresentation: Bool = true
+    ) -> CGRect? {
+        if preferSnapshot, let snapshot = snapshotVisibleBounds() {
             return snapshot
         }
-        return projectedRenderableBounds(for: root)
+        return projectedRenderableBounds(for: root, usePresentation: usePresentation)
     }
 
-    private func projectedRenderableBounds(for root: SCNNode) -> CGRect? {
+    private func projectedRenderableBounds(for root: SCNNode, usePresentation: Bool = true) -> CGRect? {
         sceneView.layoutSubtreeIfNeeded()
         var minX = CGFloat.greatestFiniteMagnitude
         var minY = CGFloat.greatestFiniteMagnitude
@@ -2080,7 +2230,9 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
                 SCNVector3(localMax.x, localMax.y, localMax.z),
             ]
             for corner in corners {
-                let world = node.presentation.convertPosition(corner, to: nil)
+                let world = usePresentation
+                    ? node.presentation.convertPosition(corner, to: nil)
+                    : node.convertPosition(corner, to: nil)
                 let projected = sceneView.projectPoint(world)
                 minX = min(minX, projected.x)
                 minY = min(minY, projected.y)
@@ -2100,15 +2252,9 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
 
     private func snapshotVisibleBounds() -> CGRect? {
         sceneView.layoutSubtreeIfNeeded()
-        let originalBackground = sceneView.backgroundColor
-        let chroma = NSColor(
-            calibratedRed: 1.0,
-            green: 0.0,
-            blue: 1.0,
-            alpha: 1.0)
-        sceneView.backgroundColor = chroma
+        sceneView.needsDisplay = true
+        sceneView.displayIfNeeded()
         let image = sceneView.snapshot()
-        sceneView.backgroundColor = originalBackground
 
         guard let tiffData = image.tiffRepresentation,
               let bitmap = NSBitmapImageRep(data: tiffData) else {
@@ -2133,13 +2279,6 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
                     continue
                 }
                 if color.alphaComponent < 0.05 {
-                    continue
-                }
-                let distance =
-                    abs(color.redComponent - 1.0) +
-                    abs(color.greenComponent - 0.0) +
-                    abs(color.blueComponent - 1.0)
-                if distance < 0.15 {
                     continue
                 }
                 if x < minX { minX = x }
@@ -2600,19 +2739,33 @@ public func mfx_macos_mouse_companion_panel_hide_v1(_ panelHandle: UnsafeMutable
 @_cdecl("mfx_macos_mouse_companion_panel_configure_v1")
 public func mfx_macos_mouse_companion_panel_configure_v1(
     _ panelHandle: UnsafeMutableRawPointer?,
+    _ sizePx: Int32,
     _ positionModeCode: Int32,
+    _ edgeClampModeCode: Int32,
     _ offsetX: Int32,
-    _ offsetY: Int32
+    _ offsetY: Int32,
+    _ absoluteX: Int32,
+    _ absoluteY: Int32,
+    _ targetMonitorUtf8: UnsafePointer<CChar>?
 ) {
     let panelHandleBits = UInt(bitPattern: panelHandle)
     if panelHandleBits == 0 {
         return
     }
+    let targetMonitor = targetMonitorUtf8.map { String(cString: $0) } ?? "cursor"
 
     DispatchQueue.main.async {
         MainActor.assumeIsolated {
             mfxWithMouseCompanionPanelHandle(panelHandleBits) { handle in
-                handle.configure(positionModeCode: positionModeCode, offsetX: offsetX, offsetY: offsetY)
+                handle.configure(
+                    sizePx: sizePx,
+                    positionModeCode: positionModeCode,
+                    edgeClampModeCode: edgeClampModeCode,
+                    offsetX: offsetX,
+                    offsetY: offsetY,
+                    absoluteX: absoluteX,
+                    absoluteY: absoluteY,
+                    targetMonitor: targetMonitor)
             }
         }
     }

@@ -1,6 +1,6 @@
 # AI Context Map
 
-Generated: 2026-03-19T14:45:12.396Z
+Generated: 2026-03-20T02:22:05.885Z
 
 ## Goal
 Load minimal docs by task keyword while keeping AGENTS + current context as mandatory baseline.
@@ -27,6 +27,9 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 - `docs/architecture/mouse-companion-action-clip-contract.zh-CN.md` (P2, 750 tok)
 - `docs/architecture/mouse-companion-procedural-effect-profile-contract.zh-CN.md` (P2, 750 tok)
 
+### input-indicator
+- `docs/architecture/mouse-companion-position-mode-contract.zh-CN.md` (P2, 750 tok)
+
 ### workflow
 - `AGENTS.md` (P0, 1500 tok)
 - `docs/architecture/posix-core-lane-smoke-workflow.md` (P2, 435 tok)
@@ -50,9 +53,9 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 - `docs/architecture/custom-effects-wasm-route.zh-CN.md` -> ~6872 tok
 - `docs/architecture/custom-effects-wasm-route.md` -> ~6707 tok
 - `docs/refactoring/phase-roadmap-macos-m1-status.md` -> ~5868 tok
-- `docs/agent-context/current.md` -> ~4875 tok
+- `docs/agent-context/current.md` -> ~5433 tok
 - `docs/automation/gesture-matching.md` -> ~4462 tok
-- `docs/architecture/mouse-companion-3d-runtime-blueprint.zh-CN.md` -> ~3768 tok
+- `docs/architecture/mouse-companion-3d-runtime-blueprint.zh-CN.md` -> ~3937 tok
 - `docs/architecture/mouse-companion-plugin-landing-roadmap.zh-CN.md` -> ~2561 tok
 - `docs/architecture/wasm-plugin-abi-v3-design.md` -> ~2078 tok
 

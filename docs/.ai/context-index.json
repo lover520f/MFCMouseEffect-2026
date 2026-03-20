@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-19T14:45:12.396Z",
+  "generated_at": "2026-03-20T02:22:05.885Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -84,14 +84,14 @@
       ],
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 158,
-      "size_bytes": 19500,
-      "estimated_tokens": 4875,
+      "line_count": 163,
+      "size_bytes": 21732,
+      "estimated_tokens": 5433,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": false,
-      "hash_sha1": "c8783c43bb00a896ced7ffeba2c675879dff805d",
-      "updated_at": "2026-03-19T14:45:04.075Z"
+      "hash_sha1": "e9fbd716fcf732cc1a5810f359607600b4a010d5",
+      "updated_at": "2026-03-20T02:21:51.821Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -248,14 +248,14 @@
       ],
       "summary": "1. 资产层（Import）",
       "when_to_read": "Read only when task keywords match this capability area.",
-      "line_count": 249,
-      "size_bytes": 15072,
-      "estimated_tokens": 3768,
+      "line_count": 250,
+      "size_bytes": 15746,
+      "estimated_tokens": 3937,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "71869327b6d4bbff8162e7ceed69a4693b029bec",
-      "updated_at": "2026-03-17T13:05:46.583Z"
+      "hash_sha1": "72cb460178a3fcbf3e3924853745ba1a418c0cfe",
+      "updated_at": "2026-03-20T02:21:59.962Z"
     },
     {
       "id": "docs/architecture/mouse-companion-action-clip-contract.zh-CN.md",
@@ -480,7 +480,7 @@
       "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-position-mode-contract.zh-CN.md",
       "priority": "P2",
       "role": "architecture",
-      "topic": "general",
+      "topic": "input-indicator",
       "first_read_rank": 0,
       "tags": [
         "mouse",
@@ -490,19 +490,20 @@
         "contract",
         "zh",
         "cn",
+        "indicator",
         "swift",
         "macos"
       ],
-      "summary": "1. 打开 `Mouse Companion -> Follow`，确认可见 `Position Mode` 下拉，默认 `fixed_bottom_left`。",
+      "summary": "1. 打开 `Mouse Companion` 设置面板，确认页面为单面板布局，且不再出现 `Probe / Runtime` 页签。",
       "when_to_read": "Read only when task keywords match this capability area.",
-      "line_count": 41,
-      "size_bytes": 1866,
-      "estimated_tokens": 467,
-      "max_read_tokens": 587,
+      "line_count": 129,
+      "size_bytes": 5059,
+      "estimated_tokens": 1265,
+      "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "78736af2058b0c511b29303c8f4711a0f775a264",
-      "updated_at": "2026-03-18T12:39:19.521Z"
+      "hash_sha1": "5dc23c4172bccfea7d679e88a65f9c19e25dc745",
+      "updated_at": "2026-03-20T01:48:55.994Z"
     },
     {
       "id": "docs/architecture/mouse-companion-procedural-effect-profile-contract.zh-CN.md",

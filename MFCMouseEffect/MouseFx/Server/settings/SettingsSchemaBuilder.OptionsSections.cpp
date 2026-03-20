@@ -54,8 +54,10 @@ void AppendSettingsSchemaOptionsSections(const EffectConfig& config, json* out) 
         {"action_library_path_default", "MFCMouseEffect/Assets/Pet3D/source/pet-actions.json"},
         {"appearance_profile_path_default", "MFCMouseEffect/Assets/Pet3D/source/pet-appearance.json"},
         {"position_modes", json::array({
-            MakeOpt("fixed_bottom_left", L"\u56fa\u5b9a\u5de6\u4e0b\u89d2\uff08\u70b9\u51fb\u8c03\u8bd5\u63a8\u8350\uff09", L"Fixed Bottom Left (Recommended For Click Tuning)", lang),
-            MakeOpt("follow", L"\u8ddf\u968f\u5149\u6807", L"Follow Cursor", lang),
+            MakeOpt("relative", L"\u76f8\u5bf9\u5149\u6807", L"Relative To Cursor", lang),
+            MakeOpt("absolute", L"\u5c4f\u5e55\u7edd\u5bf9\u5750\u6807", L"Absolute Screen Position", lang),
+            MakeOpt("fixed_bottom_left", L"\u56fa\u5b9a\u5de6\u4e0b\u89d2\uff08\u65e7\u914d\u7f6e\u517c\u5bb9\uff09", L"Fixed Bottom Left (Legacy Compatibility)", lang),
+            MakeOpt("follow", L"\u8ddf\u968f\u5149\u6807\uff08\u65e7\u914d\u7f6e\u517c\u5bb9\uff09", L"Follow Cursor (Legacy Compatibility)", lang),
         })},
         {"edge_clamp_modes", json::array({
             MakeOpt("soft", L"\u8f6f\u8fb9\u754c\uff08\u63a8\u8350\uff09", L"Soft Edge (Recommended)", lang),
@@ -64,6 +66,7 @@ void AppendSettingsSchemaOptionsSections(const EffectConfig& config, json* out) 
         })},
         {"size_px_range", {{"min", 48}, {"max", 360}, {"step", 1}}},
         {"offset_range", {{"min", -1200}, {"max", 1200}, {"step", 1}}},
+        {"absolute_range", {{"min", -20000}, {"max", 20000}, {"step", 1}}},
         {"press_lift_px_range", {{"min", 0}, {"max", 240}, {"step", 1}}},
         {"smoothing_percent_range", {{"min", 0}, {"max", 95}, {"step", 1}}},
         {"follow_threshold_px_range", {{"min", 0}, {"max", 32}, {"step", 1}}},
@@ -204,6 +207,15 @@ void AppendSettingsSchemaOptionsSections(const EffectConfig& config, json* out) 
     }
     (*out)["target_monitor_options"] = tmOpts;
     (*out)["monitors"] = monArr;
+    json petTmOpts = json::array();
+    for (const auto& item : tmOpts) {
+        const std::string value = item.value("value", "");
+        if (value == "custom") {
+            continue;
+        }
+        petTmOpts.push_back(item);
+    }
+    (*out)["mouse_companion"]["target_monitor_options"] = petTmOpts;
 
     auto build = [&](const EffectOption* (*fn)(size_t&), const char* key) {
         size_t n = 0;

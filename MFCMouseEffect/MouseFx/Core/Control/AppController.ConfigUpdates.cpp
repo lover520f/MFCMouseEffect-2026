@@ -125,6 +125,9 @@ void AppController::SetMouseCompanionConfig(const MouseCompanionConfig& cfg) {
         config_.mouseCompanion.sizePx == normalized.sizePx &&
         config_.mouseCompanion.offsetX == normalized.offsetX &&
         config_.mouseCompanion.offsetY == normalized.offsetY &&
+        config_.mouseCompanion.absoluteX == normalized.absoluteX &&
+        config_.mouseCompanion.absoluteY == normalized.absoluteY &&
+        config_.mouseCompanion.targetMonitor == normalized.targetMonitor &&
         config_.mouseCompanion.pressLiftPx == normalized.pressLiftPx &&
         config_.mouseCompanion.smoothingPercent == normalized.smoothingPercent &&
         config_.mouseCompanion.followThresholdPx == normalized.followThresholdPx &&

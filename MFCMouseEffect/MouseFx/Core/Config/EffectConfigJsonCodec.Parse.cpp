@@ -107,6 +107,18 @@ void ApplyRootToConfig(const nlohmann::json& root, EffectConfig& config) {
             companion,
             keys::mouse_companion::kOffsetY,
             config.mouseCompanion.offsetY);
+        config.mouseCompanion.absoluteX = parse_internal::GetOr<int>(
+            companion,
+            keys::mouse_companion::kAbsoluteX,
+            config.mouseCompanion.absoluteX);
+        config.mouseCompanion.absoluteY = parse_internal::GetOr<int>(
+            companion,
+            keys::mouse_companion::kAbsoluteY,
+            config.mouseCompanion.absoluteY);
+        config.mouseCompanion.targetMonitor = parse_internal::GetOr<std::string>(
+            companion,
+            keys::mouse_companion::kTargetMonitor,
+            config.mouseCompanion.targetMonitor);
         config.mouseCompanion.pressLiftPx = parse_internal::GetOr<int>(
             companion,
             keys::mouse_companion::kPressLiftPx,

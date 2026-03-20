@@ -151,7 +151,9 @@ MouseCompanionConfig SanitizeMouseCompanionConfig(MouseCompanionConfig config) {
         config.appearanceProfilePath = "MFCMouseEffect/Assets/Pet3D/source/pet-appearance.json";
     }
     config.positionMode = ToLowerAscii(TrimAscii(config.positionMode));
-    if (config.positionMode != "follow" &&
+    if (config.positionMode != "relative" &&
+        config.positionMode != "absolute" &&
+        config.positionMode != "follow" &&
         config.positionMode != "fixed_bottom_left") {
         config.positionMode = "fixed_bottom_left";
     }
@@ -164,6 +166,12 @@ MouseCompanionConfig SanitizeMouseCompanionConfig(MouseCompanionConfig config) {
     config.sizePx = ClampInt(config.sizePx, 48, 360);
     config.offsetX = ClampInt(config.offsetX, -1200, 1200);
     config.offsetY = ClampInt(config.offsetY, -1200, 1200);
+    config.absoluteX = ClampInt(config.absoluteX, -20000, 20000);
+    config.absoluteY = ClampInt(config.absoluteY, -20000, 20000);
+    config.targetMonitor = ToLowerAscii(TrimAscii(config.targetMonitor));
+    if (config.targetMonitor.empty()) {
+        config.targetMonitor = "cursor";
+    }
     config.pressLiftPx = ClampInt(config.pressLiftPx, 0, 240);
     config.smoothingPercent = ClampInt(config.smoothingPercent, 0, 95);
     config.followThresholdPx = ClampInt(config.followThresholdPx, 0, 32);

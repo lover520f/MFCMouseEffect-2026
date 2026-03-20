@@ -743,6 +743,8 @@ MouseCompanionPetRuntimeConfig AppController::BuildMouseCompanionPluginRuntimeCo
     out.sizePx = cfg.sizePx;
     out.offsetX = cfg.offsetX;
     out.offsetY = cfg.offsetY;
+    out.absoluteX = cfg.absoluteX;
+    out.absoluteY = cfg.absoluteY;
     out.pressLiftPx = activeConfig.pressLiftPx;
     out.smoothingPercent = activeConfig.smoothingPercent;
     out.followThresholdPx = activeConfig.followThresholdPx;
@@ -752,6 +754,7 @@ MouseCompanionPetRuntimeConfig AppController::BuildMouseCompanionPluginRuntimeCo
     out.headTintMax = activeConfig.headTintMax;
     out.headTintDecayPerSecond = activeConfig.headTintDecayPerSecond;
     out.positionMode = cfg.positionMode;
+    out.targetMonitor = cfg.targetMonitor;
     out.edgeClampMode = cfg.edgeClampMode;
     return out;
 }

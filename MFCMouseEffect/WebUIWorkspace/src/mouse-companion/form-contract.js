@@ -1,7 +1,3 @@
-export const MOUSE_COMPANION_DEFAULT_ACTIVE_TAB = 'basic';
-
-export const MOUSE_COMPANION_TAB_IDS = ['basic', 'follow', 'probe', 'runtime'];
-
 export const MOUSE_COMPANION_CHECKBOX_FIELDS = [
   { key: 'enabled', id: 'mc_enabled' },
   { key: 'face_pointer_enabled', id: 'mc_face_pointer_enabled' },
@@ -12,13 +8,14 @@ export const MOUSE_COMPANION_TEXT_FIELDS = [
   { key: 'model_path', id: 'mc_model_path' },
   { key: 'action_library_path', id: 'mc_action_library_path' },
   { key: 'appearance_profile_path', id: 'mc_appearance_profile_path' },
-  { key: 'position_mode', id: 'mc_position_mode' },
 ];
 
 export const MOUSE_COMPANION_NUMBER_FIELDS = [
   { key: 'size_px', id: 'mc_size_px' },
   { key: 'offset_x', id: 'mc_offset_x' },
   { key: 'offset_y', id: 'mc_offset_y' },
+  { key: 'absolute_x', id: 'mc_absolute_x' },
+  { key: 'absolute_y', id: 'mc_absolute_y' },
   { key: 'press_lift_px', id: 'mc_press_lift_px' },
   { key: 'smoothing_percent', id: 'mc_smoothing_percent' },
   { key: 'follow_threshold_px', id: 'mc_follow_threshold_px' },
@@ -42,6 +39,8 @@ export const MOUSE_COMPANION_RANGE_BINDINGS = [
   { id: 'mc_size_px', schemaKey: 'size_px_range' },
   { id: 'mc_offset_x', schemaKey: 'offset_range' },
   { id: 'mc_offset_y', schemaKey: 'offset_range' },
+  { id: 'mc_absolute_x', schemaKey: 'absolute_range' },
+  { id: 'mc_absolute_y', schemaKey: 'absolute_range' },
   { id: 'mc_press_lift_px', schemaKey: 'press_lift_px_range' },
   { id: 'mc_smoothing_percent', schemaKey: 'smoothing_percent_range' },
   { id: 'mc_follow_threshold_px', schemaKey: 'follow_threshold_px_range' },

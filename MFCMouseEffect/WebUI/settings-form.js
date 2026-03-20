@@ -200,7 +200,10 @@
       action_library_path: actionLibraryPath || 'MFCMouseEffect/Assets/Pet3D/source/pet-actions.json',
       appearance_profile_path: appearanceProfilePath || 'MFCMouseEffect/Assets/Pet3D/source/pet-appearance.json',
       position_mode:
-        positionMode === 'follow' || positionMode === 'fixed_bottom_left'
+        positionMode === 'relative' ||
+        positionMode === 'absolute' ||
+        positionMode === 'follow' ||
+        positionMode === 'fixed_bottom_left'
           ? positionMode
           : 'fixed_bottom_left',
       edge_clamp_mode:
@@ -210,6 +213,9 @@
       size_px: clamp(source.size_px, 48, 360, 112),
       offset_x: clamp(source.offset_x, -1200, 1200, 18),
       offset_y: clamp(source.offset_y, -1200, 1200, 26),
+      absolute_x: clamp(source.absolute_x, -20000, 20000, 40),
+      absolute_y: clamp(source.absolute_y, -20000, 20000, 40),
+      target_monitor: `${source.target_monitor || ''}`.trim().toLowerCase() || 'cursor',
       press_lift_px: clamp(source.press_lift_px, 0, 240, 24),
       smoothing_percent: clamp(source.smoothing_percent, 0, 95, 68),
       follow_threshold_px: clamp(source.follow_threshold_px, 0, 32, 2),
@@ -490,6 +496,9 @@
         size_px: getNum('mc_size_px'),
         offset_x: getNum('mc_offset_x'),
         offset_y: getNum('mc_offset_y'),
+        absolute_x: getNum('mc_absolute_x'),
+        absolute_y: getNum('mc_absolute_y'),
+        target_monitor: getText('mc_target_monitor') || 'cursor',
         press_lift_px: getNum('mc_press_lift_px'),
         smoothing_percent: getNum('mc_smoothing_percent'),
         follow_threshold_px: getNum('mc_follow_threshold_px'),

@@ -50,6 +50,8 @@ struct MouseCompanionPetRuntimeConfig {
     int sizePx{0};
     int offsetX{0};
     int offsetY{0};
+    int absoluteX{0};
+    int absoluteY{0};
     int pressLiftPx{0};
     int smoothingPercent{0};
     int followThresholdPx{0};
@@ -59,6 +61,7 @@ struct MouseCompanionPetRuntimeConfig {
     float headTintMax{0.0f};
     float headTintDecayPerSecond{0.0f};
     std::string positionMode;
+    std::string targetMonitor;
     std::string edgeClampMode;
 };
 

@@ -193,10 +193,13 @@ int ResolveMouseCompanionEdgeClampModeCode(const std::string& mode) {
 
 int ResolveMouseCompanionPositionModeCode(const std::string& mode) {
     const std::string normalized = ToLowerAscii(TrimAscii(mode));
-    if (normalized == "follow") {
+    if (normalized == "relative" || normalized == "follow") {
         return 0;
     }
-    return 1; // fixed_bottom_left
+    if (normalized == "absolute") {
+        return 1;
+    }
+    return 2; // fixed_bottom_left legacy compatibility
 }
 
 } // namespace
@@ -553,8 +556,8 @@ void AppController::EnsurePetVisualHost() {
             companion.offsetY);
     }
     if (petVisualHostHandle_) {
-        mfx_macos_mouse_companion_panel_show_v1(petVisualHostHandle_);
         ApplyPetVisualFollowProfile();
+        mfx_macos_mouse_companion_panel_show_v1(petVisualHostHandle_);
     }
 #endif
     std::lock_guard<std::mutex> guard(mouseCompanionRuntimeStatusMutex_);
@@ -569,9 +572,14 @@ void AppController::ApplyPetVisualFollowProfile() {
     const MouseCompanionConfig companion = config_internal::SanitizeMouseCompanionConfig(config_.mouseCompanion);
     mfx_macos_mouse_companion_panel_configure_v1(
         petVisualHostHandle_,
+        companion.sizePx,
         ResolveMouseCompanionPositionModeCode(companion.positionMode),
+        ResolveMouseCompanionEdgeClampModeCode(companion.edgeClampMode),
         companion.offsetX,
-        companion.offsetY);
+        companion.offsetY,
+        companion.absoluteX,
+        companion.absoluteY,
+        companion.targetMonitor.c_str());
 #endif
 }
 
