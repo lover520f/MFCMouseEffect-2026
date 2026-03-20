@@ -65,6 +65,18 @@ bool PosixCoreAppShell::Initialize(const AppShellStartOptions& options) {
         return false;
     }
 
+    if (!backgroundMode_ && services_.trayService) {
+        if (!services_.trayService->Start(this, options.showTrayIcon)) {
+            appController_->SetInputCaptureStatusCallback(nullptr);
+            appController_->Stop();
+            appController_.reset();
+            services_.singleInstanceGuard->Release();
+            return false;
+        }
+    } else {
+        StartStdinExitMonitor();
+    }
+
     if (services_.notifier) {
         auto* notifier = services_.notifier.get();
         appController_->SetInputCaptureStatusCallback(
@@ -89,18 +101,6 @@ bool PosixCoreAppShell::Initialize(const AppShellStartOptions& options) {
         services_.notifier->ShowWarning(
             "MFCMouseEffect",
             "Core WebSettings probe output failed. Check MFX_CORE_WEB_SETTINGS_PROBE_FILE.");
-    }
-
-    if (!backgroundMode_ && services_.trayService) {
-        if (!services_.trayService->Start(this, options.showTrayIcon)) {
-            appController_->SetInputCaptureStatusCallback(nullptr);
-            appController_->Stop();
-            appController_.reset();
-            services_.singleInstanceGuard->Release();
-            return false;
-        }
-    } else {
-        StartStdinExitMonitor();
     }
 
     initialized_ = true;

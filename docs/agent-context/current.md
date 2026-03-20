@@ -39,6 +39,7 @@
 - Unified top-level `Plugin Management` section is active.
 - WebUI apply flow is backend-state-driven (post-apply reconcile + refresh).
 - Sidebar order is fixed: `General -> Mouse Companion -> Cursor Effects -> Input Indicator -> Automation Mapping -> Plugin Management`.
+- Shell top-bar layout regression fixed on 2026-03-20: the header is now a stable three-column layout (`brand / center status / actions`) instead of a single-line strip. The middle status area now expands from the title column boundary, stays visually one-line/high-aligned with the action row for short text, and only grows taller when longer warning/status text wraps (`white-space: normal; overflow-wrap: anywhere`). The desktop action row remains explicitly locked to a single line (`flex-wrap: nowrap; min-width: max-content`) and only falls back to wrapping on the narrow-screen breakpoint.
 
 ### Mouse Companion (Current Truth)
 - Backend reset was executed; old skeleton runtime remains removed.
@@ -131,19 +132,23 @@
   - Theme switching, effect-type switching, and tray-side reload/config mutation entries were removed from the menu because they could freeze the tray/event loop and are better served by the Web settings UI.
 - macOS portable packaging (active):
   - `./mfx package` is now the preferred user entrypoint for a full build + macOS `.app` package; `./mfx package-no-build` skips both core and WebUI rebuilds, and `./mfx pack` / `./mfx pkg` stay as compatibility aliases.
+  - `run/start/package` now share the same macOS core/WebUI preparation helper (`mfx_manual_prepare_core_host_binary`) instead of carrying separate build paths; this keeps full-build vs skip-build behavior consistent across local run and packaging flows.
   - `tools/platform/package/build-macos-portable.sh` now assembles a standard `MFCMouseEffect.app` bundle that embeds `mfx_entry_posix_host`, `MFCMouseEffect/WebUI`, the minimal pet runtime asset set, and the sample wasm plugin under `Contents/MacOS/plugins/wasm`.
   - The packaged app launcher is now a native Mach-O wrapper (`Contents/MacOS/MFCMouseEffect`) instead of a shell script, so Finder/LaunchServices can start the bundle directly.
+  - macOS package icon is active again with low size impact: packaging now generates a minimal `MFX` text iconset directly via AppKit/Swift at package time and writes `CFBundleIconFile=AppIcon`. The icon payload is about `210K` (`AppIcon.icns`), packaged artifacts are about `2.5M` (`.dmg`) / `2.6M` (`.zip`), the packaged host binary is stripped in-bundle (`strip -x`) to reduce payload size, and the prior `svg -> sips` CoreSVG warning noise is gone.
   - Packaged `.app` launches no longer auto-open Web settings; startup behavior now matches the normal tray app instead of the old debug-first browser flow.
   - macOS package size trim (active): packaging now copies only the runtime-used pet payload (`pet-main.usdz` + `pet-actions.json` + `pet-appearance.json` + `pet-effects.json`) instead of the whole `Assets` tree; `pet-main.glb` remains a repo/dev asset and is excluded from packaged artifacts.
   - wasm package trim (active): the bundled demo plugin now keeps only `plugin.json` + `effect.wasm`; development helpers (`effect.js`, `.d.ts`, `.wat`, `samples/`) are excluded from packaged artifacts.
   - The generated app launcher (`Contents/MacOS/MFCMouseEffect`) exports `MFX_WEBUI_DIR` / `MFX_SCAFFOLD_WEBUI_DIR` and launches from `Contents/Resources` so repo-style relative pet asset paths keep working inside the app bundle.
   - Default portable artifact naming now explicitly marks Apple Silicon scope: `MFCMouseEffect-macos-arm64-portable` folder + `.zip`.
   - Default macOS packaging output root is now `Install/macos` (instead of `dist/package/macos`) so packaged artifacts live under the same install-family location as Windows outputs and avoid `install`/`Install` ambiguity on case-insensitive macOS volumes.
-  - `package` now also emits an unsigned `.dmg` alongside the folder and `.zip`, using the already-validated `.app` bundle as the sole source of truth and exposing an `Applications` symlink for drag-to-install flow.
+  - `package` now also emits an unsigned `.dmg` alongside the folder and `.zip`, using the already-validated `.app` bundle as the sole source of truth and exposing a real Finder `Applications` alias for drag-to-install flow.
+  - DMG presentation is now installation-oriented instead of raw Finder defaults: packaging mounts a writable staging image, creates a real Finder `Applications` alias, assigns a lightweight system `Applications` icon to that alias, pins icon positions to `left = MFCMouseEffect.app`, `right = Applications`, closes the temporary Finder layout window before finishing the package so `./mfx package` no longer leaves the staging DMG open on screen, and converts the final image with `UDBZ` compression for smaller distribution size.
   - Package cleanup (active): the generated folder/dmg no longer includes a top-level `README.txt`; delivered artifacts now keep only install-relevant payloads (`.app` and `Applications` link inside the dmg).
   - `Install/macos/` is now git-ignored so repeated local packaging does not pollute the worktree with generated macOS artifacts.
   - Unsigned package constraint remains active: Finder launch may still be gated by Gatekeeper until Developer ID signing/notarization is added later.
-  - Known open issue: `.dmg` / `Applications` launch reliability is not yet equivalent to `./mfx start`; keep app-bundle startup work as a separate follow-up instead of assuming packaging is fully production-ready.
+  - App-bundle runtime resolution is now bundle-relative: packaged `.app` resolves WebUI from `Contents/Resources/MFCMouseEffect/WebUI`, resolves pet runtime assets from `Contents/Resources/MFCMouseEffect/Assets/Pet3D/source`, and carries a generated `pet-main.joints.json` so the USDZ runtime can hydrate skeleton names without shipping the larger `pet-main.glb`.
+  - App-bundle startup stabilization (active): packaged `.app` launch no longer auto-opens settings, `NSApplication.finishLaunching()` is forced before tray creation, tray startup now runs before degraded input-capture warnings, and macOS warning notifications are dispatched asynchronously so first-run permission prompts do not block tray initialization.
 - Mouse companion manual proof helper:
   - `tools/platform/manual/run-macos-mouse-companion-proof.sh`
 - Manual websettings runner lock handoff (active):

@@ -71,6 +71,16 @@ void AddExecutableWebUiDir(std::vector<std::filesystem::path>* outDirs) {
     AddWebUiDirIfExistsUnique(std::filesystem::path(exeDir) / L"webui", outDirs);
 }
 
+void AddBundleResourceWebUiDir(std::vector<std::filesystem::path>* outDirs) {
+    const std::wstring exeDir = platform::GetExecutableDirectoryW();
+    if (exeDir.empty()) {
+        return;
+    }
+    const std::filesystem::path macosDir(exeDir);
+    const std::filesystem::path resourcesDir = macosDir.parent_path() / L"Resources";
+    AddWebUiDirIfExistsUnique(resourcesDir / L"MFCMouseEffect" / L"WebUI", outDirs);
+}
+
 void AddWorkingDirectoryWebUiDirs(std::vector<std::filesystem::path>* outDirs) {
     std::error_code ec;
     const std::filesystem::path cwd = std::filesystem::current_path(ec);
@@ -112,6 +122,7 @@ std::wstring ResolveWebSettingsWebUiBaseDir() {
     std::vector<std::filesystem::path> candidates;
     candidates.reserve(8);
     AddEnvWebUiDir(&candidates);
+    AddBundleResourceWebUiDir(&candidates);
     // Prefer source/dev tree assets before executable-side webui bundle so
     // local iteration picks up freshly built WebUIWorkspace output.
     AddSourceTreeWebUiDir(&candidates);

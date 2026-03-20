@@ -3,7 +3,9 @@
 
 @MainActor
 private func mfxEnsureApplicationReadyOnMainThread() {
-    _ = NSApplication.shared
+    let app = NSApplication.shared
+    app.setActivationPolicy(.accessory)
+    app.finishLaunching()
 }
 
 @MainActor

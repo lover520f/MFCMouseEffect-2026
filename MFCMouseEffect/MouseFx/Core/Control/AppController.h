@@ -462,6 +462,7 @@ private:
     std::vector<std::string> petVisualSkeletonNames_{};
     std::vector<const char*> petVisualSkeletonNamePtrs_{};
     bool petVisualPoseBindingConfigured_{false};
+    bool petVisualPoseBindingAttempted_{false};
     bool petDragging_ = false;
     uint64_t petLastTickMs_ = 0;
     static constexpr uint32_t kPetClickMaxPressMs = 220;

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-20T04:52:19.565Z",
+  "generated_at": "2026-03-20T10:32:37.220Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -71,6 +71,7 @@
         "plugin",
         "effects",
         "indicator",
+        "theme",
         "regression",
         "workflow",
         "swift",
@@ -84,14 +85,14 @@
       ],
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 164,
-      "size_bytes": 22290,
-      "estimated_tokens": 5573,
+      "line_count": 185,
+      "size_bytes": 26197,
+      "estimated_tokens": 6550,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": false,
-      "hash_sha1": "34c09731cc2a67f97310fa6f11b9b610c3c26db4",
-      "updated_at": "2026-03-20T04:51:11.615Z"
+      "hash_sha1": "a66b5d4a6897891cd882ba313cc4c715d81ab342",
+      "updated_at": "2026-03-20T10:32:24.042Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -960,6 +961,39 @@
       "updated_at": "2026-03-13T12:17:04.538Z"
     },
     {
+      "id": "docs/ops/macos-portable-packaging.md",
+      "relative_path": "docs/ops/macos-portable-packaging.md",
+      "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/ops/macos-portable-packaging.md",
+      "priority": "P2",
+      "role": "capability",
+      "topic": "wasm",
+      "first_read_rank": 0,
+      "tags": [
+        "ops",
+        "macos",
+        "portable",
+        "packaging",
+        "wasm",
+        "plugin",
+        "effects",
+        "theme",
+        "windows",
+        "contract",
+        "abi",
+        "debug"
+      ],
+      "summary": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/package/build-macos-portable.sh",
+      "when_to_read": "Read when task touches wasm runtime, plugin ABI, or sample behavior.",
+      "line_count": 122,
+      "size_bytes": 6685,
+      "estimated_tokens": 1672,
+      "max_read_tokens": 750,
+      "line_limit": 0,
+      "line_limit_exceeded": false,
+      "hash_sha1": "0be61647ad167cf059907e326948385de8b777cb",
+      "updated_at": "2026-03-20T10:32:01.821Z"
+    },
+    {
       "id": "docs/ops/manual-commands.md",
       "relative_path": "docs/ops/manual-commands.md",
       "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/ops/manual-commands.md",
@@ -1013,14 +1047,14 @@
       ],
       "summary": "Language: [English](README.md) | [中文](README.zh-CN.md)",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 98,
-      "size_bytes": 4188,
-      "estimated_tokens": 1047,
+      "line_count": 106,
+      "size_bytes": 4373,
+      "estimated_tokens": 1094,
       "max_read_tokens": 750,
       "line_limit": 140,
       "line_limit_exceeded": false,
-      "hash_sha1": "bdbe1a5ea551a7f9d84bde8dc7377edb898481b4",
-      "updated_at": "2026-03-19T12:39:41.791Z"
+      "hash_sha1": "51835ce7c0f49ceca0e9bba53c586e48f3fa6539",
+      "updated_at": "2026-03-20T06:06:00.156Z"
     },
     {
       "id": "docs/README.zh-CN.md",
@@ -1049,14 +1083,14 @@
       ],
       "summary": "语言： [English](README.md) | [中文](README.zh-CN.md)",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 99,
-      "size_bytes": 4295,
-      "estimated_tokens": 1074,
+      "line_count": 107,
+      "size_bytes": 4485,
+      "estimated_tokens": 1122,
       "max_read_tokens": 750,
       "line_limit": 140,
       "line_limit_exceeded": false,
-      "hash_sha1": "6d6fb2f193483d27fb6bc152883f18bce5289c14",
-      "updated_at": "2026-03-19T12:39:41.791Z"
+      "hash_sha1": "d84b11606ea960b6bb727990ada99a6594fb57d2",
+      "updated_at": "2026-03-20T06:06:00.156Z"
     },
     {
       "id": "docs/refactoring/phase-roadmap-macos-m1-status.md",

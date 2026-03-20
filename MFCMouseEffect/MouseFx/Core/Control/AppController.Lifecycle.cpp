@@ -9,6 +9,7 @@
 #include "MouseFx/Renderers/Hold/Presentation/QuantumHaloPresenterSelection.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/StringUtils.h"
+#include "Platform/PlatformRuntimeEnvironment.h"
 #include "Platform/PlatformTarget.h"
 #if MFX_PLATFORM_MACOS
 #include "Platform/macos/Pet/MacosMouseCompanionPhase1SwiftBridge.h"
@@ -21,6 +22,20 @@ namespace mousefx {
 namespace {
 
 constexpr uint32_t kPlatformInvalidHandleError = 6;
+
+std::filesystem::path ResolveBundleResourcePath(const std::filesystem::path& relativePath) {
+    const std::wstring exeDir = platform::GetExecutableDirectoryW();
+    if (exeDir.empty()) {
+        return {};
+    }
+    const std::filesystem::path macosDir(exeDir);
+    const std::filesystem::path candidate = macosDir.parent_path() / L"Resources" / relativePath;
+    std::error_code ec;
+    if (candidate.empty() || !std::filesystem::exists(candidate, ec) || ec) {
+        return {};
+    }
+    return candidate;
+}
 
 std::filesystem::path ResolveExistingDefaultPetModelPath(const std::string& configuredPathUtf8) {
     const std::string configuredPath = TrimAscii(configuredPathUtf8);
@@ -50,7 +65,8 @@ std::filesystem::path ResolveExistingDefaultPetModelPath(const std::string& conf
             return path;
         }
     }
-    return {};
+    return ResolveBundleResourcePath(
+        std::filesystem::path(L"MFCMouseEffect") / L"Assets" / L"Pet3D" / L"source" / L"pet-main.usdz");
 }
 
 std::filesystem::path ResolveExistingDefaultPetActionLibraryPath() {
@@ -65,7 +81,8 @@ std::filesystem::path ResolveExistingDefaultPetActionLibraryPath() {
             return path;
         }
     }
-    return {};
+    return ResolveBundleResourcePath(
+        std::filesystem::path(L"MFCMouseEffect") / L"Assets" / L"Pet3D" / L"source" / L"pet-actions.json");
 }
 
 std::filesystem::path ResolveExistingDefaultPetActionLibraryPath(const std::string& configuredPathUtf8) {
@@ -91,7 +108,8 @@ std::filesystem::path ResolveExistingDefaultPetAppearanceProfilePath() {
             return path;
         }
     }
-    return {};
+    return ResolveBundleResourcePath(
+        std::filesystem::path(L"MFCMouseEffect") / L"Assets" / L"Pet3D" / L"source" / L"pet-appearance.json");
 }
 
 std::filesystem::path ResolveExistingDefaultPetAppearanceProfilePath(const std::string& configuredPathUtf8) {
@@ -121,7 +139,8 @@ std::filesystem::path ResolveExistingDefaultPetEffectProfilePath() {
             return path;
         }
     }
-    return {};
+    return ResolveBundleResourcePath(
+        std::filesystem::path(L"MFCMouseEffect") / L"Assets" / L"Pet3D" / L"source" / L"pet-effects.json");
 }
 
 void AppendUniqueExistingPath(
@@ -366,6 +385,7 @@ void AppController::TryLoadDefaultPetModel() {
     loadedPetEffectProfilePath_.clear();
     loadedPetAppearanceProfilePath_.clear();
     petVisualPoseBindingConfigured_ = false;
+    petVisualPoseBindingAttempted_ = false;
     const MouseCompanionConfig companion = config_internal::SanitizeMouseCompanionConfig(config_.mouseCompanion);
     if (!companion.enabled) {
         ShutdownPetVisualHost();
@@ -592,6 +612,7 @@ void AppController::ShutdownPetVisualHost() {
 #endif
     petVisualHostHandle_ = nullptr;
     petVisualPoseBindingConfigured_ = false;
+    petVisualPoseBindingAttempted_ = false;
     petVisualPoseRuntime_ = PetVisualPoseRuntimeState{};
     petVisualSkeletonNamePtrs_.clear();
     petVisualSkeletonNames_.clear();

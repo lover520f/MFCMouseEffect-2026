@@ -1496,10 +1496,7 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         guard sourceURL.pathExtension.lowercased() == "usdz" else {
             return
         }
-        guard let glbURL = canonicalGlbMetadataURL(for: sourceURL) else {
-            return
-        }
-        guard let canonicalNames = parseJointDescendantNamesFromGlb(url: glbURL), !canonicalNames.isEmpty else {
+        guard let canonicalNames = loadCanonicalJointDescendantNames(for: sourceURL), !canonicalNames.isEmpty else {
             return
         }
         guard let skeletonContainer = findSkeletonContainer(in: root) else {
@@ -1519,9 +1516,42 @@ private final class MfxMouseCompanionPanelHandle: NSObject {
         }
     }
 
+    private func loadCanonicalJointDescendantNames(for sourceURL: URL) -> [String]? {
+        if let jsonURL = canonicalJointMetadataURL(for: sourceURL),
+           let names = parseJointDescendantNamesFromJson(url: jsonURL),
+           !names.isEmpty {
+            return names
+        }
+        guard let glbURL = canonicalGlbMetadataURL(for: sourceURL) else {
+            return nil
+        }
+        return parseJointDescendantNamesFromGlb(url: glbURL)
+    }
+
+    private func canonicalJointMetadataURL(for sourceURL: URL) -> URL? {
+        let jsonURL = sourceURL.deletingPathExtension().appendingPathExtension("joints.json")
+        return FileManager.default.fileExists(atPath: jsonURL.path) ? jsonURL : nil
+    }
+
     private func canonicalGlbMetadataURL(for sourceURL: URL) -> URL? {
         let glbURL = sourceURL.deletingPathExtension().appendingPathExtension("glb")
         return FileManager.default.fileExists(atPath: glbURL.path) ? glbURL : nil
+    }
+
+    private func parseJointDescendantNamesFromJson(url: URL) -> [String]? {
+        guard let data = try? Data(contentsOf: url),
+              let rootAny = try? JSONSerialization.jsonObject(with: data) else {
+            return nil
+        }
+        if let names = rootAny as? [String] {
+            return names.isEmpty ? nil : names
+        }
+        if let root = rootAny as? [String: Any],
+           let names = root["joint_descendant_names"] as? [String],
+           !names.isEmpty {
+            return names
+        }
+        return nil
     }
 
     private func parseJointDescendantNamesFromGlb(url: URL) -> [String]? {

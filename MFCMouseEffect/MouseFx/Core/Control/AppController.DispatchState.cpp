@@ -1456,12 +1456,14 @@ void AppController::UpdatePetVisualState(const ScreenPoint& pt, int actionCode, 
 bool AppController::EnsurePetVisualPoseBinding() {
 #if MFX_PLATFORM_MACOS
     if (!petVisualHostHandle_) {
+        petVisualPoseBindingAttempted_ = false;
         std::lock_guard<std::mutex> guard(mouseCompanionRuntimeStatusMutex_);
         mouseCompanionRuntimeStatus_.poseBindingConfigured = false;
         mouseCompanionRuntimeStatus_.skeletonBoneCount = 0;
         return false;
     }
-    if (!petVisualPoseBindingConfigured_) {
+    if (!petVisualPoseBindingAttempted_) {
+        petVisualPoseBindingAttempted_ = true;
         petVisualPoseBindingConfigured_ = mfx_macos_mouse_companion_panel_configure_pose_binding_v1(
             petVisualHostHandle_,
             kPetPoseBoneNames.data(),

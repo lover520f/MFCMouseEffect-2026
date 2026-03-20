@@ -89,9 +89,9 @@ body.mfx-modal-open {
   position: sticky;
   top: 10px;
   z-index: 5;
-  display: flex;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 18px;
   padding: 14px 16px;
   margin-bottom: 12px;
@@ -106,7 +106,8 @@ body.mfx-modal-open {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 280px;
+  min-width: 0;
+  max-width: 620px;
 }
 
 .brand .t {
@@ -128,9 +129,16 @@ body.mfx-modal-open {
 
 .btns {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
   justify-content: flex-end;
+  align-self: center;
+  flex-shrink: 0;
+  min-width: max-content;
+}
+
+.btns > * {
+  flex: 0 0 auto;
 }
 
 button,
@@ -2331,16 +2339,17 @@ textarea {
 
 /* Status badge inside the top header bar (center between brand and buttons) */
 .top-status {
-  flex: 1 1 auto;
   min-width: 0;
-  text-align: center;
-  padding: 6px 14px;
+  min-height: 0;
+  display: block;
+  text-align: left;
+  padding: 10px 16px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.45;
+  white-space: normal;
+  overflow-wrap: anywhere;
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
@@ -2430,6 +2439,15 @@ textarea {
 @media (max-width: 1080px) {
   .top {
     position: static;
+    grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr);
+    align-items: start;
+  }
+
+  .btns {
+    flex-wrap: wrap;
+    min-width: 0;
+    grid-column: 1 / -1;
+    justify-content: flex-start;
   }
 
   .settings-shell {
@@ -2470,12 +2488,19 @@ textarea {
   }
 
   .top {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     align-items: stretch;
   }
 
   .btns {
+    grid-column: auto;
     justify-content: flex-start;
+    align-self: stretch;
+  }
+
+  .top-status {
+    min-height: 0;
+    padding: 10px 12px;
   }
 
   .brand .t {

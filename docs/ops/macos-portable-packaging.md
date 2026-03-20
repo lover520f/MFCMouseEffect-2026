@@ -8,19 +8,25 @@
 ## Current Packaging Contract
 - Entry binary: `build-macos/mfx_entry_posix_host`
 - App bundle: `MFCMouseEffect.app`
-- Bundle launcher: `Contents/MacOS/MFCMouseEffect` (native Mach-O launcher, not a shell wrapper)
+- Bundle executable: `Contents/MacOS/MFCMouseEffect` (the packaged app runs the host binary directly)
+- Build preparation is shared with the normal macOS manual-run path: packaging now calls the same `mfx_manual_prepare_core_host_binary(...)` helper used by `./mfx run` / `./mfx start`, so core/WebUI full-build vs skip-build behavior stays aligned across run and package flows.
 - Bundled runtime assets:
   - `MFCMouseEffect.app/Contents/Resources/MFCMouseEffect/WebUI`
   - `MFCMouseEffect.app/Contents/Resources/MFCMouseEffect/Assets/Pet3D/source/pet-main.usdz`
+  - `MFCMouseEffect.app/Contents/Resources/MFCMouseEffect/Assets/Pet3D/source/pet-main.joints.json`
   - `MFCMouseEffect.app/Contents/Resources/MFCMouseEffect/Assets/Pet3D/source/pet-actions.json`
   - `MFCMouseEffect.app/Contents/Resources/MFCMouseEffect/Assets/Pet3D/source/pet-appearance.json`
   - `MFCMouseEffect.app/Contents/Resources/MFCMouseEffect/Assets/Pet3D/source/pet-effects.json`
   - `MFCMouseEffect.app/Contents/MacOS/plugins/wasm`
-- The launcher always:
-  - starts from the app bundle
-  - exports `MFX_WEBUI_DIR`
-  - exports `MFX_SCAFFOLD_WEBUI_DIR`
 - Packaged app launches do **not** auto-open Web settings anymore; first-launch behavior now matches normal tray startup instead of debug-style browser popups.
+- Bundle-relative runtime resolution is active:
+  - WebUI resolves from `Contents/Resources/MFCMouseEffect/WebUI`
+  - pet runtime assets resolve from `Contents/Resources/MFCMouseEffect/Assets/Pet3D/source`
+  - USDZ anonymous skeleton binding uses packaged `pet-main.joints.json` instead of shipping the full `pet-main.glb`
+- App-bundle startup stabilization is active:
+  - the macOS event loop now explicitly calls `NSApplication.finishLaunching()` before tray creation
+  - tray startup happens before degraded input-capture warnings are emitted
+  - warning notifications are posted asynchronously so first-run permission prompts no longer block tray initialization
 - The app intentionally keeps repo-style relative asset paths under `Contents/Resources/MFCMouseEffect/...` so the runtime can continue to resolve `MFCMouseEffect/Assets/Pet3D/source/...`.
 - To keep the macOS ARM64 package small, the packaged pet payload intentionally excludes `pet-main.glb`; only the runtime-used `pet-main.usdz` plus required JSON metadata files are copied.
 - To keep the package small, the bundled sample wasm plugin now includes only the runtime-required files (`plugin.json` + `effect.wasm`); developer helpers such as `.wat`, `.d.ts`, `.js`, and `samples/` are excluded from packaged artifacts.
@@ -58,10 +64,10 @@ Inside the folder:
 Inside `MFCMouseEffect.app`:
 - `Contents/Info.plist`
 - `Contents/MacOS/MFCMouseEffect`
-- `Contents/MacOS/mfx_entry_posix_host`
 - `Contents/MacOS/plugins/wasm/demo.template.default.v2/*`
 - `Contents/Resources/MFCMouseEffect/WebUI/*`
 - `Contents/Resources/MFCMouseEffect/Assets/Pet3D/source/pet-main.usdz`
+- `Contents/Resources/MFCMouseEffect/Assets/Pet3D/source/pet-main.joints.json`
 - `Contents/Resources/MFCMouseEffect/Assets/Pet3D/source/pet-actions.json`
 - `Contents/Resources/MFCMouseEffect/Assets/Pet3D/source/pet-appearance.json`
 - `Contents/Resources/MFCMouseEffect/Assets/Pet3D/source/pet-effects.json`
@@ -90,13 +96,14 @@ Inside `MFCMouseEffect.app`:
    - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/./mfx package --skip-build --skip-webui-build`
 5. Verify packaged folder:
    - `MFCMouseEffect.app` launches
+   - menu-bar `MFX` item appears without auto-opening settings
    - WebUI opens
    - pet assets load
    - bundled wasm plugin appears in plugin catalog
 6. Verify dmg:
    - `.dmg` mounts successfully
    - mounted image contains `MFCMouseEffect.app`
-   - mounted image contains `Applications` symlink for drag-to-install
+   - mounted image contains a real Finder `Applications` alias for drag-to-install
 
 ## Current Non-goal
 - This script does not sign, notarize, or produce a `.pkg` installer yet.
@@ -113,3 +120,14 @@ Inside `MFCMouseEffect.app`:
 - Default package name is `MFCMouseEffect-macos-arm64-portable`.
 - The `arm64` marker is intentional and indicates the current portable package target is Apple Silicon only.
 - Default output root is `Install/macos`, so macOS packaged artifacts now live under the same install-family location as Windows deliverables and avoid macOS case-insensitive `install/Install` ambiguity.
+- Finder/DMG icon is now restored with low size impact:
+  - packaging generates `Contents/Resources/AppIcon.icns` from a tiny AppKit-rendered `MFX` text iconset at package time
+  - `Info.plist` sets `CFBundleIconFile=AppIcon`
+  - current icon payload is about `210K`, with packaged artifacts around `2.5M` (`.dmg`) / `2.6M` (`.zip`)
+  - this avoids the earlier `CoreSVG` warning noise from the `svg -> sips` path while keeping packaged artifacts close to previous size.
+- DMG layout is now staged through Finder customization:
+  - packaging creates a writable temporary image, mounts it, and lets Finder create a real `Applications` alias instead of a plain filesystem symlink
+  - the alias is then assigned a lightweight system `Applications` icon so Finder shows an `Applications`-style install target without pulling in the larger full-size folder icon payload
+  - icon positions are pinned to the standard install flow layout: `MFCMouseEffect.app` on the left, `Applications` on the right
+  - the temporary Finder layout window is explicitly closed before detach, so local `./mfx package` runs do not leave the staging DMG window open after packaging finishes
+  - the packaged host binary inside `MFCMouseEffect.app` is stripped with `strip -x`, and the final `.dmg` uses `UDBZ` compression to keep distribution size down.
