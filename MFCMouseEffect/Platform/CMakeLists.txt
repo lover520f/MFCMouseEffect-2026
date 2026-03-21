@@ -344,6 +344,7 @@ if(MFX_ENABLE_ENTRY_RUNTIME_TARGETS)
             "${MFX_PROJECT_ROOT}/MouseFx/Server/webui/WebSettingsServer.WebUiPathResolver.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/core/WebSettingsServer.Routing.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/routes/testing/WebSettingsServer.TestApiRoutes.cpp"
+            "${MFX_PROJECT_ROOT}/MouseFx/Server/routes/testing/WebSettingsServer.MouseCompanionRenderProof.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/routes/testing/WebSettingsServer.TestMouseCompanionApiRoutes.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/routes/testing/WebSettingsServer.TestRouteCommon.cpp"
             "${MFX_PROJECT_ROOT}/MouseFx/Server/routes/testing/WebSettingsServer.TestWasmInputApiRoutes.cpp"

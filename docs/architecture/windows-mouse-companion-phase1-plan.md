@@ -194,11 +194,18 @@
   - backend preference updates that arrive through runtime config now trigger an in-place window/backend reselection instead of being ignored after the first backend is created
   - a `real` backend now has a complete internal preview pipeline through `Win32MouseCompanionRealRendererAssetResources`, `Win32MouseCompanionRealRendererSceneRuntime`, `Win32MouseCompanionRealRendererSceneBuilder`, and `Win32MouseCompanionRealRendererPainter`
   - that preview path is no longer just a readiness card; it now renders a stylized pet-like scene that reacts to action/facing/pose lanes under the hidden rollout gate
+  - the preview path now also keeps action-specific differentiation inside the renderer seam itself: `click` adds a ring, `hold` adds a grip band, `scroll` adds orbit arcs, and `follow/drag` add motion overlays, so visual bring-up can verify action changes without reading only JSON diagnostics
+  - the same preview seam now also owns action-aware face semantics, so brow/mouth/blush changes stay renderer-local instead of expanding controller-side preview rules
+  - whole-body posture is now also renderer-owned: center-of-mass lift, head offset, tail lift, shadow scale, and limb placement vary per action so visible state separation does not depend only on overlay glyphs
+  - idle life rhythm is now also renderer-owned and time-driven from existing runtime ticks, so breathing/ear cadence/tail sway stay inside the preview seam instead of introducing another controller-side idle animation track
   - default diagnostics should now show `real` as `unavailable(rollout_disabled)` instead of `requirements_unmet`
   - current `real_renderer_unmet_requirements` should be empty; rollout is now controlled by the hidden test gate `MFX_WIN32_MOUSE_COMPANION_REAL_RENDERER_ENABLE=1`
   - `real_renderer_preview` now acts as the current bring-up truth view for rollout gate state, preview-active state, current action lane, pose lane, and asset-lane readiness
   - backend-owned runtime diagnostics now travel through `renderer -> window -> visual host -> AppController -> settings/test diagnostics`, so future renderer swaps do not need a second controller-side inference path
   - those runtime diagnostics now also include render-proof counters/timestamps/surface-size fields, making it possible to verify that a dispatched test event caused a fresh frame instead of only changing logical state
+  - the test mouse-companion route now returns explicit `renderer_runtime_before / after / delta` payloads, so renderer proof no longer requires two manual snapshot requests and client-side diffing
+  - the same route now also supports bounded waiting (`wait_for_frame_ms`) and expectation reporting (`expect_frame_advance`), which keeps Windows renderer verification test-friendly without changing production runtime behavior
+  - compact render-proof handling is now split into its own helper seam, and `/api/mouse-companion/test-render-proof` now exists as a minimal verification path when we only need renderer frame proof and preview summary rather than the full mouse-companion runtime object
 - Backend lifecycle fallback is now part of the seam:
   - registry/factory selection no longer treats constructor success as enough
   - backend startup now has an explicit `Start() / Shutdown() / IsReady() / LastErrorReason()` contract

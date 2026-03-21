@@ -89,6 +89,62 @@ void DrawStar(
     graphics->DrawPath(&pen, &path);
 }
 
+void DrawActionOverlay(
+    Gdiplus::Graphics* graphics,
+    const Win32MouseCompanionRealRendererActionOverlay& overlay,
+    const Gdiplus::Color& stroke) {
+    if (!graphics) {
+        return;
+    }
+
+    if (overlay.followTrailVisible) {
+        for (size_t i = 0; i < overlay.followTrailRects.size(); ++i) {
+            const BYTE alpha = static_cast<BYTE>(std::max(48, 150 - static_cast<int>(i) * 34));
+            FillEllipse(
+                graphics,
+                overlay.followTrailRects[i],
+                Gdiplus::Color(alpha, overlay.accentColor.GetR(), overlay.accentColor.GetG(), overlay.accentColor.GetB()),
+                Gdiplus::Color(0, 0, 0, 0),
+                0.0f);
+        }
+    }
+
+    if (overlay.scrollArcVisible) {
+        Gdiplus::Pen arcPen(overlay.accentColor, 3.0f);
+        arcPen.SetStartCap(Gdiplus::LineCapRound);
+        arcPen.SetEndCap(Gdiplus::LineCapRound);
+        graphics->DrawArc(
+            &arcPen,
+            overlay.scrollArcRect,
+            overlay.scrollArcStartDeg,
+            overlay.scrollArcSweepDeg);
+    }
+
+    if (overlay.dragLineVisible) {
+        Gdiplus::Pen dashPen(overlay.accentColor, 2.4f);
+        dashPen.SetStartCap(Gdiplus::LineCapRound);
+        dashPen.SetEndCap(Gdiplus::LineCapRound);
+        const Gdiplus::REAL dashPattern[2] = {4.0f, 3.0f};
+        dashPen.SetDashPattern(dashPattern, 2);
+        graphics->DrawLine(&dashPen, overlay.dragLineStart, overlay.dragLineEnd);
+    }
+
+    if (overlay.clickRingVisible) {
+        Gdiplus::Pen ringPen(overlay.accentColor, 2.2f);
+        ringPen.SetAlignment(Gdiplus::PenAlignmentCenter);
+        graphics->DrawEllipse(&ringPen, overlay.clickRingRect);
+    }
+
+    if (overlay.holdBandVisible) {
+        FillRoundedRect(
+            graphics,
+            overlay.holdBandRect,
+            Gdiplus::Color(150, overlay.accentColor.GetR(), overlay.accentColor.GetG(), overlay.accentColor.GetB()),
+            stroke,
+            1.0f);
+    }
+}
+
 } // namespace
 
 void Win32MouseCompanionRealRendererPainter::Paint(
@@ -109,6 +165,7 @@ void Win32MouseCompanionRealRendererPainter::Paint(
     Gdiplus::SolidBrush shadowBrush(scene.pedestalFill);
     graphics->FillEllipse(&glowBrush, scene.glowRect);
     graphics->FillEllipse(&shadowBrush, scene.shadowRect);
+    DrawActionOverlay(graphics, scene.actionOverlay, scene.bodyStroke);
     FillRoundedRect(graphics, scene.pedestalRect, scene.pedestalFill, scene.pedestalFill, 0.0f);
     FillEllipse(graphics, scene.tailRect, scene.tailFill, scene.bodyStroke, 1.2f);
 
@@ -144,14 +201,22 @@ void Win32MouseCompanionRealRendererPainter::Paint(
     FillEllipse(graphics, scene.rightBlushRect, scene.blushFill, scene.blushFill, 0.0f);
 
     {
-        Gdiplus::Pen mouthPen(scene.mouthFill, 1.4f);
+        Gdiplus::Pen browPen(scene.eyeFill, 1.5f);
+        browPen.SetStartCap(Gdiplus::LineCapRound);
+        browPen.SetEndCap(Gdiplus::LineCapRound);
+        graphics->DrawLine(&browPen, scene.leftBrowStart, scene.leftBrowEnd);
+        graphics->DrawLine(&browPen, scene.rightBrowStart, scene.rightBrowEnd);
+    }
+
+    {
+        Gdiplus::Pen mouthPen(scene.mouthFill, scene.mouthStrokeWidth);
         mouthPen.SetStartCap(Gdiplus::LineCapRound);
         mouthPen.SetEndCap(Gdiplus::LineCapRound);
         graphics->DrawArc(
             &mouthPen,
             scene.mouthRect,
-            10.0f,
-            160.0f);
+            scene.mouthStartDeg,
+            scene.mouthSweepDeg);
     }
 
     for (size_t i = 0; i < scene.laneBadgeRects.size(); ++i) {

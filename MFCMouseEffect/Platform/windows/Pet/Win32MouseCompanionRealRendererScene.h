@@ -6,6 +6,23 @@
 
 namespace mousefx::windows {
 
+struct Win32MouseCompanionRealRendererActionOverlay final {
+    Gdiplus::Color accentColor{};
+    bool clickRingVisible{false};
+    Gdiplus::RectF clickRingRect{};
+    bool holdBandVisible{false};
+    Gdiplus::RectF holdBandRect{};
+    bool scrollArcVisible{false};
+    Gdiplus::RectF scrollArcRect{};
+    float scrollArcStartDeg{0.0f};
+    float scrollArcSweepDeg{0.0f};
+    bool dragLineVisible{false};
+    Gdiplus::PointF dragLineStart{};
+    Gdiplus::PointF dragLineEnd{};
+    bool followTrailVisible{false};
+    std::array<Gdiplus::RectF, 3> followTrailRects{};
+};
+
 struct Win32MouseCompanionRealRendererScene final {
     float centerX{0.0f};
     float centerY{0.0f};
@@ -45,7 +62,14 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::RectF rightLegRect{};
     Gdiplus::RectF leftEyeRect{};
     Gdiplus::RectF rightEyeRect{};
+    Gdiplus::PointF leftBrowStart{};
+    Gdiplus::PointF leftBrowEnd{};
+    Gdiplus::PointF rightBrowStart{};
+    Gdiplus::PointF rightBrowEnd{};
     Gdiplus::RectF mouthRect{};
+    float mouthStartDeg{10.0f};
+    float mouthSweepDeg{160.0f};
+    float mouthStrokeWidth{1.4f};
     Gdiplus::RectF noseRect{};
     Gdiplus::RectF leftBlushRect{};
     Gdiplus::RectF rightBlushRect{};
@@ -56,6 +80,7 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::RectF poseBadgeRect{};
     bool accessoryVisible{false};
     std::array<Gdiplus::PointF, 5> accessoryStar{};
+    Win32MouseCompanionRealRendererActionOverlay actionOverlay{};
 };
 
 } // namespace mousefx::windows

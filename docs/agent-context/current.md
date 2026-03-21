@@ -85,6 +85,8 @@
   - `renderer_backend_catalog`
   - `real_renderer_preview`
   - `renderer_runtime_*`
+  - test mouse-companion route now also returns `renderer_runtime_before / renderer_runtime_after / renderer_runtime_delta`
+  - test mouse-companion route now also supports test-friendly `wait_for_frame_ms` and `expect_frame_advance`, so Windows renderer proof can wait briefly for a new frame and report pass/fail in one response
 - Renderer backend lifecycle seam is now explicit too:
   - backend selection no longer stops at constructor success
   - factory now treats `Start() / IsReady() / LastErrorReason()` as first-class fallback signals
@@ -101,12 +103,17 @@
   - runtime/test diagnostics now also report whether the hidden config preference is the active resolved preference via `configured_renderer_backend_preference_effective` and `configured_renderer_backend_preference_status`
   - renderer registry/factory diagnostics now also distinguish currently unavailable backends from simply unselected ones, so future real-backend rollout can report machine/runtime gating reasons without changing the host contract again
   - a `real` backend now has a complete internal preview pipeline (`asset resources -> scene runtime -> scene builder -> painter -> render`), and the preview output is already a pose/action-aware stylized pet instead of a pure diagnostics card; default selection still keeps it unavailable behind a rollout gate, so current placeholder-first behavior stays unchanged
+  - that preview path now also adds action-specific overlays inside `scene -> painter`, so `click / hold / scroll / follow / drag` are easier to distinguish visually during Windows bring-up instead of relying only on diagnostics fields
+  - the preview face is now action-aware too: brows, mouth arc, and blush strength react to `click / hold / scroll / follow / drag`, so real-preview verification is not limited to silhouettes and motion marks
+  - the preview posture is now action-aware too: body lift, head offset, shadow compression, tail lift, and limb cadence all vary per action, so Windows bring-up can distinguish states from whole-body rhythm rather than only overlays
+  - idle preview now also has a lightweight time-driven life rhythm via `poseSampleTickMs`: breathing, subtle hand float, ear cadence, shadow breathing, and tail sway keep the Windows preview from freezing into a static card when no action is active
   - `renderer_backend_catalog` is now the structured source of truth for backend inventory; `available/unavailable` arrays remain as lightweight compatibility views
   - the `real` backend now also publishes explicit unmet requirements through both `renderer_backend_catalog[*].unmet_requirements` and top-level `real_renderer_unmet_requirements`
   - `real_renderer_unmet_requirements` is now expected to be empty on current code; default unavailability is controlled by rollout gate `MFX_WIN32_MOUSE_COMPANION_REAL_RENDERER_ENABLE`
   - runtime/test diagnostics now also publish a derived `real_renderer_preview` summary so Windows bring-up can verify rollout gate, selected backend, preview-active state, action lane, pose lane, and asset-lane readiness without reading renderer internals
   - the selected Windows renderer backend now also reports a backend-owned runtime snapshot (`renderer_runtime_*`), so diagnostics no longer have to infer preview state only from controller-side cached fields
   - backend-owned runtime diagnostics now also include render-proof fields (`frame_count`, `last_render_tick_ms`, `surface_width`, `surface_height`) so Windows bring-up can confirm that a test event really produced a new rendered frame
+  - render-proof helpers are now extracted out of the mouse-companion test route, and Windows test API now also exposes a compact `/api/mouse-companion/test-render-proof` path for frame-advance validation without returning the full runtime payload
 - Current boundary:
   - visible backend is stable enough for `Phase1.5` structural work
   - Windows still does not render the real 3D model yet

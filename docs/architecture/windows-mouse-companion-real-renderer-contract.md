@@ -187,6 +187,9 @@ Before touching GPU-specific code, the safest first step is:
   - `real_renderer_preview` is the rollout-facing preview summary contract; it should remain stable enough for manual verification and AI-IDE consumption without requiring direct access to renderer-private scene objects
   - `renderer_runtime_*` is the backend-owned runtime snapshot contract; it should reflect the last successful renderer input/render state instead of forcing diagnostics to reconstruct preview state only from higher controller layers
   - `renderer_runtime_frame_count`, `renderer_runtime_last_render_tick_ms`, and renderer surface-size fields are part of the render-proof subset of that contract; future real-backend rollout should preserve their semantics so test automation can detect actual rendered-frame advancement
+  - the current test route contract now includes `renderer_runtime_before / renderer_runtime_after / renderer_runtime_delta`; future renderer bring-up should preserve this diff-friendly proof shape instead of forcing callers to reconstruct transitions manually
+  - the test route also accepts bounded wait/expect parameters (`wait_for_frame_ms`, `expect_frame_advance`) so proof-of-render can tolerate short asynchronous frame delays while staying explicit and machine-readable
+  - a compact `/api/mouse-companion/test-render-proof` route now exists beside dispatch testing; it should remain focused on renderer proof + preview summary, while `/api/mouse-companion/test-dispatch` remains the heavier end-to-end dispatch contract
   - the first real-renderer requirement seam is now active too:
     - `Win32MouseCompanionRealRendererAssetResources`
     - it adapts shared `model / action_library / appearance_profile` lanes into a renderer-facing resource contract
@@ -198,6 +201,28 @@ Before touching GPU-specific code, the safest first step is:
     - `Win32MouseCompanionRealRendererPainter`
     - `Win32MouseCompanionRealRendererBackend::Render(...)`
     - the current output is still a preview backend, but it now renders a stylized pet-like scene with ears/limbs/face/accessory markers instead of only abstract readiness geometry
+    - action-specific visual overlays are now part of that preview contract too, and they intentionally stay renderer-owned rather than leaking back into controller logic:
+      - `click` -> ring overlay
+      - `hold` -> grip band
+      - `scroll` -> orbit arc
+      - `follow` -> trail overlay
+      - `drag` -> motion slash
+    - face expression is now part of the same renderer-owned preview contract:
+      - brows tilt/lift per action
+      - mouth arc shape changes per action
+      - blush intensity can vary with reactive/click state
+    - whole-body posture is now part of that renderer-owned preview contract too:
+      - body center can lift/drop per action
+      - head can nod/lean independently
+      - tail can lift/sag
+      - shadow scale can compress/spread with the apparent weight shift
+      - limb placement can change with follow/hold cadence
+    - idle life rhythm is also part of the preview contract:
+      - lightweight breathing can modulate body/shadow scale
+      - ears can keep a subtle cadence
+      - tail can sway slightly
+      - hands can float slightly
+      - this rhythm should remain renderer-local and reuse existing runtime ticks rather than requiring a second idle animation subsystem
   - current rollout rule:
     - default `real` availability is gated by `MFX_WIN32_MOUSE_COMPANION_REAL_RENDERER_ENABLE`
     - when unset, diagnostics should report `unavailable_reason=rollout_disabled`

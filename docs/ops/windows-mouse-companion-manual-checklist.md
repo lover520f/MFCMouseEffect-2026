@@ -123,6 +123,13 @@ Check `/api/state.mouse_companion_runtime` or equivalent diagnostics snapshot an
 - `renderer_runtime_model_source_format`
 - `renderer_runtime_surface_width`
 - `renderer_runtime_surface_height`
+- `renderer_runtime_before`
+- `renderer_runtime_after`
+- `renderer_runtime_delta`
+- `renderer_runtime_wait_for_frame_ms`
+- `renderer_runtime_expect_frame_advance`
+- `renderer_runtime_expectation_met`
+- `renderer_runtime_expectation_status`
 - `configured_renderer_backend_preference_effective`
 - `configured_renderer_backend_preference_status`
 - `loaded_model_path`
@@ -131,6 +138,19 @@ Check `/api/state.mouse_companion_runtime` or equivalent diagnostics snapshot an
 - `model_load_error`
 - `action_library_load_error`
 - `appearance_profile_load_error`
+
+Compact proof route:
+- `POST /api/mouse-companion/test-render-proof`
+- returns:
+  - `renderer_runtime_before`
+  - `renderer_runtime_after`
+  - `renderer_runtime_delta`
+  - `renderer_runtime_expectation_met`
+  - `renderer_runtime_expectation_status`
+  - `selected_renderer_backend`
+  - `real_renderer_preview`
+- intended use:
+  - frame-advance verification when you do not need the full `runtime` and `action_coverage` payload from `/api/mouse-companion/test-dispatch`
 
 ## Test-Friendly Backend Preference
 Current Windows pet backend preference is intentionally test-friendly and does not require a schema change yet.
@@ -178,6 +198,13 @@ If those hidden fields change while the host is already active, the Windows visu
 10. Hidden rollout-gate validation:
    - set `MFX_WIN32_MOUSE_COMPANION_REAL_RENDERER_ENABLE=1`
    - optionally set `MFX_WIN32_MOUSE_COMPANION_RENDERER_BACKEND=real`
+   - for test dispatch, you can also send:
+     - `wait_for_frame_ms`
+       - default: `0`
+       - recommended test value: `120`
+     - `expect_frame_advance`
+       - default: `false`
+       - recommended test value: `true`
    - expected diagnostics:
      - `preferred_renderer_backend=real` when explicit backend env is set
      - `selected_renderer_backend=real` only when rollout gate is enabled
@@ -195,9 +222,39 @@ If those hidden fields change while the host is already active, the Windows visu
      - repeated dispatch events should advance `renderer_runtime_last_render_tick_ms`
      - `renderer_runtime_action_name` and `renderer_runtime_reactive_action_name` should follow the last renderer-fed runtime state
      - `renderer_runtime_surface_width` / `renderer_runtime_surface_height` should stay non-zero while the preview window is active
+     - `renderer_runtime_before / after / delta` should show the transition in a single response, and `renderer_runtime_delta.frame_count_delta` should be positive once a new render is produced
+     - when `expect_frame_advance=true`, the route should return:
+       - `renderer_runtime_expectation_met=true`
+       - `renderer_runtime_expectation_status=frame_advanced`
+   - for compact proof-only checks, call `/api/mouse-companion/test-render-proof` with the same `wait_for_frame_ms` and `expect_frame_advance` parameters
+     - expected compact result:
+       - `selected_renderer_backend=real`
+       - `real_renderer_preview.preview_active=true`
+       - `renderer_runtime_delta.frame_count_delta > 0` once a new frame is observed
    - expected visual boundary:
      - current `real` backend still looks like a preview renderer, not macOS SceneKit parity
      - but it should now render a stylized pet silhouette with visible ears/limbs/face plus asset-lane badges, rather than only an abstract diagnostics card
+     - action changes should now be visually distinguishable even before true-model rendering lands:
+       - `click` should show a ring overlay near the head/body center
+       - `hold` should show a grip-band style overlay between the hands
+       - `scroll` should show an orbit arc around the body
+       - `follow` should show a short trailing-motion overlay
+       - `drag` should show a directional motion slash
+       - the face should now react too:
+         - `click` should read as the happiest/openest expression
+         - `hold` should look more concentrated/tense
+         - `scroll` should show an offset mouth/brow expression
+         - `follow` should look more alert
+       - whole-body posture should now react too:
+         - `click` should feel slightly lifted/lightened
+         - `hold` should feel lower and more planted
+         - `follow` should feel forward/alert with more kinetic cadence
+         - `scroll` should show a tilted, slightly orbiting stance
+         - `drag` should lean in the drag direction more obviously
+       - `idle` should no longer look frozen:
+         - slight breathing should be visible in body/shadow rhythm
+         - ears should keep a small cadence
+         - tail should sway subtly
 
 ## Current Expected Boundary
 - `model_loaded` may still be `false` on Windows because the current Windows path does not render the real 3D model yet.

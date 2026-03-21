@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-21T14:55:14.388Z",
+  "generated_at": "2026-03-21T15:18:58.030Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -83,14 +83,14 @@
       ],
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 235,
-      "size_bytes": 13585,
-      "estimated_tokens": 3397,
+      "line_count": 242,
+      "size_bytes": 15093,
+      "estimated_tokens": 3774,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": true,
-      "hash_sha1": "b8281bcc3ada3962cd2a3eea07013fc479e90608",
-      "updated_at": "2026-03-21T14:35:10.449Z"
+      "hash_sha1": "5f89d631924209ce9171950f4c08a27824ffcc54",
+      "updated_at": "2026-03-21T15:16:49.708Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -878,14 +878,14 @@
       ],
       "summary": "1. close Phase1.5 behavior/structure boundary",
       "when_to_read": "Read when task touches wasm runtime, plugin ABI, or sample behavior.",
-      "line_count": 242,
-      "size_bytes": 17987,
-      "estimated_tokens": 4497,
+      "line_count": 249,
+      "size_bytes": 19584,
+      "estimated_tokens": 4896,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "f97e17822cea0e9d688761daac451abd0959b7b0",
-      "updated_at": "2026-03-21T14:35:17.769Z"
+      "hash_sha1": "f007d7a605ebc6598aea337d805afedd602af37b",
+      "updated_at": "2026-03-21T15:16:58.138Z"
     },
     {
       "id": "docs/architecture/windows-mouse-companion-phase15-exit-contract.md",
@@ -941,14 +941,14 @@
       ],
       "summary": "This contract does **not** choose the final Windows rendering technology yet.",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 235,
-      "size_bytes": 13507,
-      "estimated_tokens": 3377,
+      "line_count": 260,
+      "size_bytes": 15466,
+      "estimated_tokens": 3867,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "23d71104ef36c58792ef3db18db4440e33dfab4e",
-      "updated_at": "2026-03-21T14:35:23.161Z"
+      "hash_sha1": "a181c4b67b375ea40025ba181e5604226e61ec8f",
+      "updated_at": "2026-03-21T15:17:08.934Z"
     },
     {
       "id": "docs/archive/architecture/README.md",
@@ -1226,14 +1226,14 @@
       ],
       "summary": "1. Build [MFCMouseEffect.vcxproj](/f:/language/cpp/code/MFCMouseEffect/MFCMouseEffect/MFCMouseEffect.vcxproj) with `Release|x64`.",
       "when_to_read": "Read when executing manual/regression workflows.",
-      "line_count": 215,
-      "size_bytes": 13258,
-      "estimated_tokens": 3315,
+      "line_count": 272,
+      "size_bytes": 16176,
+      "estimated_tokens": 4044,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "732d4204d7ecb7198398c9a225ecefd4424d7a1d",
-      "updated_at": "2026-03-21T14:35:30.789Z"
+      "hash_sha1": "5d149e2e542b1c634b08f62067e5ea75561bbfc8",
+      "updated_at": "2026-03-21T15:17:19.654Z"
     },
     {
       "id": "docs/README.md",

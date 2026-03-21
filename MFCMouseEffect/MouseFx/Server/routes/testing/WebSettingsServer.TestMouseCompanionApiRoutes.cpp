@@ -9,6 +9,7 @@
 #include "MouseFx/Core/Protocol/InputTypes.h"
 #include "MouseFx/Server/diagnostics/MouseCompanionRendererBackendDiagnostics.h"
 #include "MouseFx/Server/http/HttpServer.h"
+#include "MouseFx/Server/routes/testing/WebSettingsServer.MouseCompanionRenderProof.h"
 #include "MouseFx/Server/routes/testing/WebSettingsServer.TestRouteCommon.h"
 #include "MouseFx/Utils/StringUtils.h"
 
@@ -21,6 +22,8 @@ using websettings_test_routes::IsEnabledByEnv;
 using websettings_test_routes::ParseButtonOrDefault;
 using websettings_test_routes::ParseInt32OrDefault;
 using websettings_test_routes::ParseObjectOrEmpty;
+using websettings_test_routes::ParseBooleanOrDefault;
+using websettings_test_routes::ParseUInt32OrDefault;
 using websettings_test_routes::SetJsonResponse;
 using websettings_test_routes::SetPlainResponse;
 
@@ -186,6 +189,90 @@ json BuildActionCoverageJson(const AppController::MouseCompanionRuntimeStatus& s
     return out;
 }
 
+json BuildRendererRuntimeProofJson(const AppController::MouseCompanionRuntimeStatus& status) {
+    return {
+        {"backend", status.rendererRuntimeBackend},
+        {"ready", status.rendererRuntimeReady},
+        {"frame_rendered", status.rendererRuntimeFrameRendered},
+        {"frame_count", status.rendererRuntimeFrameCount},
+        {"last_render_tick_ms", status.rendererRuntimeLastRenderTickMs},
+        {"surface_width", status.rendererRuntimeSurfaceWidth},
+        {"surface_height", status.rendererRuntimeSurfaceHeight},
+        {"action_name", status.rendererRuntimeActionName},
+        {"reactive_action_name", status.rendererRuntimeReactiveActionName},
+        {"action_intensity", status.rendererRuntimeActionIntensity},
+        {"reactive_action_intensity", status.rendererRuntimeReactiveActionIntensity},
+        {"model_ready", status.rendererRuntimeModelReady},
+        {"action_library_ready", status.rendererRuntimeActionLibraryReady},
+        {"appearance_profile_ready", status.rendererRuntimeAppearanceProfileReady},
+        {"pose_frame_available", status.rendererRuntimePoseFrameAvailable},
+        {"pose_binding_configured", status.rendererRuntimePoseBindingConfigured},
+        {"model_source_format", status.rendererRuntimeModelSourceFormat},
+    };
+}
+
+json BuildRendererRuntimeProofDeltaJson(
+    const AppController::MouseCompanionRuntimeStatus& before,
+    const AppController::MouseCompanionRuntimeStatus& after) {
+    return {
+        {"backend_changed", before.rendererRuntimeBackend != after.rendererRuntimeBackend},
+        {"ready_changed", before.rendererRuntimeReady != after.rendererRuntimeReady},
+        {"frame_rendered_changed",
+         before.rendererRuntimeFrameRendered != after.rendererRuntimeFrameRendered},
+        {"frame_count_delta",
+         static_cast<int64_t>(after.rendererRuntimeFrameCount) -
+             static_cast<int64_t>(before.rendererRuntimeFrameCount)},
+        {"last_render_tick_advanced",
+         after.rendererRuntimeLastRenderTickMs > before.rendererRuntimeLastRenderTickMs},
+        {"action_changed", before.rendererRuntimeActionName != after.rendererRuntimeActionName},
+        {"reactive_action_changed",
+         before.rendererRuntimeReactiveActionName != after.rendererRuntimeReactiveActionName},
+        {"pose_frame_changed",
+         before.rendererRuntimePoseFrameAvailable != after.rendererRuntimePoseFrameAvailable},
+        {"surface_changed",
+         before.rendererRuntimeSurfaceWidth != after.rendererRuntimeSurfaceWidth ||
+             before.rendererRuntimeSurfaceHeight != after.rendererRuntimeSurfaceHeight},
+    };
+}
+
+json BuildMouseCompanionRenderProofJson(const MouseCompanionRenderProofResult& proof) {
+    return {
+        {"renderer_runtime_wait_for_frame_ms", proof.waitForFrameMs},
+        {"renderer_runtime_expect_frame_advance", proof.expectFrameAdvance},
+        {"renderer_runtime_expectation_met", proof.expectationMet},
+        {"renderer_runtime_expectation_status", proof.expectationStatus},
+        {"renderer_runtime_before", BuildRendererRuntimeProofJson(proof.beforeStatus)},
+        {"renderer_runtime_after", BuildRendererRuntimeProofJson(proof.afterStatus)},
+        {"renderer_runtime_delta",
+         BuildRendererRuntimeProofDeltaJson(proof.beforeStatus, proof.afterStatus)},
+    };
+}
+
+json BuildRealRendererPreviewJson(const AppController::MouseCompanionRuntimeStatus& status) {
+    const auto preview = EvaluateMouseCompanionRealRendererPreviewDiagnostics(status);
+    return {
+        {"rollout_enabled", preview.rolloutEnabled},
+        {"preview_selected", preview.previewSelected},
+        {"preview_active", preview.previewActive},
+        {"rendered_frame", preview.renderedFrame},
+        {"rendered_frame_count", preview.renderedFrameCount},
+        {"last_render_tick_ms", preview.lastRenderTickMs},
+        {"availability_reason", preview.availabilityReason},
+        {"model_ready", preview.modelReady},
+        {"action_library_ready", preview.actionLibraryReady},
+        {"appearance_profile_ready", preview.appearanceProfileReady},
+        {"pose_frame_available", preview.poseFrameAvailable},
+        {"pose_binding_configured", preview.poseBindingConfigured},
+        {"surface_width", preview.surfaceWidth},
+        {"surface_height", preview.surfaceHeight},
+        {"action_name", preview.actionName},
+        {"action_intensity", preview.actionIntensity},
+        {"reactive_action_name", preview.reactiveActionName},
+        {"reactive_action_intensity", preview.reactiveActionIntensity},
+        {"model_source_format", preview.modelSourceFormat},
+    };
+}
+
 } // namespace
 
 bool HandleWebSettingsTestMouseCompanionApiRoute(
@@ -193,7 +280,9 @@ bool HandleWebSettingsTestMouseCompanionApiRoute(
     const std::string& path,
     AppController* controller,
     HttpResponse& resp) {
-    if (req.method != "POST" || path != "/api/mouse-companion/test-dispatch") {
+    if (req.method != "POST" ||
+        (path != "/api/mouse-companion/test-dispatch" &&
+         path != "/api/mouse-companion/test-render-proof")) {
         return false;
     }
 
@@ -211,79 +300,103 @@ bool HandleWebSettingsTestMouseCompanionApiRoute(
     }
 
     const json payload = ParseObjectOrEmpty(req.body);
+    const bool proofOnly = path == "/api/mouse-companion/test-render-proof";
     const std::string event = ToLowerAscii(TrimAscii(payload.value("event", std::string("status"))));
-    const int32_t x = ParseInt32OrDefault(payload, "x", 640);
-    const int32_t y = ParseInt32OrDefault(payload, "y", 360);
-    const int32_t delta = ParseInt32OrDefault(payload, "delta", 120);
-    const uint32_t holdMs = static_cast<uint32_t>(std::max(0, ParseInt32OrDefault(payload, "hold_ms", 420)));
-    const uint8_t rawButton = ParseButtonOrDefault(payload, "button", 1);
-    const int button = std::max(0, static_cast<int>(rawButton));
+    const bool expectFrameAdvance =
+        ParseBooleanOrDefault(payload, "expect_frame_advance", false);
+    const uint32_t waitForFrameMs = std::min<uint32_t>(
+        ParseUInt32OrDefault(payload, "wait_for_frame_ms", expectFrameAdvance ? 120 : 0),
+        2000);
+    const AppController::MouseCompanionRuntimeStatus beforeStatus =
+        controller->ReadMouseCompanionRuntimeStatus();
 
     ScreenPoint pt{};
-    pt.x = x;
-    pt.y = y;
+    pt.x = ParseInt32OrDefault(payload, "x", 640);
+    pt.y = ParseInt32OrDefault(payload, "y", 360);
+    int32_t delta = 120;
+    uint32_t holdMs = 420;
+    int button = 1;
 
-    if (event == "status") {
-        // No-op: return current runtime snapshot only.
-    } else if (event == "move") {
-        controller->DispatchPetMove(pt);
-    } else if (event == "scroll") {
-        controller->DispatchPetScroll(pt, delta);
-    } else if (event == "button_down") {
-        controller->DispatchPetButtonDown(pt, button);
-    } else if (event == "button_up") {
-        controller->DispatchPetButtonUp(pt, button);
-    } else if (event == "click") {
-        ClickEvent ev{};
-        ev.pt = pt;
-        ev.button = ResolveMouseButton(rawButton);
-        controller->DispatchPetClick(ev);
-    } else if (event == "hover_start") {
-        controller->DispatchPetHoverStart(pt);
-    } else if (event == "hover_end") {
-        controller->DispatchPetHoverEnd(pt);
-    } else if (event == "hold_start") {
-        controller->DispatchPetHoldStart(pt, button, holdMs);
-    } else if (event == "hold_update") {
-        controller->DispatchPetHoldUpdate(pt, holdMs);
-    } else if (event == "hold_end") {
-        controller->DispatchPetHoldEnd(pt);
-    } else {
-        SetJsonResponse(resp, json({
-            {"ok", false},
-            {"error", "unsupported_event"},
-            {"event", event},
-            {"supported_events", json::array({
-                "status",
-                "move",
-                "scroll",
-                "button_down",
-                "button_up",
-                "click",
-                "hover_start",
-                "hover_end",
-                "hold_start",
-                "hold_update",
-                "hold_end"})},
-        }).dump());
-        return true;
+    if (!proofOnly) {
+        delta = ParseInt32OrDefault(payload, "delta", 120);
+        holdMs = static_cast<uint32_t>(std::max(0, ParseInt32OrDefault(payload, "hold_ms", 420)));
+        const uint8_t rawButton = ParseButtonOrDefault(payload, "button", 1);
+        button = std::max(0, static_cast<int>(rawButton));
+
+        if (event == "status") {
+            // No-op: return current runtime snapshot only.
+        } else if (event == "move") {
+            controller->DispatchPetMove(pt);
+        } else if (event == "scroll") {
+            controller->DispatchPetScroll(pt, delta);
+        } else if (event == "button_down") {
+            controller->DispatchPetButtonDown(pt, button);
+        } else if (event == "button_up") {
+            controller->DispatchPetButtonUp(pt, button);
+        } else if (event == "click") {
+            ClickEvent ev{};
+            ev.pt = pt;
+            ev.button = ResolveMouseButton(rawButton);
+            controller->DispatchPetClick(ev);
+        } else if (event == "hover_start") {
+            controller->DispatchPetHoverStart(pt);
+        } else if (event == "hover_end") {
+            controller->DispatchPetHoverEnd(pt);
+        } else if (event == "hold_start") {
+            controller->DispatchPetHoldStart(pt, button, holdMs);
+        } else if (event == "hold_update") {
+            controller->DispatchPetHoldUpdate(pt, holdMs);
+        } else if (event == "hold_end") {
+            controller->DispatchPetHoldEnd(pt);
+        } else {
+            SetJsonResponse(resp, json({
+                {"ok", false},
+                {"error", "unsupported_event"},
+                {"event", event},
+                {"supported_events", json::array({
+                    "status",
+                    "move",
+                    "scroll",
+                    "button_down",
+                    "button_up",
+                    "click",
+                    "hover_start",
+                    "hover_end",
+                    "hold_start",
+                    "hold_update",
+                    "hold_end"})},
+            }).dump());
+            return true;
+        }
     }
 
-    const AppController::MouseCompanionRuntimeStatus status =
-        controller->ReadMouseCompanionRuntimeStatus();
-    SetJsonResponse(resp, json({
+    const MouseCompanionRenderProofResult proof = CaptureMouseCompanionRenderProof(
+        controller,
+        beforeStatus,
+        waitForFrameMs,
+        expectFrameAdvance);
+    const AppController::MouseCompanionRuntimeStatus& status = proof.afterStatus;
+
+    json response = {
         {"ok", true},
-        {"event", event},
-        {"point", {
+        {"event", proofOnly ? "render_proof" : event},
+    };
+    response.update(BuildMouseCompanionRenderProofJson(proof));
+    if (proofOnly) {
+        response["selected_renderer_backend"] = status.selectedRendererBackend;
+        response["real_renderer_preview"] = BuildRealRendererPreviewJson(status);
+    } else {
+        response["point"] = {
             {"x", pt.x},
             {"y", pt.y},
-        }},
-        {"delta", delta},
-        {"hold_ms", holdMs},
-        {"button", button},
-        {"runtime", BuildMouseCompanionRuntimeStatusJson(status)},
-        {"action_coverage", BuildActionCoverageJson(status)},
-    }).dump());
+        };
+        response["delta"] = delta;
+        response["hold_ms"] = holdMs;
+        response["button"] = button;
+        response["runtime"] = BuildMouseCompanionRuntimeStatusJson(status);
+        response["action_coverage"] = BuildActionCoverageJson(status);
+    }
+    SetJsonResponse(resp, response.dump());
     return true;
 }
 

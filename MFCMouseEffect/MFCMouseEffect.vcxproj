@@ -799,6 +799,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationShortcutApiRoutes.cpp" />
     <ClCompile Include="MouseFx\Server\routes\core\WebSettingsServer.CoreApiRoutes.cpp" />
     <ClCompile Include="MouseFx\Server\routes\core\WebSettingsServer.RequestGateway.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.MouseCompanionRenderProof.cpp" />
     <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestApiRoutes.cpp" />
     <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsApiRoutes.cpp" />
     <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsOverlayApiRoute.cpp" />

@@ -872,6 +872,9 @@
     <ClCompile Include="MouseFx\Server\routes\core\WebSettingsServer.RequestGateway.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.MouseCompanionRenderProof.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestApiRoutes.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
