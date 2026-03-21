@@ -141,6 +141,10 @@
 - macOS tray menu simplification (active):
   - The macOS status-bar menu now intentionally exposes only three user-facing entries: `Star Project`, `Settings`, and `Exit`.
   - Theme switching, effect-type switching, and tray-side reload/config mutation entries were removed from the menu because they could freeze the tray/event loop and are better served by the Web settings UI.
+- Windows tray menu simplification (active):
+  - Problem classification: this is a product-strategy alignment change, not a regression fix.
+  - The Windows tray menu now matches macOS and intentionally exposes only three user-facing entries: `Star Project`, `Settings`, and `Exit`.
+  - Theme switching, effect-type switching, and tray-side reload/config mutation entries were removed from the native tray path so Windows no longer keeps a second configuration surface that can drift from the Web settings UI.
 - macOS launch-at-startup contract (active):
   - Launch-at-startup now registers the packaged executable in `tray` mode instead of `background` mode.
   - Reason: the POSIX background path enables stdin EOF auto-exit monitoring, which is suitable for piped/manual background runs but causes LaunchAgent-started processes to exit immediately under login-session startup.
@@ -182,6 +186,10 @@
   - `run-macos-core-websettings-manual.sh` now preempts stale lock owners from prior manual websettings runs before acquiring `mfx-entry-posix-host` lock.
   - lock wait now defaults to `MFX_MANUAL_ENTRY_LOCK_TIMEOUT_SECONDS=30` (manual-runner scoped) to avoid long silent stalls from inherited global lock timeout settings.
   - 2026-03-19 startup deadlock fix: `mfx_macos_mouse_companion_panel_apply_pose_v1` switched from `DispatchQueue.main.sync` to `DispatchQueue.main.async` to break main-thread <-> dispatch-worker circular wait during tray bootstrap (`GetConfigSnapshot` vs pose tick).
+- Windows installer/runtime packaging note (active):
+  - Problem classification: this is a distribution-policy decision, not a runtime regression.
+  - `d3dcompiler_47.dll` is no longer copied into the Windows release output or bundled into the Inno Setup installer.
+  - Current policy is to rely on the system-provided Direct3D compiler runtime instead of side-loading a repo-shipped copy, because the project wants to avoid forcing one bundled compiler DLL across different target machines.
 
 ## Contracts That Must Not Drift
 - Keep stdin JSON command compatibility.

@@ -194,26 +194,8 @@ void Win32TrayHostWindow::HandleTrayMenu() {
         shellHost_->RequestExitFromShell();
     } else if (cmd == kCmdTraySettings) {
         shellHost_->OpenSettingsFromShell();
-    } else if (cmd == kCmdTrayReloadConfig) {
-        shellHost_->ReloadConfigFromShell();
     } else if (cmd == kCmdStarRepo) {
         shellHost_->OpenProjectRepositoryFromShell();
-    } else {
-        std::string category;
-        std::string effectType;
-        if (Win32TrayMenuBuilder::TryBuildEffectSelection(cmd, &category, &effectType) && shellHost_) {
-            shellHost_->SetEffectFromShell(category, effectType);
-        } else if (mouseFx) {
-            std::string json;
-            if (Win32TrayMenuBuilder::TryBuildIpcJson(cmd, &json)) {
-                mouseFx->HandleCommand(json);
-            }
-        }
-
-        std::string theme;
-        if (Win32TrayMenuBuilder::TryBuildTheme(cmd, &theme) && shellHost_) {
-            shellHost_->SetThemeFromShell(theme);
-        }
     }
 
     PostMessageW(hwnd_, WM_NULL, 0, 0);

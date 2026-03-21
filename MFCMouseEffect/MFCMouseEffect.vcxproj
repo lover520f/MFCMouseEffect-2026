@@ -121,7 +121,7 @@
       <Command>if exist "$(OutDir)webui" rmdir /S /Q "$(OutDir)webui"
 if exist "$(ProjectDir)WebUI" xcopy /E /Y /I "$(ProjectDir)WebUI" "$(OutDir)webui\\"
 if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
-if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" "$(OutDir)d3dcompiler_47.dll"</Command>
+if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -207,7 +207,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
       <Command>if exist "$(OutDir)webui" rmdir /S /Q "$(OutDir)webui"
 if exist "$(ProjectDir)WebUI" xcopy /E /Y /I "$(ProjectDir)WebUI" "$(OutDir)webui\\"
 if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
-if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" "$(OutDir)d3dcompiler_47.dll"</Command>
+if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

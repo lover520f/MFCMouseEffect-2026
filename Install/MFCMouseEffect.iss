@@ -1,7 +1,7 @@
 ; Reference: http://www.jrsoftware.org/ishelp/
 
 #define MyAppName "MFCMouseEffect"
-#define MyAppVersion "1.3.0"
+#define MyAppVersion "1.3.1"
 #define MyAppPublisher "ksun22515@gmail.com"
 #define MyAppURL "https://github.com/sqmw/MFCMouseEffect"
 #define MyAppExeName "MFCMouseEffect.exe"
@@ -121,7 +121,6 @@ Source: "..\x64\Release\config.json"; DestDir: "{app}"; Flags: ignoreversion onl
 Source: "..\x64\Release\webui\*"; DestDir: "{app}\webui"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Runtime DLLs
 Source: "..\x64\Release\webgpu_dawn.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
-Source: "..\x64\Release\d3dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "..\x64\Release\mfx_wasm_runtime.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 ; Docs + license (optional)
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
