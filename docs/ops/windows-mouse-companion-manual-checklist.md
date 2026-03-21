@@ -53,14 +53,30 @@
 2. Confirm the pet stays in the idle silhouette.
 3. Move the mouse continuously.
 4. Confirm `follow` becomes visibly distinct from idle.
-5. Click repeatedly.
-6. Confirm `click_react` is visible and stronger than idle/follow.
-7. Press and drag.
-8. Confirm `drag` silhouette differs from `click_react`.
-9. Hold the pointer steady with button pressed.
-10. Confirm `hold_react` appears.
-11. Scroll in both directions.
-12. Confirm `scroll_react` appears and body lean changes direction.
+5. While moving left/right, confirm the pet shows a stable left/right facing tendency instead of staying rigidly front-facing or jitter-flipping on tiny pointer shakes.
+6. Confirm the near-side ear/limb reads slightly more forward than the far side, so follow/drag does not look completely flat.
+7. During idle/follow, confirm the pet has light procedural life: subtle bob, ear sway, paw cadence, and shadow/tail response instead of remaining completely rigid.
+8. Click repeatedly.
+9. Confirm `click_react` is visible and stronger than idle/follow.
+10. Press and drag.
+11. Confirm `drag` silhouette differs from `click_react`.
+12. Hold the pointer steady with button pressed.
+13. Confirm `hold_react` appears.
+14. Scroll in both directions.
+15. Confirm `scroll_react` appears and body lean changes direction.
+16. Click repeatedly and confirm there is a short impact-and-rebound feel, not only a static squash pose.
+17. Hold steadily and confirm the body compression settles into a gentle press pulse instead of flickering.
+18. Scroll in short bursts and confirm the directional kick decays after the burst instead of staying latched.
+19. During click/hold/scroll, confirm face/chest details respond too: whiskers spread slightly, cheeks lift, mouth opens a bit more, and chest motion remains subtle instead of noisy.
+20. During stronger reactions, confirm pupils/brows also change slightly so the face reads more focused rather than remaining a fixed sticker.
+21. During follow/drag/scroll, confirm low-cost motion accents remain tasteful: collar/charm stay attached cleanly and dust cues are subtle, not noisy or always-on.
+22. During follow/drag, confirm head/body/limbs read as one connected creature: neck bridge, limb bridge lines, and back/hip accents should improve structure without making the placeholder look busy.
+23. If appearance accessories are enabled, confirm the head accessory resolves consistently and does not jump to a random place while moving.
+24. Confirm material/detail accents stay coherent across variants: tail tip, paw pads, body/head fills, and accessory colors should change together instead of looking like unrelated hardcoded colors.
+25. During follow/drag, confirm ear, tail, and front/rear limbs feel rhythmically related rather than moving as unrelated parts; the timing should read as one creature, not several independent stickers.
+26. Confirm silhouette anchor nodes improve readability without noise: ear roots, tail root, shoulder/hip patches, and front/rear depth patches should make the pet easier to read, not busier.
+27. Compare `idle / follow / drag / hold` directly and confirm the base stance changes too: body center, head anchor, ear spread, and fore/rear stance width should differ even before micro-motion and reaction pulses are noticed.
+28. Compare `click / hold / scroll / drag / follow` and confirm the silhouette profile changes too: chest lift/width, tail-root attitude, shoulder-vs-hip emphasis, and front/rear depth patches should not all look like the same creature with only timing differences.
 
 ## Pose / Action Library
 1. Keep default `pet-actions.json` available.

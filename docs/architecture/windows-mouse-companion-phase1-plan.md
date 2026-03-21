@@ -72,6 +72,15 @@
   - `Platform/windows/Pet/Win32MouseCompanionVisualRuntime.h/.cpp`
   - `Platform/windows/Pet/Win32MouseCompanionActionRuntime.h/.cpp`
   - `Platform/windows/Pet/Win32MouseCompanionPlaceholderScene.h/.cpp`
+  - `Platform/windows/Pet/Win32MouseCompanionPlaceholderAccessory.h/.cpp`
+  - `Platform/windows/Pet/Win32MouseCompanionPlaceholderAdornment.h/.cpp`
+  - `Platform/windows/Pet/Win32MouseCompanionPlaceholderGait.h/.cpp`
+  - `Platform/windows/Pet/Win32MouseCompanionPlaceholderExpression.h/.cpp`
+  - `Platform/windows/Pet/Win32MouseCompanionPlaceholderPalette.h/.cpp`
+  - `Platform/windows/Pet/Win32MouseCompanionPlaceholderMotion.h/.cpp`
+  - `Platform/windows/Pet/Win32MouseCompanionPlaceholderRhythm.h/.cpp`
+  - `Platform/windows/Pet/Win32MouseCompanionPlaceholderSilhouette.h/.cpp`
+  - `Platform/windows/Pet/Win32MouseCompanionReactiveMotion.h/.cpp`
 - Responsibility:
   - own Windows pet runtime state
   - split `Host / Presenter / Window / Renderer` responsibilities incrementally
@@ -134,6 +143,19 @@
     - host-side `state_` mutation is also being thinned: follow/action/pose/application now goes through a small visual-runtime helper instead of hand-written field assignment blocks in `Win32MouseCompanionVisualHost`
     - action clip timeline state is now moving out of the host too: active action key, one-shot restart logic, and sampled clip refresh are handled by a dedicated action-runtime helper instead of staying embedded in the host class
     - placeholder pre-render interpretation is now being separated from paint code: the scene helper converts `action/pose/appearance` state into draw-ready geometry/colors so the renderer itself keeps trending toward pure drawing
+    - placeholder now also carries a lightweight facing contract: horizontal movement updates a left/right facing hint, and the current implementation uses a small accumulated-motion hysteresis so rapid micro-jitter does not constantly flip the facing side
+    - placeholder procedural motion is now split from scene building: a dedicated motion helper drives idle/follow bob, ear sway, paw cadence, tail swing, blink, and shadow squash before the scene builder converts that into draw-ready geometry
+    - reactive pulses for `click_react / hold_react / scroll_react / drag` are now split once more into a dedicated helper, so placeholder motion consumes a small time-decayed reaction contract instead of only branching on raw action labels
+    - placeholder face/chest details are now also reaction-aware: whiskers, blush, chest bob, glow, and mouth openness all consume the same reactive timeline instead of adding more renderer-local branching
+    - facial expression assembly is now split again from both scene layout and paint code: pupils, brows, and mouth-arc semantics are produced by a dedicated expression helper so renderer responsibility keeps narrowing
+    - placeholder gait support is now split too: neck/head-body bridge, limb bridge lines, and back/belly/hip shape accents are assembled separately so the body no longer reads as disconnected ellipses
+    - accessory resolution is no longer a single hardcoded oval in the renderer; a dedicated helper can now map appearance-profile accessory ids into simple bow/star-like head accessories without inflating the draw path further
+    - placeholder palette/material resolution is now split from scene layout too: skin variant, tint, scroll accent, tail tip, and paw-pad colors are resolved once behind a dedicated palette helper before geometry assembly
+    - placeholder posture baselines are now split too: `idle / follow / drag / hold / scroll` no longer rely only on additive per-part tweaks, because a dedicated posture helper now establishes base body/head stance, ear spread, fore/rear stance width, and shadow/body anchor bias before rhythm and pose offsets are applied
+    - placeholder action-shape profiles are now split too: `click / hold / scroll / drag / follow` can reshape chest lift/width, tail root/curl, ear-root presence, shoulder/hip patch scale, and front/rear depth bias without inflating the main scene builder further
+    - cross-part stride rhythm is now split too: ear/tail/fore-leg/rear-leg phase relationships are assembled behind a dedicated rhythm helper so silhouette timing no longer has to stay embedded in scene geometry math
+    - explicit silhouette nodes are now split too: ear roots, tail root, shoulder/hip patches, and front/rear depth patches are assembled behind a dedicated helper so body-readability tweaks no longer bloat the main scene builder
+    - accessory/motion accents are now split too: collar/charm and low-cost dust/motion cues are built behind a dedicated adornment helper instead of inflating scene layout or renderer branches further
   - boundary remains explicit: Windows still does not render the real 3D model yet, but the host contract now already carries the same data classes that the later real renderer will consume.
 
 ## Why This Structure

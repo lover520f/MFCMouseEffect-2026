@@ -22,6 +22,14 @@ struct Win32MouseCompanionVisualState {
     MouseCompanionPetPoseFrame latestPoseFrame{};
     Win32MouseCompanionActionSample latestActionClipSample{};
     Win32MouseCompanionAppearanceProfile appearanceProfile{};
+    int facingDirection{1};
+    float facingMomentumPx{0.0f};
+    uint64_t lastClickTriggerTickMs{0};
+    uint64_t lastHoldTriggerTickMs{0};
+    uint64_t lastScrollTriggerTickMs{0};
+    float lastScrollSignedIntensity{0.0f};
+    std::string lastReactiveActionName{"idle"};
+    float lastReactiveActionIntensity{0.0f};
     bool active{false};
     bool visible{false};
     bool modelAssetAvailable{false};

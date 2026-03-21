@@ -2,10 +2,17 @@
 
 #include "Platform/windows/Pet/Win32MouseCompanionVisualRuntime.h"
 
+#include "MouseFx/Utils/TimeUtils.h"
+
 #include <filesystem>
 
 namespace mousefx::windows {
 namespace {
+
+constexpr int kDefaultFacingDirection = 1;
+constexpr float kFacingMomentumClampPx = 18.0f;
+constexpr float kFacingMomentumDecay = 0.45f;
+constexpr float kFacingFlipThresholdPx = 8.0f;
 
 std::string ResolveActionName(int actionCode) {
     switch (actionCode) {
@@ -24,6 +31,75 @@ std::string ResolveActionName(int actionCode) {
     }
 }
 
+bool IsScrollLikeAction(const std::string& actionName) {
+    return actionName == "scroll_react";
+}
+
+bool IsHoldLikeAction(const std::string& actionName) {
+    return actionName == "hold_react";
+}
+
+bool IsClickLikeAction(const std::string& actionName) {
+    return actionName == "click_react" || actionName == "drag";
+}
+
+void UpdateReactiveActionTelemetry(
+    Win32MouseCompanionVisualState* state,
+    const std::string& actionName,
+    float intensity) {
+    if (!state) {
+        return;
+    }
+
+    const uint64_t nowMs = NowMs();
+    const float clampedIntensity = std::clamp(intensity, -1.0f, 1.0f);
+    const float absIntensity = std::abs(clampedIntensity);
+    const bool actionChanged = state->lastReactiveActionName != actionName;
+    const bool intensitySpike =
+        absIntensity > std::abs(state->lastReactiveActionIntensity) + 0.18f;
+
+    if (IsClickLikeAction(actionName) && (actionChanged || intensitySpike || absIntensity >= 0.80f)) {
+        state->lastClickTriggerTickMs = nowMs;
+    }
+
+    if (IsHoldLikeAction(actionName) && (actionChanged || intensitySpike || state->lastHoldTriggerTickMs == 0)) {
+        state->lastHoldTriggerTickMs = nowMs;
+    }
+
+    if (IsScrollLikeAction(actionName)) {
+        const float previousSign = (state->lastScrollSignedIntensity > 0.0f) ? 1.0f :
+            (state->lastScrollSignedIntensity < 0.0f ? -1.0f : 0.0f);
+        const float nextSign = (clampedIntensity > 0.0f) ? 1.0f :
+            (clampedIntensity < 0.0f ? -1.0f : 0.0f);
+        if (actionChanged || intensitySpike || previousSign != nextSign || absIntensity >= 0.66f) {
+            state->lastScrollTriggerTickMs = nowMs;
+        }
+        state->lastScrollSignedIntensity = clampedIntensity;
+    }
+
+    state->lastReactiveActionName = actionName;
+    state->lastReactiveActionIntensity = clampedIntensity;
+}
+
+void UpdateFacingDirection(Win32MouseCompanionVisualState* state, const ScreenPoint& nextPoint) {
+    if (!state) {
+        return;
+    }
+    if (!state->hasLastPoint) {
+        return;
+    }
+    const float dx = static_cast<float>(nextPoint.x - state->lastPoint.x);
+    state->facingMomentumPx =
+        std::clamp(state->facingMomentumPx * kFacingMomentumDecay + dx,
+                   -kFacingMomentumClampPx,
+                   kFacingMomentumClampPx);
+    if (state->facingMomentumPx >= kFacingFlipThresholdPx) {
+        state->facingDirection = 1;
+    } else if (state->facingMomentumPx <= -kFacingFlipThresholdPx) {
+        state->facingDirection = -1;
+    }
+}
+
 } // namespace
 
 void ResetWin32MouseCompanionVisualState(
@@ -38,6 +114,8 @@ void ResetWin32MouseCompanionVisualState(
     state->active = active;
     state->visible = false;
     state->hasLastPoint = false;
+    state->facingDirection = kDefaultFacingDirection;
+    state->facingMomentumPx = 0.0f;
 }
 
 void ApplyWin32MouseCompanionVisualConfig(
@@ -87,6 +165,7 @@ void ApplyWin32MouseCompanionFollowPoint(
     if (!state || !state->active) {
         return;
     }
+    UpdateFacingDirection(state, pt);
     state->lastPoint = pt;
     state->hasLastPoint = true;
 }
@@ -97,12 +176,14 @@ void ApplyWin32MouseCompanionHostUpdate(
     if (!state || !state->active) {
         return;
     }
+    UpdateFacingDirection(state, update.pt);
     state->lastPoint = update.pt;
     state->hasLastPoint = true;
     state->lastActionCode = update.actionCode;
     state->lastActionIntensity = update.actionIntensity;
     state->lastHeadTintAmount = update.headTintAmount;
     state->lastActionName = ResolveActionName(update.actionCode);
+    UpdateReactiveActionTelemetry(state, state->lastActionName, update.actionIntensity);
 }
 
 void ApplyWin32MouseCompanionPoseFrame(
@@ -117,6 +198,7 @@ void ApplyWin32MouseCompanionPoseFrame(
     state->lastActionIntensity = poseFrame.actionIntensity;
     state->lastHeadTintAmount = poseFrame.headTintAmount;
     state->poseFrameAvailable = !poseFrame.samples.empty();
+    UpdateReactiveActionTelemetry(state, state->lastActionName, poseFrame.actionIntensity);
 }
 
 } // namespace mousefx::windows
