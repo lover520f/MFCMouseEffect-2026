@@ -180,13 +180,19 @@
     <ClInclude Include="MouseFx\Core\Json\JsonFacade.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Server\HttpServer.h">
+    <ClInclude Include="MouseFx\Server\http\HttpServer.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Server\WebUiAssets.h">
+    <ClInclude Include="MouseFx\Server\webui\WebUiAssets.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
-    <ClInclude Include="MouseFx\Server\WebSettingsServer.h">
+    <ClInclude Include="MouseFx\Server\core\WebSettingsServer.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Server\settings\SettingsSchemaBuilder.h">
+      <Filter>头文件\MouseFx</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseFx\Server\settings\SettingsStateMapper.h">
       <Filter>头文件\MouseFx</Filter>
     </ClInclude>
     <ClInclude Include="MouseFx\Styles\RippleStyle.h">
@@ -456,6 +462,9 @@
     <ClInclude Include="Platform\PlatformTarget.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\PlatformLaunchAtStartup.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\PlatformStartupOptionsFactory.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -605,6 +614,9 @@
     <ClCompile Include="MouseFx\Core\Control\AppController.Lifecycle.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Core\Control\AppController.VmSuppression.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Core\Control\AutomationDispatchFeature.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
@@ -629,6 +641,12 @@
     <ClCompile Include="MouseFx\Core\Automation\InputAutomationEngine.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Core\Automation\InputAutomationDispatch.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Automation\GestureMatchSelection.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Core\Automation\KeyChord.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
@@ -650,22 +668,169 @@
     <ClCompile Include="MouseFx\Core\System\CursorPositionProvider.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Server\HttpServer.cpp">
+    <ClCompile Include="MouseFx\Server\http\HttpServer.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Server\HttpServer.Protocol.cpp">
+    <ClCompile Include="MouseFx\Server\http\HttpServer.ClientSession.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Server\WebUiAssets.cpp">
+    <ClCompile Include="MouseFx\Server\http\HttpServer.Lifecycle.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Server\WebSettingsServer.cpp">
+    <ClCompile Include="MouseFx\Server\http\HttpServer.Protocol.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Server\WebSettingsServer.Routing.cpp">
+    <ClCompile Include="MouseFx\Server\core\WebSettingsServer.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Server\WebSettingsServer.TokenMonitor.cpp">
+    <ClCompile Include="MouseFx\Server\core\WebSettingsServer.Routing.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\core\WebSettingsServer.TokenMonitor.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\diagnostics\SettingsStateMapper.Diagnostics.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\diagnostics\SettingsStateMapper.InputCaptureDiagnostics.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\diagnostics\SettingsStateMapper.WasmDiagnostics.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.AutomationCatalogRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.AutomationRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.AutomationRouteUtils.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.AutomationShortcutCaptureRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationApiRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationInjectionApiRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationRouteUtils.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationScopeApiRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationShortcutApiRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\core\WebSettingsServer.CoreApiRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\core\WebSettingsServer.RequestGateway.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestApiRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsApiRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsOverlayApiRoute.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsProfileApiRoute.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestMouseCompanionApiRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestRouteCommon.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestWasmInputApiRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmCatalogQueryRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmCatalogRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmExportRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmImportFolderDialogRoute.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmImportRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmImportSelectedRoute.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmLoadManifestRoute.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmReloadRoute.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRouteParseUtils.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRoutePathUtils.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRouteResponseUtils.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRuntimeActionRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRuntimePolicyRoute.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRuntimeRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRuntimeStateRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRuntimeToggleRoutes.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\settings\SettingsSchemaBuilder.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\settings\SettingsSchemaBuilder.CapabilitiesSections.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\settings\SettingsSchemaBuilder.OptionsSections.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\settings\SettingsStateMapper.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\settings\SettingsStateMapper.BaseSections.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\settings\SettingsStateMapper.EffectsDiagnostics.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\settings\SettingsStateMapper.EffectsProfileStateBuilder.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\settings\SettingsWasmCapabilities.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\webui\WebSettingsServer.WebUiPathResolver.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\webui\WebUiAssets.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="Platform\PlatformApplicationCatalog.cpp">
@@ -752,6 +917,9 @@
     <ClCompile Include="Platform\PlatformRuntimeEnvironment.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
+    <ClCompile Include="Platform\PlatformLaunchAtStartup.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
     <ClCompile Include="Platform\windows\Shell\Win32DpiAwarenessService.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
@@ -768,6 +936,9 @@
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Shell\Win32UserNotificationService.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Shell\Win32ShellServicesFactory.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Overlay\Win32OverlayCoordSpaceService.cpp">
@@ -814,6 +985,24 @@
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32BinaryResourceLoader.cpp">
       <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Control\CommandHandler.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Control\CommandHandler.ApplySettings.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Control\CommandHandler.ApplySettings.AutomationWasm.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Control\CommandHandler.ApplySettings.Visual.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Control\DispatchRouter.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Control\DispatchRouter.Pointer.cpp">
+      <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\System\Win32RuntimeEnvironment.cpp">
       <Filter>源文件\Platform</Filter>
@@ -893,7 +1082,10 @@
     <ClCompile Include="MouseFx\Core\Wasm\WasmExecutionBudgetGuard.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
-    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginManifest.cpp">
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginManifest.Load.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginManifest.Validate.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginPaths.cpp">
@@ -903,6 +1095,15 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginTransferService.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginTransferService.Common.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginTransferService.Export.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginTransferService.Import.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginImageAssetCatalog.cpp">
@@ -929,6 +1130,9 @@
     <ClCompile Include="MouseFx\Core\Wasm\WasmEffectHost.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmEffectHost.Invoke.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\WasmDynamicTextLabelScope.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
@@ -945,6 +1149,9 @@
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\WasmRibbonStripCommandExecutor.cpp">
+      <Filter>源文件\MouseFx</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Core\Wasm\WasmSpriteBatchCommandExecutor.cpp">
       <Filter>源文件\MouseFx</Filter>
     </ClCompile>
     <ClCompile Include="MouseFx\Core\Wasm\WasmPathStrokeCommandExecutor.cpp">

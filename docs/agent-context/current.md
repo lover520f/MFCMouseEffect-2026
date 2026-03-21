@@ -9,6 +9,7 @@
 - Primary host: macOS.
 - Delivery order: macOS first, Windows regression-free, Linux compile/contract-level.
 - macOS stack rule: new capability modules are Swift-first; avoid expanding `.mm` for new large modules.
+- Windows VS2026 project sync (2026-03-21): `MFCMouseEffect/MFCMouseEffect.vcxproj` is now aligned with the split automation/server/wasm source layout and passes `Release|x64` direct project build again. The top-level `MFCMouseEffect.slnx` still fails early at `ValidateSolutionConfiguration` with `0 errors`, so treat that as a separate solution-metadata issue rather than a C++ compile regression.
 
 ## Runtime Lanes
 - Stable lane: `scaffold`.

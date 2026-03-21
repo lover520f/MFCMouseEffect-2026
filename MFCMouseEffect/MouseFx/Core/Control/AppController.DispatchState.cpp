@@ -749,9 +749,9 @@ MouseCompanionPetRuntimeConfig AppController::BuildMouseCompanionPluginRuntimeCo
     out.followThresholdPx = activeConfig.followThresholdPx;
     out.releaseHoldMs = activeConfig.releaseHoldMs;
     out.clickStreakBreakMs = activeConfig.clickStreakBreakMs;
-    out.headTintPerClick = activeConfig.headTintPerClick;
-    out.headTintMax = activeConfig.headTintMax;
-    out.headTintDecayPerSecond = activeConfig.headTintDecayPerSecond;
+    out.headTintPerClick = static_cast<float>(activeConfig.headTintPerClick);
+    out.headTintMax = static_cast<float>(activeConfig.headTintMax);
+    out.headTintDecayPerSecond = static_cast<float>(activeConfig.headTintDecayPerSecond);
     out.positionMode = cfg.positionMode;
     out.targetMonitor = cfg.targetMonitor;
     out.edgeClampMode = cfg.edgeClampMode;

@@ -143,7 +143,7 @@ public:
                         alpha,
                         static_cast<BYTE>(std::min(255, c.GetR() + 24)),
                         static_cast<BYTE>(std::min(255, c.GetG() + 18)),
-                        static_cast<BYTE>(std::max(100, c.GetB())));
+                        static_cast<BYTE>(std::max<int>(100, c.GetB())));
                 }
 
                 Gdiplus::Pen pen(c, width);

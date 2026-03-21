@@ -16,6 +16,22 @@ namespace mousefx::platform {
 
 namespace {
 
+std::string ReadEnvValue(const char* key) {
+#if defined(_WIN32)
+    char* raw = nullptr;
+    size_t length = 0;
+    if (_dupenv_s(&raw, &length, key) != 0 || raw == nullptr) {
+        return {};
+    }
+    std::string value(raw);
+    std::free(raw);
+    return value;
+#else
+    const char* raw = std::getenv(key);
+    return raw ? std::string(raw) : std::string();
+#endif
+}
+
 char ToLowerAscii(char c) {
     if (c >= 'A' && c <= 'Z') {
         return static_cast<char>(c - 'A' + 'a');
@@ -161,8 +177,8 @@ void ApplySingleInstanceKeyEnv(AppShellStartOptions* options) {
     if (!options) {
         return;
     }
-    const char* envKey = std::getenv("MFX_SINGLE_INSTANCE_KEY");
-    if (!envKey || *envKey == '\0') {
+    const std::string envKey = ReadEnvValue("MFX_SINGLE_INSTANCE_KEY");
+    if (envKey.empty()) {
         return;
     }
     ApplySingleInstanceKeyArg(envKey, options);
@@ -172,11 +188,11 @@ void ApplyRuntimeDebugEnv(AppShellStartOptions* options) {
     if (!options) {
         return;
     }
-    const char* envValue = std::getenv("MFX_RUNTIME_DEBUG");
-    if (!envValue || *envValue == '\0') {
-        envValue = std::getenv("MFX_DEBUG");
+    std::string envValue = ReadEnvValue("MFX_RUNTIME_DEBUG");
+    if (envValue.empty()) {
+        envValue = ReadEnvValue("MFX_DEBUG");
     }
-    if (!envValue || *envValue == '\0') {
+    if (envValue.empty()) {
         return;
     }
     bool enabled = false;

@@ -270,6 +270,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="Platform\PlatformEntryArgs.h" />
     <ClInclude Include="Platform\PlatformEntryRunner.h" />
     <ClInclude Include="Platform\PlatformTarget.h" />
+    <ClInclude Include="Platform\PlatformLaunchAtStartup.h" />
     <ClInclude Include="Platform\PlatformStartupOptionsFactory.h" />
     <ClInclude Include="Platform\PlatformWasmRuntimeFactory.h" />
     <ClInclude Include="Platform\PlatformTextEncoding.h" />
@@ -329,9 +330,11 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClInclude Include="MouseFx\Core\Protocol\VirtualKeyCodes.h" />
     <ClInclude Include="MouseFx\Core\Json\JsonFacade.h" />
     <ClInclude Include="MouseFx\Core\Protocol\MouseFxMessages.h" />
-    <ClInclude Include="MouseFx\Server\HttpServer.h" />
-    <ClInclude Include="MouseFx\Server\WebUiAssets.h" />
-    <ClInclude Include="MouseFx\Server\WebSettingsServer.h" />
+    <ClInclude Include="MouseFx\Server\http\HttpServer.h" />
+    <ClInclude Include="MouseFx\Server\webui\WebUiAssets.h" />
+    <ClInclude Include="MouseFx\Server\core\WebSettingsServer.h" />
+    <ClInclude Include="MouseFx\Server\settings\SettingsSchemaBuilder.h" />
+    <ClInclude Include="MouseFx\Server\settings\SettingsStateMapper.h" />
     <ClInclude Include="MouseFx\Effects\RippleEffect.h" />
     <ClInclude Include="MouseFx\Styles\RippleStyle.h" />
     <ClInclude Include="MouseFx\Styles\ThemeCatalogLoader.h" />
@@ -453,6 +456,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Control\AppController.Effects.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.InputCapture.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AppController.Lifecycle.cpp" />
+    <ClCompile Include="MouseFx\Core\Control\AppController.VmSuppression.cpp" />
     <ClCompile Include="MouseFx\Core\Control\AutomationDispatchFeature.cpp" />
     <ClCompile Include="MouseFx\Core\Control\InputIndicatorDispatchFeature.cpp" />
     <ClCompile Include="MouseFx\Core\Control\InputIndicatorWasmDispatchFeature.cpp" />
@@ -461,6 +465,8 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Control\WasmDispatchFeature.cpp" />
     <ClCompile Include="MouseFx\Core\Diagnostics\TextEffectRuntimeDiagnostics.cpp" />
     <ClCompile Include="MouseFx\Core\Automation\InputAutomationEngine.cpp" />
+    <ClCompile Include="MouseFx\Core\Automation\InputAutomationDispatch.cpp" />
+    <ClCompile Include="MouseFx\Core\Automation\GestureMatchSelection.cpp" />
     <ClCompile Include="MouseFx\Core\Automation\KeyChord.cpp" />
     <ClCompile Include="MouseFx\Core\Automation\ShortcutCaptureSession.cpp" />
     <ClCompile Include="MouseFx\Core\Config\ConfigPathResolver.cpp" />
@@ -491,6 +497,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\PlatformInputServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformOverlayServicesFactory.cpp" />
     <ClCompile Include="Platform\PlatformRuntimeEnvironment.cpp" />
+    <ClCompile Include="Platform\PlatformLaunchAtStartup.cpp" />
     <ClCompile Include="Platform\PlatformEffectFallbackFactory.cpp" />
     <ClCompile Include="Platform\PlatformHoldRuntimeFactory.cpp" />
     <ClCompile Include="Platform\PlatformSystemServicesFactory.cpp" />
@@ -507,6 +514,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="Platform\windows\Shell\Win32SingleInstanceGuard.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32TrayService.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32UserNotificationService.cpp" />
+    <ClCompile Include="Platform\windows\Shell\Win32ShellServicesFactory.cpp" />
     <ClCompile Include="Platform\windows\Overlay\Win32OverlayCoordSpaceService.cpp" />
     <ClCompile Include="Platform\windows\Overlay\Win32OverlayHostWindow.cpp" />
     <ClCompile Include="Platform\windows\Overlay\Win32OverlayTimerSupport.cpp" />
@@ -546,8 +554,11 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Renderers\Hold\Neon3D\Neon3DFx.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.ApplySettings.cpp" />
+    <ClCompile Include="MouseFx\Core\Control\CommandHandler.ApplySettings.AutomationWasm.cpp" />
+    <ClCompile Include="MouseFx\Core\Control\CommandHandler.ApplySettings.Visual.cpp" />
     <ClCompile Include="Platform\windows\System\Win32RuntimeEnvironment.cpp" />
     <ClCompile Include="MouseFx\Core\Control\DispatchRouter.cpp" />
+    <ClCompile Include="MouseFx\Core\Control\DispatchRouter.Pointer.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleBasedHoldRuntime.cpp" />
     <ClCompile Include="MouseFx\Renderers\Indicator\IndicatorRenderer.cpp" />
     <ClCompile Include="MouseFx\Styles\ThemeCatalogLoader.cpp" />
@@ -591,10 +602,14 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Wasm\WasmBinaryCodec.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmCommandBufferParser.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmExecutionBudgetGuard.cpp" />
-    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginManifest.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginManifest.Load.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginManifest.Validate.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginPaths.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginCatalog.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginTransferService.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginTransferService.Common.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginTransferService.Export.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmPluginTransferService.Import.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmPluginImageAssetCatalog.cpp" />
     <ClCompile Include="Platform\windows\Wasm\Win32DllWasmRuntime.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\NullWasmRuntime.cpp" />
@@ -603,6 +618,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Wasm\Wasm3Runtime.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmRuntimeFactory.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmEffectHost.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmEffectHost.Invoke.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmDynamicTextLabelScope.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmEventInvokeExecutor.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmCommandRenderer.cpp" />
@@ -610,6 +626,7 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="MouseFx\Core\Wasm\WasmPathFillCommandExecutor.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmPathStrokeCommandExecutor.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmRibbonStripCommandExecutor.cpp" />
+    <ClCompile Include="MouseFx\Core\Wasm\WasmSpriteBatchCommandExecutor.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmRetainedGlowEmitterRuntime.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmRetainedParticleEmitterRuntime.cpp" />
     <ClCompile Include="MouseFx\Core\Wasm\WasmRetainedQuadFieldRuntime.cpp" />
@@ -620,52 +637,119 @@ if exist "$(ProjectDir)Runtime\Dawn\d3dcompiler_47.dll" copy /Y "$(ProjectDir)Ru
     <ClCompile Include="WasmRuntimeBridge\third_party\wasm3\source\m3_bind.c">
       <CompileAs>CompileAsC</CompileAs>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>false</SDLCheck>
+      <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="WasmRuntimeBridge\third_party\wasm3\source\m3_code.c">
       <CompileAs>CompileAsC</CompileAs>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>false</SDLCheck>
+      <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="WasmRuntimeBridge\third_party\wasm3\source\m3_compile.c">
       <CompileAs>CompileAsC</CompileAs>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>false</SDLCheck>
+      <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="WasmRuntimeBridge\third_party\wasm3\source\m3_core.c">
       <CompileAs>CompileAsC</CompileAs>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>false</SDLCheck>
+      <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="WasmRuntimeBridge\third_party\wasm3\source\m3_env.c">
       <CompileAs>CompileAsC</CompileAs>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>false</SDLCheck>
+      <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="WasmRuntimeBridge\third_party\wasm3\source\m3_exec.c">
       <CompileAs>CompileAsC</CompileAs>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>false</SDLCheck>
+      <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="WasmRuntimeBridge\third_party\wasm3\source\m3_function.c">
       <CompileAs>CompileAsC</CompileAs>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>false</SDLCheck>
+      <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="WasmRuntimeBridge\third_party\wasm3\source\m3_info.c">
       <CompileAs>CompileAsC</CompileAs>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>false</SDLCheck>
+      <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="WasmRuntimeBridge\third_party\wasm3\source\m3_module.c">
       <CompileAs>CompileAsC</CompileAs>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>false</SDLCheck>
+      <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="WasmRuntimeBridge\third_party\wasm3\source\m3_parse.c">
       <CompileAs>CompileAsC</CompileAs>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <SDLCheck>false</SDLCheck>
+      <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="MouseFx\Utils\StringUtils.cpp" />
-    <ClCompile Include="MouseFx\Server\HttpServer.cpp" />
-    <ClCompile Include="MouseFx\Server\HttpServer.Protocol.cpp" />
-    <ClCompile Include="MouseFx\Server\WebUiAssets.cpp" />
-    <ClCompile Include="MouseFx\Server\WebSettingsServer.cpp" />
-    <ClCompile Include="MouseFx\Server\WebSettingsServer.Routing.cpp" />
-    <ClCompile Include="MouseFx\Server\WebSettingsServer.TokenMonitor.cpp" />
-    <ClCompile Include="MouseFx\Server\SettingsSchemaBuilder.cpp" />
-    <ClCompile Include="MouseFx\Server\SettingsStateMapper.cpp" />
+    <ClCompile Include="MouseFx\Server\http\HttpServer.cpp" />
+    <ClCompile Include="MouseFx\Server\http\HttpServer.ClientSession.cpp" />
+    <ClCompile Include="MouseFx\Server\http\HttpServer.Lifecycle.cpp" />
+    <ClCompile Include="MouseFx\Server\http\HttpServer.Protocol.cpp" />
+    <ClCompile Include="MouseFx\Server\core\WebSettingsServer.cpp" />
+    <ClCompile Include="MouseFx\Server\core\WebSettingsServer.Routing.cpp" />
+    <ClCompile Include="MouseFx\Server\core\WebSettingsServer.TokenMonitor.cpp" />
+    <ClCompile Include="MouseFx\Server\diagnostics\SettingsStateMapper.Diagnostics.cpp" />
+    <ClCompile Include="MouseFx\Server\diagnostics\SettingsStateMapper.InputCaptureDiagnostics.cpp" />
+    <ClCompile Include="MouseFx\Server\diagnostics\SettingsStateMapper.WasmDiagnostics.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.AutomationCatalogRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.AutomationRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.AutomationRouteUtils.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.AutomationShortcutCaptureRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationApiRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationInjectionApiRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationRouteUtils.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationScopeApiRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationShortcutApiRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\core\WebSettingsServer.CoreApiRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\core\WebSettingsServer.RequestGateway.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestApiRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsApiRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsOverlayApiRoute.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsProfileApiRoute.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestMouseCompanionApiRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestRouteCommon.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestWasmInputApiRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmCatalogQueryRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmCatalogRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmExportRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmImportFolderDialogRoute.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmImportRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmImportSelectedRoute.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmLoadManifestRoute.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmReloadRoute.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRouteParseUtils.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRoutePathUtils.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRouteResponseUtils.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRuntimeActionRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRuntimePolicyRoute.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRuntimeRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRuntimeStateRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmRuntimeToggleRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\settings\SettingsSchemaBuilder.cpp" />
+    <ClCompile Include="MouseFx\Server\settings\SettingsSchemaBuilder.CapabilitiesSections.cpp" />
+    <ClCompile Include="MouseFx\Server\settings\SettingsSchemaBuilder.OptionsSections.cpp" />
+    <ClCompile Include="MouseFx\Server\settings\SettingsStateMapper.cpp" />
+    <ClCompile Include="MouseFx\Server\settings\SettingsStateMapper.BaseSections.cpp" />
+    <ClCompile Include="MouseFx\Server\settings\SettingsStateMapper.EffectsDiagnostics.cpp" />
+    <ClCompile Include="MouseFx\Server\settings\SettingsStateMapper.EffectsProfileStateBuilder.cpp" />
+    <ClCompile Include="MouseFx\Server\settings\SettingsWasmCapabilities.cpp" />
+    <ClCompile Include="MouseFx\Server\webui\WebSettingsServer.WebUiPathResolver.cpp" />
+    <ClCompile Include="MouseFx\Server\webui\WebUiAssets.cpp" />
     <ClCompile Include="Settings\EmojiUtils.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

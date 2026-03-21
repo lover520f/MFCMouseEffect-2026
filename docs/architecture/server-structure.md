@@ -17,6 +17,9 @@ P1 (`docs/agent-context/current.md`) keeps only a brief summary.
 
 ## Include Boundary Notes
 - Compatibility wrapper headers under `MouseFx/Server` are removed; includes point to concrete sub-layer paths.
+- Windows VS project sync note (2026-03-21):
+  - `MFCMouseEffect.vcxproj` now compiles concrete sub-layer sources directly (`http/core/diagnostics/routes/settings/webui`) instead of stale root-level `MouseFx/Server/*.cpp` paths.
+  - Do not restore root-level compatibility `.cpp` wrappers just to satisfy Visual Studio; keep the project file synchronized to the real split layout.
 - POSIX shell include boundary tightened:
   - `PosixCoreAppShell.h` forward-declares `mousefx::AppController` / `mousefx::WebSettingsServer`.
   - concrete headers live in `.cpp` or action units only.

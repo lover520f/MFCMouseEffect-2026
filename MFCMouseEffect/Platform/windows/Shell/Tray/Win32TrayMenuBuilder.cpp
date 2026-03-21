@@ -342,7 +342,7 @@ static void AppendEffectSubMenu(HMENU parent,
     if (!sub) return;
 
     const std::string currentType = GetCurrentEffectType(mouseFx, category);
-    const bool zh = IsZhUi(mouseFx);
+    const bool zh = IsZhUi(mouseFx, nullptr);
     for (size_t i = 0; i < count; ++i) {
         const mousefx::EffectOption* option = &opts[i];
         UINT cmd = 0;

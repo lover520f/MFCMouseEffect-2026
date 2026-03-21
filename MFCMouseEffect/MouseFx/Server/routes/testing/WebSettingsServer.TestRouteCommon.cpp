@@ -11,6 +11,22 @@ namespace mousefx {
 namespace websettings_test_routes {
 namespace {
 
+std::string ReadEnvValue(const char* name) {
+#if defined(_WIN32)
+    char* raw = nullptr;
+    size_t length = 0;
+    if (_dupenv_s(&raw, &length, name) != 0 || raw == nullptr) {
+        return {};
+    }
+    std::string value(raw);
+    std::free(raw);
+    return value;
+#else
+    const char* raw = std::getenv(name);
+    return raw ? std::string(raw) : std::string();
+#endif
+}
+
 char ToLowerAscii(char c) {
     if (c >= 'A' && c <= 'Z') {
         return static_cast<char>(c - 'A' + 'a');
@@ -59,12 +75,12 @@ nlohmann::json ParseObjectOrEmpty(const std::string& body) {
 }
 
 bool IsEnabledByEnv(const char* name) {
-    const char* raw = std::getenv(name);
-    if (raw == nullptr || raw[0] == '\0') {
+    const std::string valueStorage = ReadEnvValue(name);
+    if (valueStorage.empty()) {
         return false;
     }
 
-    const std::string_view value(raw);
+    const std::string_view value(valueStorage);
     return value == "1" ||
            EqualsIgnoreCaseAscii(value, "true") ||
            EqualsIgnoreCaseAscii(value, "yes") ||

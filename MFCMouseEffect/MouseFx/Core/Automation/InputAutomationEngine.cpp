@@ -13,6 +13,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstdint>
+#include <string>
 
 namespace mousefx {
 namespace {
@@ -49,11 +50,27 @@ constexpr int kButtonLeft = 1;
 constexpr int kButtonRight = 2;
 constexpr int kButtonMiddle = 3;
 
+std::string ReadEnvValue(const char* key) {
+#if defined(_WIN32)
+    char* raw = nullptr;
+    size_t length = 0;
+    if (_dupenv_s(&raw, &length, key) != 0 || raw == nullptr) {
+        return {};
+    }
+    std::string value(raw);
+    std::free(raw);
+    return value;
+#else
+    const char* raw = std::getenv(key);
+    return raw ? std::string(raw) : std::string();
+#endif
+}
+
 double SimilarityAmbiguityMargin(double bestScore) {
-    const char* env = std::getenv("MFX_GESTURE_AMBIGUITY_MARGIN");
-    if (env != nullptr) {
+    const std::string env = ReadEnvValue("MFX_GESTURE_AMBIGUITY_MARGIN");
+    if (!env.empty()) {
         try {
-            const double overridden = std::stod(std::string(env));
+            const double overridden = std::stod(env);
             if (std::isfinite(overridden) && overridden >= 0.5 && overridden <= 20.0) {
                 return overridden;
             }
@@ -73,10 +90,10 @@ double SimilarityAmbiguityMargin(double bestScore) {
 }
 
 double CustomMinEffectiveStrokeLengthPx() {
-    const char* env = std::getenv("MFX_GESTURE_CUSTOM_MIN_EFFECTIVE_STROKE_PX");
-    if (env != nullptr) {
+    const std::string env = ReadEnvValue("MFX_GESTURE_CUSTOM_MIN_EFFECTIVE_STROKE_PX");
+    if (!env.empty()) {
         try {
-            const double overridden = std::stod(std::string(env));
+            const double overridden = std::stod(env);
             if (std::isfinite(overridden) && overridden >= 0.0 && overridden <= 300.0) {
                 return overridden;
             }
@@ -87,12 +104,12 @@ double CustomMinEffectiveStrokeLengthPx() {
 }
 
 int EnvIntClamped(const char* key, int fallback, int minValue, int maxValue) {
-    const char* env = std::getenv(key);
-    if (env == nullptr) {
+    const std::string env = ReadEnvValue(key);
+    if (env.empty()) {
         return fallback;
     }
     try {
-        const int parsed = std::stoi(std::string(env));
+        const int parsed = std::stoi(env);
         if (parsed < minValue || parsed > maxValue) {
             return fallback;
         }

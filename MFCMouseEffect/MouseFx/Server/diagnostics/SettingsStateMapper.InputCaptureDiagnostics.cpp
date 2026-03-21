@@ -3,11 +3,16 @@
 #include "SettingsStateMapper.Diagnostics.h"
 
 #include "MouseFx/Core/Control/AppController.h"
+#include "MouseFx/Utils/StringUtils.h"
 
 using json = nlohmann::json;
 
 namespace mousefx {
 namespace {
+
+std::string Utf8FromWide(const wchar_t* text) {
+    return Utf16ToUtf8(text);
+}
 
 const char* InputCaptureReasonToCode(AppController::InputCaptureFailureReason reason) {
     using Reason = AppController::InputCaptureFailureReason;
@@ -58,8 +63,10 @@ json BuildInputCaptureState(const AppController* controller, const std::string& 
     case AppController::InputCaptureFailureReason::PermissionDenied:
         if (zh) {
             notice["message"] =
-                "全局输入采集已降级：未授予 macOS 权限。请在“系统设置 > 隐私与安全性”中为 "
-                "MFCMouseEffect 同时开启“辅助功能”和“输入监控”。权限恢复后应用会自动恢复，无需重启。";
+                Utf8FromWide(
+                    L"\u672A\u6388\u4E88 macOS \u8F85\u52A9\u529F\u80FD\u548C\u8F93\u5165\u76D1\u63A7"
+                    L"\u6743\u9650\uFF0C\u8F93\u5165\u91C7\u96C6\u5DF2\u964D\u7EA7\uFF1B"
+                    L"\u6388\u6743\u540E\u65E0\u9700\u91CD\u542F\u3002");
         } else {
             notice["message"] =
                 "Global input capture is degraded: macOS permissions are missing. "
@@ -71,7 +78,9 @@ json BuildInputCaptureState(const AppController* controller, const std::string& 
     case AppController::InputCaptureFailureReason::Unsupported:
         if (zh) {
             notice["message"] =
-                "当前平台暂不支持全局输入采集，已自动降级为仅保留可用功能。";
+                Utf8FromWide(
+                    L"\u5F53\u524D\u5E73\u53F0\u6682\u4E0D\u652F\u6301\u5168\u5C40\u8F93\u5165\u91C7\u96C6"
+                    L"\uFF0C\u5DF2\u81EA\u52A8\u964D\u7EA7\u4E3A\u4EC5\u4FDD\u7559\u53EF\u7528\u529F\u80FD\u3002");
         } else {
             notice["message"] =
                 "Global input capture is not supported on this platform. "
@@ -82,8 +91,11 @@ json BuildInputCaptureState(const AppController* controller, const std::string& 
     default:
         if (zh) {
             notice["message"] =
-                std::string("全局输入采集启动失败，当前以降级模式运行。错误码：") +
-                std::to_string(status.error) + "。";
+                Utf8FromWide(
+                    L"\u5168\u5C40\u8F93\u5165\u91C7\u96C6\u542F\u52A8\u5931\u8D25\uFF0C"
+                    L"\u5F53\u524D\u4EE5\u964D\u7EA7\u6A21\u5F0F\u8FD0\u884C\u3002"
+                    L"\u9519\u8BEF\u7801\uFF1A") +
+                std::to_string(status.error) + Utf8FromWide(L"\u3002");
         } else {
             notice["message"] =
                 std::string("Global input capture failed to start. Running in degraded mode. Error code: ") +

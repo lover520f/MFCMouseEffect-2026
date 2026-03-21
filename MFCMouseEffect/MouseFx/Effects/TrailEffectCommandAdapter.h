@@ -22,7 +22,7 @@ inline TrailEffectProfile BuildTrailProfileFromConfig(
     const std::string& normalizedType,
     int historyDurationMs) {
     TrailEffectProfile profile{};
-    const RippleStyle style = GetThemePalette(config.theme).trail;
+    const RippleStyle style = GetThemePalette(config.theme).click;
     const int trailScalePercent = std::clamp(config.effectSizeScales.trail, 50, 200);
     const double sizeScale = static_cast<double>(trailScalePercent) / 100.0;
     const int baseSize = std::clamp(style.windowSize, 36, 220);

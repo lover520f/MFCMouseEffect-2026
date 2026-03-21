@@ -4,6 +4,7 @@
 #include "MouseFx/Utils/StringUtils.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace mousefx {
 namespace {

@@ -10,7 +10,10 @@
 #include "MouseFx/Server/http/HttpServer.h"
 #include "MouseFx/Server/routes/automation/WebSettingsServer.TestAutomationRouteUtils.h"
 #include "MouseFx/Server/routes/testing/WebSettingsServer.TestRouteCommon.h"
+#include "Platform/PlatformTarget.h"
+#if MFX_PLATFORM_MACOS
 #include "Platform/macos/System/MacosVirtualKeyMapper.h"
+#endif
 
 using json = nlohmann::json;
 
@@ -21,6 +24,19 @@ using websettings_test_routes::ParseInt32OrDefault;
 using websettings_test_routes::ParseObjectOrEmpty;
 using websettings_test_routes::SetJsonResponse;
 using websettings_test_routes::SetPlainResponse;
+
+namespace {
+
+uint32_t ResolveVirtualKeyFromMacKeyCode(uint16_t macKeyCode) {
+#if MFX_PLATFORM_MACOS
+    return macos_keymap::VirtualKeyFromMacKeyCode(macKeyCode);
+#else
+    (void)macKeyCode;
+    return 0;
+#endif
+}
+
+} // namespace
 
 bool HandleWebSettingsTestAutomationShortcutApiRoute(
     const HttpRequest& req,
@@ -38,7 +54,7 @@ bool HandleWebSettingsTestAutomationShortcutApiRoute(
             rawMacKeyCode >= 0 &&
             rawMacKeyCode <= static_cast<int32_t>(std::numeric_limits<uint16_t>::max());
         const uint32_t vkCode = validMacKeyCode
-            ? macos_keymap::VirtualKeyFromMacKeyCode(static_cast<uint16_t>(rawMacKeyCode))
+            ? ResolveVirtualKeyFromMacKeyCode(static_cast<uint16_t>(rawMacKeyCode))
             : 0;
 
         KeyEvent event{};

@@ -11,6 +11,22 @@
 namespace mousefx {
 namespace {
 
+std::string ReadEnvValue(const char* name) {
+#if defined(_WIN32)
+    char* raw = nullptr;
+    size_t length = 0;
+    if (_dupenv_s(&raw, &length, name) != 0 || raw == nullptr) {
+        return {};
+    }
+    std::string value(raw);
+    std::free(raw);
+    return value;
+#else
+    const char* raw = std::getenv(name);
+    return raw ? std::string(raw) : std::string();
+#endif
+}
+
 bool PathExists(const std::filesystem::path& path) {
     std::error_code ec;
     return std::filesystem::exists(path, ec) && !ec;
@@ -56,8 +72,8 @@ void AddWebUiDirIfExistsUnique(
 }
 
 void AddEnvWebUiDir(std::vector<std::filesystem::path>* outDirs) {
-    const char* envDir = std::getenv("MFX_WEBUI_DIR");
-    if (envDir == nullptr || envDir[0] == '\0') {
+    const std::string envDir = ReadEnvValue("MFX_WEBUI_DIR");
+    if (envDir.empty()) {
         return;
     }
     AddWebUiDirIfExistsUnique(std::filesystem::path(envDir), outDirs);
