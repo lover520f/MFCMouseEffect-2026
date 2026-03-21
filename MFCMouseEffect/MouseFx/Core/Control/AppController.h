@@ -285,8 +285,10 @@ public:
     void DispatchPetHoldEnd(const ScreenPoint& pt);
     void TickPetVisualFrame();
     void KillDispatchTimer(uintptr_t timerId);
-    std::string CurrentForegroundProcessBaseName();
+    std::string CurrentForegroundProcessBaseName() const;
+    std::string ProcessBaseNameForScreenPoint(const ScreenPoint& pt) const;
     bool IsEffectsBlockedByAppBlacklist();
+    bool IsEffectsBlockedByAppBlacklistAtPoint(const ScreenPoint& pt) const;
     bool InjectShortcutForTest(const std::string& chordText);
     std::string StartShortcutCaptureSession(uint64_t timeoutMs);
     void StopShortcutCaptureSession(const std::string& sessionId);
@@ -339,6 +341,7 @@ private:
 
     void NotifyGpuFallbackIfNeeded(const std::string& reason);
     void WriteGpuRouteStatusSnapshot(EffectCategory category, const std::string& requestedType, const std::string& effectiveType, const std::string& reason) const;
+    bool IsProcessBlockedByEffectsBlacklist(const std::string& processBaseName) const;
     void NotifyInputCaptureStatusChanged();
     void RefreshInputCaptureRuntimeState();
     void TryLoadDefaultPetModel();

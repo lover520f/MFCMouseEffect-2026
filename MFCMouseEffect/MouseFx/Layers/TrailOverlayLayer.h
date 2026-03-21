@@ -28,8 +28,9 @@ private:
     int maxPoints_ = 40;
     Gdiplus::Color color_{220, 100, 255, 218};
     bool isChromatic_ = false;
-    TrailPoint latestPoint_{};
+    TrailPoint latestPoint_{}; 
     bool hasLatestPoint_ = false;
+    uint64_t lastInputPointTickMs_ = 0;
     ScreenPoint lastSamplePt_{};
     bool hasLastSamplePt_ = false;
 };

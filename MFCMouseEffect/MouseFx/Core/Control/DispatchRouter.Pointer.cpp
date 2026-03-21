@@ -120,7 +120,7 @@ intptr_t DispatchRouter::OnMove(const DispatchMessage& message) {
 
     petFeature_.OnMouseMove(*ctrl_, pt);
     automationFeature_.OnMouseMove(*ctrl_, pt);
-    const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklist();
+    const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklistAtPoint(pt);
 
     const bool suppressTrailByPolicy = ShouldSuppressTrailWhileHold(ctrl_);
     const bool suppressHoldUpdateByPolicy = ShouldSuppressHoldUpdateWhileMove(ctrl_);
@@ -173,7 +173,7 @@ intptr_t DispatchRouter::OnScroll(const DispatchMessage& message) {
     petFeature_.OnScroll(*ctrl_, pt, static_cast<int>(delta));
     automationFeature_.OnScroll(*ctrl_, delta);
     indicatorFeature_.OnScroll(*ctrl_, ev);
-    const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklist();
+    const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklistAtPoint(pt);
 
     IMouseEffect* scrollEffect = ctrl_->GetEffect(EffectCategory::Scroll);
     bool scrollRenderedByWasm = false;
@@ -207,7 +207,7 @@ intptr_t DispatchRouter::OnButtonDown(const DispatchMessage& message) {
 #endif
 
     petFeature_.OnButtonDown(*ctrl_, pt, button);
-    const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklist();
+    const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklistAtPoint(pt);
     ctrl_->BeginHoldTracking(pt, button);
     automationFeature_.OnButtonDown(*ctrl_, pt, button);
     if (!effectsBlockedByAppBlacklist) {
@@ -240,7 +240,7 @@ intptr_t DispatchRouter::OnButtonUp(const DispatchMessage& message) {
     petFeature_.OnButtonUp(*ctrl_, pt, static_cast<int>(message.button));
     petFeature_.OnHoldEnd(*ctrl_, pt);
     automationFeature_.OnButtonUp(*ctrl_, pt, static_cast<int>(message.button));
-    const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklist();
+    const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklistAtPoint(pt);
     if (!effectsBlockedByAppBlacklist) {
         wasmFeature_.RouteHoldEndIfActive(*ctrl_, pt);
         if (auto* effect = ctrl_->GetEffect(EffectCategory::Hold)) {
@@ -278,7 +278,7 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
         }
         if (ctrl_->TryEnterHover(&pt)) {
             petFeature_.OnHoverStart(*ctrl_, pt);
-            if (!ctrl_->IsEffectsBlockedByAppBlacklist()) {
+            if (!ctrl_->IsEffectsBlockedByAppBlacklistAtPoint(pt)) {
                 bool hoverRenderedByWasm = false;
                 const bool hoverRouteActive = wasmFeature_.RouteHoverStart(*ctrl_, pt, &hoverRenderedByWasm);
                 if (!hoverRouteActive || !hoverRenderedByWasm) {
@@ -297,10 +297,6 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
             ctrl_->ClearPendingHold();
             return 0;
         }
-        if (ctrl_->IsEffectsBlockedByAppBlacklist()) {
-            ctrl_->ClearPendingHold();
-            return 0;
-        }
         const bool moveOnlyPolicy = (HoldMovePolicy(ctrl_) == "move_only");
         ScreenPoint pt{};
         int button = 0;
@@ -315,6 +311,9 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
 #else
             ctrl_->RememberLastPointerPoint(holdStartPt);
 #endif
+            if (ctrl_->IsEffectsBlockedByAppBlacklistAtPoint(holdStartPt)) {
+                return 0;
+            }
             if (moveOnlyPolicy) {
                 // In move-only mode, keep long-press lane disabled so trail
                 // rendering is not interrupted by hold start/end churn.
@@ -381,6 +380,10 @@ intptr_t DispatchRouter::OnTimer(const DispatchMessage& message) {
 #else
         ctrl_->RememberLastPointerPoint(pt);
 #endif
+        if (ctrl_->IsEffectsBlockedByAppBlacklistAtPoint(pt)) {
+            ctrl_->DisarmHoldUpdateTimer();
+            return 0;
+        }
         // Track cursor movement across timer ticks.
         const bool cursorMoved =
             (pt.x != sLastTimerPt.x || pt.y != sLastTimerPt.y);

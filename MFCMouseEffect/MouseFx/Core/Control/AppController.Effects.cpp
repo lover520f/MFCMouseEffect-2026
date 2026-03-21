@@ -15,6 +15,10 @@
 #include <fstream>
 #include <sstream>
 
+#if MFX_PLATFORM_WINDOWS
+#include <windows.h>
+#endif
+
 namespace mousefx {
 namespace {
 
@@ -31,6 +35,48 @@ constexpr std::array<ActiveCategoryDescriptor, 5> kActiveCategoryDescriptors{{
     {EffectCategory::Hold, &ActiveEffectConfig::hold, true},
     {EffectCategory::Hover, &ActiveEffectConfig::hover, true},
 }};
+
+} // namespace
+
+namespace {
+
+#if MFX_PLATFORM_WINDOWS
+std::string QueryProcessBaseNameFromWindowHandle(HWND hwnd, DWORD* outPid = nullptr) {
+    if (!hwnd || !IsWindow(hwnd)) {
+        return {};
+    }
+
+    DWORD pid = 0;
+    GetWindowThreadProcessId(hwnd, &pid);
+    if (pid == 0) {
+        return {};
+    }
+    if (outPid) {
+        *outPid = pid;
+    }
+
+    HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
+    if (!process) {
+        return {};
+    }
+
+    std::wstring fullPath;
+    fullPath.resize(1024);
+    DWORD size = static_cast<DWORD>(fullPath.size());
+    const BOOL ok = QueryFullProcessImageNameW(process, 0, fullPath.data(), &size);
+    CloseHandle(process);
+    if (!ok || size == 0) {
+        return {};
+    }
+
+    fullPath.resize(static_cast<size_t>(size));
+    const size_t slashPos = fullPath.find_last_of(L"\\/");
+    const std::wstring baseName = (slashPos == std::wstring::npos)
+        ? fullPath
+        : fullPath.substr(slashPos + 1);
+    return ToLowerAscii(TrimAscii(Utf16ToUtf8(baseName.c_str())));
+}
+#endif
 
 } // namespace
 
@@ -259,20 +305,50 @@ void AppController::SetEffectsBlacklistApps(const std::vector<std::string>& apps
     PersistConfig();
 }
 
-bool AppController::IsEffectsBlockedByAppBlacklist() {
+bool AppController::IsProcessBlockedByEffectsBlacklist(const std::string& processBaseName) const {
     if (config_.effectsBlacklistApps.empty()) {
         return false;
     }
-    const std::string currentProcess = CurrentForegroundProcessBaseName();
-    if (currentProcess.empty()) {
+    if (processBaseName.empty()) {
         return false;
     }
     for (const auto& blocked : config_.effectsBlacklistApps) {
-        if (automation_scope::IsSameProcessName(blocked, currentProcess)) {
+        if (automation_scope::IsSameProcessName(blocked, processBaseName)) {
             return true;
         }
     }
     return false;
+}
+
+bool AppController::IsEffectsBlockedByAppBlacklist() {
+    return IsProcessBlockedByEffectsBlacklist(CurrentForegroundProcessBaseName());
+}
+
+std::string AppController::ProcessBaseNameForScreenPoint(const ScreenPoint& pt) const {
+#if MFX_PLATFORM_WINDOWS
+    POINT nativePt{};
+    nativePt.x = pt.x;
+    nativePt.y = pt.y;
+    HWND hwnd = WindowFromPoint(nativePt);
+    if (hwnd && IsWindow(hwnd)) {
+        HWND root = GetAncestor(hwnd, GA_ROOTOWNER);
+        if (root && IsWindow(root)) {
+            hwnd = root;
+        }
+        DWORD pid = 0;
+        const std::string processBaseName = QueryProcessBaseNameFromWindowHandle(hwnd, &pid);
+        if (!processBaseName.empty() && pid != GetCurrentProcessId()) {
+            return processBaseName;
+        }
+    }
+#else
+    (void)pt;
+#endif
+    return CurrentForegroundProcessBaseName();
+}
+
+bool AppController::IsEffectsBlockedByAppBlacklistAtPoint(const ScreenPoint& pt) const {
+    return IsProcessBlockedByEffectsBlacklist(ProcessBaseNameForScreenPoint(pt));
 }
 
 IMouseEffect* AppController::GetEffect(EffectCategory category) const {

@@ -4,6 +4,11 @@
 #include "MouseFx/Core/System/CursorPositionProvider.h"
 
 namespace mousefx {
+namespace {
+
+constexpr uint64_t kTrailSyntheticFollowWindowMs = 48;
+
+} // namespace
 
 TrailOverlayLayer::TrailOverlayLayer(std::unique_ptr<ITrailRenderer> renderer, int durationMs, int maxPoints, Gdiplus::Color color, bool isChromatic)
     : renderer_(std::move(renderer)),
@@ -20,11 +25,13 @@ TrailOverlayLayer::TrailOverlayLayer(std::unique_ptr<ITrailRenderer> renderer, i
 void TrailOverlayLayer::AddPoint(const TrailPoint& point) {
     latestPoint_ = point;
     hasLatestPoint_ = true;
+    lastInputPointTickMs_ = point.addedTime;
 }
 
 void TrailOverlayLayer::Clear() {
     points_.clear();
     hasLastSamplePt_ = false;
+    lastInputPointTickMs_ = 0;
 }
 
 void TrailOverlayLayer::Update(uint64_t nowMs) {
@@ -55,7 +62,10 @@ void TrailOverlayLayer::SampleCursorPoint(uint64_t nowMs) {
         pt = incoming.pt;
         hasLatestPoint_ = false;
         havePoint = true;
-    } else if (TryGetCursorScreenPoint(&pt)) {
+    } else if (lastInputPointTickMs_ != 0 &&
+               nowMs >= lastInputPointTickMs_ &&
+               (nowMs - lastInputPointTickMs_) <= kTrailSyntheticFollowWindowMs &&
+               TryGetCursorScreenPoint(&pt)) {
         havePoint = true;
     }
     if (!havePoint) return;

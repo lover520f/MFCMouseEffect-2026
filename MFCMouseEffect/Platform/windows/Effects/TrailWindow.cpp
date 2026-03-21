@@ -10,6 +10,11 @@
 #include <cmath>
 
 namespace mousefx {
+namespace {
+
+constexpr uint64_t kTrailSyntheticFollowWindowMs = 48;
+
+}
 
 
 static const uint64_t kTopmostReassertIntervalMs = 2500;
@@ -94,12 +99,14 @@ bool TrailWindow::Create() {
 void TrailWindow::AddPoint(const TrailPoint& point) {
     latestPoint_ = point;
     hasLatestPoint_ = true;
+    lastInputPointTickMs_ = point.addedTime;
     UpdateFrameTimerForPoint(&point.pt, false);
 }
 
 void TrailWindow::Clear() {
     points_.clear();
     hasLastSamplePt_ = false;
+    lastInputPointTickMs_ = 0;
     UpdateLayered(); // Clear screen
 }
 
@@ -194,7 +201,10 @@ void TrailWindow::SampleCursorPoint(uint64_t nowMs) {
         hasLatestPoint_ = false;
         havePoint = true;
     } else {
-        if (TryGetCursorScreenPoint(&pt)) {
+        if (lastInputPointTickMs_ != 0 &&
+            nowMs >= lastInputPointTickMs_ &&
+            (nowMs - lastInputPointTickMs_) <= kTrailSyntheticFollowWindowMs &&
+            TryGetCursorScreenPoint(&pt)) {
             havePoint = true;
         }
     }

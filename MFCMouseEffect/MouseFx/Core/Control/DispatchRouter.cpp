@@ -83,7 +83,7 @@ intptr_t DispatchRouter::OnClick(const DispatchMessage& message) {
     if (ev) {
         ctrl_->RememberLastPointerPoint(ev->pt);
         petFeature_.OnClick(*ctrl_, *ev);
-        const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklist();
+        const bool effectsBlockedByAppBlacklist = ctrl_->IsEffectsBlockedByAppBlacklistAtPoint(ev->pt);
         bool renderedByWasm = false;
         bool wasmRouteActive = false;
         if (!effectsBlockedByAppBlacklist) {

@@ -1517,7 +1517,7 @@ uint32_t AppController::ResolveWasmFrameTimerIntervalMs() const {
     return static_cast<uint32_t>(std::clamp(intervalMs, 4, 1000));
 }
 
-std::string AppController::CurrentForegroundProcessBaseName() {
+std::string AppController::CurrentForegroundProcessBaseName() const {
     if (!foregroundProcessService_) {
         return {};
     }

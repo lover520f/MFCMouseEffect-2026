@@ -28,6 +28,10 @@
 - `click/trail/scroll/hold/hover` are active in `core`.
 - Shared command tail (`blend_mode/sort_key/group_id`) is active.
 - Group-retained model is active; transform/material/pass remain host-owned.
+- Windows effects blacklist routing fix (2026-03-21) is active:
+  - Problem classification: `Bug/regression`. On Windows, move-driven effects such as trail could keep rendering inside a blacklisted app because the blacklist gate relied only on foreground-process resolution, which could miss the actual target window under the cursor.
+  - The blacklist gate now resolves the process from the current screen point first on Windows (`WindowFromPoint -> root owner -> process image name`), then falls back to the foreground-process service. Pointer-driven `click/trail/scroll/hover/hold` effect lanes now use that point-based gate so blacklisted apps block the effect route more reliably.
+  - Follow-up root fix: Windows trail layers (`TrailOverlayLayer` and `TrailWindow`) previously kept synthesizing cursor-follow points for as long as the cursor moved, even after the move route itself stopped feeding new trail points. Synthetic follow sampling is now limited to a short post-input smoothing window only, so a blacklisted app can no longer keep trail alive indefinitely just because the internal trail layer still polls cursor position.
   - Click ripple default baseline refresh (2026-03-21) is active:
   - Problem classification: this was treated as a default-visual-quality issue, not a clear Windows/macOS divergence bug. Both platforms already shared similar click semantics; the weak point was that the built-in default pulse was still too heavy for recording/presentation use.
   - Windows click ripple no longer ignores `EffectConfig.ripple`; the native `ripple` / `star` path now builds click profiles from config-level geometry, per-button colors, and click size scale instead of theme-only defaults.

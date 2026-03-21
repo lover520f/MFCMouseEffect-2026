@@ -84,6 +84,7 @@ private:
     bool frameTimerArmed_ = false;
     TrailPoint latestPoint_{};
     bool hasLatestPoint_ = false;
+    uint64_t lastInputPointTickMs_ = 0;
     ScreenPoint lastSamplePt_{};
     bool hasLastSamplePt_ = false;
 
