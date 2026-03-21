@@ -108,8 +108,8 @@ Goal: reduce low-value token consumption and keep docs continuously usable for A
 - Optional line-limit hard gate: `./tools/docs/ai-context.sh check --strict --enforce-line-limits`
 - Optional local realtime update: `./tools/docs/ai-context.sh watch`
 - Optional pre-commit installer: `./tools/docs/install-git-hook.sh`
-- Known post-commit behavior: repository hooks may refresh `docs/.ai/context-index.json` and `docs/.ai/context-map.md` again after a successful commit, leaving timestamp-only diffs in the worktree.
-- Handling rule: treat that pair as expected generated-file drift unless the task explicitly changed AI context routing/content; mention it in handoff instead of reporting it as functional dirty state.
+- Pre-commit hook contract: repository hook regenerates `docs/.ai/context-index.json` and `docs/.ai/context-map.md` before commit and stages them into the same commit.
+- Handling rule: if that pair is dirty after a commit, treat it as a hook/config drift to fix instead of normal expected post-commit noise.
 - Generated artifacts:
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/.ai/context-index.json`
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/.ai/context-map.md`

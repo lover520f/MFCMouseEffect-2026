@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-21T12:02:02.433Z",
+  "generated_at": "2026-03-21T12:08:49.387Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -41,19 +41,18 @@
         "linux",
         "contract",
         "abi",
-        "routing",
         "debug"
       ],
       "summary": "Repository-level collaboration and engineering rules for AI agents and developers.",
       "when_to_read": "Always read first.",
       "line_count": 143,
-      "size_bytes": 8072,
-      "estimated_tokens": 2018,
+      "size_bytes": 7980,
+      "estimated_tokens": 1995,
       "max_read_tokens": 1500,
       "line_limit": 260,
       "line_limit_exceeded": false,
-      "hash_sha1": "4b046c59e1b335bfaf0e5f0005e82ee062559e11",
-      "updated_at": "2026-03-19T10:40:53.387Z"
+      "hash_sha1": "26da227ce2e685d828c63e68aa6220bb334eae52",
+      "updated_at": "2026-03-21T12:06:36.613Z"
     },
     {
       "id": "docs/agent-context/current.md",
@@ -1258,14 +1257,14 @@
       ],
       "summary": "Language: [English](README.md) | [中文](README.zh-CN.md)",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 114,
-      "size_bytes": 4492,
-      "estimated_tokens": 1123,
+      "line_count": 115,
+      "size_bytes": 4652,
+      "estimated_tokens": 1163,
       "max_read_tokens": 750,
       "line_limit": 140,
       "line_limit_exceeded": false,
-      "hash_sha1": "421b05834434644dd95ff5d360f56381da867c51",
-      "updated_at": "2026-03-21T08:12:52.434Z"
+      "hash_sha1": "416a47307805d9dbbb8d4536f17d183ca6b8e7f8",
+      "updated_at": "2026-03-21T12:06:44.846Z"
     },
     {
       "id": "docs/README.zh-CN.md",
@@ -1295,14 +1294,14 @@
       ],
       "summary": "语言： [English](README.md) | [中文](README.zh-CN.md)",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 115,
-      "size_bytes": 4610,
-      "estimated_tokens": 1153,
+      "line_count": 116,
+      "size_bytes": 4809,
+      "estimated_tokens": 1203,
       "max_read_tokens": 750,
       "line_limit": 140,
       "line_limit_exceeded": false,
-      "hash_sha1": "0b1f1b60ef7e8f5728129080290b9dec0b82510c",
-      "updated_at": "2026-03-21T08:12:52.435Z"
+      "hash_sha1": "b382ff132f71a59ea687b793f0b116d7f9e3bc2b",
+      "updated_at": "2026-03-21T12:06:52.362Z"
     },
     {
       "id": "docs/refactoring/phase-roadmap-macos-m1-status.md",

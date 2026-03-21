@@ -12,6 +12,9 @@ ROOT_DIR="$(git rev-parse --show-toplevel)"
 cd "$ROOT_DIR"
 
 ./tools/docs/ai-context.sh index
+# Stage regenerated artifacts into the same commit so the worktree
+# does not appear dirty immediately after commit.
+git add docs/.ai/context-index.json docs/.ai/context-map.md
 ./tools/docs/ai-context.sh check --strict
 EOF
 

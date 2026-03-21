@@ -73,6 +73,7 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/autom
 - 约束：
   - `route` 固定包含首读基线（P0 + P1），再按关键词和 token 预算补充 P2。
   - `check` 在 AGENTS/docs 已变化但未刷新索引时失败。
+  - 已安装的 `pre-commit` hook 会在提交前重新生成并自动 stage 这两个生成文件，所以正常情况下它们不应该在提交后再次作为“预期漂移”留在工作区。
 
 ## 本地命令
 ```bash

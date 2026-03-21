@@ -72,6 +72,7 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/autom
 - Contract:
   - `route` always keeps first-read baseline (P0 + P1) and adds keyword-matched P2 docs under token budget.
   - `check` fails when markdown/AGENTS changed but index was not refreshed.
+  - installed `pre-commit` hook regenerates and stages the two generated files into the same commit, so they should not normally reappear as post-commit drift.
 
 ## Local Commands
 ```bash
