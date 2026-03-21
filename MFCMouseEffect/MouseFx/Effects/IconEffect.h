@@ -1,7 +1,8 @@
 #pragma once
 
+#include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Core/Effects/ClickEffectCompute.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
-#include "MouseFx/Styles/RippleStyle.h"
 #include <string>
 
 namespace mousefx {
@@ -9,7 +10,7 @@ namespace mousefx {
 // Click effect that draws a star icon instead of a circle.
 class IconEffect final : public IMouseEffect {
 public:
-    explicit IconEffect(const std::string& themeName);
+    IconEffect(const std::string& themeName, const EffectConfig& config);
     ~IconEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Click; }
@@ -20,7 +21,7 @@ public:
     void OnClick(const ClickEvent& event) override;
 
 private:
-    RippleStyle style_{};
+    ClickEffectProfile profile_{};
     bool isChromatic_ = false;
 };
 

@@ -37,11 +37,11 @@ struct TextConfig {
 
 // Configuration for Ripple effect
 struct RippleConfig {
-    int durationMs = 350;
-    float startRadius = 0.0f;
-    float endRadius = 40.0f;
-    float strokeWidth = 2.5f;
-    int windowSize = 120;
+    int durationMs = 260;
+    float startRadius = 8.0f;
+    float endRadius = 44.0f;
+    float strokeWidth = 2.2f;
+    int windowSize = 112;
     
     // Per-button colors
     struct ButtonColors {
@@ -50,9 +50,9 @@ struct RippleConfig {
         Argb glow;
     };
     
-    ButtonColors leftClick{ {0x594FC3F7}, {0xFF0288D1}, {0x660288D1} };
-    ButtonColors rightClick{ {0x50FFB74D}, {0xFFFF6F00}, {0x55FF6F00} };
-    ButtonColors middleClick{ {0x5033D17A}, {0xFF0B8043}, {0x550B8043} };
+    ButtonColors leftClick{ {0x3D4FC3F7}, {0xFF0288D1}, {0x520288D1} };
+    ButtonColors rightClick{ {0x38FFB74D}, {0xFFFF6F00}, {0x4DFF6F00} };
+    ButtonColors middleClick{ {0x3833D17A}, {0xFF0B8043}, {0x4A0B8043} };
 };
 
 // Configuration for Trail effect

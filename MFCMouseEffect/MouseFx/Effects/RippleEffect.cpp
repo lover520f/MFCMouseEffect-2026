@@ -8,8 +8,8 @@
 
 namespace mousefx {
 
-RippleEffect::RippleEffect(const std::string& themeName) {
-    style_ = GetThemePalette(themeName).click;
+RippleEffect::RippleEffect(const std::string& themeName, const EffectConfig& config) {
+    profile_ = click_effect_adapter::BuildClickProfileFromConfig(config);
     isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
 }
 
@@ -29,17 +29,19 @@ void RippleEffect::OnClick(const ClickEvent& event) {
     params.loop = false;
     params.intensity = 1.0f;
 
-    RippleStyle runtimeStyle = style_;
-    if (isChromatic_) {
-        runtimeStyle = MakeRandomStyle(style_);
-    }
-    const ClickEffectRenderCommand command = ComputeClickEffectRenderCommand(
+    ClickEffectRenderCommand command = ComputeClickEffectRenderCommand(
         event.pt,
         event.button,
         TypeName(),
-        click_effect_adapter::BuildClickProfileFromStyle(runtimeStyle));
+        profile_);
+    if (isChromatic_) {
+        const RippleStyle chromaticStyle = MakeRandomStyle(click_effect_adapter::BuildRippleStyleFromCommand(command));
+        command.fillArgb = chromaticStyle.fill.value;
+        command.strokeArgb = chromaticStyle.stroke.value;
+        command.glowArgb = chromaticStyle.glow.value;
+    }
     const ClickEvent renderEvent = click_effect_adapter::BuildClickEventFromCommand(event, command);
-    const RippleStyle renderStyle = click_effect_adapter::BuildRippleStyleFromCommand(runtimeStyle, command);
+    const RippleStyle renderStyle = click_effect_adapter::BuildRippleStyleFromCommand(command);
 
     OverlayHostService::Instance().ShowRipple(
         renderEvent, renderStyle, std::make_unique<RippleRenderer>(), params);

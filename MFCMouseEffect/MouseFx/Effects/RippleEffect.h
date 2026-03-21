@@ -1,14 +1,15 @@
 #pragma once
 
+#include "MouseFx/Core/Config/EffectConfig.h"
+#include "MouseFx/Core/Effects/ClickEffectCompute.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
-#include "MouseFx/Styles/RippleStyle.h"
 #include <string>
 
 namespace mousefx {
 
 class RippleEffect final : public IMouseEffect {
 public:
-    explicit RippleEffect(const std::string& themeName);
+    RippleEffect(const std::string& themeName, const EffectConfig& config);
     ~RippleEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Click; }
@@ -19,7 +20,7 @@ public:
     void OnClick(const ClickEvent& event) override;
 
 private:
-    RippleStyle style_{};
+    ClickEffectProfile profile_{};
     bool isChromatic_ = false;
 };
 

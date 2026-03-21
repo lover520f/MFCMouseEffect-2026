@@ -44,11 +44,11 @@ constexpr size_t CategoryIndex(EffectCategory category) {
 }
 
 std::unique_ptr<IMouseEffect> CreateClickRipple(const std::string&, const EffectConfig& config) {
-    return std::make_unique<RippleEffect>(config.theme);
+    return std::make_unique<RippleEffect>(config.theme, config);
 }
 
 std::unique_ptr<IMouseEffect> CreateClickStar(const std::string&, const EffectConfig& config) {
-    return std::make_unique<IconEffect>(config.theme);
+    return std::make_unique<IconEffect>(config.theme, config);
 }
 
 std::unique_ptr<IMouseEffect> CreateClickText(const std::string&, const EffectConfig& config) {
