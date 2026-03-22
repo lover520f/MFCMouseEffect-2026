@@ -2,9 +2,15 @@
 
 #include "MouseFx/Core/Shell/AppShellCore.h"
 
+#include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <sstream>
 #include <utility>
 
+#include <nlohmann/json.hpp>
+
+#include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Core/Control/AppController.h"
 #include "MouseFx/Core/Control/IpcController.h"
 #include "MouseFx/Core/Shell/IDpiAwarenessService.h"
@@ -26,6 +32,8 @@
 namespace mousefx {
 
 namespace {
+
+using json = nlohmann::json;
 
 const char* StartStageToString(AppController::StartStage stage) {
     using S = AppController::StartStage;
@@ -77,6 +85,42 @@ std::string ToLowerAsciiCopy(std::string text) {
 bool IsZhLanguageToken(const std::string& uiLanguage) {
     const std::string normalized = ToLowerAsciiCopy(uiLanguage);
     return normalized.rfind("zh", 0) == 0;
+}
+
+std::wstring ResolveWebSettingsRuntimeInfoPath() {
+    std::filesystem::path baseDir(ResolveConfigDirectory());
+    return (baseDir / L"websettings_runtime_auto.json").wstring();
+}
+
+void WriteWebSettingsRuntimeInfo(const WebSettingsServer& server) {
+    const std::wstring outPath = ResolveWebSettingsRuntimeInfoPath();
+    if (outPath.empty()) {
+        return;
+    }
+
+    std::error_code ec;
+    std::filesystem::create_directories(std::filesystem::path(outPath).parent_path(), ec);
+    if (ec) {
+        return;
+    }
+
+    json root = {
+        {"url", server.Url()},
+        {"base_url", "http://127.0.0.1:" + std::to_string(server.Port())},
+        {"token", server.TokenCopy()},
+        {"port", server.Port()},
+        {"updated_at_unix_ms",
+         static_cast<long long>(
+             std::chrono::duration_cast<std::chrono::milliseconds>(
+                 std::chrono::system_clock::now().time_since_epoch())
+                 .count())},
+    };
+
+    std::ofstream out(std::filesystem::path(outPath), std::ios::binary | std::ios::trunc);
+    if (!out.is_open()) {
+        return;
+    }
+    out << root.dump(2);
 }
 
 std::string NormalizeEffectTypeForCategory(EffectCategory category, const std::string& type) {
@@ -521,6 +565,8 @@ void AppShellCore::ShowWebSettings() {
             return;
         }
     }
+
+    WriteWebSettingsRuntimeInfo(*webSettings_);
 
     if (!settingsLauncher_->OpenUrlUtf8(webSettings_->Url())) {
         NotifyWarning("MFCMouseEffect", "Web settings open failed.");

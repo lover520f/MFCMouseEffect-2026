@@ -256,7 +256,10 @@ If those hidden fields change while the host is already active, the Windows visu
      - single-event proof is also supported:
        - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -BaseUrl <url> -Token <token> -Route proof -Event click`
      - when validating the gated real preview path, prefer:
+       - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Preset real-preview-smoke`
        - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -BaseUrl <url> -Token <token> -Preset real-preview-smoke`
+     - when `-BaseUrl/-Token` are omitted, the native entry now auto-reads `%APPDATA%\MFCMouseEffect\websettings_runtime_auto.json`
+     - that handoff file is now written automatically when the app opens WebSettings, so the shortest Windows flow no longer needs manual copy/paste of the loopback URL and token
      - the `.cmd` entry forwards into a PowerShell implementation, so Windows bring-up no longer depends on Git Bash just to issue proof/sweep checks
      - the Windows-native entry exits non-zero if proof expectations are missed, so it can be used as a simple bring-up gate instead of only a logging helper
    - for a reusable Git Bash entry on Windows, run:

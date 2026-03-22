@@ -2,6 +2,7 @@
 param(
     [string]$BaseUrl = "",
     [string]$Token = "",
+    [string]$RuntimeFile = "",
     [ValidateSet("proof", "sweep")]
     [string]$Route = "sweep",
     [string]$Preset = "",
@@ -30,6 +31,7 @@ Usage:
 Options:
   -BaseUrl <url>               Required API base URL, e.g. http://127.0.0.1:8787
   -Token <token>               Required x-mfcmouseeffect-token value
+  -RuntimeFile <path>          Optional runtime handoff json; auto-used when BaseUrl/Token are omitted
   -Route <proof|sweep>         Route kind (default: sweep)
   -Preset <name>               Named preset (currently: real-preview-smoke)
   -Event <name>                Single proof event when -Route proof (default: status)
@@ -70,10 +72,36 @@ function Show-RealPreviewSmokeHint {
 '@ | Write-Host
 }
 
+function Resolve-DefaultRuntimeFile {
+    if (-not [string]::IsNullOrWhiteSpace($env:MFX_WEBSETTINGS_RUNTIME_FILE)) {
+        return $env:MFX_WEBSETTINGS_RUNTIME_FILE
+    }
+    if (-not [string]::IsNullOrWhiteSpace($env:APPDATA)) {
+        return (Join-Path $env:APPDATA "MFCMouseEffect\websettings_runtime_auto.json")
+    }
+    return ""
+}
+
+function Read-RuntimeHandoff([string]$Path) {
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return $null
+    }
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $null
+    }
+    try {
+        return Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
+    } catch {
+        Fail "failed to parse runtime handoff file: $Path"
+    }
+}
+
 if ($Help) {
     Show-Usage
     exit 0
 }
+
+$runtimeInfo = $null
 
 switch ($Preset) {
     "" { }
@@ -91,10 +119,31 @@ switch ($Preset) {
 }
 
 if ([string]::IsNullOrWhiteSpace($BaseUrl)) {
-    Fail "missing required -BaseUrl"
+    if ([string]::IsNullOrWhiteSpace($RuntimeFile)) {
+        $RuntimeFile = Resolve-DefaultRuntimeFile
+    }
+    $runtimeInfo = Read-RuntimeHandoff $RuntimeFile
+    if ($null -ne $runtimeInfo -and -not [string]::IsNullOrWhiteSpace($runtimeInfo.base_url)) {
+        $BaseUrl = [string]$runtimeInfo.base_url
+    }
 }
 if ([string]::IsNullOrWhiteSpace($Token)) {
-    Fail "missing required -Token"
+    if ([string]::IsNullOrWhiteSpace($RuntimeFile)) {
+        $RuntimeFile = Resolve-DefaultRuntimeFile
+    }
+    if ($null -eq $runtimeInfo) {
+        $runtimeInfo = Read-RuntimeHandoff $RuntimeFile
+    }
+    if ($null -ne $runtimeInfo -and -not [string]::IsNullOrWhiteSpace($runtimeInfo.token)) {
+        $Token = [string]$runtimeInfo.token
+    }
+}
+
+if ([string]::IsNullOrWhiteSpace($BaseUrl)) {
+    Fail "missing required -BaseUrl and no runtime handoff file could provide it"
+}
+if ([string]::IsNullOrWhiteSpace($Token)) {
+    Fail "missing required -Token and no runtime handoff file could provide it"
 }
 
 $endpoint = $BaseUrl.TrimEnd("/")
