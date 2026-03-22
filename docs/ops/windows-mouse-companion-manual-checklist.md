@@ -259,6 +259,7 @@ If those hidden fields change while the host is already active, the Windows visu
        - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-windows-mouse-companion-render-proof.sh --base-url <url> --token <token> --route sweep --expected-backend real --expect-preview-active true`
        - or use the shortest preset form:
          - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-windows-mouse-companion-render-proof.sh --base-url <url> --token <token> --preset real-preview-smoke`
+       - the preset now also prints a short human-readable expectation checklist before issuing the sweep, so a manual bring-up run can quickly confirm env/gate assumptions before reading the JSON-backed result rows
      - the script now exits non-zero if proof expectations are missed, so it can be used as a simple bring-up gate instead of only a logging helper
    - expected visual boundary:
      - current `real` backend still looks like a preview renderer, not macOS SceneKit parity

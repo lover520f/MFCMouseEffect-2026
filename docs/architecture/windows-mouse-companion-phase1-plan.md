@@ -225,6 +225,7 @@
   - the compact proof path and the sweep proof path now both support optional expected-backend and preview-active checks, so bring-up can validate renderer selection, preview activation, and frame advance through the same expectation model
   - real preview palette emphasis is now action-themed too, so glow/body/head/accent colors shift slightly toward the current action family rather than relying on overlay geometry alone
   - the Windows Git Bash bring-up helper now also exposes a `real-preview-smoke` preset, keeping the shortest real-preview gate as a named preset instead of another repeated long command form
+  - that smoke preset now also prints a short human-readable expectation checklist before it runs, so the shortest bring-up path can confirm env/gate assumptions without sending readers back to a separate doc first
   - face detailing is now action-aware too: pupil focus and eye-highlight intensity are renderer-owned, so state readability no longer depends only on brows/mouth/overlay geometry
 - Backend lifecycle fallback is now part of the seam:
   - registry/factory selection no longer treats constructor success as enough

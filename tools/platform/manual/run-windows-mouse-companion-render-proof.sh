@@ -32,6 +32,20 @@ Options:
 EOF
 }
 
+print_real_preview_smoke_hint() {
+    cat <<'EOF'
+[mfx:info] real-preview-smoke preset
+  - expected env:
+    - MFX_ENABLE_MOUSE_COMPANION_TEST_API=1
+    - MFX_WIN32_MOUSE_COMPANION_REAL_RENDERER_ENABLE=1
+    - optional: MFX_WIN32_MOUSE_COMPANION_RENDERER_BACKEND=real
+  - expected gate:
+    - selected backend should resolve to real
+    - preview should be active
+    - sweep should advance frames on action rows
+EOF
+}
+
 base_url=""
 token=""
 route_kind="sweep"
@@ -162,6 +176,10 @@ case "$preset_name" in
         mfx_fail "invalid --preset value: $preset_name (expected: real-preview-smoke)"
         ;;
 esac
+
+if [[ "$preset_name" == "real-preview-smoke" ]]; then
+    print_real_preview_smoke_hint
+fi
 
 mfx_require_non_negative_integer() {
     local raw_value="$1"
