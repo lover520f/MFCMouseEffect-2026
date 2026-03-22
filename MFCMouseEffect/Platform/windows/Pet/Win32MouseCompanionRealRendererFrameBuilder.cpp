@@ -80,6 +80,31 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
             profile.headNod,
         metrics.headWidth,
         metrics.headHeight);
+    scene.neckBridgeRect = Gdiplus::RectF(
+        scene.centerX - metrics.bodyWidth * style.neckBridgeXOffsetRatio + profile.bodyForward * 0.08f,
+        scene.headRect.GetBottom() - metrics.bodyHeight * style.neckBridgeYOffsetRatio,
+        metrics.bodyWidth * style.neckBridgeWidthRatio,
+        metrics.bodyHeight * style.neckBridgeHeightRatio);
+    scene.leftShoulderPatchRect = Gdiplus::RectF(
+        scene.bodyRect.X + metrics.bodyWidth * style.shoulderPatchXOffsetRatio,
+        scene.bodyRect.Y + metrics.bodyHeight * style.shoulderPatchYOffsetRatio,
+        metrics.bodyWidth * style.shoulderPatchWidthRatio,
+        metrics.bodyHeight * style.shoulderPatchHeightRatio);
+    scene.rightShoulderPatchRect = Gdiplus::RectF(
+        scene.bodyRect.GetRight() - metrics.bodyWidth * (style.shoulderPatchXOffsetRatio + style.shoulderPatchWidthRatio),
+        scene.bodyRect.Y + metrics.bodyHeight * style.shoulderPatchYOffsetRatio,
+        metrics.bodyWidth * style.shoulderPatchWidthRatio,
+        metrics.bodyHeight * style.shoulderPatchHeightRatio);
+    scene.leftHipPatchRect = Gdiplus::RectF(
+        scene.bodyRect.X + metrics.bodyWidth * style.hipPatchXOffsetRatio,
+        scene.bodyRect.GetBottom() - metrics.bodyHeight * (style.hipPatchYOffsetRatio + style.hipPatchHeightRatio),
+        metrics.bodyWidth * style.hipPatchWidthRatio,
+        metrics.bodyHeight * style.hipPatchHeightRatio);
+    scene.rightHipPatchRect = Gdiplus::RectF(
+        scene.bodyRect.GetRight() - metrics.bodyWidth * (style.hipPatchXOffsetRatio + style.hipPatchWidthRatio),
+        scene.bodyRect.GetBottom() - metrics.bodyHeight * (style.hipPatchYOffsetRatio + style.hipPatchHeightRatio),
+        metrics.bodyWidth * style.hipPatchWidthRatio,
+        metrics.bodyHeight * style.hipPatchHeightRatio);
     scene.pedestalRect = Gdiplus::RectF(
         scene.centerX - metrics.bodyWidth * style.pedestalXOffsetRatio,
         scene.shadowRect.GetBottom() - metrics.bodyHeight * style.pedestalYOffsetRatio,
