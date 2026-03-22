@@ -152,6 +152,22 @@ Win32MouseCompanionRealRendererMotionProfile BuildWin32MouseCompanionRealRendere
                                                : MakeColor(180, 111, 219, 255);
     profile.blushAlpha = PickBlushAlpha(runtime, profile.reactiveIntensity);
     profile.eyeOpen = runtime.hold ? 0.28f : (runtime.click ? 0.42f : 1.0f);
+    profile.pupilFocusX = runtime.drag ? runtime.facingSign * 0.95f
+        : runtime.follow               ? runtime.facingSign * 0.72f
+        : runtime.scroll               ? runtime.scrollSignedIntensity * 0.60f
+        : runtime.click                ? runtime.facingSign * 0.18f
+                                       : runtime.facingSign * 0.08f;
+    profile.pupilFocusY = runtime.click ? -0.30f
+        : runtime.hold                 ? 0.32f
+        : runtime.follow               ? -0.18f
+        : runtime.scroll               ? -runtime.scrollSignedIntensity * 0.14f
+                                       : -0.06f;
+    profile.eyeHighlightAlpha = runtime.hold ? 110.0f
+        : runtime.drag                      ? 150.0f
+        : runtime.click                     ? 235.0f
+        : runtime.follow                    ? 205.0f
+        : runtime.scroll                    ? 190.0f
+                                            : 182.0f;
     profile.browTilt = runtime.drag ? runtime.facingSign * 4.5f
         : runtime.scroll            ? runtime.scrollSignedIntensity * 5.5f
         : runtime.click             ? runtime.facingSign * 1.6f

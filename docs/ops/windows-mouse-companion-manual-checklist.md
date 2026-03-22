@@ -279,6 +279,9 @@ If those hidden fields change while the host is already active, the Windows visu
          - `click` should read as the happiest/openest expression
          - `hold` should look more concentrated/tense
          - `scroll` should show an offset mouth/brow expression
+       - the eyes should no longer read as static stickers:
+         - pupils should bias slightly toward facing/action direction
+         - eye highlights should feel brighter in `click/follow` and more restrained in `hold`
          - `follow` should look more alert
        - whole-body posture should now react too:
          - `click` should feel slightly lifted/lightened

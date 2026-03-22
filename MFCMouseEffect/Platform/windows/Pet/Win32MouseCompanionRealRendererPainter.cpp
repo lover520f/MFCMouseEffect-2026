@@ -209,6 +209,20 @@ void Win32MouseCompanionRealRendererPainter::Paint(
 
     FillEllipse(graphics, scene.leftEyeRect, scene.eyeFill, scene.eyeFill, 0.0f);
     FillEllipse(graphics, scene.rightEyeRect, scene.eyeFill, scene.eyeFill, 0.0f);
+    FillEllipse(graphics, scene.leftPupilRect, scene.mouthFill, scene.mouthFill, 0.0f);
+    FillEllipse(graphics, scene.rightPupilRect, scene.mouthFill, scene.mouthFill, 0.0f);
+    FillEllipse(
+        graphics,
+        scene.leftEyeHighlightRect,
+        WithAlpha(Gdiplus::Color(255, 255, 255, 255), scene.eyeHighlightAlpha),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.rightEyeHighlightRect,
+        WithAlpha(Gdiplus::Color(255, 255, 255, 255), scene.eyeHighlightAlpha),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
     FillEllipse(graphics, scene.noseRect, scene.mouthFill, scene.mouthFill, 0.0f);
     FillEllipse(graphics, scene.leftBlushRect, scene.blushFill, scene.blushFill, 0.0f);
     FillEllipse(graphics, scene.rightBlushRect, scene.blushFill, scene.blushFill, 0.0f);

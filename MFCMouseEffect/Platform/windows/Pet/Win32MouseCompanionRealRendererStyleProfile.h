@@ -50,6 +50,13 @@ struct Win32MouseCompanionRealRendererStyleProfile final {
 
     float eyeWidthPx{5.0f};
     float eyeHeightRatio{0.12f};
+    float pupilWidthPx{2.4f};
+    float pupilHeightRatio{0.50f};
+    float pupilFocusXScale{0.75f};
+    float pupilFocusYScale{0.42f};
+    float eyeHighlightSizePx{1.6f};
+    float eyeHighlightInsetXPx{0.9f};
+    float eyeHighlightInsetYPx{0.7f};
     float eyeLeftXRatio{0.20f};
     float eyeRightXRatio{0.20f};
     float eyeYRatio{0.43f};

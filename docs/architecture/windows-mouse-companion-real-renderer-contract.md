@@ -192,6 +192,7 @@ Before touching GPU-specific code, the safest first step is:
   - a compact `/api/mouse-companion/test-render-proof` route now exists beside dispatch testing; it should remain focused on renderer proof + preview summary, and it now shares the same optional backend/preview expectation checks as the sweep path while `/api/mouse-companion/test-dispatch` remains the heavier end-to-end dispatch contract
   - a compact `/api/mouse-companion/test-render-proof-sweep` route now also exists for bring-up sequencing; it should remain focused on a small fixed proof sequence and reuse the same render-proof/result semantics instead of inventing a second diagnostics schema
   - preview palette emphasis is renderer-owned too; future visual tuning should keep action-family tinting behind palette/style contracts instead of scattering ad-hoc color shifts through painter code
+  - face focus detailing is renderer-owned too; pupil offset and eye-highlight intensity should remain face-builder inputs derived from runtime motion state rather than controller-side flags or painter-local heuristics
   - the first real-renderer requirement seam is now active too:
     - `Win32MouseCompanionRealRendererAssetResources`
     - it adapts shared `model / action_library / appearance_profile` lanes into a renderer-facing resource contract

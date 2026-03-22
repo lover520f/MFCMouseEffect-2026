@@ -77,6 +77,10 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::RectF rightLegRect{};
     Gdiplus::RectF leftEyeRect{};
     Gdiplus::RectF rightEyeRect{};
+    Gdiplus::RectF leftPupilRect{};
+    Gdiplus::RectF rightPupilRect{};
+    Gdiplus::RectF leftEyeHighlightRect{};
+    Gdiplus::RectF rightEyeHighlightRect{};
     Gdiplus::PointF leftBrowStart{};
     Gdiplus::PointF leftBrowEnd{};
     Gdiplus::PointF rightBrowStart{};
@@ -88,6 +92,7 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::RectF noseRect{};
     Gdiplus::RectF leftBlushRect{};
     Gdiplus::RectF rightBlushRect{};
+    float eyeHighlightAlpha{190.0f};
     Gdiplus::RectF pedestalRect{};
     std::array<Gdiplus::RectF, 3> laneBadgeRects{};
     std::array<bool, 3> laneReady{};
