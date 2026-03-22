@@ -142,7 +142,7 @@ void WriteWebSettingsRuntimeInfo(const WebSettingsServer& server) {
 
     const std::string url = server.Url();
     const std::string baseUrl = "http://127.0.0.1:" + std::to_string(server.Port());
-    const std::string token = server.TokenCopy();
+    const std::string token = server.Token();
     const long long updatedAtUnixMs =
         static_cast<long long>(
             std::chrono::duration_cast<std::chrono::milliseconds>(
