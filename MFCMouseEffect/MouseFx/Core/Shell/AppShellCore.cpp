@@ -5,10 +5,9 @@
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 #include <utility>
-
-#include <nlohmann/json.hpp>
 
 #include "MouseFx/Core/Config/ConfigPathResolver.h"
 #include "MouseFx/Core/Control/AppController.h"
@@ -32,8 +31,6 @@
 namespace mousefx {
 
 namespace {
-
-using json = nlohmann::json;
 
 const char* StartStageToString(AppController::StartStage stage) {
     using S = AppController::StartStage;
@@ -92,6 +89,45 @@ std::wstring ResolveWebSettingsRuntimeInfoPath() {
     return (baseDir / L"websettings_runtime_auto.json").wstring();
 }
 
+std::string EscapeJsonString(const std::string& value) {
+    std::string escaped;
+    escaped.reserve(value.size() + 8);
+    for (unsigned char ch : value) {
+        switch (ch) {
+        case '\\':
+            escaped += "\\\\";
+            break;
+        case '"':
+            escaped += "\\\"";
+            break;
+        case '\n':
+            escaped += "\\n";
+            break;
+        case '\r':
+            escaped += "\\r";
+            break;
+        case '\t':
+            escaped += "\\t";
+            break;
+        default:
+            if (ch < 0x20) {
+                std::ostringstream controlEscape;
+                controlEscape << "\\u"
+                              << std::hex
+                              << std::uppercase
+                              << std::setw(4)
+                              << std::setfill('0')
+                              << static_cast<int>(ch);
+                escaped += controlEscape.str();
+            } else {
+                escaped.push_back(static_cast<char>(ch));
+            }
+            break;
+        }
+    }
+    return escaped;
+}
+
 void WriteWebSettingsRuntimeInfo(const WebSettingsServer& server) {
     const std::wstring outPath = ResolveWebSettingsRuntimeInfoPath();
     if (outPath.empty()) {
@@ -104,23 +140,26 @@ void WriteWebSettingsRuntimeInfo(const WebSettingsServer& server) {
         return;
     }
 
-    json root = {
-        {"url", server.Url()},
-        {"base_url", "http://127.0.0.1:" + std::to_string(server.Port())},
-        {"token", server.TokenCopy()},
-        {"port", server.Port()},
-        {"updated_at_unix_ms",
-         static_cast<long long>(
-             std::chrono::duration_cast<std::chrono::milliseconds>(
-                 std::chrono::system_clock::now().time_since_epoch())
-                 .count())},
-    };
+    const std::string url = server.Url();
+    const std::string baseUrl = "http://127.0.0.1:" + std::to_string(server.Port());
+    const std::string token = server.TokenCopy();
+    const long long updatedAtUnixMs =
+        static_cast<long long>(
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::system_clock::now().time_since_epoch())
+                .count());
 
     std::ofstream out(std::filesystem::path(outPath), std::ios::binary | std::ios::trunc);
     if (!out.is_open()) {
         return;
     }
-    out << root.dump(2);
+    out << "{\n"
+        << "  \"url\": \"" << EscapeJsonString(url) << "\",\n"
+        << "  \"base_url\": \"" << EscapeJsonString(baseUrl) << "\",\n"
+        << "  \"token\": \"" << EscapeJsonString(token) << "\",\n"
+        << "  \"port\": " << server.Port() << ",\n"
+        << "  \"updated_at_unix_ms\": " << updatedAtUnixMs << "\n"
+        << "}\n";
 }
 
 std::string NormalizeEffectTypeForCategory(EffectCategory category, const std::string& type) {
