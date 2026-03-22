@@ -5,6 +5,8 @@
 #include "Platform/windows/Pet/Win32MouseCompanionPlaceholderPainter.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRendererBackendRegistry.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRendererRuntime.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRenderPluginHost.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
 #include "Platform/windows/Pet/Win32MouseCompanionPlaceholderScene.h"
 #include "Platform/windows/Pet/Win32MouseCompanionPlaceholderSceneBuilder.h"
 
@@ -62,6 +64,7 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
     const Win32MouseCompanionRendererRuntime runtime = BuildWin32MouseCompanionRendererRuntime(input);
     const Win32MouseCompanionPlaceholderScene scene =
         BuildWin32MouseCompanionPlaceholderScene(runtime, width, height);
+    const auto pluginSelection = ResolveWin32MouseCompanionRenderPluginSelection();
     const Win32MouseCompanionPlaceholderPainter painter{};
     painter.Paint(scene, graphics, width, height);
 
@@ -84,6 +87,41 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
     diagnostics.surfaceWidth = width;
     diagnostics.surfaceHeight = height;
     diagnostics.modelSourceFormat = "phase1_placeholder";
+    diagnostics.appearanceSkinVariantId = input.appearanceProfile.skinVariantId;
+    diagnostics.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;
+    const auto accessoryFamily =
+        ResolveWin32MouseCompanionRealRendererAppearanceAccessoryFamily(
+            input.appearanceProfile.enabledAccessoryIds);
+    diagnostics.appearanceAccessoryFamily =
+        ToStringWin32MouseCompanionRealRendererAppearanceAccessoryFamily(accessoryFamily);
+    diagnostics.appearanceComboPreset =
+        ToStringWin32MouseCompanionRealRendererAppearanceComboPreset(
+            ResolveWin32MouseCompanionRealRendererAppearanceComboPreset(
+                input.appearanceProfile.skinVariantId,
+                accessoryFamily));
+    if (pluginSelection.comboPresetOverride !=
+        Win32MouseCompanionRealRendererAppearanceComboPreset::None) {
+        diagnostics.appearanceComboPreset =
+            ToStringWin32MouseCompanionRealRendererAppearanceComboPreset(
+                pluginSelection.comboPresetOverride);
+    }
+    diagnostics.appearanceRequestedPresetId = input.appearanceProfile.requestedPresetId;
+    diagnostics.appearanceResolvedPresetId = input.appearanceProfile.resolvedPresetId;
+    diagnostics.appearancePluginId = pluginSelection.pluginId;
+    diagnostics.appearancePluginKind = pluginSelection.pluginKind;
+    diagnostics.appearancePluginSource = pluginSelection.pluginSource;
+    diagnostics.appearancePluginSelectionReason = pluginSelection.selectionReason;
+    diagnostics.appearancePluginFailureReason = pluginSelection.failureReason;
+    diagnostics.appearancePluginManifestPath = pluginSelection.manifestPath;
+    diagnostics.appearancePluginRuntimeBackend = pluginSelection.runtimeBackend;
+    diagnostics.appearancePluginMetadataPath = pluginSelection.metadataPath;
+    diagnostics.appearancePluginMetadataSchemaVersion =
+        pluginSelection.metadataSchemaVersion;
+    diagnostics.appearancePluginAppearanceSemanticsMode =
+        pluginSelection.appearanceSemanticsMode;
+    diagnostics.defaultLaneCandidate = pluginSelection.defaultLaneCandidate;
+    diagnostics.defaultLaneSource = pluginSelection.defaultLaneSource;
+    diagnostics.defaultLaneRolloutStatus = pluginSelection.defaultLaneRolloutStatus;
     std::lock_guard<std::mutex> guard(runtimeDiagnosticsMutex_);
     diagnostics.renderedFrameCount = runtimeDiagnostics_.renderedFrameCount + 1;
     runtimeDiagnostics_ = std::move(diagnostics);

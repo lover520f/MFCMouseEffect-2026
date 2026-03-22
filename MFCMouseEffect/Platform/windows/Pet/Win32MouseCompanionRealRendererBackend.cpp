@@ -3,8 +3,10 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererBackend.h"
 
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetResources.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererCapabilities.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererPainter.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRenderPluginHost.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererSceneBuilder.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererSceneRuntime.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRendererBackendRegistry.h"
@@ -62,6 +64,7 @@ void Win32MouseCompanionRealRendererBackend::Render(
     const auto resources = BuildWin32MouseCompanionRealRendererAssetResources(input);
     const auto sceneRuntime = BuildWin32MouseCompanionRealRendererSceneRuntime(input, resources);
     const auto scene = BuildWin32MouseCompanionRealRendererScene(sceneRuntime, width, height);
+    const auto pluginSelection = ResolveWin32MouseCompanionRenderPluginSelection();
     const Win32MouseCompanionRealRendererPainter painter{};
     painter.Paint(scene, graphics, width, height);
 
@@ -84,6 +87,41 @@ void Win32MouseCompanionRealRendererBackend::Render(
     diagnostics.surfaceWidth = width;
     diagnostics.surfaceHeight = height;
     diagnostics.modelSourceFormat = resources.modelSourceFormat;
+    diagnostics.appearanceSkinVariantId = resources.appearanceProfileSkinVariantId;
+    diagnostics.appearanceAccessoryIds = resources.appearanceAccessoryIds;
+    const auto accessoryFamily =
+        ResolveWin32MouseCompanionRealRendererAppearanceAccessoryFamily(
+            resources.appearanceAccessoryIds);
+    diagnostics.appearanceAccessoryFamily =
+        ToStringWin32MouseCompanionRealRendererAppearanceAccessoryFamily(accessoryFamily);
+    diagnostics.appearanceComboPreset =
+        ToStringWin32MouseCompanionRealRendererAppearanceComboPreset(
+            ResolveWin32MouseCompanionRealRendererAppearanceComboPreset(
+                resources.appearanceProfileSkinVariantId,
+                accessoryFamily));
+    if (pluginSelection.comboPresetOverride !=
+        Win32MouseCompanionRealRendererAppearanceComboPreset::None) {
+        diagnostics.appearanceComboPreset =
+            ToStringWin32MouseCompanionRealRendererAppearanceComboPreset(
+                pluginSelection.comboPresetOverride);
+    }
+    diagnostics.appearanceRequestedPresetId = resources.appearanceRequestedPresetId;
+    diagnostics.appearanceResolvedPresetId = resources.appearanceResolvedPresetId;
+    diagnostics.appearancePluginId = pluginSelection.pluginId;
+    diagnostics.appearancePluginKind = pluginSelection.pluginKind;
+    diagnostics.appearancePluginSource = pluginSelection.pluginSource;
+    diagnostics.appearancePluginSelectionReason = pluginSelection.selectionReason;
+    diagnostics.appearancePluginFailureReason = pluginSelection.failureReason;
+    diagnostics.appearancePluginManifestPath = pluginSelection.manifestPath;
+    diagnostics.appearancePluginRuntimeBackend = pluginSelection.runtimeBackend;
+    diagnostics.appearancePluginMetadataPath = pluginSelection.metadataPath;
+    diagnostics.appearancePluginMetadataSchemaVersion =
+        pluginSelection.metadataSchemaVersion;
+    diagnostics.appearancePluginAppearanceSemanticsMode =
+        pluginSelection.appearanceSemanticsMode;
+    diagnostics.defaultLaneCandidate = pluginSelection.defaultLaneCandidate;
+    diagnostics.defaultLaneSource = pluginSelection.defaultLaneSource;
+    diagnostics.defaultLaneRolloutStatus = pluginSelection.defaultLaneRolloutStatus;
     std::lock_guard<std::mutex> guard(runtimeDiagnosticsMutex_);
     diagnostics.renderedFrameCount = runtimeDiagnostics_.renderedFrameCount + 1;
     runtimeDiagnostics_ = std::move(diagnostics);

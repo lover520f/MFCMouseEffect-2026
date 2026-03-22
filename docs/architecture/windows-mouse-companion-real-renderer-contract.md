@@ -67,6 +67,22 @@ Input meaning:
 Contract rule:
 - appearance profile remains a first-class asset lane independent of full model reload
 - renderer consumes resolved appearance intent, not controller-specific branching
+- Windows Phase1.5 real preview still stays in stylized 2D geometry space rather than macOS SceneKit model rendering, so the near-term parity target is asset-intent alignment instead of renderer-form-factor parity
+- resolved appearance intent should drive a coherent preview family (body/head/ear/accessory/pedestal palette decisions), not only a single body-fill override, so Windows can approximate macOS asset-theme feedback before full model rendering exists
+- resolved appearance intent may also bias lightweight frame/face proportions inside renderer-owned builders (for example body/head ratio, muzzle/jaw/cheek emphasis), so `skinVariantId` affects more than color while still staying below full-model geometry replacement
+- the same lightweight appearance-structure bias may extend into appendage and patch layers too (for example ear scale, tail thickness, shoulder/hip patch fullness), so Windows can express a family look across the whole pet without breaking the Phase1.5 stylized-preview contract
+- appearance intent may also bias lightweight expression tuning (for example brow tilt, pupil focus, mouth reactivity, highlight/whisker emphasis) inside renderer-owned face builders, so different skins can feel slightly different under the same action without forking controller action semantics
+- the same lightweight appearance intent may bias appendage/body action cadence too (for example follow reach, hold stance, ear spread, tail width/height response), so different skins can carry slightly different movement character while action ownership still remains in shared runtime/controller layers
+- if needed, that appearance-driven movement character may also reach renderer-owned motion synthesis itself (for example follow lift, click squash, drag lean, head nod, tail swing scaling), but only as a lightweight bias layered on top of shared action semantics rather than a new action taxonomy
+- once appearance intent reaches palette/frame/face/appendage/motion together, those branches should be centralized behind one renderer-owned semantics source instead of being re-expanded independently in each builder; current Phase1.5 now expects that consolidation through `Win32MouseCompanionRealRendererAppearanceSemantics`
+- accessory semantics should stay renderer-owned but asset-driven; `appearanceAccessoryIds` may map to distinct preview adornment families (for example star / moon / leaf / ribbon) instead of collapsing every accessory into one generic badge glyph
+- accessory-family selection should also carry a small amount of shape-specific staging (anchor/offset/bounds tuning) inside renderer contracts, so Windows preview can approximate asset-specific attachment semantics without leaking adornment branching back into controller layers
+- accessory-family differentiation should reach lightweight internal detail too (for example moon inset highlight, leaf vein, ribbon fold lines), so asset intent is visible as family-specific structure instead of only a silhouette swap
+- accessory-family semantics may also bias lightweight motion/staging within renderer-owned adornment contracts (for example moon lift, leaf sway, ribbon bounce) as long as controller-visible action semantics stay unchanged and the behavior remains a presentation concern
+- once skin and accessory semantics both exist, their combination should also be allowed to bias renderer-owned presentation lightly (for example head/face emphasis, appendage cadence, motion softness/sharpness) through the same centralized semantics source, so Windows preview can consume `skinVariantId + accessory family` as one appearance system instead of two disconnected override lanes
+- that same centralized combination semantics may also bias preview mood/grounding contracts lightly (for example glow/accent tint strength, shadow/pedestal weight, overlay emphasis) as long as those changes remain renderer-owned presentation effects and do not create a new controller-visible action/state taxonomy
+- high-value appearance combinations may also resolve to stable renderer-owned persona presets (for example dreamy/agile/charming) as long as those presets remain centralized inside the renderer semantics source and bias only renderer-owned presentation layers rather than introducing a new shared runtime taxonomy
+- that renderer-owned semantics source should now be treated as plugin-hosted rather than permanently hardcoded in builders; Phase1.5 currently uses a builtin native plugin behind `Win32MouseCompanionRenderPluginHost`, and future wasm adoption should replace the provider behind that seam instead of reopening every builder
 
 ### 4. Pose-Frame Lane
 Input meaning:
@@ -103,6 +119,107 @@ It should **not** own:
 - controller config parsing
 - launch/show/hide lifecycle policy
 - cross-platform runtime semantics
+
+## Renderer Plugin Host Contract
+
+### Situation
+- `appearance / accessory family / combo persona / motion bias` 这类语义属于 renderer-owned presentation。
+- 若这些语义长期散在 builder/painter 内部，后续 wasm 接入会被迫再次拆层。
+
+### Target
+- renderer plugin host 负责：
+  - 选择 provider
+  - 调用 provider
+  - 暴露统一 diagnostics
+- provider 负责：
+  - 把共享 runtime/style/appearance 输入扩展成 renderer-owned semantics
+
+### Action
+- 当前输入保持收敛：
+  - `SceneRuntime`
+  - `StyleProfile`
+  - appearance asset context
+- 当前输出保持结构化：
+  - `theme`
+  - `frame/face/appendage/motion/adornment/mood semantics`
+  - `combo preset`
+- wasm 正确挂载方式应为：
+  - `wasm module -> wasm adapter -> renderer plugin host -> renderer builders`
+- 当前 Windows-first skeleton 选择面先固定为环境变量：
+  - `MFX_WIN32_MOUSE_COMPANION_RENDER_PLUGIN=auto|builtin|wasm`
+  - `MFX_WIN32_MOUSE_COMPANION_RENDER_PLUGIN_WASM_MANIFEST=<manifest path>`
+  - `wasm` 请求失败时必须自动回退到 builtin provider，不能让 renderer bring-up 因 provider 装载失败而整体不可用
+- 当前 renderer-plugin wasm manifest 预检合同：
+  - manifest 必须声明 `effects` surface
+  - manifest 必须启用 `frame_tick`
+  - 若 manifest 同目录存在可选 sidecar `<manifest>.mouse_companion_renderer.json`（replace-extension 语义），则其中必须声明：
+    - `schema_version >= 1`
+    - `renderer_lane = mouse_companion_renderer`
+    - `supports_appearance_semantics = true`
+    - `appearance_semantics_mode = builtin_passthrough|wasm_v1`
+    - 当 mode=`builtin_passthrough` 时：
+      - optional `combo_preset_override = none|dreamy|agile|charming`
+      - optional controlled tuning floats (`0.5 ~ 1.5`):
+        - `follow_lift_scale`
+        - `click_squash_scale`
+        - `drag_lean_scale`
+        - `highlight_alpha_scale`
+        - `follow_tail_swing_scale`
+        - `hold_head_nod_scale`
+        - `scroll_tail_lift_scale`
+        - `follow_head_nod_scale`
+    - 当 mode=`wasm_v1` 时：
+      - 仍可带 `combo_preset_override`
+      - 必须声明 `appearance_semantics` object
+      - 当前受控字段为：
+        - `theme.glow_color / body_stroke / head_fill / accent_fill / accessory_fill / pedestal_fill`
+        - `frame.body_width_scale / head_width_scale / head_height_scale`
+        - `face.blush_width_scale / pupil_focus_scale / highlight_alpha_scale / whisker_spread_scale`
+        - `appendage.ear_scale / tail_width_scale / follow_tail_width_scale / follow_ear_spread_scale`
+        - `motion.follow_state_lift_scale / click_squash_scale / drag_lean_scale / hold_head_nod_scale / scroll_tail_lift_scale / follow_head_nod_scale`
+        - `mood.glow_tint_mix_scale / accent_tint_mix_scale / shadow_alpha_bias / pedestal_alpha_bias / scroll_arc_alpha_scale / follow_trail_alpha_scale`
+      - scale 类字段当前受控范围默认仍为 `0.5 ~ 1.5`
+      - `shadow_alpha_bias / pedestal_alpha_bias` 当前受控范围为 `-24 ~ 24`
+  - 任何预检失败都按 provider attach 失败处理，并通过统一 fallback diagnostics 暴露给 `/api/state` / render-proof
+  - 这组预检与失败归因应集中维护在独立 contract/helper 文件中，而不是继续散落在 renderer host 与 builder 内部
+  - failure reason 应优先输出稳定 code，例如 `renderer_plugin_manifest_io_error / renderer_plugin_manifest_json_parse_error / renderer_plugin_manifest_invalid / renderer_plugin_metadata_io_error / renderer_plugin_metadata_json_parse_error / renderer_plugin_metadata_invalid / renderer_plugin_metadata_lane_mismatch / renderer_plugin_metadata_missing_appearance_semantics / renderer_plugin_metadata_appearance_mode_unsupported / renderer_plugin_metadata_combo_preset_unsupported / renderer_plugin_metadata_tuning_out_of_range / renderer_plugin_metadata_missing_appearance_semantics_payload / renderer_plugin_metadata_appearance_payload_invalid / renderer_plugin_metadata_appearance_payload_out_of_range / renderer_plugin_manifest_missing_effects_surface / renderer_plugin_manifest_requires_frame_tick`
+
+### Result
+- 当前与后续 provider 都应复用同一组运行时诊断：
+  - `appearance_plugin_id`
+  - `appearance_plugin_kind`
+  - `appearance_plugin_source`
+  - `appearance_plugin_selection_reason`
+  - `appearance_plugin_failure_reason`
+  - `appearance_plugin_manifest_path`
+  - `appearance_plugin_runtime_backend`
+  - `appearance_plugin_metadata_path`
+  - `appearance_plugin_metadata_schema_version`
+  - `appearance_plugin_appearance_semantics_mode`
+  - `default_lane_candidate`
+  - `default_lane_source`
+  - `default_lane_rollout_status`
+  - `default_lane_source` 当前稳定值应优先使用短机器码，例如：
+    - `runtime_builtin_default`
+    - `env_builtin_forced`
+    - `env_wasm_candidate`
+    - `env_wasm_fallback_builtin`
+    - `runtime_plugin_candidate`
+- 新增 renderer-owned semantics 时，应优先扩展 plugin output，而不是把 builder 继续当作事实上的插件层；当前 `wasm_v1` 就是第一步 bounded patch 协议，而不是继续往 `builtin_passthrough` 堆更多 ad-hoc tuning key
+- 当前默认 lane rollout 合同：
+  - lane matrix 的机器摘要最多只能产出 `recommended_default_lane` candidate
+  - machine candidate 只基于：
+    - lane proof 通过
+    - `appearance_plugin_failure_reason` 为空
+    - 该 lane 相比 `builtin` 在 machine compare 中确实存在差异
+  - 仅凭 machine candidate 不能直接切换默认 lane
+  - 真正允许从 `builtin` 切到更强 lane，仍需后续人工 observation 明确记录：
+    - `best lane for current Win pet`
+    - `recommended default lane now`
+    - `manual confirmation result = approve_default_switch`
+  - 在人工确认前，machine recommendation 的 `rollout_contract_status` 必须视为：
+    - `candidate_pending_manual_confirmation`
+    - 或 `stay_on_builtin`
 
 ## Recommended Internal Interface Split
 The future Windows real renderer can be implemented behind three narrow concepts.
@@ -185,7 +302,12 @@ Before touching GPU-specific code, the safest first step is:
   - the first concrete use of that lane now exists: backend name `real` is registered with a complete internal preview pipeline, but default availability is still gated as `rollout_disabled` so factory/diagnostics behavior can be exercised before wider rollout
   - `renderer_backend_catalog` is the structured backend inventory contract; future renderer rollout should extend it instead of adding more ad-hoc string lists
   - `real_renderer_preview` is the rollout-facing preview summary contract; it should remain stable enough for manual verification and AI-IDE consumption without requiring direct access to renderer-private scene objects
-  - `renderer_runtime_*` is the backend-owned runtime snapshot contract; it should reflect the last successful renderer input/render state instead of forcing diagnostics to reconstruct preview state only from higher controller layers
+- `renderer_runtime_*` is the backend-owned runtime snapshot contract; it should reflect the last successful renderer input/render state instead of forcing diagnostics to reconstruct preview state only from higher controller layers
+- renderer-owned appearance semantics are now also expected to publish plugin provenance in that same runtime snapshot:
+  - `appearance_plugin_id`
+  - `appearance_plugin_kind`
+  - `appearance_plugin_source`
+  - future wasm renderer plugins should reuse these keys instead of inventing a second plugin-diagnostics surface
   - `renderer_runtime_frame_count`, `renderer_runtime_last_render_tick_ms`, and renderer surface-size fields are part of the render-proof subset of that contract; future real-backend rollout should preserve their semantics so test automation can detect actual rendered-frame advancement
   - the current test route contract now includes `renderer_runtime_before / renderer_runtime_after / renderer_runtime_delta`; future renderer bring-up should preserve this diff-friendly proof shape instead of forcing callers to reconstruct transitions manually
   - the test route also accepts bounded wait/expect parameters (`wait_for_frame_ms`, `expect_frame_advance`) so proof-of-render can tolerate short asynchronous frame delays while staying explicit and machine-readable

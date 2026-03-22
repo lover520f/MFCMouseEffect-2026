@@ -21,6 +21,32 @@ export function getMouseCompanionSectionMarkup() {
     </section>
 
     <details class="mouse-companion-details" open>
+      <summary>Runtime Diagnostics</summary>
+      <div class="grid">
+        <label>Lane Verdict</label>
+        <output id="mc_runtime_default_lane_verdict">-</output>
+
+        <label>Default Lane Candidate</label>
+        <output id="mc_runtime_default_lane_candidate">-</output>
+
+        <label>Default Lane Source</label>
+        <output id="mc_runtime_default_lane_source">-</output>
+
+        <label>Rollout Status</label>
+        <output id="mc_runtime_default_lane_rollout_status">-</output>
+
+        <label>Appearance Plugin Kind</label>
+        <output id="mc_runtime_appearance_plugin_kind">-</output>
+
+        <label>Appearance Semantics Mode</label>
+        <output id="mc_runtime_appearance_semantics_mode">-</output>
+
+        <label>Plugin Selection Reason</label>
+        <output id="mc_runtime_appearance_plugin_selection_reason">-</output>
+      </div>
+    </details>
+
+    <details class="mouse-companion-details" open>
       <summary data-i18n="summary_mouse_companion_placement">Placement</summary>
       <div class="grid">
         <label for="mc_offset_x" data-i18n="label_mouse_companion_offset_x">Offset X</label>

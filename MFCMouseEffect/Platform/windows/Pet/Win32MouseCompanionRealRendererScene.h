@@ -6,6 +6,14 @@
 
 namespace mousefx::windows {
 
+enum class Win32MouseCompanionRealRendererAccessoryShape {
+    None = 0,
+    Star,
+    Moon,
+    Leaf,
+    RibbonBow,
+};
+
 struct Win32MouseCompanionRealRendererActionOverlay final {
     Gdiplus::Color accentColor{};
     bool clickRingVisible{false};
@@ -45,11 +53,20 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::Color headFillRear{};
     Gdiplus::Color earFill{};
     Gdiplus::Color earFillRear{};
+    Gdiplus::Color earStroke{};
+    Gdiplus::Color earStrokeRear{};
     Gdiplus::Color earInner{};
+    Gdiplus::Color earInnerRear{};
+    Gdiplus::Color earRootCuffFill{};
+    Gdiplus::Color earRootCuffFillRear{};
     Gdiplus::Color eyeFill{};
     Gdiplus::Color mouthFill{};
     Gdiplus::Color blushFill{};
     Gdiplus::Color tailFill{};
+    Gdiplus::Color tailFillRear{};
+    Gdiplus::Color tailMidFill{};
+    Gdiplus::Color tailTipFill{};
+    Gdiplus::Color tailStroke{};
     Gdiplus::Color accentFill{};
     Gdiplus::Color shadowFill{};
     Gdiplus::Color pedestalFill{};
@@ -59,6 +76,15 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::Color accessoryStroke{};
     float bodyStrokeWidth{1.8f};
     float headStrokeWidth{1.8f};
+    float earStrokeWidth{1.45f};
+    float earStrokeWidthRear{1.15f};
+    float earInnerBaseInsetPx{3.0f};
+    float earInnerBaseInsetPxRear{4.0f};
+    float earInnerMidInsetPx{4.0f};
+    float earInnerMidInsetPxRear{5.5f};
+    float earInnerTipInsetPx{8.0f};
+    float earInnerTipInsetPxRear{10.0f};
+    float earOcclusionCapAlpha{224.0f};
     float limbStrokeWidth{1.2f};
     float tailStrokeWidth{1.2f};
     float chestStrokeWidth{1.1f};
@@ -68,6 +94,8 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::RectF bodyRect{};
     Gdiplus::RectF chestRect{};
     Gdiplus::RectF neckBridgeRect{};
+    Gdiplus::RectF leftHeadShoulderBridgeRect{};
+    Gdiplus::RectF rightHeadShoulderBridgeRect{};
     Gdiplus::RectF leftShoulderPatchRect{};
     Gdiplus::RectF rightShoulderPatchRect{};
     Gdiplus::RectF leftHipPatchRect{};
@@ -75,16 +103,25 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::RectF bellyContourRect{};
     Gdiplus::RectF sternumContourRect{};
     Gdiplus::RectF upperTorsoContourRect{};
+    Gdiplus::RectF leftTorsoCadenceBridgeRect{};
+    Gdiplus::RectF rightTorsoCadenceBridgeRect{};
     Gdiplus::RectF leftBackContourRect{};
     Gdiplus::RectF rightBackContourRect{};
     Gdiplus::RectF leftFlankContourRect{};
     Gdiplus::RectF rightFlankContourRect{};
+    Gdiplus::RectF leftTailHaunchBridgeRect{};
+    Gdiplus::RectF rightTailHaunchBridgeRect{};
     Gdiplus::RectF headRect{};
     Gdiplus::RectF tailRect{};
     Gdiplus::RectF tailRootCuffRect{};
+    Gdiplus::RectF tailBridgeRect{};
+    Gdiplus::RectF tailMidContourRect{};
+    Gdiplus::RectF tailTipBridgeRect{};
     Gdiplus::RectF tailTipRect{};
     Gdiplus::RectF leftEarRootCuffRect{};
     Gdiplus::RectF rightEarRootCuffRect{};
+    Gdiplus::RectF leftEarOcclusionCapRect{};
+    Gdiplus::RectF rightEarOcclusionCapRect{};
     std::array<Gdiplus::PointF, 4> leftEar{};
     std::array<Gdiplus::PointF, 4> rightEar{};
     Gdiplus::RectF leftHandRect{};
@@ -99,6 +136,10 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::RectF rightHandSilhouetteBridgeRect{};
     Gdiplus::RectF leftLegSilhouetteBridgeRect{};
     Gdiplus::RectF rightLegSilhouetteBridgeRect{};
+    Gdiplus::RectF leftHandCadenceBridgeRect{};
+    Gdiplus::RectF rightHandCadenceBridgeRect{};
+    Gdiplus::RectF leftLegCadenceBridgeRect{};
+    Gdiplus::RectF rightLegCadenceBridgeRect{};
     Gdiplus::RectF leftHandPadRect{};
     Gdiplus::RectF rightHandPadRect{};
     Gdiplus::RectF leftLegPadRect{};
@@ -129,6 +170,13 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::RectF jawContourRect{};
     Gdiplus::RectF muzzlePadRect{};
     Gdiplus::RectF foreheadPadRect{};
+    Gdiplus::RectF crownPadRect{};
+    Gdiplus::RectF leftParietalBridgeRect{};
+    Gdiplus::RectF rightParietalBridgeRect{};
+    Gdiplus::RectF leftEarSkullBridgeRect{};
+    Gdiplus::RectF rightEarSkullBridgeRect{};
+    Gdiplus::RectF leftOccipitalContourRect{};
+    Gdiplus::RectF rightOccipitalContourRect{};
     Gdiplus::RectF leftTempleContourRect{};
     Gdiplus::RectF rightTempleContourRect{};
     Gdiplus::RectF leftUnderEyeContourRect{};
@@ -142,7 +190,22 @@ struct Win32MouseCompanionRealRendererScene final {
     bool poseBadgeVisible{false};
     Gdiplus::RectF poseBadgeRect{};
     bool accessoryVisible{false};
+    Win32MouseCompanionRealRendererAccessoryShape accessoryShape{
+        Win32MouseCompanionRealRendererAccessoryShape::None};
+    Gdiplus::RectF accessoryBounds{};
     std::array<Gdiplus::PointF, 5> accessoryStar{};
+    std::array<Gdiplus::PointF, 6> accessoryMoon{};
+    Gdiplus::RectF accessoryMoonInsetRect{};
+    std::array<Gdiplus::PointF, 4> accessoryLeaf{};
+    Gdiplus::PointF accessoryLeafVeinStart{};
+    Gdiplus::PointF accessoryLeafVeinEnd{};
+    std::array<Gdiplus::PointF, 4> accessoryRibbonLeft{};
+    std::array<Gdiplus::PointF, 4> accessoryRibbonRight{};
+    Gdiplus::RectF accessoryRibbonCenter{};
+    Gdiplus::PointF accessoryRibbonLeftFoldStart{};
+    Gdiplus::PointF accessoryRibbonLeftFoldEnd{};
+    Gdiplus::PointF accessoryRibbonRightFoldStart{};
+    Gdiplus::PointF accessoryRibbonRightFoldEnd{};
     Win32MouseCompanionRealRendererActionOverlay actionOverlay{};
 };
 

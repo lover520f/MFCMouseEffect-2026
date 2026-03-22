@@ -12,7 +12,7 @@ namespace mousefx {
 
 class AppController;
 class IpcController;
-class WebSettingsServer;
+class WebSettingsLaunchCoordinator;
 
 // Cross-platform shell flow controller.
 class AppShellCore final : public IAppShellHost {
@@ -54,7 +54,7 @@ private:
 private:
     std::unique_ptr<AppController> mouseFx_{};
     std::unique_ptr<IpcController> ipc_{};
-    std::unique_ptr<WebSettingsServer> webSettings_{};
+    std::unique_ptr<WebSettingsLaunchCoordinator> webSettingsCoordinator_{};
 
     std::unique_ptr<ITrayService> trayService_{};
     std::unique_ptr<ISettingsLauncher> settingsLauncher_{};

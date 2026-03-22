@@ -4,8 +4,9 @@
 
 #if MFX_PLATFORM_MACOS || MFX_PLATFORM_LINUX
 
-#include "Platform/posix/Shell/PosixCoreWebSettingsProbe.h"
 #include "MouseFx/Server/core/WebSettingsServer.h"
+#include "MouseFx/Core/Shell/WebSettingsLaunchCoordinator.h"
+#include "Platform/posix/Shell/PosixCoreWebSettingsProbe.h"
 
 #include <sstream>
 #include <string>
@@ -31,25 +32,30 @@ bool PosixCoreAppShell::SetupRegressionWebSettingsProbe() {
         return true;
     }
 
-    if (!webSettings_) {
-        webSettings_ = std::make_unique<WebSettingsServer>(appController_.get());
+    if (!webSettingsCoordinator_) {
+        webSettingsCoordinator_ = std::make_unique<WebSettingsLaunchCoordinator>(appController_.get());
     }
-    if (!webSettings_->IsRunning()) {
-        webSettings_->RotateToken();
-        if (!webSettings_->Start()) {
-            std::ostringstream reason;
-            reason << "websettings_start_failed"
-                   << "(stage=" << webSettings_->LastStartErrorStage()
-                   << ",code=" << webSettings_->LastStartErrorCode() << ")";
-            const std::string reasonText = reason.str();
-            writeDiagnostics("error", reasonText.c_str());
-            return false;
-        }
+    webSettingsCoordinator_->ResetController(appController_.get());
+    const mousefx::WebSettingsLaunchResult launch = webSettingsCoordinator_->EnsureStarted();
+    if (!launch.ok) {
+        std::ostringstream reason;
+        reason << launch.errorCode
+               << "(stage=" << launch.startErrorStage
+               << ",code=" << launch.startErrorCode << ")";
+        const std::string reasonText = reason.str();
+        writeDiagnostics("error", reasonText.c_str());
+        return false;
+    }
+
+    const WebSettingsServer* server = webSettingsCoordinator_->Server();
+    if (!server) {
+        writeDiagnostics("error", "websettings_server_missing_after_start");
+        return false;
     }
 
     bool ok = true;
     if (!probeFilePath.empty()) {
-        const bool probeWriteOk = WriteCoreWebSettingsProbeFile(probeFilePath, *webSettings_);
+        const bool probeWriteOk = WriteCoreWebSettingsProbeFile(probeFilePath, *server);
         ok = probeWriteOk && ok;
         if (!probeWriteOk) {
             writeDiagnostics("error", "probe_file_write_failed");
@@ -57,7 +63,7 @@ bool PosixCoreAppShell::SetupRegressionWebSettingsProbe() {
     }
 
     if (!launchProbeFilePath.empty()) {
-        const std::string settingsUrl = webSettings_->Url();
+        const std::string settingsUrl = server->Url();
         const bool opened = services_.settingsLauncher && services_.settingsLauncher->OpenUrlUtf8(settingsUrl);
         const bool launchProbeWriteOk =
             WriteCoreWebSettingsLaunchProbeFile(launchProbeFilePath, settingsUrl, opened);

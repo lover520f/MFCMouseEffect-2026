@@ -10,7 +10,7 @@
 #include "MouseFx/Core/Effects/HoverEffectCompute.h"
 #include "MouseFx/Core/Effects/ScrollEffectCompute.h"
 #include "MouseFx/Core/Effects/TrailEffectCompute.h"
-#include "MouseFx/Server/core/WebSettingsServer.h"
+#include "MouseFx/Core/Shell/WebSettingsLaunchCoordinator.h"
 #include "MouseFx/Styles/ThemeStyle.h"
 #include "MouseFx/Utils/StringUtils.h"
 #include "Settings/SettingsOptions.h"
@@ -370,20 +370,19 @@ void PosixCoreAppShell::ShowWebSettings() {
         return;
     }
 
-    if (!webSettings_) {
-        webSettings_ = std::make_unique<WebSettingsServer>(appController_.get());
+    if (!webSettingsCoordinator_) {
+        webSettingsCoordinator_ = std::make_unique<WebSettingsLaunchCoordinator>(appController_.get());
     }
-    if (!webSettings_->IsRunning()) {
-        webSettings_->RotateToken();
-        if (!webSettings_->Start()) {
-            if (services_.notifier) {
-                services_.notifier->ShowWarning("MFCMouseEffect", "Web settings server start failed.");
-            }
-            return;
+    webSettingsCoordinator_->ResetController(appController_.get());
+    const mousefx::WebSettingsLaunchResult launch = webSettingsCoordinator_->EnsureStarted();
+    if (!launch.ok) {
+        if (services_.notifier) {
+            services_.notifier->ShowWarning("MFCMouseEffect", "Web settings server start failed.");
         }
+        return;
     }
 
-    if (!services_.settingsLauncher->OpenUrlUtf8(webSettings_->Url()) && services_.notifier) {
+    if (!services_.settingsLauncher->OpenUrlUtf8(launch.url) && services_.notifier) {
         services_.notifier->ShowWarning("MFCMouseEffect", "Open core settings URL failed.");
     }
 }

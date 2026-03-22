@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "renderer_lane": "mouse_companion_renderer",
+  "supports_appearance_semantics": true,
+  "appearance_semantics_mode": "builtin_passthrough",
+  "combo_preset_override": "dreamy",
+  "follow_lift_scale": 1.12,
+  "click_squash_scale": 1.06,
+  "drag_lean_scale": 1.08,
+  "highlight_alpha_scale": 1.05,
+  "follow_tail_swing_scale": 1.10,
+  "hold_head_nod_scale": 0.94,
+  "scroll_tail_lift_scale": 1.08,
+  "follow_head_nod_scale": 1.06
+}

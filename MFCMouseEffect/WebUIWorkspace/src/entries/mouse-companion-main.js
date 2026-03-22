@@ -74,9 +74,38 @@ const DEFAULT_STATE = {
 
 let latestSchema = { ...DEFAULT_SCHEMA };
 let latestState = { ...DEFAULT_STATE };
+let latestRuntimeState = {};
 
 function byId(id) {
   return document.getElementById(id);
+}
+
+function normalizeRuntimeText(value, fallback = '-') {
+  const text = `${value ?? ''}`.trim();
+  return text || fallback;
+}
+
+function buildDefaultLaneVerdict(runtimeState) {
+  const candidate = `${runtimeState?.default_lane_candidate ?? ''}`.trim();
+  const source = `${runtimeState?.default_lane_source ?? ''}`.trim();
+  const rolloutStatus = `${runtimeState?.default_lane_rollout_status ?? ''}`.trim();
+
+  if (rolloutStatus === 'candidate_pending_manual_confirmation' && candidate) {
+    return `${candidate} candidate pending manual confirmation`;
+  }
+  if (rolloutStatus === 'stay_on_builtin') {
+    if (source === 'env_builtin_forced') {
+      return 'Stay on builtin (env forced)';
+    }
+    if (source === 'env_wasm_fallback_builtin') {
+      return 'Stay on builtin (wasm fallback)';
+    }
+    return 'Stay on builtin';
+  }
+  if (candidate) {
+    return `Current candidate: ${candidate}`;
+  }
+  return '-';
 }
 
 function clampInt(value, min, max, fallback) {
@@ -303,6 +332,13 @@ function writeInputValue(id, value) {
   }
 }
 
+function writeTextValue(id, value) {
+  const node = byId(id);
+  if (node) {
+    node.textContent = normalizeRuntimeText(value);
+  }
+}
+
 function applyRange(inputId, range) {
   const node = byId(inputId);
   if (!node || !range) {
@@ -478,6 +514,22 @@ function writeToDom(state, schema) {
   syncPositionFieldState();
 }
 
+function writeRuntimeDiagnostics(runtimeState) {
+  writeTextValue('mc_runtime_default_lane_verdict', buildDefaultLaneVerdict(runtimeState));
+  writeTextValue('mc_runtime_default_lane_candidate', runtimeState.default_lane_candidate);
+  writeTextValue('mc_runtime_default_lane_source', runtimeState.default_lane_source);
+  writeTextValue('mc_runtime_default_lane_rollout_status', runtimeState.default_lane_rollout_status);
+  writeTextValue('mc_runtime_appearance_plugin_kind', runtimeState.renderer_runtime_appearance_plugin_kind);
+  writeTextValue(
+    'mc_runtime_appearance_semantics_mode',
+    runtimeState.renderer_runtime_appearance_semantics_mode,
+  );
+  writeTextValue(
+    'mc_runtime_appearance_plugin_selection_reason',
+    runtimeState.renderer_runtime_appearance_plugin_selection_reason,
+  );
+}
+
 function render(payload) {
   const rootSchema = payload?.schema || {};
   const companionSchema = rootSchema.mouse_companion || rootSchema || {};
@@ -487,11 +539,13 @@ function render(payload) {
     monitors: rootSchema.monitors ?? companionSchema.monitors,
   });
   latestState = normalizeState(payload?.state?.mouse_companion || payload?.state || {});
+  latestRuntimeState = payload?.state?.mouse_companion_runtime || {};
   const mount = mountIfNeeded();
   if (!mount) {
     return;
   }
   writeToDom(latestState, latestSchema);
+  writeRuntimeDiagnostics(latestRuntimeState);
 }
 
 function read() {

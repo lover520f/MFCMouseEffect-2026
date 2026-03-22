@@ -1,8 +1,35 @@
 {
   "version": 1,
+  "activePreset": "default",
   "default": {
     "skinVariantId": "default",
     "enabledAccessoryIds": [],
     "textureOverridePaths": []
-  }
+  },
+  "presets": [
+    {
+      "id": "default",
+      "skinVariantId": "default",
+      "enabledAccessoryIds": [],
+      "textureOverridePaths": []
+    },
+    {
+      "id": "cream-moon",
+      "skinVariantId": "cream",
+      "enabledAccessoryIds": ["moon"],
+      "textureOverridePaths": []
+    },
+    {
+      "id": "night-leaf",
+      "skinVariantId": "night",
+      "enabledAccessoryIds": ["leaf"],
+      "textureOverridePaths": []
+    },
+    {
+      "id": "strawberry-ribbon-bow",
+      "skinVariantId": "strawberry",
+      "enabledAccessoryIds": ["ribbon-bow"],
+      "textureOverridePaths": []
+    }
+  ]
 }

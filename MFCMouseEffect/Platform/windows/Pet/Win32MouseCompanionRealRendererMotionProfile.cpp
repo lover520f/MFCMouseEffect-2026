@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererMotionProfile.h"
 
 #include <algorithm>
@@ -43,8 +44,12 @@ float PickBlushAlpha(
 } // namespace
 
 Win32MouseCompanionRealRendererMotionProfile BuildWin32MouseCompanionRealRendererMotionProfile(
-    const Win32MouseCompanionRealRendererSceneRuntime& runtime) {
+    const Win32MouseCompanionRealRendererSceneRuntime& runtime,
+    const Win32MouseCompanionRealRendererStyleProfile& style) {
     Win32MouseCompanionRealRendererMotionProfile profile{};
+    const auto appearanceSemantics =
+        BuildWin32MouseCompanionRealRendererAppearanceSemantics(runtime, style);
+    const auto& skinTuning = appearanceSemantics.motion;
     profile.actionIntensity = Clamp01(runtime.actionIntensity);
     profile.reactiveIntensity = Clamp01(runtime.reactiveActionIntensity);
     profile.scrollIntensity = std::abs(ClampSigned(runtime.scrollSignedIntensity));
@@ -59,8 +64,10 @@ Win32MouseCompanionRealRendererMotionProfile BuildWin32MouseCompanionRealRendere
         ? 0.0f
         : 1.0f;
 
-    profile.clickSquash = runtime.click ? (0.08f + profile.actionIntensity * 0.12f) : 0.0f;
-    profile.dragLean = runtime.drag ? runtime.facingSign * (5.0f + profile.actionIntensity * 6.5f) : 0.0f;
+    profile.clickSquash =
+        runtime.click ? (0.08f + profile.actionIntensity * 0.12f) * skinTuning.clickSquashScale : 0.0f;
+    profile.dragLean =
+        runtime.drag ? runtime.facingSign * (5.0f + profile.actionIntensity * 6.5f) * skinTuning.dragLeanScale : 0.0f;
     profile.scrollLean = runtime.scrollSignedIntensity * 8.5f;
     profile.earLift = (runtime.follow ? 10.0f + profile.actionIntensity * 5.0f : 2.5f) +
         (runtime.scroll ? profile.scrollIntensity * 12.0f : 0.0f);
@@ -73,15 +80,15 @@ Win32MouseCompanionRealRendererMotionProfile BuildWin32MouseCompanionRealRendere
     profile.legStride = runtime.follow ? (7.0f + profile.actionIntensity * 7.0f) : 0.0f;
     profile.legLift = 0.0f;
     profile.stateLift = runtime.click ? (8.0f + profile.actionIntensity * 6.0f)
-        : runtime.follow             ? (4.5f + profile.actionIntensity * 3.5f)
+        : runtime.follow             ? (4.5f + profile.actionIntensity * 3.5f) * skinTuning.followStateLiftScale
         : runtime.scroll             ? (2.0f + profile.scrollIntensity * 2.5f)
                                      : 0.0f;
     profile.headNod = runtime.follow ? (-4.5f - profile.actionIntensity * 3.5f)
-        : runtime.hold              ? (2.5f + profile.actionIntensity * 2.2f)
+        : runtime.hold              ? (2.5f + profile.actionIntensity * 2.2f) * skinTuning.holdHeadNodScale
         : runtime.scroll            ? (-runtime.scrollSignedIntensity * 4.0f)
         : runtime.drag              ? (-runtime.facingSign * 2.1f)
                                     : 0.0f;
-    profile.bodyForward = runtime.drag ? runtime.facingSign * (7.0f + profile.actionIntensity * 5.0f)
+    profile.bodyForward = runtime.drag ? runtime.facingSign * (7.0f + profile.actionIntensity * 5.0f) * skinTuning.bodyForwardScale
         : runtime.follow               ? runtime.facingSign * (3.5f + profile.actionIntensity * 3.0f)
         : runtime.scroll               ? runtime.scrollSignedIntensity * 2.3f
                                        : 0.0f;
@@ -120,7 +127,7 @@ Win32MouseCompanionRealRendererMotionProfile BuildWin32MouseCompanionRealRendere
         const float swirl = std::sin(gesturePhaseMedium * 1.15f + runtime.scrollSignedIntensity * 0.8f);
         profile.stateLift += swirl * profile.scrollIntensity * 1.4f;
         profile.headNod -= swirl * profile.scrollIntensity * 1.1f;
-        profile.tailLift += swirl * profile.scrollIntensity * 1.6f;
+        profile.tailLift += swirl * profile.scrollIntensity * 1.6f * skinTuning.scrollTailLiftScale;
         profile.tailSwing += runtime.scrollSignedIntensity * swirl * 1.5f;
         profile.earSpreadPulse += swirl * profile.scrollIntensity * 0.8f;
     }
@@ -136,12 +143,59 @@ Win32MouseCompanionRealRendererMotionProfile BuildWin32MouseCompanionRealRendere
         profile.legStride += gaitWave * 2.4f;
         profile.legLift += std::abs(gaitCounter) * (1.6f + profile.actionIntensity * 0.8f);
         profile.bodyForward += runtime.facingSign * gaitWave * 1.4f;
-        profile.headNod += gaitCounter * 1.3f;
+        profile.headNod += gaitCounter * 1.3f * skinTuning.followHeadNodScale;
         profile.tailLift += gaitWave * 1.1f;
-        profile.tailSwing += runtime.facingSign * gaitCounter * 1.8f;
+        profile.tailSwing += runtime.facingSign * gaitCounter * 1.8f * skinTuning.followTailSwingScale;
         profile.earSwing += runtime.facingSign * gaitCounter * 1.2f;
         profile.handSwing += runtime.facingSign * gaitCounter * 1.1f;
         profile.earSpreadPulse += gaitWave * 0.7f;
+    }
+
+    switch (appearanceSemantics.comboPreset) {
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Dreamy:
+        if (runtime.follow) {
+            profile.stateLift += 1.8f + profile.actionIntensity * 1.3f;
+            profile.tailLift -= 1.4f;
+            profile.tailSwing *= 0.88f;
+            profile.earSwing *= 0.90f;
+            profile.bodyForward *= 0.92f;
+            profile.shadowScale *= 0.96f;
+        }
+        if (runtime.hold) {
+            profile.handLift += 0.8f;
+            profile.headNod *= 0.92f;
+        }
+        break;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Agile:
+        if (runtime.drag) {
+            profile.dragLean += runtime.facingSign * (1.8f + profile.actionIntensity * 1.6f);
+            profile.bodyForward += runtime.facingSign * (1.3f + profile.actionIntensity * 1.1f);
+            profile.handSwing += runtime.facingSign * 1.1f;
+            profile.tailSwing += runtime.facingSign * 1.6f;
+            profile.shadowScale *= 0.95f;
+        }
+        if (runtime.follow) {
+            profile.legStride += 1.1f + profile.actionIntensity * 0.9f;
+            profile.earSpreadPulse += 0.5f;
+            profile.bodyForward += runtime.facingSign * 0.8f;
+        }
+        break;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Charming:
+        if (runtime.hold) {
+            profile.handLift += 1.3f + profile.actionIntensity * 1.0f;
+            profile.headNod *= 0.86f;
+            profile.stateLift += 0.7f;
+            profile.earSpreadPulse += 0.8f;
+            profile.shadowScale *= 1.03f;
+        }
+        if (runtime.click) {
+            profile.clickSquash += 0.02f + profile.actionIntensity * 0.03f;
+            profile.stateLift += 0.9f;
+            profile.tailSwing += runtime.facingSign * 1.0f;
+        }
+        break;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::None:
+        break;
     }
 
     profile.overlayAccentColor = runtime.click ? MakeColor(230, 255, 118, 186)
@@ -185,6 +239,33 @@ Win32MouseCompanionRealRendererMotionProfile BuildWin32MouseCompanionRealRendere
                                     : 0.0f;
     profile.browLift = runtime.follow ? -3.2f : (runtime.hold ? 2.1f : 0.0f);
 
+    switch (appearanceSemantics.comboPreset) {
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Dreamy:
+        if (runtime.follow) {
+            profile.eyeHighlightAlpha += 12.0f;
+            profile.pupilFocusY -= 0.06f;
+            profile.whiskerSpread *= 0.90f;
+        }
+        break;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Agile:
+        if (runtime.drag || runtime.follow) {
+            profile.eyeHighlightAlpha += 8.0f;
+            profile.pupilFocusX *= 1.10f;
+            profile.whiskerTilt *= 1.10f;
+            profile.browTilt *= 1.08f;
+        }
+        break;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Charming:
+        if (runtime.hold || runtime.click) {
+            profile.eyeHighlightAlpha += 14.0f;
+            profile.whiskerSpread *= 1.06f;
+            profile.browLift += 0.5f;
+        }
+        break;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::None:
+        break;
+    }
+
     if (runtime.hold) {
         profile.mouthStartDeg = 24.0f;
         profile.mouthSweepDeg = 132.0f;
@@ -205,6 +286,31 @@ Win32MouseCompanionRealRendererMotionProfile BuildWin32MouseCompanionRealRendere
         profile.mouthStartDeg = 6.0f;
         profile.mouthSweepDeg = 170.0f;
         profile.mouthStrokeWidth = 1.5f;
+    }
+
+    switch (appearanceSemantics.comboPreset) {
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Dreamy:
+        if (runtime.follow) {
+            profile.mouthStartDeg += 6.0f;
+            profile.mouthSweepDeg -= 10.0f;
+        }
+        break;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Agile:
+        if (runtime.drag) {
+            profile.mouthStartDeg += 4.0f;
+            profile.mouthSweepDeg -= 16.0f;
+            profile.mouthStrokeWidth += 0.1f;
+        }
+        break;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Charming:
+        if (runtime.hold || runtime.click) {
+            profile.mouthStartDeg -= 4.0f;
+            profile.mouthSweepDeg += 12.0f;
+            profile.mouthStrokeWidth += 0.1f;
+        }
+        break;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::None:
+        break;
     }
 
     return profile;

@@ -58,25 +58,33 @@ void FillEar(
     const std::array<Gdiplus::PointF, 4>& points,
     const Gdiplus::Color& fill,
     const Gdiplus::Color& inner,
-    const Gdiplus::Color& stroke) {
+    const Gdiplus::Color& stroke,
+    float strokeWidth,
+    float innerBaseInsetPx,
+    float innerMidInsetPx,
+    float innerTipInsetPx) {
     if (!graphics) {
         return;
     }
     Gdiplus::GraphicsPath path;
-    path.AddClosedCurve(points.data(), static_cast<int>(points.size()));
+    path.AddPolygon(points.data(), static_cast<INT>(points.size()));
     Gdiplus::SolidBrush fillBrush(fill);
-    Gdiplus::Pen pen(stroke, 1.4f);
+    Gdiplus::Pen pen(stroke, strokeWidth);
     graphics->FillPath(&fillBrush, &path);
     graphics->DrawPath(&pen, &path);
 
     Gdiplus::GraphicsPath innerPath;
     const Gdiplus::PointF innerPoints[4] = {
-        Gdiplus::PointF(points[0].X, points[0].Y + 3.0f),
-        Gdiplus::PointF((points[0].X + points[1].X) * 0.5f, (points[0].Y + points[1].Y) * 0.5f + 4.0f),
-        Gdiplus::PointF(points[2].X, points[2].Y + 8.0f),
-        Gdiplus::PointF((points[0].X + points[3].X) * 0.5f, (points[0].Y + points[3].Y) * 0.5f + 4.0f),
+        Gdiplus::PointF(points[0].X, points[0].Y + innerBaseInsetPx),
+        Gdiplus::PointF(
+            (points[0].X + points[1].X) * 0.5f,
+            (points[0].Y + points[1].Y) * 0.5f + innerMidInsetPx),
+        Gdiplus::PointF(points[2].X, points[2].Y + innerTipInsetPx),
+        Gdiplus::PointF(
+            (points[0].X + points[3].X) * 0.5f,
+            (points[0].Y + points[3].Y) * 0.5f + innerMidInsetPx),
     };
-    innerPath.AddClosedCurve(innerPoints, 4);
+    innerPath.AddPolygon(innerPoints, 4);
     Gdiplus::SolidBrush innerBrush(inner);
     graphics->FillPath(&innerBrush, &innerPath);
 }
@@ -95,6 +103,53 @@ void DrawStar(
     Gdiplus::Pen pen(stroke, 1.1f);
     graphics->FillPath(&brush, &path);
     graphics->DrawPath(&pen, &path);
+}
+
+template <size_t N>
+void DrawPolygonAdornment(
+    Gdiplus::Graphics* graphics,
+    const std::array<Gdiplus::PointF, N>& points,
+    const Gdiplus::Color& fill,
+    const Gdiplus::Color& stroke,
+    float strokeWidth) {
+    if (!graphics) {
+        return;
+    }
+    Gdiplus::GraphicsPath path;
+    path.AddPolygon(points.data(), static_cast<INT>(points.size()));
+    Gdiplus::SolidBrush brush(fill);
+    Gdiplus::Pen pen(stroke, strokeWidth);
+    pen.SetLineJoin(Gdiplus::LineJoinRound);
+    graphics->FillPath(&brush, &path);
+    graphics->DrawPath(&pen, &path);
+}
+
+void DrawRibbonAdornment(
+    Gdiplus::Graphics* graphics,
+    const std::array<Gdiplus::PointF, 4>& leftWing,
+    const std::array<Gdiplus::PointF, 4>& rightWing,
+    const Gdiplus::RectF& centerRect,
+    const Gdiplus::Color& fill,
+    const Gdiplus::Color& stroke) {
+    DrawPolygonAdornment(graphics, leftWing, fill, stroke, 1.0f);
+    DrawPolygonAdornment(graphics, rightWing, fill, stroke, 1.0f);
+    FillEllipse(graphics, centerRect, fill, stroke, 1.0f);
+}
+
+void DrawAdornmentLine(
+    Gdiplus::Graphics* graphics,
+    const Gdiplus::PointF& start,
+    const Gdiplus::PointF& end,
+    const Gdiplus::Color& stroke,
+    float alpha,
+    float width) {
+    if (!graphics) {
+        return;
+    }
+    Gdiplus::Pen pen(WithAlpha(stroke, alpha), width);
+    pen.SetStartCap(Gdiplus::LineCapRound);
+    pen.SetEndCap(Gdiplus::LineCapRound);
+    graphics->DrawLine(&pen, start, end);
 }
 
 void DrawActionOverlay(
@@ -179,34 +234,100 @@ void Win32MouseCompanionRealRendererPainter::Paint(
     FillEllipse(
         graphics,
         scene.tailRootCuffRect,
-        WithAlpha(scene.bodyFillRear, 214.0f),
+        scene.tailFillRear,
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.tailBridgeRect,
+        scene.tailMidFill,
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.tailMidContourRect,
+        scene.tailMidFill,
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.tailTipBridgeRect,
+        scene.tailTipFill,
         Gdiplus::Color(0, 0, 0, 0),
         0.0f);
     FillEllipse(
         graphics,
         scene.tailTipRect,
-        WithAlpha(scene.headFill, 236.0f),
-        scene.bodyStroke,
+        scene.tailTipFill,
+        scene.tailStroke,
         std::max(0.9f, scene.tailStrokeWidth - 0.2f));
     FillEllipse(
         graphics,
         scene.leftEarRootCuffRect,
-        WithAlpha(scene.headFillRear, 214.0f),
+        scene.facingSign < 0.0f ? scene.earRootCuffFill : scene.earRootCuffFillRear,
         Gdiplus::Color(0, 0, 0, 0),
         0.0f);
     FillEllipse(
         graphics,
         scene.rightEarRootCuffRect,
-        WithAlpha(scene.headFillRear, 214.0f),
+        scene.facingSign < 0.0f ? scene.earRootCuffFillRear : scene.earRootCuffFill,
         Gdiplus::Color(0, 0, 0, 0),
         0.0f);
 
     if (scene.facingSign < 0.0f) {
-        FillEar(graphics, scene.rightEar, scene.earFillRear, scene.earInner, scene.bodyStroke);
-        FillEar(graphics, scene.leftEar, scene.earFill, scene.earInner, scene.bodyStroke);
+        FillEar(
+            graphics,
+            scene.rightEar,
+            scene.earFillRear,
+            scene.earInnerRear,
+            scene.earStrokeRear,
+            scene.earStrokeWidthRear,
+            scene.earInnerBaseInsetPxRear,
+            scene.earInnerMidInsetPxRear,
+            scene.earInnerTipInsetPxRear);
+        FillEllipse(
+            graphics,
+            scene.rightEarOcclusionCapRect,
+            WithAlpha(scene.headFill, scene.earOcclusionCapAlpha),
+            Gdiplus::Color(0, 0, 0, 0),
+            0.0f);
+        FillEar(
+            graphics,
+            scene.leftEar,
+            scene.earFill,
+            scene.earInner,
+            scene.earStroke,
+            scene.earStrokeWidth,
+            scene.earInnerBaseInsetPx,
+            scene.earInnerMidInsetPx,
+            scene.earInnerTipInsetPx);
     } else {
-        FillEar(graphics, scene.leftEar, scene.earFillRear, scene.earInner, scene.bodyStroke);
-        FillEar(graphics, scene.rightEar, scene.earFill, scene.earInner, scene.bodyStroke);
+        FillEar(
+            graphics,
+            scene.leftEar,
+            scene.earFillRear,
+            scene.earInnerRear,
+            scene.earStrokeRear,
+            scene.earStrokeWidthRear,
+            scene.earInnerBaseInsetPxRear,
+            scene.earInnerMidInsetPxRear,
+            scene.earInnerTipInsetPxRear);
+        FillEllipse(
+            graphics,
+            scene.leftEarOcclusionCapRect,
+            WithAlpha(scene.headFill, scene.earOcclusionCapAlpha),
+            Gdiplus::Color(0, 0, 0, 0),
+            0.0f);
+        FillEar(
+            graphics,
+            scene.rightEar,
+            scene.earFill,
+            scene.earInner,
+            scene.earStroke,
+            scene.earStrokeWidth,
+            scene.earInnerBaseInsetPx,
+            scene.earInnerMidInsetPx,
+            scene.earInnerTipInsetPx);
     }
 
     FillRoundedRect(graphics, scene.leftLegRect, scene.bodyFillRear, scene.bodyStroke, scene.limbStrokeWidth);
@@ -221,6 +342,18 @@ void Win32MouseCompanionRealRendererPainter::Paint(
         graphics,
         scene.rightLegSilhouetteBridgeRect,
         WithAlpha(scene.bodyFillRear, 144.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.leftLegCadenceBridgeRect,
+        WithAlpha(scene.bodyFillRear, 150.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.rightLegCadenceBridgeRect,
+        WithAlpha(scene.bodyFillRear, 150.0f),
         Gdiplus::Color(0, 0, 0, 0),
         0.0f);
     FillEllipse(
@@ -275,6 +408,18 @@ void Win32MouseCompanionRealRendererPainter::Paint(
         std::max(1.0f, scene.bodyStrokeWidth - 0.2f));
     FillEllipse(
         graphics,
+        scene.leftHeadShoulderBridgeRect,
+        WithAlpha(scene.headFillRear, 174.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.rightHeadShoulderBridgeRect,
+        WithAlpha(scene.headFillRear, 174.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
         scene.chestRect,
         WithAlpha(scene.headFill, scene.chestFillAlpha),
         scene.bodyStroke,
@@ -311,6 +456,18 @@ void Win32MouseCompanionRealRendererPainter::Paint(
         0.0f);
     FillEllipse(
         graphics,
+        scene.leftTorsoCadenceBridgeRect,
+        WithAlpha(scene.bodyFillRear, 142.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.rightTorsoCadenceBridgeRect,
+        WithAlpha(scene.bodyFillRear, 142.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
         scene.leftBackContourRect,
         WithAlpha(scene.bodyFillRear, 146.0f),
         Gdiplus::Color(0, 0, 0, 0),
@@ -333,6 +490,18 @@ void Win32MouseCompanionRealRendererPainter::Paint(
         WithAlpha(scene.bodyFillRear, 150.0f),
         Gdiplus::Color(0, 0, 0, 0),
         0.0f);
+    FillEllipse(
+        graphics,
+        scene.leftTailHaunchBridgeRect,
+        WithAlpha(scene.bodyFillRear, 154.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.rightTailHaunchBridgeRect,
+        WithAlpha(scene.bodyFillRear, 154.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
     graphics->Restore(saved);
 
     FillRoundedRect(graphics, scene.leftHandRect, scene.headFillRear, scene.bodyStroke, scene.limbStrokeWidth);
@@ -347,6 +516,18 @@ void Win32MouseCompanionRealRendererPainter::Paint(
         graphics,
         scene.rightHandSilhouetteBridgeRect,
         WithAlpha(scene.headFillRear, 150.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.leftHandCadenceBridgeRect,
+        WithAlpha(scene.headFillRear, 158.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.rightHandCadenceBridgeRect,
+        WithAlpha(scene.headFillRear, 158.0f),
         Gdiplus::Color(0, 0, 0, 0),
         0.0f);
     FillEllipse(
@@ -402,6 +583,48 @@ void Win32MouseCompanionRealRendererPainter::Paint(
         graphics,
         scene.foreheadPadRect,
         WithAlpha(scene.headFillRear, 148.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.crownPadRect,
+        WithAlpha(scene.headFillRear, 138.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.leftParietalBridgeRect,
+        WithAlpha(scene.headFillRear, 132.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.rightParietalBridgeRect,
+        WithAlpha(scene.headFillRear, 132.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.leftEarSkullBridgeRect,
+        WithAlpha(scene.headFillRear, 138.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.rightEarSkullBridgeRect,
+        WithAlpha(scene.headFillRear, 138.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.leftOccipitalContourRect,
+        WithAlpha(scene.headFillRear, 126.0f),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        scene.rightOccipitalContourRect,
+        WithAlpha(scene.headFillRear, 126.0f),
         Gdiplus::Color(0, 0, 0, 0),
         0.0f);
     FillEllipse(
@@ -493,7 +716,56 @@ void Win32MouseCompanionRealRendererPainter::Paint(
         FillEllipse(graphics, scene.poseBadgeRect, scene.accentFill, scene.headFill, 1.0f);
     }
     if (scene.accessoryVisible) {
-        DrawStar(graphics, scene.accessoryStar, scene.accessoryFill, scene.accessoryStroke);
+        switch (scene.accessoryShape) {
+        case Win32MouseCompanionRealRendererAccessoryShape::Moon:
+            DrawPolygonAdornment(graphics, scene.accessoryMoon, scene.accessoryFill, scene.accessoryStroke, 1.0f);
+            FillEllipse(
+                graphics,
+                scene.accessoryMoonInsetRect,
+                WithAlpha(scene.accessoryStroke, 54.0f),
+                Gdiplus::Color(0, 0, 0, 0),
+                0.0f);
+            break;
+        case Win32MouseCompanionRealRendererAccessoryShape::Leaf:
+            DrawPolygonAdornment(graphics, scene.accessoryLeaf, scene.accessoryFill, scene.accessoryStroke, 1.0f);
+            DrawAdornmentLine(
+                graphics,
+                scene.accessoryLeafVeinStart,
+                scene.accessoryLeafVeinEnd,
+                scene.accessoryStroke,
+                164.0f,
+                1.0f);
+            break;
+        case Win32MouseCompanionRealRendererAccessoryShape::RibbonBow:
+            DrawRibbonAdornment(
+                graphics,
+                scene.accessoryRibbonLeft,
+                scene.accessoryRibbonRight,
+                scene.accessoryRibbonCenter,
+                scene.accessoryFill,
+                scene.accessoryStroke);
+            DrawAdornmentLine(
+                graphics,
+                scene.accessoryRibbonLeftFoldStart,
+                scene.accessoryRibbonLeftFoldEnd,
+                scene.accessoryStroke,
+                162.0f,
+                1.0f);
+            DrawAdornmentLine(
+                graphics,
+                scene.accessoryRibbonRightFoldStart,
+                scene.accessoryRibbonRightFoldEnd,
+                scene.accessoryStroke,
+                162.0f,
+                1.0f);
+            break;
+        case Win32MouseCompanionRealRendererAccessoryShape::Star:
+            DrawStar(graphics, scene.accessoryStar, scene.accessoryFill, scene.accessoryStroke);
+            break;
+        case Win32MouseCompanionRealRendererAccessoryShape::None:
+        default:
+            break;
+        }
     }
 }
 

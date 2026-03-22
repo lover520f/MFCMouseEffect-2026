@@ -128,6 +128,44 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
     diagnostics.modelSourceFormat = TrimAscii(status.rendererRuntimeModelSourceFormat).empty()
         ? "unknown"
         : status.rendererRuntimeModelSourceFormat;
+    diagnostics.appearanceSkinVariantId =
+        TrimAscii(status.rendererRuntimeAppearanceSkinVariantId).empty()
+            ? "default"
+            : status.rendererRuntimeAppearanceSkinVariantId;
+    diagnostics.appearanceAccessoryIds = status.rendererRuntimeAppearanceAccessoryIds;
+    diagnostics.appearanceAccessoryFamily =
+        TrimAscii(status.rendererRuntimeAppearanceAccessoryFamily).empty()
+            ? "none"
+            : status.rendererRuntimeAppearanceAccessoryFamily;
+    diagnostics.appearanceComboPreset =
+        TrimAscii(status.rendererRuntimeAppearanceComboPreset).empty()
+            ? "none"
+            : status.rendererRuntimeAppearanceComboPreset;
+    diagnostics.appearanceRequestedPresetId = status.rendererRuntimeAppearanceRequestedPresetId;
+    diagnostics.appearanceResolvedPresetId = status.rendererRuntimeAppearanceResolvedPresetId;
+    diagnostics.appearancePluginId = status.rendererRuntimeAppearancePluginId;
+    diagnostics.appearancePluginKind = status.rendererRuntimeAppearancePluginKind;
+    diagnostics.appearancePluginSource = status.rendererRuntimeAppearancePluginSource;
+    diagnostics.appearancePluginSelectionReason =
+        status.rendererRuntimeAppearancePluginSelectionReason;
+    diagnostics.appearancePluginFailureReason =
+        status.rendererRuntimeAppearancePluginFailureReason;
+    diagnostics.appearancePluginManifestPath =
+        status.rendererRuntimeAppearancePluginManifestPath;
+    diagnostics.appearancePluginRuntimeBackend =
+        status.rendererRuntimeAppearancePluginRuntimeBackend;
+    diagnostics.appearancePluginMetadataPath =
+        status.rendererRuntimeAppearancePluginMetadataPath;
+    diagnostics.appearancePluginMetadataSchemaVersion =
+        status.rendererRuntimeAppearancePluginMetadataSchemaVersion;
+    diagnostics.appearancePluginAppearanceSemanticsMode =
+        status.rendererRuntimeAppearancePluginAppearanceSemanticsMode;
+    diagnostics.defaultLaneCandidate =
+        status.rendererRuntimeDefaultLaneCandidate;
+    diagnostics.defaultLaneSource =
+        status.rendererRuntimeDefaultLaneSource;
+    diagnostics.defaultLaneRolloutStatus =
+        status.rendererRuntimeDefaultLaneRolloutStatus;
     if (const auto* realEntry = FindRendererBackendCatalogEntry(status, "real")) {
         diagnostics.availabilityReason = realEntry->available ? "" : realEntry->unavailableReason;
     }

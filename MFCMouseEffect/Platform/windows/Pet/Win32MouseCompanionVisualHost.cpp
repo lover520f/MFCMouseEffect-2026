@@ -150,6 +150,44 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
     diagnostics.rendererRuntime.surfaceWidth = rendererRuntime.surfaceWidth;
     diagnostics.rendererRuntime.surfaceHeight = rendererRuntime.surfaceHeight;
     diagnostics.rendererRuntime.modelSourceFormat = rendererRuntime.modelSourceFormat;
+    diagnostics.rendererRuntime.appearanceSkinVariantId =
+        rendererRuntime.appearanceSkinVariantId;
+    diagnostics.rendererRuntime.appearanceAccessoryIds =
+        rendererRuntime.appearanceAccessoryIds;
+    diagnostics.rendererRuntime.appearanceAccessoryFamily =
+        rendererRuntime.appearanceAccessoryFamily;
+    diagnostics.rendererRuntime.appearanceComboPreset =
+        rendererRuntime.appearanceComboPreset;
+    diagnostics.rendererRuntime.appearanceRequestedPresetId =
+        rendererRuntime.appearanceRequestedPresetId;
+    diagnostics.rendererRuntime.appearanceResolvedPresetId =
+        rendererRuntime.appearanceResolvedPresetId;
+    diagnostics.rendererRuntime.appearancePluginId =
+        rendererRuntime.appearancePluginId;
+    diagnostics.rendererRuntime.appearancePluginKind =
+        rendererRuntime.appearancePluginKind;
+    diagnostics.rendererRuntime.appearancePluginSource =
+        rendererRuntime.appearancePluginSource;
+    diagnostics.rendererRuntime.appearancePluginSelectionReason =
+        rendererRuntime.appearancePluginSelectionReason;
+    diagnostics.rendererRuntime.appearancePluginFailureReason =
+        rendererRuntime.appearancePluginFailureReason;
+    diagnostics.rendererRuntime.appearancePluginManifestPath =
+        rendererRuntime.appearancePluginManifestPath;
+    diagnostics.rendererRuntime.appearancePluginRuntimeBackend =
+        rendererRuntime.appearancePluginRuntimeBackend;
+    diagnostics.rendererRuntime.appearancePluginMetadataPath =
+        rendererRuntime.appearancePluginMetadataPath;
+    diagnostics.rendererRuntime.appearancePluginMetadataSchemaVersion =
+        rendererRuntime.appearancePluginMetadataSchemaVersion;
+    diagnostics.rendererRuntime.appearancePluginAppearanceSemanticsMode =
+        rendererRuntime.appearancePluginAppearanceSemanticsMode;
+    diagnostics.rendererRuntime.defaultLaneCandidate =
+        rendererRuntime.defaultLaneCandidate;
+    diagnostics.rendererRuntime.defaultLaneSource =
+        rendererRuntime.defaultLaneSource;
+    diagnostics.rendererRuntime.defaultLaneRolloutStatus =
+        rendererRuntime.defaultLaneRolloutStatus;
     for (const auto& descriptor : Win32MouseCompanionRendererBackendRegistry::Instance().ListByPriority()) {
         PetVisualHostRendererBackendCatalogEntry entry{};
         entry.name = descriptor.name;

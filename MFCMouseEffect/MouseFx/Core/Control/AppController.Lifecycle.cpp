@@ -585,6 +585,44 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.surfaceHeight;
     mouseCompanionRuntimeStatus_.rendererRuntimeModelSourceFormat =
         diagnostics.rendererRuntime.modelSourceFormat;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceSkinVariantId =
+        diagnostics.rendererRuntime.appearanceSkinVariantId;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceAccessoryIds =
+        diagnostics.rendererRuntime.appearanceAccessoryIds;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceAccessoryFamily =
+        diagnostics.rendererRuntime.appearanceAccessoryFamily;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceComboPreset =
+        diagnostics.rendererRuntime.appearanceComboPreset;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceRequestedPresetId =
+        diagnostics.rendererRuntime.appearanceRequestedPresetId;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceResolvedPresetId =
+        diagnostics.rendererRuntime.appearanceResolvedPresetId;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginId =
+        diagnostics.rendererRuntime.appearancePluginId;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginKind =
+        diagnostics.rendererRuntime.appearancePluginKind;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginSource =
+        diagnostics.rendererRuntime.appearancePluginSource;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginSelectionReason =
+        diagnostics.rendererRuntime.appearancePluginSelectionReason;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginFailureReason =
+        diagnostics.rendererRuntime.appearancePluginFailureReason;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginManifestPath =
+        diagnostics.rendererRuntime.appearancePluginManifestPath;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginRuntimeBackend =
+        diagnostics.rendererRuntime.appearancePluginRuntimeBackend;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginMetadataPath =
+        diagnostics.rendererRuntime.appearancePluginMetadataPath;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginMetadataSchemaVersion =
+        diagnostics.rendererRuntime.appearancePluginMetadataSchemaVersion;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginAppearanceSemanticsMode =
+        diagnostics.rendererRuntime.appearancePluginAppearanceSemanticsMode;
+    mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneCandidate =
+        diagnostics.rendererRuntime.defaultLaneCandidate;
+    mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneSource =
+        diagnostics.rendererRuntime.defaultLaneSource;
+    mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneRolloutStatus =
+        diagnostics.rendererRuntime.defaultLaneRolloutStatus;
 }
 
 void AppController::ClearPetVisualHostDiagnostics() {
@@ -616,6 +654,28 @@ void AppController::ClearPetVisualHostDiagnostics() {
     mouseCompanionRuntimeStatus_.rendererRuntimeSurfaceWidth = 0;
     mouseCompanionRuntimeStatus_.rendererRuntimeSurfaceHeight = 0;
     mouseCompanionRuntimeStatus_.rendererRuntimeModelSourceFormat = "unknown";
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceSkinVariantId = "default";
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceAccessoryIds.clear();
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceAccessoryFamily = "none";
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceComboPreset = "none";
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceRequestedPresetId.clear();
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceResolvedPresetId.clear();
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginId.clear();
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginKind.clear();
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginSource.clear();
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginSelectionReason.clear();
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginFailureReason.clear();
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginManifestPath.clear();
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginRuntimeBackend.clear();
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginMetadataPath.clear();
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginMetadataSchemaVersion = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginAppearanceSemanticsMode =
+        "legacy_manifest_compat";
+    mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneCandidate = "builtin";
+    mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneSource =
+        "runtime_builtin_default";
+    mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneRolloutStatus =
+        "stay_on_builtin";
 }
 
 void AppController::EnsurePetVisualHost() {

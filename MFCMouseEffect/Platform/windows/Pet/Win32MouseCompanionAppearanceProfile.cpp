@@ -13,6 +13,7 @@ using json = nlohmann::json;
 
 bool ApplyAppearanceNode(
     const json& node,
+    const std::string& resolvedPresetId,
     Win32MouseCompanionAppearanceProfile* outProfile) {
     if (!outProfile || !node.is_object()) {
         return false;
@@ -26,6 +27,7 @@ bool ApplyAppearanceNode(
             }
         }
     }
+    outProfile->resolvedPresetId = resolvedPresetId;
     outProfile->loaded = true;
     return true;
 }
@@ -55,8 +57,8 @@ bool LoadWin32MouseCompanionAppearanceProfileFromPath(
         return false;
     }
 
-    if (root.contains("default")) {
-        return ApplyAppearanceNode(root["default"], outProfile);
+    if (root.contains("activePreset") && root["activePreset"].is_string()) {
+        outProfile->requestedPresetId = root["activePreset"].get<std::string>();
     }
 
     if (root.contains("activePreset") &&
@@ -69,9 +71,13 @@ bool LoadWin32MouseCompanionAppearanceProfileFromPath(
                 continue;
             }
             if (preset["id"].get<std::string>() == activePreset) {
-                return ApplyAppearanceNode(preset, outProfile);
+                return ApplyAppearanceNode(preset, activePreset, outProfile);
             }
         }
+    }
+
+    if (root.contains("default")) {
+        return ApplyAppearanceNode(root["default"], "default", outProfile);
     }
 
     return false;

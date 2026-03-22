@@ -13,6 +13,8 @@ struct Win32MouseCompanionRealRendererAssetResources final {
     std::string actionLibraryPath;
     std::string appearanceProfileSkinVariantId{"default"};
     std::vector<std::string> appearanceAccessoryIds;
+    std::string appearanceRequestedPresetId;
+    std::string appearanceResolvedPresetId;
     bool modelReady{false};
     bool actionLibraryReady{false};
     bool appearanceProfileReady{false};

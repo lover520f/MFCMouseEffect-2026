@@ -42,6 +42,25 @@ struct PetVisualHostRendererRuntimeDiagnostics {
     int surfaceWidth{0};
     int surfaceHeight{0};
     std::string modelSourceFormat{"unknown"};
+    std::string appearanceSkinVariantId{"default"};
+    std::vector<std::string> appearanceAccessoryIds;
+    std::string appearanceAccessoryFamily{"none"};
+    std::string appearanceComboPreset{"none"};
+    std::string appearanceRequestedPresetId;
+    std::string appearanceResolvedPresetId;
+    std::string appearancePluginId;
+    std::string appearancePluginKind;
+    std::string appearancePluginSource;
+    std::string appearancePluginSelectionReason;
+    std::string appearancePluginFailureReason;
+    std::string appearancePluginManifestPath;
+    std::string appearancePluginRuntimeBackend;
+    std::string appearancePluginMetadataPath;
+    uint32_t appearancePluginMetadataSchemaVersion{0};
+    std::string appearancePluginAppearanceSemanticsMode{"legacy_manifest_compat"};
+    std::string defaultLaneCandidate{"builtin"};
+    std::string defaultLaneSource{"runtime_builtin_default"};
+    std::string defaultLaneRolloutStatus{"stay_on_builtin"};
 };
 
 struct PetVisualHostDiagnostics {

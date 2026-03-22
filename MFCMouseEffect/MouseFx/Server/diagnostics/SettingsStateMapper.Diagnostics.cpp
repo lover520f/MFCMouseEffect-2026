@@ -268,6 +268,33 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         {"reactive_action_name", realRendererPreviewDiagnostics.reactiveActionName},
         {"reactive_action_intensity", realRendererPreviewDiagnostics.reactiveActionIntensity},
         {"model_source_format", realRendererPreviewDiagnostics.modelSourceFormat},
+        {"appearance_skin_variant_id", realRendererPreviewDiagnostics.appearanceSkinVariantId},
+        {"appearance_accessory_ids", realRendererPreviewDiagnostics.appearanceAccessoryIds},
+        {"appearance_accessory_family", realRendererPreviewDiagnostics.appearanceAccessoryFamily},
+        {"appearance_combo_preset", realRendererPreviewDiagnostics.appearanceComboPreset},
+        {"appearance_requested_preset_id", realRendererPreviewDiagnostics.appearanceRequestedPresetId},
+        {"appearance_resolved_preset_id", realRendererPreviewDiagnostics.appearanceResolvedPresetId},
+        {"appearance_plugin_id", realRendererPreviewDiagnostics.appearancePluginId},
+        {"appearance_plugin_kind", realRendererPreviewDiagnostics.appearancePluginKind},
+        {"appearance_plugin_source", realRendererPreviewDiagnostics.appearancePluginSource},
+        {"appearance_plugin_selection_reason",
+         realRendererPreviewDiagnostics.appearancePluginSelectionReason},
+        {"appearance_plugin_failure_reason",
+         realRendererPreviewDiagnostics.appearancePluginFailureReason},
+        {"appearance_plugin_manifest_path",
+         realRendererPreviewDiagnostics.appearancePluginManifestPath},
+        {"appearance_plugin_runtime_backend",
+         realRendererPreviewDiagnostics.appearancePluginRuntimeBackend},
+        {"appearance_plugin_metadata_path",
+         realRendererPreviewDiagnostics.appearancePluginMetadataPath},
+        {"appearance_plugin_metadata_schema_version",
+         realRendererPreviewDiagnostics.appearancePluginMetadataSchemaVersion},
+        {"appearance_plugin_appearance_semantics_mode",
+         realRendererPreviewDiagnostics.appearancePluginAppearanceSemanticsMode},
+        {"default_lane_candidate", realRendererPreviewDiagnostics.defaultLaneCandidate},
+        {"default_lane_source", realRendererPreviewDiagnostics.defaultLaneSource},
+        {"default_lane_rollout_status",
+         realRendererPreviewDiagnostics.defaultLaneRolloutStatus},
     };
     out["configured_model_path"] = status.configuredModelPath;
     out["configured_action_library_path"] = status.configuredActionLibraryPath;
@@ -300,6 +327,44 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
     out["renderer_runtime_surface_width"] = status.rendererRuntimeSurfaceWidth;
     out["renderer_runtime_surface_height"] = status.rendererRuntimeSurfaceHeight;
     out["renderer_runtime_model_source_format"] = status.rendererRuntimeModelSourceFormat;
+    out["renderer_runtime_appearance_skin_variant_id"] =
+        status.rendererRuntimeAppearanceSkinVariantId;
+    out["renderer_runtime_appearance_accessory_ids"] =
+        status.rendererRuntimeAppearanceAccessoryIds;
+    out["renderer_runtime_appearance_accessory_family"] =
+        status.rendererRuntimeAppearanceAccessoryFamily;
+    out["renderer_runtime_appearance_combo_preset"] =
+        status.rendererRuntimeAppearanceComboPreset;
+    out["renderer_runtime_appearance_requested_preset_id"] =
+        status.rendererRuntimeAppearanceRequestedPresetId;
+    out["renderer_runtime_appearance_resolved_preset_id"] =
+        status.rendererRuntimeAppearanceResolvedPresetId;
+    out["renderer_runtime_appearance_plugin_id"] =
+        status.rendererRuntimeAppearancePluginId;
+    out["renderer_runtime_appearance_plugin_kind"] =
+        status.rendererRuntimeAppearancePluginKind;
+    out["renderer_runtime_appearance_plugin_source"] =
+        status.rendererRuntimeAppearancePluginSource;
+    out["renderer_runtime_appearance_plugin_selection_reason"] =
+        status.rendererRuntimeAppearancePluginSelectionReason;
+    out["renderer_runtime_appearance_plugin_failure_reason"] =
+        status.rendererRuntimeAppearancePluginFailureReason;
+    out["renderer_runtime_appearance_plugin_manifest_path"] =
+        status.rendererRuntimeAppearancePluginManifestPath;
+    out["renderer_runtime_appearance_plugin_runtime_backend"] =
+        status.rendererRuntimeAppearancePluginRuntimeBackend;
+    out["renderer_runtime_appearance_plugin_metadata_path"] =
+        status.rendererRuntimeAppearancePluginMetadataPath;
+    out["renderer_runtime_appearance_plugin_metadata_schema_version"] =
+        status.rendererRuntimeAppearancePluginMetadataSchemaVersion;
+    out["renderer_runtime_appearance_plugin_appearance_semantics_mode"] =
+        status.rendererRuntimeAppearancePluginAppearanceSemanticsMode;
+    out["renderer_runtime_default_lane_candidate"] =
+        status.rendererRuntimeDefaultLaneCandidate;
+    out["renderer_runtime_default_lane_source"] =
+        status.rendererRuntimeDefaultLaneSource;
+    out["renderer_runtime_default_lane_rollout_status"] =
+        status.rendererRuntimeDefaultLaneRolloutStatus;
     out["visual_model_path"] = status.visualModelPath;
     out["loaded_model_path"] = status.loadedModelPath;
     out["loaded_model_source_format"] = status.loadedModelSourceFormat;

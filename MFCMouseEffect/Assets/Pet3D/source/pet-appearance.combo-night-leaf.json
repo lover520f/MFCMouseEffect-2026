@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "activePreset": "night-leaf",
+  "presets": [
+    {
+      "id": "night-leaf",
+      "skinVariantId": "night",
+      "enabledAccessoryIds": ["leaf"],
+      "textureOverridePaths": []
+    }
+  ]
+}

@@ -8,6 +8,8 @@ namespace mousefx::windows {
 struct Win32MouseCompanionAppearanceProfile final {
     std::string skinVariantId{"default"};
     std::vector<std::string> enabledAccessoryIds;
+    std::string requestedPresetId;
+    std::string resolvedPresetId;
     bool loaded{false};
 };
 

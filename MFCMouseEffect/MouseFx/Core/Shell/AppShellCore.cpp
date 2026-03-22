@@ -18,6 +18,7 @@
 #include "MouseFx/Core/Shell/ISingleInstanceGuard.h"
 #include "MouseFx/Core/Shell/ITrayService.h"
 #include "MouseFx/Core/Shell/IUserNotificationService.h"
+#include "MouseFx/Core/Shell/WebSettingsLaunchCoordinator.h"
 #include "MouseFx/Core/Effects/ClickEffectCompute.h"
 #include "MouseFx/Core/Effects/HoldEffectCompute.h"
 #include "MouseFx/Core/Effects/HoverEffectCompute.h"
@@ -330,7 +331,9 @@ AppShellCore::AppShellCore(ShellPlatformServices services)
       singleInstanceGuard_(std::move(services.singleInstanceGuard)),
       dpiAwarenessService_(std::move(services.dpiAwarenessService)),
       eventLoopService_(std::move(services.eventLoopService)),
-      notifier_(std::move(services.notifier)) {}
+      notifier_(std::move(services.notifier)) {
+    webSettingsCoordinator_ = std::make_unique<WebSettingsLaunchCoordinator>();
+}
 
 AppShellCore::~AppShellCore() {
     Shutdown();
@@ -352,6 +355,7 @@ bool AppShellCore::Initialize(const AppShellStartOptions& options) {
     backgroundMode_ = !options.showTrayIcon || !trayService_;
 
     mouseFx_ = std::make_unique<AppController>();
+    webSettingsCoordinator_->ResetController(mouseFx_.get());
     mouseFx_->SetRuntimeDiagnosticsEnabled(options.enableRuntimeDiagnostics);
     if (!mouseFx_->Start()) {
 #ifdef _DEBUG
@@ -408,9 +412,8 @@ void AppShellCore::Shutdown() {
         ipc_->Stop();
         ipc_.reset();
     }
-    if (webSettings_) {
-        webSettings_->Stop();
-        webSettings_.reset();
+    if (webSettingsCoordinator_) {
+        webSettingsCoordinator_->Stop();
     }
     if (mouseFx_) {
         mouseFx_->Stop();
@@ -594,20 +597,21 @@ void AppShellCore::ShowWebSettings() {
         return;
     }
 
-    if (!webSettings_) {
-        webSettings_ = std::make_unique<WebSettingsServer>(mouseFx_.get());
+    if (!webSettingsCoordinator_) {
+        webSettingsCoordinator_ = std::make_unique<WebSettingsLaunchCoordinator>(mouseFx_.get());
     }
-    if (!webSettings_->IsRunning()) {
-        webSettings_->RotateToken();
-        if (!webSettings_->Start()) {
-            NotifyWarning("MFCMouseEffect", "Web settings server start failed.");
-            return;
-        }
+    webSettingsCoordinator_->ResetController(mouseFx_.get());
+    const WebSettingsLaunchResult launch = webSettingsCoordinator_->EnsureStarted();
+    if (!launch.ok) {
+        NotifyWarning("MFCMouseEffect", "Web settings server start failed.");
+        return;
     }
 
-    WriteWebSettingsRuntimeInfo(*webSettings_);
+    if (const WebSettingsServer* server = webSettingsCoordinator_->Server()) {
+        WriteWebSettingsRuntimeInfo(*server);
+    }
 
-    if (!settingsLauncher_->OpenUrlUtf8(webSettings_->Url())) {
+    if (!settingsLauncher_->OpenUrlUtf8(launch.url)) {
         NotifyWarning("MFCMouseEffect", "Web settings open failed.");
     }
 }

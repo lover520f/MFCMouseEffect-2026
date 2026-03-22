@@ -3,6 +3,7 @@
 #include <gdiplus.h>
 
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererSceneRuntime.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererStyleProfile.h"
 
 namespace mousefx::windows {
 
@@ -48,6 +49,7 @@ struct Win32MouseCompanionRealRendererMotionProfile final {
 };
 
 Win32MouseCompanionRealRendererMotionProfile BuildWin32MouseCompanionRealRendererMotionProfile(
-    const Win32MouseCompanionRealRendererSceneRuntime& runtime);
+    const Win32MouseCompanionRealRendererSceneRuntime& runtime,
+    const Win32MouseCompanionRealRendererStyleProfile& style);
 
 } // namespace mousefx::windows

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "activePreset": "strawberry-ribbon-bow",
+  "presets": [
+    {
+      "id": "strawberry-ribbon-bow",
+      "skinVariantId": "strawberry",
+      "enabledAccessoryIds": ["ribbon-bow"],
+      "textureOverridePaths": []
+    }
+  ]
+}

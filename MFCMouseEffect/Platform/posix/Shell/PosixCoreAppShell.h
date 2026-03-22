@@ -11,7 +11,7 @@
 
 namespace mousefx {
 class AppController;
-class WebSettingsServer;
+class WebSettingsLaunchCoordinator;
 }
 
 namespace mousefx::platform {
@@ -52,7 +52,7 @@ private:
 private:
     ShellPlatformServices services_{};
     std::unique_ptr<AppController> appController_{};
-    std::unique_ptr<WebSettingsServer> webSettings_{};
+    std::unique_ptr<WebSettingsLaunchCoordinator> webSettingsCoordinator_{};
     bool initialized_ = false;
     bool backgroundMode_ = false;
     bool stdinMonitorStarted_ = false;

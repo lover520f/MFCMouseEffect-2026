@@ -14,6 +14,8 @@ Win32MouseCompanionRealRendererAssetResources BuildWin32MouseCompanionRealRender
     resources.actionLibraryPath = input.actionLibraryPath;
     resources.appearanceProfileSkinVariantId = input.appearanceProfile.skinVariantId;
     resources.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;
+    resources.appearanceRequestedPresetId = input.appearanceProfile.requestedPresetId;
+    resources.appearanceResolvedPresetId = input.appearanceProfile.resolvedPresetId;
     resources.modelReady = input.modelAssetAvailable && !resources.modelPath.empty();
     resources.actionLibraryReady = input.actionLibraryAvailable && !resources.actionLibraryPath.empty();
     resources.appearanceProfileReady = input.appearanceProfile.loaded;

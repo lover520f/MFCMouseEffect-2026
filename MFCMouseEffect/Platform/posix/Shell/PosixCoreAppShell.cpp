@@ -5,7 +5,7 @@
 #if MFX_PLATFORM_MACOS || MFX_PLATFORM_LINUX
 
 #include "MouseFx/Core/Control/AppController.h"
-#include "MouseFx/Server/core/WebSettingsServer.h"
+#include "MouseFx/Core/Shell/WebSettingsLaunchCoordinator.h"
 
 #include <string>
 #include <utility>
@@ -53,6 +53,7 @@ bool PosixCoreAppShell::Initialize(const AppShellStartOptions& options) {
     backgroundMode_ = !options.showTrayIcon || !services_.trayService;
 
     appController_ = std::make_unique<AppController>();
+    webSettingsCoordinator_ = std::make_unique<WebSettingsLaunchCoordinator>(appController_.get());
     appController_->SetRuntimeDiagnosticsEnabled(options.enableRuntimeDiagnostics);
     if (!appController_ || !appController_->Start()) {
         if (services_.notifier) {
@@ -118,9 +119,8 @@ void PosixCoreAppShell::Shutdown() {
     if (!initialized_) {
         return;
     }
-    if (webSettings_) {
-        webSettings_->Stop();
-        webSettings_.reset();
+    if (webSettingsCoordinator_) {
+        webSettingsCoordinator_->Stop();
     }
     if (appController_) {
         appController_->SetInputCaptureStatusCallback(nullptr);

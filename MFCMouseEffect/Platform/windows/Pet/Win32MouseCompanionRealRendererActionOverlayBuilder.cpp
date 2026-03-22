@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererActionOverlayBuilder.h"
 
 #include <algorithm>
@@ -23,6 +24,7 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
     const Win32MouseCompanionRealRendererStyleProfile& style,
     const Win32MouseCompanionRealRendererLayoutMetrics& metrics,
     Win32MouseCompanionRealRendererScene& scene) {
+    const auto mood = BuildWin32MouseCompanionRealRendererAppearanceSemantics(runtime, style).mood;
     scene.actionOverlay.accentColor = profile.overlayAccentColor;
 
     if (runtime.click) {
@@ -30,7 +32,8 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
             (style.clickRingScale + profile.actionIntensity * style.clickRingIntensityScale);
         scene.actionOverlay.clickRingVisible = true;
         scene.actionOverlay.clickRingStrokeWidth = 2.2f + profile.actionIntensity * 1.4f;
-        scene.actionOverlay.clickRingAlpha = ClampAlpha(205.0f + profile.actionIntensity * 36.0f);
+        scene.actionOverlay.clickRingAlpha =
+            ClampAlpha((205.0f + profile.actionIntensity * 36.0f) * mood.clickRingAlphaScale);
         scene.actionOverlay.clickRingRect = MakeCenteredRect(
             scene.centerX,
             scene.headRect.Y + scene.headRect.Height * style.clickRingCenterYRatio,
@@ -40,7 +43,8 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
 
     if (runtime.hold) {
         scene.actionOverlay.holdBandVisible = true;
-        scene.actionOverlay.holdBandAlpha = ClampAlpha(145.0f + profile.actionIntensity * 78.0f);
+        scene.actionOverlay.holdBandAlpha =
+            ClampAlpha((145.0f + profile.actionIntensity * 78.0f) * mood.holdBandAlphaScale);
         scene.actionOverlay.holdBandRect = Gdiplus::RectF(
             scene.leftHandRect.X + scene.leftHandRect.Width * style.holdBandInsetRatio,
             std::min(scene.leftHandRect.Y, scene.rightHandRect.Y) + metrics.bodyHeight * style.holdBandYOffsetRatio,
@@ -51,7 +55,8 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
     if (runtime.scroll) {
         scene.actionOverlay.scrollArcVisible = true;
         scene.actionOverlay.scrollArcStrokeWidth = 3.0f + profile.scrollIntensity * 1.6f;
-        scene.actionOverlay.scrollArcAlpha = ClampAlpha(180.0f + profile.scrollIntensity * 56.0f);
+        scene.actionOverlay.scrollArcAlpha =
+            ClampAlpha((180.0f + profile.scrollIntensity * 56.0f) * mood.scrollArcAlphaScale);
         scene.actionOverlay.scrollArcRect = MakeCenteredRect(
             scene.centerX,
             scene.centerY - metrics.bodyHeight * style.scrollArcCenterYRatio,
@@ -64,7 +69,8 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
     if (runtime.drag) {
         scene.actionOverlay.dragLineVisible = true;
         scene.actionOverlay.dragLineStrokeWidth = 2.4f + profile.actionIntensity * 1.2f;
-        scene.actionOverlay.dragLineAlpha = ClampAlpha(178.0f + profile.actionIntensity * 52.0f);
+        scene.actionOverlay.dragLineAlpha =
+            ClampAlpha((178.0f + profile.actionIntensity * 52.0f) * mood.dragLineAlphaScale);
         scene.actionOverlay.dragLineStart = Gdiplus::PointF(
             scene.centerX - runtime.facingSign * metrics.bodyWidth * style.dragLineStartXRatio,
             scene.centerY - metrics.bodyHeight * style.dragLineStartYRatio);
@@ -75,7 +81,8 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
 
     if (runtime.follow) {
         scene.actionOverlay.followTrailVisible = true;
-        scene.actionOverlay.followTrailBaseAlpha = ClampAlpha(150.0f + profile.actionIntensity * 68.0f);
+        scene.actionOverlay.followTrailBaseAlpha =
+            ClampAlpha((150.0f + profile.actionIntensity * 68.0f) * mood.followTrailAlphaScale);
         const float trailBaseX = scene.centerX - runtime.facingSign * metrics.bodyWidth * style.followTrailBaseXRatio;
         const float trailBaseY = scene.centerY + metrics.bodyHeight * style.followTrailBaseYRatio;
         for (size_t i = 0; i < scene.actionOverlay.followTrailRects.size(); ++i) {

@@ -248,6 +248,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClInclude Include="MouseFx\Core\Overlay\NullInputIndicatorOverlay.h" />
     <ClInclude Include="MouseFx\Core\Shell\IAppShellHost.h" />
     <ClInclude Include="MouseFx\Core\Shell\AppShellCore.h" />
+    <ClInclude Include="MouseFx\Core\Shell\WebSettingsLaunchCoordinator.h" />
     <ClInclude Include="MouseFx\Core\Shell\ITrayService.h" />
     <ClInclude Include="MouseFx\Core\Shell\IEventLoopService.h" />
     <ClInclude Include="MouseFx\Core\Shell\ISettingsLauncher.h" />
@@ -285,6 +286,9 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRendererBackendPreference.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererActionOverlayBuilder.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAdornmentBuilder.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAppearanceSemantics.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRenderPluginManifestContract.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRenderPluginHost.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAppendageBuilder.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetResources.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererCapabilities.h" />
@@ -546,6 +550,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="MouseFx\Effects\ClickEffectCommandAdapter.cpp" />
     <ClCompile Include="MouseFx\Core\Control\IpcController.cpp" />
     <ClCompile Include="MouseFx\Core\Shell\AppShellCore.cpp" />
+    <ClCompile Include="MouseFx\Core\Shell\WebSettingsLaunchCoordinator.cpp" />
     <ClCompile Include="Platform\windows\Shell\Win32AppShell.cpp" />
     <ClCompile Include="Platform\PlatformOverlayCoordSpaceFactory.cpp" />
     <ClCompile Include="Platform\PlatformControlMessageCodecFactory.cpp" />
@@ -624,6 +629,9 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRendererBackendPreference.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererActionOverlayBuilder.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAdornmentBuilder.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAppearanceSemantics.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRenderPluginManifestContract.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRenderPluginHost.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAppendageBuilder.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetResources.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererCapabilities.cpp" />

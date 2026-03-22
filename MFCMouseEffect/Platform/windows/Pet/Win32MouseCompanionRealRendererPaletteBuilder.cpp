@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererPaletteBuilder.h"
 
 #include <algorithm>
@@ -59,8 +60,13 @@ void BuildWin32MouseCompanionRealRendererPalette(
         : runtime.scroll                           ? style.scrollPedestalAlphaBias
         : runtime.drag                             ? style.dragPedestalAlphaBias
                                                    : 0.0f;
+    const auto appearanceSemantics = BuildWin32MouseCompanionRealRendererAppearanceSemantics(runtime, style);
+    const auto& mood = appearanceSemantics.mood;
     const auto actionTint = profile.overlayAccentColor;
-    scene.glowColor = BlendToward(palette.glowColor, actionTint, emphasis * style.glowActionTintMix);
+    scene.glowColor = BlendToward(
+        palette.glowColor,
+        actionTint,
+        emphasis * style.glowActionTintMix * mood.glowTintMixScale);
     scene.bodyFill = BlendToward(baseBody, actionTint, emphasis * style.bodyActionTintMix);
     scene.bodyFillRear = Darken(scene.bodyFill, style.bodyRearDarkenFactor);
     scene.bodyStroke = MakeColor(
@@ -71,8 +77,50 @@ void BuildWin32MouseCompanionRealRendererPalette(
     scene.headFill = BlendToward(palette.headFill, actionTint, emphasis * style.headActionTintMix);
     scene.headFillRear = BlendToward(palette.headFillRear, actionTint, emphasis * style.headActionTintMix * 0.7f);
     scene.earFill = palette.earFill;
-    scene.earFillRear = palette.earFillRear;
-    scene.earInner = palette.earInner;
+    scene.earFillRear = MakeColor(
+        static_cast<BYTE>(std::clamp(style.rearEarFillAlpha, 0.0f, 255.0f)),
+        BlendChannel(palette.earFillRear.GetR(), actionTint.GetR(), emphasis * style.rearEarActionTintMix),
+        BlendChannel(palette.earFillRear.GetG(), actionTint.GetG(), emphasis * style.rearEarActionTintMix),
+        BlendChannel(palette.earFillRear.GetB(), actionTint.GetB(), emphasis * style.rearEarActionTintMix));
+    scene.earStroke = MakeColor(
+        static_cast<BYTE>(std::clamp(style.frontEarStrokeAlpha, 0.0f, 255.0f)),
+        scene.bodyStroke.GetR(),
+        scene.bodyStroke.GetG(),
+        scene.bodyStroke.GetB());
+    scene.earStrokeRear = MakeColor(
+        static_cast<BYTE>(std::clamp(style.rearEarStrokeAlpha, 0.0f, 255.0f)),
+        BlendChannel(palette.bodyStroke.GetR(), actionTint.GetR(), emphasis * style.rearEarStrokeActionTintMix),
+        BlendChannel(palette.bodyStroke.GetG(), actionTint.GetG(), emphasis * style.rearEarStrokeActionTintMix),
+        BlendChannel(palette.bodyStroke.GetB(), actionTint.GetB(), emphasis * style.rearEarStrokeActionTintMix));
+    scene.earStrokeWidth = style.frontEarStrokeWidth;
+    scene.earStrokeWidthRear = style.rearEarStrokeWidth;
+    scene.earInnerBaseInsetPx = style.frontEarInnerBaseInsetPx;
+    scene.earInnerBaseInsetPxRear = style.rearEarInnerBaseInsetPx;
+    scene.earInnerMidInsetPx = style.frontEarInnerMidInsetPx;
+    scene.earInnerMidInsetPxRear = style.rearEarInnerMidInsetPx;
+    scene.earInnerTipInsetPx = style.frontEarInnerTipInsetPx;
+    scene.earInnerTipInsetPxRear = style.rearEarInnerTipInsetPx;
+    scene.earOcclusionCapAlpha = style.earOcclusionCapAlpha;
+    scene.earRootCuffFill = MakeColor(
+        static_cast<BYTE>(std::clamp(style.frontEarRootCuffAlpha, 0.0f, 255.0f)),
+        scene.headFill.GetR(),
+        scene.headFill.GetG(),
+        scene.headFill.GetB());
+    scene.earRootCuffFillRear = MakeColor(
+        static_cast<BYTE>(std::clamp(style.rearEarRootCuffAlpha, 0.0f, 255.0f)),
+        BlendChannel(palette.headFillRear.GetR(), actionTint.GetR(), emphasis * style.rearEarRootCuffActionTintMix),
+        BlendChannel(palette.headFillRear.GetG(), actionTint.GetG(), emphasis * style.rearEarRootCuffActionTintMix),
+        BlendChannel(palette.headFillRear.GetB(), actionTint.GetB(), emphasis * style.rearEarRootCuffActionTintMix));
+    scene.earInner = MakeColor(
+        static_cast<BYTE>(std::clamp(style.frontEarInnerAlpha, 0.0f, 255.0f)),
+        palette.earInner.GetR(),
+        palette.earInner.GetG(),
+        palette.earInner.GetB());
+    scene.earInnerRear = MakeColor(
+        static_cast<BYTE>(std::clamp(style.rearEarInnerAlpha, 0.0f, 255.0f)),
+        BlendChannel(palette.earInnerRear.GetR(), actionTint.GetR(), emphasis * style.rearEarInnerActionTintMix),
+        BlendChannel(palette.earInnerRear.GetG(), actionTint.GetG(), emphasis * style.rearEarInnerActionTintMix),
+        BlendChannel(palette.earInnerRear.GetB(), actionTint.GetB(), emphasis * style.rearEarInnerActionTintMix));
     scene.eyeFill = palette.eyeFill;
     scene.mouthFill = palette.mouthFill;
     scene.blushFill = MakeColor(
@@ -81,27 +129,66 @@ void BuildWin32MouseCompanionRealRendererPalette(
         palette.blushRgb.GetG(),
         palette.blushRgb.GetB());
     scene.tailFill = Darken(scene.bodyFill, style.tailDarkenFactor);
+    const auto rearTailBase = Darken(scene.bodyFillRear, style.tailRearDarkenFactor);
+    scene.tailFillRear = MakeColor(
+        static_cast<BYTE>(std::clamp(style.tailRearAlpha, 0.0f, 255.0f)),
+        BlendChannel(
+            rearTailBase.GetR(),
+            actionTint.GetR(),
+            emphasis * style.tailRearActionTintMix),
+        BlendChannel(
+            rearTailBase.GetG(),
+            actionTint.GetG(),
+            emphasis * style.tailRearActionTintMix),
+        BlendChannel(
+            rearTailBase.GetB(),
+            actionTint.GetB(),
+            emphasis * style.tailRearActionTintMix));
+    scene.tailMidFill = MakeColor(
+        static_cast<BYTE>(std::clamp(style.tailMidAlpha, 0.0f, 255.0f)),
+        BlendChannel(
+            scene.tailFillRear.GetR(),
+            scene.headFill.GetR(),
+            style.tailMidBlendTowardTip + emphasis * style.tailMidActionTintMix),
+        BlendChannel(
+            scene.tailFillRear.GetG(),
+            scene.headFill.GetG(),
+            style.tailMidBlendTowardTip + emphasis * style.tailMidActionTintMix),
+        BlendChannel(
+            scene.tailFillRear.GetB(),
+            scene.headFill.GetB(),
+            style.tailMidBlendTowardTip + emphasis * style.tailMidActionTintMix));
+    scene.tailTipFill = MakeColor(
+        static_cast<BYTE>(std::clamp(style.tailTipAlpha, 0.0f, 255.0f)),
+        BlendChannel(scene.headFill.GetR(), actionTint.GetR(), emphasis * style.tailTipActionTintMix),
+        BlendChannel(scene.headFill.GetG(), actionTint.GetG(), emphasis * style.tailTipActionTintMix),
+        BlendChannel(scene.headFill.GetB(), actionTint.GetB(), emphasis * style.tailTipActionTintMix));
+    scene.tailStroke = MakeColor(
+        static_cast<BYTE>(std::clamp(style.tailTipStrokeAlpha, 0.0f, 255.0f)),
+        scene.bodyStroke.GetR(),
+        scene.bodyStroke.GetG(),
+        scene.bodyStroke.GetB());
     scene.accentFill = MakeColor(
         static_cast<BYTE>(std::clamp(style.accentBaseAlpha + emphasis * style.accentActionAlphaScale, 0.0f, 255.0f)),
-        BlendChannel(palette.accentFill.GetR(), actionTint.GetR(), emphasis * style.accentActionTintMix),
-        BlendChannel(palette.accentFill.GetG(), actionTint.GetG(), emphasis * style.accentActionTintMix),
-        BlendChannel(palette.accentFill.GetB(), actionTint.GetB(), emphasis * style.accentActionTintMix));
+        BlendChannel(palette.accentFill.GetR(), actionTint.GetR(), emphasis * style.accentActionTintMix * mood.accentTintMixScale),
+        BlendChannel(palette.accentFill.GetG(), actionTint.GetG(), emphasis * style.accentActionTintMix * mood.accentTintMixScale),
+        BlendChannel(palette.accentFill.GetB(), actionTint.GetB(), emphasis * style.accentActionTintMix * mood.accentTintMixScale));
     scene.shadowFill = MakeColor(
         static_cast<BYTE>(std::clamp(
-            style.shadowBaseAlpha + shadowEmphasis * style.shadowActionAlphaScale + shadowAlphaBias,
+            style.shadowBaseAlpha + shadowEmphasis * style.shadowActionAlphaScale + shadowAlphaBias + mood.shadowAlphaBias,
             0.0f,
             255.0f)),
-        BlendChannel(palette.pedestalFill.GetR(), actionTint.GetR(), emphasis * style.shadowActionTintMix),
-        BlendChannel(palette.pedestalFill.GetG(), actionTint.GetG(), emphasis * style.shadowActionTintMix),
-        BlendChannel(palette.pedestalFill.GetB(), actionTint.GetB(), emphasis * style.shadowActionTintMix));
+        BlendChannel(palette.pedestalFill.GetR(), actionTint.GetR(), emphasis * style.shadowActionTintMix * mood.shadowTintMixScale),
+        BlendChannel(palette.pedestalFill.GetG(), actionTint.GetG(), emphasis * style.shadowActionTintMix * mood.shadowTintMixScale),
+        BlendChannel(palette.pedestalFill.GetB(), actionTint.GetB(), emphasis * style.shadowActionTintMix * mood.shadowTintMixScale));
     scene.pedestalFill = MakeColor(
         static_cast<BYTE>(std::clamp(
-            style.pedestalBaseAlpha + shadowEmphasis * style.pedestalActionAlphaScale + pedestalAlphaBias,
+            style.pedestalBaseAlpha + shadowEmphasis * style.pedestalActionAlphaScale + pedestalAlphaBias + mood.pedestalAlphaBias,
             0.0f,
             255.0f)),
-        BlendChannel(palette.pedestalFill.GetR(), actionTint.GetR(), emphasis * style.pedestalActionTintMix),
-        BlendChannel(palette.pedestalFill.GetG(), actionTint.GetG(), emphasis * style.pedestalActionTintMix),
-        BlendChannel(palette.pedestalFill.GetB(), actionTint.GetB(), emphasis * style.pedestalActionTintMix));
+        BlendChannel(palette.pedestalFill.GetR(), actionTint.GetR(), emphasis * style.pedestalActionTintMix * mood.pedestalTintMixScale),
+        BlendChannel(palette.pedestalFill.GetG(), actionTint.GetG(), emphasis * style.pedestalActionTintMix * mood.pedestalTintMixScale),
+        BlendChannel(palette.pedestalFill.GetB(), actionTint.GetB(), emphasis * style.pedestalActionTintMix * mood.pedestalTintMixScale));
     scene.badgeReadyFill = palette.badgeReadyFill;
     scene.badgePendingFill = palette.badgePendingFill;
     scene.accessoryFill = palette.accessoryFill;

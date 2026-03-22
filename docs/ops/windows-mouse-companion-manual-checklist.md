@@ -91,6 +91,221 @@
 3. Change appearance profile content if needed and reload settings.
 4. Confirm base color / accessory accent changes are reflected by the placeholder.
 
+## Appearance Combo Persona
+1. Keep default `pet-appearance.json` available and confirm Windows real preview is active.
+2. Validate these three high-value combinations first:
+   - `activePreset = "cream-moon"`
+   - `activePreset = "night-leaf"`
+   - `activePreset = "strawberry-ribbon-bow"`
+3. Static-frame expectation:
+   - `cream + moon` should read lighter/softer/dreamier than the other two.
+   - `night + leaf` should read tighter/more directional/more agile than the other two.
+   - `strawberry + ribbon-bow` should read sweeter/brighter/more charming than the other two.
+4. Dynamic expectation:
+   - `cream + moon` should feel lighter during `follow / scroll`; glow and lift should read slightly more airy than baseline.
+   - `night + leaf` should feel sharper during `drag / scroll`; ear, tail, whisker, and grounding direction should read more decisive than baseline.
+   - `strawberry + ribbon-bow` should feel more buoyant during `click / hold`; blush/accent/overlay emphasis should read sweeter and springier than baseline.
+   - latest Windows real-preview tuning also expects:
+     - `cream + moon`: `follow` should sit a bit higher with softer shadow/pedestal weight and gentler tail swing
+     - `night + leaf`: `drag` should show a stronger forward/reach posture and tighter eye/brow focus
+     - `strawberry + ribbon-bow`: `hold/click` should show slightly fuller blush/mouth response and a rounder upbeat bounce
+5. Combination pass criteria:
+   - differences must not reduce to accessory shape only
+   - differences must not reduce to palette only
+   - at least two of these layers should differ together:
+     - face mood
+     - body/appendage silhouette
+     - action rhythm
+     - glow/shadow/pedestal mood
+6. If the combination is only weakly readable in a static frame but clearly readable during action changes, mark it as:
+   - `pass (dynamic-biased)`
+7. If the combination still feels indistinguishable after `follow / hold / click / drag / scroll`, mark it as:
+   - `fail (persona readability too weak)`
+8. Fastest Windows entry:
+   - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-combo-persona-acceptance.cmd`
+   - this first runs the real-preview smoke gate, then switches runtime `appearance_profile_path` across the three synced combo-only JSON files and validates each case
+9. Runtime handoff discovery note:
+   - in `Release`, the app normally writes `websettings_runtime_auto.json` under `%APPDATA%\MFCMouseEffect`
+   - in `Debug`, config-path fallback may place the same file near the built exe instead (for example `F:\language\cpp\code\MFCMouseEffect\x64\Debug\websettings_runtime_auto.json`)
+   - the Windows-native proof/acceptance scripts now check both locations automatically
+10. Machine-check note:
+   - after switching `activePreset`, verify `/api/state` or `/api/mouse-companion/test-render-proof` also reflects:
+     - `appearance_requested_preset_id`
+     - `appearance_resolved_preset_id`
+     - `appearance_skin_variant_id`
+     - `appearance_accessory_family`
+     - `appearance_combo_preset`
+     - `appearance_plugin_id`
+     - `appearance_plugin_kind`
+     - `appearance_plugin_source`
+     - `appearance_plugin_selection_reason`
+     - `appearance_plugin_failure_reason`
+     - `appearance_plugin_manifest_path`
+     - `appearance_plugin_runtime_backend`
+     - `appearance_plugin_metadata_path`
+     - `appearance_plugin_metadata_schema_version`
+   - if `requested` and `resolved` differ, treat it as fallback behavior first, not immediate renderer drift
+   - if `appearance_plugin_kind=builtin` while the env explicitly requested `wasm`, treat `appearance_plugin_selection_reason` + `appearance_plugin_failure_reason` as the authoritative fallback explanation before judging visual drift
+   - if `appearance_plugin_metadata_path` is empty, the host is still running on manifest-only compatibility mode rather than the renderer sidecar contract
+   - if sidecar exists and is valid, `appearance_plugin_appearance_semantics_mode` should currently report either:
+     - `builtin_passthrough`
+     - `wasm_v1`
+   - runtime diagnostics now also expose default-lane decision state:
+     - `default_lane_candidate`
+     - `default_lane_source`
+     - `default_lane_rollout_status`
+   - current interpretation:
+     - `default_lane_rollout_status = stay_on_builtin` means runtime still recommends keeping builtin as shipped default
+     - `default_lane_rollout_status = candidate_pending_manual_confirmation` means runtime sees a non-builtin candidate, but the lane is still not approved for default rollout until observation says so
+   - common `default_lane_source` readings:
+     - `runtime_builtin_default`: no stronger lane is currently nominated
+     - `env_builtin_forced`: runtime is intentionally pinned to builtin
+     - `env_wasm_candidate`: wasm lane is healthy enough to be nominated as a candidate
+     - `env_wasm_fallback_builtin`: wasm was requested, but runtime stayed on builtin after fallback
+     - `runtime_plugin_candidate`: a non-builtin candidate exists through runtime plugin selection even without an explicit env-wasm request path
+   - native shortcut:
+     - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Route proof -Event status -ExpectAppearanceProfileMatch $true`
+   - `run-windows-mouse-companion-combo-persona-acceptance.cmd` now enables the same appearance-profile machine check automatically and uses dedicated combo-only appearance JSON files instead of asking Win-side validation to edit the synced main profile
+11. Optional wasm skeleton smoke:
+   - set `MFX_WIN32_MOUSE_COMPANION_RENDER_PLUGIN=wasm`
+   - set `MFX_WIN32_MOUSE_COMPANION_RENDER_PLUGIN_WASM_MANIFEST=<manifest path>`
+   - ensure that manifest at least targets the `effects` surface and has `frame_tick=true`
+   - optional sidecar path: replace the manifest extension with `.mouse_companion_renderer.json`
+   - sample sidecar template:
+     - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.sample.json`
+     - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.sample.json`
+   - fastest dedicated Windows-native smoke:
+     - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-renderer-sidecar-smoke.cmd`
+     - or `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Preset renderer-sidecar-smoke`
+   - fastest dedicated Windows-native `wasm_v1` smoke:
+     - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-renderer-sidecar-wasm-v1-smoke.cmd`
+     - or `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Preset renderer-sidecar-wasm-v1-smoke`
+   - fastest dedicated Windows-native lane comparison:
+     - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-renderer-lane-matrix.cmd`
+     - this runs `builtin -> builtin_passthrough -> wasm_v1` in sequence, swaps the checked-in sidecar samples automatically, and restores the original sidecar/env afterward
+     - it also writes per-lane proof json plus `summary.json` and `summary.md`; if `-JsonOutput` is omitted, the script auto-picks a temp prefix and prints those output paths
+   - if sidecar exists, ensure it includes:
+     - `schema_version`
+     - `renderer_lane = mouse_companion_renderer`
+     - `supports_appearance_semantics = true`
+     - `appearance_semantics_mode = builtin_passthrough|wasm_v1`
+     - optional `combo_preset_override = none|dreamy|agile|charming`
+     - when mode=`builtin_passthrough`, optional controlled tuning floats in `0.5 ~ 1.5`:
+       - `follow_lift_scale`
+       - `click_squash_scale`
+       - `drag_lean_scale`
+       - `highlight_alpha_scale`
+       - `follow_tail_swing_scale`
+       - `hold_head_nod_scale`
+       - `scroll_tail_lift_scale`
+       - `follow_head_nod_scale`
+     - when mode=`wasm_v1`, require `appearance_semantics` with bounded patch fields such as:
+       - `theme.glow_color / body_stroke / head_fill / accent_fill / accessory_fill / pedestal_fill`
+       - `frame.body_width_scale / head_width_scale / head_height_scale`
+       - `face.blush_width_scale / pupil_focus_scale / highlight_alpha_scale / whisker_spread_scale`
+       - `appendage.ear_scale / tail_width_scale / follow_tail_width_scale / follow_ear_spread_scale`
+       - `motion.follow_state_lift_scale / click_squash_scale / drag_lean_scale / hold_head_nod_scale / scroll_tail_lift_scale / follow_head_nod_scale`
+       - `mood.glow_tint_mix_scale / accent_tint_mix_scale / shadow_alpha_bias / pedestal_alpha_bias / scroll_arc_alpha_scale / follow_trail_alpha_scale`
+   - then call the same proof/status route and confirm the runtime reports either:
+     - `appearance_plugin_kind=wasm`, or
+     - builtin fallback plus a non-empty `appearance_plugin_failure_reason`
+   - the dedicated `renderer-sidecar-smoke` preset now also fails fast when:
+     - `appearance_plugin_kind` is not `wasm`
+     - `appearance_plugin_metadata_path` is empty
+     - `appearance_plugin_appearance_semantics_mode` is not `builtin_passthrough`
+     - `default_lane_candidate` is not `builtin_passthrough`
+     - `default_lane_source` is not `env_wasm_candidate`
+     - `default_lane_rollout_status` is not `candidate_pending_manual_confirmation`
+   - if you swap to the checked-in `wasm_v1` sample, keep the same wasm env, but use:
+     - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-renderer-sidecar-wasm-v1-smoke.cmd`
+     - or `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Route proof -Event status -ExpectedAppearancePluginKind wasm -ExpectAppearancePluginMetadataPresent $true -ExpectedAppearanceSemanticsMode wasm_v1`
+   - that `wasm_v1` smoke now also expects:
+     - `default_lane_candidate = wasm_v1`
+     - `default_lane_source = env_wasm_candidate`
+     - `default_lane_rollout_status = candidate_pending_manual_confirmation`
+   - if you use the sample sidecar unchanged, expect the effective combo persona to move toward `dreamy` and the dynamic motion to feel more lifted/elastic during `follow / click / drag / hold / scroll`
+   - if you use the checked-in `wasm_v1` sample unchanged, expect a narrower/agiler body read with cooler glow/accent mood, stronger follow lift/drag lean, slightly tighter eye focus, slightly wider whisker spread, a fuller follow-tail read, a slightly tighter head silhouette, a broader `follow` ear spread, and a more obvious `scroll` tail lift / `follow` head nod than the baseline builtin lane; the checked-in sample now also pushes a slightly clearer `follow` trail / `scroll` arc alpha and a cooler body-stroke + head-fill read than builtin
+   - if you use the dedicated lane matrix unchanged, expect:
+     - `builtin`: baseline real-preview lane with no renderer sidecar contract attached
+     - `builtin_passthrough`: same wasm provider attach, but still closest to builtin semantics with extra dreamy lift/elasticity from the sample tuning
+     - `wasm_v1`: the strongest lane delta, with a cooler/agiler mood and more obvious structure/motion patching than baseline builtin
+   - the generated `summary.json` / `summary.md` now also contain an automatic `vs builtin` compare section, which is the fastest way to confirm lane drift before doing the manual motion read:
+     - `plugin_kind`
+     - `appearance_semantics_mode`
+     - `appearance_combo_preset`
+     - `selection_reason`
+     - `failure_reason`
+     - whether a renderer sidecar metadata path was present
+   - the same summary now also carries a conservative machine recommendation for `recommended_default_lane`; treat it as a triage hint first, not an automatic ship decision
+   - the same run now also emits `observation-template.md`, which is the shortest place to record the human-side outcome for `follow / drag / click / hold / scroll` without losing the matching machine summary
+   - current stable preflight failure codes include:
+     - `renderer_plugin_manifest_io_error`
+     - `renderer_plugin_manifest_json_parse_error`
+     - `renderer_plugin_manifest_invalid`
+     - `renderer_plugin_metadata_io_error`
+     - `renderer_plugin_metadata_json_parse_error`
+     - `renderer_plugin_metadata_invalid`
+     - `renderer_plugin_metadata_lane_mismatch`
+     - `renderer_plugin_metadata_missing_appearance_semantics`
+     - `renderer_plugin_metadata_appearance_mode_unsupported`
+     - `renderer_plugin_metadata_combo_preset_unsupported`
+     - `renderer_plugin_metadata_tuning_out_of_range`
+     - `renderer_plugin_metadata_missing_appearance_semantics_payload`
+     - `renderer_plugin_metadata_appearance_payload_invalid`
+     - `renderer_plugin_metadata_appearance_payload_out_of_range`
+     - `renderer_plugin_manifest_missing_effects_surface`
+     - `renderer_plugin_manifest_requires_frame_tick`
+
+## Renderer Lane Matrix
+1. Use the dedicated lane matrix entry first:
+   - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-renderer-lane-matrix.cmd`
+2. Treat `builtin` as the control lane.
+3. Compare `builtin_passthrough` against `builtin` first.
+4. Compare `wasm_v1` against `builtin` second.
+5. During `follow`, check:
+   - lift height
+   - ear spread
+   - tail swing
+   - whether the whole pet feels lighter or more planted
+6. During `drag`, check:
+   - lean direction
+   - reach posture
+   - eye/brow focus
+7. During `click / hold`, check:
+   - squash and rebound
+   - blush/highlight response
+   - whether upbeat response reads rounder or tighter than baseline
+8. During `scroll`, check:
+   - tail lift
+   - glow/shadow/pedestal mood shift
+9. Current checked-in sample expectation:
+   - `builtin`: control baseline
+   - `builtin_passthrough`: slightly dreamier, lighter, more elastic than baseline
+   - `wasm_v1`: cooler, tighter, slightly more agile than baseline
+10. Suggested manual record:
+   - `builtin_passthrough`: `pass|fail`, plus `stronger|weaker|same` versus builtin
+   - `wasm_v1`: `pass|fail`, plus `stronger|weaker|same` versus builtin
+11. If all three lanes feel nearly identical after `follow / drag / click / hold / scroll`, record:
+   - `fail (lane readability too weak)`
+12. If `builtin_passthrough` and `wasm_v1` are both readable but only mainly during motion, record:
+   - `pass (dynamic-biased lane delta)`
+13. After the run, keep the generated `summary.md` as the shortest replay artifact:
+   - it already records lane order, backend/plugin/semantics mode, and the recommended manual compare focus
+   - it now also records a machine-side `recommended_default_lane` candidate, but that recommendation remains low-confidence until the manual observation template is filled
+   - it also records `rollout_contract_status`; treat `candidate_pending_manual_confirmation` as a hint only, not a ship/no-ship decision
+   - if you also want to keep the human judgement in the same artifact bundle, fill in `observation-template.md` instead of writing free-form notes elsewhere
+   - that same template now also has final decision fields for:
+     - `best lane for current Win pet`
+     - `recommended default lane now`
+     - `manual confirmation result`
+     - `recommended next tuning target`
+14. Use the compact lane verdict as the shortest machine summary first:
+   - format: `backend/plugin/mode/pass|fail`
+   - example reading:
+     - `real/native_builtin//pass`
+     - `real/wasm/builtin_passthrough/pass`
+     - `real/wasm/wasm_v1/pass`
+
 ## Runtime Diagnostics
 Check `/api/state.mouse_companion_runtime` or equivalent diagnostics snapshot and confirm:
 - `visual_host_active`

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "activePreset": "cream-moon",
+  "presets": [
+    {
+      "id": "cream-moon",
+      "skinVariantId": "cream",
+      "enabledAccessoryIds": ["moon"],
+      "textureOverridePaths": []
+    }
+  ]
+}

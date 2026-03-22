@@ -148,6 +148,26 @@ public:
         int rendererRuntimeSurfaceWidth{0};
         int rendererRuntimeSurfaceHeight{0};
         std::string rendererRuntimeModelSourceFormat{"unknown"};
+        std::string rendererRuntimeAppearanceSkinVariantId{"default"};
+        std::vector<std::string> rendererRuntimeAppearanceAccessoryIds;
+        std::string rendererRuntimeAppearanceAccessoryFamily{"none"};
+        std::string rendererRuntimeAppearanceComboPreset{"none"};
+        std::string rendererRuntimeAppearanceRequestedPresetId;
+        std::string rendererRuntimeAppearanceResolvedPresetId;
+        std::string rendererRuntimeAppearancePluginId;
+        std::string rendererRuntimeAppearancePluginKind;
+        std::string rendererRuntimeAppearancePluginSource;
+        std::string rendererRuntimeAppearancePluginSelectionReason;
+        std::string rendererRuntimeAppearancePluginFailureReason;
+        std::string rendererRuntimeAppearancePluginManifestPath;
+        std::string rendererRuntimeAppearancePluginRuntimeBackend;
+        std::string rendererRuntimeAppearancePluginMetadataPath;
+        uint32_t rendererRuntimeAppearancePluginMetadataSchemaVersion{0};
+        std::string rendererRuntimeAppearancePluginAppearanceSemanticsMode{
+            "legacy_manifest_compat"};
+        std::string rendererRuntimeDefaultLaneCandidate{"builtin"};
+        std::string rendererRuntimeDefaultLaneSource{"runtime_builtin_default"};
+        std::string rendererRuntimeDefaultLaneRolloutStatus{"stay_on_builtin"};
         std::string configuredModelPath;
         std::string configuredActionLibraryPath;
         std::string configuredEffectProfilePath;

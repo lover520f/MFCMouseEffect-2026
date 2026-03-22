@@ -22,13 +22,13 @@ Win32MouseCompanionRealRendererScene BuildWin32MouseCompanionRealRendererScene(
         return scene;
     }
 
-    const auto profile = BuildWin32MouseCompanionRealRendererMotionProfile(runtime);
     const auto style = BuildWin32MouseCompanionRealRendererStyleProfile();
-    const auto palette = BuildWin32MouseCompanionRealRendererPaletteProfile(runtime);
+    const auto profile = BuildWin32MouseCompanionRealRendererMotionProfile(runtime, style);
+    const auto palette = BuildWin32MouseCompanionRealRendererPaletteProfile(runtime, style);
     BuildWin32MouseCompanionRealRendererPalette(runtime, profile, style, palette, scene);
     const auto metrics = BuildWin32MouseCompanionRealRendererFrame(runtime, profile, style, width, height, scene);
     BuildWin32MouseCompanionRealRendererAppendages(runtime, profile, style, metrics, scene);
-    BuildWin32MouseCompanionRealRendererFace(profile, style, scene);
+    BuildWin32MouseCompanionRealRendererFace(runtime, profile, style, scene);
     BuildWin32MouseCompanionRealRendererAdornment(runtime, style, metrics, scene);
     BuildWin32MouseCompanionRealRendererActionOverlay(runtime, profile, style, metrics, scene);
 

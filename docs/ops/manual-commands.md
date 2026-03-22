@@ -22,13 +22,124 @@ Keep P1 concise; add details here when needed.
 - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -BaseUrl <url> -Token <token> -Route proof -Event click`
 - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -BaseUrl <url> -Token <token> -Preset real-preview-smoke`
 - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Preset real-preview-smoke`
+- `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-combo-persona-acceptance.cmd`
+- `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-renderer-sidecar-smoke.cmd`
+- `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Preset renderer-sidecar-smoke`
+- `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-renderer-sidecar-wasm-v1-smoke.cmd`
+- `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Preset renderer-sidecar-wasm-v1-smoke`
+- `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-renderer-lane-matrix.cmd`
+- `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Route proof -Event status -ExpectAppearanceProfileMatch $true`
+- renderer sidecar sample for Win pet tuning:
+  - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.sample.json`
+  - copy/rename it next to the wasm manifest as `<manifest>.mouse_companion_renderer.json`
+- renderer sidecar sample for the first structured wasm semantics patch:
+  - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.sample.json`
+  - this sample expects `appearance_semantics_mode=wasm_v1`
+  - it drives a bounded `appearance_semantics` patch instead of only passthrough tuning
+  - current sample motion patch now covers:
+    - `follow_state_lift_scale`
+    - `click_squash_scale`
+    - `drag_lean_scale`
+    - `hold_head_nod_scale`
+    - `scroll_tail_lift_scale`
+    - `follow_head_nod_scale`
+  - current sample structure patch now also covers:
+    - `face.whisker_spread_scale`
+    - `appendage.follow_tail_width_scale`
+    - `frame.head_width_scale`
+    - `appendage.follow_ear_spread_scale`
+  - current sample mood patch now also covers:
+    - `mood.scroll_arc_alpha_scale`
+    - `mood.follow_trail_alpha_scale`
+  - current sample theme patch now also covers:
+    - `theme.body_stroke`
+    - `theme.head_fill`
+  - recommended proof command after swapping this sample into `<manifest>.mouse_companion_renderer.json`:
+    - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Route proof -Event status -ExpectedAppearancePluginKind wasm -ExpectAppearancePluginMetadataPresent $true -ExpectedAppearanceSemanticsMode wasm_v1`
+- renderer sidecar smoke preset expectations:
+  - requires `MFX_WIN32_MOUSE_COMPANION_RENDER_PLUGIN=wasm`
+  - requires `MFX_WIN32_MOUSE_COMPANION_RENDER_PLUGIN_WASM_MANIFEST=<manifest path>`
+  - expects `appearance_plugin_kind=wasm`
+  - expects non-empty `appearance_plugin_metadata_path`
+  - expects `appearance_plugin_appearance_semantics_mode=builtin_passthrough`
+  - expects `default_lane_candidate=builtin_passthrough`
+  - expects `default_lane_source=env_wasm_candidate`
+  - expects `default_lane_rollout_status=candidate_pending_manual_confirmation`
+- renderer sidecar `wasm_v1` smoke preset expectations:
+  - requires the same wasm env pair as above
+  - expects `appearance_plugin_kind=wasm`
+  - expects non-empty `appearance_plugin_metadata_path`
+  - expects `appearance_plugin_appearance_semantics_mode=wasm_v1`
+  - expects `default_lane_candidate=wasm_v1`
+  - expects `default_lane_source=env_wasm_candidate`
+  - expects `default_lane_rollout_status=candidate_pending_manual_confirmation`
+- renderer lane matrix expectations:
+  - runs three lanes in one pass:
+    - `builtin`
+    - `builtin_passthrough`
+    - `wasm_v1`
+  - temporarily swaps `<manifest>.mouse_companion_renderer.json` between the checked-in passthrough and `wasm_v1` samples
+  - restores the original sidecar file and env vars after the run
+  - prints a short compare checklist for `follow / drag / click / hold / scroll`, so the operator can judge lane deltas immediately after the automated smoke
+  - now also writes:
+    - `<prefix>.builtin.json`
+    - `<prefix>.builtin_passthrough.json`
+    - `<prefix>.wasm_v1.json`
+    - `<prefix>.summary.json`
+    - `<prefix>.summary.md`
+    - `<prefix>.observation-template.md`
+  - each summary now also carries a compact lane verdict in the form:
+    - `backend/plugin/mode/pass|fail`
+  - `summary.json` and `summary.md` now also include an auto-compare section against `builtin`, so you can immediately see lane-level drift in:
+    - `plugin_kind`
+    - `semantics_mode`
+    - `combo_preset`
+    - `selection_reason`
+    - `failure_reason`
+    - `metadata_path_present`
+  - the same summary bundle now also emits a conservative machine recommendation for `recommended_default_lane`, based only on:
+    - lane proof pass/fail
+    - empty/non-empty failure reason
+    - whether the lane actually differs from builtin in the machine compare
+  - the same recommendation now also carries `rollout_contract_status`:
+    - `candidate_pending_manual_confirmation`
+    - `stay_on_builtin`
+  - runtime `/api/state` and `test-render-proof` now also surface the same default-lane diagnostics directly:
+    - `default_lane_candidate`
+    - `default_lane_source`
+    - `default_lane_rollout_status`
+  - the Mouse Companion WebUI section now also mirrors those runtime values in a dedicated `Runtime Diagnostics` block, together with `appearance_plugin_kind`, `appearance_plugin_appearance_semantics_mode`, and `appearance_plugin_selection_reason`
+  - that same block now also derives a short `Lane Verdict`, so Win bring-up can read `stay on builtin` vs `candidate pending manual confirmation` without manually interpreting the three machine-coded default-lane fields first
+  - `observation-template.md` is the operator-facing follow-up note sheet for `follow / drag / click / hold / scroll`, so manual visual conclusions can be stored next to the machine summary instead of in ad-hoc chat notes
+  - the same template now also carries final decision slots for:
+    - `best lane for current Win pet`
+    - `recommended default lane now`
+    - `manual confirmation result`
+    - `recommended next tuning target`
+  - if `-JsonOutput` is omitted, the matrix script auto-picks a temp prefix and prints the resulting summary paths
+- Windows combo-persona manual pass should use `real-preview-smoke` first, then compare at least:
+  - `activePreset = "cream-moon"`
+  - `activePreset = "night-leaf"`
+  - `activePreset = "strawberry-ribbon-bow"`
+  - the dedicated `.cmd` entry now runs the same smoke gate first, then switches `appearance_profile_path` across the three synced combo-only JSON files and validates each case
+  - the PowerShell/native proof helper can now also auto-read synced `pet-appearance.json` and fail when runtime preview diagnostics do not match the requested/resolved preset, skin, accessory family, or combo persona
+  - the combo matrix path avoids editing the receive-only synced repo on Win; it only changes runtime `appearance_profile_path`
+  - runtime handoff auto-discovery now checks both:
+    - `%APPDATA%\MFCMouseEffect\websettings_runtime_auto.json`
+    - synced repo build outputs such as `F:\language\cpp\code\MFCMouseEffect\x64\Debug\websettings_runtime_auto.json` and `...\x64\Release\...`
+against the `Appearance Combo Persona` section in [windows-mouse-companion-manual-checklist.md](/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/ops/windows-mouse-companion-manual-checklist.md)
 - Windows-native bring-up should prefer the `.cmd` entry; it forwards into the PowerShell implementation and does not require Git Bash
 - when `-BaseUrl/-Token` are omitted, the Windows-native entry now auto-reads `%APPDATA%\MFCMouseEffect\websettings_runtime_auto.json`
+- when `-ExpectAppearanceProfileMatch $true` is set, the Windows-native entry defaults `-AppearanceProfilePath` to the synced repo `MFCMouseEffect\Assets\Pet3D\source\pet-appearance.json`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-windows-mouse-companion-render-proof.sh --base-url <url> --token <token> --route sweep`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-windows-mouse-companion-render-proof.sh --base-url <url> --token <token> --route proof --event click`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-windows-mouse-companion-render-proof.sh --base-url <url> --token <token> --route proof --event click --expected-backend real --expect-preview-active true`
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-windows-mouse-companion-render-proof.sh --base-url <url> --token <token> --preset real-preview-smoke`
+- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-windows-mouse-companion-render-proof.sh --base-url <url> --token <token> --preset combo-persona-acceptance`
 - `real-preview-smoke` now prints a short human-readable expectation checklist before it runs the sweep gate
+- Git Bash parity is now aligned with the PowerShell path for combo persona too:
+  - `combo-persona-acceptance` also switches runtime `appearance_profile_path` across the three combo-only JSON files
+  - it also performs the same appearance diagnostic checks and restores the original appearance path afterward
 
 ## WebUI Model Tests
 - `cd /Users/sunqin/study/language/cpp/code/MFCMouseEffect/MFCMouseEffect/WebUIWorkspace && pnpm run test:webui-models`

@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererFrameBuilder.h"
 
 #include <algorithm>
@@ -23,14 +24,17 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
     const float bodyHeightScale = runtime.follow ? style.followBodyHeightScale
         : runtime.click                     ? style.clickBodyHeightScale
                                             : 1.0f;
-    metrics.bodyWidth = static_cast<float>(width) * bodyWidthRatio * bodyWidthScale;
-    metrics.bodyHeight = static_cast<float>(height) * bodyHeightRatio * bodyHeightScale;
+    const auto appearanceSemantics =
+        BuildWin32MouseCompanionRealRendererAppearanceSemantics(runtime, style);
+    const auto& skinTuning = appearanceSemantics.frame;
+    metrics.bodyWidth = static_cast<float>(width) * bodyWidthRatio * bodyWidthScale * skinTuning.bodyWidthScale;
+    metrics.bodyHeight = static_cast<float>(height) * bodyHeightRatio * bodyHeightScale * skinTuning.bodyHeightScale;
     const float headScale = runtime.follow ? style.followHeadScale
         : runtime.hold                    ? style.holdHeadScale
         : runtime.click                   ? style.clickHeadScale
                                           : 1.0f;
-    metrics.headWidth = metrics.bodyWidth * style.headWidthRatio * headScale;
-    metrics.headHeight = metrics.bodyHeight * style.headHeightRatio * headScale;
+    metrics.headWidth = metrics.bodyWidth * style.headWidthRatio * headScale * skinTuning.headWidthScale;
+    metrics.headHeight = metrics.bodyHeight * style.headHeightRatio * headScale * skinTuning.headHeightScale;
 
     const float glowBoost = std::max({profile.actionIntensity, profile.reactiveIntensity, profile.scrollIntensity});
     const float facingOffset = runtime.facingSign *
@@ -74,11 +78,46 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
                                                      : 0.0f;
     const float pedestalStateYOffset = runtime.hold ? style.holdPedestalYOffsetPx : 0.0f;
 
+    float comboGlowStateScale = 1.0f;
+    float comboShadowStateScale = 1.0f;
+    float comboPedestalStateScale = 1.0f;
+    float comboCenterYOffset = 0.0f;
+    switch (appearanceSemantics.comboPreset) {
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Dreamy:
+        if (runtime.follow) {
+            comboGlowStateScale = 1.06f;
+            comboShadowStateScale = 0.95f;
+            comboPedestalStateScale = 0.96f;
+            comboCenterYOffset = -1.5f;
+        }
+        break;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Agile:
+        if (runtime.drag) {
+            comboGlowStateScale = 0.97f;
+            comboShadowStateScale = 0.94f;
+            comboPedestalStateScale = 0.95f;
+            comboCenterYOffset = -0.8f;
+        } else if (runtime.follow) {
+            comboShadowStateScale = 0.97f;
+        }
+        break;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Charming:
+        if (runtime.hold) {
+            comboGlowStateScale = 1.04f;
+            comboShadowStateScale = 1.03f;
+            comboPedestalStateScale = 1.04f;
+            comboCenterYOffset = -0.6f;
+        }
+        break;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::None:
+        break;
+    }
+
     scene.centerX = static_cast<float>(width) * style.centerXRatio + facingOffset + profile.bodyForward + profile.idleHeadSway;
     scene.centerY = static_cast<float>(height) * (runtime.hold ? style.holdCenterYRatio : style.idleCenterYRatio) -
         (runtime.follow ? static_cast<float>(height) * style.followCenterYOffsetRatio : 0.0f) -
         (runtime.drag ? static_cast<float>(height) * style.dragCenterYOffsetRatio : 0.0f) -
-        profile.stateLift - profile.breathLift;
+        profile.stateLift - profile.breathLift + comboCenterYOffset;
     scene.facingSign = runtime.facingSign;
     scene.bodyTiltDeg = profile.scrollLean + profile.dragLean;
     scene.glowAlpha =
@@ -109,15 +148,15 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
         scene.centerX - metrics.bodyWidth * style.glowXOffsetRatio + glowStateXOffset,
         scene.centerY - metrics.bodyHeight * style.glowYOffsetRatio - profile.stateLift * style.glowStateLiftScale +
             glowStateYOffset,
-        metrics.bodyWidth * style.glowWidthScale * glowScale,
-        metrics.bodyHeight * style.glowHeightScale * glowScale);
+        metrics.bodyWidth * style.glowWidthScale * glowScale * comboGlowStateScale,
+        metrics.bodyHeight * style.glowHeightScale * glowScale * comboGlowStateScale);
     scene.shadowRect = Gdiplus::RectF(
-        scene.centerX - metrics.bodyWidth * style.shadowXOffsetRatio * profile.shadowScale * shadowStateScale +
+        scene.centerX - metrics.bodyWidth * style.shadowXOffsetRatio * profile.shadowScale * shadowStateScale * comboShadowStateScale +
             shadowStateXOffset * runtime.facingSign,
         scene.centerY + metrics.bodyHeight * style.shadowYRatio + shadowStateYOffset,
-        metrics.bodyWidth * style.shadowWidthScale * profile.shadowScale * shadowStateScale *
+        metrics.bodyWidth * style.shadowWidthScale * profile.shadowScale * shadowStateScale * comboShadowStateScale *
             (1.0f - (profile.breathScale - 1.0f) * style.shadowBreathScale),
-        metrics.bodyHeight * style.shadowHeightScale * shadowStateScale);
+        metrics.bodyHeight * style.shadowHeightScale * shadowStateScale * comboShadowStateScale);
     scene.bodyRect = Gdiplus::RectF(
         scene.centerX - metrics.bodyWidth * style.bodyXOffsetRatio,
         scene.centerY - metrics.bodyHeight * style.bodyYOffsetRatio + profile.clickSquash * style.bodyClickSquashLiftPx,
@@ -140,26 +179,41 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
         scene.headRect.GetBottom() - metrics.bodyHeight * style.neckBridgeYOffsetRatio,
         metrics.bodyWidth * style.neckBridgeWidthRatio,
         metrics.bodyHeight * style.neckBridgeHeightRatio);
+    scene.leftHeadShoulderBridgeRect = Gdiplus::RectF(
+        scene.centerX - metrics.bodyWidth * style.headShoulderBridgeXRatio,
+        scene.headRect.GetBottom() - metrics.bodyHeight * style.headShoulderBridgeYRatio,
+        metrics.bodyWidth * style.headShoulderBridgeWidthRatio,
+        metrics.bodyHeight * style.headShoulderBridgeHeightRatio);
+    scene.rightHeadShoulderBridgeRect = Gdiplus::RectF(
+        scene.centerX + metrics.bodyWidth * style.headShoulderBridgeXRatio -
+            metrics.bodyWidth * style.headShoulderBridgeWidthRatio,
+        scene.headRect.GetBottom() - metrics.bodyHeight * style.headShoulderBridgeYRatio,
+        metrics.bodyWidth * style.headShoulderBridgeWidthRatio,
+        metrics.bodyHeight * style.headShoulderBridgeHeightRatio);
     scene.leftShoulderPatchRect = Gdiplus::RectF(
         scene.bodyRect.X + metrics.bodyWidth * style.shoulderPatchXOffsetRatio,
         scene.bodyRect.Y + metrics.bodyHeight * style.shoulderPatchYOffsetRatio,
-        metrics.bodyWidth * style.shoulderPatchWidthRatio,
-        metrics.bodyHeight * style.shoulderPatchHeightRatio);
+        metrics.bodyWidth * style.shoulderPatchWidthRatio * skinTuning.shoulderPatchScale,
+        metrics.bodyHeight * style.shoulderPatchHeightRatio * skinTuning.shoulderPatchScale);
     scene.rightShoulderPatchRect = Gdiplus::RectF(
-        scene.bodyRect.GetRight() - metrics.bodyWidth * (style.shoulderPatchXOffsetRatio + style.shoulderPatchWidthRatio),
+        scene.bodyRect.GetRight() - metrics.bodyWidth *
+            (style.shoulderPatchXOffsetRatio + style.shoulderPatchWidthRatio * skinTuning.shoulderPatchScale),
         scene.bodyRect.Y + metrics.bodyHeight * style.shoulderPatchYOffsetRatio,
-        metrics.bodyWidth * style.shoulderPatchWidthRatio,
-        metrics.bodyHeight * style.shoulderPatchHeightRatio);
+        metrics.bodyWidth * style.shoulderPatchWidthRatio * skinTuning.shoulderPatchScale,
+        metrics.bodyHeight * style.shoulderPatchHeightRatio * skinTuning.shoulderPatchScale);
     scene.leftHipPatchRect = Gdiplus::RectF(
         scene.bodyRect.X + metrics.bodyWidth * style.hipPatchXOffsetRatio,
-        scene.bodyRect.GetBottom() - metrics.bodyHeight * (style.hipPatchYOffsetRatio + style.hipPatchHeightRatio),
-        metrics.bodyWidth * style.hipPatchWidthRatio,
-        metrics.bodyHeight * style.hipPatchHeightRatio);
+        scene.bodyRect.GetBottom() - metrics.bodyHeight *
+            (style.hipPatchYOffsetRatio + style.hipPatchHeightRatio * skinTuning.hipPatchScale),
+        metrics.bodyWidth * style.hipPatchWidthRatio * skinTuning.hipPatchScale,
+        metrics.bodyHeight * style.hipPatchHeightRatio * skinTuning.hipPatchScale);
     scene.rightHipPatchRect = Gdiplus::RectF(
-        scene.bodyRect.GetRight() - metrics.bodyWidth * (style.hipPatchXOffsetRatio + style.hipPatchWidthRatio),
-        scene.bodyRect.GetBottom() - metrics.bodyHeight * (style.hipPatchYOffsetRatio + style.hipPatchHeightRatio),
-        metrics.bodyWidth * style.hipPatchWidthRatio,
-        metrics.bodyHeight * style.hipPatchHeightRatio);
+        scene.bodyRect.GetRight() - metrics.bodyWidth *
+            (style.hipPatchXOffsetRatio + style.hipPatchWidthRatio * skinTuning.hipPatchScale),
+        scene.bodyRect.GetBottom() - metrics.bodyHeight *
+            (style.hipPatchYOffsetRatio + style.hipPatchHeightRatio * skinTuning.hipPatchScale),
+        metrics.bodyWidth * style.hipPatchWidthRatio * skinTuning.hipPatchScale,
+        metrics.bodyHeight * style.hipPatchHeightRatio * skinTuning.hipPatchScale);
     scene.bellyContourRect = Gdiplus::RectF(
         scene.centerX - metrics.bodyWidth * style.bellyContourWidthRatio * 0.5f,
         scene.bodyRect.Y + metrics.bodyHeight * style.bellyContourYRatio,
@@ -175,6 +229,16 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
         scene.bodyRect.Y + metrics.bodyHeight * style.upperTorsoContourYRatio,
         metrics.bodyWidth * style.upperTorsoContourWidthRatio,
         metrics.bodyHeight * style.upperTorsoContourHeightRatio);
+    scene.leftTorsoCadenceBridgeRect = Gdiplus::RectF(
+        scene.bodyRect.X + metrics.bodyWidth * style.torsoCadenceBridgeXRatio,
+        scene.bodyRect.Y + metrics.bodyHeight * style.torsoCadenceBridgeYRatio,
+        metrics.bodyWidth * style.torsoCadenceBridgeWidthRatio,
+        metrics.bodyHeight * style.torsoCadenceBridgeHeightRatio);
+    scene.rightTorsoCadenceBridgeRect = Gdiplus::RectF(
+        scene.bodyRect.GetRight() - metrics.bodyWidth * (style.torsoCadenceBridgeXRatio + style.torsoCadenceBridgeWidthRatio),
+        scene.bodyRect.Y + metrics.bodyHeight * style.torsoCadenceBridgeYRatio,
+        metrics.bodyWidth * style.torsoCadenceBridgeWidthRatio,
+        metrics.bodyHeight * style.torsoCadenceBridgeHeightRatio);
     scene.leftBackContourRect = Gdiplus::RectF(
         scene.bodyRect.X + metrics.bodyWidth * style.backContourXRatio,
         scene.bodyRect.Y + metrics.bodyHeight * style.backContourYRatio,
@@ -195,12 +259,29 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
         scene.bodyRect.Y + metrics.bodyHeight * style.flankContourYRatio,
         metrics.bodyWidth * style.flankContourWidthRatio,
         metrics.bodyHeight * style.flankContourHeightRatio);
+    const bool leftRearQuarterFront = scene.facingSign < 0.0f;
+    const bool rightRearQuarterFront = !leftRearQuarterFront;
+    const float leftTailHaunchWidthScale =
+        leftRearQuarterFront ? style.frontTailHaunchBridgeWidthScale : style.rearTailHaunchBridgeWidthScale;
+    const float rightTailHaunchWidthScale =
+        rightRearQuarterFront ? style.frontTailHaunchBridgeWidthScale : style.rearTailHaunchBridgeWidthScale;
+    scene.leftTailHaunchBridgeRect = Gdiplus::RectF(
+        scene.bodyRect.X + metrics.bodyWidth * style.tailHaunchBridgeXRatio,
+        scene.bodyRect.Y + metrics.bodyHeight * style.tailHaunchBridgeYRatio,
+        metrics.bodyWidth * style.tailHaunchBridgeWidthRatio * leftTailHaunchWidthScale,
+        metrics.bodyHeight * style.tailHaunchBridgeHeightRatio);
+    scene.rightTailHaunchBridgeRect = Gdiplus::RectF(
+        scene.bodyRect.GetRight() - metrics.bodyWidth *
+            (style.tailHaunchBridgeXRatio + style.tailHaunchBridgeWidthRatio * rightTailHaunchWidthScale),
+        scene.bodyRect.Y + metrics.bodyHeight * style.tailHaunchBridgeYRatio,
+        metrics.bodyWidth * style.tailHaunchBridgeWidthRatio * rightTailHaunchWidthScale,
+        metrics.bodyHeight * style.tailHaunchBridgeHeightRatio);
     scene.pedestalRect = Gdiplus::RectF(
-        scene.centerX - metrics.bodyWidth * style.pedestalXOffsetRatio * pedestalStateScale +
+        scene.centerX - metrics.bodyWidth * style.pedestalXOffsetRatio * pedestalStateScale * comboPedestalStateScale +
             pedestalStateXOffset * runtime.facingSign,
         scene.shadowRect.GetBottom() - metrics.bodyHeight * style.pedestalYOffsetRatio + pedestalStateYOffset,
-        metrics.bodyWidth * style.pedestalWidthScale * pedestalStateScale,
-        metrics.bodyHeight * style.pedestalHeightScale * pedestalStateScale);
+        metrics.bodyWidth * style.pedestalWidthScale * pedestalStateScale * comboPedestalStateScale,
+        metrics.bodyHeight * style.pedestalHeightScale * pedestalStateScale * comboPedestalStateScale);
 
     return metrics;
 }

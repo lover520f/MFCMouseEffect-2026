@@ -3,6 +3,7 @@
 #include <gdiplus.h>
 
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererSceneRuntime.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererStyleProfile.h"
 
 namespace mousefx::windows {
 
@@ -15,6 +16,7 @@ struct Win32MouseCompanionRealRendererPaletteProfile final {
     Gdiplus::Color earFill{};
     Gdiplus::Color earFillRear{};
     Gdiplus::Color earInner{};
+    Gdiplus::Color earInnerRear{};
     Gdiplus::Color eyeFill{};
     Gdiplus::Color mouthFill{};
     Gdiplus::Color blushRgb{};
@@ -27,6 +29,7 @@ struct Win32MouseCompanionRealRendererPaletteProfile final {
 };
 
 Win32MouseCompanionRealRendererPaletteProfile BuildWin32MouseCompanionRealRendererPaletteProfile(
-    const Win32MouseCompanionRealRendererSceneRuntime& runtime);
+    const Win32MouseCompanionRealRendererSceneRuntime& runtime,
+    const Win32MouseCompanionRealRendererStyleProfile& style);
 
 } // namespace mousefx::windows

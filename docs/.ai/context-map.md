@@ -1,6 +1,6 @@
 # AI Context Map
 
-Generated: 2026-03-22T03:34:55.216Z
+Generated: 2026-03-22T15:08:08.506Z
 
 ## Goal
 Load minimal docs by task keyword while keeping AGENTS + current context as mandatory baseline.
@@ -20,8 +20,8 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 ### wasm
 - `docs/architecture/custom-effects-wasm-route.md` (P2, 750 tok)
 - `docs/architecture/custom-effects-wasm-route.zh-CN.md` (P2, 750 tok)
+- `docs/architecture/mouse-companion-appearance-contract.zh-CN.md` (P2, 750 tok)
 - `docs/architecture/mouse-companion-backend-reset-contract.zh-CN.md` (P2, 750 tok)
-- `docs/architecture/mouse-companion-plugin-landing-roadmap.zh-CN.md` (P2, 750 tok)
 
 ### effects
 - `docs/architecture/click-ripple-cross-platform-alignment.md` (P2, 750 tok)
@@ -37,14 +37,11 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 - `docs/architecture/posix-linux-compile-gate-workflow.md` (P2, 490 tok)
 - `docs/architecture/windows-mouse-companion-phase15-exit-contract.md` (P2, 750 tok)
 
-### theme
-- `docs/ops/windows-mouse-companion-manual-checklist.md` (P2, 750 tok)
-
 ### general
 - `docs/architecture/mouse-companion-3d-runtime-blueprint.zh-CN.md` (P2, 750 tok)
-- `docs/architecture/mouse-companion-appearance-contract.zh-CN.md` (P2, 645 tok)
 - `docs/architecture/mouse-companion-click-parity-tauri-contract.zh-CN.md` (P2, 750 tok)
 - `docs/architecture/mouse-companion-model-import-pipeline-contract.zh-CN.md` (P2, 750 tok)
+- `docs/architecture/windows-launch-at-startup-contract.md` (P2, 619 tok)
 
 ## Commands
 ```bash
@@ -55,12 +52,12 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 ```
 
 ## Largest Docs (Trim Candidates)
+- `docs/agent-context/current.md` -> ~13302 tok
+- `docs/ops/windows-mouse-companion-manual-checklist.md` -> ~10531 tok
+- `docs/architecture/windows-mouse-companion-real-renderer-contract.md` -> ~9517 tok
 - `docs/architecture/windows-mouse-companion-phase1-plan.md` -> ~7479 tok
 - `docs/architecture/custom-effects-wasm-route.zh-CN.md` -> ~6872 tok
-- `docs/architecture/windows-mouse-companion-real-renderer-contract.md` -> ~6792 tok
 - `docs/architecture/custom-effects-wasm-route.md` -> ~6707 tok
-- `docs/agent-context/current.md` -> ~6662 tok
-- `docs/ops/windows-mouse-companion-manual-checklist.md` -> ~6620 tok
 - `docs/refactoring/phase-roadmap-macos-m1-status.md` -> ~5868 tok
 - `docs/automation/gesture-matching.md` -> ~4462 tok
 

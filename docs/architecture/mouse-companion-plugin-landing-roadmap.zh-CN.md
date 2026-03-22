@@ -16,6 +16,39 @@
 - 目标 C：事件、动作、姿态、渲染链路具备可观测性与可回归验证能力。
 - 目标 D：遵守现有工程约束（小文件、低耦合、文档同步、渐进演进）。
 
+## 2.5 当前总架构（STAR 收敛版）
+
+### Situation
+- 当前 renderer 主施工面是 Windows，不是 macOS。
+- macOS 已有可工作的 visual host，因此当前不应为配合 Windows bring-up 而频繁改接口。
+- 仓库已有稳定的 wasm runtime/manifest/diagnostics 基础，但 Windows renderer 宿主此前还没有真正把 renderer-owned semantics 完整插件化。
+
+### Target
+- 建立一条清晰主线：
+  - 先完成 Windows
+  - 保持 macOS 现有接口稳定
+  - renderer 继续走自研
+  - 插件化必须成立，后续正式扩展方向是 wasm provider
+
+### Action
+- 当前推荐分层：
+  - `AppController / shared runtime`
+  - `Platform visual host`
+  - `Renderer backend`
+  - `Renderer plugin host`
+  - `WASM adapter`
+- 当前冻结决策：
+  - Windows 优先，不等 mac 一起重写
+  - 不把第三方重型引擎整体塞进产品
+  - 先上 builtin native renderer plugin，再接 wasm adapter
+
+### Result
+- 当前阶段应保证：
+  - Windows 可以继续交付推进
+  - macOS 接口不被破坏
+  - renderer-owned semantics 有正式宿主边界
+  - `/api/state` 与 render-proof 能说明当前 provider 来源
+
 ## 3. 对齐基准（tauri -> MFCMouseEffect）
 - 语义映射基准：
   - `click` -> `click`
@@ -114,6 +147,35 @@
   - wasm 插件与 native 插件共用同一诊断与回退语义；
   - 任何 wasm 故障不影响 native 主线稳定性。
 
+## 6.5 Windows-first 顺序冻结（STAR 收敛版）
+
+### Situation
+- 若过早先做完整 wasm 视觉系统，而 Windows renderer host 还没收口，后面仍会返工宿主。
+- 若继续只靠 Windows builder 硬编码推进，后面接 wasm 时同样会返工。
+
+### Target
+- 正确顺序应是：
+  1. 先稳住 Windows-first renderer host
+  2. 再补 wasm renderer plugin adapter
+  3. 再推进更真实的 model-driven renderer
+  4. 最后再做 macOS 收敛
+
+### Action
+- `Phase A`
+  - 冻结 Windows visual host/backend/runtime/plugin host 边界
+- `Phase B`
+  - 补 wasm provider creation/attach/fallback 空实现
+- `Phase C`
+  - 推进 Windows real renderer 能力
+- `Phase D`
+  - 让 macOS 逐步收敛到同一 plugin contract
+
+### Result
+- 当前不推荐：
+  - 先大规模改 mac 再做 Windows
+  - 先做完整 wasm 视觉系统，再回头补 Windows host
+  - 继续向 builder 里塞语义分支，等以后再统一插件化
+
 ## 7. 测试态友好参数（强制）
 - 默认保留“生产值 + 测试值”双档，不允许写死。
 - 建议首批参数：
@@ -144,7 +206,7 @@
 - Click 对齐契约（历史阶段文档，后续纳入插件化实现）：
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/mouse-companion-click-parity-tauri-contract.zh-CN.md`
 
-## 11. 当前实现状态（2026-03-18）
+## 11. 当前实现状态（2026-03-22）
 - 已落地 `Phase 0` 第一批代码骨架：
   - `MouseFx/Core/Control/MouseCompanionPluginHostPhase0.{h,cpp}` 已接入 `AppController`，
   - `DispatchPet*` 事件已接入 Phase0 插件宿主计数与事件轨迹，
@@ -167,6 +229,14 @@
   - macOS 视觉宿主已开始记录 follow 模式下的指针归一化 X，并把 real-model yaw 对齐到 tauri 的 `baseYaw - normalizedX * 0.28`，
   - fallback 视图同步复用该指针归一化量做轻量横向 follow tilt，
   - native follow 的额外前倾已明显收轻，避免视觉上更像 drag 而不是 follow。
+- Windows `Phase1.5` renderer 已补上第一层“插件宿主化”边界：
+  - 新增 `Platform/windows/Pet/Win32MouseCompanionRenderPluginHost.{h,cpp}`，
+  - 当前 `appearance/persona` 语义不再默认视为 builder 内硬编码实现，而是改为通过该 host 调 builtin native plugin，
+  - 当前 wasm adapter 已有 Windows-first skeleton：宿主先通过 `MFX_WIN32_MOUSE_COMPANION_RENDER_PLUGIN` 与 `MFX_WIN32_MOUSE_COMPANION_RENDER_PLUGIN_WASM_MANIFEST` 选择 provider，再在失败时自动回退 builtin，
+  - 当前 skeleton 已先冻结最小 manifest 准入：必须带 `effects` surface 且开启 `frame_tick`，否则直接视为 renderer-plugin attach 失败，
+  - 当前也支持可选 renderer metadata sidecar：若存在 `<manifest>.mouse_companion_renderer.json`，则必须显式声明 `mouse_companion_renderer` lane 与 `supports_appearance_semantics=true`，用于逐步把 pet renderer lane 的专用 ABI 从通用 wasm manifest 中分离出来，
+  - 当前已接入第一步 renderer-owned wasm semantics 合同：sidecar 可选 `appearance_semantics_mode=wasm_v1`，并通过受控 `appearance_semantics` patch 覆盖 `theme/frame/face/appendage/motion/mood` 的少量字段；Windows 先消费这条 bounded patch 协议，mac 现有 visual-host 接口继续保持不动，
+  - 运行时诊断新增 `appearance_plugin_id / appearance_plugin_kind / appearance_plugin_source / appearance_plugin_selection_reason / appearance_plugin_failure_reason / appearance_plugin_manifest_path / appearance_plugin_runtime_backend`，后续 wasm 接入应直接复用这一层宿主诊断，而不是新开平行状态面。
 - 已落地 `Phase 1` 第一批 click-first 状态机语义（后端）：
   - click 门槛：`press<=220ms && travel<=10px`，并接入 `scroll` 后短窗口抑制，
   - `position_mode=fixed_bottom_left` 下 move 路径保持 `idle`（不进入 follow），
