@@ -7,6 +7,7 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeAnchorProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeParentSpaceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeTargetProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeWorldSpaceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeResolverProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererCapabilities.h"
@@ -70,13 +71,16 @@ void Win32MouseCompanionRealRendererBackend::Render(
     graphics->SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
     const auto resources = BuildWin32MouseCompanionRealRendererAssetResources(input);
     const auto sceneRuntime = BuildWin32MouseCompanionRealRendererSceneRuntime(input, resources);
-    const auto scene = BuildWin32MouseCompanionRealRendererScene(sceneRuntime, width, height);
+    auto scene = BuildWin32MouseCompanionRealRendererScene(sceneRuntime, width, height);
     const auto resolverProfile = sceneRuntime.assetNodeResolverProfile;
     const auto parentSpaceProfile = sceneRuntime.assetNodeParentSpaceProfile;
     const auto targetProfile = sceneRuntime.assetNodeTargetProfile;
     const auto targetResolverProfile = sceneRuntime.assetNodeTargetResolverProfile;
     const auto anchorProfile =
         BuildWin32MouseCompanionRealRendererAssetNodeAnchorProfile(sceneRuntime, scene);
+    const auto worldSpaceProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodeWorldSpaceProfile(sceneRuntime, scene);
+    ApplyWin32MouseCompanionRealRendererAssetNodeWorldSpaceProfile(worldSpaceProfile, scene);
     const auto pluginSelection = ResolveWin32MouseCompanionRenderPluginSelection();
     const Win32MouseCompanionRealRendererPainter painter{};
     painter.Paint(scene, graphics, width, height);
@@ -213,6 +217,15 @@ void Win32MouseCompanionRealRendererBackend::Render(
         targetResolverProfile.pathBrief;
     diagnostics.sceneRuntimeAssetNodeTargetResolverValueBrief =
         targetResolverProfile.valueBrief;
+    diagnostics.sceneRuntimeAssetNodeWorldSpaceState = worldSpaceProfile.worldSpaceState;
+    diagnostics.sceneRuntimeAssetNodeWorldSpaceEntryCount = worldSpaceProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodeWorldSpaceResolvedEntryCount =
+        worldSpaceProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeWorldSpaceBrief = worldSpaceProfile.brief;
+    diagnostics.sceneRuntimeAssetNodeWorldSpacePathBrief =
+        worldSpaceProfile.pathBrief;
+    diagnostics.sceneRuntimeAssetNodeWorldSpaceValueBrief =
+        worldSpaceProfile.valueBrief;
     const auto& poseAdapterProfile = sceneRuntime.poseAdapterProfile;
     diagnostics.sceneRuntimePoseAdapterInfluence = poseAdapterProfile.influence;
     diagnostics.sceneRuntimePoseReadabilityBias = poseAdapterProfile.readabilityBias;

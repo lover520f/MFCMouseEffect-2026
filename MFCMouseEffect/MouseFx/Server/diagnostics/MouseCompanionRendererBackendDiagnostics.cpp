@@ -347,6 +347,26 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverValueBrief).empty()
             ? "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"
             : status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverValueBrief;
+    diagnostics.sceneRuntimeAssetNodeWorldSpaceState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceState;
+    diagnostics.sceneRuntimeAssetNodeWorldSpaceEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceEntryCount;
+    diagnostics.sceneRuntimeAssetNodeWorldSpaceResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeWorldSpaceBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceBrief;
+    diagnostics.sceneRuntimeAssetNodeWorldSpacePathBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeWorldSpacePathBrief).empty()
+            ? "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"
+            : status.rendererRuntimeSceneRuntimeAssetNodeWorldSpacePathBrief;
+    diagnostics.sceneRuntimeAssetNodeWorldSpaceValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceValueBrief).empty()
+            ? "body:(0.0,0.0,1.00)|head:(0.0,0.0,1.00)|appendage:(0.0,0.0,1.00)|overlay:(0.0,0.0,1.00)|grounding:(0.0,0.0,1.00)"
+            : status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceValueBrief;
     diagnostics.sceneRuntimePoseAdapterInfluence =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     diagnostics.sceneRuntimePoseReadabilityBias =

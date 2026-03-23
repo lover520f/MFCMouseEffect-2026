@@ -236,6 +236,14 @@ public:
             "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
         std::string rendererRuntimeSceneRuntimeAssetNodeTargetResolverValueBrief{
             "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeWorldSpaceState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeWorldSpaceEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeWorldSpaceResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeWorldSpaceBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeWorldSpacePathBrief{
+            "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeWorldSpaceValueBrief{
+            "body:(0.0,0.0,1.00)|head:(0.0,0.0,1.00)|appendage:(0.0,0.0,1.00)|overlay:(0.0,0.0,1.00)|grounding:(0.0,0.0,1.00)"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

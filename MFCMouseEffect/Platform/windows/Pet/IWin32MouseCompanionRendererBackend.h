@@ -113,6 +113,14 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
         "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
     std::string sceneRuntimeAssetNodeTargetResolverValueBrief{
         "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"};
+    std::string sceneRuntimeAssetNodeWorldSpaceState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeWorldSpaceEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeWorldSpaceResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeWorldSpaceBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeWorldSpacePathBrief{
+        "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
+    std::string sceneRuntimeAssetNodeWorldSpaceValueBrief{
+        "body:(0.0,0.0,1.00)|head:(0.0,0.0,1.00)|appendage:(0.0,0.0,1.00)|overlay:(0.0,0.0,1.00)|grounding:(0.0,0.0,1.00)"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

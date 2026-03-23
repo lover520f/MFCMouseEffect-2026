@@ -403,6 +403,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetResolverPathBrief},
         {"scene_runtime_asset_node_target_resolver_value_brief",
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetResolverValueBrief},
+        {"scene_runtime_asset_node_world_space_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpaceState},
+        {"scene_runtime_asset_node_world_space_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpaceEntryCount},
+        {"scene_runtime_asset_node_world_space_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpaceResolvedEntryCount},
+        {"scene_runtime_asset_node_world_space_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpaceBrief},
+        {"scene_runtime_asset_node_world_space_path_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpacePathBrief},
+        {"scene_runtime_asset_node_world_space_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpaceValueBrief},
         {"scene_runtime_pose_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
         {"scene_runtime_pose_readability_bias",
@@ -621,6 +633,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverPathBrief;
     out["renderer_runtime_scene_runtime_asset_node_target_resolver_value_brief"] =
         status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_world_space_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceState;
+    out["renderer_runtime_scene_runtime_asset_node_world_space_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_world_space_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_world_space_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceBrief;
+    out["renderer_runtime_scene_runtime_asset_node_world_space_path_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpacePathBrief;
+    out["renderer_runtime_scene_runtime_asset_node_world_space_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceValueBrief;
     out["renderer_runtime_scene_runtime_pose_adapter_influence"] =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     out["renderer_runtime_scene_runtime_pose_readability_bias"] =
