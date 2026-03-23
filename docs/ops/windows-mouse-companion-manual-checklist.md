@@ -183,6 +183,7 @@
      - `experimental_style_candidate`: agile / dreamy / charming
    - runtime now surfaces the same value as `appearance_plugin_sample_tier`, so Win-side validation can tell “ship default candidate” from “experimental style candidate” without reopening the sidecar file
    - runtime now also surfaces `appearance_plugin_contract_brief = semantics_mode/style_intent/sample_tier`, so the current sidecar contract can be skimmed from one short field
+   - `render-proof` and lane matrix now also echo `default_lane_candidate_tier`, so `ship_default_candidate` vs `experimental_style_candidate` no longer needs to be inferred manually from raw sample metadata
    - smoke expectation now also pins that value:
      - `renderer-sidecar-smoke` -> `baseline_reference`
      - `renderer-sidecar-wasm-v1-smoke(default)` -> `ship_default_candidate`

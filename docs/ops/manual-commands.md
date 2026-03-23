@@ -171,8 +171,9 @@ Keep P1 concise; add details here when needed.
     - `default_lane_candidate_tier`
     - `appearance_plugin_sample_tier`
   - `render-proof` console output now also prints `default_lane_summary = candidate/source/rollout/style_intent` and `appearance_plugin_contract_brief = semantics_mode/style_intent/sample_tier`
+  - the same output now also prints `default_lane_candidate_tier`
   - saved `render-proof` JSON now also carries both fields under `real_renderer_preview` and `renderer_runtime_after`
-  - lane matrix summary now also records `runtime_contract_brief`, so proof/runtime/WebUI/matrix all share the same short contract string
+  - lane matrix summary now also records `runtime_contract_brief` and `default_lane_candidate_tier`, so proof/runtime/WebUI/matrix all share the same contract/tier vocabulary
   - the Mouse Companion WebUI section now also mirrors those runtime values in a dedicated `Runtime Diagnostics` block, together with `appearance_plugin_kind`, `appearance_plugin_appearance_semantics_mode`, `appearance_plugin_sample_tier`, `appearance_plugin_contract_brief`, and `appearance_plugin_selection_reason`
   - that same block now also derives a short `Lane Verdict`, so Win bring-up can read `stay on builtin` vs `candidate pending manual confirmation` without manually interpreting the three machine-coded default-lane fields first
   - `observation-template.md` is the operator-facing follow-up note sheet for `follow / drag / click / hold / scroll`, so manual visual conclusions can be stored next to the machine summary instead of in ad-hoc chat notes
