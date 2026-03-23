@@ -89,9 +89,21 @@ function buildDefaultLaneVerdict(runtimeState) {
   const candidate = `${runtimeState?.default_lane_candidate ?? ''}`.trim();
   const source = `${runtimeState?.default_lane_source ?? ''}`.trim();
   const rolloutStatus = `${runtimeState?.default_lane_rollout_status ?? ''}`.trim();
+  const candidateTier = `${runtimeState?.renderer_runtime_default_lane_candidate_tier ?? ''}`.trim();
+
+  const tierLabel =
+    candidateTier === 'ship_default_candidate'
+      ? 'ship'
+      : candidateTier === 'experimental_style_candidate'
+        ? 'experimental'
+        : candidateTier === 'baseline_reference_candidate'
+          ? 'baseline'
+          : '';
 
   if (rolloutStatus === 'candidate_pending_manual_confirmation' && candidate) {
-    return `${candidate} candidate pending manual confirmation`;
+    return tierLabel
+      ? `${candidate} ${tierLabel} candidate pending manual confirmation`
+      : `${candidate} candidate pending manual confirmation`;
   }
   if (rolloutStatus === 'stay_on_builtin') {
     if (source === 'env_builtin_forced') {
@@ -522,6 +534,10 @@ function writeRuntimeDiagnostics(runtimeState) {
   writeTextValue(
     'mc_runtime_default_lane_style_intent',
     runtimeState.default_lane_style_intent || runtimeState.renderer_runtime_default_lane_style_intent,
+  );
+  writeTextValue(
+    'mc_runtime_default_lane_candidate_tier',
+    runtimeState.renderer_runtime_default_lane_candidate_tier,
   );
   writeTextValue(
     'mc_runtime_appearance_plugin_sample_tier',

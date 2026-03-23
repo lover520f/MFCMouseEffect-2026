@@ -125,6 +125,7 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
     diagnostics.defaultLaneSource = pluginSelection.defaultLaneSource;
     diagnostics.defaultLaneRolloutStatus = pluginSelection.defaultLaneRolloutStatus;
     diagnostics.defaultLaneStyleIntent = pluginSelection.defaultLaneStyleIntent;
+    diagnostics.defaultLaneCandidateTier = pluginSelection.defaultLaneCandidateTier;
     diagnostics.appearancePluginContractBrief =
         BuildWin32MouseCompanionRenderPluginContractBrief(
             diagnostics.appearancePluginAppearanceSemanticsMode,

@@ -172,6 +172,8 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         status.rendererRuntimeDefaultLaneRolloutStatus;
     diagnostics.defaultLaneStyleIntent =
         status.rendererRuntimeDefaultLaneStyleIntent;
+    diagnostics.defaultLaneCandidateTier =
+        status.rendererRuntimeDefaultLaneCandidateTier;
     if (const auto* realEntry = FindRendererBackendCatalogEntry(status, "real")) {
         diagnostics.availabilityReason = realEntry->available ? "" : realEntry->unavailableReason;
     }

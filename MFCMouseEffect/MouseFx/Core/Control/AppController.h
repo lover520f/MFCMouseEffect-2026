@@ -172,6 +172,7 @@ public:
         std::string rendererRuntimeDefaultLaneSource{"runtime_builtin_default"};
         std::string rendererRuntimeDefaultLaneRolloutStatus{"stay_on_builtin"};
         std::string rendererRuntimeDefaultLaneStyleIntent{"style_candidate:none"};
+        std::string rendererRuntimeDefaultLaneCandidateTier{"builtin_shipped_default"};
         std::string configuredModelPath;
         std::string configuredActionLibraryPath;
         std::string configuredEffectProfilePath;

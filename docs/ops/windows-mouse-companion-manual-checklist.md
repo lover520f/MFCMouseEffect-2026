@@ -155,6 +155,7 @@
      - `default_lane_source`
      - `default_lane_rollout_status`
      - `default_lane_style_intent`
+     - `default_lane_candidate_tier`
    - current interpretation:
      - `default_lane_rollout_status = stay_on_builtin` means runtime still recommends keeping builtin as shipped default
      - `default_lane_rollout_status = candidate_pending_manual_confirmation` means runtime sees a non-builtin candidate, but the lane is still not approved for default rollout until observation says so
@@ -171,6 +172,11 @@
      - `style_candidate:agile_follow_drag`
      - `style_candidate:dreamy_follow_scroll`
      - `style_candidate:charming_click_hold`
+   - common `default_lane_candidate_tier` readings:
+     - `builtin_shipped_default`: runtime still treats builtin as shipped default
+     - `baseline_reference_candidate`: non-builtin lane is only baseline/reference quality
+     - `ship_default_candidate`: current candidate matches the balanced ship-default tier
+     - `experimental_style_candidate`: current candidate is intentionally experimental
    - checked-in sidecars now declare `style_intent` explicitly; when a non-builtin lane is active, runtime should prefer that declared intent instead of only deriving from combo preset
    - checked-in sidecars now also declare `sample_tier`:
      - `ship_default_candidate`: current balanced default sample

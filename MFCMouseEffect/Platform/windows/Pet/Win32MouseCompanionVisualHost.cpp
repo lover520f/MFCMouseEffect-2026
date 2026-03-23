@@ -194,6 +194,8 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.defaultLaneRolloutStatus;
     diagnostics.rendererRuntime.defaultLaneStyleIntent =
         rendererRuntime.defaultLaneStyleIntent;
+    diagnostics.rendererRuntime.defaultLaneCandidateTier =
+        rendererRuntime.defaultLaneCandidateTier;
     for (const auto& descriptor : Win32MouseCompanionRendererBackendRegistry::Instance().ListByPriority()) {
         PetVisualHostRendererBackendCatalogEntry entry{};
         entry.name = descriptor.name;

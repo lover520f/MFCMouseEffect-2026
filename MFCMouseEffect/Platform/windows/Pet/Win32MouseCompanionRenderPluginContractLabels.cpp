@@ -54,6 +54,26 @@ std::string ResolveWin32MouseCompanionRenderPluginDefaultLaneStyleIntent(
     return "style_candidate:none";
 }
 
+std::string ResolveWin32MouseCompanionRenderPluginDefaultLaneCandidateTier(
+    const std::string& defaultLaneCandidate,
+    const std::string& declaredSampleTier) {
+    const std::string candidate = TrimAscii(defaultLaneCandidate);
+    const std::string sampleTier = TrimAscii(declaredSampleTier);
+    if (candidate.empty() || candidate == "builtin") {
+        return "builtin_shipped_default";
+    }
+    if (sampleTier == "baseline_reference") {
+        return "baseline_reference_candidate";
+    }
+    if (sampleTier == "ship_default_candidate") {
+        return "ship_default_candidate";
+    }
+    if (sampleTier == "experimental_style_candidate") {
+        return "experimental_style_candidate";
+    }
+    return "unclassified_candidate";
+}
+
 std::string BuildWin32MouseCompanionRenderPluginContractBrief(
     const std::string& appearanceSemanticsMode,
     const std::string& styleIntent,

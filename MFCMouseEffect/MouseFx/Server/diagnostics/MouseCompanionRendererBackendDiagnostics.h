@@ -54,6 +54,7 @@ struct MouseCompanionRealRendererPreviewDiagnostics {
     std::string defaultLaneSource{"runtime_builtin_default"};
     std::string defaultLaneRolloutStatus{"stay_on_builtin"};
     std::string defaultLaneStyleIntent{"style_candidate:none"};
+    std::string defaultLaneCandidateTier{"builtin_shipped_default"};
 };
 
 ConfiguredMouseCompanionRendererBackendPreferenceDiagnostics

@@ -29,6 +29,7 @@ void ApplyDefaultLaneDecision(
     selection->defaultLaneCandidate = "builtin";
     selection->defaultLaneSource = "runtime_builtin_default";
     selection->defaultLaneRolloutStatus = "stay_on_builtin";
+    selection->defaultLaneCandidateTier = "builtin_shipped_default";
 
     const std::string selectionReason = TrimAscii(selection->selectionReason);
     if (selectionReason == "env:explicit_builtin") {
@@ -66,6 +67,10 @@ void ApplyDefaultLaneDecision(
             selection->defaultLaneCandidate,
             selection->declaredStyleIntent,
             selection->comboPresetOverride);
+    selection->defaultLaneCandidateTier =
+        ResolveWin32MouseCompanionRenderPluginDefaultLaneCandidateTier(
+            selection->defaultLaneCandidate,
+            selection->declaredSampleTier);
 }
 
 std::string ReadEnvCopy(const char* key) {

@@ -17,6 +17,10 @@ std::string ResolveWin32MouseCompanionRenderPluginDefaultLaneStyleIntent(
     const std::string& declaredStyleIntent,
     Win32MouseCompanionRealRendererAppearanceComboPreset comboPresetOverride);
 
+std::string ResolveWin32MouseCompanionRenderPluginDefaultLaneCandidateTier(
+    const std::string& defaultLaneCandidate,
+    const std::string& declaredSampleTier);
+
 std::string BuildWin32MouseCompanionRenderPluginContractBrief(
     const std::string& appearanceSemanticsMode,
     const std::string& styleIntent,

@@ -38,6 +38,9 @@ export function getMouseCompanionSectionMarkup() {
         <label>Style Intent</label>
         <output id="mc_runtime_default_lane_style_intent">-</output>
 
+        <label>Candidate Tier</label>
+        <output id="mc_runtime_default_lane_candidate_tier">-</output>
+
         <label>Sample Tier</label>
         <output id="mc_runtime_appearance_plugin_sample_tier">-</output>
 

@@ -36,6 +36,7 @@ Keep P1 concise; add details here when needed.
     - `-AllWasmV1Styles`
   - runtime/UI diagnostics now also surface:
     - `default_lane_style_intent`
+    - `default_lane_candidate_tier`
     - `appearance_plugin_sample_tier`
     - `appearance_plugin_contract_brief`
   - `renderer-sidecar-smoke` now also asserts `appearance_plugin_sample_tier=baseline_reference`
@@ -167,6 +168,7 @@ Keep P1 concise; add details here when needed.
     - `default_lane_source`
     - `default_lane_rollout_status`
     - `default_lane_style_intent`
+    - `default_lane_candidate_tier`
     - `appearance_plugin_sample_tier`
   - `render-proof` console output now also prints `default_lane_summary = candidate/source/rollout/style_intent` and `appearance_plugin_contract_brief = semantics_mode/style_intent/sample_tier`
   - saved `render-proof` JSON now also carries both fields under `real_renderer_preview` and `renderer_runtime_after`

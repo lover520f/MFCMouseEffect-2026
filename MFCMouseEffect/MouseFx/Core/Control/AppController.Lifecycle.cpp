@@ -629,6 +629,8 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.defaultLaneRolloutStatus;
     mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneStyleIntent =
         diagnostics.rendererRuntime.defaultLaneStyleIntent;
+    mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneCandidateTier =
+        diagnostics.rendererRuntime.defaultLaneCandidateTier;
 }
 
 void AppController::ClearPetVisualHostDiagnostics() {
@@ -687,6 +689,8 @@ void AppController::ClearPetVisualHostDiagnostics() {
         "stay_on_builtin";
     mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneStyleIntent =
         "style_candidate:none";
+    mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneCandidateTier =
+        "builtin_shipped_default";
 }
 
 void AppController::EnsurePetVisualHost() {
