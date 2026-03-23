@@ -139,6 +139,8 @@ void BuildWin32MouseCompanionRealRendererAdornment(
 
     const float poseAdapterInfluence =
         ResolveWin32MouseCompanionRealRendererPoseAdapterInfluence(runtime);
+    const float poseReadabilityBias =
+        ResolveWin32MouseCompanionRealRendererPoseAdapterReadabilityBias(runtime);
     const float poseHandReachX = ResolveAveragePoseX(runtime.leftHandPose, runtime.rightHandPose);
     const float poseHandLiftY = ResolveAveragePoseY(runtime.leftHandPose, runtime.rightHandPose);
     const float poseLegReachX = ResolveAveragePoseX(runtime.leftLegPose, runtime.rightLegPose);
@@ -149,9 +151,9 @@ void BuildWin32MouseCompanionRealRendererAdornment(
     const float poseAdornmentY =
         (-poseHandLiftY * metrics.bodyHeight * 0.018f - poseLegLiftY * metrics.bodyHeight * 0.010f) *
         poseAdapterInfluence;
-    scene.poseBadgeAlpha = 196.0f + poseAdapterInfluence * 59.0f;
-    scene.accessoryAlphaScale = 1.0f + poseAdapterInfluence * 0.10f;
-    scene.accessoryStrokeWidth = 1.0f + poseAdapterInfluence * 0.16f;
+    scene.poseBadgeAlpha = 180.0f + poseReadabilityBias * 75.0f;
+    scene.accessoryAlphaScale = 1.0f + poseReadabilityBias * 0.12f;
+    scene.accessoryStrokeWidth = 1.0f + poseReadabilityBias * 0.22f;
 
     scene.poseBadgeVisible =
         runtime.poseBindingConfigured ||

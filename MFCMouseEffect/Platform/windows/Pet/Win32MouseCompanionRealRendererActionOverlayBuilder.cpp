@@ -57,6 +57,10 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
     const auto mood = BuildWin32MouseCompanionRealRendererAppearanceSemantics(runtime, style).mood;
     const float poseAdapterInfluence =
         ResolveWin32MouseCompanionRealRendererPoseAdapterInfluence(runtime);
+    const float poseReadabilityBias =
+        ResolveWin32MouseCompanionRealRendererPoseAdapterReadabilityBias(runtime);
+    const float overlayAlphaScale = 1.0f + poseReadabilityBias * 0.10f;
+    const float overlayStrokeScale = 1.0f + poseReadabilityBias * 0.08f;
     const float poseHandReachX = ResolveAveragePoseX(runtime.leftHandPose, runtime.rightHandPose);
     const float poseHandLiftY = ResolveAveragePoseY(runtime.leftHandPose, runtime.rightHandPose);
     const float poseLegReachX = ResolveAveragePoseX(runtime.leftLegPose, runtime.rightLegPose);
@@ -71,9 +75,10 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         const float ringSize = std::max(scene.headRect.Width, scene.headRect.Height) *
             (style.clickRingScale + profile.actionIntensity * style.clickRingIntensityScale);
         scene.actionOverlay.clickRingVisible = true;
-        scene.actionOverlay.clickRingStrokeWidth = 2.2f + profile.actionIntensity * 1.4f;
+        scene.actionOverlay.clickRingStrokeWidth =
+            (2.2f + profile.actionIntensity * 1.4f) * overlayStrokeScale;
         scene.actionOverlay.clickRingAlpha =
-            ClampAlpha((205.0f + profile.actionIntensity * 36.0f) * mood.clickRingAlphaScale);
+            ClampAlpha((205.0f + profile.actionIntensity * 36.0f) * mood.clickRingAlphaScale * overlayAlphaScale);
         scene.actionOverlay.clickRingRect = MakeCenteredRect(
             scene.centerX + poseOverlayCenterX * 0.55f,
             scene.headRect.Y + scene.headRect.Height * style.clickRingCenterYRatio + poseOverlayCenterY * 0.45f,
@@ -84,7 +89,7 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
     if (runtime.hold) {
         scene.actionOverlay.holdBandVisible = true;
         scene.actionOverlay.holdBandAlpha =
-            ClampAlpha((145.0f + profile.actionIntensity * 78.0f) * mood.holdBandAlphaScale);
+            ClampAlpha((145.0f + profile.actionIntensity * 78.0f) * mood.holdBandAlphaScale * overlayAlphaScale);
         scene.actionOverlay.holdBandRect = Gdiplus::RectF(
             scene.leftHandRect.X + scene.leftHandRect.Width * style.holdBandInsetRatio,
             std::min(scene.leftHandRect.Y, scene.rightHandRect.Y) + metrics.bodyHeight * style.holdBandYOffsetRatio +
@@ -95,9 +100,10 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
 
     if (runtime.scroll) {
         scene.actionOverlay.scrollArcVisible = true;
-        scene.actionOverlay.scrollArcStrokeWidth = 3.0f + profile.scrollIntensity * 1.6f;
+        scene.actionOverlay.scrollArcStrokeWidth =
+            (3.0f + profile.scrollIntensity * 1.6f) * overlayStrokeScale;
         scene.actionOverlay.scrollArcAlpha =
-            ClampAlpha((180.0f + profile.scrollIntensity * 56.0f) * mood.scrollArcAlphaScale);
+            ClampAlpha((180.0f + profile.scrollIntensity * 56.0f) * mood.scrollArcAlphaScale * overlayAlphaScale);
         scene.actionOverlay.scrollArcRect = MakeCenteredRect(
             scene.centerX + poseOverlayCenterX * 0.35f,
             scene.centerY - metrics.bodyHeight * style.scrollArcCenterYRatio + poseOverlayCenterY * 0.30f,
@@ -109,9 +115,10 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
 
     if (runtime.drag) {
         scene.actionOverlay.dragLineVisible = true;
-        scene.actionOverlay.dragLineStrokeWidth = 2.4f + profile.actionIntensity * 1.2f;
+        scene.actionOverlay.dragLineStrokeWidth =
+            (2.4f + profile.actionIntensity * 1.2f) * overlayStrokeScale;
         scene.actionOverlay.dragLineAlpha =
-            ClampAlpha((178.0f + profile.actionIntensity * 52.0f) * mood.dragLineAlphaScale);
+            ClampAlpha((178.0f + profile.actionIntensity * 52.0f) * mood.dragLineAlphaScale * overlayAlphaScale);
         scene.actionOverlay.dragLineStart = Gdiplus::PointF(
             scene.centerX - runtime.facingSign * metrics.bodyWidth * style.dragLineStartXRatio + poseOverlayCenterX,
             scene.centerY - metrics.bodyHeight * style.dragLineStartYRatio + poseOverlayCenterY * 0.45f);
@@ -123,7 +130,7 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
     if (runtime.follow) {
         scene.actionOverlay.followTrailVisible = true;
         scene.actionOverlay.followTrailBaseAlpha =
-            ClampAlpha((150.0f + profile.actionIntensity * 68.0f) * mood.followTrailAlphaScale);
+            ClampAlpha((150.0f + profile.actionIntensity * 68.0f) * mood.followTrailAlphaScale * overlayAlphaScale);
         const float trailBaseX =
             scene.centerX - runtime.facingSign * metrics.bodyWidth * style.followTrailBaseXRatio + poseOverlayCenterX;
         const float trailBaseY =

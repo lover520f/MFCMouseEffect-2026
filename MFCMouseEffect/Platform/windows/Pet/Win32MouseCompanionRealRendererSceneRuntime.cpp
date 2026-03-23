@@ -74,4 +74,17 @@ float ResolveWin32MouseCompanionRealRendererPoseAdapterInfluence(
     return 0.0f;
 }
 
+float ResolveWin32MouseCompanionRealRendererPoseAdapterReadabilityBias(
+    const Win32MouseCompanionRealRendererSceneRuntime& runtime) {
+    const float sampleCoverage =
+        ResolveWin32MouseCompanionRealRendererPoseSampleCoverage(runtime);
+    if (runtime.sceneRuntimeAdapterMode == "pose_bound") {
+        return std::clamp(0.70f + sampleCoverage * 0.30f, 0.0f, 1.0f);
+    }
+    if (runtime.sceneRuntimeAdapterMode == "pose_unbound") {
+        return std::clamp(0.25f + sampleCoverage * 0.35f, 0.0f, 1.0f);
+    }
+    return 0.0f;
+}
+
 } // namespace mousefx::windows
