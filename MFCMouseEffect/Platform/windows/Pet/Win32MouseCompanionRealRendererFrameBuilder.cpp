@@ -113,19 +113,17 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
         break;
     }
 
-    const auto& nodeAdapter = runtime.modelNodeAdapterProfile;
-    const float poseAnchorX = nodeAdapter.bodyChannel.offsetX * nodeAdapter.bodyChannel.influence * metrics.bodyWidth;
-    const float poseAnchorY = nodeAdapter.bodyChannel.offsetY * nodeAdapter.bodyChannel.influence * metrics.bodyHeight;
-    const float poseHeadX = nodeAdapter.faceChannel.offsetX * nodeAdapter.faceChannel.influence * metrics.headWidth;
-    const float poseHeadY = nodeAdapter.faceChannel.offsetY * nodeAdapter.faceChannel.influence * metrics.headHeight;
-    const float poseGroundingX =
-        nodeAdapter.groundingChannel.offsetX * nodeAdapter.groundingChannel.influence * metrics.bodyWidth;
-    const float poseGroundingY =
-        nodeAdapter.groundingChannel.offsetY * nodeAdapter.groundingChannel.influence * metrics.bodyHeight;
+    const auto& nodeBinding = runtime.modelNodeBindingProfile;
+    const float poseAnchorX = nodeBinding.bodyEntry.worldOffsetX * metrics.bodyWidth;
+    const float poseAnchorY = nodeBinding.bodyEntry.worldOffsetY * metrics.bodyHeight;
+    const float poseHeadX = nodeBinding.headEntry.worldOffsetX * metrics.headWidth;
+    const float poseHeadY = nodeBinding.headEntry.worldOffsetY * metrics.headHeight;
+    const float poseGroundingX = nodeBinding.groundingEntry.worldOffsetX * metrics.bodyWidth;
+    const float poseGroundingY = nodeBinding.groundingEntry.worldOffsetY * metrics.bodyHeight;
     const float poseGroundingScale =
-        1.0f + std::abs(nodeAdapter.groundingChannel.offsetX) * nodeAdapter.groundingChannel.influence * 0.65f;
-    scene.shadowAlphaScale = 1.0f + nodeAdapter.groundingChannel.influence * 0.08f;
-    scene.pedestalAlphaScale = 1.0f + nodeAdapter.groundingChannel.influence * 0.06f;
+        1.0f + std::abs(nodeBinding.groundingEntry.worldOffsetX) * nodeBinding.groundingEntry.bindWeight * 0.65f;
+    scene.shadowAlphaScale = 1.0f + nodeBinding.groundingEntry.bindWeight * 0.08f;
+    scene.pedestalAlphaScale = 1.0f + nodeBinding.groundingEntry.bindWeight * 0.06f;
 
     scene.centerX = static_cast<float>(width) * style.centerXRatio + facingOffset + profile.bodyForward +
         profile.idleHeadSway + poseAnchorX;

@@ -48,6 +48,16 @@ struct PetVisualHostRendererRuntimeDiagnostics {
     std::string sceneRuntimeModelNodeAdapterBrief{"preview_only/0.00"};
     std::string sceneRuntimeModelNodeChannelBrief{
         "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
+    std::string sceneRuntimeModelNodeGraphState{"preview_only"};
+    uint32_t sceneRuntimeModelNodeGraphNodeCount{0};
+    uint32_t sceneRuntimeModelNodeGraphBoundNodeCount{0};
+    std::string sceneRuntimeModelNodeGraphBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelNodeBindingState{"preview_only"};
+    uint32_t sceneRuntimeModelNodeBindingEntryCount{0};
+    uint32_t sceneRuntimeModelNodeBindingBoundEntryCount{0};
+    std::string sceneRuntimeModelNodeBindingBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelNodeBindingWeightBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

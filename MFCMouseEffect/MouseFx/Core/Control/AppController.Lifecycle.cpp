@@ -595,6 +595,24 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.sceneRuntimeModelNodeAdapterBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeChannelBrief =
         diagnostics.rendererRuntime.sceneRuntimeModelNodeChannelBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeGraphState =
+        diagnostics.rendererRuntime.sceneRuntimeModelNodeGraphState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeGraphNodeCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelNodeGraphNodeCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeGraphBoundNodeCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelNodeGraphBoundNodeCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeGraphBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelNodeGraphBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeBindingState =
+        diagnostics.rendererRuntime.sceneRuntimeModelNodeBindingState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeBindingEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelNodeBindingEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeBindingBoundEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelNodeBindingBoundEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeBindingBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelNodeBindingBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeBindingWeightBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelNodeBindingWeightBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterInfluence =
         diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseReadabilityBias =
@@ -697,6 +715,24 @@ void AppController::ClearPetVisualHostDiagnostics() {
         "preview_only/0.00";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeChannelBrief =
         "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeGraphState =
+        "preview_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeGraphNodeCount =
+        0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeGraphBoundNodeCount =
+        0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeGraphBrief =
+        "preview_only/0/0";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeBindingState =
+        "preview_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeBindingEntryCount =
+        0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeBindingBoundEntryCount =
+        0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeBindingBrief =
+        "preview_only/0/0";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeBindingWeightBrief =
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterInfluence = 0.0f;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseReadabilityBias = 0.0f;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterBrief =

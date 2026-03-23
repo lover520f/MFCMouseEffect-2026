@@ -7,6 +7,8 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetResources.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelSceneAdapterProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelNodeAdapterProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelNodeBindingProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelNodeGraphProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererPoseAdapterProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRendererInput.h"
 
@@ -46,6 +48,8 @@ struct Win32MouseCompanionRealRendererSceneRuntime final {
     uint32_t sceneRuntimeBoundPoseSampleCount{0};
     Win32MouseCompanionRealRendererModelSceneAdapterProfile modelSceneAdapterProfile{};
     Win32MouseCompanionRealRendererModelNodeAdapterProfile modelNodeAdapterProfile{};
+    Win32MouseCompanionRealRendererModelNodeGraphProfile modelNodeGraphProfile{};
+    Win32MouseCompanionRealRendererModelNodeBindingProfile modelNodeBindingProfile{};
     Win32MouseCompanionRealRendererPoseAdapterProfile poseAdapterProfile{};
 };
 

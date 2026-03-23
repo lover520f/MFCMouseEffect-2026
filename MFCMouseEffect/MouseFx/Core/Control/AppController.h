@@ -156,6 +156,16 @@ public:
             "preview_only/0.00"};
         std::string rendererRuntimeSceneRuntimeModelNodeChannelBrief{
             "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelNodeGraphState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelNodeGraphNodeCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelNodeGraphBoundNodeCount{0};
+        std::string rendererRuntimeSceneRuntimeModelNodeGraphBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelNodeBindingState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelNodeBindingEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelNodeBindingBoundEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelNodeBindingBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelNodeBindingWeightBrief{
+            "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

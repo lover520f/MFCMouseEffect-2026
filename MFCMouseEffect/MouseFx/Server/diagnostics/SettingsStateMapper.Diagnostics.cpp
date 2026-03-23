@@ -279,6 +279,24 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeAdapterBrief},
         {"scene_runtime_model_node_channel_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeChannelBrief},
+        {"scene_runtime_model_node_graph_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeGraphState},
+        {"scene_runtime_model_node_graph_node_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeGraphNodeCount},
+        {"scene_runtime_model_node_graph_bound_node_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeGraphBoundNodeCount},
+        {"scene_runtime_model_node_graph_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeGraphBrief},
+        {"scene_runtime_model_node_binding_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeBindingState},
+        {"scene_runtime_model_node_binding_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeBindingEntryCount},
+        {"scene_runtime_model_node_binding_bound_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeBindingBoundEntryCount},
+        {"scene_runtime_model_node_binding_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeBindingBrief},
+        {"scene_runtime_model_node_binding_weight_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeBindingWeightBrief},
         {"scene_runtime_pose_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
         {"scene_runtime_pose_readability_bias",
@@ -373,6 +391,24 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeModelNodeAdapterBrief;
     out["renderer_runtime_scene_runtime_model_node_channel_brief"] =
         status.rendererRuntimeSceneRuntimeModelNodeChannelBrief;
+    out["renderer_runtime_scene_runtime_model_node_graph_state"] =
+        status.rendererRuntimeSceneRuntimeModelNodeGraphState;
+    out["renderer_runtime_scene_runtime_model_node_graph_node_count"] =
+        status.rendererRuntimeSceneRuntimeModelNodeGraphNodeCount;
+    out["renderer_runtime_scene_runtime_model_node_graph_bound_node_count"] =
+        status.rendererRuntimeSceneRuntimeModelNodeGraphBoundNodeCount;
+    out["renderer_runtime_scene_runtime_model_node_graph_brief"] =
+        status.rendererRuntimeSceneRuntimeModelNodeGraphBrief;
+    out["renderer_runtime_scene_runtime_model_node_binding_state"] =
+        status.rendererRuntimeSceneRuntimeModelNodeBindingState;
+    out["renderer_runtime_scene_runtime_model_node_binding_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelNodeBindingEntryCount;
+    out["renderer_runtime_scene_runtime_model_node_binding_bound_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelNodeBindingBoundEntryCount;
+    out["renderer_runtime_scene_runtime_model_node_binding_brief"] =
+        status.rendererRuntimeSceneRuntimeModelNodeBindingBrief;
+    out["renderer_runtime_scene_runtime_model_node_binding_weight_brief"] =
+        status.rendererRuntimeSceneRuntimeModelNodeBindingWeightBrief;
     out["renderer_runtime_scene_runtime_pose_adapter_influence"] =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     out["renderer_runtime_scene_runtime_pose_readability_bias"] =

@@ -28,11 +28,10 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
     const float poseReadabilityBias = runtime.poseAdapterProfile.readabilityBias;
     const float overlayAlphaScale = 1.0f + poseReadabilityBias * 0.10f;
     const float overlayStrokeScale = 1.0f + poseReadabilityBias * 0.08f;
-    const auto& nodeAdapter = runtime.modelNodeAdapterProfile;
     const float poseOverlayCenterX =
-        nodeAdapter.overlayChannel.offsetX * nodeAdapter.overlayChannel.influence * metrics.bodyWidth;
+        runtime.modelNodeBindingProfile.overlayEntry.worldOffsetX * metrics.bodyWidth;
     const float poseOverlayCenterY =
-        nodeAdapter.overlayChannel.offsetY * nodeAdapter.overlayChannel.influence * metrics.bodyHeight;
+        runtime.modelNodeBindingProfile.overlayEntry.worldOffsetY * metrics.bodyHeight;
     scene.actionOverlay.accentColor = profile.overlayAccentColor;
 
     if (runtime.click) {

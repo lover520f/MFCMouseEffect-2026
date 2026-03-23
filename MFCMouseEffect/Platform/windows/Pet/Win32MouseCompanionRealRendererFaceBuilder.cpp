@@ -35,10 +35,9 @@ void BuildWin32MouseCompanionRealRendererFace(
         BuildWin32MouseCompanionRealRendererAppearanceSemantics(runtime, style);
     const auto& skinTuning = appearanceSemantics.face;
     const auto& nodeAdapter = runtime.modelNodeAdapterProfile;
-    const float poseFaceYOffset =
-        nodeAdapter.faceChannel.offsetY * nodeAdapter.faceChannel.influence * scene.headRect.Height;
-    const float poseFaceXOffset =
-        nodeAdapter.faceChannel.offsetX * nodeAdapter.faceChannel.influence * scene.headRect.Width;
+    const auto& nodeBinding = runtime.modelNodeBindingProfile;
+    const float poseFaceYOffset = nodeBinding.headEntry.worldOffsetY * scene.headRect.Height;
+    const float poseFaceXOffset = nodeBinding.headEntry.worldOffsetX * scene.headRect.Width;
     const float poseWhiskerBias = nodeAdapter.whiskerBias;
     const float poseBlushLift = nodeAdapter.blushLift;
     const float eyeH = std::max(3.0f, scene.headRect.Height * style.eyeHeightRatio * profile.eyeOpen);

@@ -65,6 +65,21 @@ export function getMouseCompanionSectionMarkup() {
         <label>Model Node Channels</label>
         <output id="mc_runtime_scene_runtime_model_node_channel_brief">-</output>
 
+        <label>Model Node Graph</label>
+        <output id="mc_runtime_scene_runtime_model_node_graph_brief">-</output>
+
+        <label>Bound Model Nodes</label>
+        <output id="mc_runtime_scene_runtime_model_node_graph_bound_count">-</output>
+
+        <label>Model Node Binding</label>
+        <output id="mc_runtime_scene_runtime_model_node_binding_brief">-</output>
+
+        <label>Bound Model Bindings</label>
+        <output id="mc_runtime_scene_runtime_model_node_binding_bound_count">-</output>
+
+        <label>Binding Weights</label>
+        <output id="mc_runtime_scene_runtime_model_node_binding_weight_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 

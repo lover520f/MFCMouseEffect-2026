@@ -285,6 +285,52 @@ function Add-ModelNodeChannelSummaryProperty($Node) {
     $Node | Add-Member -NotePropertyName "scene_runtime_model_node_channel_brief" -NotePropertyValue $brief
 }
 
+function Format-ModelNodeGraphSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_node_graph_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-ModelNodeGraphSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelNodeGraphSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_node_graph_brief").Count -gt 0) {
+        $Node.scene_runtime_model_node_graph_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_node_graph_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelNodeBindingSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_node_binding_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-ModelNodeBindingSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelNodeBindingSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_node_binding_brief").Count -gt 0) {
+        $Node.scene_runtime_model_node_binding_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_node_binding_brief" -NotePropertyValue $brief
+}
+
 function Show-RealPreviewSmokeHint {
     @'
 [mfx:info] real-preview-smoke preset
@@ -966,6 +1012,8 @@ if ($Route -eq "sweep") {
                 Add-ModelSceneAdapterSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeAdapterSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeChannelSummaryProperty $item.real_renderer_preview
+                Add-ModelNodeGraphSummaryProperty $item.real_renderer_preview
+                Add-ModelNodeBindingSummaryProperty $item.real_renderer_preview
                 Add-PoseAdapterSummaryProperty $item.real_renderer_preview
                 if ($null -ne $item.proof) {
                     Add-DefaultLaneSummaryProperty $item.proof.renderer_runtime_after
@@ -973,6 +1021,8 @@ if ($Route -eq "sweep") {
                     Add-ModelSceneAdapterSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeAdapterSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeChannelSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelNodeGraphSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelNodeBindingSummaryProperty $item.proof.renderer_runtime_after
                     Add-PoseAdapterSummaryProperty $item.proof.renderer_runtime_after
                 }
             }
@@ -983,12 +1033,16 @@ if ($Route -eq "sweep") {
         Add-ModelSceneAdapterSummaryProperty $response.real_renderer_preview
         Add-ModelNodeAdapterSummaryProperty $response.real_renderer_preview
         Add-ModelNodeChannelSummaryProperty $response.real_renderer_preview
+        Add-ModelNodeGraphSummaryProperty $response.real_renderer_preview
+        Add-ModelNodeBindingSummaryProperty $response.real_renderer_preview
         Add-PoseAdapterSummaryProperty $response.real_renderer_preview
         Add-DefaultLaneSummaryProperty $response.renderer_runtime_after
         Add-AppearancePluginContractBriefProperty $response.renderer_runtime_after
         Add-ModelSceneAdapterSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeAdapterSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeChannelSummaryProperty $response.renderer_runtime_after
+        Add-ModelNodeGraphSummaryProperty $response.renderer_runtime_after
+        Add-ModelNodeBindingSummaryProperty $response.renderer_runtime_after
         Add-PoseAdapterSummaryProperty $response.renderer_runtime_after
     }
 
@@ -1276,6 +1330,10 @@ Write-Host ("  - model_node_adapter={0}" -f `
     (Format-ModelNodeAdapterSummary $response.real_renderer_preview))
 Write-Host ("  - model_node_channels={0}" -f `
     (Format-ModelNodeChannelSummary $response.real_renderer_preview))
+Write-Host ("  - model_node_graph={0}" -f `
+    (Format-ModelNodeGraphSummary $response.real_renderer_preview))
+Write-Host ("  - model_node_binding={0}" -f `
+    (Format-ModelNodeBindingSummary $response.real_renderer_preview))
 foreach ($failure in @($appearanceFailures)) {
     Write-Host ("  - appearance_mismatch: {0}" -f $failure)
 }

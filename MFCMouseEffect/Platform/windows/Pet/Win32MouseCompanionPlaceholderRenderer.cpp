@@ -125,6 +125,16 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         modelSceneAdapterProfile.seamState + "/0.00";
     diagnostics.sceneRuntimeModelNodeChannelBrief =
         "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
+    diagnostics.sceneRuntimeModelNodeGraphState = "preview_only";
+    diagnostics.sceneRuntimeModelNodeGraphNodeCount = 0;
+    diagnostics.sceneRuntimeModelNodeGraphBoundNodeCount = 0;
+    diagnostics.sceneRuntimeModelNodeGraphBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeModelNodeBindingState = "preview_only";
+    diagnostics.sceneRuntimeModelNodeBindingEntryCount = 0;
+    diagnostics.sceneRuntimeModelNodeBindingBoundEntryCount = 0;
+    diagnostics.sceneRuntimeModelNodeBindingBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeModelNodeBindingWeightBrief =
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
     diagnostics.appearanceSkinVariantId = input.appearanceProfile.skinVariantId;
     diagnostics.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;
     const auto accessoryFamily =

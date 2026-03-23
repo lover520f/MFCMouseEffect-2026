@@ -143,6 +143,34 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeChannelBrief).empty()
             ? "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00"
             : status.rendererRuntimeSceneRuntimeModelNodeChannelBrief;
+    diagnostics.sceneRuntimeModelNodeGraphState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeGraphState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeModelNodeGraphState;
+    diagnostics.sceneRuntimeModelNodeGraphNodeCount =
+        status.rendererRuntimeSceneRuntimeModelNodeGraphNodeCount;
+    diagnostics.sceneRuntimeModelNodeGraphBoundNodeCount =
+        status.rendererRuntimeSceneRuntimeModelNodeGraphBoundNodeCount;
+    diagnostics.sceneRuntimeModelNodeGraphBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeGraphBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeModelNodeGraphBrief;
+    diagnostics.sceneRuntimeModelNodeBindingState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeBindingState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeModelNodeBindingState;
+    diagnostics.sceneRuntimeModelNodeBindingEntryCount =
+        status.rendererRuntimeSceneRuntimeModelNodeBindingEntryCount;
+    diagnostics.sceneRuntimeModelNodeBindingBoundEntryCount =
+        status.rendererRuntimeSceneRuntimeModelNodeBindingBoundEntryCount;
+    diagnostics.sceneRuntimeModelNodeBindingBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeBindingBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeModelNodeBindingBrief;
+    diagnostics.sceneRuntimeModelNodeBindingWeightBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeBindingWeightBrief).empty()
+            ? "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"
+            : status.rendererRuntimeSceneRuntimeModelNodeBindingWeightBrief;
     diagnostics.sceneRuntimePoseAdapterInfluence =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     diagnostics.sceneRuntimePoseReadabilityBias =

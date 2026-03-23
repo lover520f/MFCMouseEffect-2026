@@ -181,12 +181,17 @@ Keep P1 concise; add details here when needed.
     - `-ExpectedSceneRuntimePoseAdapterInfluenceMin`
     - `-ExpectedSceneRuntimePoseReadabilityBiasMin`
   - saved `render-proof` JSON now also carries both fields under `real_renderer_preview` and `renderer_runtime_after`
-  - runtime / proof / lane matrix now also expose `scene_runtime_model_scene_adapter_brief`, `scene_runtime_model_node_adapter_brief`, and `scene_runtime_model_node_channel_brief`, so you can tell whether the current lane is still preview-only, already on the asset/pose-ready seam, and how strongly `body / face / appendage / overlay / grounding` are consuming the shared node seam without reopening raw state JSON
+  - runtime / proof / lane matrix now also expose `scene_runtime_model_scene_adapter_brief`, `scene_runtime_model_node_adapter_brief`, `scene_runtime_model_node_channel_brief`, `scene_runtime_model_node_graph_brief`, `scene_runtime_model_node_binding_brief`, and `scene_runtime_model_node_binding_weight_brief`, so you can tell whether the current lane is still preview-only, already on the asset/pose-ready seam, how strongly `body / face / appendage / overlay / grounding` are consuming the shared node seam, whether those node channels have already been lifted into a shared preview graph, and whether builders are already consuming a binding-entry layer without reopening raw state JSON
   - current seam states:
     - `preview_only`
     - `asset_stub_ready`
     - `pose_stub_ready`
     - `pose_bound_preview_ready`
+  - current model-node graph states:
+    - `preview_only`
+    - `scaffold_ready`
+    - `channel_stub_ready`
+    - `channel_bound_preview`
   - lane matrix summary now also records `runtime_contract_brief`, `runtime_model_scene_adapter_brief`, `runtime_pose_adapter_brief`, and `default_lane_candidate_tier`, so proof/runtime/WebUI/matrix all share the same contract/tier vocabulary
   - machine recommendation priority now prefers runtime `default_lane_candidate_tier` first, then `recommended_sample_tier`, then style intent
   - lane matrix now also records `style_focus_profile`, so each lane summary and the final recommendation can state whether the current style is biased toward `follow_drag_tension`, `follow_scroll_float`, `click_hold_warmth`, or `balanced_all_rounder`

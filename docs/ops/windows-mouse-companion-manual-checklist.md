@@ -212,6 +212,12 @@
     - `body` and `face` first
     - then `appendage` / `overlay`
     - `grounding` slightly softer than fully bound body/face
+  - `scene_runtime_model_node_binding_brief` should now also move through:
+    - `preview_only/0/0`
+    - `binding_scaffold/5/<low>`
+    - `binding_stub_ready/5/<mid>`
+    - `binding_ready/5/<high>`
+  - `scene_runtime_model_node_binding_weight_brief` should stay near all-zero in `runtime_only`, rise into sub-1.0 weights for `pose_unbound`, and approach fuller `body/head/appendage/overlay/grounding` weights once `pose_bound` is active
    - `render-proof` can now pin pose-adapter state directly with `-ExpectedSceneRuntimeAdapterMode`, `-ExpectedSceneRuntimePoseAdapterBrief`, `-ExpectedSceneRuntimePoseAdapterInfluenceMin`, and `-ExpectedSceneRuntimePoseReadabilityBiasMin`
    - `render-proof` and lane matrix now also echo `default_lane_candidate_tier`, so `ship_default_candidate` vs `experimental_style_candidate` no longer needs to be inferred manually from raw sample metadata
    - smoke expectation now also pins that value:

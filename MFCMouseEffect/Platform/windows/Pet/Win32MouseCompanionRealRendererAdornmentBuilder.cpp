@@ -108,16 +108,16 @@ void BuildWin32MouseCompanionRealRendererAdornment(
     };
 
     const float poseReadabilityBias = runtime.poseAdapterProfile.readabilityBias;
-    const auto& nodeAdapter = runtime.modelNodeAdapterProfile;
+    const auto& nodeBinding = runtime.modelNodeBindingProfile;
     const float poseAdornmentX =
-        nodeAdapter.appendageChannel.offsetX * nodeAdapter.appendageChannel.influence * metrics.bodyWidth;
+        nodeBinding.appendageEntry.worldOffsetX * metrics.bodyWidth;
     const float poseAdornmentY =
-        nodeAdapter.appendageChannel.offsetY * nodeAdapter.appendageChannel.influence * metrics.bodyHeight;
+        nodeBinding.appendageEntry.worldOffsetY * metrics.bodyHeight;
     scene.poseBadgeAlpha = 180.0f + poseReadabilityBias * 75.0f;
     scene.accessoryAlphaScale =
-        1.0f + poseReadabilityBias * 0.12f + nodeAdapter.appendageChannel.influence * 0.05f;
+        1.0f + poseReadabilityBias * 0.12f + nodeBinding.appendageEntry.bindWeight * 0.05f;
     scene.accessoryStrokeWidth =
-        1.0f + poseReadabilityBias * 0.22f + nodeAdapter.appendageChannel.influence * 0.08f;
+        1.0f + poseReadabilityBias * 0.22f + nodeBinding.appendageEntry.bindWeight * 0.08f;
 
     scene.poseBadgeVisible =
         runtime.poseBindingConfigured ||

@@ -239,6 +239,18 @@ It should **not** own:
     - `scene_runtime_model_node_adapter_influence`
     - `scene_runtime_model_node_adapter_brief = seam_state/influence`
     - `scene_runtime_model_node_channel_brief = body:x|face:y|appendage:z|overlay:w|grounding:v`
+  - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `modelNodeGraphProfile`; runtime/proof/WebUI may expose:
+    - `scene_runtime_model_node_graph_state`
+    - `scene_runtime_model_node_graph_node_count`
+    - `scene_runtime_model_node_graph_bound_node_count`
+    - `scene_runtime_model_node_graph_brief = graph_state/node_count/bound_node_count`
+  - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `modelNodeBindingProfile`; runtime/proof/WebUI may expose:
+    - `scene_runtime_model_node_binding_state`
+    - `scene_runtime_model_node_binding_entry_count`
+    - `scene_runtime_model_node_binding_bound_entry_count`
+    - `scene_runtime_model_node_binding_brief = binding_state/entry_count/bound_entry_count`
+    - `scene_runtime_model_node_binding_weight_brief = body:x|head:y|appendage:z|overlay:w|grounding:v`
+  - current preview seam should now layer `modelNodeAdapterProfile -> modelNodeGraphProfile -> modelNodeBindingProfile`, so later real asset-node binding can replace the binding-profile generator without rewriting downstream builders
   - host-side default-lane style-intent inference and metadata support lists should reuse the same helper, so `style_intent` / `sample_tier` machine vocab does not split between validation and runtime
   - runtime/preview diagnostics should also expose scene-runtime adapter state explicitly instead of only `pose_frame_available / pose_binding_configured` booleans:
     - `scene_runtime_adapter_mode = runtime_only|pose_unbound|pose_bound`
