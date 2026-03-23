@@ -515,6 +515,29 @@ function Add-AssetNodeTargetSummaryProperty($Node) {
     $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_target_brief" -NotePropertyValue $brief
 }
 
+function Format-AssetNodeTargetResolverSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_target_resolver_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeTargetResolverSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeTargetResolverSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_target_resolver_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_target_resolver_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_target_resolver_brief" -NotePropertyValue $brief
+}
+
 function Show-RealPreviewSmokeHint {
     @'
 [mfx:info] real-preview-smoke preset
@@ -1206,6 +1229,7 @@ if ($Route -eq "sweep") {
                 Add-AssetNodeResolverSummaryProperty $item.real_renderer_preview
                 Add-AssetNodeParentSpaceSummaryProperty $item.real_renderer_preview
                 Add-AssetNodeTargetSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeTargetResolverSummaryProperty $item.real_renderer_preview
                 Add-PoseAdapterSummaryProperty $item.real_renderer_preview
                 if ($null -ne $item.proof) {
                     Add-DefaultLaneSummaryProperty $item.proof.renderer_runtime_after
@@ -1223,6 +1247,7 @@ if ($Route -eq "sweep") {
                     Add-AssetNodeResolverSummaryProperty $item.proof.renderer_runtime_after
                     Add-AssetNodeParentSpaceSummaryProperty $item.proof.renderer_runtime_after
                     Add-AssetNodeTargetSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeTargetResolverSummaryProperty $item.proof.renderer_runtime_after
                     Add-PoseAdapterSummaryProperty $item.proof.renderer_runtime_after
                 }
             }
@@ -1243,6 +1268,7 @@ if ($Route -eq "sweep") {
         Add-AssetNodeResolverSummaryProperty $response.real_renderer_preview
         Add-AssetNodeParentSpaceSummaryProperty $response.real_renderer_preview
         Add-AssetNodeTargetSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeTargetResolverSummaryProperty $response.real_renderer_preview
         Add-PoseAdapterSummaryProperty $response.real_renderer_preview
         Add-DefaultLaneSummaryProperty $response.renderer_runtime_after
         Add-AppearancePluginContractBriefProperty $response.renderer_runtime_after
@@ -1259,6 +1285,7 @@ if ($Route -eq "sweep") {
         Add-AssetNodeResolverSummaryProperty $response.renderer_runtime_after
         Add-AssetNodeParentSpaceSummaryProperty $response.renderer_runtime_after
         Add-AssetNodeTargetSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeTargetResolverSummaryProperty $response.renderer_runtime_after
         Add-PoseAdapterSummaryProperty $response.renderer_runtime_after
     }
 
@@ -1548,6 +1575,8 @@ Write-Host ("  - asset_parent_space={0}" -f `
     (Format-AssetNodeParentSpaceSummary $response.real_renderer_preview))
 Write-Host ("  - asset_target={0}" -f `
     (Format-AssetNodeTargetSummary $response.real_renderer_preview))
+Write-Host ("  - asset_target_resolver={0}" -f `
+    (Format-AssetNodeTargetResolverSummary $response.real_renderer_preview))
 Write-Host ("  - pose_adapter={0}" -f `
     (Format-PoseAdapterSummary $response.real_renderer_preview))
 Write-Host ("  - model_scene_adapter={0}" -f `

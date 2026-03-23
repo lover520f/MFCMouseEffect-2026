@@ -298,6 +298,13 @@ It should **not** own:
     - `scene_runtime_asset_node_target_brief = target_state/entry_count/resolved_entry_count`
     - `scene_runtime_asset_node_target_kind_brief = body:body_target|head:head_target|appendage:appendage_target|overlay:overlay_target|grounding:grounding_target`
     - `scene_runtime_asset_node_target_value_brief = body:(x,y,s)|head:(x,y,s)|appendage:(x,y,s)|overlay:(x,y,s)|grounding:(x,y,s)`
+  - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `assetNodeTargetResolverProfile`; runtime/proof/WebUI may expose:
+    - `scene_runtime_asset_node_target_resolver_state`
+    - `scene_runtime_asset_node_target_resolver_entry_count`
+    - `scene_runtime_asset_node_target_resolver_resolved_entry_count`
+    - `scene_runtime_asset_node_target_resolver_brief = resolver_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_target_resolver_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
+    - `scene_runtime_asset_node_target_resolver_value_brief = body:(x,y,s)|head:(x,y,s)|appendage:(x,y,s)|overlay:(x,y,s)|grounding:(x,y,s)`
   - scene build/runtime diagnostics should also expose a derived `assetNodeAnchorProfile` over the same five logical lanes:
     - `scene_runtime_asset_node_anchor_state`
     - `scene_runtime_asset_node_anchor_entry_count`
@@ -312,7 +319,7 @@ It should **not** own:
   - current preview seam should now also layer `assetNodeBindingProfile -> assetNodeTransformProfile`, so later real node-local transform resolution can replace this transform-table generator while preserving builder-facing geometry/readability seams and runtime/proof vocabulary
   - current preview seam should now also layer `assetNodeTransformProfile -> assetNodeResolverProfile`, so later true parent-space or hierarchy-aware node resolution can replace this resolver generator while keeping builder-facing local transform semantics and runtime/proof vocabulary stable
   - current preview seam should now also layer `assetNodeResolverProfile -> assetNodeParentSpaceProfile`, so later true node-tree accumulation can replace this parent-space generator while keeping builder-facing hierarchy transforms, diagnostics, WebUI, and proof vocabulary stable
-  - current preview seam should now also layer `assetNodeParentSpaceProfile -> assetNodeTargetProfile`, so later true node-target resolution can replace this target-table generator while preserving builder-facing target semantics, diagnostics, WebUI, and proof vocabulary
+  - current preview seam should now also layer `assetNodeParentSpaceProfile -> assetNodeTargetProfile -> assetNodeTargetResolverProfile`, so later true node-target resolution can replace this target-table generator while preserving builder-facing target semantics, diagnostics, WebUI, and proof vocabulary
   - current preview seam should now also layer `assetNodeTransformProfile -> assetNodeAnchorProfile`, so later true node-local anchor resolution can replace the preview anchor generator while keeping builder-facing centers/scales, diagnostics, WebUI, and proof vocabulary stable
   - builder code should now prefer consuming the resolver seam over reading raw asset-node transform/binding tables directly, so later real model-node hierarchy work reopens the resolver generator instead of re-fragmenting builder-local math
   - builder code may now also prefer consuming the parent-space seam over raw local-transform tables whenever hierarchy accumulation matters, so later real model-node graph traversal reopens the parent-space generator instead of scattering parent-child math back into builders

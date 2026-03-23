@@ -107,6 +107,14 @@ struct MouseCompanionRealRendererPreviewDiagnostics {
         "body:body_target|head:head_target|appendage:appendage_target|overlay:overlay_target|grounding:grounding_target"};
     std::string sceneRuntimeAssetNodeTargetValueBrief{
         "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"};
+    std::string sceneRuntimeAssetNodeTargetResolverState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeTargetResolverEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeTargetResolverResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeTargetResolverBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeTargetResolverPathBrief{
+        "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
+    std::string sceneRuntimeAssetNodeTargetResolverValueBrief{
+        "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

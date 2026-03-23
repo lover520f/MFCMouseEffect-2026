@@ -74,6 +74,7 @@ void Win32MouseCompanionRealRendererBackend::Render(
     const auto resolverProfile = sceneRuntime.assetNodeResolverProfile;
     const auto parentSpaceProfile = sceneRuntime.assetNodeParentSpaceProfile;
     const auto targetProfile = sceneRuntime.assetNodeTargetProfile;
+    const auto targetResolverProfile = sceneRuntime.assetNodeTargetResolverProfile;
     const auto anchorProfile =
         BuildWin32MouseCompanionRealRendererAssetNodeAnchorProfile(sceneRuntime, scene);
     const auto pluginSelection = ResolveWin32MouseCompanionRenderPluginSelection();
@@ -203,6 +204,15 @@ void Win32MouseCompanionRealRendererBackend::Render(
     diagnostics.sceneRuntimeAssetNodeTargetBrief = targetProfile.brief;
     diagnostics.sceneRuntimeAssetNodeTargetKindBrief = targetProfile.kindBrief;
     diagnostics.sceneRuntimeAssetNodeTargetValueBrief = targetProfile.valueBrief;
+    diagnostics.sceneRuntimeAssetNodeTargetResolverState = targetResolverProfile.resolverState;
+    diagnostics.sceneRuntimeAssetNodeTargetResolverEntryCount = targetResolverProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodeTargetResolverResolvedEntryCount =
+        targetResolverProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeTargetResolverBrief = targetResolverProfile.brief;
+    diagnostics.sceneRuntimeAssetNodeTargetResolverPathBrief =
+        targetResolverProfile.pathBrief;
+    diagnostics.sceneRuntimeAssetNodeTargetResolverValueBrief =
+        targetResolverProfile.valueBrief;
     const auto& poseAdapterProfile = sceneRuntime.poseAdapterProfile;
     diagnostics.sceneRuntimePoseAdapterInfluence = poseAdapterProfile.influence;
     diagnostics.sceneRuntimePoseReadabilityBias = poseAdapterProfile.readabilityBias;

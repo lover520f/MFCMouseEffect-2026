@@ -707,6 +707,18 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.sceneRuntimeAssetNodeTargetKindBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeTargetValueBrief =
         diagnostics.rendererRuntime.sceneRuntimeAssetNodeTargetValueBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeTargetResolverState =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeTargetResolverState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeTargetResolverEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeTargetResolverEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeTargetResolverResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeTargetResolverResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeTargetResolverBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeTargetResolverBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeTargetResolverPathBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeTargetResolverPathBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeTargetResolverValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeTargetResolverValueBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterInfluence =
         diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseReadabilityBias =

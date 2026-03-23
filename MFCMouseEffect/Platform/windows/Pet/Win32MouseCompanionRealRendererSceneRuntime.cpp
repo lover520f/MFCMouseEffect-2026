@@ -73,6 +73,8 @@ Win32MouseCompanionRealRendererSceneRuntime BuildWin32MouseCompanionRealRenderer
         BuildWin32MouseCompanionRealRendererAssetNodeParentSpaceProfile(sceneRuntime);
     sceneRuntime.assetNodeTargetProfile =
         BuildWin32MouseCompanionRealRendererAssetNodeTargetProfile(sceneRuntime);
+    sceneRuntime.assetNodeTargetResolverProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodeTargetResolverProfile(sceneRuntime);
     return sceneRuntime;
 }
 

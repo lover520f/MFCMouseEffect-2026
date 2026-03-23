@@ -407,8 +407,8 @@ void BuildWin32MouseCompanionRealRendererAppendages(
     scene.appendageAnchor = Gdiplus::PointF(
         (appendageMinX + appendageMaxX) * 0.5f,
         (appendageMinY + appendageMaxY) * 0.5f);
-    scene.appendageAnchorScale = runtime.assetNodeTargetProfile.appendageEntry.resolved
-        ? runtime.assetNodeTargetProfile.appendageEntry.targetScale
+    scene.appendageAnchorScale = runtime.assetNodeTargetResolverProfile.appendageEntry.resolved
+        ? runtime.assetNodeTargetResolverProfile.appendageEntry.resolvedScale
         : 1.0f;
 }
 

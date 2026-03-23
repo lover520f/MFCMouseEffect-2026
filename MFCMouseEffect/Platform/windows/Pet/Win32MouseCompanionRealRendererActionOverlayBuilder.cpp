@@ -34,11 +34,10 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         runtime.modelNodeRegistryProfile.overlayEntry.resolved
             ? runtime.modelNodeRegistryProfile.overlayEntry.registryWeight
             : 0.0f;
-    const auto& assetTarget = runtime.assetNodeTargetProfile;
-    const float transformOverlayWeight =
-        assetTarget.overlayEntry.resolved
-            ? assetTarget.overlayEntry.targetWeight
-            : 0.0f;
+    const auto& assetTargetResolver = runtime.assetNodeTargetResolverProfile;
+    const float transformOverlayWeight = assetTargetResolver.overlayEntry.resolved
+        ? assetTargetResolver.overlayEntry.resolvedWeight
+        : 0.0f;
     const float overlayAlphaScale =
         1.0f + poseReadabilityBias * 0.10f + registryOverlayWeight * 0.08f + assetOverlayWeight * 0.06f +
         transformOverlayWeight * 0.05f;
@@ -49,21 +48,18 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         runtime.modelNodeBindingProfile.overlayEntry.worldOffsetX * metrics.bodyWidth;
     const float poseOverlayCenterY =
         runtime.modelNodeBindingProfile.overlayEntry.worldOffsetY * metrics.bodyHeight;
-    const float transformOverlayCenterX =
-        assetTarget.overlayEntry.resolved
-            ? assetTarget.overlayEntry.targetOffsetX * metrics.bodyWidth
-            : 0.0f;
-    const float transformOverlayCenterY =
-        assetTarget.overlayEntry.resolved
-            ? assetTarget.overlayEntry.targetOffsetY * metrics.bodyHeight
-            : 0.0f;
+    const float transformOverlayCenterX = assetTargetResolver.overlayEntry.resolved
+        ? assetTargetResolver.overlayEntry.resolvedOffsetX * metrics.bodyWidth
+        : 0.0f;
+    const float transformOverlayCenterY = assetTargetResolver.overlayEntry.resolved
+        ? assetTargetResolver.overlayEntry.resolvedOffsetY * metrics.bodyHeight
+        : 0.0f;
     scene.overlayAnchor = Gdiplus::PointF(
         scene.centerX + poseOverlayCenterX + transformOverlayCenterX,
         scene.centerY + poseOverlayCenterY + transformOverlayCenterY);
-    scene.overlayAnchorScale =
-        assetTarget.overlayEntry.resolved
-            ? assetTarget.overlayEntry.targetScale
-            : 1.0f;
+    scene.overlayAnchorScale = assetTargetResolver.overlayEntry.resolved
+        ? assetTargetResolver.overlayEntry.resolvedScale
+        : 1.0f;
     scene.actionOverlay.accentColor = profile.overlayAccentColor;
 
     if (runtime.click) {

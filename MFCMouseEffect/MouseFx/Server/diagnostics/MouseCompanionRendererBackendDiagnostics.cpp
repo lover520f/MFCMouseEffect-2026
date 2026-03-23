@@ -327,6 +327,26 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeTargetValueBrief).empty()
             ? "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"
             : status.rendererRuntimeSceneRuntimeAssetNodeTargetValueBrief;
+    diagnostics.sceneRuntimeAssetNodeTargetResolverState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverState;
+    diagnostics.sceneRuntimeAssetNodeTargetResolverEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverEntryCount;
+    diagnostics.sceneRuntimeAssetNodeTargetResolverResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeTargetResolverBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverBrief;
+    diagnostics.sceneRuntimeAssetNodeTargetResolverPathBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverPathBrief).empty()
+            ? "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"
+            : status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverPathBrief;
+    diagnostics.sceneRuntimeAssetNodeTargetResolverValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverValueBrief).empty()
+            ? "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"
+            : status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverValueBrief;
     diagnostics.sceneRuntimePoseAdapterInfluence =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     diagnostics.sceneRuntimePoseReadabilityBias =
