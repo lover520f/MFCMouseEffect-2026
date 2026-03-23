@@ -449,6 +449,30 @@ export function getMouseCompanionSectionMarkup() {
         <label>Execution Lane Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_execution_lane_value_brief">-</output>
 
+        <label>Controller Phase</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_phase_brief">-</output>
+
+        <label>Resolved Controller Phases</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_phase_resolved_count">-</output>
+
+        <label>Controller Phase Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_phase_name_brief">-</output>
+
+        <label>Controller Phase Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_phase_value_brief">-</output>
+
+        <label>Execution Surface</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_surface_brief">-</output>
+
+        <label>Resolved Execution Surfaces</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_surface_resolved_count">-</output>
+
+        <label>Execution Surface Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_surface_name_brief">-</output>
+
+        <label>Execution Surface Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_surface_value_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 

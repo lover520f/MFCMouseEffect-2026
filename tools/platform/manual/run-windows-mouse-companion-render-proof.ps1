@@ -1044,6 +1044,52 @@ function Add-AssetNodeExecutionLaneSummaryProperty($Node) {
     $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_execution_lane_brief" -NotePropertyValue $brief
 }
 
+function Format-AssetNodeControllerPhaseSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_controller_phase_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeControllerPhaseSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeControllerPhaseSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_controller_phase_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_controller_phase_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_controller_phase_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeExecutionSurfaceSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_execution_surface_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeExecutionSurfaceSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeExecutionSurfaceSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_execution_surface_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_execution_surface_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_execution_surface_brief" -NotePropertyValue $brief
+}
+
 function Show-RealPreviewSmokeHint {
     @'
 [mfx:info] real-preview-smoke preset
@@ -1758,6 +1804,8 @@ if ($Route -eq "sweep") {
                 Add-AssetNodeDriverBusSummaryProperty $item.real_renderer_preview
                 Add-AssetNodeControllerDriverRegistrySummaryProperty $item.real_renderer_preview
                 Add-AssetNodeExecutionLaneSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeControllerPhaseSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeExecutionSurfaceSummaryProperty $item.real_renderer_preview
                 Add-PoseAdapterSummaryProperty $item.real_renderer_preview
                 if ($null -ne $item.proof) {
                     Add-DefaultLaneSummaryProperty $item.proof.renderer_runtime_after
@@ -1798,6 +1846,8 @@ if ($Route -eq "sweep") {
                     Add-AssetNodeDriverBusSummaryProperty $item.proof.renderer_runtime_after
                     Add-AssetNodeControllerDriverRegistrySummaryProperty $item.proof.renderer_runtime_after
                     Add-AssetNodeExecutionLaneSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeControllerPhaseSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeExecutionSurfaceSummaryProperty $item.proof.renderer_runtime_after
                     Add-PoseAdapterSummaryProperty $item.proof.renderer_runtime_after
                 }
             }
@@ -1841,6 +1891,8 @@ if ($Route -eq "sweep") {
         Add-AssetNodeDriverBusSummaryProperty $response.real_renderer_preview
         Add-AssetNodeControllerDriverRegistrySummaryProperty $response.real_renderer_preview
         Add-AssetNodeExecutionLaneSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeControllerPhaseSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeExecutionSurfaceSummaryProperty $response.real_renderer_preview
         Add-PoseAdapterSummaryProperty $response.real_renderer_preview
         Add-DefaultLaneSummaryProperty $response.renderer_runtime_after
         Add-AppearancePluginContractBriefProperty $response.renderer_runtime_after
@@ -1880,6 +1932,8 @@ if ($Route -eq "sweep") {
         Add-AssetNodeDriverBusSummaryProperty $response.renderer_runtime_after
         Add-AssetNodeControllerDriverRegistrySummaryProperty $response.renderer_runtime_after
         Add-AssetNodeExecutionLaneSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeControllerPhaseSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeExecutionSurfaceSummaryProperty $response.renderer_runtime_after
         Add-PoseAdapterSummaryProperty $response.renderer_runtime_after
     }
 
@@ -2211,6 +2265,10 @@ Write-Host ("  - asset_controller_driver_registry={0}" -f `
     (Format-AssetNodeControllerDriverRegistrySummary $response.real_renderer_preview))
 Write-Host ("  - asset_execution_lane={0}" -f `
     (Format-AssetNodeExecutionLaneSummary $response.real_renderer_preview))
+Write-Host ("  - asset_controller_phase={0}" -f `
+    (Format-AssetNodeControllerPhaseSummary $response.real_renderer_preview))
+Write-Host ("  - asset_execution_surface={0}" -f `
+    (Format-AssetNodeExecutionSurfaceSummary $response.real_renderer_preview))
 Write-Host ("  - pose_adapter={0}" -f `
     (Format-PoseAdapterSummary $response.real_renderer_preview))
 Write-Host ("  - model_scene_adapter={0}" -f `

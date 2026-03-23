@@ -412,6 +412,22 @@ public:
             "body:execution.lane.body.spine|head:execution.lane.head.look|appendage:execution.lane.appendage.reach|overlay:execution.lane.overlay.fx|grounding:execution.lane.grounding.balance"};
         std::string rendererRuntimeSceneRuntimeAssetNodeExecutionLaneValueBrief{
             "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControllerPhaseState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeControllerPhaseEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeControllerPhaseResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControllerPhaseBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControllerPhaseNameBrief{
+            "body:controller.phase.body.spine|head:controller.phase.head.look|appendage:controller.phase.appendage.reach|overlay:controller.phase.overlay.fx|grounding:controller.phase.grounding.balance"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControllerPhaseValueBrief{
+            "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceNameBrief{
+            "body:execution.surface.body.shell|head:execution.surface.head.mask|appendage:execution.surface.appendage.trim|overlay:execution.surface.overlay.fx|grounding:execution.surface.grounding.base"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceValueBrief{
+            "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

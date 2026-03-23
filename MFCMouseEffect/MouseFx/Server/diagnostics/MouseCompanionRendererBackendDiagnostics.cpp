@@ -787,6 +787,46 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneValueBrief).empty()
             ? "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"
             : status.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneValueBrief;
+    diagnostics.sceneRuntimeAssetNodeControllerPhaseState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseState;
+    diagnostics.sceneRuntimeAssetNodeControllerPhaseEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseEntryCount;
+    diagnostics.sceneRuntimeAssetNodeControllerPhaseResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeControllerPhaseBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseBrief;
+    diagnostics.sceneRuntimeAssetNodeControllerPhaseNameBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseNameBrief).empty()
+            ? "body:controller.phase.body.spine|head:controller.phase.head.look|appendage:controller.phase.appendage.reach|overlay:controller.phase.overlay.fx|grounding:controller.phase.grounding.balance"
+            : status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseNameBrief;
+    diagnostics.sceneRuntimeAssetNodeControllerPhaseValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseValueBrief).empty()
+            ? "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"
+            : status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseValueBrief;
+    diagnostics.sceneRuntimeAssetNodeExecutionSurfaceState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceState;
+    diagnostics.sceneRuntimeAssetNodeExecutionSurfaceEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceEntryCount;
+    diagnostics.sceneRuntimeAssetNodeExecutionSurfaceResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeExecutionSurfaceBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceBrief;
+    diagnostics.sceneRuntimeAssetNodeExecutionSurfaceNameBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceNameBrief).empty()
+            ? "body:execution.surface.body.shell|head:execution.surface.head.mask|appendage:execution.surface.appendage.trim|overlay:execution.surface.overlay.fx|grounding:execution.surface.grounding.base"
+            : status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceNameBrief;
+    diagnostics.sceneRuntimeAssetNodeExecutionSurfaceValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceValueBrief).empty()
+            ? "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"
+            : status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceValueBrief;
     diagnostics.sceneRuntimePoseAdapterInfluence =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     diagnostics.sceneRuntimePoseReadabilityBias =

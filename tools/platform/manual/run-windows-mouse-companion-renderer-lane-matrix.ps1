@@ -705,6 +705,26 @@ function New-LaneSummary(
     } else {
         ""
     }
+    $runtimeAssetNodeControllerPhaseBrief = if ($null -ne $preview) {
+        $existingAssetNodeControllerPhaseBrief = [string]$preview.scene_runtime_asset_node_controller_phase_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingAssetNodeControllerPhaseBrief)) {
+            $existingAssetNodeControllerPhaseBrief
+        } else {
+            "preview_only/0/0"
+        }
+    } else {
+        ""
+    }
+    $runtimeAssetNodeExecutionSurfaceBrief = if ($null -ne $preview) {
+        $existingAssetNodeExecutionSurfaceBrief = [string]$preview.scene_runtime_asset_node_execution_surface_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingAssetNodeExecutionSurfaceBrief)) {
+            $existingAssetNodeExecutionSurfaceBrief
+        } else {
+            "preview_only/0/0"
+        }
+    } else {
+        ""
+    }
     $selectedBackend = [string]$json.selected_renderer_backend
     $expectationState = if ($expectationMet) { "pass" } else { "fail" }
     $laneVerdict = "{0}/{1}/{2}/{3}" -f $selectedBackend, $pluginKind, $semanticsMode, $expectationState
@@ -777,6 +797,8 @@ function New-LaneSummary(
         runtime_asset_node_driver_bus_brief = $runtimeAssetNodeDriverBusBrief
         runtime_asset_node_controller_driver_registry_brief = $runtimeAssetNodeControllerDriverRegistryBrief
         runtime_asset_node_execution_lane_brief = $runtimeAssetNodeExecutionLaneBrief
+        runtime_asset_node_controller_phase_brief = $runtimeAssetNodeControllerPhaseBrief
+        runtime_asset_node_execution_surface_brief = $runtimeAssetNodeExecutionSurfaceBrief
         runtime_pose_adapter_brief = $runtimePoseAdapterBrief
         default_lane_brief = (Format-DefaultLaneBrief `
             $defaultLaneCandidate `
@@ -846,6 +868,8 @@ function Compare-LaneAgainstBaseline(
         @{ name = "runtime_asset_node_control_surface_brief"; baseline = [string]$Baseline.runtime_asset_node_control_surface_brief; current = [string]$Lane.runtime_asset_node_control_surface_brief },
         @{ name = "runtime_asset_node_rig_driver_brief"; baseline = [string]$Baseline.runtime_asset_node_rig_driver_brief; current = [string]$Lane.runtime_asset_node_rig_driver_brief },
         @{ name = "runtime_asset_node_surface_driver_brief"; baseline = [string]$Baseline.runtime_asset_node_surface_driver_brief; current = [string]$Lane.runtime_asset_node_surface_driver_brief },
+        @{ name = "runtime_asset_node_controller_phase_brief"; baseline = [string]$Baseline.runtime_asset_node_controller_phase_brief; current = [string]$Lane.runtime_asset_node_controller_phase_brief },
+        @{ name = "runtime_asset_node_execution_surface_brief"; baseline = [string]$Baseline.runtime_asset_node_execution_surface_brief; current = [string]$Lane.runtime_asset_node_execution_surface_brief },
         @{ name = "runtime_pose_adapter_brief"; baseline = [string]$Baseline.runtime_pose_adapter_brief; current = [string]$Lane.runtime_pose_adapter_brief },
         @{ name = "combo_preset"; baseline = [string]$Baseline.combo_preset; current = [string]$Lane.combo_preset },
         @{ name = "selection_reason"; baseline = [string]$Baseline.selection_reason; current = [string]$Lane.selection_reason },
@@ -1120,6 +1144,12 @@ function Write-LaneMatrixSummary(
         }
         if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_asset_node_control_surface_brief)) {
             $lines.Add(("  runtime_asset_node_control_surface_brief: `{0}`" -f $lane.runtime_asset_node_control_surface_brief))
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_asset_node_controller_phase_brief)) {
+            $lines.Add(("  runtime_asset_node_controller_phase_brief: `{0}`" -f $lane.runtime_asset_node_controller_phase_brief))
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_asset_node_execution_surface_brief)) {
+            $lines.Add(("  runtime_asset_node_execution_surface_brief: `{0}`" -f $lane.runtime_asset_node_execution_surface_brief))
         }
         if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_pose_adapter_brief)) {
             $lines.Add(("  runtime_pose_adapter_brief: `{0}`" -f $lane.runtime_pose_adapter_brief))

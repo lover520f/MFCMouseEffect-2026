@@ -289,6 +289,22 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
         "body:execution.lane.body.spine|head:execution.lane.head.look|appendage:execution.lane.appendage.reach|overlay:execution.lane.overlay.fx|grounding:execution.lane.grounding.balance"};
     std::string sceneRuntimeAssetNodeExecutionLaneValueBrief{
         "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeControllerPhaseState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeControllerPhaseEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeControllerPhaseResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeControllerPhaseBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeControllerPhaseNameBrief{
+        "body:controller.phase.body.spine|head:controller.phase.head.look|appendage:controller.phase.appendage.reach|overlay:controller.phase.overlay.fx|grounding:controller.phase.grounding.balance"};
+    std::string sceneRuntimeAssetNodeControllerPhaseValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeExecutionSurfaceState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeExecutionSurfaceEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeExecutionSurfaceResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeExecutionSurfaceBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeExecutionSurfaceNameBrief{
+        "body:execution.surface.body.shell|head:execution.surface.head.mask|appendage:execution.surface.appendage.trim|overlay:execution.surface.overlay.fx|grounding:execution.surface.grounding.base"};
+    std::string sceneRuntimeAssetNodeExecutionSurfaceValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};
