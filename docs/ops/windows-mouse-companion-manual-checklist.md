@@ -84,6 +84,7 @@
 3. Trigger click/scroll/follow again.
 4. Confirm placeholder motion still reacts even without a real 3D model.
 5. If pose samples are flowing, confirm ear/hand/leg motion differs from pure action-label fallback.
+6. If `scene_runtime_adapter_mode=pose_bound`, confirm ear/hand/leg pose offsets read stronger than `pose_unbound`; `pose_unbound` should still move, but more softly.
 
 ## Appearance
 1. Keep default `pet-appearance.json` available.

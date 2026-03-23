@@ -56,14 +56,39 @@ void BuildWin32MouseCompanionRealRendererAppendages(
     const Win32MouseCompanionRealRendererStyleProfile& style,
     const Win32MouseCompanionRealRendererLayoutMetrics& metrics,
     Win32MouseCompanionRealRendererScene& scene) {
-    const float poseEarLift = runtime.leftEarPose ? runtime.leftEarPose->position[1] * style.leftEarPoseLiftScale : 0.0f;
-    const float poseEarSpread = runtime.leftEarPose ? -runtime.leftEarPose->position[0] * style.leftEarPoseSpreadScale : 0.0f;
-    const float poseRightEarLift = runtime.rightEarPose ? runtime.rightEarPose->position[1] * style.rightEarPoseLiftScale : 0.0f;
-    const float poseRightEarSpread = runtime.rightEarPose ? runtime.rightEarPose->position[0] * style.rightEarPoseSpreadScale : 0.0f;
-    const float poseLeftHandLift = runtime.leftHandPose ? -runtime.leftHandPose->position[1] * style.leftHandPoseLiftScale : 0.0f;
-    const float poseRightHandLift = runtime.rightHandPose ? -runtime.rightHandPose->position[1] * style.rightHandPoseLiftScale : 0.0f;
-    const float poseLeftLegShift = runtime.leftLegPose ? runtime.leftLegPose->position[0] * style.leftLegPoseShiftScale : 0.0f;
-    const float poseRightLegShift = runtime.rightLegPose ? runtime.rightLegPose->position[0] * style.rightLegPoseShiftScale : 0.0f;
+    const float poseAdapterInfluence =
+        ResolveWin32MouseCompanionRealRendererPoseAdapterInfluence(runtime);
+    const float poseEarLift = runtime.leftEarPose
+        ? runtime.leftEarPose->position[1] * style.leftEarPoseLiftScale * poseAdapterInfluence
+        : 0.0f;
+    const float poseEarSpread = runtime.leftEarPose
+        ? -runtime.leftEarPose->position[0] * style.leftEarPoseSpreadScale *
+              poseAdapterInfluence
+        : 0.0f;
+    const float poseRightEarLift = runtime.rightEarPose
+        ? runtime.rightEarPose->position[1] * style.rightEarPoseLiftScale *
+              poseAdapterInfluence
+        : 0.0f;
+    const float poseRightEarSpread = runtime.rightEarPose
+        ? runtime.rightEarPose->position[0] * style.rightEarPoseSpreadScale *
+              poseAdapterInfluence
+        : 0.0f;
+    const float poseLeftHandLift = runtime.leftHandPose
+        ? -runtime.leftHandPose->position[1] * style.leftHandPoseLiftScale *
+              poseAdapterInfluence
+        : 0.0f;
+    const float poseRightHandLift = runtime.rightHandPose
+        ? -runtime.rightHandPose->position[1] * style.rightHandPoseLiftScale *
+              poseAdapterInfluence
+        : 0.0f;
+    const float poseLeftLegShift = runtime.leftLegPose
+        ? runtime.leftLegPose->position[0] * style.leftLegPoseShiftScale *
+              poseAdapterInfluence
+        : 0.0f;
+    const float poseRightLegShift = runtime.rightLegPose
+        ? runtime.rightLegPose->position[0] * style.rightLegPoseShiftScale *
+              poseAdapterInfluence
+        : 0.0f;
     const auto appearanceSemantics =
         BuildWin32MouseCompanionRealRendererAppearanceSemantics(runtime, style);
     const auto& skinTuning = appearanceSemantics.appendage;

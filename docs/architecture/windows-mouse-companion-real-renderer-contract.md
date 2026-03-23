@@ -236,6 +236,10 @@ It should **not** own:
     - `scene_runtime_pose_sample_count`
     - `scene_runtime_bound_pose_sample_count`
   - those fields are runtime-state diagnostics, not metadata contracts: they describe how much of the future model-driven pose lane is actually live in the current frame
+  - current Phase1.5 behavior should treat adapter mode as an actual renderer input, not diagnostics-only noise:
+    - `runtime_only`: no pose-sample influence
+    - `pose_unbound`: reduced pose influence is allowed for lightweight preview continuity
+    - `pose_bound`: full bounded pose influence is allowed for appendage/pose-consumer builders
 - 新增 renderer-owned semantics 时，应优先扩展 plugin output，而不是把 builder 继续当作事实上的插件层；当前 `wasm_v1` 就是第一步 bounded patch 协议，而不是继续往 `builtin_passthrough` 堆更多 ad-hoc tuning key
 - 当前默认 lane rollout 合同：
   - lane matrix 的机器摘要最多只能产出 `recommended_default_lane` candidate

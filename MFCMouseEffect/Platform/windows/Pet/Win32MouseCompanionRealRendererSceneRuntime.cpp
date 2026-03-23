@@ -4,7 +4,14 @@
 
 #include "Platform/windows/Pet/Win32MouseCompanionRendererRuntime.h"
 
+#include <algorithm>
+
 namespace mousefx::windows {
+namespace {
+
+constexpr float kCanonicalPoseSampleCount = 6.0f;
+
+}
 
 Win32MouseCompanionRealRendererSceneRuntime BuildWin32MouseCompanionRealRendererSceneRuntime(
     const Win32MouseCompanionRendererInput& input,
@@ -44,6 +51,27 @@ Win32MouseCompanionRealRendererSceneRuntime BuildWin32MouseCompanionRealRenderer
     sceneRuntime.sceneRuntimePoseSampleCount = runtime.sceneRuntimePoseSampleCount;
     sceneRuntime.sceneRuntimeBoundPoseSampleCount = runtime.sceneRuntimeBoundPoseSampleCount;
     return sceneRuntime;
+}
+
+float ResolveWin32MouseCompanionRealRendererPoseSampleCoverage(
+    const Win32MouseCompanionRealRendererSceneRuntime& runtime) {
+    return std::clamp(
+        static_cast<float>(runtime.sceneRuntimePoseSampleCount) / kCanonicalPoseSampleCount,
+        0.0f,
+        1.0f);
+}
+
+float ResolveWin32MouseCompanionRealRendererPoseAdapterInfluence(
+    const Win32MouseCompanionRealRendererSceneRuntime& runtime) {
+    const float sampleCoverage =
+        ResolveWin32MouseCompanionRealRendererPoseSampleCoverage(runtime);
+    if (runtime.sceneRuntimeAdapterMode == "pose_bound") {
+        return sampleCoverage;
+    }
+    if (runtime.sceneRuntimeAdapterMode == "pose_unbound") {
+        return sampleCoverage * 0.45f;
+    }
+    return 0.0f;
 }
 
 } // namespace mousefx::windows

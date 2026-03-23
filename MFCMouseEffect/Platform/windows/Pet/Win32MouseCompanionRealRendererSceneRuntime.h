@@ -46,5 +46,9 @@ struct Win32MouseCompanionRealRendererSceneRuntime final {
 Win32MouseCompanionRealRendererSceneRuntime BuildWin32MouseCompanionRealRendererSceneRuntime(
     const Win32MouseCompanionRendererInput& input,
     const Win32MouseCompanionRealRendererAssetResources& assets);
+float ResolveWin32MouseCompanionRealRendererPoseSampleCoverage(
+    const Win32MouseCompanionRealRendererSceneRuntime& runtime);
+float ResolveWin32MouseCompanionRealRendererPoseAdapterInfluence(
+    const Win32MouseCompanionRealRendererSceneRuntime& runtime);
 
 } // namespace mousefx::windows
