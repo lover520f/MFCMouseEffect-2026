@@ -291,6 +291,8 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.appearancePluginMetadataSchemaVersion},
         {"appearance_plugin_appearance_semantics_mode",
          realRendererPreviewDiagnostics.appearancePluginAppearanceSemanticsMode},
+        {"appearance_plugin_sample_tier",
+         realRendererPreviewDiagnostics.appearancePluginSampleTier},
         {"default_lane_candidate", realRendererPreviewDiagnostics.defaultLaneCandidate},
         {"default_lane_source", realRendererPreviewDiagnostics.defaultLaneSource},
         {"default_lane_rollout_status",
@@ -361,6 +363,8 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeAppearancePluginMetadataSchemaVersion;
     out["renderer_runtime_appearance_plugin_appearance_semantics_mode"] =
         status.rendererRuntimeAppearancePluginAppearanceSemanticsMode;
+    out["renderer_runtime_appearance_plugin_sample_tier"] =
+        status.rendererRuntimeAppearancePluginSampleTier;
     out["renderer_runtime_default_lane_candidate"] =
         status.rendererRuntimeDefaultLaneCandidate;
     out["renderer_runtime_default_lane_source"] =

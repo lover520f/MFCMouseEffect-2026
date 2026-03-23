@@ -617,6 +617,8 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.appearancePluginMetadataSchemaVersion;
     mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginAppearanceSemanticsMode =
         diagnostics.rendererRuntime.appearancePluginAppearanceSemanticsMode;
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginSampleTier =
+        diagnostics.rendererRuntime.appearancePluginSampleTier;
     mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneCandidate =
         diagnostics.rendererRuntime.defaultLaneCandidate;
     mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneSource =
@@ -673,6 +675,7 @@ void AppController::ClearPetVisualHostDiagnostics() {
     mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginMetadataSchemaVersion = 0;
     mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginAppearanceSemanticsMode =
         "legacy_manifest_compat";
+    mouseCompanionRuntimeStatus_.rendererRuntimeAppearancePluginSampleTier.clear();
     mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneCandidate = "builtin";
     mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneSource =
         "runtime_builtin_default";

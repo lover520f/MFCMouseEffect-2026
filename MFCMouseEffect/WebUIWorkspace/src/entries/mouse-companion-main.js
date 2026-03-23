@@ -523,6 +523,10 @@ function writeRuntimeDiagnostics(runtimeState) {
     'mc_runtime_default_lane_style_intent',
     runtimeState.default_lane_style_intent || runtimeState.renderer_runtime_default_lane_style_intent,
   );
+  writeTextValue(
+    'mc_runtime_appearance_plugin_sample_tier',
+    runtimeState.renderer_runtime_appearance_plugin_sample_tier,
+  );
   writeTextValue('mc_runtime_appearance_plugin_kind', runtimeState.renderer_runtime_appearance_plugin_kind);
   writeTextValue(
     'mc_runtime_appearance_semantics_mode',

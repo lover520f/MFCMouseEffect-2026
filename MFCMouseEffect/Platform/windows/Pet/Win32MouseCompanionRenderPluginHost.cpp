@@ -648,6 +648,7 @@ public:
                 metadataSchemaVersion_ = preflight.metadataSchemaVersion;
                 appearanceSemanticsMode_ = preflight.appearanceSemanticsMode;
                 styleIntent_ = preflight.styleIntent;
+                sampleTier_ = preflight.sampleTier;
                 comboPresetOverride_ = preflight.comboPresetOverride;
                 tuning_ = preflight.tuning;
                 appearanceSemanticsPatch_ = preflight.appearanceSemanticsPatch;
@@ -658,6 +659,7 @@ public:
             metadataSchemaVersion_ = preflight.metadataSchemaVersion;
             appearanceSemanticsMode_ = preflight.appearanceSemanticsMode;
             styleIntent_ = preflight.styleIntent;
+            sampleTier_ = preflight.sampleTier;
             comboPresetOverride_ = preflight.comboPresetOverride;
             tuning_ = preflight.tuning;
             appearanceSemanticsPatch_ = preflight.appearanceSemanticsPatch;
@@ -680,6 +682,7 @@ public:
             selection.metadataSchemaVersion = metadataSchemaVersion_;
             selection.appearanceSemanticsMode = appearanceSemanticsMode_;
             selection.declaredStyleIntent = styleIntent_;
+            selection.declaredSampleTier = sampleTier_;
             return selection;
         }
 
@@ -697,6 +700,7 @@ public:
         selection.metadataSchemaVersion = metadataSchemaVersion_;
         selection.appearanceSemanticsMode = appearanceSemanticsMode_;
         selection.declaredStyleIntent = styleIntent_;
+        selection.declaredSampleTier = sampleTier_;
         selection.comboPresetOverride = comboPresetOverride_;
         selection.tuning = tuning_;
         return selection;
@@ -710,6 +714,7 @@ private:
     mutable uint32_t metadataSchemaVersion_{0};
     mutable std::string appearanceSemanticsMode_{"legacy_manifest_compat"};
     mutable std::string styleIntent_{};
+    mutable std::string sampleTier_{};
     mutable Win32MouseCompanionRealRendererAppearanceComboPreset comboPresetOverride_{
         Win32MouseCompanionRealRendererAppearanceComboPreset::None};
     mutable Win32MouseCompanionRendererPluginAppearanceSemanticsTuning tuning_{};
@@ -775,6 +780,7 @@ ResolveWin32MouseCompanionRenderPluginSelection() {
         selection.metadataSchemaVersion = wasmSelection.metadataSchemaVersion;
         selection.appearanceSemanticsMode = wasmSelection.appearanceSemanticsMode;
         selection.declaredStyleIntent = wasmSelection.declaredStyleIntent;
+        selection.declaredSampleTier = wasmSelection.declaredSampleTier;
         selection.comboPresetOverride = wasmSelection.comboPresetOverride;
         selection.pluginSource = "env:fallback_builtin";
         ApplyDefaultLaneDecision(&selection);

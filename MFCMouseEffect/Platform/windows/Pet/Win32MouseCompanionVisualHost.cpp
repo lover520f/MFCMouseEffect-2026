@@ -182,6 +182,8 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.appearancePluginMetadataSchemaVersion;
     diagnostics.rendererRuntime.appearancePluginAppearanceSemanticsMode =
         rendererRuntime.appearancePluginAppearanceSemanticsMode;
+    diagnostics.rendererRuntime.appearancePluginSampleTier =
+        rendererRuntime.appearancePluginSampleTier;
     diagnostics.rendererRuntime.defaultLaneCandidate =
         rendererRuntime.defaultLaneCandidate;
     diagnostics.rendererRuntime.defaultLaneSource =

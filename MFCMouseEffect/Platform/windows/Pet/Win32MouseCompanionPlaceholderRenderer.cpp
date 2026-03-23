@@ -119,6 +119,7 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         pluginSelection.metadataSchemaVersion;
     diagnostics.appearancePluginAppearanceSemanticsMode =
         pluginSelection.appearanceSemanticsMode;
+    diagnostics.appearancePluginSampleTier = pluginSelection.declaredSampleTier;
     diagnostics.defaultLaneCandidate = pluginSelection.defaultLaneCandidate;
     diagnostics.defaultLaneSource = pluginSelection.defaultLaneSource;
     diagnostics.defaultLaneRolloutStatus = pluginSelection.defaultLaneRolloutStatus;

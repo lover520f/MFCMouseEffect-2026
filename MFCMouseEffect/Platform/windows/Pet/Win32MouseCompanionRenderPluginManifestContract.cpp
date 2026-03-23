@@ -33,6 +33,12 @@ bool IsSupportedDeclaredStyleIntent(const std::string& value) {
         value == "style_candidate:single_selected_wasm_v1";
 }
 
+bool IsSupportedDeclaredSampleTier(const std::string& value) {
+    return value == "baseline_reference" ||
+        value == "ship_default_candidate" ||
+        value == "experimental_style_candidate";
+}
+
 std::filesystem::path ResolveRendererMetadataPath(
     const std::filesystem::path& manifestPath) {
     std::filesystem::path metadataPath = manifestPath;
@@ -737,6 +743,7 @@ bool ValidateOptionalRendererMetadata(
     uint32_t* outMetadataSchemaVersion,
     std::string* outAppearanceSemanticsMode,
     std::string* outStyleIntent,
+    std::string* outSampleTier,
     Win32MouseCompanionRealRendererAppearanceComboPreset* outComboPresetOverride,
     Win32MouseCompanionRendererPluginAppearanceSemanticsTuning* outTuning,
     Win32MouseCompanionRendererPluginAppearanceSemanticsPatch* outAppearanceSemanticsPatch,
@@ -752,6 +759,9 @@ bool ValidateOptionalRendererMetadata(
     }
     if (outStyleIntent) {
         outStyleIntent->clear();
+    }
+    if (outSampleTier) {
+        outSampleTier->clear();
     }
     if (outComboPresetOverride) {
         *outComboPresetOverride = Win32MouseCompanionRealRendererAppearanceComboPreset::None;
@@ -871,6 +881,24 @@ bool ValidateOptionalRendererMetadata(
             *outStyleIntent = styleIntent;
         }
     }
+    if (root.contains("sample_tier")) {
+        if (!root["sample_tier"].is_string()) {
+            if (outFailureReason) {
+                *outFailureReason = "renderer_plugin_metadata_invalid";
+            }
+            return false;
+        }
+        const std::string sampleTier = TrimAscii(root["sample_tier"].get<std::string>());
+        if (!IsSupportedDeclaredSampleTier(sampleTier)) {
+            if (outFailureReason) {
+                *outFailureReason = "renderer_plugin_metadata_sample_tier_unsupported";
+            }
+            return false;
+        }
+        if (outSampleTier) {
+            *outSampleTier = sampleTier;
+        }
+    }
     if (root.contains("combo_preset_override")) {
         if (!root["combo_preset_override"].is_string()) {
             if (outFailureReason) {
@@ -984,6 +1012,7 @@ PreflightWin32MouseCompanionWasmRenderPluginManifest(
             &preflight.metadataSchemaVersion,
             &preflight.appearanceSemanticsMode,
             &preflight.styleIntent,
+            &preflight.sampleTier,
             &preflight.comboPresetOverride,
             &preflight.tuning,
             &preflight.appearanceSemanticsPatch,

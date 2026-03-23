@@ -175,6 +175,11 @@
    - checked-in sidecars now also declare `sample_tier`:
      - `ship_default_candidate`: current balanced default sample
      - `experimental_style_candidate`: agile / dreamy / charming
+   - runtime now surfaces the same value as `appearance_plugin_sample_tier`, so Win-side validation can tell “ship default candidate” from “experimental style candidate” without reopening the sidecar file
+   - smoke expectation now also pins that value:
+     - `renderer-sidecar-smoke` -> `baseline_reference`
+     - `renderer-sidecar-wasm-v1-smoke(default)` -> `ship_default_candidate`
+     - `renderer-sidecar-wasm-v1-smoke(agile|dreamy|charming)` -> `experimental_style_candidate`
    - native shortcut:
      - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Route proof -Event status -ExpectAppearanceProfileMatch $true`
    - `run-windows-mouse-companion-combo-persona-acceptance.cmd` now enables the same appearance-profile machine check automatically and uses dedicated combo-only appearance JSON files instead of asking Win-side validation to edit the synced main profile
@@ -269,6 +274,7 @@
      - `default_lane_source`
      - `default_lane_rollout_status`
      - `default_lane_style_intent`
+     - `appearance_plugin_sample_tier`
      - `appearance_combo_preset`
      - `selection_reason`
      - `failure_reason`

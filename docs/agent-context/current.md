@@ -117,8 +117,7 @@
 - Renderer lane matrix now also accepts `-WasmV1Style default|agile|dreamy|charming`, so the third lane can switch between the checked-in curated `wasm_v1` samples without manual sidecar replacement.
 - Renderer lane matrix now also accepts `-AllWasmV1Styles`, which expands the third lane into `wasm_v1_default / wasm_v1_agile / wasm_v1_dreamy / wasm_v1_charming` and emits separate proof artifacts for each style.
 - Checked-in samples exist at `tools/platform/manual/lib/windows-mouse-companion-renderer-sidecar.sample.json` and `tools/platform/manual/lib/windows-mouse-companion-renderer-sidecar.wasm-v1.sample.json`.
-- Lane matrix now emits per-lane proof json plus `summary.json`, `summary.md`, and `observation-template.md`.
-- Lane matrix summary also emits:
+- Lane matrix now emits per-lane proof json plus `summary.json`, `summary.md`, and `observation-template.md`; summary also emits:
   - compact lane verdicts
   - per-lane default-lane snapshots
   - per-lane configured sample metadata
@@ -131,7 +130,8 @@
 - Default lane rollout contract: machine summary may nominate a candidate, but actual default switch still requires later manual confirmation.
 - Runtime default-lane diagnostics are surfaced directly:
   - `default_lane_candidate`, `default_lane_source`, `default_lane_rollout_status`, `default_lane_style_intent`
-- Sidecar smoke presets now also assert `default_lane_style_intent`; `renderer-sidecar-wasm-v1-smoke` additionally accepts `-WasmV1Style default|agile|dreamy|charming`, so single-lane smoke can assert the selected checked-in style intent directly.
+  - `appearance_plugin_sample_tier`
+- Sidecar smoke presets now also assert `default_lane_style_intent` and `appearance_plugin_sample_tier`; `renderer-sidecar-wasm-v1-smoke` additionally accepts `-WasmV1Style default|agile|dreamy|charming`, so single-lane smoke can assert the selected checked-in style intent and sample tier directly.
 - `render-proof` now exposes `default_lane_summary = candidate/source/rollout/style_intent` in both console summaries and saved JSON (`real_renderer_preview` / `renderer_runtime_after`).
 - `default_lane_source` stable machine values currently include:
   - `runtime_builtin_default`
@@ -142,7 +142,7 @@
 - `default_lane_style_intent` stable machine values currently include:
   - `style_candidate:none`, `style_candidate:builtin_passthrough_baseline`, `style_candidate:balanced_default_candidate`, `style_candidate:agile_follow_drag`, `style_candidate:dreamy_follow_scroll`, `style_candidate:charming_click_hold`
 - Lane matrix recommendation now prefers `sample_tier` first, then runtime `default_lane_style_intent`, instead of hardcoded lane-name priority.
-- Mouse Companion WebUI mirrors runtime lane state in `Runtime Diagnostics`, including a short `Lane Verdict` and `Style Intent`.
+- Mouse Companion WebUI mirrors runtime lane state in `Runtime Diagnostics`, including a short `Lane Verdict`, `Style Intent`, and `Sample Tier`.
 
 #### Windows Renderer Backend / Preview
 - Backend selection diagnostics are active for preference source/name, selected backend, selection/failure reasons, available/unavailable backends, backend catalog, `real_renderer_preview`, and `renderer_runtime_*`.

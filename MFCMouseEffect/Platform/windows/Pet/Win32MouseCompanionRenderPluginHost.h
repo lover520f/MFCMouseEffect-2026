@@ -22,6 +22,7 @@ struct Win32MouseCompanionRenderPluginSelection final {
     std::string defaultLaneRolloutStatus{"stay_on_builtin"};
     std::string defaultLaneStyleIntent{"style_candidate:none"};
     std::string declaredStyleIntent;
+    std::string declaredSampleTier;
     Win32MouseCompanionRealRendererAppearanceComboPreset comboPresetOverride{
         Win32MouseCompanionRealRendererAppearanceComboPreset::None};
     Win32MouseCompanionRendererPluginAppearanceSemanticsTuning tuning{};

@@ -58,6 +58,7 @@ struct PetVisualHostRendererRuntimeDiagnostics {
     std::string appearancePluginMetadataPath;
     uint32_t appearancePluginMetadataSchemaVersion{0};
     std::string appearancePluginAppearanceSemanticsMode{"legacy_manifest_compat"};
+    std::string appearancePluginSampleTier;
     std::string defaultLaneCandidate{"builtin"};
     std::string defaultLaneSource{"runtime_builtin_default"};
     std::string defaultLaneRolloutStatus{"stay_on_builtin"};

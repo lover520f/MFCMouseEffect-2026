@@ -165,6 +165,7 @@ public:
         uint32_t rendererRuntimeAppearancePluginMetadataSchemaVersion{0};
         std::string rendererRuntimeAppearancePluginAppearanceSemanticsMode{
             "legacy_manifest_compat"};
+        std::string rendererRuntimeAppearancePluginSampleTier;
         std::string rendererRuntimeDefaultLaneCandidate{"builtin"};
         std::string rendererRuntimeDefaultLaneSource{"runtime_builtin_default"};
         std::string rendererRuntimeDefaultLaneRolloutStatus{"stay_on_builtin"};

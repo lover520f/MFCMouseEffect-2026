@@ -21,6 +21,7 @@ param(
     [string]$ExpectedAppearancePluginKind = "",
     [bool]$ExpectAppearancePluginMetadataPresent = $false,
     [string]$ExpectedAppearanceSemanticsMode = "",
+    [string]$ExpectedAppearancePluginSampleTier = "",
     [string]$ExpectedDefaultLaneCandidate = "",
     [string]$ExpectedDefaultLaneSource = "",
     [string]$ExpectedDefaultLaneRolloutStatus = "",
@@ -60,6 +61,7 @@ Options:
   -ExpectedAppearancePluginKind <name>  Require renderer plugin kind to match this name
   -ExpectAppearancePluginMetadataPresent <bool> Require non-empty sidecar metadata path
   -ExpectedAppearanceSemanticsMode <name> Require sidecar semantics mode to match this name
+  -ExpectedAppearancePluginSampleTier <name> Require sidecar sample tier to match this name
   -ExpectedDefaultLaneCandidate <name> Require runtime default lane candidate to match this name
   -ExpectedDefaultLaneSource <name> Require runtime default lane source to match this name
   -ExpectedDefaultLaneRolloutStatus <name> Require runtime default lane rollout status to match this name
@@ -85,6 +87,15 @@ function Resolve-WasmV1StyleIntent([string]$Style) {
     "dreamy" { return "style_candidate:dreamy_follow_scroll" }
     "charming" { return "style_candidate:charming_click_hold" }
     default { return "style_candidate:balanced_default_candidate" }
+    }
+}
+
+function Resolve-WasmV1SampleTier([string]$Style) {
+    switch ($Style) {
+    "agile" { return "experimental_style_candidate" }
+    "dreamy" { return "experimental_style_candidate" }
+    "charming" { return "experimental_style_candidate" }
+    default { return "ship_default_candidate" }
     }
 }
 
@@ -168,6 +179,7 @@ function Show-RendererSidecarSmokeHint {
     - appearance_plugin_kind should resolve to wasm
     - appearance_plugin_metadata_path should be non-empty
     - appearance_plugin_appearance_semantics_mode should be builtin_passthrough
+    - appearance_plugin_sample_tier should be baseline_reference
     - default_lane_candidate should be builtin_passthrough
     - default_lane_source should be env_wasm_candidate
     - default_lane_rollout_status should be candidate_pending_manual_confirmation
@@ -194,6 +206,7 @@ function Show-RendererSidecarWasmV1SmokeHint {
     - appearance_plugin_kind should resolve to wasm
     - appearance_plugin_metadata_path should be non-empty
     - appearance_plugin_appearance_semantics_mode should be wasm_v1
+    - appearance_plugin_sample_tier should match the selected wasm_v1 sample tier
     - default_lane_candidate should be wasm_v1
     - default_lane_source should be env_wasm_candidate
     - default_lane_rollout_status should be candidate_pending_manual_confirmation
@@ -464,6 +477,7 @@ function Test-RendererPluginExpectation(
     [string]$ExpectedPluginKind,
     [bool]$ExpectMetadataPresent,
     [string]$ExpectedSemanticsMode,
+    [string]$ExpectedSampleTier,
     [string]$ExpectedDefaultLaneCandidate,
     [string]$ExpectedDefaultLaneSource,
     [string]$ExpectedDefaultLaneRolloutStatus,
@@ -487,6 +501,11 @@ function Test-RendererPluginExpectation(
         ([string]$Node.appearance_plugin_appearance_semantics_mode -ne $ExpectedSemanticsMode)) {
         $mismatches.Add(("{0}:appearance_semantics_mode expected={1} actual={2}" -f
             $Label, $ExpectedSemanticsMode, [string]$Node.appearance_plugin_appearance_semantics_mode))
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedSampleTier) -and
+        ([string]$Node.appearance_plugin_sample_tier -ne $ExpectedSampleTier)) {
+        $mismatches.Add(("{0}:appearance_plugin_sample_tier expected={1} actual={2}" -f
+            $Label, $ExpectedSampleTier, [string]$Node.appearance_plugin_sample_tier))
     }
     if (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneCandidate) -and
         ([string]$Node.default_lane_candidate -ne $ExpectedDefaultLaneCandidate)) {
@@ -553,6 +572,7 @@ switch ($Preset) {
         $ExpectedAppearancePluginKind = "wasm"
         $ExpectAppearancePluginMetadataPresent = $true
         $ExpectedAppearanceSemanticsMode = "builtin_passthrough"
+        $ExpectedAppearancePluginSampleTier = "baseline_reference"
         $ExpectedDefaultLaneCandidate = "builtin_passthrough"
         $ExpectedDefaultLaneSource = "env_wasm_candidate"
         $ExpectedDefaultLaneRolloutStatus = "candidate_pending_manual_confirmation"
@@ -569,6 +589,7 @@ switch ($Preset) {
         $ExpectedAppearancePluginKind = "wasm"
         $ExpectAppearancePluginMetadataPresent = $true
         $ExpectedAppearanceSemanticsMode = "wasm_v1"
+        $ExpectedAppearancePluginSampleTier = Resolve-WasmV1SampleTier $WasmV1Style
         $ExpectedDefaultLaneCandidate = "wasm_v1"
         $ExpectedDefaultLaneSource = "env_wasm_candidate"
         $ExpectedDefaultLaneRolloutStatus = "candidate_pending_manual_confirmation"
@@ -762,6 +783,7 @@ if ($Route -eq "sweep") {
     if ((-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginKind)) -or
         $ExpectAppearancePluginMetadataPresent -or
         (-not [string]::IsNullOrWhiteSpace($ExpectedAppearanceSemanticsMode)) -or
+        (-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginSampleTier)) -or
         (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneCandidate)) -or
         (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneSource)) -or
         (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneRolloutStatus)) -or
@@ -772,6 +794,7 @@ if ($Route -eq "sweep") {
                 $ExpectedAppearancePluginKind `
                 $ExpectAppearancePluginMetadataPresent `
                 $ExpectedAppearanceSemanticsMode `
+                $ExpectedAppearancePluginSampleTier `
                 $ExpectedDefaultLaneCandidate `
                 $ExpectedDefaultLaneSource `
                 $ExpectedDefaultLaneRolloutStatus `
@@ -785,6 +808,7 @@ if ($Route -eq "sweep") {
                 $ExpectedAppearancePluginKind `
                 $ExpectAppearancePluginMetadataPresent `
                 $ExpectedAppearanceSemanticsMode `
+                $ExpectedAppearancePluginSampleTier `
                 $ExpectedDefaultLaneCandidate `
                 $ExpectedDefaultLaneSource `
                 $ExpectedDefaultLaneRolloutStatus `
@@ -816,7 +840,8 @@ if ($Route -eq "sweep") {
     }
     if ((-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginKind)) -or
         $ExpectAppearancePluginMetadataPresent -or
-        (-not [string]::IsNullOrWhiteSpace($ExpectedAppearanceSemanticsMode))) {
+        (-not [string]::IsNullOrWhiteSpace($ExpectedAppearanceSemanticsMode)) -or
+        (-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginSampleTier))) {
         Write-Host ("  - plugin_check={0}" -f $pluginExpectationMet)
     }
     foreach ($item in $response.results) {
@@ -867,6 +892,7 @@ if ($ExpectAppearanceProfileMatch) {
 if ((-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginKind)) -or
     $ExpectAppearancePluginMetadataPresent -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedAppearanceSemanticsMode)) -or
+    (-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginSampleTier)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneCandidate)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneSource)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneRolloutStatus)) -or
@@ -877,6 +903,7 @@ if ((-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginKind)) -or
             $ExpectedAppearancePluginKind `
             $ExpectAppearancePluginMetadataPresent `
             $ExpectedAppearanceSemanticsMode `
+            $ExpectedAppearancePluginSampleTier `
             $ExpectedDefaultLaneCandidate `
             $ExpectedDefaultLaneSource `
             $ExpectedDefaultLaneRolloutStatus `
@@ -888,6 +915,7 @@ if ((-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginKind)) -or
             $ExpectedAppearancePluginKind `
             $ExpectAppearancePluginMetadataPresent `
             $ExpectedAppearanceSemanticsMode `
+            $ExpectedAppearancePluginSampleTier `
             $ExpectedDefaultLaneCandidate `
             $ExpectedDefaultLaneSource `
             $ExpectedDefaultLaneRolloutStatus `
@@ -915,14 +943,16 @@ Write-Host ("  - status={0} frame_delta={1} backend={2} preview_active={3} frame
 if ((-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginKind)) -or
     $ExpectAppearancePluginMetadataPresent -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedAppearanceSemanticsMode)) -or
+    (-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginSampleTier)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneCandidate)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneSource)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneRolloutStatus)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneStyleIntent))) {
-    Write-Host ("  - plugin kind={0} metadata_path={1} semantics_mode={2} default_lane={3}/{4}/{5}/{6} plugin_check={7}" -f `
+    Write-Host ("  - plugin kind={0} metadata_path={1} semantics_mode={2} sample_tier={3} default_lane={4}/{5}/{6}/{7} plugin_check={8}" -f `
         $response.real_renderer_preview.appearance_plugin_kind, `
         $response.real_renderer_preview.appearance_plugin_metadata_path, `
         $response.real_renderer_preview.appearance_plugin_appearance_semantics_mode, `
+        $response.real_renderer_preview.appearance_plugin_sample_tier, `
         $response.real_renderer_preview.default_lane_candidate, `
         $response.real_renderer_preview.default_lane_source, `
         $response.real_renderer_preview.default_lane_rollout_status, `
