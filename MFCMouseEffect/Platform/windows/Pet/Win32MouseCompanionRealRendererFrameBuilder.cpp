@@ -341,6 +341,18 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
         metrics.bodyWidth * style.pedestalWidthScale * pedestalStateScale * comboPedestalStateScale *
             poseGroundingScale,
         metrics.bodyHeight * style.pedestalHeightScale * pedestalStateScale * comboPedestalStateScale);
+    scene.bodyAnchor = Gdiplus::PointF(
+        scene.bodyRect.X + scene.bodyRect.Width * 0.5f,
+        scene.bodyRect.Y + scene.bodyRect.Height * 0.52f);
+    scene.headAnchor = Gdiplus::PointF(
+        scene.headRect.X + scene.headRect.Width * 0.5f,
+        scene.headRect.Y + scene.headRect.Height * 0.50f);
+    scene.groundingAnchor = Gdiplus::PointF(
+        scene.pedestalRect.X + scene.pedestalRect.Width * 0.5f,
+        scene.pedestalRect.Y + scene.pedestalRect.Height * 0.50f);
+    scene.bodyAnchorScale = bodyTransformScale;
+    scene.headAnchorScale = headTransformScale;
+    scene.groundingAnchorScale = groundingTransformScale;
 
     return metrics;
 }

@@ -42,6 +42,16 @@ struct Win32MouseCompanionRealRendererActionOverlay final {
 struct Win32MouseCompanionRealRendererScene final {
     float centerX{0.0f};
     float centerY{0.0f};
+    Gdiplus::PointF bodyAnchor{};
+    Gdiplus::PointF headAnchor{};
+    Gdiplus::PointF appendageAnchor{};
+    Gdiplus::PointF overlayAnchor{};
+    Gdiplus::PointF groundingAnchor{};
+    float bodyAnchorScale{1.0f};
+    float headAnchorScale{1.0f};
+    float appendageAnchorScale{1.0f};
+    float overlayAnchorScale{1.0f};
+    float groundingAnchorScale{1.0f};
     float bodyTiltDeg{0.0f};
     float facingSign{1.0f};
     float glowAlpha{0.0f};

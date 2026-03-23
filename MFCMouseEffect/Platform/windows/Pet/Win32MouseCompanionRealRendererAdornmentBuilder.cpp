@@ -139,8 +139,8 @@ void BuildWin32MouseCompanionRealRendererAdornment(
         runtime.sceneRuntimeAdapterMode != "runtime_only" ||
         runtime.sceneRuntimePoseSampleCount > 0;
     scene.poseBadgeRect = Gdiplus::RectF(
-        scene.headRect.GetRight() - scene.headRect.Width * style.poseBadgeXRatio,
-        scene.headRect.Y - scene.headRect.Height * style.poseBadgeYRatio + poseAdornmentY * 0.35f +
+        scene.headAnchor.X + scene.headRect.Width * (0.5f - style.poseBadgeXRatio),
+        scene.headAnchor.Y - scene.headRect.Height * (0.5f + style.poseBadgeYRatio) + poseAdornmentY * 0.15f +
             transformAdornmentY * 0.20f,
         scene.headRect.Width * style.poseBadgeSizeRatio,
         scene.headRect.Width * style.poseBadgeSizeRatio);
@@ -154,11 +154,11 @@ void BuildWin32MouseCompanionRealRendererAdornment(
     const auto& adornment = semantics.adornment;
 
     float centerX =
-        scene.headRect.GetRight() - scene.headRect.Width * (style.accessoryXRatio - adornment.xOffsetRatio) +
-        poseAdornmentX + transformAdornmentX;
+        scene.appendageAnchor.X + scene.headRect.Width * (0.42f - style.accessoryXRatio + adornment.xOffsetRatio) +
+        poseAdornmentX * 0.25f + transformAdornmentX;
     float centerY =
-        scene.headRect.Y + scene.headRect.Height * (style.accessoryYRatio + adornment.yOffsetRatio) + poseAdornmentY +
-        transformAdornmentY;
+        scene.headAnchor.Y - scene.headRect.Height * (0.5f - style.accessoryYRatio - adornment.yOffsetRatio) +
+        poseAdornmentY * 0.20f + transformAdornmentY;
     const float baseWidth = scene.headRect.Width * style.accessoryOuterRatio * 2.0f * adornment.widthScale;
     const float baseHeight = scene.headRect.Width * style.accessoryOuterRatio * 2.0f * adornment.heightScale;
     const float actionIntensity = std::clamp(runtime.actionIntensity + runtime.reactiveActionIntensity * 0.6f, 0.0f, 1.0f);

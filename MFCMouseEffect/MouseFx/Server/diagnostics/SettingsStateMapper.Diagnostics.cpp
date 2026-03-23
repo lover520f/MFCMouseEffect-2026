@@ -343,6 +343,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTransformPathBrief},
         {"scene_runtime_asset_node_transform_value_brief",
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTransformValueBrief},
+        {"scene_runtime_asset_node_anchor_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeAnchorState},
+        {"scene_runtime_asset_node_anchor_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeAnchorEntryCount},
+        {"scene_runtime_asset_node_anchor_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeAnchorResolvedEntryCount},
+        {"scene_runtime_asset_node_anchor_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeAnchorBrief},
+        {"scene_runtime_asset_node_anchor_point_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeAnchorPointBrief},
+        {"scene_runtime_asset_node_anchor_scale_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeAnchorScaleBrief},
         {"scene_runtime_pose_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
         {"scene_runtime_pose_readability_bias",
@@ -501,6 +513,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeAssetNodeTransformPathBrief;
     out["renderer_runtime_scene_runtime_asset_node_transform_value_brief"] =
         status.rendererRuntimeSceneRuntimeAssetNodeTransformValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_anchor_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeAnchorState;
+    out["renderer_runtime_scene_runtime_asset_node_anchor_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeAnchorEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_anchor_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeAnchorResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_anchor_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeAnchorBrief;
+    out["renderer_runtime_scene_runtime_asset_node_anchor_point_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeAnchorPointBrief;
+    out["renderer_runtime_scene_runtime_asset_node_anchor_scale_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeAnchorScaleBrief;
     out["renderer_runtime_scene_runtime_pose_adapter_influence"] =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     out["renderer_runtime_scene_runtime_pose_readability_bias"] =

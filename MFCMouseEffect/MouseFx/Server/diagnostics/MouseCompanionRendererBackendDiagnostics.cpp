@@ -247,6 +247,26 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeTransformValueBrief).empty()
             ? "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"
             : status.rendererRuntimeSceneRuntimeAssetNodeTransformValueBrief;
+    diagnostics.sceneRuntimeAssetNodeAnchorState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeAnchorState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodeAnchorState;
+    diagnostics.sceneRuntimeAssetNodeAnchorEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeAnchorEntryCount;
+    diagnostics.sceneRuntimeAssetNodeAnchorResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeAnchorResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeAnchorBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeAnchorBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodeAnchorBrief;
+    diagnostics.sceneRuntimeAssetNodeAnchorPointBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeAnchorPointBrief).empty()
+            ? "body:(0.0,0.0)|head:(0.0,0.0)|appendage:(0.0,0.0)|overlay:(0.0,0.0)|grounding:(0.0,0.0)"
+            : status.rendererRuntimeSceneRuntimeAssetNodeAnchorPointBrief;
+    diagnostics.sceneRuntimeAssetNodeAnchorScaleBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeAnchorScaleBrief).empty()
+            ? "body:1.00|head:1.00|appendage:1.00|overlay:1.00|grounding:1.00"
+            : status.rendererRuntimeSceneRuntimeAssetNodeAnchorScaleBrief;
     diagnostics.sceneRuntimePoseAdapterInfluence =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     diagnostics.sceneRuntimePoseReadabilityBias =

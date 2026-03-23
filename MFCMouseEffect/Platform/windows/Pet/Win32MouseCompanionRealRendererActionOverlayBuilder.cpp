@@ -56,6 +56,13 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         runtime.assetNodeTransformProfile.overlayEntry.resolved
             ? runtime.assetNodeTransformProfile.overlayEntry.offsetY * metrics.bodyHeight
             : 0.0f;
+    scene.overlayAnchor = Gdiplus::PointF(
+        scene.centerX + poseOverlayCenterX + transformOverlayCenterX,
+        scene.centerY + poseOverlayCenterY + transformOverlayCenterY);
+    scene.overlayAnchorScale =
+        runtime.assetNodeTransformProfile.overlayEntry.resolved
+            ? runtime.assetNodeTransformProfile.overlayEntry.anchorScale
+            : 1.0f;
     scene.actionOverlay.accentColor = profile.overlayAccentColor;
 
     if (runtime.click) {
@@ -67,7 +74,7 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         scene.actionOverlay.clickRingAlpha =
             ClampAlpha((205.0f + profile.actionIntensity * 36.0f) * mood.clickRingAlphaScale * overlayAlphaScale);
         scene.actionOverlay.clickRingRect = MakeCenteredRect(
-            scene.centerX + poseOverlayCenterX * 0.55f + transformOverlayCenterX * 0.45f,
+            scene.overlayAnchor.X,
             scene.headRect.Y + scene.headRect.Height * style.clickRingCenterYRatio + poseOverlayCenterY * 0.45f +
                 transformOverlayCenterY * 0.30f,
             ringSize,
@@ -93,7 +100,7 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         scene.actionOverlay.scrollArcAlpha =
             ClampAlpha((180.0f + profile.scrollIntensity * 56.0f) * mood.scrollArcAlphaScale * overlayAlphaScale);
         scene.actionOverlay.scrollArcRect = MakeCenteredRect(
-            scene.centerX + poseOverlayCenterX * 0.35f + transformOverlayCenterX * 0.40f,
+            scene.overlayAnchor.X,
             scene.centerY - metrics.bodyHeight * style.scrollArcCenterYRatio + poseOverlayCenterY * 0.30f +
                 transformOverlayCenterY * 0.25f,
             metrics.bodyWidth * style.scrollArcWidthRatio,
@@ -109,13 +116,11 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         scene.actionOverlay.dragLineAlpha =
             ClampAlpha((178.0f + profile.actionIntensity * 52.0f) * mood.dragLineAlphaScale * overlayAlphaScale);
         scene.actionOverlay.dragLineStart = Gdiplus::PointF(
-            scene.centerX - runtime.facingSign * metrics.bodyWidth * style.dragLineStartXRatio + poseOverlayCenterX +
-                transformOverlayCenterX,
+            scene.overlayAnchor.X - runtime.facingSign * metrics.bodyWidth * style.dragLineStartXRatio,
             scene.centerY - metrics.bodyHeight * style.dragLineStartYRatio + poseOverlayCenterY * 0.45f +
                 transformOverlayCenterY * 0.30f);
         scene.actionOverlay.dragLineEnd = Gdiplus::PointF(
-            scene.centerX + runtime.facingSign * metrics.bodyWidth * style.dragLineEndXRatio + poseOverlayCenterX +
-                transformOverlayCenterX * 0.85f,
+            scene.overlayAnchor.X + runtime.facingSign * metrics.bodyWidth * style.dragLineEndXRatio,
             scene.centerY - metrics.bodyHeight * style.dragLineEndYRatio + poseOverlayCenterY * 0.25f +
                 transformOverlayCenterY * 0.20f);
     }
@@ -125,8 +130,7 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         scene.actionOverlay.followTrailBaseAlpha =
             ClampAlpha((150.0f + profile.actionIntensity * 68.0f) * mood.followTrailAlphaScale * overlayAlphaScale);
         const float trailBaseX =
-            scene.centerX - runtime.facingSign * metrics.bodyWidth * style.followTrailBaseXRatio + poseOverlayCenterX +
-            transformOverlayCenterX;
+            scene.overlayAnchor.X - runtime.facingSign * metrics.bodyWidth * style.followTrailBaseXRatio;
         const float trailBaseY =
             scene.centerY + metrics.bodyHeight * style.followTrailBaseYRatio + poseOverlayCenterY * 0.25f +
             transformOverlayCenterY * 0.20f;

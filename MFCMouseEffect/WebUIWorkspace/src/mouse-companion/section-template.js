@@ -125,6 +125,18 @@ export function getMouseCompanionSectionMarkup() {
         <label>Asset Transform Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_transform_value_brief">-</output>
 
+        <label>Asset Node Anchor</label>
+        <output id="mc_runtime_scene_runtime_asset_node_anchor_brief">-</output>
+
+        <label>Resolved Asset Anchors</label>
+        <output id="mc_runtime_scene_runtime_asset_node_anchor_resolved_count">-</output>
+
+        <label>Asset Anchor Points</label>
+        <output id="mc_runtime_scene_runtime_asset_node_anchor_point_brief">-</output>
+
+        <label>Asset Anchor Scales</label>
+        <output id="mc_runtime_scene_runtime_asset_node_anchor_scale_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 

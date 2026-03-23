@@ -91,6 +91,7 @@ void BuildWin32MouseCompanionRealRendererAppendages(
     const auto appearanceSemantics =
         BuildWin32MouseCompanionRealRendererAppearanceSemantics(runtime, style);
     const auto& skinTuning = appearanceSemantics.appendage;
+    const auto& assetTransform = runtime.assetNodeTransformProfile;
     const float handReachBias = runtime.follow ? metrics.bodyWidth * style.followHandReachRatio * skinTuning.followHandReachScale
         : runtime.hold                        ? -metrics.bodyWidth * style.holdHandTuckRatio
         : runtime.drag                        ? metrics.bodyWidth * style.dragHandReachRatio * skinTuning.dragHandReachScale
@@ -391,6 +392,23 @@ void BuildWin32MouseCompanionRealRendererAppendages(
     scene.rightHandPadRect = BuildPadRect(scene.rightHandRect, style);
     scene.leftLegPadRect = BuildPadRect(scene.leftLegRect, style);
     scene.rightLegPadRect = BuildPadRect(scene.rightLegRect, style);
+    const float appendageMinX = std::min(
+        std::min(scene.leftHandRect.X, scene.rightHandRect.X),
+        std::min(scene.leftLegRect.X, scene.rightLegRect.X));
+    const float appendageMaxX = std::max(
+        std::max(scene.leftHandRect.GetRight(), scene.rightHandRect.GetRight()),
+        std::max(scene.leftLegRect.GetRight(), scene.rightLegRect.GetRight()));
+    const float appendageMinY = std::min(
+        std::min(scene.leftHandRect.Y, scene.rightHandRect.Y),
+        std::min(scene.leftLegRect.Y, scene.rightLegRect.Y));
+    const float appendageMaxY = std::max(
+        std::max(scene.leftHandRect.GetBottom(), scene.rightHandRect.GetBottom()),
+        std::max(scene.leftLegRect.GetBottom(), scene.rightLegRect.GetBottom()));
+    scene.appendageAnchor = Gdiplus::PointF(
+        (appendageMinX + appendageMaxX) * 0.5f,
+        (appendageMinY + appendageMaxY) * 0.5f);
+    scene.appendageAnchorScale =
+        assetTransform.appendageEntry.resolved ? assetTransform.appendageEntry.anchorScale : 1.0f;
 }
 
 } // namespace mousefx::windows

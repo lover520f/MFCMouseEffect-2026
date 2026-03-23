@@ -4,6 +4,7 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererBackend.h"
 
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetResources.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeAnchorProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererCapabilities.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelSceneAdapterProfile.h"
@@ -67,6 +68,8 @@ void Win32MouseCompanionRealRendererBackend::Render(
     const auto resources = BuildWin32MouseCompanionRealRendererAssetResources(input);
     const auto sceneRuntime = BuildWin32MouseCompanionRealRendererSceneRuntime(input, resources);
     const auto scene = BuildWin32MouseCompanionRealRendererScene(sceneRuntime, width, height);
+    const auto anchorProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodeAnchorProfile(sceneRuntime, scene);
     const auto pluginSelection = ResolveWin32MouseCompanionRenderPluginSelection();
     const Win32MouseCompanionRealRendererPainter painter{};
     painter.Paint(scene, graphics, width, height);
@@ -166,6 +169,13 @@ void Win32MouseCompanionRealRendererBackend::Render(
         sceneRuntime.assetNodeTransformProfile.pathBrief;
     diagnostics.sceneRuntimeAssetNodeTransformValueBrief =
         sceneRuntime.assetNodeTransformProfile.transformBrief;
+    diagnostics.sceneRuntimeAssetNodeAnchorState = anchorProfile.anchorState;
+    diagnostics.sceneRuntimeAssetNodeAnchorEntryCount = anchorProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodeAnchorResolvedEntryCount =
+        anchorProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeAnchorBrief = anchorProfile.brief;
+    diagnostics.sceneRuntimeAssetNodeAnchorPointBrief = anchorProfile.pointBrief;
+    diagnostics.sceneRuntimeAssetNodeAnchorScaleBrief = anchorProfile.scaleBrief;
     const auto& poseAdapterProfile = sceneRuntime.poseAdapterProfile;
     diagnostics.sceneRuntimePoseAdapterInfluence = poseAdapterProfile.influence;
     diagnostics.sceneRuntimePoseReadabilityBias = poseAdapterProfile.readabilityBias;

@@ -196,6 +196,14 @@ public:
             "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
         std::string rendererRuntimeSceneRuntimeAssetNodeTransformValueBrief{
             "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeAnchorState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeAnchorEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeAnchorResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeAnchorBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeAnchorPointBrief{
+            "body:(0.0,0.0)|head:(0.0,0.0)|appendage:(0.0,0.0)|overlay:(0.0,0.0)|grounding:(0.0,0.0)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeAnchorScaleBrief{
+            "body:1.00|head:1.00|appendage:1.00|overlay:1.00|grounding:1.00"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};
