@@ -84,6 +84,10 @@ void Win32MouseCompanionRealRendererBackend::Render(
     diagnostics.appearanceProfileReady = resources.appearanceProfileReady;
     diagnostics.poseFrameAvailable = sceneRuntime.poseFrameAvailable;
     diagnostics.poseBindingConfigured = sceneRuntime.poseBindingConfigured;
+    diagnostics.sceneRuntimeAdapterMode = sceneRuntime.sceneRuntimeAdapterMode;
+    diagnostics.sceneRuntimePoseSampleCount = sceneRuntime.sceneRuntimePoseSampleCount;
+    diagnostics.sceneRuntimeBoundPoseSampleCount =
+        sceneRuntime.sceneRuntimeBoundPoseSampleCount;
     diagnostics.facingDirection = sceneRuntime.facingSign >= 0.0f ? 1 : -1;
     diagnostics.surfaceWidth = width;
     diagnostics.surfaceHeight = height;

@@ -183,6 +183,14 @@
      - `experimental_style_candidate`: agile / dreamy / charming
    - runtime now surfaces the same value as `appearance_plugin_sample_tier`, so Win-side validation can tell “ship default candidate” from “experimental style candidate” without reopening the sidecar file
    - runtime now also surfaces `appearance_plugin_contract_brief = semantics_mode/style_intent/sample_tier`, so the current sidecar contract can be skimmed from one short field
+   - runtime now also surfaces scene-runtime adapter progress:
+     - `scene_runtime_adapter_mode = runtime_only|pose_unbound|pose_bound`
+     - `scene_runtime_pose_sample_count`
+     - `scene_runtime_bound_pose_sample_count`
+   - practical reading:
+     - `runtime_only`: renderer runtime is still only consuming action/runtime lanes
+     - `pose_unbound`: pose samples are present, but binding is not configured yet
+     - `pose_bound`: the current frame is already on the bound-pose lane
    - `render-proof` and lane matrix now also echo `default_lane_candidate_tier`, so `ship_default_candidate` vs `experimental_style_candidate` no longer needs to be inferred manually from raw sample metadata
    - smoke expectation now also pins that value:
      - `renderer-sidecar-smoke` -> `baseline_reference`

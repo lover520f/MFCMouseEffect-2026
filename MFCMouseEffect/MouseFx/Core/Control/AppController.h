@@ -144,6 +144,9 @@ public:
         bool rendererRuntimeAppearanceProfileReady{false};
         bool rendererRuntimePoseFrameAvailable{false};
         bool rendererRuntimePoseBindingConfigured{false};
+        std::string rendererRuntimeSceneRuntimeAdapterMode{"runtime_only"};
+        uint32_t rendererRuntimeSceneRuntimePoseSampleCount{0};
+        uint32_t rendererRuntimeSceneRuntimeBoundPoseSampleCount{0};
         int rendererRuntimeFacingDirection{1};
         int rendererRuntimeSurfaceWidth{0};
         int rendererRuntimeSurfaceHeight{0};

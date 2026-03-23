@@ -84,6 +84,10 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
     diagnostics.appearanceProfileReady = true;
     diagnostics.poseFrameAvailable = input.poseFrameAvailable;
     diagnostics.poseBindingConfigured = input.poseBindingConfigured;
+    diagnostics.sceneRuntimeAdapterMode = runtime.sceneRuntimeAdapterMode;
+    diagnostics.sceneRuntimePoseSampleCount = runtime.sceneRuntimePoseSampleCount;
+    diagnostics.sceneRuntimeBoundPoseSampleCount =
+        runtime.sceneRuntimeBoundPoseSampleCount;
     diagnostics.facingDirection = input.facingDirection;
     diagnostics.surfaceWidth = width;
     diagnostics.surfaceHeight = height;

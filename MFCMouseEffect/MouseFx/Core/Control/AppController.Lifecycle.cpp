@@ -577,6 +577,12 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.poseFrameAvailable;
     mouseCompanionRuntimeStatus_.rendererRuntimePoseBindingConfigured =
         diagnostics.rendererRuntime.poseBindingConfigured;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAdapterMode =
+        diagnostics.rendererRuntime.sceneRuntimeAdapterMode;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseSampleCount =
+        diagnostics.rendererRuntime.sceneRuntimePoseSampleCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeBoundPoseSampleCount =
+        diagnostics.rendererRuntime.sceneRuntimeBoundPoseSampleCount;
     mouseCompanionRuntimeStatus_.rendererRuntimeFacingDirection =
         diagnostics.rendererRuntime.facingDirection;
     mouseCompanionRuntimeStatus_.rendererRuntimeSurfaceWidth =
@@ -658,6 +664,9 @@ void AppController::ClearPetVisualHostDiagnostics() {
     mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceProfileReady = false;
     mouseCompanionRuntimeStatus_.rendererRuntimePoseFrameAvailable = false;
     mouseCompanionRuntimeStatus_.rendererRuntimePoseBindingConfigured = false;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAdapterMode = "runtime_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseSampleCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeBoundPoseSampleCount = 0;
     mouseCompanionRuntimeStatus_.rendererRuntimeFacingDirection = 1;
     mouseCompanionRuntimeStatus_.rendererRuntimeSurfaceWidth = 0;
     mouseCompanionRuntimeStatus_.rendererRuntimeSurfaceHeight = 0;

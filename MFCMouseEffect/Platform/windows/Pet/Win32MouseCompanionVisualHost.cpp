@@ -146,6 +146,12 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
     diagnostics.rendererRuntime.appearanceProfileReady = rendererRuntime.appearanceProfileReady;
     diagnostics.rendererRuntime.poseFrameAvailable = rendererRuntime.poseFrameAvailable;
     diagnostics.rendererRuntime.poseBindingConfigured = rendererRuntime.poseBindingConfigured;
+    diagnostics.rendererRuntime.sceneRuntimeAdapterMode =
+        rendererRuntime.sceneRuntimeAdapterMode;
+    diagnostics.rendererRuntime.sceneRuntimePoseSampleCount =
+        rendererRuntime.sceneRuntimePoseSampleCount;
+    diagnostics.rendererRuntime.sceneRuntimeBoundPoseSampleCount =
+        rendererRuntime.sceneRuntimeBoundPoseSampleCount;
     diagnostics.rendererRuntime.facingDirection = rendererRuntime.facingDirection;
     diagnostics.rendererRuntime.surfaceWidth = rendererRuntime.surfaceWidth;
     diagnostics.rendererRuntime.surfaceHeight = rendererRuntime.surfaceHeight;

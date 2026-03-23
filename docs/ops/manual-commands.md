@@ -39,6 +39,9 @@ Keep P1 concise; add details here when needed.
     - `default_lane_candidate_tier`
     - `appearance_plugin_sample_tier`
     - `appearance_plugin_contract_brief`
+    - `scene_runtime_adapter_mode`
+    - `scene_runtime_pose_sample_count`
+    - `scene_runtime_bound_pose_sample_count`
   - `renderer-sidecar-smoke` now also asserts `appearance_plugin_sample_tier=baseline_reference`
   - `renderer-sidecar-wasm-v1-smoke` now also asserts sample tier:
     - `default` -> `ship_default_candidate`

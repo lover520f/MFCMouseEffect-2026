@@ -35,6 +35,27 @@ const MouseCompanionPetPoseSample* FindPoseSample(
     return nullptr;
 }
 
+uint32_t CountAvailablePoseSamples(const Win32MouseCompanionRendererRuntime& runtime) {
+    uint32_t count = 0;
+    count += runtime.leftEarPose ? 1u : 0u;
+    count += runtime.rightEarPose ? 1u : 0u;
+    count += runtime.leftHandPose ? 1u : 0u;
+    count += runtime.rightHandPose ? 1u : 0u;
+    count += runtime.leftLegPose ? 1u : 0u;
+    count += runtime.rightLegPose ? 1u : 0u;
+    return count;
+}
+
+std::string ResolveSceneRuntimeAdapterMode(const Win32MouseCompanionRendererRuntime& runtime) {
+    if (!runtime.poseFrameAvailable) {
+        return "runtime_only";
+    }
+    if (!runtime.poseBindingConfigured) {
+        return "pose_unbound";
+    }
+    return "pose_bound";
+}
+
 } // namespace
 
 Win32MouseCompanionRendererRuntime BuildWin32MouseCompanionRendererRuntime(
@@ -71,6 +92,10 @@ Win32MouseCompanionRendererRuntime BuildWin32MouseCompanionRendererRuntime(
     runtime.rightHandPose = FindPoseSample(input.latestPoseFrame, kBoneRightHand);
     runtime.leftLegPose = FindPoseSample(input.latestPoseFrame, kBoneLeftLeg);
     runtime.rightLegPose = FindPoseSample(input.latestPoseFrame, kBoneRightLeg);
+    runtime.sceneRuntimePoseSampleCount = CountAvailablePoseSamples(runtime);
+    runtime.sceneRuntimeBoundPoseSampleCount =
+        runtime.poseBindingConfigured ? runtime.sceneRuntimePoseSampleCount : 0u;
+    runtime.sceneRuntimeAdapterMode = ResolveSceneRuntimeAdapterMode(runtime);
     return runtime;
 }
 

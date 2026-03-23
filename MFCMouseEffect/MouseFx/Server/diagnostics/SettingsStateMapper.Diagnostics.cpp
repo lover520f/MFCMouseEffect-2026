@@ -261,6 +261,12 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         {"appearance_profile_ready", realRendererPreviewDiagnostics.appearanceProfileReady},
         {"pose_frame_available", realRendererPreviewDiagnostics.poseFrameAvailable},
         {"pose_binding_configured", realRendererPreviewDiagnostics.poseBindingConfigured},
+        {"scene_runtime_adapter_mode",
+         realRendererPreviewDiagnostics.sceneRuntimeAdapterMode},
+        {"scene_runtime_pose_sample_count",
+         realRendererPreviewDiagnostics.sceneRuntimePoseSampleCount},
+        {"scene_runtime_bound_pose_sample_count",
+         realRendererPreviewDiagnostics.sceneRuntimeBoundPoseSampleCount},
         {"surface_width", realRendererPreviewDiagnostics.surfaceWidth},
         {"surface_height", realRendererPreviewDiagnostics.surfaceHeight},
         {"action_name", realRendererPreviewDiagnostics.actionName},
@@ -331,6 +337,12 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
     out["renderer_runtime_pose_frame_available"] = status.rendererRuntimePoseFrameAvailable;
     out["renderer_runtime_pose_binding_configured"] =
         status.rendererRuntimePoseBindingConfigured;
+    out["renderer_runtime_scene_runtime_adapter_mode"] =
+        status.rendererRuntimeSceneRuntimeAdapterMode;
+    out["renderer_runtime_scene_runtime_pose_sample_count"] =
+        status.rendererRuntimeSceneRuntimePoseSampleCount;
+    out["renderer_runtime_scene_runtime_bound_pose_sample_count"] =
+        status.rendererRuntimeSceneRuntimeBoundPoseSampleCount;
     out["renderer_runtime_facing_direction"] = status.rendererRuntimeFacingDirection;
     out["renderer_runtime_surface_width"] = status.rendererRuntimeSurfaceWidth;
     out["renderer_runtime_surface_height"] = status.rendererRuntimeSurfaceHeight;

@@ -10,6 +10,8 @@
 namespace mousefx::windows {
 
 struct Win32MouseCompanionRendererRuntime {
+    static constexpr uint32_t kCanonicalPoseSampleCount = 6;
+
     const MouseCompanionPetRuntimeConfig* config{nullptr};
     const Win32MouseCompanionAppearanceProfile* appearanceProfile{nullptr};
     const Win32MouseCompanionActionSample* clipSample{nullptr};
@@ -41,6 +43,9 @@ struct Win32MouseCompanionRendererRuntime {
     bool actionLibraryAvailable{false};
     bool poseFrameAvailable{false};
     bool poseBindingConfigured{false};
+    std::string sceneRuntimeAdapterMode{"runtime_only"};
+    uint32_t sceneRuntimePoseSampleCount{0};
+    uint32_t sceneRuntimeBoundPoseSampleCount{0};
 };
 
 Win32MouseCompanionRendererRuntime BuildWin32MouseCompanionRendererRuntime(

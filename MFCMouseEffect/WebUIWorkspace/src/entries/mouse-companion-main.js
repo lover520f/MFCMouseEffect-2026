@@ -547,6 +547,18 @@ function writeRuntimeDiagnostics(runtimeState) {
     'mc_runtime_appearance_plugin_contract_brief',
     runtimeState.renderer_runtime_appearance_plugin_contract_brief,
   );
+  writeTextValue(
+    'mc_runtime_scene_runtime_adapter_mode',
+    runtimeState.renderer_runtime_scene_runtime_adapter_mode,
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_pose_sample_count',
+    normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_pose_sample_count, '0'),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_bound_pose_sample_count',
+    normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_bound_pose_sample_count, '0'),
+  );
   writeTextValue('mc_runtime_appearance_plugin_kind', runtimeState.renderer_runtime_appearance_plugin_kind);
   writeTextValue(
     'mc_runtime_appearance_semantics_mode',

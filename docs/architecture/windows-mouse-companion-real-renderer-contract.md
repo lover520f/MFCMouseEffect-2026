@@ -231,6 +231,11 @@ It should **not** own:
     - `unclassified_candidate`
   - runtime may also expose `appearance_plugin_contract_brief = semantics_mode/style_intent/sample_tier`, so higher-level tools can reuse one short summary instead of recomposing those fields
   - host-side default-lane style-intent inference and metadata support lists should reuse the same helper, so `style_intent` / `sample_tier` machine vocab does not split between validation and runtime
+  - runtime/preview diagnostics should also expose scene-runtime adapter state explicitly instead of only `pose_frame_available / pose_binding_configured` booleans:
+    - `scene_runtime_adapter_mode = runtime_only|pose_unbound|pose_bound`
+    - `scene_runtime_pose_sample_count`
+    - `scene_runtime_bound_pose_sample_count`
+  - those fields are runtime-state diagnostics, not metadata contracts: they describe how much of the future model-driven pose lane is actually live in the current frame
 - 新增 renderer-owned semantics 时，应优先扩展 plugin output，而不是把 builder 继续当作事实上的插件层；当前 `wasm_v1` 就是第一步 bounded patch 协议，而不是继续往 `builtin_passthrough` 堆更多 ad-hoc tuning key
 - 当前默认 lane rollout 合同：
   - lane matrix 的机器摘要最多只能产出 `recommended_default_lane` candidate

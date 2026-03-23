@@ -38,6 +38,9 @@ struct PetVisualHostRendererRuntimeDiagnostics {
     bool appearanceProfileReady{false};
     bool poseFrameAvailable{false};
     bool poseBindingConfigured{false};
+    std::string sceneRuntimeAdapterMode{"runtime_only"};
+    uint32_t sceneRuntimePoseSampleCount{0};
+    uint32_t sceneRuntimeBoundPoseSampleCount{0};
     int facingDirection{1};
     int surfaceWidth{0};
     int surfaceHeight{0};

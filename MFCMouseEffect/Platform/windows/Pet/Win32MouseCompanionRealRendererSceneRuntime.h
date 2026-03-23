@@ -38,6 +38,9 @@ struct Win32MouseCompanionRealRendererSceneRuntime final {
     bool click{false};
     bool poseFrameAvailable{false};
     bool poseBindingConfigured{false};
+    std::string sceneRuntimeAdapterMode{"runtime_only"};
+    uint32_t sceneRuntimePoseSampleCount{0};
+    uint32_t sceneRuntimeBoundPoseSampleCount{0};
 };
 
 Win32MouseCompanionRealRendererSceneRuntime BuildWin32MouseCompanionRealRendererSceneRuntime(

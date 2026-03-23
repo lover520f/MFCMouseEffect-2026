@@ -47,6 +47,15 @@ export function getMouseCompanionSectionMarkup() {
         <label>Contract Brief</label>
         <output id="mc_runtime_appearance_plugin_contract_brief">-</output>
 
+        <label>Scene Runtime Adapter</label>
+        <output id="mc_runtime_scene_runtime_adapter_mode">-</output>
+
+        <label>Pose Samples</label>
+        <output id="mc_runtime_scene_runtime_pose_sample_count">-</output>
+
+        <label>Bound Pose Samples</label>
+        <output id="mc_runtime_scene_runtime_bound_pose_sample_count">-</output>
+
         <label>Appearance Plugin Kind</label>
         <output id="mc_runtime_appearance_plugin_kind">-</output>
 
