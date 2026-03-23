@@ -32,6 +32,8 @@ Keep P1 concise; add details here when needed.
     - `-WasmV1Style default|agile|dreamy|charming`
   - optional full style matrix:
     - `-AllWasmV1Styles`
+  - runtime/UI diagnostics now also surface:
+    - `default_lane_style_intent`
 - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Route proof -Event status -ExpectAppearanceProfileMatch $true`
 - renderer sidecar sample for Win pet tuning:
   - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.sample.json`

@@ -295,6 +295,8 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         {"default_lane_source", realRendererPreviewDiagnostics.defaultLaneSource},
         {"default_lane_rollout_status",
          realRendererPreviewDiagnostics.defaultLaneRolloutStatus},
+        {"default_lane_style_intent",
+         realRendererPreviewDiagnostics.defaultLaneStyleIntent},
     };
     out["configured_model_path"] = status.configuredModelPath;
     out["configured_action_library_path"] = status.configuredActionLibraryPath;
@@ -365,6 +367,8 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeDefaultLaneSource;
     out["renderer_runtime_default_lane_rollout_status"] =
         status.rendererRuntimeDefaultLaneRolloutStatus;
+    out["renderer_runtime_default_lane_style_intent"] =
+        status.rendererRuntimeDefaultLaneStyleIntent;
     out["visual_model_path"] = status.visualModelPath;
     out["loaded_model_path"] = status.loadedModelPath;
     out["loaded_model_source_format"] = status.loadedModelSourceFormat;

@@ -204,6 +204,8 @@ json BuildMouseCompanionRuntimeStatusJson(const AppController::MouseCompanionRun
             {"default_lane_source", realRendererPreviewDiagnostics.defaultLaneSource},
             {"default_lane_rollout_status",
              realRendererPreviewDiagnostics.defaultLaneRolloutStatus},
+            {"default_lane_style_intent",
+             realRendererPreviewDiagnostics.defaultLaneStyleIntent},
         }},
         {"configured_model_path", status.configuredModelPath},
         {"configured_action_library_path", status.configuredActionLibraryPath},
@@ -260,6 +262,8 @@ json BuildMouseCompanionRuntimeStatusJson(const AppController::MouseCompanionRun
          status.rendererRuntimeDefaultLaneSource},
         {"renderer_runtime_default_lane_rollout_status",
          status.rendererRuntimeDefaultLaneRolloutStatus},
+        {"renderer_runtime_default_lane_style_intent",
+         status.rendererRuntimeDefaultLaneStyleIntent},
         {"visual_model_path", status.visualModelPath},
         {"loaded_model_path", status.loadedModelPath},
         {"loaded_model_source_format", status.loadedModelSourceFormat},
@@ -359,6 +363,8 @@ json BuildRendererRuntimeProofJson(const AppController::MouseCompanionRuntimeSta
         {"default_lane_source", status.rendererRuntimeDefaultLaneSource},
         {"default_lane_rollout_status",
          status.rendererRuntimeDefaultLaneRolloutStatus},
+        {"default_lane_style_intent",
+         status.rendererRuntimeDefaultLaneStyleIntent},
     };
 }
 

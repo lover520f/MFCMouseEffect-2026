@@ -122,6 +122,7 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
     diagnostics.defaultLaneCandidate = pluginSelection.defaultLaneCandidate;
     diagnostics.defaultLaneSource = pluginSelection.defaultLaneSource;
     diagnostics.defaultLaneRolloutStatus = pluginSelection.defaultLaneRolloutStatus;
+    diagnostics.defaultLaneStyleIntent = pluginSelection.defaultLaneStyleIntent;
     std::lock_guard<std::mutex> guard(runtimeDiagnosticsMutex_);
     diagnostics.renderedFrameCount = runtimeDiagnostics_.renderedFrameCount + 1;
     runtimeDiagnostics_ = std::move(diagnostics);

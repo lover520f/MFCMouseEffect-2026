@@ -35,6 +35,9 @@ export function getMouseCompanionSectionMarkup() {
         <label>Rollout Status</label>
         <output id="mc_runtime_default_lane_rollout_status">-</output>
 
+        <label>Style Intent</label>
+        <output id="mc_runtime_default_lane_style_intent">-</output>
+
         <label>Appearance Plugin Kind</label>
         <output id="mc_runtime_appearance_plugin_kind">-</output>
 

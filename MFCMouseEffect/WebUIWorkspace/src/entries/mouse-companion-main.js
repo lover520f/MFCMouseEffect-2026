@@ -519,6 +519,10 @@ function writeRuntimeDiagnostics(runtimeState) {
   writeTextValue('mc_runtime_default_lane_candidate', runtimeState.default_lane_candidate);
   writeTextValue('mc_runtime_default_lane_source', runtimeState.default_lane_source);
   writeTextValue('mc_runtime_default_lane_rollout_status', runtimeState.default_lane_rollout_status);
+  writeTextValue(
+    'mc_runtime_default_lane_style_intent',
+    runtimeState.default_lane_style_intent || runtimeState.renderer_runtime_default_lane_style_intent,
+  );
   writeTextValue('mc_runtime_appearance_plugin_kind', runtimeState.renderer_runtime_appearance_plugin_kind);
   writeTextValue(
     'mc_runtime_appearance_semantics_mode',

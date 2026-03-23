@@ -128,16 +128,16 @@
   - machine summary may nominate a candidate
   - actual default switch still requires later manual confirmation
 - Runtime default-lane diagnostics are surfaced directly:
-  - `default_lane_candidate`
-  - `default_lane_source`
-  - `default_lane_rollout_status`
+  - `default_lane_candidate`, `default_lane_source`, `default_lane_rollout_status`, `default_lane_style_intent`
 - `default_lane_source` stable machine values currently include:
   - `runtime_builtin_default`
   - `env_builtin_forced`
   - `env_wasm_candidate`
   - `env_wasm_fallback_builtin`
   - `runtime_plugin_candidate`
-- Mouse Companion WebUI mirrors runtime lane state in `Runtime Diagnostics`, including a short `Lane Verdict`.
+- `default_lane_style_intent` stable machine values currently include:
+  - `style_candidate:none`, `style_candidate:builtin_passthrough_baseline`, `style_candidate:balanced_default_candidate`, `style_candidate:agile_follow_drag`, `style_candidate:dreamy_follow_scroll`, `style_candidate:charming_click_hold`
+- Mouse Companion WebUI mirrors runtime lane state in `Runtime Diagnostics`, including a short `Lane Verdict` and `Style Intent`.
 
 #### Windows Renderer Backend / Preview
 - Backend selection diagnostics are active for preference source/name, selected backend, selection/failure reasons, available/unavailable backends, backend catalog, `real_renderer_preview`, and `renderer_runtime_*`.

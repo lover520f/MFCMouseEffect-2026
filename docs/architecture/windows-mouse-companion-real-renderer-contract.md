@@ -205,12 +205,20 @@ It should **not** own:
   - `default_lane_candidate`
   - `default_lane_source`
   - `default_lane_rollout_status`
+  - `default_lane_style_intent`
   - `default_lane_source` 当前稳定值应优先使用短机器码，例如：
     - `runtime_builtin_default`
     - `env_builtin_forced`
     - `env_wasm_candidate`
     - `env_wasm_fallback_builtin`
     - `runtime_plugin_candidate`
+  - `default_lane_style_intent` 当前稳定值应优先使用短机器码，例如：
+    - `style_candidate:none`
+    - `style_candidate:builtin_passthrough_baseline`
+    - `style_candidate:balanced_default_candidate`
+    - `style_candidate:agile_follow_drag`
+    - `style_candidate:dreamy_follow_scroll`
+    - `style_candidate:charming_click_hold`
 - 新增 renderer-owned semantics 时，应优先扩展 plugin output，而不是把 builder 继续当作事实上的插件层；当前 `wasm_v1` 就是第一步 bounded patch 协议，而不是继续往 `builtin_passthrough` 堆更多 ad-hoc tuning key
 - 当前默认 lane rollout 合同：
   - lane matrix 的机器摘要最多只能产出 `recommended_default_lane` candidate

@@ -59,6 +59,30 @@ void ApplyDefaultLaneDecision(
         selection->defaultLaneRolloutStatus =
             "candidate_pending_manual_confirmation";
     }
+
+    selection->defaultLaneStyleIntent = "style_candidate:none";
+    if (selection->defaultLaneCandidate == "builtin_passthrough") {
+        selection->defaultLaneStyleIntent = "style_candidate:builtin_passthrough_baseline";
+        return;
+    }
+    if (selection->defaultLaneCandidate != "wasm_v1") {
+        return;
+    }
+
+    switch (selection->comboPresetOverride) {
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Agile:
+        selection->defaultLaneStyleIntent = "style_candidate:agile_follow_drag";
+        return;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Dreamy:
+        selection->defaultLaneStyleIntent = "style_candidate:dreamy_follow_scroll";
+        return;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::Charming:
+        selection->defaultLaneStyleIntent = "style_candidate:charming_click_hold";
+        return;
+    case Win32MouseCompanionRealRendererAppearanceComboPreset::None:
+        selection->defaultLaneStyleIntent = "style_candidate:balanced_default_candidate";
+        return;
+    }
 }
 
 std::string ReadEnvCopy(const char* key) {

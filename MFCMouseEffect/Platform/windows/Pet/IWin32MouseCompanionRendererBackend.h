@@ -46,6 +46,7 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
     std::string defaultLaneCandidate{"builtin"};
     std::string defaultLaneSource{"runtime_builtin_default"};
     std::string defaultLaneRolloutStatus{"stay_on_builtin"};
+    std::string defaultLaneStyleIntent{"style_candidate:none"};
 };
 
 class IWin32MouseCompanionRendererBackend {

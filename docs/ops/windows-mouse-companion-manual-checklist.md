@@ -154,6 +154,7 @@
      - `default_lane_candidate`
      - `default_lane_source`
      - `default_lane_rollout_status`
+     - `default_lane_style_intent`
    - current interpretation:
      - `default_lane_rollout_status = stay_on_builtin` means runtime still recommends keeping builtin as shipped default
      - `default_lane_rollout_status = candidate_pending_manual_confirmation` means runtime sees a non-builtin candidate, but the lane is still not approved for default rollout until observation says so
@@ -163,6 +164,13 @@
      - `env_wasm_candidate`: wasm lane is healthy enough to be nominated as a candidate
      - `env_wasm_fallback_builtin`: wasm was requested, but runtime stayed on builtin after fallback
      - `runtime_plugin_candidate`: a non-builtin candidate exists through runtime plugin selection even without an explicit env-wasm request path
+   - common `default_lane_style_intent` readings:
+     - `style_candidate:none`
+     - `style_candidate:builtin_passthrough_baseline`
+     - `style_candidate:balanced_default_candidate`
+     - `style_candidate:agile_follow_drag`
+     - `style_candidate:dreamy_follow_scroll`
+     - `style_candidate:charming_click_hold`
    - native shortcut:
      - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Route proof -Event status -ExpectAppearanceProfileMatch $true`
    - `run-windows-mouse-companion-combo-persona-acceptance.cmd` now enables the same appearance-profile machine check automatically and uses dedicated combo-only appearance JSON files instead of asking Win-side validation to edit the synced main profile
@@ -338,6 +346,10 @@ Check `/api/state.mouse_companion_runtime` or equivalent diagnostics snapshot an
 - `renderer_backend_selection_reason`
 - `renderer_backend_failure_reason`
 - `available_renderer_backends`
+- `default_lane_candidate`
+- `default_lane_source`
+- `default_lane_rollout_status`
+- `default_lane_style_intent`
 - `unavailable_renderer_backends`
 - `renderer_backend_catalog`
 - `real_renderer_unmet_requirements`
