@@ -207,6 +207,7 @@ It should **not** own:
   - `default_lane_rollout_status`
   - `default_lane_style_intent`
   - `appearance_plugin_sample_tier`
+  - `appearance_plugin_contract_brief`
   - `default_lane_source` 当前稳定值应优先使用短机器码，例如：
     - `runtime_builtin_default`
     - `env_builtin_forced`
@@ -222,6 +223,7 @@ It should **not** own:
     - `style_candidate:charming_click_hold`
   - renderer sidecar metadata may now declare optional `style_intent`; when present and the runtime actually nominates a non-builtin lane, host/runtime diagnostics should prefer that explicit value over combo-preset-only inference
   - renderer sidecar metadata may now also declare optional `sample_tier`; runtime diagnostics should surface it as `appearance_plugin_sample_tier` without folding it into `default_lane_*`, because it describes the checked-in sample contract rather than the rollout decision itself
+  - runtime may also expose `appearance_plugin_contract_brief = semantics_mode/style_intent/sample_tier`, so higher-level tools can reuse one short summary instead of recomposing those fields
   - host-side default-lane style-intent inference and metadata support lists should reuse the same helper, so `style_intent` / `sample_tier` machine vocab does not split between validation and runtime
 - 新增 renderer-owned semantics 时，应优先扩展 plugin output，而不是把 builder 继续当作事实上的插件层；当前 `wasm_v1` 就是第一步 bounded patch 协议，而不是继续往 `builtin_passthrough` 堆更多 ad-hoc tuning key
 - 当前默认 lane rollout 合同：

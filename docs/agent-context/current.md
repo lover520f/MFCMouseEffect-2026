@@ -128,7 +128,7 @@
   - `recommendation_style_intent`, `recommended_sample_path`
   - `rollout_contract_status`
 - Default lane rollout contract: machine summary may nominate a candidate, but actual default switch still requires later manual confirmation.
-- Runtime default-lane diagnostics are surfaced directly: `default_lane_candidate`, `default_lane_source`, `default_lane_rollout_status`, `default_lane_style_intent`, `appearance_plugin_sample_tier`
+- Runtime default-lane diagnostics are surfaced directly: `default_lane_candidate`, `default_lane_source`, `default_lane_rollout_status`, `default_lane_style_intent`, `appearance_plugin_sample_tier`, `appearance_plugin_contract_brief`
 - Windows host/manifest now share one renderer-plugin label helper for `style_intent`, `sample_tier`, and default lane style-intent inference, so contracts do not drift between runtime and metadata validation.
 - Sidecar smoke presets now also assert `default_lane_style_intent` and `appearance_plugin_sample_tier`; `renderer-sidecar-wasm-v1-smoke` additionally accepts `-WasmV1Style default|agile|dreamy|charming`, so single-lane smoke can assert the selected checked-in style intent and sample tier directly.
 - `render-proof` now exposes `default_lane_summary = candidate/source/rollout/style_intent` in both console summaries and saved JSON (`real_renderer_preview` / `renderer_runtime_after`).
@@ -141,7 +141,7 @@
 - `default_lane_style_intent` stable machine values currently include:
   - `style_candidate:none`, `style_candidate:builtin_passthrough_baseline`, `style_candidate:balanced_default_candidate`, `style_candidate:agile_follow_drag`, `style_candidate:dreamy_follow_scroll`, `style_candidate:charming_click_hold`
 - Lane matrix recommendation now prefers `sample_tier` first, then runtime `default_lane_style_intent`, instead of hardcoded lane-name priority.
-- Mouse Companion WebUI mirrors runtime lane state in `Runtime Diagnostics`, including a short `Lane Verdict`, `Style Intent`, and `Sample Tier`.
+- Mouse Companion WebUI mirrors runtime lane state in `Runtime Diagnostics`, including a short `Lane Verdict`, `Style Intent`, `Sample Tier`, and `Contract Brief`.
 
 #### Windows Renderer Backend / Preview
 - Backend selection diagnostics are active for preference source/name, selected backend, selection/failure reasons, available/unavailable backends, backend catalog, `real_renderer_preview`, and `renderer_runtime_*`.

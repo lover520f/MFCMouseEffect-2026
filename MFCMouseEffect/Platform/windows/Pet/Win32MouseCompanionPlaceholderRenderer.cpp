@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "Platform/windows/Pet/Win32MouseCompanionRenderPluginContractLabels.h"
 #include "Platform/windows/Pet/Win32MouseCompanionPlaceholderRenderer.h"
 
 #include "Platform/windows/Pet/Win32MouseCompanionPlaceholderPainter.h"
@@ -124,6 +125,11 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
     diagnostics.defaultLaneSource = pluginSelection.defaultLaneSource;
     diagnostics.defaultLaneRolloutStatus = pluginSelection.defaultLaneRolloutStatus;
     diagnostics.defaultLaneStyleIntent = pluginSelection.defaultLaneStyleIntent;
+    diagnostics.appearancePluginContractBrief =
+        BuildWin32MouseCompanionRenderPluginContractBrief(
+            diagnostics.appearancePluginAppearanceSemanticsMode,
+            diagnostics.defaultLaneStyleIntent,
+            diagnostics.appearancePluginSampleTier);
     std::lock_guard<std::mutex> guard(runtimeDiagnosticsMutex_);
     diagnostics.renderedFrameCount = runtimeDiagnostics_.renderedFrameCount + 1;
     runtimeDiagnostics_ = std::move(diagnostics);

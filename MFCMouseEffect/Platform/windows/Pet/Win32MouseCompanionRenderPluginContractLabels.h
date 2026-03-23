@@ -17,4 +17,9 @@ std::string ResolveWin32MouseCompanionRenderPluginDefaultLaneStyleIntent(
     const std::string& declaredStyleIntent,
     Win32MouseCompanionRealRendererAppearanceComboPreset comboPresetOverride);
 
+std::string BuildWin32MouseCompanionRenderPluginContractBrief(
+    const std::string& appearanceSemanticsMode,
+    const std::string& styleIntent,
+    const std::string& sampleTier);
+
 } // namespace mousefx::windows

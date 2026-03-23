@@ -41,6 +41,9 @@ export function getMouseCompanionSectionMarkup() {
         <label>Sample Tier</label>
         <output id="mc_runtime_appearance_plugin_sample_tier">-</output>
 
+        <label>Contract Brief</label>
+        <output id="mc_runtime_appearance_plugin_contract_brief">-</output>
+
         <label>Appearance Plugin Kind</label>
         <output id="mc_runtime_appearance_plugin_kind">-</output>
 

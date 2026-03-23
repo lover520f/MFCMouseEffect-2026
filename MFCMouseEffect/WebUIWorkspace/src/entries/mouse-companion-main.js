@@ -527,6 +527,10 @@ function writeRuntimeDiagnostics(runtimeState) {
     'mc_runtime_appearance_plugin_sample_tier',
     runtimeState.renderer_runtime_appearance_plugin_sample_tier,
   );
+  writeTextValue(
+    'mc_runtime_appearance_plugin_contract_brief',
+    runtimeState.renderer_runtime_appearance_plugin_contract_brief,
+  );
   writeTextValue('mc_runtime_appearance_plugin_kind', runtimeState.renderer_runtime_appearance_plugin_kind);
   writeTextValue(
     'mc_runtime_appearance_semantics_mode',

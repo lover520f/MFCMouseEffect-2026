@@ -54,4 +54,20 @@ std::string ResolveWin32MouseCompanionRenderPluginDefaultLaneStyleIntent(
     return "style_candidate:none";
 }
 
+std::string BuildWin32MouseCompanionRenderPluginContractBrief(
+    const std::string& appearanceSemanticsMode,
+    const std::string& styleIntent,
+    const std::string& sampleTier) {
+    const std::string mode = TrimAscii(appearanceSemanticsMode).empty()
+        ? "-"
+        : TrimAscii(appearanceSemanticsMode);
+    const std::string intent = TrimAscii(styleIntent).empty()
+        ? "-"
+        : TrimAscii(styleIntent);
+    const std::string tier = TrimAscii(sampleTier).empty()
+        ? "-"
+        : TrimAscii(sampleTier);
+    return mode + "/" + intent + "/" + tier;
+}
+
 } // namespace mousefx::windows
