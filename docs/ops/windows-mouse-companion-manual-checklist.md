@@ -224,6 +224,13 @@
     - `slot_stub_ready/5/<mid>`
     - `slot_binding_ready/5/<high>`
   - `scene_runtime_model_node_slot_name_brief` should stay stable across lanes; it is the future asset-node vocabulary seam, so `body_root / head_anchor / appendage_anchor / overlay_anchor / grounding_anchor` should not drift between runtime, proof, and WebUI
+  - `scene_runtime_model_node_registry_brief` should now also move through:
+    - `preview_only/0/0`
+    - `registry_scaffold/5/<low>`
+    - `registry_stub_ready/5/<mid>`
+    - `registry_binding_ready/5/<high>`
+  - `scene_runtime_model_node_registry_asset_node_brief` should stay stable across lanes; it is the next seam after slots, so `asset.body.root / asset.head.anchor / asset.appendage.anchor / asset.overlay.anchor / asset.grounding.anchor` should not drift between runtime, proof, lane matrix, and WebUI
+  - `scene_runtime_model_node_registry_weight_brief` should remain near all-zero in `runtime_only`, then rise along with bound slots; frame grounding, accessory readability, and overlay emphasis should now subtly strengthen with that registry-weight seam instead of only raw binding weight
    - `render-proof` can now pin pose-adapter state directly with `-ExpectedSceneRuntimeAdapterMode`, `-ExpectedSceneRuntimePoseAdapterBrief`, `-ExpectedSceneRuntimePoseAdapterInfluenceMin`, and `-ExpectedSceneRuntimePoseReadabilityBiasMin`
    - `render-proof` and lane matrix now also echo `default_lane_candidate_tier`, so `ship_default_candidate` vs `experimental_style_candidate` no longer needs to be inferred manually from raw sample metadata
    - smoke expectation now also pins that value:

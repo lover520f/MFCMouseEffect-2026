@@ -64,6 +64,14 @@ struct PetVisualHostRendererRuntimeDiagnostics {
     std::string sceneRuntimeModelNodeSlotBrief{"preview_only/0/0"};
     std::string sceneRuntimeModelNodeSlotNameBrief{
         "body:body_root|head:head_anchor|appendage:appendage_anchor|overlay:overlay_anchor|grounding:grounding_anchor"};
+    std::string sceneRuntimeModelNodeRegistryState{"preview_only"};
+    uint32_t sceneRuntimeModelNodeRegistryEntryCount{0};
+    uint32_t sceneRuntimeModelNodeRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeModelNodeRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelNodeRegistryAssetNodeBrief{
+        "body:asset.body.root|head:asset.head.anchor|appendage:asset.appendage.anchor|overlay:asset.overlay.anchor|grounding:asset.grounding.anchor"};
+    std::string sceneRuntimeModelNodeRegistryWeightBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

@@ -114,6 +114,13 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
     }
 
     const auto& nodeBinding = runtime.modelNodeBindingProfile;
+    const auto& nodeRegistry = runtime.modelNodeRegistryProfile;
+    const float bodyRegistryWeight =
+        nodeRegistry.bodyEntry.resolved ? nodeRegistry.bodyEntry.registryWeight : 0.0f;
+    const float headRegistryWeight =
+        nodeRegistry.headEntry.resolved ? nodeRegistry.headEntry.registryWeight : 0.0f;
+    const float groundingRegistryWeight =
+        nodeRegistry.groundingEntry.resolved ? nodeRegistry.groundingEntry.registryWeight : 0.0f;
     const float poseAnchorX = nodeBinding.bodyEntry.worldOffsetX * metrics.bodyWidth;
     const float poseAnchorY = nodeBinding.bodyEntry.worldOffsetY * metrics.bodyHeight;
     const float poseHeadX = nodeBinding.headEntry.worldOffsetX * metrics.headWidth;
@@ -122,15 +129,18 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
     const float poseGroundingY = nodeBinding.groundingEntry.worldOffsetY * metrics.bodyHeight;
     const float poseGroundingScale =
         1.0f + std::abs(nodeBinding.groundingEntry.worldOffsetX) * nodeBinding.groundingEntry.bindWeight * 0.65f;
-    scene.shadowAlphaScale = 1.0f + nodeBinding.groundingEntry.bindWeight * 0.08f;
-    scene.pedestalAlphaScale = 1.0f + nodeBinding.groundingEntry.bindWeight * 0.06f;
+    scene.shadowAlphaScale =
+        1.0f + nodeBinding.groundingEntry.bindWeight * 0.08f + groundingRegistryWeight * 0.06f;
+    scene.pedestalAlphaScale =
+        1.0f + nodeBinding.groundingEntry.bindWeight * 0.06f + groundingRegistryWeight * 0.05f;
 
     scene.centerX = static_cast<float>(width) * style.centerXRatio + facingOffset + profile.bodyForward +
         profile.idleHeadSway + poseAnchorX;
     scene.centerY = static_cast<float>(height) * (runtime.hold ? style.holdCenterYRatio : style.idleCenterYRatio) -
         (runtime.follow ? static_cast<float>(height) * style.followCenterYOffsetRatio : 0.0f) -
         (runtime.drag ? static_cast<float>(height) * style.dragCenterYOffsetRatio : 0.0f) -
-        profile.stateLift - profile.breathLift + comboCenterYOffset + poseAnchorY;
+        profile.stateLift - profile.breathLift + comboCenterYOffset + poseAnchorY -
+        metrics.bodyHeight * bodyRegistryWeight * 0.005f;
     scene.facingSign = runtime.facingSign;
     scene.bodyTiltDeg = profile.scrollLean + profile.dragLean;
     scene.glowAlpha =
@@ -183,9 +193,10 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
         metrics.bodyHeight * style.chestHeightRatio);
     scene.headRect = Gdiplus::RectF(
         scene.centerX - metrics.headWidth * style.headXOffsetRatio + profile.dragLean * style.headDragLeanScale +
-            profile.bodyForward * style.headBodyForwardScale + poseHeadX,
+            profile.bodyForward * style.headBodyForwardScale + poseHeadX +
+            metrics.headWidth * headRegistryWeight * 0.01f,
         scene.bodyRect.Y - metrics.headHeight * style.headYOffsetRatio - profile.actionIntensity * style.headActionLiftPx +
-            profile.headNod + poseHeadY,
+            profile.headNod + poseHeadY - metrics.headHeight * headRegistryWeight * 0.008f,
         metrics.headWidth,
         metrics.headHeight);
     scene.neckBridgeRect = Gdiplus::RectF(

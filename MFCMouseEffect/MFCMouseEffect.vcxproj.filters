@@ -558,6 +558,9 @@
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeSlotProfile.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeGraphProfile.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -1293,6 +1296,9 @@
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeSlotProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeRegistryProfile.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeGraphProfile.cpp">

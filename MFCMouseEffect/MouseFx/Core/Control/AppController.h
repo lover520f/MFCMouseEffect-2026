@@ -172,6 +172,14 @@ public:
         std::string rendererRuntimeSceneRuntimeModelNodeSlotBrief{"preview_only/0/0"};
         std::string rendererRuntimeSceneRuntimeModelNodeSlotNameBrief{
             "body:body_root|head:head_anchor|appendage:appendage_anchor|overlay:overlay_anchor|grounding:grounding_anchor"};
+        std::string rendererRuntimeSceneRuntimeModelNodeRegistryState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelNodeRegistryEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelNodeRegistryResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelNodeRegistryBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelNodeRegistryAssetNodeBrief{
+            "body:asset.body.root|head:asset.head.anchor|appendage:asset.appendage.anchor|overlay:asset.overlay.anchor|grounding:asset.grounding.anchor"};
+        std::string rendererRuntimeSceneRuntimeModelNodeRegistryWeightBrief{
+            "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

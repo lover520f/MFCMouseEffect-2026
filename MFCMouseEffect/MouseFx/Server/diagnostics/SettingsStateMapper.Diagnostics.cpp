@@ -307,6 +307,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeSlotBrief},
         {"scene_runtime_model_node_slot_name_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeSlotNameBrief},
+        {"scene_runtime_model_node_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeRegistryState},
+        {"scene_runtime_model_node_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeRegistryEntryCount},
+        {"scene_runtime_model_node_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeRegistryResolvedEntryCount},
+        {"scene_runtime_model_node_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeRegistryBrief},
+        {"scene_runtime_model_node_registry_asset_node_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeRegistryAssetNodeBrief},
+        {"scene_runtime_model_node_registry_weight_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelNodeRegistryWeightBrief},
         {"scene_runtime_pose_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
         {"scene_runtime_pose_readability_bias",
@@ -429,6 +441,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeModelNodeSlotBrief;
     out["renderer_runtime_scene_runtime_model_node_slot_name_brief"] =
         status.rendererRuntimeSceneRuntimeModelNodeSlotNameBrief;
+    out["renderer_runtime_scene_runtime_model_node_registry_state"] =
+        status.rendererRuntimeSceneRuntimeModelNodeRegistryState;
+    out["renderer_runtime_scene_runtime_model_node_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelNodeRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_model_node_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelNodeRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_node_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeModelNodeRegistryBrief;
+    out["renderer_runtime_scene_runtime_model_node_registry_asset_node_brief"] =
+        status.rendererRuntimeSceneRuntimeModelNodeRegistryAssetNodeBrief;
+    out["renderer_runtime_scene_runtime_model_node_registry_weight_brief"] =
+        status.rendererRuntimeSceneRuntimeModelNodeRegistryWeightBrief;
     out["renderer_runtime_scene_runtime_pose_adapter_influence"] =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     out["renderer_runtime_scene_runtime_pose_readability_bias"] =

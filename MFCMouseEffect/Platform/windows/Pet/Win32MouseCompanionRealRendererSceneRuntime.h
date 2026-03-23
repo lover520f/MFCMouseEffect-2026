@@ -9,6 +9,7 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelNodeAdapterProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelNodeBindingProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelNodeGraphProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelNodeRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelNodeSlotProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererPoseAdapterProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRendererInput.h"
@@ -52,6 +53,7 @@ struct Win32MouseCompanionRealRendererSceneRuntime final {
     Win32MouseCompanionRealRendererModelNodeGraphProfile modelNodeGraphProfile{};
     Win32MouseCompanionRealRendererModelNodeBindingProfile modelNodeBindingProfile{};
     Win32MouseCompanionRealRendererModelNodeSlotProfile modelNodeSlotProfile{};
+    Win32MouseCompanionRealRendererModelNodeRegistryProfile modelNodeRegistryProfile{};
     Win32MouseCompanionRealRendererPoseAdapterProfile poseAdapterProfile{};
 };
 

@@ -187,6 +187,26 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeSlotNameBrief).empty()
             ? "body:body_root|head:head_anchor|appendage:appendage_anchor|overlay:overlay_anchor|grounding:grounding_anchor"
             : status.rendererRuntimeSceneRuntimeModelNodeSlotNameBrief;
+    diagnostics.sceneRuntimeModelNodeRegistryState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeRegistryState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeModelNodeRegistryState;
+    diagnostics.sceneRuntimeModelNodeRegistryEntryCount =
+        status.rendererRuntimeSceneRuntimeModelNodeRegistryEntryCount;
+    diagnostics.sceneRuntimeModelNodeRegistryResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeModelNodeRegistryResolvedEntryCount;
+    diagnostics.sceneRuntimeModelNodeRegistryBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeRegistryBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeModelNodeRegistryBrief;
+    diagnostics.sceneRuntimeModelNodeRegistryAssetNodeBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeRegistryAssetNodeBrief).empty()
+            ? "body:asset.body.root|head:asset.head.anchor|appendage:asset.appendage.anchor|overlay:asset.overlay.anchor|grounding:asset.grounding.anchor"
+            : status.rendererRuntimeSceneRuntimeModelNodeRegistryAssetNodeBrief;
+    diagnostics.sceneRuntimeModelNodeRegistryWeightBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeRegistryWeightBrief).empty()
+            ? "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"
+            : status.rendererRuntimeSceneRuntimeModelNodeRegistryWeightBrief;
     diagnostics.sceneRuntimePoseAdapterInfluence =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     diagnostics.sceneRuntimePoseReadabilityBias =

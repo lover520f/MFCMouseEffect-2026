@@ -89,6 +89,18 @@ export function getMouseCompanionSectionMarkup() {
         <label>Node Slot Names</label>
         <output id="mc_runtime_scene_runtime_model_node_slot_name_brief">-</output>
 
+        <label>Model Node Registry</label>
+        <output id="mc_runtime_scene_runtime_model_node_registry_brief">-</output>
+
+        <label>Resolved Registry Entries</label>
+        <output id="mc_runtime_scene_runtime_model_node_registry_resolved_count">-</output>
+
+        <label>Registry Asset Nodes</label>
+        <output id="mc_runtime_scene_runtime_model_node_registry_asset_node_brief">-</output>
+
+        <label>Registry Weights</label>
+        <output id="mc_runtime_scene_runtime_model_node_registry_weight_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 
