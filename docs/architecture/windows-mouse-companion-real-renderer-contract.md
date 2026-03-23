@@ -318,6 +318,18 @@ It should **not** own:
     - `scene_runtime_asset_node_pose_brief = pose_state/entry_count/resolved_entry_count`
     - `scene_runtime_asset_node_pose_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
     - `scene_runtime_asset_node_pose_value_brief = body:(x,y,s,tilt)|head:(x,y,s,tilt)|appendage:(x,y,s,tilt)|overlay:(x,y,s,tilt)|grounding:(x,y,s,tilt)`
+    - `scene_runtime_asset_node_pose_resolver_state`
+    - `scene_runtime_asset_node_pose_resolver_entry_count`
+    - `scene_runtime_asset_node_pose_resolver_resolved_entry_count`
+    - `scene_runtime_asset_node_pose_resolver_brief = resolver_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_pose_resolver_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
+    - `scene_runtime_asset_node_pose_resolver_value_brief = body:(x,y,s,tilt)|head:(x,y,s,tilt)|appendage:(x,y,s,tilt)|overlay:(x,y,s,tilt)|grounding:(x,y,s,tilt)`
+    - `scene_runtime_asset_node_pose_registry_state`
+    - `scene_runtime_asset_node_pose_registry_entry_count`
+    - `scene_runtime_asset_node_pose_registry_resolved_entry_count`
+    - `scene_runtime_asset_node_pose_registry_brief = registry_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_pose_registry_node_brief = body:pose.body.root|head:pose.head.anchor|appendage:pose.appendage.anchor|overlay:pose.overlay.anchor|grounding:pose.grounding.anchor`
+    - `scene_runtime_asset_node_pose_registry_weight_brief = body:w|head:w|appendage:w|overlay:w|grounding:w`
   - scene build/runtime diagnostics should also expose a derived `assetNodeAnchorProfile` over the same five logical lanes:
     - `scene_runtime_asset_node_anchor_state`
     - `scene_runtime_asset_node_anchor_entry_count`

@@ -312,6 +312,30 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeAssetNodePosePathBrief;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseValueBrief =
         rendererRuntime.sceneRuntimeAssetNodePoseValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseResolverState =
+        rendererRuntime.sceneRuntimeAssetNodePoseResolverState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseResolverEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodePoseResolverEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseResolverResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodePoseResolverResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseResolverBrief =
+        rendererRuntime.sceneRuntimeAssetNodePoseResolverBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseResolverPathBrief =
+        rendererRuntime.sceneRuntimeAssetNodePoseResolverPathBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseResolverValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodePoseResolverValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseRegistryState =
+        rendererRuntime.sceneRuntimeAssetNodePoseRegistryState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseRegistryEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodePoseRegistryEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseRegistryResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodePoseRegistryResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseRegistryBrief =
+        rendererRuntime.sceneRuntimeAssetNodePoseRegistryBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseRegistryNodeBrief =
+        rendererRuntime.sceneRuntimeAssetNodePoseRegistryNodeBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseRegistryWeightBrief =
+        rendererRuntime.sceneRuntimeAssetNodePoseRegistryWeightBrief;
     diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence =
         rendererRuntime.sceneRuntimePoseAdapterInfluence;
     diagnostics.rendererRuntime.sceneRuntimePoseReadabilityBias =

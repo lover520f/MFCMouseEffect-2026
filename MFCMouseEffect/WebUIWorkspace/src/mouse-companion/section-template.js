@@ -209,6 +209,30 @@ export function getMouseCompanionSectionMarkup() {
         <label>Node Pose Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_pose_value_brief">-</output>
 
+        <label>Pose Resolver</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_resolver_brief">-</output>
+
+        <label>Resolved Pose Resolvers</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_resolver_resolved_count">-</output>
+
+        <label>Pose Resolver Paths</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_resolver_path_brief">-</output>
+
+        <label>Pose Resolver Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_resolver_value_brief">-</output>
+
+        <label>Pose Registry</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_registry_brief">-</output>
+
+        <label>Resolved Pose Registry Nodes</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_registry_resolved_count">-</output>
+
+        <label>Pose Registry Nodes</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_registry_node_brief">-</output>
+
+        <label>Pose Registry Weights</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_registry_weight_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 

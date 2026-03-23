@@ -308,6 +308,8 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTargetProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTargetResolverProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseResolverProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseRegistryProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeWorldSpaceProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTransformProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeSlotProfile.h" />
@@ -667,6 +669,8 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTargetProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTargetResolverProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseResolverProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseRegistryProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeWorldSpaceProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTransformProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeSlotProfile.cpp" />

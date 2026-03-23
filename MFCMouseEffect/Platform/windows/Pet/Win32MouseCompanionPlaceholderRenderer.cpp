@@ -221,6 +221,22 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding";
     diagnostics.sceneRuntimeAssetNodePoseValueBrief =
         "body:(0.0,0.0,1.00,0.0)|head:(0.0,0.0,1.00,0.0)|appendage:(0.0,0.0,1.00,0.0)|overlay:(0.0,0.0,1.00,0.0)|grounding:(0.0,0.0,1.00,0.0)";
+    diagnostics.sceneRuntimeAssetNodePoseResolverState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodePoseResolverEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodePoseResolverResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodePoseResolverBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodePoseResolverPathBrief =
+        "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding";
+    diagnostics.sceneRuntimeAssetNodePoseResolverValueBrief =
+        "body:(0.0,0.0,1.00,0.0)|head:(0.0,0.0,1.00,0.0)|appendage:(0.0,0.0,1.00,0.0)|overlay:(0.0,0.0,1.00,0.0)|grounding:(0.0,0.0,1.00,0.0)";
+    diagnostics.sceneRuntimeAssetNodePoseRegistryState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodePoseRegistryEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodePoseRegistryNodeBrief =
+        "body:pose.body.root|head:pose.head.anchor|appendage:pose.appendage.anchor|overlay:pose.overlay.anchor|grounding:pose.grounding.anchor";
+    diagnostics.sceneRuntimeAssetNodePoseRegistryWeightBrief =
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
     diagnostics.appearanceSkinVariantId = input.appearanceProfile.skinVariantId;
     diagnostics.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;
     const auto accessoryFamily =

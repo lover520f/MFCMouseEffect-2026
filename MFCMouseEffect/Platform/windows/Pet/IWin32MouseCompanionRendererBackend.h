@@ -129,6 +129,22 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
         "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
     std::string sceneRuntimeAssetNodePoseValueBrief{
         "body:(0.0,0.0,1.00,0.0)|head:(0.0,0.0,1.00,0.0)|appendage:(0.0,0.0,1.00,0.0)|overlay:(0.0,0.0,1.00,0.0)|grounding:(0.0,0.0,1.00,0.0)"};
+    std::string sceneRuntimeAssetNodePoseResolverState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodePoseResolverEntryCount{0};
+    uint32_t sceneRuntimeAssetNodePoseResolverResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodePoseResolverBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodePoseResolverPathBrief{
+        "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
+    std::string sceneRuntimeAssetNodePoseResolverValueBrief{
+        "body:(0.0,0.0,1.00,0.0)|head:(0.0,0.0,1.00,0.0)|appendage:(0.0,0.0,1.00,0.0)|overlay:(0.0,0.0,1.00,0.0)|grounding:(0.0,0.0,1.00,0.0)"};
+    std::string sceneRuntimeAssetNodePoseRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodePoseRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodePoseRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodePoseRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodePoseRegistryNodeBrief{
+        "body:pose.body.root|head:pose.head.anchor|appendage:pose.appendage.anchor|overlay:pose.overlay.anchor|grounding:pose.grounding.anchor"};
+    std::string sceneRuntimeAssetNodePoseRegistryWeightBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

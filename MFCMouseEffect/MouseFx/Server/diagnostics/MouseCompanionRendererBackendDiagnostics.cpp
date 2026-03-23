@@ -387,6 +387,46 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodePoseValueBrief).empty()
             ? "body:(0.0,0.0,1.00,0.0)|head:(0.0,0.0,1.00,0.0)|appendage:(0.0,0.0,1.00,0.0)|overlay:(0.0,0.0,1.00,0.0)|grounding:(0.0,0.0,1.00,0.0)"
             : status.rendererRuntimeSceneRuntimeAssetNodePoseValueBrief;
+    diagnostics.sceneRuntimeAssetNodePoseResolverState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodePoseResolverState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodePoseResolverState;
+    diagnostics.sceneRuntimeAssetNodePoseResolverEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseResolverEntryCount;
+    diagnostics.sceneRuntimeAssetNodePoseResolverResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseResolverResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodePoseResolverBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodePoseResolverBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodePoseResolverBrief;
+    diagnostics.sceneRuntimeAssetNodePoseResolverPathBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodePoseResolverPathBrief).empty()
+            ? "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"
+            : status.rendererRuntimeSceneRuntimeAssetNodePoseResolverPathBrief;
+    diagnostics.sceneRuntimeAssetNodePoseResolverValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodePoseResolverValueBrief).empty()
+            ? "body:(0.0,0.0,1.00,0.0)|head:(0.0,0.0,1.00,0.0)|appendage:(0.0,0.0,1.00,0.0)|overlay:(0.0,0.0,1.00,0.0)|grounding:(0.0,0.0,1.00,0.0)"
+            : status.rendererRuntimeSceneRuntimeAssetNodePoseResolverValueBrief;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryState;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryEntryCount;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryBrief;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryNodeBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryNodeBrief).empty()
+            ? "body:pose.body.root|head:pose.head.anchor|appendage:pose.appendage.anchor|overlay:pose.overlay.anchor|grounding:pose.grounding.anchor"
+            : status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryNodeBrief;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryWeightBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryWeightBrief).empty()
+            ? "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"
+            : status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryWeightBrief;
     diagnostics.sceneRuntimePoseAdapterInfluence =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     diagnostics.sceneRuntimePoseReadabilityBias =

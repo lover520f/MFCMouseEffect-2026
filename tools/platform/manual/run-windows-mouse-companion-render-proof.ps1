@@ -584,6 +584,52 @@ function Add-AssetNodePoseSummaryProperty($Node) {
     $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_pose_brief" -NotePropertyValue $brief
 }
 
+function Format-AssetNodePoseResolverSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_pose_resolver_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodePoseResolverSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodePoseResolverSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_pose_resolver_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_pose_resolver_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_pose_resolver_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodePoseRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_pose_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodePoseRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodePoseRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_pose_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_pose_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_pose_registry_brief" -NotePropertyValue $brief
+}
+
 function Show-RealPreviewSmokeHint {
     @'
 [mfx:info] real-preview-smoke preset
@@ -1278,6 +1324,8 @@ if ($Route -eq "sweep") {
                 Add-AssetNodeTargetResolverSummaryProperty $item.real_renderer_preview
                 Add-AssetNodeWorldSpaceSummaryProperty $item.real_renderer_preview
                 Add-AssetNodePoseSummaryProperty $item.real_renderer_preview
+                Add-AssetNodePoseResolverSummaryProperty $item.real_renderer_preview
+                Add-AssetNodePoseRegistrySummaryProperty $item.real_renderer_preview
                 Add-PoseAdapterSummaryProperty $item.real_renderer_preview
                 if ($null -ne $item.proof) {
                     Add-DefaultLaneSummaryProperty $item.proof.renderer_runtime_after
@@ -1298,6 +1346,8 @@ if ($Route -eq "sweep") {
                     Add-AssetNodeTargetResolverSummaryProperty $item.proof.renderer_runtime_after
                     Add-AssetNodeWorldSpaceSummaryProperty $item.proof.renderer_runtime_after
                     Add-AssetNodePoseSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodePoseResolverSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodePoseRegistrySummaryProperty $item.proof.renderer_runtime_after
                     Add-PoseAdapterSummaryProperty $item.proof.renderer_runtime_after
                 }
             }
@@ -1321,6 +1371,8 @@ if ($Route -eq "sweep") {
         Add-AssetNodeTargetResolverSummaryProperty $response.real_renderer_preview
         Add-AssetNodeWorldSpaceSummaryProperty $response.real_renderer_preview
         Add-AssetNodePoseSummaryProperty $response.real_renderer_preview
+        Add-AssetNodePoseResolverSummaryProperty $response.real_renderer_preview
+        Add-AssetNodePoseRegistrySummaryProperty $response.real_renderer_preview
         Add-PoseAdapterSummaryProperty $response.real_renderer_preview
         Add-DefaultLaneSummaryProperty $response.renderer_runtime_after
         Add-AppearancePluginContractBriefProperty $response.renderer_runtime_after
@@ -1340,6 +1392,8 @@ if ($Route -eq "sweep") {
         Add-AssetNodeTargetResolverSummaryProperty $response.renderer_runtime_after
         Add-AssetNodeWorldSpaceSummaryProperty $response.renderer_runtime_after
         Add-AssetNodePoseSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodePoseResolverSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodePoseRegistrySummaryProperty $response.renderer_runtime_after
         Add-PoseAdapterSummaryProperty $response.renderer_runtime_after
     }
 
@@ -1635,6 +1689,10 @@ Write-Host ("  - asset_world_space={0}" -f `
     (Format-AssetNodeWorldSpaceSummary $response.real_renderer_preview))
 Write-Host ("  - asset_pose={0}" -f `
     (Format-AssetNodePoseSummary $response.real_renderer_preview))
+Write-Host ("  - asset_pose_resolver={0}" -f `
+    (Format-AssetNodePoseResolverSummary $response.real_renderer_preview))
+Write-Host ("  - asset_pose_registry={0}" -f `
+    (Format-AssetNodePoseRegistrySummary $response.real_renderer_preview))
 Write-Host ("  - pose_adapter={0}" -f `
     (Format-PoseAdapterSummary $response.real_renderer_preview))
 Write-Host ("  - model_scene_adapter={0}" -f `

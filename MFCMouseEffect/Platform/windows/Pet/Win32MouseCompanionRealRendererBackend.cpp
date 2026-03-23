@@ -7,6 +7,8 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeAnchorProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeParentSpaceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseRegistryProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseResolverProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeTargetProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeWorldSpaceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
@@ -88,6 +90,15 @@ void Win32MouseCompanionRealRendererBackend::Render(
             scene,
             worldSpaceProfile);
     ApplyWin32MouseCompanionRealRendererAssetNodePoseProfile(poseProfile, scene);
+    const auto poseResolverProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodePoseResolverProfile(
+            poseProfile);
+    const auto poseRegistryProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodePoseRegistryProfile(
+            poseResolverProfile);
+    ApplyWin32MouseCompanionRealRendererAssetNodePoseRegistryProfile(
+        poseRegistryProfile,
+        scene);
     const auto pluginSelection = ResolveWin32MouseCompanionRenderPluginSelection();
     const Win32MouseCompanionRealRendererPainter painter{};
     painter.Paint(scene, graphics, width, height);
@@ -240,6 +251,30 @@ void Win32MouseCompanionRealRendererBackend::Render(
     diagnostics.sceneRuntimeAssetNodePoseBrief = poseProfile.brief;
     diagnostics.sceneRuntimeAssetNodePosePathBrief = poseProfile.pathBrief;
     diagnostics.sceneRuntimeAssetNodePoseValueBrief = poseProfile.valueBrief;
+    diagnostics.sceneRuntimeAssetNodePoseResolverState =
+        poseResolverProfile.resolverState;
+    diagnostics.sceneRuntimeAssetNodePoseResolverEntryCount =
+        poseResolverProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodePoseResolverResolvedEntryCount =
+        poseResolverProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodePoseResolverBrief =
+        poseResolverProfile.brief;
+    diagnostics.sceneRuntimeAssetNodePoseResolverPathBrief =
+        poseResolverProfile.pathBrief;
+    diagnostics.sceneRuntimeAssetNodePoseResolverValueBrief =
+        poseResolverProfile.valueBrief;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryState =
+        poseRegistryProfile.registryState;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryEntryCount =
+        poseRegistryProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryResolvedEntryCount =
+        poseRegistryProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryBrief =
+        poseRegistryProfile.brief;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryNodeBrief =
+        poseRegistryProfile.poseNodeBrief;
+    diagnostics.sceneRuntimeAssetNodePoseRegistryWeightBrief =
+        poseRegistryProfile.weightBrief;
     const auto& poseAdapterProfile = sceneRuntime.poseAdapterProfile;
     diagnostics.sceneRuntimePoseAdapterInfluence = poseAdapterProfile.influence;
     diagnostics.sceneRuntimePoseReadabilityBias = poseAdapterProfile.readabilityBias;
