@@ -26,6 +26,17 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
     std::string sceneRuntimeAdapterMode{"runtime_only"};
     uint32_t sceneRuntimePoseSampleCount{0};
     uint32_t sceneRuntimeBoundPoseSampleCount{0};
+    std::string sceneRuntimeModelAssetSourceState{"preview_only"};
+    float sceneRuntimeModelAssetSourceReadiness{0.0f};
+    std::string sceneRuntimeModelAssetSourceBrief{"preview_only/unknown/model:0/action:0/appearance:0"};
+    std::string sceneRuntimeModelAssetSourcePathBrief{"model:-|action:-|appearance:default"};
+    std::string sceneRuntimeModelAssetSourceValueBrief{"format:unknown|readiness:0.00"};
+    std::string sceneRuntimeModelAssetManifestState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetManifestEntryCount{0};
+    uint32_t sceneRuntimeModelAssetManifestResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetManifestBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetManifestEntryBrief{"model:-|action:-|appearance:default"};
+    std::string sceneRuntimeModelAssetManifestValueBrief{"model:(0,0.00)|action:(0,0.00)|appearance:(0,0.00)"};
     std::string sceneRuntimeModelSceneAdapterState{"preview_only"};
     float sceneRuntimeModelSceneSeamReadiness{0.0f};
     std::string sceneRuntimeModelSceneAdapterBrief{"preview_only/unknown/runtime_only"};

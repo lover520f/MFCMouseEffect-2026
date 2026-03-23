@@ -552,6 +552,34 @@ function writeRuntimeDiagnostics(runtimeState) {
     runtimeState.renderer_runtime_scene_runtime_adapter_mode,
   );
   writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_source_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_source_brief,
+      'preview_only/unknown/model:0/action:0/appearance:0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_source_path_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_source_path_brief,
+      'model:-|action:-|appearance:default',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_manifest_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_manifest_brief,
+      'preview_only/0/0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_manifest_entry_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_manifest_entry_brief,
+      'model:-|action:-|appearance:default',
+    ),
+  );
+  writeTextValue(
     'mc_runtime_scene_runtime_model_scene_adapter_brief',
     normalizeRuntimeText(
       runtimeState.renderer_runtime_scene_runtime_model_scene_adapter_brief,

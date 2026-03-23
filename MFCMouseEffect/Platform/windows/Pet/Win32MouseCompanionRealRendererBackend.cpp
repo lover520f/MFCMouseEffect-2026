@@ -52,6 +52,8 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeResolverProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererCapabilities.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetManifestProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSourceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelSceneAdapterProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererPainter.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererPoseAdapterProfile.h"
@@ -113,6 +115,14 @@ void Win32MouseCompanionRealRendererBackend::Render(
     const auto resources = BuildWin32MouseCompanionRealRendererAssetResources(input);
     const auto sceneRuntime = BuildWin32MouseCompanionRealRendererSceneRuntime(input, resources);
     auto scene = BuildWin32MouseCompanionRealRendererScene(sceneRuntime, width, height);
+    const auto modelAssetSourceProfile = sceneRuntime.modelAssetSourceProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetSourceProfile(
+        modelAssetSourceProfile,
+        scene);
+    const auto modelAssetManifestProfile = sceneRuntime.modelAssetManifestProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetManifestProfile(
+        modelAssetManifestProfile,
+        scene);
     const auto resolverProfile = sceneRuntime.assetNodeResolverProfile;
     const auto parentSpaceProfile = sceneRuntime.assetNodeParentSpaceProfile;
     const auto targetProfile = sceneRuntime.assetNodeTargetProfile;
@@ -383,6 +393,28 @@ void Win32MouseCompanionRealRendererBackend::Render(
     diagnostics.sceneRuntimePoseSampleCount = sceneRuntime.sceneRuntimePoseSampleCount;
     diagnostics.sceneRuntimeBoundPoseSampleCount =
         sceneRuntime.sceneRuntimeBoundPoseSampleCount;
+    diagnostics.sceneRuntimeModelAssetSourceState =
+        modelAssetSourceProfile.sourceState;
+    diagnostics.sceneRuntimeModelAssetSourceReadiness =
+        modelAssetSourceProfile.sourceReadiness;
+    diagnostics.sceneRuntimeModelAssetSourceBrief =
+        modelAssetSourceProfile.brief;
+    diagnostics.sceneRuntimeModelAssetSourcePathBrief =
+        modelAssetSourceProfile.pathBrief;
+    diagnostics.sceneRuntimeModelAssetSourceValueBrief =
+        modelAssetSourceProfile.valueBrief;
+    diagnostics.sceneRuntimeModelAssetManifestState =
+        modelAssetManifestProfile.manifestState;
+    diagnostics.sceneRuntimeModelAssetManifestEntryCount =
+        modelAssetManifestProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetManifestResolvedEntryCount =
+        modelAssetManifestProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetManifestBrief =
+        modelAssetManifestProfile.brief;
+    diagnostics.sceneRuntimeModelAssetManifestEntryBrief =
+        modelAssetManifestProfile.entryBrief;
+    diagnostics.sceneRuntimeModelAssetManifestValueBrief =
+        modelAssetManifestProfile.valueBrief;
     diagnostics.sceneRuntimeModelSceneAdapterState =
         sceneRuntime.modelSceneAdapterProfile.seamState;
     diagnostics.sceneRuntimeModelSceneSeamReadiness =

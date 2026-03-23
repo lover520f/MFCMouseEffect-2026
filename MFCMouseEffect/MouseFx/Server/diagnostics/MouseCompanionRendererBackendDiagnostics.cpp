@@ -123,6 +123,44 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         status.rendererRuntimeSceneRuntimePoseSampleCount;
     diagnostics.sceneRuntimeBoundPoseSampleCount =
         status.rendererRuntimeSceneRuntimeBoundPoseSampleCount;
+    diagnostics.sceneRuntimeModelAssetSourceState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetSourceState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetSourceState;
+    diagnostics.sceneRuntimeModelAssetSourceReadiness =
+        status.rendererRuntimeSceneRuntimeModelAssetSourceReadiness;
+    diagnostics.sceneRuntimeModelAssetSourceBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetSourceBrief).empty()
+            ? "preview_only/unknown/model:0/action:0/appearance:0"
+            : status.rendererRuntimeSceneRuntimeModelAssetSourceBrief;
+    diagnostics.sceneRuntimeModelAssetSourcePathBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetSourcePathBrief).empty()
+            ? "model:-|action:-|appearance:default"
+            : status.rendererRuntimeSceneRuntimeModelAssetSourcePathBrief;
+    diagnostics.sceneRuntimeModelAssetSourceValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetSourceValueBrief).empty()
+            ? "format:unknown|readiness:0.00"
+            : status.rendererRuntimeSceneRuntimeModelAssetSourceValueBrief;
+    diagnostics.sceneRuntimeModelAssetManifestState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetManifestState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetManifestState;
+    diagnostics.sceneRuntimeModelAssetManifestEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestEntryCount;
+    diagnostics.sceneRuntimeModelAssetManifestResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestResolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetManifestBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetManifestBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeModelAssetManifestBrief;
+    diagnostics.sceneRuntimeModelAssetManifestEntryBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetManifestEntryBrief).empty()
+            ? "model:-|action:-|appearance:default"
+            : status.rendererRuntimeSceneRuntimeModelAssetManifestEntryBrief;
+    diagnostics.sceneRuntimeModelAssetManifestValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetManifestValueBrief).empty()
+            ? "model:(0,0.00)|action:(0,0.00)|appearance:(0,0.00)"
+            : status.rendererRuntimeSceneRuntimeModelAssetManifestValueBrief;
     diagnostics.sceneRuntimeModelSceneAdapterState =
         TrimAscii(status.rendererRuntimeSceneRuntimeModelSceneAdapterState).empty()
             ? "preview_only"

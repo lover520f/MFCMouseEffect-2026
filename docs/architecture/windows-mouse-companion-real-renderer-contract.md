@@ -231,6 +231,11 @@ It should **not** own:
     - `unclassified_candidate`
   - runtime may also expose `appearance_plugin_contract_brief = semantics_mode/style_intent/sample_tier`, so higher-level tools can reuse one short summary instead of recomposing those fields
   - `Win32MouseCompanionRealRendererSceneRuntime` now also carries a cached `poseAdapterProfile`; builder/painter/backend code should consume that shared profile instead of recomputing pose adapter influence/readability independently
+  - `Win32MouseCompanionRealRendererSceneRuntime` should now also carry cached `modelAssetSourceProfile` and `modelAssetManifestProfile`; runtime/proof/WebUI may expose:
+    - `scene_runtime_model_asset_source_state`
+    - `scene_runtime_model_asset_source_brief = source_state/source_format/model:0|1/action:0|1/appearance:0|1`
+    - `scene_runtime_model_asset_manifest_state`
+    - `scene_runtime_model_asset_manifest_brief = manifest_state/entry_count/resolved_entry_count`
   - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `modelSceneAdapterProfile`; runtime/proof/WebUI may expose:
     - `scene_runtime_model_scene_adapter_state`
     - `scene_runtime_model_scene_seam_readiness`
@@ -399,6 +404,7 @@ It should **not** own:
     - `scene_runtime_asset_node_anchor_scale_brief = body:s|head:s|appendage:s|overlay:s|grounding:s`
   - current preview seam should now layer `modelNodeAdapterProfile -> modelNodeGraphProfile -> modelNodeBindingProfile`, so later real asset-node binding can replace the binding-profile generator without rewriting downstream builders
   - current preview seam should now also layer `modelNodeBindingProfile -> modelNodeSlotProfile`, so later true model assets can plug real node names/slots into one stable contract before any real graph traversal replaces preview-owned offsets
+  - current real-renderer bring-up should now start from `modelAssetSourceProfile -> modelAssetManifestProfile -> modelSceneAdapterProfile`, so the first true 3D step is no longer “just another preview seam”; it now has a dedicated asset-entry contract for model path, action library, and appearance-profile readiness before node/pose/rig layers consume anything
   - current preview seam should now also layer `modelNodeSlotProfile -> modelNodeRegistryProfile`, so later true asset-node resolution can replace registry generation while keeping builder-facing semantics, diagnostics, and proof vocabulary stable
   - current preview seam should now also layer `modelNodeRegistryProfile -> assetNodeBindingProfile`, so later true asset-node-path lookup can replace this binding-table generator while preserving builder-facing weights and runtime/proof vocabulary
   - current preview seam should now also layer `assetNodeBindingProfile -> assetNodeTransformProfile`, so later real node-local transform resolution can replace this transform-table generator while preserving builder-facing geometry/readability seams and runtime/proof vocabulary

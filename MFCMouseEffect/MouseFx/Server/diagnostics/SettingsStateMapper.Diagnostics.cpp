@@ -267,6 +267,28 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimePoseSampleCount},
         {"scene_runtime_bound_pose_sample_count",
          realRendererPreviewDiagnostics.sceneRuntimeBoundPoseSampleCount},
+        {"scene_runtime_model_asset_source_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSourceState},
+        {"scene_runtime_model_asset_source_readiness",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSourceReadiness},
+        {"scene_runtime_model_asset_source_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSourceBrief},
+        {"scene_runtime_model_asset_source_path_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSourcePathBrief},
+        {"scene_runtime_model_asset_source_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSourceValueBrief},
+        {"scene_runtime_model_asset_manifest_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestState},
+        {"scene_runtime_model_asset_manifest_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestEntryCount},
+        {"scene_runtime_model_asset_manifest_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestResolvedEntryCount},
+        {"scene_runtime_model_asset_manifest_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestBrief},
+        {"scene_runtime_model_asset_manifest_entry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestEntryBrief},
+        {"scene_runtime_model_asset_manifest_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestValueBrief},
         {"scene_runtime_model_scene_adapter_state",
          realRendererPreviewDiagnostics.sceneRuntimeModelSceneAdapterState},
         {"scene_runtime_model_scene_seam_readiness",
@@ -965,6 +987,28 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimePoseSampleCount;
     out["renderer_runtime_scene_runtime_bound_pose_sample_count"] =
         status.rendererRuntimeSceneRuntimeBoundPoseSampleCount;
+    out["renderer_runtime_scene_runtime_model_asset_source_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSourceState;
+    out["renderer_runtime_scene_runtime_model_asset_source_readiness"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSourceReadiness;
+    out["renderer_runtime_scene_runtime_model_asset_source_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSourceBrief;
+    out["renderer_runtime_scene_runtime_model_asset_source_path_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSourcePathBrief;
+    out["renderer_runtime_scene_runtime_model_asset_source_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSourceValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_manifest_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestState;
+    out["renderer_runtime_scene_runtime_model_asset_manifest_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_manifest_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_manifest_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestBrief;
+    out["renderer_runtime_scene_runtime_model_asset_manifest_entry_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestEntryBrief;
+    out["renderer_runtime_scene_runtime_model_asset_manifest_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestValueBrief;
     out["renderer_runtime_scene_runtime_model_scene_adapter_state"] =
         status.rendererRuntimeSceneRuntimeModelSceneAdapterState;
     out["renderer_runtime_scene_runtime_model_scene_seam_readiness"] =

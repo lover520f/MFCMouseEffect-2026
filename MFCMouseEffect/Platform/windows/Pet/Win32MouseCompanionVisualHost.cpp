@@ -152,6 +152,28 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimePoseSampleCount;
     diagnostics.rendererRuntime.sceneRuntimeBoundPoseSampleCount =
         rendererRuntime.sceneRuntimeBoundPoseSampleCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSourceState =
+        rendererRuntime.sceneRuntimeModelAssetSourceState;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSourceReadiness =
+        rendererRuntime.sceneRuntimeModelAssetSourceReadiness;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSourceBrief =
+        rendererRuntime.sceneRuntimeModelAssetSourceBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSourcePathBrief =
+        rendererRuntime.sceneRuntimeModelAssetSourcePathBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSourceValueBrief =
+        rendererRuntime.sceneRuntimeModelAssetSourceValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetManifestState =
+        rendererRuntime.sceneRuntimeModelAssetManifestState;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetManifestEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetManifestEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetManifestResolvedEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetManifestResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetManifestBrief =
+        rendererRuntime.sceneRuntimeModelAssetManifestBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetManifestEntryBrief =
+        rendererRuntime.sceneRuntimeModelAssetManifestEntryBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetManifestValueBrief =
+        rendererRuntime.sceneRuntimeModelAssetManifestValueBrief;
     diagnostics.rendererRuntime.sceneRuntimeModelSceneAdapterState =
         rendererRuntime.sceneRuntimeModelSceneAdapterState;
     diagnostics.rendererRuntime.sceneRuntimeModelSceneSeamReadiness =

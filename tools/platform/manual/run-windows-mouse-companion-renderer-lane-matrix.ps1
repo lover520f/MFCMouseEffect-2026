@@ -354,6 +354,37 @@ function New-LaneSummary(
     } else {
         ""
     }
+    $runtimeModelAssetSourceBrief = if ($null -ne $preview) {
+        $existingModelAssetSourceBrief = [string]$preview.scene_runtime_model_asset_source_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingModelAssetSourceBrief)) {
+            $existingModelAssetSourceBrief
+        } else {
+            $state = [string]$preview.scene_runtime_model_asset_source_state
+            if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+            $format = [string]$preview.model_source_format
+            if ([string]::IsNullOrWhiteSpace($format)) { $format = "unknown" }
+            $modelReady = if ($preview.model_ready) { 1 } else { 0 }
+            $actionReady = if ($preview.action_library_ready) { 1 } else { 0 }
+            $appearanceReady = if ($preview.appearance_profile_ready) { 1 } else { 0 }
+            "{0}/{1}/model:{2}/action:{3}/appearance:{4}" -f $state, $format, $modelReady, $actionReady, $appearanceReady
+        }
+    } else {
+        ""
+    }
+    $runtimeModelAssetManifestBrief = if ($null -ne $preview) {
+        $existingModelAssetManifestBrief = [string]$preview.scene_runtime_model_asset_manifest_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingModelAssetManifestBrief)) {
+            $existingModelAssetManifestBrief
+        } else {
+            $state = [string]$preview.scene_runtime_model_asset_manifest_state
+            if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+            $entryCount = [int]([string]$preview.scene_runtime_model_asset_manifest_entry_count)
+            $resolved = [int]([string]$preview.scene_runtime_model_asset_manifest_resolved_entry_count)
+            "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+        }
+    } else {
+        ""
+    }
     $runtimeModelNodeAdapterBrief = if ($null -ne $preview) {
         $existingModelNodeBrief = [string]$preview.scene_runtime_model_node_adapter_brief
         if (-not [string]::IsNullOrWhiteSpace($existingModelNodeBrief)) {
@@ -941,6 +972,8 @@ function New-LaneSummary(
         default_lane_candidate_tier = $defaultLaneCandidateTier
         runtime_sample_tier = $runtimeSampleTier
         runtime_contract_brief = $runtimeContractBrief
+        runtime_model_asset_source_brief = $runtimeModelAssetSourceBrief
+        runtime_model_asset_manifest_brief = $runtimeModelAssetManifestBrief
         runtime_model_scene_adapter_brief = $runtimeModelSceneAdapterBrief
         runtime_model_node_adapter_brief = $runtimeModelNodeAdapterBrief
         runtime_model_node_channel_brief = $runtimeModelNodeChannelBrief
@@ -1036,6 +1069,8 @@ function Compare-LaneAgainstBaseline(
         @{ name = "default_lane_candidate_tier"; baseline = [string]$Baseline.default_lane_candidate_tier; current = [string]$Lane.default_lane_candidate_tier },
         @{ name = "runtime_sample_tier"; baseline = [string]$Baseline.runtime_sample_tier; current = [string]$Lane.runtime_sample_tier },
         @{ name = "runtime_contract_brief"; baseline = [string]$Baseline.runtime_contract_brief; current = [string]$Lane.runtime_contract_brief },
+        @{ name = "runtime_model_asset_source_brief"; baseline = [string]$Baseline.runtime_model_asset_source_brief; current = [string]$Lane.runtime_model_asset_source_brief },
+        @{ name = "runtime_model_asset_manifest_brief"; baseline = [string]$Baseline.runtime_model_asset_manifest_brief; current = [string]$Lane.runtime_model_asset_manifest_brief },
         @{ name = "runtime_model_scene_adapter_brief"; baseline = [string]$Baseline.runtime_model_scene_adapter_brief; current = [string]$Lane.runtime_model_scene_adapter_brief },
         @{ name = "runtime_model_node_adapter_brief"; baseline = [string]$Baseline.runtime_model_node_adapter_brief; current = [string]$Lane.runtime_model_node_adapter_brief },
         @{ name = "runtime_model_node_channel_brief"; baseline = [string]$Baseline.runtime_model_node_channel_brief; current = [string]$Lane.runtime_model_node_channel_brief },
@@ -1165,6 +1200,8 @@ function New-LaneRecommendation(
             recommendation_style_focus_profile = [string]$lane.style_focus_profile
             recommendation_candidate_tier = $bestCandidate.candidate_tier
             runtime_default_lane_brief = [string]$lane.default_lane_brief
+            runtime_model_asset_source_brief = [string]$lane.runtime_model_asset_source_brief
+            runtime_model_asset_manifest_brief = [string]$lane.runtime_model_asset_manifest_brief
             runtime_model_node_adapter_brief = [string]$lane.runtime_model_node_adapter_brief
             runtime_model_node_channel_brief = [string]$lane.runtime_model_node_channel_brief
             runtime_model_node_graph_brief = [string]$lane.runtime_model_node_graph_brief
@@ -1188,6 +1225,8 @@ function New-LaneRecommendation(
         recommendation_style_focus_profile = if ($null -ne $baseline) { [string]$baseline.style_focus_profile } else { "builtin_control" }
         recommendation_candidate_tier = "builtin_shipped_default"
         runtime_default_lane_brief = if ($null -ne $baseline) { [string]$baseline.default_lane_brief } else { "builtin/runtime_builtin_default/stay_on_builtin/style_candidate:none" }
+        runtime_model_asset_source_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_asset_source_brief } else { "preview_only/unknown/model:0/action:0/appearance:0" }
+        runtime_model_asset_manifest_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_asset_manifest_brief } else { "preview_only/0/0" }
         runtime_model_node_adapter_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_node_adapter_brief } else { "preview_only/0.00" }
         runtime_model_node_channel_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_node_channel_brief } else { "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00" }
         runtime_model_node_graph_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_node_graph_brief } else { "preview_only/0/0" }
@@ -1276,6 +1315,12 @@ function Write-LaneMatrixSummary(
         }
         if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_contract_brief)) {
             $lines.Add(("  runtime_contract_brief: `{0}`" -f $lane.runtime_contract_brief))
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_model_asset_source_brief)) {
+            $lines.Add(("  runtime_model_asset_source_brief: `{0}`" -f $lane.runtime_model_asset_source_brief))
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_model_asset_manifest_brief)) {
+            $lines.Add(("  runtime_model_asset_manifest_brief: `{0}`" -f $lane.runtime_model_asset_manifest_brief))
         }
         if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_model_scene_adapter_brief)) {
             $lines.Add(("  runtime_model_scene_adapter_brief: `{0}`" -f $lane.runtime_model_scene_adapter_brief))
@@ -1461,6 +1506,12 @@ function Write-LaneMatrixSummary(
     $lines.Add(("- style_focus_profile: `{0}`" -f $recommendation.recommendation_style_focus_profile))
     $lines.Add(("- candidate_tier: `{0}`" -f $recommendation.recommendation_candidate_tier))
     $lines.Add(("- runtime_default_lane: `{0}`" -f $recommendation.runtime_default_lane_brief))
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_source_brief)) {
+        $lines.Add(("- runtime_model_asset_source_brief: `{0}`" -f $recommendation.runtime_model_asset_source_brief))
+    }
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_manifest_brief)) {
+        $lines.Add(("- runtime_model_asset_manifest_brief: `{0}`" -f $recommendation.runtime_model_asset_manifest_brief))
+    }
     if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_node_adapter_brief)) {
         $lines.Add(("- runtime_model_node_adapter_brief: `{0}`" -f $recommendation.runtime_model_node_adapter_brief))
     }
@@ -1605,6 +1656,12 @@ function Write-LaneMatrixSummary(
     $observationLines.Add(("- machine style focus: `{0}`" -f $recommendation.recommendation_style_focus_profile))
     $observationLines.Add(("- machine candidate tier: `{0}`" -f $recommendation.recommendation_candidate_tier))
     $observationLines.Add(("- machine runtime default lane: `{0}`" -f $recommendation.runtime_default_lane_brief))
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_source_brief)) {
+        $observationLines.Add(("- machine model asset source: `{0}`" -f $recommendation.runtime_model_asset_source_brief))
+    }
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_manifest_brief)) {
+        $observationLines.Add(("- machine model asset manifest: `{0}`" -f $recommendation.runtime_model_asset_manifest_brief))
+    }
     if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_node_adapter_brief)) {
         $observationLines.Add(("- machine model node adapter: `{0}`" -f $recommendation.runtime_model_node_adapter_brief))
     }

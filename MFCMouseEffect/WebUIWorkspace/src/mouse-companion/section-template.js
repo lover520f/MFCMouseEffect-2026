@@ -50,6 +50,18 @@ export function getMouseCompanionSectionMarkup() {
         <label>Scene Runtime Adapter</label>
         <output id="mc_runtime_scene_runtime_adapter_mode">-</output>
 
+        <label>Model Asset Source</label>
+        <output id="mc_runtime_scene_runtime_model_asset_source_brief">-</output>
+
+        <label>Model Asset Paths</label>
+        <output id="mc_runtime_scene_runtime_model_asset_source_path_brief">-</output>
+
+        <label>Model Asset Manifest</label>
+        <output id="mc_runtime_scene_runtime_model_asset_manifest_brief">-</output>
+
+        <label>Model Manifest Entries</label>
+        <output id="mc_runtime_scene_runtime_model_asset_manifest_entry_brief">-</output>
+
         <label>Model Scene Adapter</label>
         <output id="mc_runtime_scene_runtime_model_scene_adapter_brief">-</output>
 

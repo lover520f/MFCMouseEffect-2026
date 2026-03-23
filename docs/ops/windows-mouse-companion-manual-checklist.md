@@ -203,6 +203,9 @@
     - `asset_stub_ready/<format>/runtime_only`
     - `pose_stub_ready/<format>/pose_unbound`
     - `pose_bound_preview_ready/<format>/pose_bound`
+  - runtime / proof / lane matrix / WebUI now also surface `scene_runtime_model_asset_source_*` and `scene_runtime_model_asset_manifest_*`; current expected progression is:
+    - `model_asset_source_brief`: `preview_only/unknown/model:0/action:0/appearance:0` -> `model_asset_source_ready|model_asset_manifest_ready/<format>/model:1/action:1/appearance:1`
+    - `model_asset_manifest_brief`: `preview_only/0/0` -> `model_asset_manifest_partial/3/<n>` -> `model_asset_manifest_ready|model_asset_manifest_bound/3/3`
   - runtime / proof / lane matrix now also surface `scene_runtime_model_node_adapter_influence` and `scene_runtime_model_node_adapter_brief`; expected reading is:
     - `preview_only/0.00` before builders consume the shared node seam
     - `asset_stub_ready/<small>` while asset seam is present but pose influence is still reduced
