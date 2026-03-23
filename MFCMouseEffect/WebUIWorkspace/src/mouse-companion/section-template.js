@@ -137,6 +137,30 @@ export function getMouseCompanionSectionMarkup() {
         <label>Asset Anchor Scales</label>
         <output id="mc_runtime_scene_runtime_asset_node_anchor_scale_brief">-</output>
 
+        <label>Asset Node Resolver</label>
+        <output id="mc_runtime_scene_runtime_asset_node_resolver_brief">-</output>
+
+        <label>Resolved Node Resolvers</label>
+        <output id="mc_runtime_scene_runtime_asset_node_resolver_resolved_count">-</output>
+
+        <label>Node Resolver Parents</label>
+        <output id="mc_runtime_scene_runtime_asset_node_resolver_parent_brief">-</output>
+
+        <label>Node Resolver Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_resolver_value_brief">-</output>
+
+        <label>Asset Parent Space</label>
+        <output id="mc_runtime_scene_runtime_asset_node_parent_space_brief">-</output>
+
+        <label>Resolved Parent Space Nodes</label>
+        <output id="mc_runtime_scene_runtime_asset_node_parent_space_resolved_count">-</output>
+
+        <label>Parent Space Parents</label>
+        <output id="mc_runtime_scene_runtime_asset_node_parent_space_parent_brief">-</output>
+
+        <label>Parent Space Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_parent_space_value_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 

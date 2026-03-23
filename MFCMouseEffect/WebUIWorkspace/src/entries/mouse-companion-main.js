@@ -704,6 +704,50 @@ function writeRuntimeDiagnostics(runtimeState) {
     ),
   );
   writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_resolver_brief',
+    normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_asset_node_resolver_brief, 'preview_only/0/0'),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_resolver_resolved_count',
+    normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_asset_node_resolver_resolved_entry_count, '0'),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_resolver_parent_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_asset_node_resolver_parent_brief,
+      'body:root|head:body|appendage:body|overlay:head|grounding:body',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_resolver_value_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_asset_node_resolver_value_brief,
+      'body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_parent_space_brief',
+    normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_asset_node_parent_space_brief, 'preview_only/0/0'),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_parent_space_resolved_count',
+    normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_asset_node_parent_space_resolved_entry_count, '0'),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_parent_space_parent_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_asset_node_parent_space_parent_brief,
+      'body:root|head:body|appendage:body|overlay:head|grounding:body',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_parent_space_value_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_asset_node_parent_space_value_brief,
+      'body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)',
+    ),
+  );
+  writeTextValue(
     'mc_runtime_scene_runtime_pose_adapter_brief',
     normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_pose_adapter_brief, 'runtime_only/0.00/0.00'),
   );

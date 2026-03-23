@@ -267,6 +267,46 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeAnchorScaleBrief).empty()
             ? "body:1.00|head:1.00|appendage:1.00|overlay:1.00|grounding:1.00"
             : status.rendererRuntimeSceneRuntimeAssetNodeAnchorScaleBrief;
+    diagnostics.sceneRuntimeAssetNodeResolverState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeResolverState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodeResolverState;
+    diagnostics.sceneRuntimeAssetNodeResolverEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverEntryCount;
+    diagnostics.sceneRuntimeAssetNodeResolverResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeResolverBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeResolverBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodeResolverBrief;
+    diagnostics.sceneRuntimeAssetNodeResolverParentBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeResolverParentBrief).empty()
+            ? "body:root|head:body|appendage:body|overlay:head|grounding:body"
+            : status.rendererRuntimeSceneRuntimeAssetNodeResolverParentBrief;
+    diagnostics.sceneRuntimeAssetNodeResolverValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeResolverValueBrief).empty()
+            ? "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"
+            : status.rendererRuntimeSceneRuntimeAssetNodeResolverValueBrief;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceState;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceEntryCount;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceBrief;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceParentBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceParentBrief).empty()
+            ? "body:root|head:body|appendage:body|overlay:head|grounding:body"
+            : status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceParentBrief;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceValueBrief).empty()
+            ? "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"
+            : status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceValueBrief;
     diagnostics.sceneRuntimePoseAdapterInfluence =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     diagnostics.sceneRuntimePoseReadabilityBias =

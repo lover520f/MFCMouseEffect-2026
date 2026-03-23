@@ -240,6 +240,30 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeAssetNodeAnchorPointBrief;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeAnchorScaleBrief =
         rendererRuntime.sceneRuntimeAssetNodeAnchorScaleBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeResolverState =
+        rendererRuntime.sceneRuntimeAssetNodeResolverState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeResolverEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeResolverEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeResolverResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeResolverResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeResolverBrief =
+        rendererRuntime.sceneRuntimeAssetNodeResolverBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeResolverParentBrief =
+        rendererRuntime.sceneRuntimeAssetNodeResolverParentBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeResolverValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodeResolverValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeParentSpaceState =
+        rendererRuntime.sceneRuntimeAssetNodeParentSpaceState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeParentSpaceEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeParentSpaceEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeParentSpaceResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeParentSpaceResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeParentSpaceBrief =
+        rendererRuntime.sceneRuntimeAssetNodeParentSpaceBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeParentSpaceParentBrief =
+        rendererRuntime.sceneRuntimeAssetNodeParentSpaceParentBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeParentSpaceValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodeParentSpaceValueBrief;
     diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence =
         rendererRuntime.sceneRuntimePoseAdapterInfluence;
     diagnostics.rendererRuntime.sceneRuntimePoseReadabilityBias =

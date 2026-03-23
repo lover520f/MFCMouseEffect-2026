@@ -173,6 +173,22 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "body:(0.0,0.0)|head:(0.0,0.0)|appendage:(0.0,0.0)|overlay:(0.0,0.0)|grounding:(0.0,0.0)";
     diagnostics.sceneRuntimeAssetNodeAnchorScaleBrief =
         "body:1.00|head:1.00|appendage:1.00|overlay:1.00|grounding:1.00";
+    diagnostics.sceneRuntimeAssetNodeResolverState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeResolverEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeResolverResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeResolverBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeResolverParentBrief =
+        "body:root|head:body|appendage:body|overlay:head|grounding:body";
+    diagnostics.sceneRuntimeAssetNodeResolverValueBrief =
+        "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)";
+    diagnostics.sceneRuntimeAssetNodeParentSpaceState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeParentSpaceEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeParentSpaceParentBrief =
+        "body:root|head:body|appendage:body|overlay:head|grounding:body";
+    diagnostics.sceneRuntimeAssetNodeParentSpaceValueBrief =
+        "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)";
     diagnostics.appearanceSkinVariantId = input.appearanceProfile.skinVariantId;
     diagnostics.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;
     const auto accessoryFamily =

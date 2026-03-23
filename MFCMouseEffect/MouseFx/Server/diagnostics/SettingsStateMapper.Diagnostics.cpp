@@ -355,6 +355,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeAnchorPointBrief},
         {"scene_runtime_asset_node_anchor_scale_brief",
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeAnchorScaleBrief},
+        {"scene_runtime_asset_node_resolver_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeResolverState},
+        {"scene_runtime_asset_node_resolver_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeResolverEntryCount},
+        {"scene_runtime_asset_node_resolver_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeResolverResolvedEntryCount},
+        {"scene_runtime_asset_node_resolver_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeResolverBrief},
+        {"scene_runtime_asset_node_resolver_parent_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeResolverParentBrief},
+        {"scene_runtime_asset_node_resolver_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeResolverValueBrief},
+        {"scene_runtime_asset_node_parent_space_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeParentSpaceState},
+        {"scene_runtime_asset_node_parent_space_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeParentSpaceEntryCount},
+        {"scene_runtime_asset_node_parent_space_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeParentSpaceResolvedEntryCount},
+        {"scene_runtime_asset_node_parent_space_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeParentSpaceBrief},
+        {"scene_runtime_asset_node_parent_space_parent_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeParentSpaceParentBrief},
+        {"scene_runtime_asset_node_parent_space_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeParentSpaceValueBrief},
         {"scene_runtime_pose_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
         {"scene_runtime_pose_readability_bias",
@@ -525,6 +549,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeAssetNodeAnchorPointBrief;
     out["renderer_runtime_scene_runtime_asset_node_anchor_scale_brief"] =
         status.rendererRuntimeSceneRuntimeAssetNodeAnchorScaleBrief;
+    out["renderer_runtime_scene_runtime_asset_node_resolver_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverState;
+    out["renderer_runtime_scene_runtime_asset_node_resolver_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_resolver_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_resolver_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverBrief;
+    out["renderer_runtime_scene_runtime_asset_node_resolver_parent_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverParentBrief;
+    out["renderer_runtime_scene_runtime_asset_node_resolver_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_parent_space_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceState;
+    out["renderer_runtime_scene_runtime_asset_node_parent_space_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_parent_space_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_parent_space_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceBrief;
+    out["renderer_runtime_scene_runtime_asset_node_parent_space_parent_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceParentBrief;
+    out["renderer_runtime_scene_runtime_asset_node_parent_space_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceValueBrief;
     out["renderer_runtime_scene_runtime_pose_adapter_influence"] =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     out["renderer_runtime_scene_runtime_pose_readability_bias"] =

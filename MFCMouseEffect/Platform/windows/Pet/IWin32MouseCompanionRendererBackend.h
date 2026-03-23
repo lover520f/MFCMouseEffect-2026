@@ -81,6 +81,22 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
         "body:(0.0,0.0)|head:(0.0,0.0)|appendage:(0.0,0.0)|overlay:(0.0,0.0)|grounding:(0.0,0.0)"};
     std::string sceneRuntimeAssetNodeAnchorScaleBrief{
         "body:1.00|head:1.00|appendage:1.00|overlay:1.00|grounding:1.00"};
+    std::string sceneRuntimeAssetNodeResolverState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeResolverEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeResolverResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeResolverBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeResolverParentBrief{
+        "body:root|head:body|appendage:body|overlay:head|grounding:body"};
+    std::string sceneRuntimeAssetNodeResolverValueBrief{
+        "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"};
+    std::string sceneRuntimeAssetNodeParentSpaceState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeParentSpaceEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeParentSpaceResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeParentSpaceBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeParentSpaceParentBrief{
+        "body:root|head:body|appendage:body|overlay:head|grounding:body"};
+    std::string sceneRuntimeAssetNodeParentSpaceValueBrief{
+        "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

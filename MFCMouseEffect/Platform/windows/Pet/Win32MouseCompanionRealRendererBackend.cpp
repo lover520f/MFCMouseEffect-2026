@@ -5,7 +5,9 @@
 
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetResources.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeAnchorProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeParentSpaceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeResolverProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererCapabilities.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelSceneAdapterProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererPainter.h"
@@ -68,6 +70,8 @@ void Win32MouseCompanionRealRendererBackend::Render(
     const auto resources = BuildWin32MouseCompanionRealRendererAssetResources(input);
     const auto sceneRuntime = BuildWin32MouseCompanionRealRendererSceneRuntime(input, resources);
     const auto scene = BuildWin32MouseCompanionRealRendererScene(sceneRuntime, width, height);
+    const auto resolverProfile = sceneRuntime.assetNodeResolverProfile;
+    const auto parentSpaceProfile = sceneRuntime.assetNodeParentSpaceProfile;
     const auto anchorProfile =
         BuildWin32MouseCompanionRealRendererAssetNodeAnchorProfile(sceneRuntime, scene);
     const auto pluginSelection = ResolveWin32MouseCompanionRenderPluginSelection();
@@ -176,6 +180,21 @@ void Win32MouseCompanionRealRendererBackend::Render(
     diagnostics.sceneRuntimeAssetNodeAnchorBrief = anchorProfile.brief;
     diagnostics.sceneRuntimeAssetNodeAnchorPointBrief = anchorProfile.pointBrief;
     diagnostics.sceneRuntimeAssetNodeAnchorScaleBrief = anchorProfile.scaleBrief;
+    diagnostics.sceneRuntimeAssetNodeResolverState = resolverProfile.resolverState;
+    diagnostics.sceneRuntimeAssetNodeResolverEntryCount = resolverProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodeResolverResolvedEntryCount =
+        resolverProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeResolverBrief = resolverProfile.brief;
+    diagnostics.sceneRuntimeAssetNodeResolverParentBrief = resolverProfile.parentBrief;
+    diagnostics.sceneRuntimeAssetNodeResolverValueBrief =
+        resolverProfile.localTransformBrief;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceState = parentSpaceProfile.parentSpaceState;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceEntryCount = parentSpaceProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceResolvedEntryCount =
+        parentSpaceProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceBrief = parentSpaceProfile.brief;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceParentBrief = parentSpaceProfile.parentBrief;
+    diagnostics.sceneRuntimeAssetNodeParentSpaceValueBrief = parentSpaceProfile.valueBrief;
     const auto& poseAdapterProfile = sceneRuntime.poseAdapterProfile;
     diagnostics.sceneRuntimePoseAdapterInfluence = poseAdapterProfile.influence;
     diagnostics.sceneRuntimePoseReadabilityBias = poseAdapterProfile.readabilityBias;

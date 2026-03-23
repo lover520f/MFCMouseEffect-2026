@@ -34,9 +34,10 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         runtime.modelNodeRegistryProfile.overlayEntry.resolved
             ? runtime.modelNodeRegistryProfile.overlayEntry.registryWeight
             : 0.0f;
+    const auto& assetParentSpace = runtime.assetNodeParentSpaceProfile;
     const float transformOverlayWeight =
-        runtime.assetNodeTransformProfile.overlayEntry.resolved
-            ? runtime.assetNodeTransformProfile.overlayEntry.transformWeight
+        assetParentSpace.overlayEntry.resolved
+            ? assetParentSpace.overlayEntry.resolvedWeight
             : 0.0f;
     const float overlayAlphaScale =
         1.0f + poseReadabilityBias * 0.10f + registryOverlayWeight * 0.08f + assetOverlayWeight * 0.06f +
@@ -49,19 +50,19 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
     const float poseOverlayCenterY =
         runtime.modelNodeBindingProfile.overlayEntry.worldOffsetY * metrics.bodyHeight;
     const float transformOverlayCenterX =
-        runtime.assetNodeTransformProfile.overlayEntry.resolved
-            ? runtime.assetNodeTransformProfile.overlayEntry.offsetX * metrics.bodyWidth
+        assetParentSpace.overlayEntry.resolved
+            ? assetParentSpace.overlayEntry.parentSpaceOffsetX * metrics.bodyWidth
             : 0.0f;
     const float transformOverlayCenterY =
-        runtime.assetNodeTransformProfile.overlayEntry.resolved
-            ? runtime.assetNodeTransformProfile.overlayEntry.offsetY * metrics.bodyHeight
+        assetParentSpace.overlayEntry.resolved
+            ? assetParentSpace.overlayEntry.parentSpaceOffsetY * metrics.bodyHeight
             : 0.0f;
     scene.overlayAnchor = Gdiplus::PointF(
         scene.centerX + poseOverlayCenterX + transformOverlayCenterX,
         scene.centerY + poseOverlayCenterY + transformOverlayCenterY);
     scene.overlayAnchorScale =
-        runtime.assetNodeTransformProfile.overlayEntry.resolved
-            ? runtime.assetNodeTransformProfile.overlayEntry.anchorScale
+        assetParentSpace.overlayEntry.resolved
+            ? assetParentSpace.overlayEntry.parentSpaceScale
             : 1.0f;
     scene.actionOverlay.accentColor = profile.overlayAccentColor;
 

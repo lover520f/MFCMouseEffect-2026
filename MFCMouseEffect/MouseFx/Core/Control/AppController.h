@@ -204,6 +204,22 @@ public:
             "body:(0.0,0.0)|head:(0.0,0.0)|appendage:(0.0,0.0)|overlay:(0.0,0.0)|grounding:(0.0,0.0)"};
         std::string rendererRuntimeSceneRuntimeAssetNodeAnchorScaleBrief{
             "body:1.00|head:1.00|appendage:1.00|overlay:1.00|grounding:1.00"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeResolverState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeResolverEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeResolverResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeResolverBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeResolverParentBrief{
+            "body:root|head:body|appendage:body|overlay:head|grounding:body"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeResolverValueBrief{
+            "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeParentSpaceState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeParentSpaceEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeParentSpaceResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeParentSpaceBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeParentSpaceParentBrief{
+            "body:root|head:body|appendage:body|overlay:head|grounding:body"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeParentSpaceValueBrief{
+            "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};
