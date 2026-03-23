@@ -287,6 +287,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererActionOverlayBuilder.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAdornmentBuilder.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAppearanceSemantics.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRenderPluginContractLabels.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRenderPluginManifestContract.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRenderPluginHost.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAppendageBuilder.h" />
@@ -630,6 +631,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererActionOverlayBuilder.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAdornmentBuilder.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAppearanceSemantics.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRenderPluginContractLabels.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRenderPluginManifestContract.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRenderPluginHost.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAppendageBuilder.cpp" />

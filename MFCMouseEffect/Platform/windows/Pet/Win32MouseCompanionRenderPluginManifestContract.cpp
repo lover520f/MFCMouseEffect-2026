@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "Platform/windows/Pet/Win32MouseCompanionRenderPluginContractLabels.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRenderPluginManifestContract.h"
 
 #include "MouseFx/Core/Json/JsonFacade.h"
@@ -22,22 +23,6 @@ constexpr const char* kAppearanceSemanticsModeLegacyManifestCompat =
 constexpr const char* kAppearanceSemanticsModeBuiltinPassthrough =
     "builtin_passthrough";
 constexpr const char* kAppearanceSemanticsModeWasmV1 = "wasm_v1";
-
-bool IsSupportedDeclaredStyleIntent(const std::string& value) {
-    return value == "style_candidate:none" ||
-        value == "style_candidate:builtin_passthrough_baseline" ||
-        value == "style_candidate:balanced_default_candidate" ||
-        value == "style_candidate:agile_follow_drag" ||
-        value == "style_candidate:dreamy_follow_scroll" ||
-        value == "style_candidate:charming_click_hold" ||
-        value == "style_candidate:single_selected_wasm_v1";
-}
-
-bool IsSupportedDeclaredSampleTier(const std::string& value) {
-    return value == "baseline_reference" ||
-        value == "ship_default_candidate" ||
-        value == "experimental_style_candidate";
-}
 
 std::filesystem::path ResolveRendererMetadataPath(
     const std::filesystem::path& manifestPath) {
@@ -871,7 +856,7 @@ bool ValidateOptionalRendererMetadata(
             return false;
         }
         const std::string styleIntent = TrimAscii(root["style_intent"].get<std::string>());
-        if (!IsSupportedDeclaredStyleIntent(styleIntent)) {
+        if (!IsSupportedWin32MouseCompanionRenderPluginStyleIntent(styleIntent)) {
             if (outFailureReason) {
                 *outFailureReason = "renderer_plugin_metadata_style_intent_unsupported";
             }
@@ -889,7 +874,7 @@ bool ValidateOptionalRendererMetadata(
             return false;
         }
         const std::string sampleTier = TrimAscii(root["sample_tier"].get<std::string>());
-        if (!IsSupportedDeclaredSampleTier(sampleTier)) {
+        if (!IsSupportedWin32MouseCompanionRenderPluginSampleTier(sampleTier)) {
             if (outFailureReason) {
                 *outFailureReason = "renderer_plugin_metadata_sample_tier_unsupported";
             }

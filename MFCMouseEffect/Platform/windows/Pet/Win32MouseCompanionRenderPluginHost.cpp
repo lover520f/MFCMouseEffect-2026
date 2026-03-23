@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include "Platform/windows/Pet/Win32MouseCompanionRenderPluginContractLabels.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRenderPluginHost.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRenderPluginManifestContract.h"
 
@@ -60,35 +61,11 @@ void ApplyDefaultLaneDecision(
             "candidate_pending_manual_confirmation";
     }
 
-    const std::string declaredStyleIntent = TrimAscii(selection->declaredStyleIntent);
-    if (!declaredStyleIntent.empty() && selection->defaultLaneCandidate != "builtin") {
-        selection->defaultLaneStyleIntent = declaredStyleIntent;
-        return;
-    }
-
-    selection->defaultLaneStyleIntent = "style_candidate:none";
-    if (selection->defaultLaneCandidate == "builtin_passthrough") {
-        selection->defaultLaneStyleIntent = "style_candidate:builtin_passthrough_baseline";
-        return;
-    }
-    if (selection->defaultLaneCandidate != "wasm_v1") {
-        return;
-    }
-
-    switch (selection->comboPresetOverride) {
-    case Win32MouseCompanionRealRendererAppearanceComboPreset::Agile:
-        selection->defaultLaneStyleIntent = "style_candidate:agile_follow_drag";
-        return;
-    case Win32MouseCompanionRealRendererAppearanceComboPreset::Dreamy:
-        selection->defaultLaneStyleIntent = "style_candidate:dreamy_follow_scroll";
-        return;
-    case Win32MouseCompanionRealRendererAppearanceComboPreset::Charming:
-        selection->defaultLaneStyleIntent = "style_candidate:charming_click_hold";
-        return;
-    case Win32MouseCompanionRealRendererAppearanceComboPreset::None:
-        selection->defaultLaneStyleIntent = "style_candidate:balanced_default_candidate";
-        return;
-    }
+    selection->defaultLaneStyleIntent =
+        ResolveWin32MouseCompanionRenderPluginDefaultLaneStyleIntent(
+            selection->defaultLaneCandidate,
+            selection->declaredStyleIntent,
+            selection->comboPresetOverride);
 }
 
 std::string ReadEnvCopy(const char* key) {
