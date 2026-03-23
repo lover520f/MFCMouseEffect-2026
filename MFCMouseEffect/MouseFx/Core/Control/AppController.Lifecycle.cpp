@@ -593,6 +593,8 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.sceneRuntimeModelNodeAdapterInfluence;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeAdapterBrief =
         diagnostics.rendererRuntime.sceneRuntimeModelNodeAdapterBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeChannelBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelNodeChannelBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterInfluence =
         diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseReadabilityBias =
@@ -693,6 +695,8 @@ void AppController::ClearPetVisualHostDiagnostics() {
         0.0f;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeAdapterBrief =
         "preview_only/0.00";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeChannelBrief =
+        "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterInfluence = 0.0f;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseReadabilityBias = 0.0f;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterBrief =

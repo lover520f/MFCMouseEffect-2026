@@ -208,6 +208,10 @@
     - `asset_stub_ready/<small>` while asset seam is present but pose influence is still reduced
     - `pose_stub_ready/<mid>` once pose samples are feeding the shared node seam
     - `pose_bound_preview_ready/<largest>` once frame/face/adornment/overlay/grounding are all reading the same bound node offsets
+  - `scene_runtime_model_node_channel_brief` should now also move from all-zero toward non-zero channel weights; expected relative emphasis is usually:
+    - `body` and `face` first
+    - then `appendage` / `overlay`
+    - `grounding` slightly softer than fully bound body/face
    - `render-proof` can now pin pose-adapter state directly with `-ExpectedSceneRuntimeAdapterMode`, `-ExpectedSceneRuntimePoseAdapterBrief`, `-ExpectedSceneRuntimePoseAdapterInfluenceMin`, and `-ExpectedSceneRuntimePoseReadabilityBiasMin`
    - `render-proof` and lane matrix now also echo `default_lane_candidate_tier`, so `ship_default_candidate` vs `experimental_style_candidate` no longer needs to be inferred manually from raw sample metadata
    - smoke expectation now also pins that value:

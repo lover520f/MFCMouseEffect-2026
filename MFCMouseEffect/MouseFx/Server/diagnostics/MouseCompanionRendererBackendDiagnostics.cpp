@@ -139,6 +139,10 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeAdapterBrief).empty()
             ? "preview_only/0.00"
             : status.rendererRuntimeSceneRuntimeModelNodeAdapterBrief;
+    diagnostics.sceneRuntimeModelNodeChannelBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelNodeChannelBrief).empty()
+            ? "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00"
+            : status.rendererRuntimeSceneRuntimeModelNodeChannelBrief;
     diagnostics.sceneRuntimePoseAdapterInfluence =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     diagnostics.sceneRuntimePoseReadabilityBias =

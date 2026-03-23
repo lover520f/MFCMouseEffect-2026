@@ -114,15 +114,18 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
     }
 
     const auto& nodeAdapter = runtime.modelNodeAdapterProfile;
-    const float poseAnchorX = nodeAdapter.centerOffsetX * metrics.bodyWidth;
-    const float poseAnchorY = nodeAdapter.centerOffsetY * metrics.bodyHeight;
-    const float poseHeadX = nodeAdapter.faceOffsetX * metrics.headWidth;
-    const float poseHeadY = nodeAdapter.faceOffsetY * metrics.headHeight;
-    const float poseGroundingX = nodeAdapter.groundingOffsetX * metrics.bodyWidth;
-    const float poseGroundingY = nodeAdapter.groundingOffsetY * metrics.bodyHeight;
-    const float poseGroundingScale = 1.0f + std::abs(nodeAdapter.groundingOffsetX) * 0.65f;
-    scene.shadowAlphaScale = 1.0f + nodeAdapter.influence * 0.08f;
-    scene.pedestalAlphaScale = 1.0f + nodeAdapter.influence * 0.06f;
+    const float poseAnchorX = nodeAdapter.bodyChannel.offsetX * nodeAdapter.bodyChannel.influence * metrics.bodyWidth;
+    const float poseAnchorY = nodeAdapter.bodyChannel.offsetY * nodeAdapter.bodyChannel.influence * metrics.bodyHeight;
+    const float poseHeadX = nodeAdapter.faceChannel.offsetX * nodeAdapter.faceChannel.influence * metrics.headWidth;
+    const float poseHeadY = nodeAdapter.faceChannel.offsetY * nodeAdapter.faceChannel.influence * metrics.headHeight;
+    const float poseGroundingX =
+        nodeAdapter.groundingChannel.offsetX * nodeAdapter.groundingChannel.influence * metrics.bodyWidth;
+    const float poseGroundingY =
+        nodeAdapter.groundingChannel.offsetY * nodeAdapter.groundingChannel.influence * metrics.bodyHeight;
+    const float poseGroundingScale =
+        1.0f + std::abs(nodeAdapter.groundingChannel.offsetX) * nodeAdapter.groundingChannel.influence * 0.65f;
+    scene.shadowAlphaScale = 1.0f + nodeAdapter.groundingChannel.influence * 0.08f;
+    scene.pedestalAlphaScale = 1.0f + nodeAdapter.groundingChannel.influence * 0.06f;
 
     scene.centerX = static_cast<float>(width) * style.centerXRatio + facingOffset + profile.bodyForward +
         profile.idleHeadSway + poseAnchorX;

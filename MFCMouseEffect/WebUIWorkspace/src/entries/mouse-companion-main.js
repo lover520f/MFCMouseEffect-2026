@@ -571,6 +571,13 @@ function writeRuntimeDiagnostics(runtimeState) {
     normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_model_node_adapter_influence, '0'),
   );
   writeTextValue(
+    'mc_runtime_scene_runtime_model_node_channel_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_node_channel_brief,
+      'body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00',
+    ),
+  );
+  writeTextValue(
     'mc_runtime_scene_runtime_pose_adapter_brief',
     normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_pose_adapter_brief, 'runtime_only/0.00/0.00'),
   );

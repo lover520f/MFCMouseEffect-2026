@@ -181,7 +181,7 @@ Keep P1 concise; add details here when needed.
     - `-ExpectedSceneRuntimePoseAdapterInfluenceMin`
     - `-ExpectedSceneRuntimePoseReadabilityBiasMin`
   - saved `render-proof` JSON now also carries both fields under `real_renderer_preview` and `renderer_runtime_after`
-  - runtime / proof / lane matrix now also expose `scene_runtime_model_scene_adapter_brief` and `scene_runtime_model_node_adapter_brief`, so you can tell whether the current lane is still preview-only, already on the asset/pose-ready seam, and already consuming the shared node-offset seam without reopening raw state JSON
+  - runtime / proof / lane matrix now also expose `scene_runtime_model_scene_adapter_brief`, `scene_runtime_model_node_adapter_brief`, and `scene_runtime_model_node_channel_brief`, so you can tell whether the current lane is still preview-only, already on the asset/pose-ready seam, and how strongly `body / face / appendage / overlay / grounding` are consuming the shared node seam without reopening raw state JSON
   - current seam states:
     - `preview_only`
     - `asset_stub_ready`

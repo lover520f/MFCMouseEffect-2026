@@ -6,6 +6,12 @@ namespace mousefx::windows {
 
 struct Win32MouseCompanionRealRendererSceneRuntime;
 
+struct Win32MouseCompanionRealRendererModelNodeChannel final {
+    float influence{0.0f};
+    float offsetX{0.0f};
+    float offsetY{0.0f};
+};
+
 struct Win32MouseCompanionRealRendererModelNodeAdapterProfile final {
     float influence{0.0f};
     float centerOffsetX{0.0f};
@@ -20,7 +26,13 @@ struct Win32MouseCompanionRealRendererModelNodeAdapterProfile final {
     float groundingOffsetY{0.0f};
     float whiskerBias{0.0f};
     float blushLift{0.0f};
+    Win32MouseCompanionRealRendererModelNodeChannel bodyChannel{};
+    Win32MouseCompanionRealRendererModelNodeChannel faceChannel{};
+    Win32MouseCompanionRealRendererModelNodeChannel appendageChannel{};
+    Win32MouseCompanionRealRendererModelNodeChannel overlayChannel{};
+    Win32MouseCompanionRealRendererModelNodeChannel groundingChannel{};
     std::string brief{"preview_only/0.00"};
+    std::string channelBrief{"body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
 };
 
 Win32MouseCompanionRealRendererModelNodeAdapterProfile

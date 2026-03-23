@@ -154,6 +154,8 @@ public:
         float rendererRuntimeSceneRuntimeModelNodeAdapterInfluence{0.0f};
         std::string rendererRuntimeSceneRuntimeModelNodeAdapterBrief{
             "preview_only/0.00"};
+        std::string rendererRuntimeSceneRuntimeModelNodeChannelBrief{
+            "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

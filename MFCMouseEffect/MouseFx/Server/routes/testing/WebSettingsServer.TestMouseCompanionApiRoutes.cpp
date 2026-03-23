@@ -186,6 +186,8 @@ json BuildMouseCompanionRuntimeStatusJson(const AppController::MouseCompanionRun
              realRendererPreviewDiagnostics.sceneRuntimeModelNodeAdapterInfluence},
             {"scene_runtime_model_node_adapter_brief",
              realRendererPreviewDiagnostics.sceneRuntimeModelNodeAdapterBrief},
+            {"scene_runtime_model_node_channel_brief",
+             realRendererPreviewDiagnostics.sceneRuntimeModelNodeChannelBrief},
             {"scene_runtime_pose_adapter_influence",
              realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
             {"scene_runtime_pose_readability_bias",

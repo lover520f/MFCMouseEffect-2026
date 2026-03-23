@@ -238,6 +238,7 @@ It should **not** own:
   - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `modelNodeAdapterProfile`; runtime/proof/WebUI may expose:
     - `scene_runtime_model_node_adapter_influence`
     - `scene_runtime_model_node_adapter_brief = seam_state/influence`
+    - `scene_runtime_model_node_channel_brief = body:x|face:y|appendage:z|overlay:w|grounding:v`
   - host-side default-lane style-intent inference and metadata support lists should reuse the same helper, so `style_intent` / `sample_tier` machine vocab does not split between validation and runtime
   - runtime/preview diagnostics should also expose scene-runtime adapter state explicitly instead of only `pose_frame_available / pose_binding_configured` booleans:
     - `scene_runtime_adapter_mode = runtime_only|pose_unbound|pose_bound`
@@ -259,7 +260,7 @@ It should **not** own:
     - lightweight frame/face anchor bias (head/body center, eye/nose/mouth placement, blush/whisker staging)
     - lightweight adornment/overlay/grounding bias (pose-badge visibility, accessory anchor, click/hold/scroll/drag/follow overlay staging, shadow/pedestal grounding)
     - lightweight painter/readability bias (shadow/pedestal alpha, pose-badge confidence, accessory alpha/stroke emphasis)
-    - one shared model-node seam for frame/face/adornment/overlay/grounding offsets instead of local raw pose averaging
+    - one shared model-node seam for frame/face/adornment/overlay/grounding offsets, with channel-specific influence instead of one undifferentiated node bias
   - but it still must remain a bounded preview aid, not a separate controller-visible action taxonomy
 - 新增 renderer-owned semantics 时，应优先扩展 plugin output，而不是把 builder 继续当作事实上的插件层；当前 `wasm_v1` 就是第一步 bounded patch 协议，而不是继续往 `builtin_passthrough` 堆更多 ad-hoc tuning key
 - 当前默认 lane rollout 合同：
