@@ -60,6 +60,12 @@ void ApplyDefaultLaneDecision(
             "candidate_pending_manual_confirmation";
     }
 
+    const std::string declaredStyleIntent = TrimAscii(selection->declaredStyleIntent);
+    if (!declaredStyleIntent.empty() && selection->defaultLaneCandidate != "builtin") {
+        selection->defaultLaneStyleIntent = declaredStyleIntent;
+        return;
+    }
+
     selection->defaultLaneStyleIntent = "style_candidate:none";
     if (selection->defaultLaneCandidate == "builtin_passthrough") {
         selection->defaultLaneStyleIntent = "style_candidate:builtin_passthrough_baseline";
@@ -641,6 +647,7 @@ public:
                 metadataPath_ = preflight.metadataPath;
                 metadataSchemaVersion_ = preflight.metadataSchemaVersion;
                 appearanceSemanticsMode_ = preflight.appearanceSemanticsMode;
+                styleIntent_ = preflight.styleIntent;
                 comboPresetOverride_ = preflight.comboPresetOverride;
                 tuning_ = preflight.tuning;
                 appearanceSemanticsPatch_ = preflight.appearanceSemanticsPatch;
@@ -650,6 +657,7 @@ public:
             metadataPath_ = preflight.metadataPath;
             metadataSchemaVersion_ = preflight.metadataSchemaVersion;
             appearanceSemanticsMode_ = preflight.appearanceSemanticsMode;
+            styleIntent_ = preflight.styleIntent;
             comboPresetOverride_ = preflight.comboPresetOverride;
             tuning_ = preflight.tuning;
             appearanceSemanticsPatch_ = preflight.appearanceSemanticsPatch;
@@ -671,6 +679,7 @@ public:
             selection.metadataPath = metadataPath_;
             selection.metadataSchemaVersion = metadataSchemaVersion_;
             selection.appearanceSemanticsMode = appearanceSemanticsMode_;
+            selection.declaredStyleIntent = styleIntent_;
             return selection;
         }
 
@@ -687,6 +696,7 @@ public:
         selection.metadataPath = metadataPath_;
         selection.metadataSchemaVersion = metadataSchemaVersion_;
         selection.appearanceSemanticsMode = appearanceSemanticsMode_;
+        selection.declaredStyleIntent = styleIntent_;
         selection.comboPresetOverride = comboPresetOverride_;
         selection.tuning = tuning_;
         return selection;
@@ -699,6 +709,7 @@ private:
     mutable std::string metadataPath_{};
     mutable uint32_t metadataSchemaVersion_{0};
     mutable std::string appearanceSemanticsMode_{"legacy_manifest_compat"};
+    mutable std::string styleIntent_{};
     mutable Win32MouseCompanionRealRendererAppearanceComboPreset comboPresetOverride_{
         Win32MouseCompanionRealRendererAppearanceComboPreset::None};
     mutable Win32MouseCompanionRendererPluginAppearanceSemanticsTuning tuning_{};
@@ -763,6 +774,7 @@ ResolveWin32MouseCompanionRenderPluginSelection() {
         selection.metadataPath = wasmSelection.metadataPath;
         selection.metadataSchemaVersion = wasmSelection.metadataSchemaVersion;
         selection.appearanceSemanticsMode = wasmSelection.appearanceSemanticsMode;
+        selection.declaredStyleIntent = wasmSelection.declaredStyleIntent;
         selection.comboPresetOverride = wasmSelection.comboPresetOverride;
         selection.pluginSource = "env:fallback_builtin";
         ApplyDefaultLaneDecision(&selection);

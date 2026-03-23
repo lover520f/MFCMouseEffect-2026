@@ -110,6 +110,7 @@
   - agile sample: cooler / sharper `follow / drag`
   - dreamy sample: brighter / floatier `follow / scroll`
   - charming sample: rounder / warmer `click / hold`
+  - checked-in sidecars now also declare `style_intent`, so host/runtime no longer rely only on combo-preset inference
 
 #### Windows Bring-Up / Validation
 - Dedicated native validation entrypoints exist for combo-persona acceptance, renderer-sidecar smoke, renderer-sidecar `wasm_v1` smoke, and renderer lane matrix (`builtin -> builtin_passthrough -> wasm_v1`).

@@ -23,6 +23,16 @@ constexpr const char* kAppearanceSemanticsModeBuiltinPassthrough =
     "builtin_passthrough";
 constexpr const char* kAppearanceSemanticsModeWasmV1 = "wasm_v1";
 
+bool IsSupportedDeclaredStyleIntent(const std::string& value) {
+    return value == "style_candidate:none" ||
+        value == "style_candidate:builtin_passthrough_baseline" ||
+        value == "style_candidate:balanced_default_candidate" ||
+        value == "style_candidate:agile_follow_drag" ||
+        value == "style_candidate:dreamy_follow_scroll" ||
+        value == "style_candidate:charming_click_hold" ||
+        value == "style_candidate:single_selected_wasm_v1";
+}
+
 std::filesystem::path ResolveRendererMetadataPath(
     const std::filesystem::path& manifestPath) {
     std::filesystem::path metadataPath = manifestPath;
@@ -726,6 +736,7 @@ bool ValidateOptionalRendererMetadata(
     std::string* outMetadataPathUtf8,
     uint32_t* outMetadataSchemaVersion,
     std::string* outAppearanceSemanticsMode,
+    std::string* outStyleIntent,
     Win32MouseCompanionRealRendererAppearanceComboPreset* outComboPresetOverride,
     Win32MouseCompanionRendererPluginAppearanceSemanticsTuning* outTuning,
     Win32MouseCompanionRendererPluginAppearanceSemanticsPatch* outAppearanceSemanticsPatch,
@@ -738,6 +749,9 @@ bool ValidateOptionalRendererMetadata(
     }
     if (outAppearanceSemanticsMode) {
         *outAppearanceSemanticsMode = kAppearanceSemanticsModeLegacyManifestCompat;
+    }
+    if (outStyleIntent) {
+        outStyleIntent->clear();
     }
     if (outComboPresetOverride) {
         *outComboPresetOverride = Win32MouseCompanionRealRendererAppearanceComboPreset::None;
@@ -838,6 +852,24 @@ bool ValidateOptionalRendererMetadata(
         }
     } else if (outAppearanceSemanticsMode) {
         *outAppearanceSemanticsMode = kAppearanceSemanticsModeBuiltinPassthrough;
+    }
+    if (root.contains("style_intent")) {
+        if (!root["style_intent"].is_string()) {
+            if (outFailureReason) {
+                *outFailureReason = "renderer_plugin_metadata_invalid";
+            }
+            return false;
+        }
+        const std::string styleIntent = TrimAscii(root["style_intent"].get<std::string>());
+        if (!IsSupportedDeclaredStyleIntent(styleIntent)) {
+            if (outFailureReason) {
+                *outFailureReason = "renderer_plugin_metadata_style_intent_unsupported";
+            }
+            return false;
+        }
+        if (outStyleIntent) {
+            *outStyleIntent = styleIntent;
+        }
     }
     if (root.contains("combo_preset_override")) {
         if (!root["combo_preset_override"].is_string()) {
@@ -951,6 +983,7 @@ PreflightWin32MouseCompanionWasmRenderPluginManifest(
             &preflight.metadataPath,
             &preflight.metadataSchemaVersion,
             &preflight.appearanceSemanticsMode,
+            &preflight.styleIntent,
             &preflight.comboPresetOverride,
             &preflight.tuning,
             &preflight.appearanceSemanticsPatch,

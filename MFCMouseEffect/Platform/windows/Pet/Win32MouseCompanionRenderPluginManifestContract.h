@@ -110,6 +110,7 @@ struct Win32MouseCompanionWasmRenderPluginManifestPreflight final {
     std::string metadataPath;
     uint32_t metadataSchemaVersion{0};
     std::string appearanceSemanticsMode{"legacy_manifest_compat"};
+    std::string styleIntent;
     Win32MouseCompanionRealRendererAppearanceComboPreset comboPresetOverride{
         Win32MouseCompanionRealRendererAppearanceComboPreset::None};
     Win32MouseCompanionRendererPluginAppearanceSemanticsTuning tuning{};

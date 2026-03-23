@@ -40,6 +40,7 @@ Keep P1 concise; add details here when needed.
   - copy/rename it next to the wasm manifest as `<manifest>.mouse_companion_renderer.json`
 - renderer sidecar sample for the first structured wasm semantics patch:
   - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.sample.json`
+  - checked-in sidecars now declare `style_intent` explicitly, so runtime lane intent should align with the sample file without relying only on combo-preset inference
   - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.agile.sample.json`
   - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.dreamy.sample.json`
   - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.charming.sample.json`

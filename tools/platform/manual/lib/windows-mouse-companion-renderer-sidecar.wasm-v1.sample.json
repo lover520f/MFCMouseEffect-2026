@@ -3,6 +3,7 @@
   "renderer_lane": "mouse_companion_renderer",
   "supports_appearance_semantics": true,
   "appearance_semantics_mode": "wasm_v1",
+  "style_intent": "style_candidate:balanced_default_candidate",
   "combo_preset_override": "none",
   "appearance_semantics": {
     "theme": {

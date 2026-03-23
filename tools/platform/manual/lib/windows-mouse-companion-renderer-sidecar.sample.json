@@ -3,6 +3,7 @@
   "renderer_lane": "mouse_companion_renderer",
   "supports_appearance_semantics": true,
   "appearance_semantics_mode": "builtin_passthrough",
+  "style_intent": "style_candidate:builtin_passthrough_baseline",
   "combo_preset_override": "dreamy",
   "follow_lift_scale": 1.12,
   "click_squash_scale": 1.06,

@@ -171,6 +171,7 @@
      - `style_candidate:agile_follow_drag`
      - `style_candidate:dreamy_follow_scroll`
      - `style_candidate:charming_click_hold`
+   - checked-in sidecars now declare `style_intent` explicitly; when a non-builtin lane is active, runtime should prefer that declared intent instead of only deriving from combo preset
    - native shortcut:
      - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Route proof -Event status -ExpectAppearanceProfileMatch $true`
    - `run-windows-mouse-companion-combo-persona-acceptance.cmd` now enables the same appearance-profile machine check automatically and uses dedicated combo-only appearance JSON files instead of asking Win-side validation to edit the synced main profile
