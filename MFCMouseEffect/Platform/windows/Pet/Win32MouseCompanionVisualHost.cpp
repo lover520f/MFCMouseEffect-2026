@@ -162,6 +162,8 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeModelNodeAdapterInfluence;
     diagnostics.rendererRuntime.sceneRuntimeModelNodeAdapterBrief =
         rendererRuntime.sceneRuntimeModelNodeAdapterBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelNodeChannelBrief =
+        rendererRuntime.sceneRuntimeModelNodeChannelBrief;
     diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence =
         rendererRuntime.sceneRuntimePoseAdapterInfluence;
     diagnostics.rendererRuntime.sceneRuntimePoseReadabilityBias =
