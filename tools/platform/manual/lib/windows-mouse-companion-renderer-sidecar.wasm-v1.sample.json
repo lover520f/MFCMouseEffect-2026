@@ -3,55 +3,55 @@
   "renderer_lane": "mouse_companion_renderer",
   "supports_appearance_semantics": true,
   "appearance_semantics_mode": "wasm_v1",
-  "combo_preset_override": "agile",
+  "combo_preset_override": "none",
   "appearance_semantics": {
     "theme": {
-      "glow_color": "#7FD6FF",
-      "body_stroke": "#B5E7FF",
-      "head_fill": "#8EA7D6",
-      "accent_fill": "#8FF0C8",
-      "accessory_fill": "#D8F8B8",
-      "pedestal_fill": "#7A33506A"
+      "glow_color": "#A8DFFF",
+      "body_stroke": "#D7D8F0",
+      "head_fill": "#F5F3FB",
+      "accent_fill": "#BBDCCF",
+      "accessory_fill": "#F1D58A",
+      "pedestal_fill": "#73586A66"
     },
     "frame": {
-      "body_width_scale": 0.96,
-      "body_height_scale": 1.04,
-      "head_width_scale": 0.97,
-      "head_height_scale": 1.08
+      "body_width_scale": 1.00,
+      "body_height_scale": 1.02,
+      "head_width_scale": 1.01,
+      "head_height_scale": 1.06
     },
     "face": {
-      "blush_width_scale": 0.88,
-      "muzzle_width_scale": 1.08,
-      "forehead_width_scale": 0.94,
-      "pupil_focus_scale": 1.12,
-      "highlight_alpha_scale": 1.10,
-      "whisker_spread_scale": 1.10
+      "blush_width_scale": 0.98,
+      "muzzle_width_scale": 1.04,
+      "forehead_width_scale": 0.98,
+      "pupil_focus_scale": 1.04,
+      "highlight_alpha_scale": 1.08,
+      "whisker_spread_scale": 1.04
     },
     "appendage": {
-      "ear_scale": 0.94,
-      "tail_width_scale": 1.12,
-      "tail_height_scale": 1.08,
-      "follow_tail_width_scale": 1.14,
-      "follow_ear_spread_scale": 1.10,
-      "click_ear_lift_scale": 1.12
+      "ear_scale": 0.98,
+      "tail_width_scale": 1.08,
+      "tail_height_scale": 1.06,
+      "follow_tail_width_scale": 1.10,
+      "follow_ear_spread_scale": 1.06,
+      "click_ear_lift_scale": 1.08
     },
     "motion": {
-      "follow_state_lift_scale": 1.14,
-      "click_squash_scale": 1.06,
-      "drag_lean_scale": 1.12,
-      "hold_head_nod_scale": 0.90,
-      "scroll_tail_lift_scale": 1.12,
-      "follow_head_nod_scale": 1.08
+      "follow_state_lift_scale": 1.10,
+      "click_squash_scale": 1.08,
+      "drag_lean_scale": 1.04,
+      "hold_head_nod_scale": 0.96,
+      "scroll_tail_lift_scale": 1.08,
+      "follow_head_nod_scale": 1.06
     },
     "mood": {
-      "glow_tint_mix_scale": 1.16,
+      "glow_tint_mix_scale": 1.12,
       "accent_tint_mix_scale": 1.10,
-      "shadow_tint_mix_scale": 1.08,
-      "shadow_alpha_bias": -5.0,
-      "pedestal_alpha_bias": -3.0,
-      "hold_band_alpha_scale": 1.10,
-      "scroll_arc_alpha_scale": 1.12,
-      "drag_line_alpha_scale": 1.14,
+      "shadow_tint_mix_scale": 1.02,
+      "shadow_alpha_bias": -3.0,
+      "pedestal_alpha_bias": -2.0,
+      "hold_band_alpha_scale": 1.08,
+      "scroll_arc_alpha_scale": 1.08,
+      "drag_line_alpha_scale": 1.04,
       "follow_trail_alpha_scale": 1.10
     }
   }

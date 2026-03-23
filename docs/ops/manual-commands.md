@@ -29,7 +29,7 @@ Keep P1 concise; add details here when needed.
 - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Preset renderer-sidecar-wasm-v1-smoke`
 - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-renderer-lane-matrix.cmd`
   - optional style switch:
-    - `-WasmV1Style agile|dreamy|charming`
+    - `-WasmV1Style default|agile|dreamy|charming`
   - optional full style matrix:
     - `-AllWasmV1Styles`
 - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Route proof -Event status -ExpectAppearanceProfileMatch $true`
@@ -38,12 +38,14 @@ Keep P1 concise; add details here when needed.
   - copy/rename it next to the wasm manifest as `<manifest>.mouse_companion_renderer.json`
 - renderer sidecar sample for the first structured wasm semantics patch:
   - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.sample.json`
+  - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.agile.sample.json`
   - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.dreamy.sample.json`
   - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.charming.sample.json`
   - this sample expects `appearance_semantics_mode=wasm_v1`
   - it drives a bounded `appearance_semantics` patch instead of only passthrough tuning
   - recommended curated variants:
-    - default `wasm-v1.sample.json`: agile-leaning, cooler, sharper `follow / drag`
+    - default `wasm-v1.sample.json`: balanced default-candidate, slightly cooler but not strongly biased to one action family
+    - `wasm-v1.agile.sample.json`: agile-leaning, cooler, sharper `follow / drag`
     - `wasm-v1.dreamy.sample.json`: softer, floatier, brighter `follow / scroll`
     - `wasm-v1.charming.sample.json`: rounder, warmer, stronger `click / hold`
   - current sample motion patch now covers:
@@ -104,6 +106,7 @@ Keep P1 concise; add details here when needed.
   - `-AllWasmV1Styles` expands the matrix to:
     - `builtin`
     - `builtin_passthrough`
+    - `wasm_v1_default`
     - `wasm_v1_agile`
     - `wasm_v1_dreamy`
     - `wasm_v1_charming`

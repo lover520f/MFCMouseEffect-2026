@@ -182,12 +182,13 @@
      - or `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -Preset renderer-sidecar-wasm-v1-smoke`
    - fastest dedicated Windows-native lane comparison:
      - `F:\language\cpp\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-renderer-lane-matrix.cmd`
-     - optional style selection: `-WasmV1Style agile|dreamy|charming`
+     - optional style selection: `-WasmV1Style default|agile|dreamy|charming`
      - optional full style matrix: `-AllWasmV1Styles`
      - this runs `builtin -> builtin_passthrough -> wasm_v1` in sequence, swaps the checked-in sidecar samples automatically, and restores the original sidecar/env afterward
      - it also writes per-lane proof json plus `summary.json` and `summary.md`; if `-JsonOutput` is omitted, the script auto-picks a temp prefix and prints those output paths
    - checked-in `wasm_v1` sample set now has three recommended styles:
-     - `windows-mouse-companion-renderer-sidecar.wasm-v1.sample.json`: agile-leaning baseline
+     - `windows-mouse-companion-renderer-sidecar.wasm-v1.sample.json`: balanced default-candidate baseline
+     - `windows-mouse-companion-renderer-sidecar.wasm-v1.agile.sample.json`: agile-leaning follow/drag profile
      - `windows-mouse-companion-renderer-sidecar.wasm-v1.dreamy.sample.json`: dreamy / floaty follow-first profile
      - `windows-mouse-companion-renderer-sidecar.wasm-v1.charming.sample.json`: charming / click-hold-first profile
    - if sidecar exists, ensure it includes:
@@ -230,6 +231,7 @@
      - `default_lane_source = env_wasm_candidate`
      - `default_lane_rollout_status = candidate_pending_manual_confirmation`
    - if you use the sample sidecar unchanged, expect the effective combo persona to move toward `dreamy` and the dynamic motion to feel more lifted/elastic during `follow / click / drag / hold / scroll`
+   - if you use the checked-in default `wasm_v1` sample unchanged, expect a slightly cooler, cleaner, more balanced full-pet read than builtin, with moderate lift/squash/drag deltas and no single action family dominating the overall style
    - if you use the checked-in `wasm_v1` agile sample unchanged, expect a narrower/agiler body read with a slightly taller torso, slightly broader muzzle, slightly tighter forehead silhouette, cooler glow/accent mood, stronger follow lift/drag lean, slightly tighter eye focus, slightly wider whisker spread, a fuller follow-tail read with slightly taller tail volume, a slightly tighter head silhouette, a broader `follow` ear spread, a more obvious `click` ear lift, and a more obvious `scroll` tail lift / `follow` head nod than the baseline builtin lane; the checked-in sample now also pushes clearer `hold` band / `drag` line / `follow` trail / `scroll` arc alpha plus a slightly cooler shadow tint and cooler body-stroke + head-fill read than builtin
    - if you swap to the checked-in `dreamy` sample unchanged, expect a softer head read, brighter highlights, lighter shadow/pedestal grounding, stronger `follow` trail, gentler `drag`, and a more floaty `follow / scroll` feel than builtin
    - if you swap to the checked-in `charming` sample unchanged, expect a rounder head/body read, warmer accent/accessory mood, stronger `click` ear lift and `click` squash, and a more obvious `hold` band than builtin
@@ -238,10 +240,11 @@
      - `builtin_passthrough`: same wasm provider attach, but still closest to builtin semantics with extra dreamy lift/elasticity from the sample tuning
      - `wasm_v1`: the strongest lane delta, with a cooler/agiler mood and more obvious structure/motion patching than baseline builtin
    - if you use `-AllWasmV1Styles`, expect the matrix to expand into:
+     - `wasm_v1_default`
      - `wasm_v1_agile`
      - `wasm_v1_dreamy`
      - `wasm_v1_charming`
-     - and the generated observation template to list all three separately under each action group
+     - and the generated observation template to list all four separately under each action group
    - the generated `summary.json` / `summary.md` now also contain an automatic `vs builtin` compare section, which is the fastest way to confirm lane drift before doing the manual motion read:
      - `plugin_kind`
      - `appearance_semantics_mode`

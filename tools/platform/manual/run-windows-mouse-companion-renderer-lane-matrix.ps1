@@ -5,8 +5,8 @@ param(
     [string]$RuntimeFile = "",
     [string]$WasmManifestPath = "",
     [string]$JsonOutput = "",
-    [ValidateSet("agile", "dreamy", "charming")]
-    [string]$WasmV1Style = "agile",
+    [ValidateSet("default", "agile", "dreamy", "charming")]
+    [string]$WasmV1Style = "default",
     [switch]$AllWasmV1Styles,
     [switch]$Help
 )
@@ -25,8 +25,8 @@ Options:
   -RuntimeFile <path>       Optional runtime handoff json path
   -WasmManifestPath <path>  Optional wasm manifest path; falls back to env when omitted
   -JsonOutput <path>        Optional output prefix; writes one json per lane plus summary files
-  -WasmV1Style <style>      Optional `wasm_v1` sample style: agile|dreamy|charming (default: agile)
-  -AllWasmV1Styles          Run all checked-in `wasm_v1` styles: agile, dreamy, charming
+  -WasmV1Style <style>      Optional `wasm_v1` sample style: default|agile|dreamy|charming (default: default)
+  -AllWasmV1Styles          Run all checked-in `wasm_v1` styles: default, agile, dreamy, charming
   -Help                     Show this help
 '@
 }
@@ -44,8 +44,9 @@ function Show-RendererLaneMatrixHint(
     [string]$WasmV1Style,
     [bool]$AllWasmV1Styles) {
     $wasmHint = if ($AllWasmV1Styles) {
-        "checked-in matrix will run agile / dreamy / charming variants in sequence"
+        "checked-in matrix will run default / agile / dreamy / charming variants in sequence"
     } else { switch ($WasmV1Style) {
+        "default" { "checked-in sample should feel like the balanced default-candidate lane" }
         "dreamy" { "checked-in sample should feel brighter / softer / more floaty than builtin" }
         "charming" { "checked-in sample should feel warmer / rounder / more click-hold expressive than builtin" }
         default { "checked-in sample should read cooler / tighter / slightly more agile than builtin" }
@@ -97,7 +98,8 @@ function Resolve-SidecarSamples {
     $repoRoot = Resolve-RepoRoot
     return [ordered]@{
         passthrough = (Join-Path $repoRoot "tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.sample.json")
-        wasm_v1_agile = (Join-Path $repoRoot "tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.sample.json")
+        wasm_v1_agile = (Join-Path $repoRoot "tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.agile.sample.json")
+        wasm_v1_default = (Join-Path $repoRoot "tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.sample.json")
         wasm_v1_dreamy = (Join-Path $repoRoot "tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.dreamy.sample.json")
         wasm_v1_charming = (Join-Path $repoRoot "tools\platform\manual\lib\windows-mouse-companion-renderer-sidecar.wasm-v1.charming.sample.json")
     }
@@ -107,6 +109,7 @@ function Resolve-WasmV1SamplePath(
     [hashtable]$SidecarSamples,
     [string]$WasmV1Style) {
     switch ($WasmV1Style) {
+    "default" { return [string]$SidecarSamples.wasm_v1_default }
     "dreamy" { return [string]$SidecarSamples.wasm_v1_dreamy }
     "charming" { return [string]$SidecarSamples.wasm_v1_charming }
     default { return [string]$SidecarSamples.wasm_v1_agile }
@@ -118,7 +121,7 @@ function New-WasmV1LaneSpecs(
     [string]$WasmV1Style,
     [bool]$AllWasmV1Styles) {
     $styles = if ($AllWasmV1Styles) {
-        @("agile", "dreamy", "charming")
+        @("default", "agile", "dreamy", "charming")
     } else {
         @($WasmV1Style)
     }
@@ -208,6 +211,7 @@ function New-LaneSummary(
     $expectationState = if ($expectationMet) { "pass" } else { "fail" }
     $laneVerdict = "{0}/{1}/{2}/{3}" -f $selectedBackend, $pluginKind, $semanticsMode, $expectationState
     $laneStyle = switch -Regex ($Label) {
+        "^wasm_v1_default$" { "default" }
         "^wasm_v1_agile$" { "agile" }
         "^wasm_v1_dreamy$" { "dreamy" }
         "^wasm_v1_charming$" { "charming" }
@@ -287,7 +291,7 @@ function New-LaneRecommendation(
     [object[]]$LaneSummaries,
     [object[]]$Comparisons) {
     $baseline = $LaneSummaries | Where-Object { $_.lane -eq "builtin" } | Select-Object -First 1
-    $preferredOrder = @("wasm_v1_agile", "wasm_v1_dreamy", "wasm_v1_charming", "wasm_v1", "builtin_passthrough")
+    $preferredOrder = @("wasm_v1_default", "wasm_v1_agile", "wasm_v1_dreamy", "wasm_v1_charming", "wasm_v1", "builtin_passthrough")
 
     foreach ($laneName in $preferredOrder) {
         $lane = $LaneSummaries | Where-Object { $_.lane -eq $laneName } | Select-Object -First 1
@@ -301,6 +305,7 @@ function New-LaneRecommendation(
         $hasMeaningfulDelta = ($null -ne $comparison) -and ($comparison.diff_count -gt 0)
         if ($laneOk -and $hasMeaningfulDelta) {
             $styleIntent = switch ($laneName) {
+                "wasm_v1_default" { "style_candidate:balanced_default_candidate" }
                 "wasm_v1_agile" { "style_candidate:agile_follow_drag" }
                 "wasm_v1_dreamy" { "style_candidate:dreamy_follow_scroll" }
                 "wasm_v1_charming" { "style_candidate:charming_click_hold" }
@@ -410,7 +415,7 @@ function Write-LaneMatrixSummary(
     $lines.Add("- `builtin`: control baseline")
     $lines.Add("- `builtin_passthrough`: compare against builtin for dreamy/light/elastic deltas")
     if ($AllWasmV1Styles) {
-        $lines.Add("- `wasm_v1_*`: compare agile / dreamy / charming variants against builtin")
+        $lines.Add("- `wasm_v1_*`: compare default / agile / dreamy / charming variants against builtin")
     } else {
         $lines.Add(("- `wasm_v1`: compare against builtin using `{0}` style" -f $WasmV1Style))
     }
@@ -431,6 +436,7 @@ function Write-LaneMatrixSummary(
     $observationLines.Add("## Quick Verdict")
     $observationLines.Add("- `builtin_passthrough`: `pass|fail`, versus builtin = `stronger|weaker|same`")
     if ($AllWasmV1Styles) {
+        $observationLines.Add("- `wasm_v1_default`: `pass|fail`, versus builtin = `stronger|weaker|same`")
         $observationLines.Add("- `wasm_v1_agile`: `pass|fail`, versus builtin = `stronger|weaker|same`")
         $observationLines.Add("- `wasm_v1_dreamy`: `pass|fail`, versus builtin = `stronger|weaker|same`")
         $observationLines.Add("- `wasm_v1_charming`: `pass|fail`, versus builtin = `stronger|weaker|same`")
@@ -443,6 +449,7 @@ function Write-LaneMatrixSummary(
     $observationLines.Add("- builtin:")
     $observationLines.Add("- builtin_passthrough:")
     if ($AllWasmV1Styles) {
+        $observationLines.Add("- wasm_v1_default:")
         $observationLines.Add("- wasm_v1_agile:")
         $observationLines.Add("- wasm_v1_dreamy:")
         $observationLines.Add("- wasm_v1_charming:")
@@ -455,6 +462,7 @@ function Write-LaneMatrixSummary(
     $observationLines.Add("- builtin:")
     $observationLines.Add("- builtin_passthrough:")
     if ($AllWasmV1Styles) {
+        $observationLines.Add("- wasm_v1_default:")
         $observationLines.Add("- wasm_v1_agile:")
         $observationLines.Add("- wasm_v1_dreamy:")
         $observationLines.Add("- wasm_v1_charming:")
@@ -467,6 +475,7 @@ function Write-LaneMatrixSummary(
     $observationLines.Add("- builtin:")
     $observationLines.Add("- builtin_passthrough:")
     if ($AllWasmV1Styles) {
+        $observationLines.Add("- wasm_v1_default:")
         $observationLines.Add("- wasm_v1_agile:")
         $observationLines.Add("- wasm_v1_dreamy:")
         $observationLines.Add("- wasm_v1_charming:")
@@ -479,6 +488,7 @@ function Write-LaneMatrixSummary(
     $observationLines.Add("- builtin:")
     $observationLines.Add("- builtin_passthrough:")
     if ($AllWasmV1Styles) {
+        $observationLines.Add("- wasm_v1_default:")
         $observationLines.Add("- wasm_v1_agile:")
         $observationLines.Add("- wasm_v1_dreamy:")
         $observationLines.Add("- wasm_v1_charming:")
@@ -491,6 +501,7 @@ function Write-LaneMatrixSummary(
     $observationLines.Add("- builtin:")
     $observationLines.Add("- builtin_passthrough:")
     if ($AllWasmV1Styles) {
+        $observationLines.Add("- wasm_v1_default:")
         $observationLines.Add("- wasm_v1_agile:")
         $observationLines.Add("- wasm_v1_dreamy:")
         $observationLines.Add("- wasm_v1_charming:")
@@ -557,7 +568,7 @@ $laneFailures = New-Object System.Collections.Generic.List[string]
 
 try {
     if ($AllWasmV1Styles) {
-        Write-Host "[mfx:info] renderer lane matrix: builtin -> passthrough -> wasm_v1_agile -> wasm_v1_dreamy -> wasm_v1_charming"
+        Write-Host "[mfx:info] renderer lane matrix: builtin -> passthrough -> wasm_v1_default -> wasm_v1_agile -> wasm_v1_dreamy -> wasm_v1_charming"
     } else {
         Write-Host ("[mfx:info] renderer lane matrix: builtin -> passthrough -> wasm_v1 ({0})" -f $WasmV1Style)
     }
