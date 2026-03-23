@@ -18,6 +18,7 @@ struct Win32MouseCompanionRealRendererAssetResources final {
     bool modelReady{false};
     bool modelNodeSlotsReady{false};
     bool modelNodeRegistryReady{false};
+    bool assetNodeBindingsReady{false};
     bool actionLibraryReady{false};
     bool appearanceProfileReady{false};
 };

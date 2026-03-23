@@ -72,6 +72,14 @@ struct PetVisualHostRendererRuntimeDiagnostics {
         "body:asset.body.root|head:asset.head.anchor|appendage:asset.appendage.anchor|overlay:asset.overlay.anchor|grounding:asset.grounding.anchor"};
     std::string sceneRuntimeModelNodeRegistryWeightBrief{
         "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
+    std::string sceneRuntimeAssetNodeBindingState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeBindingEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeBindingResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeBindingBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeBindingPathBrief{
+        "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
+    std::string sceneRuntimeAssetNodeBindingWeightBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

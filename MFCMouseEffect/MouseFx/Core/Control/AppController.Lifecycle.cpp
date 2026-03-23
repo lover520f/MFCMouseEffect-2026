@@ -635,6 +635,18 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.sceneRuntimeModelNodeRegistryAssetNodeBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeRegistryWeightBrief =
         diagnostics.rendererRuntime.sceneRuntimeModelNodeRegistryWeightBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeBindingState =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeBindingState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeBindingEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeBindingEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeBindingResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeBindingResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeBindingBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeBindingBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeBindingPathBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeBindingPathBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeBindingWeightBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeBindingWeightBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterInfluence =
         diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseReadabilityBias =
@@ -774,6 +786,16 @@ void AppController::ClearPetVisualHostDiagnostics() {
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeRegistryAssetNodeBrief =
         "body:asset.body.root|head:asset.head.anchor|appendage:asset.appendage.anchor|overlay:asset.overlay.anchor|grounding:asset.grounding.anchor";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeRegistryWeightBrief =
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeBindingState =
+        "preview_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeBindingEntryCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeBindingResolvedEntryCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeBindingBrief =
+        "preview_only/0/0";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeBindingPathBrief =
+        "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeBindingWeightBrief =
         "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterInfluence = 0.0f;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseReadabilityBias = 0.0f;

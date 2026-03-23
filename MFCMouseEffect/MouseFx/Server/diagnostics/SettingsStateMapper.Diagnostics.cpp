@@ -319,6 +319,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeRegistryAssetNodeBrief},
         {"scene_runtime_model_node_registry_weight_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeRegistryWeightBrief},
+        {"scene_runtime_asset_node_binding_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeBindingState},
+        {"scene_runtime_asset_node_binding_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeBindingEntryCount},
+        {"scene_runtime_asset_node_binding_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeBindingResolvedEntryCount},
+        {"scene_runtime_asset_node_binding_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeBindingBrief},
+        {"scene_runtime_asset_node_binding_path_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeBindingPathBrief},
+        {"scene_runtime_asset_node_binding_weight_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeBindingWeightBrief},
         {"scene_runtime_pose_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
         {"scene_runtime_pose_readability_bias",
@@ -453,6 +465,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeModelNodeRegistryAssetNodeBrief;
     out["renderer_runtime_scene_runtime_model_node_registry_weight_brief"] =
         status.rendererRuntimeSceneRuntimeModelNodeRegistryWeightBrief;
+    out["renderer_runtime_scene_runtime_asset_node_binding_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeBindingState;
+    out["renderer_runtime_scene_runtime_asset_node_binding_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeBindingEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_binding_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeBindingResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_binding_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeBindingBrief;
+    out["renderer_runtime_scene_runtime_asset_node_binding_path_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeBindingPathBrief;
+    out["renderer_runtime_scene_runtime_asset_node_binding_weight_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeBindingWeightBrief;
     out["renderer_runtime_scene_runtime_pose_adapter_influence"] =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     out["renderer_runtime_scene_runtime_pose_readability_bias"] =

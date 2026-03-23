@@ -263,9 +263,17 @@ It should **not** own:
     - `scene_runtime_model_node_registry_brief = registry_state/entry_count/resolved_entry_count`
     - `scene_runtime_model_node_registry_asset_node_brief = body:asset.body.root|head:asset.head.anchor|appendage:asset.appendage.anchor|overlay:asset.overlay.anchor|grounding:asset.grounding.anchor`
     - `scene_runtime_model_node_registry_weight_brief = body:x|head:y|appendage:z|overlay:w|grounding:v`
+  - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `assetNodeBindingProfile`; runtime/proof/WebUI may expose:
+    - `scene_runtime_asset_node_binding_state`
+    - `scene_runtime_asset_node_binding_entry_count`
+    - `scene_runtime_asset_node_binding_resolved_entry_count`
+    - `scene_runtime_asset_node_binding_brief = asset_binding_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_binding_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
+    - `scene_runtime_asset_node_binding_weight_brief = body:x|head:y|appendage:z|overlay:w|grounding:v`
   - current preview seam should now layer `modelNodeAdapterProfile -> modelNodeGraphProfile -> modelNodeBindingProfile`, so later real asset-node binding can replace the binding-profile generator without rewriting downstream builders
   - current preview seam should now also layer `modelNodeBindingProfile -> modelNodeSlotProfile`, so later true model assets can plug real node names/slots into one stable contract before any real graph traversal replaces preview-owned offsets
   - current preview seam should now also layer `modelNodeSlotProfile -> modelNodeRegistryProfile`, so later true asset-node resolution can replace registry generation while keeping builder-facing semantics, diagnostics, and proof vocabulary stable
+  - current preview seam should now also layer `modelNodeRegistryProfile -> assetNodeBindingProfile`, so later true asset-node-path lookup can replace this binding-table generator while preserving builder-facing weights and runtime/proof vocabulary
   - host-side default-lane style-intent inference and metadata support lists should reuse the same helper, so `style_intent` / `sample_tier` machine vocab does not split between validation and runtime
   - runtime/preview diagnostics should also expose scene-runtime adapter state explicitly instead of only `pose_frame_available / pose_binding_configured` booleans:
     - `scene_runtime_adapter_mode = runtime_only|pose_unbound|pose_bound`

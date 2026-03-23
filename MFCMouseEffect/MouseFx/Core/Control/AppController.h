@@ -180,6 +180,14 @@ public:
             "body:asset.body.root|head:asset.head.anchor|appendage:asset.appendage.anchor|overlay:asset.overlay.anchor|grounding:asset.grounding.anchor"};
         std::string rendererRuntimeSceneRuntimeModelNodeRegistryWeightBrief{
             "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeBindingState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeBindingEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeBindingResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeBindingBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeBindingPathBrief{
+            "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeBindingWeightBrief{
+            "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

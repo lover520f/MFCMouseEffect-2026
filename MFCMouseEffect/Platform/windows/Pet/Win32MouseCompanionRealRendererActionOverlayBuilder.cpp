@@ -26,14 +26,18 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
     Win32MouseCompanionRealRendererScene& scene) {
     const auto mood = BuildWin32MouseCompanionRealRendererAppearanceSemantics(runtime, style).mood;
     const float poseReadabilityBias = runtime.poseAdapterProfile.readabilityBias;
+    const float assetOverlayWeight =
+        runtime.assetNodeBindingProfile.overlayEntry.resolved
+            ? runtime.assetNodeBindingProfile.overlayEntry.bindingWeight
+            : 0.0f;
     const float registryOverlayWeight =
         runtime.modelNodeRegistryProfile.overlayEntry.resolved
             ? runtime.modelNodeRegistryProfile.overlayEntry.registryWeight
             : 0.0f;
     const float overlayAlphaScale =
-        1.0f + poseReadabilityBias * 0.10f + registryOverlayWeight * 0.08f;
+        1.0f + poseReadabilityBias * 0.10f + registryOverlayWeight * 0.08f + assetOverlayWeight * 0.06f;
     const float overlayStrokeScale =
-        1.0f + poseReadabilityBias * 0.08f + registryOverlayWeight * 0.10f;
+        1.0f + poseReadabilityBias * 0.08f + registryOverlayWeight * 0.10f + assetOverlayWeight * 0.08f;
     const float poseOverlayCenterX =
         runtime.modelNodeBindingProfile.overlayEntry.worldOffsetX * metrics.bodyWidth;
     const float poseOverlayCenterY =

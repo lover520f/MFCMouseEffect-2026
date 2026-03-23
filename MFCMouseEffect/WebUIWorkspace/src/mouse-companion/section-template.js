@@ -101,6 +101,18 @@ export function getMouseCompanionSectionMarkup() {
         <label>Registry Weights</label>
         <output id="mc_runtime_scene_runtime_model_node_registry_weight_brief">-</output>
 
+        <label>Asset Node Binding</label>
+        <output id="mc_runtime_scene_runtime_asset_node_binding_brief">-</output>
+
+        <label>Resolved Asset Bindings</label>
+        <output id="mc_runtime_scene_runtime_asset_node_binding_resolved_count">-</output>
+
+        <label>Asset Node Paths</label>
+        <output id="mc_runtime_scene_runtime_asset_node_binding_path_brief">-</output>
+
+        <label>Asset Binding Weights</label>
+        <output id="mc_runtime_scene_runtime_asset_node_binding_weight_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 

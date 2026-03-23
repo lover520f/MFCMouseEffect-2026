@@ -63,6 +63,8 @@ Win32MouseCompanionRealRendererSceneRuntime BuildWin32MouseCompanionRealRenderer
         BuildWin32MouseCompanionRealRendererModelNodeSlotProfile(sceneRuntime);
     sceneRuntime.modelNodeRegistryProfile =
         BuildWin32MouseCompanionRealRendererModelNodeRegistryProfile(sceneRuntime);
+    sceneRuntime.assetNodeBindingProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodeBindingProfile(sceneRuntime);
     return sceneRuntime;
 }
 
