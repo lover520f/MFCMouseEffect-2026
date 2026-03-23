@@ -126,6 +126,31 @@ function Add-DefaultLaneSummaryProperty($Node) {
     $Node | Add-Member -NotePropertyName "default_lane_summary" -NotePropertyValue $summary
 }
 
+function Format-AppearancePluginContractBrief($Node) {
+    if ($null -eq $Node) {
+        return "-/-/-"
+    }
+    $mode = [string]$Node.appearance_plugin_appearance_semantics_mode
+    $styleIntent = [string]$Node.default_lane_style_intent
+    $sampleTier = [string]$Node.appearance_plugin_sample_tier
+    if ([string]::IsNullOrWhiteSpace($mode)) { $mode = "-" }
+    if ([string]::IsNullOrWhiteSpace($styleIntent)) { $styleIntent = "-" }
+    if ([string]::IsNullOrWhiteSpace($sampleTier)) { $sampleTier = "-" }
+    return "{0}/{1}/{2}" -f $mode, $styleIntent, $sampleTier
+}
+
+function Add-AppearancePluginContractBriefProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AppearancePluginContractBrief $Node
+    if ($Node.PSObject.Properties.Match("appearance_plugin_contract_brief").Count -gt 0) {
+        $Node.appearance_plugin_contract_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "appearance_plugin_contract_brief" -NotePropertyValue $brief
+}
+
 function Show-RealPreviewSmokeHint {
     @'
 [mfx:info] real-preview-smoke preset
@@ -744,18 +769,22 @@ try {
 }
 
 if ($Route -eq "sweep") {
-    foreach ($item in @($response.results)) {
-        if ($null -ne $item) {
-            Add-DefaultLaneSummaryProperty $item.real_renderer_preview
-            if ($null -ne $item.proof) {
-                Add-DefaultLaneSummaryProperty $item.proof.renderer_runtime_after
+        foreach ($item in @($response.results)) {
+            if ($null -ne $item) {
+                Add-DefaultLaneSummaryProperty $item.real_renderer_preview
+                Add-AppearancePluginContractBriefProperty $item.real_renderer_preview
+                if ($null -ne $item.proof) {
+                    Add-DefaultLaneSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AppearancePluginContractBriefProperty $item.proof.renderer_runtime_after
+                }
             }
         }
+    } else {
+        Add-DefaultLaneSummaryProperty $response.real_renderer_preview
+        Add-AppearancePluginContractBriefProperty $response.real_renderer_preview
+        Add-DefaultLaneSummaryProperty $response.renderer_runtime_after
+        Add-AppearancePluginContractBriefProperty $response.renderer_runtime_after
     }
-} else {
-    Add-DefaultLaneSummaryProperty $response.real_renderer_preview
-    Add-DefaultLaneSummaryProperty $response.renderer_runtime_after
-}
 
 $responseJson = $response | ConvertTo-Json -Depth 16
 if (-not [string]::IsNullOrWhiteSpace($JsonOutput)) {
@@ -848,13 +877,14 @@ if ($Route -eq "sweep") {
         $proof = $item.proof
         $deltaNode = $proof.renderer_runtime_delta
         $preview = $item.real_renderer_preview
-        Write-Host ("  - {0}: status={1} frame_delta={2} backend={3} preview_active={4} default_lane={5} preset={6}->{7} combo={8}" -f `
+        Write-Host ("  - {0}: status={1} frame_delta={2} backend={3} preview_active={4} default_lane={5} contract={6} preset={7}->{8} combo={9}" -f `
             $item.event, `
             $proof.renderer_runtime_expectation_status, `
             $deltaNode.frame_count_delta, `
             $item.selected_renderer_backend, `
             $preview.preview_active, `
             (Format-DefaultLaneSummary $preview), `
+            (Format-AppearancePluginContractBrief $preview), `
             $preview.appearance_requested_preset_id, `
             $preview.appearance_resolved_preset_id, `
             $preview.appearance_combo_preset)
@@ -948,11 +978,12 @@ if ((-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginKind)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneSource)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneRolloutStatus)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneStyleIntent))) {
-    Write-Host ("  - plugin kind={0} metadata_path={1} semantics_mode={2} sample_tier={3} default_lane={4}/{5}/{6}/{7} plugin_check={8}" -f `
+    Write-Host ("  - plugin kind={0} metadata_path={1} semantics_mode={2} sample_tier={3} contract={4} default_lane={5}/{6}/{7}/{8} plugin_check={9}" -f `
         $response.real_renderer_preview.appearance_plugin_kind, `
         $response.real_renderer_preview.appearance_plugin_metadata_path, `
         $response.real_renderer_preview.appearance_plugin_appearance_semantics_mode, `
         $response.real_renderer_preview.appearance_plugin_sample_tier, `
+        (Format-AppearancePluginContractBrief $response.real_renderer_preview), `
         $response.real_renderer_preview.default_lane_candidate, `
         $response.real_renderer_preview.default_lane_source, `
         $response.real_renderer_preview.default_lane_rollout_status, `

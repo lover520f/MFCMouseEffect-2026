@@ -278,6 +278,7 @@ function New-LaneSummary(
     $defaultLaneRolloutStatus = if ($null -ne $preview) { [string]$preview.default_lane_rollout_status } else { "" }
     $defaultLaneStyleIntent = if ($null -ne $preview) { [string]$preview.default_lane_style_intent } else { "" }
     $runtimeSampleTier = if ($null -ne $preview) { [string]$preview.appearance_plugin_sample_tier } else { "" }
+    $runtimeContractBrief = if ($null -ne $preview) { [string]$preview.appearance_plugin_contract_brief } else { "" }
     $selectedBackend = [string]$json.selected_renderer_backend
     $expectationState = if ($expectationMet) { "pass" } else { "fail" }
     $laneVerdict = "{0}/{1}/{2}/{3}" -f $selectedBackend, $pluginKind, $semanticsMode, $expectationState
@@ -311,6 +312,7 @@ function New-LaneSummary(
         default_lane_rollout_status = $defaultLaneRolloutStatus
         default_lane_style_intent = $defaultLaneStyleIntent
         runtime_sample_tier = $runtimeSampleTier
+        runtime_contract_brief = $runtimeContractBrief
         default_lane_brief = (Format-DefaultLaneBrief `
             $defaultLaneCandidate `
             $defaultLaneSource `
@@ -347,6 +349,7 @@ function Compare-LaneAgainstBaseline(
         @{ name = "default_lane_rollout_status"; baseline = [string]$Baseline.default_lane_rollout_status; current = [string]$Lane.default_lane_rollout_status },
         @{ name = "default_lane_style_intent"; baseline = [string]$Baseline.default_lane_style_intent; current = [string]$Lane.default_lane_style_intent },
         @{ name = "runtime_sample_tier"; baseline = [string]$Baseline.runtime_sample_tier; current = [string]$Lane.runtime_sample_tier },
+        @{ name = "runtime_contract_brief"; baseline = [string]$Baseline.runtime_contract_brief; current = [string]$Lane.runtime_contract_brief },
         @{ name = "combo_preset"; baseline = [string]$Baseline.combo_preset; current = [string]$Lane.combo_preset },
         @{ name = "selection_reason"; baseline = [string]$Baseline.selection_reason; current = [string]$Lane.selection_reason },
         @{ name = "failure_reason"; baseline = [string]$Baseline.failure_reason; current = [string]$Lane.failure_reason },
@@ -505,6 +508,9 @@ function Write-LaneMatrixSummary(
         }
         if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_sample_tier)) {
             $lines.Add(("  runtime_sample_tier: `{0}`" -f $lane.runtime_sample_tier))
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_contract_brief)) {
+            $lines.Add(("  runtime_contract_brief: `{0}`" -f $lane.runtime_contract_brief))
         }
         $lines.Add(("  json: `{0}`" -f $lane.json_path))
         if (-not [string]::IsNullOrWhiteSpace([string]$lane.selection_reason)) {

@@ -131,7 +131,7 @@
 - Runtime default-lane diagnostics are surfaced directly: `default_lane_candidate`, `default_lane_source`, `default_lane_rollout_status`, `default_lane_style_intent`, `appearance_plugin_sample_tier`, `appearance_plugin_contract_brief`
 - Windows host/manifest now share one renderer-plugin label helper for `style_intent`, `sample_tier`, and default lane style-intent inference, so contracts do not drift between runtime and metadata validation.
 - Sidecar smoke presets now also assert `default_lane_style_intent` and `appearance_plugin_sample_tier`; `renderer-sidecar-wasm-v1-smoke` additionally accepts `-WasmV1Style default|agile|dreamy|charming`, so single-lane smoke can assert the selected checked-in style intent and sample tier directly.
-- `render-proof` now exposes `default_lane_summary = candidate/source/rollout/style_intent` in both console summaries and saved JSON (`real_renderer_preview` / `renderer_runtime_after`).
+- `render-proof` now exposes `default_lane_summary = candidate/source/rollout/style_intent` and `appearance_plugin_contract_brief = semantics_mode/style_intent/sample_tier` in both console summaries and saved JSON (`real_renderer_preview` / `renderer_runtime_after`).
 - `default_lane_source` stable machine values currently include:
   - `runtime_builtin_default`
   - `env_builtin_forced`

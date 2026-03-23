@@ -150,7 +150,7 @@ Keep P1 concise; add details here when needed.
   - each lane summary row now also carries a compact `default_lane_brief = candidate/source/rollout/style_intent` snapshot
   - each lane summary row now also carries `configured_style` and `configured_sample_path`
   - each lane summary row now also carries `configured_sample_tier`
-  - each lane summary row now also carries `runtime_sample_tier`, so matrix output can be compared against the runtime value without reopening raw proof json
+  - each lane summary row now also carries `runtime_sample_tier` and `runtime_contract_brief`, so matrix output can be compared against runtime value without reopening raw proof json
   - each lane summary row now also carries a compact `style` tag, so expanded `wasm_v1_*` lanes can be skimmed without inferring style only from the lane name
   - the same summary bundle now also emits a conservative machine recommendation for `recommended_default_lane`, based only on:
     - lane proof pass/fail
@@ -168,8 +168,8 @@ Keep P1 concise; add details here when needed.
     - `default_lane_rollout_status`
     - `default_lane_style_intent`
     - `appearance_plugin_sample_tier`
-  - `render-proof` console output now also prints `default_lane_summary = candidate/source/rollout/style_intent`
-  - saved `render-proof` JSON now also carries `default_lane_summary` under `real_renderer_preview` and `renderer_runtime_after`
+  - `render-proof` console output now also prints `default_lane_summary = candidate/source/rollout/style_intent` and `appearance_plugin_contract_brief = semantics_mode/style_intent/sample_tier`
+  - saved `render-proof` JSON now also carries both fields under `real_renderer_preview` and `renderer_runtime_after`
   - the Mouse Companion WebUI section now also mirrors those runtime values in a dedicated `Runtime Diagnostics` block, together with `appearance_plugin_kind`, `appearance_plugin_appearance_semantics_mode`, `appearance_plugin_sample_tier`, `appearance_plugin_contract_brief`, and `appearance_plugin_selection_reason`
   - that same block now also derives a short `Lane Verdict`, so Win bring-up can read `stay on builtin` vs `candidate pending manual confirmation` without manually interpreting the three machine-coded default-lane fields first
   - `observation-template.md` is the operator-facing follow-up note sheet for `follow / drag / click / hold / scroll`, so manual visual conclusions can be stored next to the machine summary instead of in ad-hoc chat notes
