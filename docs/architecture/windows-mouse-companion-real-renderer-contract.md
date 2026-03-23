@@ -245,6 +245,7 @@ It should **not** own:
     - lightweight head/body expression bias (`body_forward`, `head_nod`, `pupil/brow focus`)
     - lightweight frame/face anchor bias (head/body center, eye/nose/mouth placement, blush/whisker staging)
     - lightweight adornment/overlay/grounding bias (pose-badge visibility, accessory anchor, click/hold/scroll/drag/follow overlay staging, shadow/pedestal grounding)
+    - lightweight painter/readability bias (shadow/pedestal alpha, pose-badge confidence, accessory alpha/stroke emphasis)
   - but it still must remain a bounded preview aid, not a separate controller-visible action taxonomy
 - 新增 renderer-owned semantics 时，应优先扩展 plugin output，而不是把 builder 继续当作事实上的插件层；当前 `wasm_v1` 就是第一步 bounded patch 协议，而不是继续往 `builtin_passthrough` 堆更多 ad-hoc tuning key
 - 当前默认 lane rollout 合同：

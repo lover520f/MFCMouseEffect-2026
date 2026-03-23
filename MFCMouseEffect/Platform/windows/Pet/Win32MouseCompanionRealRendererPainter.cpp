@@ -225,11 +225,16 @@ void Win32MouseCompanionRealRendererPainter::Paint(
         scene.glowColor.GetR(),
         scene.glowColor.GetG(),
         scene.glowColor.GetB()));
-    Gdiplus::SolidBrush shadowBrush(scene.shadowFill);
+    Gdiplus::SolidBrush shadowBrush(WithAlpha(scene.shadowFill, scene.shadowFill.GetA() * scene.shadowAlphaScale));
     graphics->FillEllipse(&glowBrush, scene.glowRect);
     graphics->FillEllipse(&shadowBrush, scene.shadowRect);
     DrawActionOverlay(graphics, scene.actionOverlay, scene.bodyStroke);
-    FillRoundedRect(graphics, scene.pedestalRect, scene.pedestalFill, scene.pedestalFill, 0.0f);
+    FillRoundedRect(
+        graphics,
+        scene.pedestalRect,
+        WithAlpha(scene.pedestalFill, scene.pedestalFill.GetA() * scene.pedestalAlphaScale),
+        WithAlpha(scene.pedestalFill, scene.pedestalFill.GetA() * scene.pedestalAlphaScale),
+        0.0f);
     FillEllipse(graphics, scene.tailRect, scene.tailFill, scene.bodyStroke, scene.tailStrokeWidth);
     FillEllipse(
         graphics,
@@ -713,28 +718,37 @@ void Win32MouseCompanionRealRendererPainter::Paint(
     }
 
     if (scene.poseBadgeVisible) {
-        FillEllipse(graphics, scene.poseBadgeRect, scene.accentFill, scene.headFill, 1.0f);
+        FillEllipse(
+            graphics,
+            scene.poseBadgeRect,
+            WithAlpha(scene.accentFill, scene.poseBadgeAlpha),
+            WithAlpha(scene.headFill, scene.poseBadgeAlpha * 0.85f),
+            1.0f);
     }
     if (scene.accessoryVisible) {
+        const auto accessoryFill = WithAlpha(scene.accessoryFill, scene.accessoryFill.GetA() * scene.accessoryAlphaScale);
+        const auto accessoryStroke = WithAlpha(
+            scene.accessoryStroke,
+            scene.accessoryStroke.GetA() * std::min(1.0f, scene.accessoryAlphaScale * 0.96f));
         switch (scene.accessoryShape) {
         case Win32MouseCompanionRealRendererAccessoryShape::Moon:
-            DrawPolygonAdornment(graphics, scene.accessoryMoon, scene.accessoryFill, scene.accessoryStroke, 1.0f);
+            DrawPolygonAdornment(graphics, scene.accessoryMoon, accessoryFill, accessoryStroke, scene.accessoryStrokeWidth);
             FillEllipse(
                 graphics,
                 scene.accessoryMoonInsetRect,
-                WithAlpha(scene.accessoryStroke, 54.0f),
+                WithAlpha(accessoryStroke, 54.0f * scene.accessoryAlphaScale),
                 Gdiplus::Color(0, 0, 0, 0),
                 0.0f);
             break;
         case Win32MouseCompanionRealRendererAccessoryShape::Leaf:
-            DrawPolygonAdornment(graphics, scene.accessoryLeaf, scene.accessoryFill, scene.accessoryStroke, 1.0f);
+            DrawPolygonAdornment(graphics, scene.accessoryLeaf, accessoryFill, accessoryStroke, scene.accessoryStrokeWidth);
             DrawAdornmentLine(
                 graphics,
                 scene.accessoryLeafVeinStart,
                 scene.accessoryLeafVeinEnd,
-                scene.accessoryStroke,
-                164.0f,
-                1.0f);
+                accessoryStroke,
+                164.0f * scene.accessoryAlphaScale,
+                scene.accessoryStrokeWidth);
             break;
         case Win32MouseCompanionRealRendererAccessoryShape::RibbonBow:
             DrawRibbonAdornment(
@@ -742,25 +756,25 @@ void Win32MouseCompanionRealRendererPainter::Paint(
                 scene.accessoryRibbonLeft,
                 scene.accessoryRibbonRight,
                 scene.accessoryRibbonCenter,
-                scene.accessoryFill,
-                scene.accessoryStroke);
+                accessoryFill,
+                accessoryStroke);
             DrawAdornmentLine(
                 graphics,
                 scene.accessoryRibbonLeftFoldStart,
                 scene.accessoryRibbonLeftFoldEnd,
-                scene.accessoryStroke,
-                162.0f,
-                1.0f);
+                accessoryStroke,
+                162.0f * scene.accessoryAlphaScale,
+                scene.accessoryStrokeWidth);
             DrawAdornmentLine(
                 graphics,
                 scene.accessoryRibbonRightFoldStart,
                 scene.accessoryRibbonRightFoldEnd,
-                scene.accessoryStroke,
-                162.0f,
-                1.0f);
+                accessoryStroke,
+                162.0f * scene.accessoryAlphaScale,
+                scene.accessoryStrokeWidth);
             break;
         case Win32MouseCompanionRealRendererAccessoryShape::Star:
-            DrawStar(graphics, scene.accessoryStar, scene.accessoryFill, scene.accessoryStroke);
+            DrawStar(graphics, scene.accessoryStar, accessoryFill, accessoryStroke);
             break;
         case Win32MouseCompanionRealRendererAccessoryShape::None:
         default:

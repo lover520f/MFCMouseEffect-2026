@@ -74,6 +74,11 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::Color badgePendingFill{};
     Gdiplus::Color accessoryFill{};
     Gdiplus::Color accessoryStroke{};
+    float shadowAlphaScale{1.0f};
+    float pedestalAlphaScale{1.0f};
+    float poseBadgeAlpha{255.0f};
+    float accessoryAlphaScale{1.0f};
+    float accessoryStrokeWidth{1.0f};
     float bodyStrokeWidth{1.8f};
     float headStrokeWidth{1.8f};
     float earStrokeWidth{1.45f};

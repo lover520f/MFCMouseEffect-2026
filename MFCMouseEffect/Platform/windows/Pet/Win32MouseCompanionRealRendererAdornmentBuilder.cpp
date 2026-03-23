@@ -149,6 +149,9 @@ void BuildWin32MouseCompanionRealRendererAdornment(
     const float poseAdornmentY =
         (-poseHandLiftY * metrics.bodyHeight * 0.018f - poseLegLiftY * metrics.bodyHeight * 0.010f) *
         poseAdapterInfluence;
+    scene.poseBadgeAlpha = 196.0f + poseAdapterInfluence * 59.0f;
+    scene.accessoryAlphaScale = 1.0f + poseAdapterInfluence * 0.10f;
+    scene.accessoryStrokeWidth = 1.0f + poseAdapterInfluence * 0.16f;
 
     scene.poseBadgeVisible =
         runtime.poseBindingConfigured ||

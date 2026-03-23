@@ -89,6 +89,7 @@
 8. With `pose_bound`, confirm face placement details also move a little more with the pose lane: eye/nose/mouth anchor, blush height, and whisker spread/tilt should read slightly more pose-driven than `pose_unbound`, but still remain stable and not noisy.
 9. With `pose_bound`, confirm accessory and overlay staging also feel more tied to the pose lane: pose badge should stay visible on adapter-aware frames, accessory anchor should drift slightly with the same head/hand bias, and click/hold/scroll/drag/follow overlays should inherit a small pose-led center offset instead of remaining perfectly action-only.
 10. With `pose_bound`, confirm grounding also changes a little: shadow and pedestal should shift/scale subtly with the bound leg lane, while `pose_unbound` remains softer and `runtime_only` stays closest to the old pure-action baseline.
+11. With `pose_bound`, confirm painter readability also tightens slightly: pose badge should feel a bit more confident, accessory stroke/fill should read a touch stronger, and shadow/pedestal should look a little more grounded than `pose_unbound`, without turning into a new flashy effect layer.
 
 ## Appearance
 1. Keep default `pet-appearance.json` available.

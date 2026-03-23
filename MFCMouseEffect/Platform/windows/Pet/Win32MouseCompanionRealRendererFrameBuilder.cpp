@@ -146,6 +146,8 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
         poseAdapterInfluence;
     const float poseGroundingY = (-poseLegLiftY * metrics.bodyHeight * 0.020f) * poseAdapterInfluence;
     const float poseGroundingScale = 1.0f + std::abs(poseLegReachX) * 0.030f * poseAdapterInfluence;
+    scene.shadowAlphaScale = 1.0f + poseAdapterInfluence * 0.08f;
+    scene.pedestalAlphaScale = 1.0f + poseAdapterInfluence * 0.06f;
 
     scene.centerX = static_cast<float>(width) * style.centerXRatio + facingOffset + profile.bodyForward +
         profile.idleHeadSway + poseAnchorX;
