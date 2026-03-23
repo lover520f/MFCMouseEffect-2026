@@ -313,6 +313,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableSlotBrief},
         {"scene_runtime_model_asset_binding_table_value_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableValueBrief},
+        {"scene_runtime_model_asset_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetRegistryState},
+        {"scene_runtime_model_asset_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetRegistryEntryCount},
+        {"scene_runtime_model_asset_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetRegistryResolvedEntryCount},
+        {"scene_runtime_model_asset_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetRegistryBrief},
+        {"scene_runtime_model_asset_registry_asset_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetRegistryAssetBrief},
+        {"scene_runtime_model_asset_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetRegistryValueBrief},
+        {"scene_runtime_model_asset_load_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadState},
+        {"scene_runtime_model_asset_load_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadEntryCount},
+        {"scene_runtime_model_asset_load_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadResolvedEntryCount},
+        {"scene_runtime_model_asset_load_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadBrief},
+        {"scene_runtime_model_asset_load_plan_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadPlanBrief},
+        {"scene_runtime_model_asset_load_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadValueBrief},
         {"scene_runtime_model_scene_adapter_state",
          realRendererPreviewDiagnostics.sceneRuntimeModelSceneAdapterState},
         {"scene_runtime_model_scene_seam_readiness",
@@ -1057,6 +1081,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeModelAssetBindingTableSlotBrief;
     out["renderer_runtime_scene_runtime_model_asset_binding_table_value_brief"] =
         status.rendererRuntimeSceneRuntimeModelAssetBindingTableValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_registry_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetRegistryState;
+    out["renderer_runtime_scene_runtime_model_asset_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetRegistryBrief;
+    out["renderer_runtime_scene_runtime_model_asset_registry_asset_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetRegistryAssetBrief;
+    out["renderer_runtime_scene_runtime_model_asset_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetRegistryValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_load_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetLoadState;
+    out["renderer_runtime_scene_runtime_model_asset_load_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetLoadEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_load_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetLoadResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_load_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetLoadBrief;
+    out["renderer_runtime_scene_runtime_model_asset_load_plan_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetLoadPlanBrief;
+    out["renderer_runtime_scene_runtime_model_asset_load_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetLoadValueBrief;
     out["renderer_runtime_scene_runtime_model_scene_adapter_state"] =
         status.rendererRuntimeSceneRuntimeModelSceneAdapterState;
     out["renderer_runtime_scene_runtime_model_scene_seam_readiness"] =

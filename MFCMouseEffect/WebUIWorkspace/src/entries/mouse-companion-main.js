@@ -608,6 +608,34 @@ function writeRuntimeDiagnostics(runtimeState) {
     ),
   );
   writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_registry_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_registry_brief,
+      'preview_only/0/0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_registry_asset_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_registry_asset_brief,
+      'model:-|slots:-|registry:-|binding:-',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_load_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_load_brief,
+      'preview_only/0/0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_load_plan_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_load_plan_brief,
+      'decode:-|actions:-|appearance:-|transforms:-|pose:runtime_only',
+    ),
+  );
+  writeTextValue(
     'mc_runtime_scene_runtime_model_scene_adapter_brief',
     normalizeRuntimeText(
       runtimeState.renderer_runtime_scene_runtime_model_scene_adapter_brief,

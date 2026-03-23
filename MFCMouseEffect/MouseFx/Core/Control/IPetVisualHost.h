@@ -72,6 +72,22 @@ struct PetVisualHostRendererRuntimeDiagnostics {
         "model:-|action:-|appearance:-"};
     std::string sceneRuntimeModelAssetBindingTableValueBrief{
         "model:0.00|action:0.00|appearance:0.00"};
+    std::string sceneRuntimeModelAssetRegistryState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetRegistryEntryCount{0};
+    uint32_t sceneRuntimeModelAssetRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetRegistryAssetBrief{
+        "model:-|slots:-|registry:-|binding:-"};
+    std::string sceneRuntimeModelAssetRegistryValueBrief{
+        "model:0.00|slots:0.00|registry:0.00|binding:0.00"};
+    std::string sceneRuntimeModelAssetLoadState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetLoadEntryCount{0};
+    uint32_t sceneRuntimeModelAssetLoadResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetLoadBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetLoadPlanBrief{
+        "decode:-|actions:-|appearance:-|transforms:-|pose:runtime_only"};
+    std::string sceneRuntimeModelAssetLoadValueBrief{
+        "model:0.00|actions:0.00|appearance:0.00|transforms:0.00|pose:0.00"};
     std::string sceneRuntimeModelSceneAdapterState{"preview_only"};
     float sceneRuntimeModelSceneSeamReadiness{0.0f};
     std::string sceneRuntimeModelSceneAdapterBrief{"preview_only/unknown/runtime_only"};

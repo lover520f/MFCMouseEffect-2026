@@ -74,6 +74,18 @@ export function getMouseCompanionSectionMarkup() {
         <label>Model Binding Slots</label>
         <output id="mc_runtime_scene_runtime_model_asset_binding_table_slot_brief">-</output>
 
+        <label>Model Asset Registry</label>
+        <output id="mc_runtime_scene_runtime_model_asset_registry_brief">-</output>
+
+        <label>Model Registry Assets</label>
+        <output id="mc_runtime_scene_runtime_model_asset_registry_asset_brief">-</output>
+
+        <label>Model Asset Load</label>
+        <output id="mc_runtime_scene_runtime_model_asset_load_brief">-</output>
+
+        <label>Model Load Plan</label>
+        <output id="mc_runtime_scene_runtime_model_asset_load_plan_brief">-</output>
+
         <label>Model Scene Adapter</label>
         <output id="mc_runtime_scene_runtime_model_scene_adapter_brief">-</output>
 

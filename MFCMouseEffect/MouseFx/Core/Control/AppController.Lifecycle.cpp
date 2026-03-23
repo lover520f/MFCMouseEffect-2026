@@ -629,6 +629,30 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.sceneRuntimeModelAssetBindingTableSlotBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableValueBrief =
         diagnostics.rendererRuntime.sceneRuntimeModelAssetBindingTableValueBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetRegistryState =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetRegistryState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetRegistryEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetRegistryEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetRegistryResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetRegistryResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetRegistryBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetRegistryBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetRegistryAssetBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetRegistryAssetBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetRegistryValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetRegistryValueBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetLoadState =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetLoadState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetLoadEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetLoadEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetLoadResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetLoadResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetLoadBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetLoadBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetLoadPlanBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetLoadPlanBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetLoadValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetLoadValueBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelSceneAdapterState =
         diagnostics.rendererRuntime.sceneRuntimeModelSceneAdapterState;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelSceneSeamReadiness =
@@ -1401,6 +1425,26 @@ void AppController::ClearPetVisualHostDiagnostics() {
         "model:-|action:-|appearance:-";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableValueBrief =
         "model:0.00|action:0.00|appearance:0.00";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetRegistryState =
+        "preview_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetRegistryEntryCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetRegistryResolvedEntryCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetRegistryBrief =
+        "preview_only/0/0";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetRegistryAssetBrief =
+        "model:-|slots:-|registry:-|binding:-";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetRegistryValueBrief =
+        "model:0.00|slots:0.00|registry:0.00|binding:0.00";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetLoadState =
+        "preview_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetLoadEntryCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetLoadResolvedEntryCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetLoadBrief =
+        "preview_only/0/0";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetLoadPlanBrief =
+        "decode:-|actions:-|appearance:-|transforms:-|pose:runtime_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetLoadValueBrief =
+        "model:0.00|actions:0.00|appearance:0.00|transforms:0.00|pose:0.00";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelSceneAdapterState =
         "preview_only";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelSceneSeamReadiness =
