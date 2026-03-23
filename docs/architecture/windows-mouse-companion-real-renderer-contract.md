@@ -174,10 +174,10 @@ It should **not** own:
       - 当前受控字段为：
         - `theme.glow_color / body_stroke / head_fill / accent_fill / accessory_fill / pedestal_fill`
         - `frame.body_width_scale / body_height_scale / head_width_scale / head_height_scale`
-        - `face.blush_width_scale / muzzle_width_scale / forehead_width_scale / brow_tilt_scale / pupil_focus_scale / highlight_alpha_scale / whisker_spread_scale`
-        - `appendage.ear_scale / tail_width_scale / tail_height_scale / follow_tail_width_scale / follow_ear_spread_scale / follow_leg_stance_scale / hold_leg_stance_scale / click_ear_lift_scale`
-        - `motion.follow_state_lift_scale / click_squash_scale / drag_lean_scale / hold_head_nod_scale / scroll_tail_lift_scale / follow_head_nod_scale`
-        - `mood.glow_tint_mix_scale / accent_tint_mix_scale / shadow_tint_mix_scale / pedestal_tint_mix_scale / shadow_alpha_bias / pedestal_alpha_bias / hold_band_alpha_scale / scroll_arc_alpha_scale / drag_line_alpha_scale / follow_trail_alpha_scale`
+        - `face.blush_width_scale / muzzle_width_scale / forehead_width_scale / brow_tilt_scale / mouth_reactive_scale / pupil_focus_scale / highlight_alpha_scale / whisker_spread_scale`
+        - `appendage.ear_scale / tail_width_scale / tail_height_scale / follow_tail_width_scale / follow_ear_spread_scale / follow_leg_stance_scale / hold_leg_stance_scale / drag_hand_reach_scale / click_ear_lift_scale`
+        - `motion.follow_state_lift_scale / click_squash_scale / drag_lean_scale / body_forward_scale / hold_head_nod_scale / scroll_tail_lift_scale / follow_head_nod_scale`
+        - `mood.glow_tint_mix_scale / accent_tint_mix_scale / shadow_tint_mix_scale / pedestal_tint_mix_scale / shadow_alpha_bias / pedestal_alpha_bias / click_ring_alpha_scale / hold_band_alpha_scale / scroll_arc_alpha_scale / drag_line_alpha_scale / follow_trail_alpha_scale`
       - scale 类字段当前受控范围默认仍为 `0.5 ~ 1.5`
       - `shadow_alpha_bias / pedestal_alpha_bias` 当前受控范围为 `-24 ~ 24`
       - host 当前应按固定层次应用这些 patch：

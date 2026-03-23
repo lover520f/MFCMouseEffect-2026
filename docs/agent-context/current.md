@@ -110,7 +110,7 @@
   - agile sample: cooler / sharper `follow / drag`
   - dreamy sample: brighter / floatier `follow / scroll`
   - charming sample: rounder / warmer `click / hold`
-- checked-in sidecars now declare `style_intent` and `sample_tier`, and `wasm_v1` also covers `face.brow_tilt_scale`, `appendage.follow_leg_stance_scale`, `appendage.hold_leg_stance_scale`, and `mood.pedestal_tint_mix_scale`, so host/runtime no longer rely only on combo-preset inference and `follow / hold` gain stronger silhouette + pedestal readability on Win pet.
+- checked-in sidecars now declare `style_intent` and `sample_tier`, and `wasm_v1` also covers `face.brow_tilt_scale / mouth_reactive_scale`, `appendage.follow_leg_stance_scale / hold_leg_stance_scale / drag_hand_reach_scale`, `motion.body_forward_scale`, and `mood.pedestal_tint_mix_scale / click_ring_alpha_scale`, so host/runtime no longer rely only on combo-preset inference and `follow / drag / hold / click` gain stronger structure + mood readability on Win pet.
 
 #### Windows Bring-Up / Validation
 - Dedicated native validation entrypoints exist for combo-persona acceptance, renderer-sidecar smoke, renderer-sidecar `wasm_v1` smoke, and renderer lane matrix (`builtin -> builtin_passthrough -> wasm_v1`).

@@ -26,6 +26,7 @@
       "muzzle_width_scale": 1.10,
       "forehead_width_scale": 1.02,
       "brow_tilt_scale": 0.98,
+      "mouth_reactive_scale": 1.12,
       "pupil_focus_scale": 1.00,
       "highlight_alpha_scale": 1.12,
       "whisker_spread_scale": 1.02
@@ -38,12 +39,14 @@
       "follow_ear_spread_scale": 1.08,
       "follow_leg_stance_scale": 1.04,
       "hold_leg_stance_scale": 1.10,
+      "drag_hand_reach_scale": 1.00,
       "click_ear_lift_scale": 1.16
     },
     "motion": {
       "follow_state_lift_scale": 1.04,
       "click_squash_scale": 1.12,
       "drag_lean_scale": 0.98,
+      "body_forward_scale": 1.02,
       "hold_head_nod_scale": 0.92,
       "scroll_tail_lift_scale": 1.04,
       "follow_head_nod_scale": 1.02
@@ -55,6 +58,7 @@
       "pedestal_tint_mix_scale": 1.06,
       "shadow_alpha_bias": -2.0,
       "pedestal_alpha_bias": -1.0,
+      "click_ring_alpha_scale": 1.14,
       "hold_band_alpha_scale": 1.14,
       "scroll_arc_alpha_scale": 1.06,
       "drag_line_alpha_scale": 0.94,

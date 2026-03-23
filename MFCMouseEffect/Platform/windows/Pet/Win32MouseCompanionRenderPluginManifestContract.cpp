@@ -408,6 +408,18 @@ bool ValidateAppearanceSemanticsPayload(
                 return false;
             }
         }
+        if (face.contains("mouth_reactive_scale")) {
+            outPatch->hasFaceMouthReactiveScale = true;
+            if (!TryReadBoundedFloat(
+                    face,
+                    "mouth_reactive_scale",
+                    0.5f,
+                    1.5f,
+                    &outPatch->faceMouthReactiveScale,
+                    outFailureReason)) {
+                return false;
+            }
+        }
         if (face.contains("pupil_focus_scale")) {
             outPatch->hasFacePupilFocusScale = true;
             if (!TryReadBoundedFloat(
@@ -539,6 +551,18 @@ bool ValidateAppearanceSemanticsPayload(
                 return false;
             }
         }
+        if (appendage.contains("drag_hand_reach_scale")) {
+            outPatch->hasAppendageDragHandReachScale = true;
+            if (!TryReadBoundedFloat(
+                    appendage,
+                    "drag_hand_reach_scale",
+                    0.5f,
+                    1.5f,
+                    &outPatch->appendageDragHandReachScale,
+                    outFailureReason)) {
+                return false;
+            }
+        }
         if (appendage.contains("click_ear_lift_scale")) {
             outPatch->hasAppendageClickEarLiftScale = true;
             if (!TryReadBoundedFloat(
@@ -594,6 +618,18 @@ bool ValidateAppearanceSemanticsPayload(
                     0.5f,
                     1.5f,
                     &outPatch->motionDragLeanScale,
+                    outFailureReason)) {
+                return false;
+            }
+        }
+        if (motion.contains("body_forward_scale")) {
+            outPatch->hasMotionBodyForwardScale = true;
+            if (!TryReadBoundedFloat(
+                    motion,
+                    "body_forward_scale",
+                    0.5f,
+                    1.5f,
+                    &outPatch->motionBodyForwardScale,
                     outFailureReason)) {
                 return false;
             }
@@ -737,6 +773,18 @@ bool ValidateAppearanceSemanticsPayload(
                     0.5f,
                     1.5f,
                     &outPatch->moodHoldBandAlphaScale,
+                    outFailureReason)) {
+                return false;
+            }
+        }
+        if (mood.contains("click_ring_alpha_scale")) {
+            outPatch->hasMoodClickRingAlphaScale = true;
+            if (!TryReadBoundedFloat(
+                    mood,
+                    "click_ring_alpha_scale",
+                    0.5f,
+                    1.5f,
+                    &outPatch->moodClickRingAlphaScale,
                     outFailureReason)) {
                 return false;
             }

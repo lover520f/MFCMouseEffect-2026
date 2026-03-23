@@ -213,6 +213,9 @@ void ApplyShapeAppearanceSemanticsPatch(
     if (patch.hasFaceBrowTiltScale) {
         semantics.face.browTiltScale = patch.faceBrowTiltScale;
     }
+    if (patch.hasFaceMouthReactiveScale) {
+        semantics.face.mouthReactiveScale = patch.faceMouthReactiveScale;
+    }
     if (patch.hasFacePupilFocusScale) {
         semantics.face.pupilFocusScale = patch.facePupilFocusScale;
     }
@@ -245,6 +248,10 @@ void ApplyShapeAppearanceSemanticsPatch(
         semantics.appendage.holdLegStanceScale =
             patch.appendageHoldLegStanceScale;
     }
+    if (patch.hasAppendageDragHandReachScale) {
+        semantics.appendage.dragHandReachScale =
+            patch.appendageDragHandReachScale;
+    }
     if (patch.hasAppendageClickEarLiftScale) {
         semantics.appendage.clickEarLiftScale = patch.appendageClickEarLiftScale;
     }
@@ -261,6 +268,9 @@ void ApplyMotionAppearanceSemanticsPatch(
     }
     if (patch.hasMotionDragLeanScale) {
         semantics.motion.dragLeanScale = patch.motionDragLeanScale;
+    }
+    if (patch.hasMotionBodyForwardScale) {
+        semantics.motion.bodyForwardScale = patch.motionBodyForwardScale;
     }
     if (patch.hasMotionHoldHeadNodScale) {
         semantics.motion.holdHeadNodScale = patch.motionHoldHeadNodScale;
@@ -299,6 +309,9 @@ void ApplyMoodAppearanceSemanticsPatch(
     }
     if (patch.hasMoodHoldBandAlphaScale) {
         semantics.mood.holdBandAlphaScale = patch.moodHoldBandAlphaScale;
+    }
+    if (patch.hasMoodClickRingAlphaScale) {
+        semantics.mood.clickRingAlphaScale = patch.moodClickRingAlphaScale;
     }
     if (patch.hasMoodDragLineAlphaScale) {
         semantics.mood.dragLineAlphaScale = patch.moodDragLineAlphaScale;

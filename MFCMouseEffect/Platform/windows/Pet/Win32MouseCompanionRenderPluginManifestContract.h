@@ -52,6 +52,8 @@ struct Win32MouseCompanionRendererPluginAppearanceSemanticsPatch final {
     float faceForeheadWidthScale{1.0f};
     bool hasFaceBrowTiltScale{false};
     float faceBrowTiltScale{1.0f};
+    bool hasFaceMouthReactiveScale{false};
+    float faceMouthReactiveScale{1.0f};
     bool hasFacePupilFocusScale{false};
     float facePupilFocusScale{1.0f};
     bool hasFaceHighlightAlphaScale{false};
@@ -73,6 +75,8 @@ struct Win32MouseCompanionRendererPluginAppearanceSemanticsPatch final {
     float appendageFollowLegStanceScale{1.0f};
     bool hasAppendageHoldLegStanceScale{false};
     float appendageHoldLegStanceScale{1.0f};
+    bool hasAppendageDragHandReachScale{false};
+    float appendageDragHandReachScale{1.0f};
     bool hasAppendageClickEarLiftScale{false};
     float appendageClickEarLiftScale{1.0f};
 
@@ -82,6 +86,8 @@ struct Win32MouseCompanionRendererPluginAppearanceSemanticsPatch final {
     float motionClickSquashScale{1.0f};
     bool hasMotionDragLeanScale{false};
     float motionDragLeanScale{1.0f};
+    bool hasMotionBodyForwardScale{false};
+    float motionBodyForwardScale{1.0f};
     bool hasMotionHoldHeadNodScale{false};
     float motionHoldHeadNodScale{1.0f};
     bool hasMotionScrollTailLiftScale{false};
@@ -103,6 +109,8 @@ struct Win32MouseCompanionRendererPluginAppearanceSemanticsPatch final {
     float moodPedestalAlphaBias{0.0f};
     bool hasMoodHoldBandAlphaScale{false};
     float moodHoldBandAlphaScale{1.0f};
+    bool hasMoodClickRingAlphaScale{false};
+    float moodClickRingAlphaScale{1.0f};
     bool hasMoodScrollArcAlphaScale{false};
     float moodScrollArcAlphaScale{1.0f};
     bool hasMoodDragLineAlphaScale{false};
