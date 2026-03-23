@@ -405,6 +405,14 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "body:execution.stack.body.shell|head:execution.stack.head.mask|appendage:execution.stack.appendage.trim|overlay:execution.stack.overlay.fx|grounding:execution.stack.grounding.base";
     diagnostics.sceneRuntimeAssetNodeExecutionStackValueBrief =
         "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
+    diagnostics.sceneRuntimeAssetNodeExecutionStackRouterState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeExecutionStackRouterEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeExecutionStackRouterResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeExecutionStackRouterBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeExecutionStackRouterNameBrief =
+        "body:execution.stack.router.body.shell|head:execution.stack.router.head.mask|appendage:execution.stack.router.appendage.trim|overlay:execution.stack.router.overlay.fx|grounding:execution.stack.router.grounding.base";
+    diagnostics.sceneRuntimeAssetNodeExecutionStackRouterValueBrief =
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
     diagnostics.sceneRuntimeAssetNodeCompositionRegistryState = "preview_only";
     diagnostics.sceneRuntimeAssetNodeCompositionRegistryEntryCount = 0;
     diagnostics.sceneRuntimeAssetNodeCompositionRegistryResolvedEntryCount = 0;
@@ -412,6 +420,30 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
     diagnostics.sceneRuntimeAssetNodeCompositionRegistryNameBrief =
         "body:composition.registry.body.shell|head:composition.registry.head.mask|appendage:composition.registry.appendage.trim|overlay:composition.registry.overlay.fx|grounding:composition.registry.grounding.base";
     diagnostics.sceneRuntimeAssetNodeCompositionRegistryValueBrief =
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteNameBrief =
+        "body:surface.route.body.shell|head:surface.route.head.mask|appendage:surface.route.appendage.trim|overlay:surface.route.overlay.fx|grounding:surface.route.grounding.base";
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteValueBrief =
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteRegistryState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteRegistryEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteRegistryResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteRegistryBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteRegistryNameBrief =
+        "body:surface.route.registry.body.shell|head:surface.route.registry.head.mask|appendage:surface.route.registry.appendage.trim|overlay:surface.route.registry.overlay.fx|grounding:surface.route.registry.grounding.base";
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteRegistryValueBrief =
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
+    diagnostics.sceneRuntimeAssetNodeExecutionDriverTableState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeExecutionDriverTableEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeExecutionDriverTableResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeExecutionDriverTableBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeExecutionDriverTableNameBrief =
+        "body:execution.driver.body.shell|head:execution.driver.head.mask|appendage:execution.driver.appendage.trim|overlay:execution.driver.overlay.fx|grounding:execution.driver.grounding.base";
+    diagnostics.sceneRuntimeAssetNodeExecutionDriverTableValueBrief =
         "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
     diagnostics.appearanceSkinVariantId = input.appearanceProfile.skinVariantId;
     diagnostics.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;

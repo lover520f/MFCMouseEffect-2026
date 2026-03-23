@@ -612,6 +612,18 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeAssetNodeExecutionStackNameBrief;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionStackValueBrief =
         rendererRuntime.sceneRuntimeAssetNodeExecutionStackValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionStackRouterState =
+        rendererRuntime.sceneRuntimeAssetNodeExecutionStackRouterState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionStackRouterEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeExecutionStackRouterEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionStackRouterResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeExecutionStackRouterResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionStackRouterBrief =
+        rendererRuntime.sceneRuntimeAssetNodeExecutionStackRouterBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionStackRouterNameBrief =
+        rendererRuntime.sceneRuntimeAssetNodeExecutionStackRouterNameBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionStackRouterValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodeExecutionStackRouterValueBrief;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeCompositionRegistryState =
         rendererRuntime.sceneRuntimeAssetNodeCompositionRegistryState;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeCompositionRegistryEntryCount =
@@ -624,6 +636,42 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeAssetNodeCompositionRegistryNameBrief;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeCompositionRegistryValueBrief =
         rendererRuntime.sceneRuntimeAssetNodeCompositionRegistryValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteState =
+        rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteBrief =
+        rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteNameBrief =
+        rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteNameBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteRegistryState =
+        rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteRegistryState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteRegistryEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteRegistryEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteRegistryResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteRegistryResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteRegistryBrief =
+        rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteRegistryBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteRegistryNameBrief =
+        rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteRegistryNameBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteRegistryValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodeSurfaceRouteRegistryValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionDriverTableState =
+        rendererRuntime.sceneRuntimeAssetNodeExecutionDriverTableState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionDriverTableEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeExecutionDriverTableEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionDriverTableResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeExecutionDriverTableResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionDriverTableBrief =
+        rendererRuntime.sceneRuntimeAssetNodeExecutionDriverTableBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionDriverTableNameBrief =
+        rendererRuntime.sceneRuntimeAssetNodeExecutionDriverTableNameBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionDriverTableValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodeExecutionDriverTableValueBrief;
     diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence =
         rendererRuntime.sceneRuntimePoseAdapterInfluence;
     diagnostics.rendererRuntime.sceneRuntimePoseReadabilityBias =

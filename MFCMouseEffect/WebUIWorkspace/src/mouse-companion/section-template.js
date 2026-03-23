@@ -509,6 +509,18 @@ export function getMouseCompanionSectionMarkup() {
         <label>Execution Stack Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_execution_stack_value_brief">-</output>
 
+        <label>Execution Stack Router</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_stack_router_brief">-</output>
+
+        <label>Resolved Execution Stack Routers</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_stack_router_resolved_count">-</output>
+
+        <label>Execution Stack Router Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_stack_router_name_brief">-</output>
+
+        <label>Execution Stack Router Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_stack_router_value_brief">-</output>
+
         <label>Composition Registry</label>
         <output id="mc_runtime_scene_runtime_asset_node_composition_registry_brief">-</output>
 
@@ -520,6 +532,42 @@ export function getMouseCompanionSectionMarkup() {
 
         <label>Composition Registry Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_composition_registry_value_brief">-</output>
+
+        <label>Surface Route</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_brief">-</output>
+
+        <label>Resolved Surface Routes</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_resolved_count">-</output>
+
+        <label>Surface Route Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_name_brief">-</output>
+
+        <label>Surface Route Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_value_brief">-</output>
+
+        <label>Surface Route Registry</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_registry_brief">-</output>
+
+        <label>Resolved Surface Route Registries</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_registry_resolved_count">-</output>
+
+        <label>Surface Route Registry Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_registry_name_brief">-</output>
+
+        <label>Surface Route Registry Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_registry_value_brief">-</output>
+
+        <label>Execution Driver Table</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_driver_table_brief">-</output>
+
+        <label>Resolved Execution Drivers</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_driver_table_resolved_count">-</output>
+
+        <label>Execution Driver Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_driver_table_name_brief">-</output>
+
+        <label>Execution Driver Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_driver_table_value_brief">-</output>
 
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
