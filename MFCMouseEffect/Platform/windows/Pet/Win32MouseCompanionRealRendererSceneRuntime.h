@@ -52,5 +52,7 @@ float ResolveWin32MouseCompanionRealRendererPoseAdapterInfluence(
     const Win32MouseCompanionRealRendererSceneRuntime& runtime);
 float ResolveWin32MouseCompanionRealRendererPoseAdapterReadabilityBias(
     const Win32MouseCompanionRealRendererSceneRuntime& runtime);
+std::string BuildWin32MouseCompanionRealRendererPoseAdapterBrief(
+    const Win32MouseCompanionRealRendererSceneRuntime& runtime);
 
 } // namespace mousefx::windows

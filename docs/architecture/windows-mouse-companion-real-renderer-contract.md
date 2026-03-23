@@ -241,6 +241,10 @@ It should **not** own:
     - `pose_unbound`: reduced pose influence is allowed for lightweight preview continuity
     - `pose_bound`: full bounded pose influence is allowed for appendage/pose-consumer builders
   - adapter mode may also expose one shared readability-bias scale for painter/adornment/overlay consumers, so `runtime_only / pose_unbound / pose_bound` keep one consistent three-tier emphasis contract instead of drifting per builder
+  - runtime/proof/summary layers may additionally expose normalized pose-adapter metrics directly:
+    - `scene_runtime_pose_adapter_influence`
+    - `scene_runtime_pose_readability_bias`
+    - `scene_runtime_pose_adapter_brief = mode/influence/readability`
   - current bounded pose influence is allowed to reach:
     - appendage stance/offset lanes directly
     - lightweight head/body expression bias (`body_forward`, `head_nod`, `pupil/brow focus`)

@@ -123,6 +123,14 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         status.rendererRuntimeSceneRuntimePoseSampleCount;
     diagnostics.sceneRuntimeBoundPoseSampleCount =
         status.rendererRuntimeSceneRuntimeBoundPoseSampleCount;
+    diagnostics.sceneRuntimePoseAdapterInfluence =
+        status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
+    diagnostics.sceneRuntimePoseReadabilityBias =
+        status.rendererRuntimeSceneRuntimePoseReadabilityBias;
+    diagnostics.sceneRuntimePoseAdapterBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimePoseAdapterBrief).empty()
+            ? "runtime_only/0.00/0.00"
+            : status.rendererRuntimeSceneRuntimePoseAdapterBrief;
     diagnostics.surfaceWidth = status.rendererRuntimeSurfaceWidth;
     diagnostics.surfaceHeight = status.rendererRuntimeSurfaceHeight;
     diagnostics.actionName = TrimAscii(status.rendererRuntimeActionName).empty()

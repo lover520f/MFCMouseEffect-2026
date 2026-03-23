@@ -303,6 +303,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererPainter.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererScene.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererSceneBuilder.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererPoseAdapterProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererSceneRuntime.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererStyleProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRendererBackendPreferenceSources.h" />
@@ -645,6 +646,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererPaletteProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererPainter.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererSceneBuilder.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererPoseAdapterProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererSceneRuntime.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererStyleProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRendererBackendPreferenceRequestBuilder.cpp" />

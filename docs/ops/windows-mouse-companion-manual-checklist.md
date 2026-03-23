@@ -90,6 +90,7 @@
 9. With `pose_bound`, confirm accessory and overlay staging also feel more tied to the pose lane: pose badge should stay visible on adapter-aware frames, accessory anchor should drift slightly with the same head/hand bias, and click/hold/scroll/drag/follow overlays should inherit a small pose-led center offset instead of remaining perfectly action-only.
 10. With `pose_bound`, confirm grounding also changes a little: shadow and pedestal should shift/scale subtly with the bound leg lane, while `pose_unbound` remains softer and `runtime_only` stays closest to the old pure-action baseline.
 11. With `pose_bound`, confirm painter readability also tightens slightly: pose badge should feel a bit more confident, accessory stroke/fill should read a touch stronger, and shadow/pedestal should look a little more grounded than `pose_unbound`, without turning into a new flashy effect layer.
+12. In runtime/proof output, confirm `scene_runtime_pose_adapter_brief` and the numeric `scene_runtime_pose_adapter_influence / scene_runtime_pose_readability_bias` agree with the visible three-tier read: `runtime_only` lowest, `pose_unbound` softer middle, `pose_bound` strongest.
 
 ## Appearance
 1. Keep default `pet-appearance.json` available.
@@ -197,6 +198,7 @@
      - `runtime_only`: renderer runtime is still only consuming action/runtime lanes
      - `pose_unbound`: pose samples are present, but binding is not configured yet
      - `pose_bound`: the current frame is already on the bound-pose lane
+   - `render-proof` can now pin pose-adapter state directly with `-ExpectedSceneRuntimeAdapterMode`, `-ExpectedSceneRuntimePoseAdapterBrief`, `-ExpectedSceneRuntimePoseAdapterInfluenceMin`, and `-ExpectedSceneRuntimePoseReadabilityBiasMin`
    - `render-proof` and lane matrix now also echo `default_lane_candidate_tier`, so `ship_default_candidate` vs `experimental_style_candidate` no longer needs to be inferred manually from raw sample metadata
    - smoke expectation now also pins that value:
      - `renderer-sidecar-smoke` -> `baseline_reference`

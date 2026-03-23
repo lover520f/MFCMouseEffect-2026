@@ -5,6 +5,7 @@
 
 #include "Platform/windows/Pet/Win32MouseCompanionPlaceholderPainter.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRendererBackendRegistry.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererPoseAdapterProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRendererRuntime.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRenderPluginHost.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
@@ -88,6 +89,14 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
     diagnostics.sceneRuntimePoseSampleCount = runtime.sceneRuntimePoseSampleCount;
     diagnostics.sceneRuntimeBoundPoseSampleCount =
         runtime.sceneRuntimeBoundPoseSampleCount;
+    const auto poseAdapterProfile =
+        BuildWin32MouseCompanionRealRendererPoseAdapterProfile(
+            runtime.sceneRuntimeAdapterMode,
+            runtime.sceneRuntimePoseSampleCount,
+            runtime.sceneRuntimeBoundPoseSampleCount);
+    diagnostics.sceneRuntimePoseAdapterInfluence = poseAdapterProfile.influence;
+    diagnostics.sceneRuntimePoseReadabilityBias = poseAdapterProfile.readabilityBias;
+    diagnostics.sceneRuntimePoseAdapterBrief = poseAdapterProfile.brief;
     diagnostics.facingDirection = input.facingDirection;
     diagnostics.surfaceWidth = width;
     diagnostics.surfaceHeight = height;

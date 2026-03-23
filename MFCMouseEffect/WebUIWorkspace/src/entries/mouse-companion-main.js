@@ -552,6 +552,18 @@ function writeRuntimeDiagnostics(runtimeState) {
     runtimeState.renderer_runtime_scene_runtime_adapter_mode,
   );
   writeTextValue(
+    'mc_runtime_scene_runtime_pose_adapter_brief',
+    normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_pose_adapter_brief, 'runtime_only/0.00/0.00'),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_pose_adapter_influence',
+    normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_pose_adapter_influence, '0'),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_pose_readability_bias',
+    normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_pose_readability_bias, '0'),
+  );
+  writeTextValue(
     'mc_runtime_scene_runtime_pose_sample_count',
     normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_pose_sample_count, '0'),
   );

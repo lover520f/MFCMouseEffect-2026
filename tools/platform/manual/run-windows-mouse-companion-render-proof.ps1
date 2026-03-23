@@ -27,6 +27,10 @@ param(
     [string]$ExpectedDefaultLaneRolloutStatus = "",
     [string]$ExpectedDefaultLaneStyleIntent = "",
     [string]$ExpectedDefaultLaneCandidateTier = "",
+    [string]$ExpectedSceneRuntimeAdapterMode = "",
+    [string]$ExpectedSceneRuntimePoseAdapterBrief = "",
+    [double]$ExpectedSceneRuntimePoseAdapterInfluenceMin = -1,
+    [double]$ExpectedSceneRuntimePoseReadabilityBiasMin = -1,
     [ValidateSet("default", "agile", "dreamy", "charming")]
     [string]$WasmV1Style = "default",
     [string]$JsonOutput = "",
@@ -68,6 +72,10 @@ Options:
   -ExpectedDefaultLaneRolloutStatus <name> Require runtime default lane rollout status to match this name
   -ExpectedDefaultLaneStyleIntent <name> Require runtime default lane style intent to match this name
   -ExpectedDefaultLaneCandidateTier <name> Require runtime default lane candidate tier to match this name
+  -ExpectedSceneRuntimeAdapterMode <name> Require scene runtime adapter mode to match this name
+  -ExpectedSceneRuntimePoseAdapterBrief <text> Require pose adapter brief to match this value
+  -ExpectedSceneRuntimePoseAdapterInfluenceMin <float> Require pose adapter influence >= this value
+  -ExpectedSceneRuntimePoseReadabilityBiasMin <float> Require pose readability bias >= this value
   -WasmV1Style <style>        Optional `wasm_v1` checked-in style for wasm-v1 smoke: default|agile|dreamy|charming
   -JsonOutput <path>           Save full JSON response to file
   -Help                        Show this help
@@ -164,6 +172,39 @@ function Add-AppearancePluginContractBriefProperty($Node) {
         return
     }
     $Node | Add-Member -NotePropertyName "appearance_plugin_contract_brief" -NotePropertyValue $brief
+}
+
+function Format-PoseAdapterSummary($Node) {
+    if ($null -eq $Node) {
+        return "runtime_only/0.00/0.00"
+    }
+    $existing = [string]$Node.scene_runtime_pose_adapter_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $mode = [string]$Node.scene_runtime_adapter_mode
+    if ([string]::IsNullOrWhiteSpace($mode)) {
+        $mode = "runtime_only"
+    }
+    $influenceText = [string]$Node.scene_runtime_pose_adapter_influence
+    $readabilityText = [string]$Node.scene_runtime_pose_readability_bias
+    if ([string]::IsNullOrWhiteSpace($influenceText)) { $influenceText = "0" }
+    if ([string]::IsNullOrWhiteSpace($readabilityText)) { $readabilityText = "0" }
+    $influence = [double]$influenceText
+    $readability = [double]$readabilityText
+    return "{0}/{1}/{2}" -f $mode, $influence.ToString("0.00"), $readability.ToString("0.00")
+}
+
+function Add-PoseAdapterSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-PoseAdapterSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_pose_adapter_brief").Count -gt 0) {
+        $Node.scene_runtime_pose_adapter_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_pose_adapter_brief" -NotePropertyValue $brief
 }
 
 function Show-RealPreviewSmokeHint {
@@ -579,6 +620,54 @@ function Test-RendererPluginExpectation(
     }
 }
 
+function Test-PoseAdapterExpectation(
+    [object]$Node,
+    [string]$ExpectedAdapterMode,
+    [string]$ExpectedPoseAdapterBrief,
+    [double]$ExpectedInfluenceMin,
+    [double]$ExpectedReadabilityMin,
+    [string]$Label) {
+    $mismatches = New-Object System.Collections.Generic.List[string]
+    if ($null -eq $Node) {
+        $mismatches.Add("$Label:missing_node")
+        return @{ ok = $false; mismatches = @($mismatches) }
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedAdapterMode) -and
+        ([string]$Node.scene_runtime_adapter_mode -ne $ExpectedAdapterMode)) {
+        $mismatches.Add(("{0}:scene_runtime_adapter_mode expected={1} actual={2}" -f
+            $Label, $ExpectedAdapterMode, [string]$Node.scene_runtime_adapter_mode))
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedPoseAdapterBrief)) {
+        $actualBrief = Format-PoseAdapterSummary $Node
+        if ($actualBrief -ne $ExpectedPoseAdapterBrief) {
+            $mismatches.Add(("{0}:scene_runtime_pose_adapter_brief expected={1} actual={2}" -f
+                $Label, $ExpectedPoseAdapterBrief, $actualBrief))
+        }
+    }
+    if ($ExpectedInfluenceMin -ge 0) {
+        $actualInfluenceText = [string]$Node.scene_runtime_pose_adapter_influence
+        if ([string]::IsNullOrWhiteSpace($actualInfluenceText)) { $actualInfluenceText = "0" }
+        $actualInfluence = [double]$actualInfluenceText
+        if ($actualInfluence -lt $ExpectedInfluenceMin) {
+            $mismatches.Add(("{0}:scene_runtime_pose_adapter_influence expected>={1} actual={2}" -f
+                $Label, $ExpectedInfluenceMin.ToString("0.00"), $actualInfluence.ToString("0.00")))
+        }
+    }
+    if ($ExpectedReadabilityMin -ge 0) {
+        $actualReadabilityText = [string]$Node.scene_runtime_pose_readability_bias
+        if ([string]::IsNullOrWhiteSpace($actualReadabilityText)) { $actualReadabilityText = "0" }
+        $actualReadability = [double]$actualReadabilityText
+        if ($actualReadability -lt $ExpectedReadabilityMin) {
+            $mismatches.Add(("{0}:scene_runtime_pose_readability_bias expected>={1} actual={2}" -f
+                $Label, $ExpectedReadabilityMin.ToString("0.00"), $actualReadability.ToString("0.00")))
+        }
+    }
+    return @{
+        ok = ($mismatches.Count -eq 0)
+        mismatches = @($mismatches)
+    }
+}
+
 if ($Help) {
     Show-Usage
     exit 0
@@ -796,17 +885,21 @@ if ($Route -eq "sweep") {
             if ($null -ne $item) {
                 Add-DefaultLaneSummaryProperty $item.real_renderer_preview
                 Add-AppearancePluginContractBriefProperty $item.real_renderer_preview
+                Add-PoseAdapterSummaryProperty $item.real_renderer_preview
                 if ($null -ne $item.proof) {
                     Add-DefaultLaneSummaryProperty $item.proof.renderer_runtime_after
                     Add-AppearancePluginContractBriefProperty $item.proof.renderer_runtime_after
+                    Add-PoseAdapterSummaryProperty $item.proof.renderer_runtime_after
                 }
             }
         }
     } else {
         Add-DefaultLaneSummaryProperty $response.real_renderer_preview
         Add-AppearancePluginContractBriefProperty $response.real_renderer_preview
+        Add-PoseAdapterSummaryProperty $response.real_renderer_preview
         Add-DefaultLaneSummaryProperty $response.renderer_runtime_after
         Add-AppearancePluginContractBriefProperty $response.renderer_runtime_after
+        Add-PoseAdapterSummaryProperty $response.renderer_runtime_after
     }
 
 $responseJson = $response | ConvertTo-Json -Depth 16
@@ -840,7 +933,11 @@ if ($Route -eq "sweep") {
         (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneSource)) -or
         (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneRolloutStatus)) -or
         (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneStyleIntent)) -or
-        (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneCandidateTier))) {
+        (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneCandidateTier)) -or
+        (-not [string]::IsNullOrWhiteSpace($ExpectedSceneRuntimeAdapterMode)) -or
+        (-not [string]::IsNullOrWhiteSpace($ExpectedSceneRuntimePoseAdapterBrief)) -or
+        ($ExpectedSceneRuntimePoseAdapterInfluenceMin -ge 0) -or
+        ($ExpectedSceneRuntimePoseReadabilityBiasMin -ge 0)) {
         foreach ($item in @($response.results)) {
             $runtimePluginCheck = Test-RendererPluginExpectation `
                 $item.proof.renderer_runtime_after `
@@ -857,6 +954,16 @@ if ($Route -eq "sweep") {
             foreach ($failure in @($runtimePluginCheck.mismatches)) {
                 $pluginFailures.Add([string]$failure)
             }
+            $runtimePoseCheck = Test-PoseAdapterExpectation `
+                $item.proof.renderer_runtime_after `
+                $ExpectedSceneRuntimeAdapterMode `
+                $ExpectedSceneRuntimePoseAdapterBrief `
+                $ExpectedSceneRuntimePoseAdapterInfluenceMin `
+                $ExpectedSceneRuntimePoseReadabilityBiasMin `
+                ("{0}:renderer_runtime_after" -f $item.event)
+            foreach ($failure in @($runtimePoseCheck.mismatches)) {
+                $pluginFailures.Add([string]$failure)
+            }
             $previewPluginCheck = Test-RendererPluginExpectation `
                 $item.real_renderer_preview `
                 $ExpectedAppearancePluginKind `
@@ -870,6 +977,16 @@ if ($Route -eq "sweep") {
                 $ExpectedDefaultLaneCandidateTier `
                 ("{0}:real_renderer_preview" -f $item.event)
             foreach ($failure in @($previewPluginCheck.mismatches)) {
+                $pluginFailures.Add([string]$failure)
+            }
+            $previewPoseCheck = Test-PoseAdapterExpectation `
+                $item.real_renderer_preview `
+                $ExpectedSceneRuntimeAdapterMode `
+                $ExpectedSceneRuntimePoseAdapterBrief `
+                $ExpectedSceneRuntimePoseAdapterInfluenceMin `
+                $ExpectedSceneRuntimePoseReadabilityBiasMin `
+                ("{0}:real_renderer_preview" -f $item.event)
+            foreach ($failure in @($previewPoseCheck.mismatches)) {
                 $pluginFailures.Add([string]$failure)
             }
         }
@@ -896,14 +1013,18 @@ if ($Route -eq "sweep") {
     if ((-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginKind)) -or
         $ExpectAppearancePluginMetadataPresent -or
         (-not [string]::IsNullOrWhiteSpace($ExpectedAppearanceSemanticsMode)) -or
-        (-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginSampleTier))) {
+        (-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginSampleTier)) -or
+        (-not [string]::IsNullOrWhiteSpace($ExpectedSceneRuntimeAdapterMode)) -or
+        (-not [string]::IsNullOrWhiteSpace($ExpectedSceneRuntimePoseAdapterBrief)) -or
+        ($ExpectedSceneRuntimePoseAdapterInfluenceMin -ge 0) -or
+        ($ExpectedSceneRuntimePoseReadabilityBiasMin -ge 0)) {
         Write-Host ("  - plugin_check={0}" -f $pluginExpectationMet)
     }
     foreach ($item in $response.results) {
         $proof = $item.proof
         $deltaNode = $proof.renderer_runtime_delta
         $preview = $item.real_renderer_preview
-        Write-Host ("  - {0}: status={1} frame_delta={2} backend={3} preview_active={4} default_lane={5} contract={6} preset={7}->{8} combo={9}" -f `
+        Write-Host ("  - {0}: status={1} frame_delta={2} backend={3} preview_active={4} default_lane={5} contract={6} pose={7} preset={8}->{9} combo={10}" -f `
             $item.event, `
             $proof.renderer_runtime_expectation_status, `
             $deltaNode.frame_count_delta, `
@@ -911,6 +1032,7 @@ if ($Route -eq "sweep") {
             $preview.preview_active, `
             (Format-DefaultLaneSummary $preview), `
             (Format-AppearancePluginContractBrief $preview), `
+            (Format-PoseAdapterSummary $preview), `
             $preview.appearance_requested_preset_id, `
             $preview.appearance_resolved_preset_id, `
             $preview.appearance_combo_preset)
@@ -953,7 +1075,11 @@ if ((-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginKind)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneSource)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneRolloutStatus)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneStyleIntent)) -or
-    (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneCandidateTier))) {
+    (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneCandidateTier)) -or
+    (-not [string]::IsNullOrWhiteSpace($ExpectedSceneRuntimeAdapterMode)) -or
+    (-not [string]::IsNullOrWhiteSpace($ExpectedSceneRuntimePoseAdapterBrief)) -or
+    ($ExpectedSceneRuntimePoseAdapterInfluenceMin -ge 0) -or
+    ($ExpectedSceneRuntimePoseReadabilityBiasMin -ge 0)) {
     $runtimePluginCheck =
         Test-RendererPluginExpectation `
             $response.renderer_runtime_after `
@@ -983,6 +1109,25 @@ if ((-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginKind)) -or
     $pluginFailures = @($runtimePluginCheck.mismatches + $previewPluginCheck.mismatches)
     $pluginExpectationMet = ($pluginFailures.Count -eq 0)
     $allExpectationsMet = $allExpectationsMet -and $pluginExpectationMet
+    $runtimePoseCheck =
+        Test-PoseAdapterExpectation `
+            $response.renderer_runtime_after `
+            $ExpectedSceneRuntimeAdapterMode `
+            $ExpectedSceneRuntimePoseAdapterBrief `
+            $ExpectedSceneRuntimePoseAdapterInfluenceMin `
+            $ExpectedSceneRuntimePoseReadabilityBiasMin `
+            "renderer_runtime_after"
+    $previewPoseCheck =
+        Test-PoseAdapterExpectation `
+            $response.real_renderer_preview `
+            $ExpectedSceneRuntimeAdapterMode `
+            $ExpectedSceneRuntimePoseAdapterBrief `
+            $ExpectedSceneRuntimePoseAdapterInfluenceMin `
+            $ExpectedSceneRuntimePoseReadabilityBiasMin `
+            "real_renderer_preview"
+    $pluginFailures = @($pluginFailures + $runtimePoseCheck.mismatches + $previewPoseCheck.mismatches)
+    $pluginExpectationMet = ($pluginFailures.Count -eq 0)
+    $allExpectationsMet = $allExpectationsMet -and $pluginExpectationMet
 }
 
 if ($allExpectationsMet) {
@@ -1007,7 +1152,11 @@ if ((-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginKind)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneSource)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneRolloutStatus)) -or
     (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneStyleIntent)) -or
-    (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneCandidateTier))) {
+    (-not [string]::IsNullOrWhiteSpace($ExpectedDefaultLaneCandidateTier)) -or
+    (-not [string]::IsNullOrWhiteSpace($ExpectedSceneRuntimeAdapterMode)) -or
+    (-not [string]::IsNullOrWhiteSpace($ExpectedSceneRuntimePoseAdapterBrief)) -or
+    ($ExpectedSceneRuntimePoseAdapterInfluenceMin -ge 0) -or
+    ($ExpectedSceneRuntimePoseReadabilityBiasMin -ge 0)) {
     Write-Host ("  - plugin kind={0} metadata_path={1} semantics_mode={2} sample_tier={3} contract={4} default_lane={5}/{6}/{7}/{8}/{9} plugin_check={10}" -f `
         $response.real_renderer_preview.appearance_plugin_kind, `
         $response.real_renderer_preview.appearance_plugin_metadata_path, `
@@ -1029,6 +1178,8 @@ Write-Host ("  - appearance preset={0}->{1} skin={2} accessory_family={3} combo=
     $response.real_renderer_preview.appearance_skin_variant_id, `
     $response.real_renderer_preview.appearance_accessory_family, `
     $response.real_renderer_preview.appearance_combo_preset)
+Write-Host ("  - pose_adapter={0}" -f `
+    (Format-PoseAdapterSummary $response.real_renderer_preview))
 foreach ($failure in @($appearanceFailures)) {
     Write-Host ("  - appearance_mismatch: {0}" -f $failure)
 }

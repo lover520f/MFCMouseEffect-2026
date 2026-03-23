@@ -28,6 +28,9 @@ struct MouseCompanionRealRendererPreviewDiagnostics {
     std::string sceneRuntimeAdapterMode{"runtime_only"};
     uint32_t sceneRuntimePoseSampleCount{0};
     uint32_t sceneRuntimeBoundPoseSampleCount{0};
+    float sceneRuntimePoseAdapterInfluence{0.0f};
+    float sceneRuntimePoseReadabilityBias{0.0f};
+    std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};
     int surfaceWidth{0};
     int surfaceHeight{0};
     std::string actionName{"idle"};

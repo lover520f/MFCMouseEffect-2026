@@ -50,6 +50,15 @@ export function getMouseCompanionSectionMarkup() {
         <label>Scene Runtime Adapter</label>
         <output id="mc_runtime_scene_runtime_adapter_mode">-</output>
 
+        <label>Pose Adapter Brief</label>
+        <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
+
+        <label>Pose Adapter Influence</label>
+        <output id="mc_runtime_scene_runtime_pose_adapter_influence">-</output>
+
+        <label>Pose Readability Bias</label>
+        <output id="mc_runtime_scene_runtime_pose_readability_bias">-</output>
+
         <label>Pose Samples</label>
         <output id="mc_runtime_scene_runtime_pose_sample_count">-</output>
 

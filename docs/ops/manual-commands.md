@@ -175,8 +175,13 @@ Keep P1 concise; add details here when needed.
     - `appearance_plugin_sample_tier`
   - `render-proof` console output now also prints `default_lane_summary = candidate/source/rollout/style_intent` and `appearance_plugin_contract_brief = semantics_mode/style_intent/sample_tier`
   - the same output now also prints `default_lane_candidate_tier`
+  - `render-proof` now also supports direct pose-adapter assertions:
+    - `-ExpectedSceneRuntimeAdapterMode`
+    - `-ExpectedSceneRuntimePoseAdapterBrief`
+    - `-ExpectedSceneRuntimePoseAdapterInfluenceMin`
+    - `-ExpectedSceneRuntimePoseReadabilityBiasMin`
   - saved `render-proof` JSON now also carries both fields under `real_renderer_preview` and `renderer_runtime_after`
-  - lane matrix summary now also records `runtime_contract_brief` and `default_lane_candidate_tier`, so proof/runtime/WebUI/matrix all share the same contract/tier vocabulary
+  - lane matrix summary now also records `runtime_contract_brief`, `runtime_pose_adapter_brief`, and `default_lane_candidate_tier`, so proof/runtime/WebUI/matrix all share the same contract/tier vocabulary
   - machine recommendation priority now prefers runtime `default_lane_candidate_tier` first, then `recommended_sample_tier`, then style intent
   - lane matrix now also records `style_focus_profile`, so each lane summary and the final recommendation can state whether the current style is biased toward `follow_drag_tension`, `follow_scroll_float`, `click_hold_warmth`, or `balanced_all_rounder`
   - the Mouse Companion WebUI section now also mirrors those runtime values in a dedicated `Runtime Diagnostics` block, together with `appearance_plugin_kind`, `appearance_plugin_appearance_semantics_mode`, `appearance_plugin_sample_tier`, `appearance_plugin_contract_brief`, and `appearance_plugin_selection_reason`
