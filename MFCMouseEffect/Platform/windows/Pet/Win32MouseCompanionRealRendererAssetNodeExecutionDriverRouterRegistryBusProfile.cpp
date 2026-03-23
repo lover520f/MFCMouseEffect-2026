@@ -129,8 +129,8 @@ void ApplyWin32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryB
     scene.headStrokeWidth *= 1.0f + profile.headEntry.strokeBus * 0.011f;
     scene.whiskerStrokeWidth *= 1.0f + profile.appendageEntry.strokeBus * 0.016f;
     scene.accessoryStrokeWidth *= 1.0f + profile.appendageEntry.alphaBus * 0.014f;
-    scene.actionOverlay.followTrailAlpha =
-        std::clamp(scene.actionOverlay.followTrailAlpha + profile.overlayEntry.alphaBus * 3.2f, 0.0f, 255.0f);
+    scene.actionOverlay.followTrailBaseAlpha =
+        std::clamp(scene.actionOverlay.followTrailBaseAlpha + profile.overlayEntry.alphaBus * 3.2f, 0.0f, 255.0f);
     scene.actionOverlay.scrollArcAlpha =
         std::clamp(scene.actionOverlay.scrollArcAlpha + profile.overlayEntry.strokeBus * 2.9f, 0.0f, 255.0f);
     scene.eyeHighlightAlpha =

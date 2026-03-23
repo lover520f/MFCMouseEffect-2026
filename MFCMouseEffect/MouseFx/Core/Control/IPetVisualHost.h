@@ -41,6 +41,21 @@ struct PetVisualHostRendererRuntimeDiagnostics {
     std::string sceneRuntimeAdapterMode{"runtime_only"};
     uint32_t sceneRuntimePoseSampleCount{0};
     uint32_t sceneRuntimeBoundPoseSampleCount{0};
+    std::string sceneRuntimeModelAssetSourceState{"preview_only"};
+    float sceneRuntimeModelAssetSourceReadiness{0.0f};
+    std::string sceneRuntimeModelAssetSourceBrief{"preview_only/unknown/runtime_only"};
+    std::string sceneRuntimeModelAssetSourcePathBrief{
+        "model:-|actions:-|appearance:-"};
+    std::string sceneRuntimeModelAssetSourceValueBrief{
+        "model:0|actions:0|appearance:0|format:0"};
+    std::string sceneRuntimeModelAssetManifestState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetManifestEntryCount{0};
+    uint32_t sceneRuntimeModelAssetManifestResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetManifestBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetManifestEntryBrief{
+        "model:model|actions:actions|appearance:appearance"};
+    std::string sceneRuntimeModelAssetManifestValueBrief{
+        "model:0|actions:0|appearance:0|weight:0.00"};
     std::string sceneRuntimeModelSceneAdapterState{"preview_only"};
     float sceneRuntimeModelSceneSeamReadiness{0.0f};
     std::string sceneRuntimeModelSceneAdapterBrief{"preview_only/unknown/runtime_only"};
@@ -239,6 +254,230 @@ struct PetVisualHostRendererRuntimeDiagnostics {
     std::string sceneRuntimeAssetNodeControlSurfaceNameBrief{
         "body:surface.body.spine|head:surface.head.look|appendage:surface.appendage.reach|overlay:surface.overlay.fx|grounding:surface.grounding.balance"};
     std::string sceneRuntimeAssetNodeControlSurfaceValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeRigDriverState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeRigDriverEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeRigDriverResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeRigDriverBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeRigDriverNameBrief{
+        "body:rig.driver.body.spine|head:rig.driver.head.look|appendage:rig.driver.appendage.reach|overlay:rig.driver.overlay.fx|grounding:rig.driver.grounding.balance"};
+    std::string sceneRuntimeAssetNodeRigDriverValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeSurfaceDriverState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeSurfaceDriverEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeSurfaceDriverResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeSurfaceDriverBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeSurfaceDriverNameBrief{
+        "body:surface.driver.body.spine|head:surface.driver.head.look|appendage:surface.driver.appendage.reach|overlay:surface.driver.overlay.fx|grounding:surface.driver.grounding.balance"};
+    std::string sceneRuntimeAssetNodeSurfaceDriverValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodePoseBusState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodePoseBusEntryCount{0};
+    uint32_t sceneRuntimeAssetNodePoseBusResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodePoseBusBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodePoseBusNameBrief{
+        "body:pose.bus.body.spine|head:pose.bus.head.look|appendage:pose.bus.appendage.reach|overlay:pose.bus.overlay.fx|grounding:pose.bus.grounding.balance"};
+    std::string sceneRuntimeAssetNodePoseBusValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeControllerTableState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeControllerTableEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeControllerTableResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeControllerTableBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeControllerTableNameBrief{
+        "body:controller.body.spine|head:controller.head.look|appendage:controller.appendage.reach|overlay:controller.overlay.fx|grounding:controller.grounding.balance"};
+    std::string sceneRuntimeAssetNodeControllerTableValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeControllerRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeControllerRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeControllerRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeControllerRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeControllerRegistryNameBrief{
+        "body:registry.body.spine|head:registry.head.look|appendage:registry.appendage.reach|overlay:registry.overlay.fx|grounding:registry.grounding.balance"};
+    std::string sceneRuntimeAssetNodeControllerRegistryValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeDriverBusState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeDriverBusEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeDriverBusResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeDriverBusBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeDriverBusNameBrief{
+        "body:driver.bus.body.spine|head:driver.bus.head.look|appendage:driver.bus.appendage.reach|overlay:driver.bus.overlay.fx|grounding:driver.bus.grounding.balance"};
+    std::string sceneRuntimeAssetNodeDriverBusValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeControllerDriverRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeControllerDriverRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeControllerDriverRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeControllerDriverRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeControllerDriverRegistryNameBrief{
+        "body:controller.driver.body.spine|head:controller.driver.head.look|appendage:controller.driver.appendage.reach|overlay:controller.driver.overlay.fx|grounding:controller.driver.grounding.balance"};
+    std::string sceneRuntimeAssetNodeControllerDriverRegistryValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeExecutionLaneState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeExecutionLaneEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeExecutionLaneResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeExecutionLaneBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeExecutionLaneNameBrief{
+        "body:execution.lane.body.spine|head:execution.lane.head.look|appendage:execution.lane.appendage.reach|overlay:execution.lane.overlay.fx|grounding:execution.lane.grounding.balance"};
+    std::string sceneRuntimeAssetNodeExecutionLaneValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeControllerPhaseState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeControllerPhaseEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeControllerPhaseResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeControllerPhaseBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeControllerPhaseNameBrief{
+        "body:controller.phase.body.spine|head:controller.phase.head.look|appendage:controller.phase.appendage.reach|overlay:controller.phase.overlay.fx|grounding:controller.phase.grounding.balance"};
+    std::string sceneRuntimeAssetNodeControllerPhaseValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeExecutionSurfaceState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeExecutionSurfaceEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeExecutionSurfaceResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeExecutionSurfaceBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeExecutionSurfaceNameBrief{
+        "body:execution.surface.body.shell|head:execution.surface.head.mask|appendage:execution.surface.appendage.trim|overlay:execution.surface.overlay.fx|grounding:execution.surface.grounding.base"};
+    std::string sceneRuntimeAssetNodeExecutionSurfaceValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeControllerPhaseRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeControllerPhaseRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeControllerPhaseRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeControllerPhaseRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeControllerPhaseRegistryNameBrief{
+        "body:phase.registry.body.spine|head:phase.registry.head.look|appendage:phase.registry.appendage.reach|overlay:phase.registry.overlay.fx|grounding:phase.registry.grounding.balance"};
+    std::string sceneRuntimeAssetNodeControllerPhaseRegistryValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeSurfaceCompositionBusState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeSurfaceCompositionBusEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeSurfaceCompositionBusResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeSurfaceCompositionBusBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeSurfaceCompositionBusNameBrief{
+        "body:surface.bus.body.shell|head:surface.bus.head.mask|appendage:surface.bus.appendage.trim|overlay:surface.bus.overlay.fx|grounding:surface.bus.grounding.base"};
+    std::string sceneRuntimeAssetNodeSurfaceCompositionBusValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeExecutionStackState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeExecutionStackEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeExecutionStackResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeExecutionStackBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeExecutionStackNameBrief{
+        "body:execution.stack.body.shell|head:execution.stack.head.mask|appendage:execution.stack.appendage.trim|overlay:execution.stack.overlay.fx|grounding:execution.stack.grounding.base"};
+    std::string sceneRuntimeAssetNodeExecutionStackValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeExecutionStackRouterState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeExecutionStackRouterEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeExecutionStackRouterResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeExecutionStackRouterBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeExecutionStackRouterNameBrief{
+        "body:execution.stack.router.body.shell|head:execution.stack.router.head.mask|appendage:execution.stack.router.appendage.trim|overlay:execution.stack.router.overlay.fx|grounding:execution.stack.router.grounding.base"};
+    std::string sceneRuntimeAssetNodeExecutionStackRouterValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeExecutionStackRouterRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeExecutionStackRouterRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeExecutionStackRouterRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeExecutionStackRouterRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeExecutionStackRouterRegistryNameBrief{
+        "body:execution.stack.router.registry.body.shell|head:execution.stack.router.registry.head.mask|appendage:execution.stack.router.registry.appendage.trim|overlay:execution.stack.router.registry.overlay.fx|grounding:execution.stack.router.registry.grounding.base"};
+    std::string sceneRuntimeAssetNodeExecutionStackRouterRegistryValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeCompositionRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeCompositionRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeCompositionRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeCompositionRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeCompositionRegistryNameBrief{
+        "body:composition.registry.body.shell|head:composition.registry.head.mask|appendage:composition.registry.appendage.trim|overlay:composition.registry.overlay.fx|grounding:composition.registry.grounding.base"};
+    std::string sceneRuntimeAssetNodeCompositionRegistryValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteNameBrief{
+        "body:surface.route.body.shell|head:surface.route.head.mask|appendage:surface.route.appendage.trim|overlay:surface.route.overlay.fx|grounding:surface.route.grounding.base"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeSurfaceRouteRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteRegistryNameBrief{
+        "body:surface.route.registry.body.shell|head:surface.route.registry.head.mask|appendage:surface.route.registry.appendage.trim|overlay:surface.route.registry.overlay.fx|grounding:surface.route.registry.grounding.base"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteRegistryValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteRouterBusState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteRouterBusEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteRouterBusResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeSurfaceRouteRouterBusBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteRouterBusNameBrief{
+        "body:surface.route.router.bus.body.shell|head:surface.route.router.bus.head.mask|appendage:surface.route.router.bus.appendage.trim|overlay:surface.route.router.bus.overlay.fx|grounding:surface.route.router.bus.grounding.base"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteRouterBusValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteBusRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteBusRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusRegistryNameBrief{
+        "body:surface.route.bus.registry.body.shell|head:surface.route.bus.registry.head.mask|appendage:surface.route.bus.registry.appendage.trim|overlay:surface.route.bus.registry.overlay.fx|grounding:surface.route.bus.registry.grounding.base"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusRegistryValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteBusDriverEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteBusDriverResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverNameBrief{
+        "body:surface.route.bus.driver.body.shell|head:surface.route.bus.driver.head.mask|appendage:surface.route.bus.driver.appendage.trim|overlay:surface.route.bus.driver.overlay.fx|grounding:surface.route.bus.driver.grounding.base"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryNameBrief{
+        "body:surface.route.bus.driver.registry.body.shell|head:surface.route.bus.driver.registry.head.mask|appendage:surface.route.bus.driver.registry.appendage.trim|overlay:surface.route.bus.driver.registry.overlay.fx|grounding:surface.route.bus.driver.registry.grounding.base"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterNameBrief{
+        "body:surface.route.bus.driver.registry.router.body.shell|head:surface.route.bus.driver.registry.router.head.mask|appendage:surface.route.bus.driver.registry.router.appendage.trim|overlay:surface.route.bus.driver.registry.router.overlay.fx|grounding:surface.route.bus.driver.registry.router.grounding.base"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeExecutionDriverTableState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeExecutionDriverTableEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeExecutionDriverTableResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeExecutionDriverTableBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeExecutionDriverTableNameBrief{
+        "body:execution.driver.body.shell|head:execution.driver.head.mask|appendage:execution.driver.appendage.trim|overlay:execution.driver.overlay.fx|grounding:execution.driver.grounding.base"};
+    std::string sceneRuntimeAssetNodeExecutionDriverTableValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterTableState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeExecutionDriverRouterTableEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeExecutionDriverRouterTableResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterTableBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterTableNameBrief{
+        "body:execution.driver.router.body.shell|head:execution.driver.router.head.mask|appendage:execution.driver.router.appendage.trim|overlay:execution.driver.router.overlay.fx|grounding:execution.driver.router.grounding.base"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterTableValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeExecutionDriverRouterRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeExecutionDriverRouterRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryNameBrief{
+        "body:execution.driver.router.registry.body.shell|head:execution.driver.router.registry.head.mask|appendage:execution.driver.router.registry.appendage.trim|overlay:execution.driver.router.registry.overlay.fx|grounding:execution.driver.router.registry.grounding.base"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusNameBrief{
+        "body:execution.driver.router.registry.bus.body.shell|head:execution.driver.router.registry.bus.head.mask|appendage:execution.driver.router.registry.bus.appendage.trim|overlay:execution.driver.router.registry.bus.overlay.fx|grounding:execution.driver.router.registry.bus.grounding.base"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryNameBrief{
+        "body:execution.driver.router.registry.bus.registry.body.shell|head:execution.driver.router.registry.bus.registry.head.mask|appendage:execution.driver.router.registry.bus.registry.appendage.trim|overlay:execution.driver.router.registry.bus.registry.overlay.fx|grounding:execution.driver.router.registry.bus.registry.grounding.base"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryValueBrief{
         "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};

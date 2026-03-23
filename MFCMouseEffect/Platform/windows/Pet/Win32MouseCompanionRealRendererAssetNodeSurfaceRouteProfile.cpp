@@ -132,8 +132,8 @@ void ApplyWin32MouseCompanionRealRendererAssetNodeSurfaceRouteProfile(
         scene.actionOverlay.scrollArcAlpha + profile.overlayEntry.paintRoute * 3.5f,
         0.0f,
         255.0f);
-    scene.actionOverlay.followTrailAlpha = std::clamp(
-        scene.actionOverlay.followTrailAlpha + profile.overlayEntry.compositeRoute * 3.0f,
+    scene.actionOverlay.followTrailBaseAlpha = std::clamp(
+        scene.actionOverlay.followTrailBaseAlpha + profile.overlayEntry.compositeRoute * 3.0f,
         0.0f,
         255.0f);
     scene.shadowAlphaScale *= 1.0f + profile.groundingEntry.compositeRoute * 0.012f;

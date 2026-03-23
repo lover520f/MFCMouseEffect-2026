@@ -43,6 +43,7 @@
 - Backend reset remains in effect; old skeleton runtime stays removed.
 - Plugin-first landing route is active (`Phase0 -> Phase1 -> Phase2`).
 - Shared `IPetVisualHost` + `PlatformPetVisualHost` abstraction is the stable cross-platform visual-host seam.
+- Any Windows renderer runtime diagnostic field added in `IWin32MouseCompanionRendererBackend.h` must be mirrored in `IPetVisualHost.h` in the same change; otherwise `AppController.Lifecycle.cpp` and `Win32MouseCompanionVisualHost.cpp` will fail at compile time on Windows.
 
 #### Windows Pet
 - Current stage: `Phase1.5`.

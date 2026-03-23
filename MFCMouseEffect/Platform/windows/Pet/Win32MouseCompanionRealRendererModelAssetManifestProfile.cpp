@@ -141,8 +141,8 @@ void ApplyWin32MouseCompanionRealRendererModelAssetManifestProfile(
     scene.bodyStrokeWidth *= 1.0f + profile.manifestWeight * 0.028f;
     scene.headStrokeWidth *= 1.0f + profile.manifestWeight * 0.024f;
     scene.whiskerStrokeWidth *= 1.0f + profile.manifestWeight * 0.036f;
-    scene.actionOverlay.followTrailAlpha = std::clamp(
-        scene.actionOverlay.followTrailAlpha + profile.manifestWeight * 10.0f,
+    scene.actionOverlay.followTrailBaseAlpha = std::clamp(
+        scene.actionOverlay.followTrailBaseAlpha + profile.manifestWeight * 10.0f,
         0.0f,
         255.0f);
     scene.actionOverlay.scrollArcAlpha = std::clamp(

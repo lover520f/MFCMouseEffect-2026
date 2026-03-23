@@ -133,8 +133,8 @@ void ApplyWin32MouseCompanionRealRendererAssetNodeSurfaceRouteRegistryProfile(
         std::clamp(scene.eyeHighlightAlpha + profile.headEntry.compositeRegistry * 3.0f, 0.0f, 255.0f);
     scene.actionOverlay.scrollArcAlpha =
         std::clamp(scene.actionOverlay.scrollArcAlpha + profile.overlayEntry.paintRegistry * 3.5f, 0.0f, 255.0f);
-    scene.actionOverlay.followTrailAlpha =
-        std::clamp(scene.actionOverlay.followTrailAlpha + profile.overlayEntry.compositeRegistry * 3.0f, 0.0f, 255.0f);
+    scene.actionOverlay.followTrailBaseAlpha =
+        std::clamp(scene.actionOverlay.followTrailBaseAlpha + profile.overlayEntry.compositeRegistry * 3.0f, 0.0f, 255.0f);
     scene.shadowAlphaScale *= 1.0f + profile.groundingEntry.compositeRegistry * 0.014f;
     scene.pedestalAlphaScale *= 1.0f + profile.groundingEntry.paintRegistry * 0.012f;
 }

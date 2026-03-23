@@ -127,10 +127,10 @@ void ApplyWin32MouseCompanionRealRendererAssetNodeExecutionStackProfile(
     scene.headStrokeWidth *= 1.0f + profile.headEntry.paintStack * 0.012f;
     scene.whiskerStrokeWidth *= 1.0f + profile.appendageEntry.paintStack * 0.016f;
     scene.accessoryStrokeWidth *= 1.0f + profile.appendageEntry.compositeStack * 0.015f;
-    scene.bodyTilt += profile.bodyEntry.compositeStack * 0.005f;
+    scene.bodyTiltDeg += profile.bodyEntry.compositeStack * 0.005f;
     scene.glowAlpha = std::clamp(scene.glowAlpha + profile.headEntry.compositeStack * 3.0f, 0.0f, 255.0f);
-    scene.actionOverlay.followTrailAlpha = std::clamp(
-        scene.actionOverlay.followTrailAlpha + profile.overlayEntry.paintStack * 4.0f,
+    scene.actionOverlay.followTrailBaseAlpha = std::clamp(
+        scene.actionOverlay.followTrailBaseAlpha + profile.overlayEntry.paintStack * 4.0f,
         0.0f,
         255.0f);
     scene.actionOverlay.clickRingAlpha = std::clamp(
