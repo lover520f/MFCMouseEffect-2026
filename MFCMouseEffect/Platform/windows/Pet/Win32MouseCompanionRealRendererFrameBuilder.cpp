@@ -116,6 +116,7 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
     const auto& nodeBinding = runtime.modelNodeBindingProfile;
     const auto& nodeRegistry = runtime.modelNodeRegistryProfile;
     const auto& assetBinding = runtime.assetNodeBindingProfile;
+    const auto& assetTransform = runtime.assetNodeTransformProfile;
     const float bodyRegistryWeight =
         nodeRegistry.bodyEntry.resolved ? nodeRegistry.bodyEntry.registryWeight : 0.0f;
     const float headRegistryWeight =
@@ -134,21 +135,39 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
     const float poseHeadY = nodeBinding.headEntry.worldOffsetY * metrics.headHeight;
     const float poseGroundingX = nodeBinding.groundingEntry.worldOffsetX * metrics.bodyWidth;
     const float poseGroundingY = nodeBinding.groundingEntry.worldOffsetY * metrics.bodyHeight;
+    const float bodyTransformX =
+        assetTransform.bodyEntry.resolved ? assetTransform.bodyEntry.offsetX * metrics.bodyWidth : 0.0f;
+    const float bodyTransformY =
+        assetTransform.bodyEntry.resolved ? assetTransform.bodyEntry.offsetY * metrics.bodyHeight : 0.0f;
+    const float headTransformX =
+        assetTransform.headEntry.resolved ? assetTransform.headEntry.offsetX * metrics.headWidth : 0.0f;
+    const float headTransformY =
+        assetTransform.headEntry.resolved ? assetTransform.headEntry.offsetY * metrics.headHeight : 0.0f;
+    const float groundingTransformX =
+        assetTransform.groundingEntry.resolved ? assetTransform.groundingEntry.offsetX * metrics.bodyWidth : 0.0f;
+    const float groundingTransformY =
+        assetTransform.groundingEntry.resolved ? assetTransform.groundingEntry.offsetY * metrics.bodyHeight : 0.0f;
+    const float bodyTransformScale =
+        assetTransform.bodyEntry.resolved ? assetTransform.bodyEntry.anchorScale : 1.0f;
+    const float headTransformScale =
+        assetTransform.headEntry.resolved ? assetTransform.headEntry.anchorScale : 1.0f;
+    const float groundingTransformScale =
+        assetTransform.groundingEntry.resolved ? assetTransform.groundingEntry.anchorScale : 1.0f;
     const float poseGroundingScale =
         1.0f + std::abs(nodeBinding.groundingEntry.worldOffsetX) * nodeBinding.groundingEntry.bindWeight * 0.65f;
     scene.shadowAlphaScale =
         1.0f + nodeBinding.groundingEntry.bindWeight * 0.08f + groundingRegistryWeight * 0.06f +
-        groundingAssetBindingWeight * 0.05f;
+        groundingAssetBindingWeight * 0.05f + (groundingTransformScale - 1.0f) * 0.80f;
     scene.pedestalAlphaScale =
         1.0f + nodeBinding.groundingEntry.bindWeight * 0.06f + groundingRegistryWeight * 0.05f +
-        groundingAssetBindingWeight * 0.04f;
+        groundingAssetBindingWeight * 0.04f + (groundingTransformScale - 1.0f) * 0.70f;
 
     scene.centerX = static_cast<float>(width) * style.centerXRatio + facingOffset + profile.bodyForward +
-        profile.idleHeadSway + poseAnchorX;
+        profile.idleHeadSway + poseAnchorX + bodyTransformX * 0.55f;
     scene.centerY = static_cast<float>(height) * (runtime.hold ? style.holdCenterYRatio : style.idleCenterYRatio) -
         (runtime.follow ? static_cast<float>(height) * style.followCenterYOffsetRatio : 0.0f) -
         (runtime.drag ? static_cast<float>(height) * style.dragCenterYOffsetRatio : 0.0f) -
-        profile.stateLift - profile.breathLift + comboCenterYOffset + poseAnchorY -
+        profile.stateLift - profile.breathLift + comboCenterYOffset + poseAnchorY + bodyTransformY * 0.55f -
         metrics.bodyHeight * (bodyRegistryWeight * 0.005f + bodyAssetBindingWeight * 0.004f);
     scene.facingSign = runtime.facingSign;
     scene.bodyTiltDeg = profile.scrollLean + profile.dragLean;
@@ -185,16 +204,19 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
     scene.shadowRect = Gdiplus::RectF(
         scene.centerX - metrics.bodyWidth * style.shadowXOffsetRatio * profile.shadowScale * shadowStateScale * comboShadowStateScale +
             shadowStateXOffset * runtime.facingSign + poseGroundingX,
-        scene.centerY + metrics.bodyHeight * style.shadowYRatio + shadowStateYOffset + poseGroundingY,
+        scene.centerY + metrics.bodyHeight * style.shadowYRatio + shadowStateYOffset + poseGroundingY +
+            groundingTransformY * 0.35f,
         metrics.bodyWidth * style.shadowWidthScale * profile.shadowScale * shadowStateScale * comboShadowStateScale *
-            poseGroundingScale *
+            poseGroundingScale * groundingTransformScale *
             (1.0f - (profile.breathScale - 1.0f) * style.shadowBreathScale),
         metrics.bodyHeight * style.shadowHeightScale * shadowStateScale * comboShadowStateScale);
     scene.bodyRect = Gdiplus::RectF(
         scene.centerX - metrics.bodyWidth * style.bodyXOffsetRatio,
         scene.centerY - metrics.bodyHeight * style.bodyYOffsetRatio + profile.clickSquash * style.bodyClickSquashLiftPx,
-        metrics.bodyWidth * (1.0f + profile.clickSquash * style.bodyClickSquashWidthScale) * profile.breathScale,
-        metrics.bodyHeight * (1.0f - profile.clickSquash * style.bodyClickSquashHeightScale) * profile.breathScale);
+        metrics.bodyWidth * (1.0f + profile.clickSquash * style.bodyClickSquashWidthScale) * profile.breathScale *
+            bodyTransformScale,
+        metrics.bodyHeight * (1.0f - profile.clickSquash * style.bodyClickSquashHeightScale) * profile.breathScale *
+            std::max(0.94f, bodyTransformScale - 0.02f));
     scene.chestRect = Gdiplus::RectF(
         scene.centerX - metrics.bodyWidth * style.chestXOffsetRatio,
         scene.centerY - metrics.bodyHeight * style.chestYOffsetRatio,
@@ -202,13 +224,13 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
         metrics.bodyHeight * style.chestHeightRatio);
     scene.headRect = Gdiplus::RectF(
         scene.centerX - metrics.headWidth * style.headXOffsetRatio + profile.dragLean * style.headDragLeanScale +
-            profile.bodyForward * style.headBodyForwardScale + poseHeadX +
+            profile.bodyForward * style.headBodyForwardScale + poseHeadX + headTransformX +
             metrics.headWidth * (headRegistryWeight * 0.01f + headAssetBindingWeight * 0.008f),
         scene.bodyRect.Y - metrics.headHeight * style.headYOffsetRatio - profile.actionIntensity * style.headActionLiftPx +
-            profile.headNod + poseHeadY -
+            profile.headNod + poseHeadY + headTransformY -
             metrics.headHeight * (headRegistryWeight * 0.008f + headAssetBindingWeight * 0.006f),
-        metrics.headWidth,
-        metrics.headHeight);
+        metrics.headWidth * headTransformScale,
+        metrics.headHeight * std::max(0.95f, headTransformScale - 0.01f));
     scene.neckBridgeRect = Gdiplus::RectF(
         scene.centerX - metrics.bodyWidth * style.neckBridgeXOffsetRatio + profile.bodyForward * 0.08f,
         scene.headRect.GetBottom() - metrics.bodyHeight * style.neckBridgeYOffsetRatio,

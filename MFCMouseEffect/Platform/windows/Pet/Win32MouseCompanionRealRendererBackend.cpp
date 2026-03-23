@@ -154,6 +154,18 @@ void Win32MouseCompanionRealRendererBackend::Render(
         sceneRuntime.assetNodeBindingProfile.pathBrief;
     diagnostics.sceneRuntimeAssetNodeBindingWeightBrief =
         sceneRuntime.assetNodeBindingProfile.weightBrief;
+    diagnostics.sceneRuntimeAssetNodeTransformState =
+        sceneRuntime.assetNodeTransformProfile.transformState;
+    diagnostics.sceneRuntimeAssetNodeTransformEntryCount =
+        sceneRuntime.assetNodeTransformProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodeTransformResolvedEntryCount =
+        sceneRuntime.assetNodeTransformProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeTransformBrief =
+        sceneRuntime.assetNodeTransformProfile.brief;
+    diagnostics.sceneRuntimeAssetNodeTransformPathBrief =
+        sceneRuntime.assetNodeTransformProfile.pathBrief;
+    diagnostics.sceneRuntimeAssetNodeTransformValueBrief =
+        sceneRuntime.assetNodeTransformProfile.transformBrief;
     const auto& poseAdapterProfile = sceneRuntime.poseAdapterProfile;
     diagnostics.sceneRuntimePoseAdapterInfluence = poseAdapterProfile.influence;
     diagnostics.sceneRuntimePoseReadabilityBias = poseAdapterProfile.readabilityBias;

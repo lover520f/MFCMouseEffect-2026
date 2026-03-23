@@ -20,6 +20,7 @@ Win32MouseCompanionRealRendererAssetResources BuildWin32MouseCompanionRealRender
     resources.modelNodeSlotsReady = resources.modelReady;
     resources.modelNodeRegistryReady = resources.modelNodeSlotsReady;
     resources.assetNodeBindingsReady = resources.modelNodeRegistryReady;
+    resources.assetNodeTransformsReady = resources.assetNodeBindingsReady;
     resources.actionLibraryReady = input.actionLibraryAvailable && !resources.actionLibraryPath.empty();
     resources.appearanceProfileReady = input.appearanceProfile.loaded;
     return resources;

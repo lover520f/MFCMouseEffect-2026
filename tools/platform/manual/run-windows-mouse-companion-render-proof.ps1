@@ -400,6 +400,29 @@ function Add-AssetNodeBindingSummaryProperty($Node) {
     $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_binding_brief" -NotePropertyValue $brief
 }
 
+function Format-AssetNodeTransformSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_transform_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeTransformSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeTransformSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_transform_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_transform_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_transform_brief" -NotePropertyValue $brief
+}
+
 function Show-RealPreviewSmokeHint {
     @'
 [mfx:info] real-preview-smoke preset
@@ -1086,6 +1109,7 @@ if ($Route -eq "sweep") {
                 Add-ModelNodeSlotSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeRegistrySummaryProperty $item.real_renderer_preview
                 Add-AssetNodeBindingSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeTransformSummaryProperty $item.real_renderer_preview
                 Add-PoseAdapterSummaryProperty $item.real_renderer_preview
                 if ($null -ne $item.proof) {
                     Add-DefaultLaneSummaryProperty $item.proof.renderer_runtime_after
@@ -1098,6 +1122,7 @@ if ($Route -eq "sweep") {
                     Add-ModelNodeSlotSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeRegistrySummaryProperty $item.proof.renderer_runtime_after
                     Add-AssetNodeBindingSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeTransformSummaryProperty $item.proof.renderer_runtime_after
                     Add-PoseAdapterSummaryProperty $item.proof.renderer_runtime_after
                 }
             }
@@ -1113,6 +1138,7 @@ if ($Route -eq "sweep") {
         Add-ModelNodeSlotSummaryProperty $response.real_renderer_preview
         Add-ModelNodeRegistrySummaryProperty $response.real_renderer_preview
         Add-AssetNodeBindingSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeTransformSummaryProperty $response.real_renderer_preview
         Add-PoseAdapterSummaryProperty $response.real_renderer_preview
         Add-DefaultLaneSummaryProperty $response.renderer_runtime_after
         Add-AppearancePluginContractBriefProperty $response.renderer_runtime_after
@@ -1124,6 +1150,7 @@ if ($Route -eq "sweep") {
         Add-ModelNodeSlotSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeRegistrySummaryProperty $response.renderer_runtime_after
         Add-AssetNodeBindingSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeTransformSummaryProperty $response.renderer_runtime_after
         Add-PoseAdapterSummaryProperty $response.renderer_runtime_after
     }
 
@@ -1403,6 +1430,10 @@ Write-Host ("  - appearance preset={0}->{1} skin={2} accessory_family={3} combo=
     $response.real_renderer_preview.appearance_skin_variant_id, `
     $response.real_renderer_preview.appearance_accessory_family, `
     $response.real_renderer_preview.appearance_combo_preset)
+Write-Host ("  - scene seams pose={0} asset_binding={1} asset_transform={2}" -f `
+    (Format-PoseAdapterSummary $response.real_renderer_preview), `
+    (Format-AssetNodeBindingSummary $response.real_renderer_preview), `
+    (Format-AssetNodeTransformSummary $response.real_renderer_preview))
 Write-Host ("  - pose_adapter={0}" -f `
     (Format-PoseAdapterSummary $response.real_renderer_preview))
 Write-Host ("  - model_scene_adapter={0}" -f `

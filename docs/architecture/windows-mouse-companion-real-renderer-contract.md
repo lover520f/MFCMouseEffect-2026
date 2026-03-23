@@ -270,10 +270,18 @@ It should **not** own:
     - `scene_runtime_asset_node_binding_brief = asset_binding_state/entry_count/resolved_entry_count`
     - `scene_runtime_asset_node_binding_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
     - `scene_runtime_asset_node_binding_weight_brief = body:x|head:y|appendage:z|overlay:w|grounding:v`
+  - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `assetNodeTransformProfile`; runtime/proof/WebUI may expose:
+    - `scene_runtime_asset_node_transform_state`
+    - `scene_runtime_asset_node_transform_entry_count`
+    - `scene_runtime_asset_node_transform_resolved_entry_count`
+    - `scene_runtime_asset_node_transform_brief = transform_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_transform_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
+    - `scene_runtime_asset_node_transform_value_brief = body:(x,y,s)|head:(x,y,s)|appendage:(x,y,s)|overlay:(x,y,s)|grounding:(x,y,s)`
   - current preview seam should now layer `modelNodeAdapterProfile -> modelNodeGraphProfile -> modelNodeBindingProfile`, so later real asset-node binding can replace the binding-profile generator without rewriting downstream builders
   - current preview seam should now also layer `modelNodeBindingProfile -> modelNodeSlotProfile`, so later true model assets can plug real node names/slots into one stable contract before any real graph traversal replaces preview-owned offsets
   - current preview seam should now also layer `modelNodeSlotProfile -> modelNodeRegistryProfile`, so later true asset-node resolution can replace registry generation while keeping builder-facing semantics, diagnostics, and proof vocabulary stable
   - current preview seam should now also layer `modelNodeRegistryProfile -> assetNodeBindingProfile`, so later true asset-node-path lookup can replace this binding-table generator while preserving builder-facing weights and runtime/proof vocabulary
+  - current preview seam should now also layer `assetNodeBindingProfile -> assetNodeTransformProfile`, so later real node-local transform resolution can replace this transform-table generator while preserving builder-facing geometry/readability seams and runtime/proof vocabulary
   - host-side default-lane style-intent inference and metadata support lists should reuse the same helper, so `style_intent` / `sample_tier` machine vocab does not split between validation and runtime
   - runtime/preview diagnostics should also expose scene-runtime adapter state explicitly instead of only `pose_frame_available / pose_binding_configured` booleans:
     - `scene_runtime_adapter_mode = runtime_only|pose_unbound|pose_bound`

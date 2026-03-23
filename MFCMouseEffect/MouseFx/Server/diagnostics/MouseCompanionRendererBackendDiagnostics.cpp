@@ -227,6 +227,26 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeBindingWeightBrief).empty()
             ? "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"
             : status.rendererRuntimeSceneRuntimeAssetNodeBindingWeightBrief;
+    diagnostics.sceneRuntimeAssetNodeTransformState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeTransformState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodeTransformState;
+    diagnostics.sceneRuntimeAssetNodeTransformEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeTransformEntryCount;
+    diagnostics.sceneRuntimeAssetNodeTransformResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeTransformResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeTransformBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeTransformBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodeTransformBrief;
+    diagnostics.sceneRuntimeAssetNodeTransformPathBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeTransformPathBrief).empty()
+            ? "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"
+            : status.rendererRuntimeSceneRuntimeAssetNodeTransformPathBrief;
+    diagnostics.sceneRuntimeAssetNodeTransformValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeTransformValueBrief).empty()
+            ? "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)"
+            : status.rendererRuntimeSceneRuntimeAssetNodeTransformValueBrief;
     diagnostics.sceneRuntimePoseAdapterInfluence =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     diagnostics.sceneRuntimePoseReadabilityBias =

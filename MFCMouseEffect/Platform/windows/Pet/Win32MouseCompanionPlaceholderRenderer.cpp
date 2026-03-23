@@ -157,6 +157,14 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding";
     diagnostics.sceneRuntimeAssetNodeBindingWeightBrief =
         "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
+    diagnostics.sceneRuntimeAssetNodeTransformState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeTransformEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeTransformResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeTransformBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeTransformPathBrief =
+        "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding";
+    diagnostics.sceneRuntimeAssetNodeTransformValueBrief =
+        "body:(0.00,0.00,1.00)|head:(0.00,0.00,1.00)|appendage:(0.00,0.00,1.00)|overlay:(0.00,0.00,1.00)|grounding:(0.00,0.00,1.00)";
     diagnostics.appearanceSkinVariantId = input.appearanceProfile.skinVariantId;
     diagnostics.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;
     const auto accessoryFamily =

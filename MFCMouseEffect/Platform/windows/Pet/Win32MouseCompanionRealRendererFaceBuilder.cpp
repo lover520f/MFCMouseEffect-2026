@@ -36,24 +36,31 @@ void BuildWin32MouseCompanionRealRendererFace(
     const auto& skinTuning = appearanceSemantics.face;
     const auto& nodeAdapter = runtime.modelNodeAdapterProfile;
     const auto& nodeBinding = runtime.modelNodeBindingProfile;
+    const auto& assetTransform = runtime.assetNodeTransformProfile;
     const float poseFaceYOffset = nodeBinding.headEntry.worldOffsetY * scene.headRect.Height;
     const float poseFaceXOffset = nodeBinding.headEntry.worldOffsetX * scene.headRect.Width;
     const float poseWhiskerBias = nodeAdapter.whiskerBias;
     const float poseBlushLift = nodeAdapter.blushLift;
+    const float transformFaceYOffset =
+        assetTransform.headEntry.resolved ? assetTransform.headEntry.offsetY * scene.headRect.Height : 0.0f;
+    const float transformFaceXOffset =
+        assetTransform.headEntry.resolved ? assetTransform.headEntry.offsetX * scene.headRect.Width : 0.0f;
+    const float transformFaceScale =
+        assetTransform.headEntry.resolved ? assetTransform.headEntry.anchorScale : 1.0f;
     const float eyeH = std::max(3.0f, scene.headRect.Height * style.eyeHeightRatio * profile.eyeOpen);
     const float pupilH = std::max(1.2f, eyeH * style.pupilHeightRatio);
     const float pupilOffsetX = profile.pupilFocusX * style.pupilFocusXScale * skinTuning.pupilFocusScale;
     const float pupilOffsetY = profile.pupilFocusY * std::max(0.6f, eyeH * style.pupilFocusYScale) * skinTuning.pupilFocusScale;
     scene.leftEyeRect = Gdiplus::RectF(
-        scene.centerX - scene.headRect.Width * style.eyeLeftXRatio + poseFaceXOffset,
-        scene.headRect.Y + scene.headRect.Height * style.eyeYRatio + poseFaceYOffset,
+        scene.centerX - scene.headRect.Width * style.eyeLeftXRatio + poseFaceXOffset + transformFaceXOffset,
+        scene.headRect.Y + scene.headRect.Height * style.eyeYRatio + poseFaceYOffset + transformFaceYOffset,
         style.eyeWidthPx,
-        eyeH);
+        eyeH * std::max(0.95f, transformFaceScale - 0.01f));
     scene.rightEyeRect = Gdiplus::RectF(
-        scene.centerX + scene.headRect.Width * style.eyeRightXRatio - style.eyeWidthPx + poseFaceXOffset,
-        scene.headRect.Y + scene.headRect.Height * style.eyeYRatio + poseFaceYOffset,
+        scene.centerX + scene.headRect.Width * style.eyeRightXRatio - style.eyeWidthPx + poseFaceXOffset + transformFaceXOffset,
+        scene.headRect.Y + scene.headRect.Height * style.eyeYRatio + poseFaceYOffset + transformFaceYOffset,
         style.eyeWidthPx,
-        eyeH);
+        eyeH * std::max(0.95f, transformFaceScale - 0.01f));
     scene.leftPupilRect = Gdiplus::RectF(
         scene.leftEyeRect.X + (scene.leftEyeRect.Width - style.pupilWidthPx) * 0.5f + pupilOffsetX,
         scene.leftEyeRect.Y + (scene.leftEyeRect.Height - pupilH) * 0.5f + pupilOffsetY,
@@ -75,16 +82,16 @@ void BuildWin32MouseCompanionRealRendererFace(
         style.eyeHighlightSizePx,
         style.eyeHighlightSizePx);
     scene.noseRect = Gdiplus::RectF(
-        scene.centerX - style.noseWidthPx * 0.5f + poseFaceXOffset,
-        scene.headRect.Y + scene.headRect.Height * style.noseYRatio + poseFaceYOffset,
+        scene.centerX - style.noseWidthPx * 0.5f + poseFaceXOffset + transformFaceXOffset,
+        scene.headRect.Y + scene.headRect.Height * style.noseYRatio + poseFaceYOffset + transformFaceYOffset,
         style.noseWidthPx,
         style.noseHeightPx);
     scene.mouthRect = Gdiplus::RectF(
-        scene.centerX - style.mouthWidthPx * 0.5f + poseFaceXOffset,
-        scene.headRect.Y + scene.headRect.Height * style.mouthYRatio + poseFaceYOffset,
+        scene.centerX - style.mouthWidthPx * 0.5f + poseFaceXOffset + transformFaceXOffset,
+        scene.headRect.Y + scene.headRect.Height * style.mouthYRatio + poseFaceYOffset + transformFaceYOffset,
         style.mouthWidthPx,
         style.mouthHeightBasePx + profile.reactiveIntensity * style.mouthReactiveHeightPx * skinTuning.mouthReactiveScale);
-    const float browY = scene.headRect.Y + scene.headRect.Height * style.browYRatio;
+    const float browY = scene.headRect.Y + scene.headRect.Height * style.browYRatio + transformFaceYOffset * 0.6f;
     scene.leftBrowStart = Gdiplus::PointF(
         scene.centerX - scene.headRect.Width * style.leftBrowStartXRatio,
         browY + profile.browLift - profile.browTilt * skinTuning.browTiltScale * style.leftBrowStartTiltScale);
@@ -101,13 +108,14 @@ void BuildWin32MouseCompanionRealRendererFace(
     scene.mouthSweepDeg = profile.mouthSweepDeg;
     scene.mouthStrokeWidth = profile.mouthStrokeWidth;
     scene.leftBlushRect = Gdiplus::RectF(
-        scene.centerX - scene.headRect.Width * style.blushXRatio,
-        scene.headRect.Y + scene.headRect.Height * style.blushYRatio - poseBlushLift,
+        scene.centerX - scene.headRect.Width * style.blushXRatio + transformFaceXOffset * 0.55f,
+        scene.headRect.Y + scene.headRect.Height * style.blushYRatio - poseBlushLift + transformFaceYOffset,
         style.blushWidthPx * skinTuning.blushWidthScale,
         style.blushHeightPx);
     scene.rightBlushRect = Gdiplus::RectF(
-        scene.centerX + scene.headRect.Width * style.blushXRatio - style.blushWidthPx * skinTuning.blushWidthScale,
-        scene.headRect.Y + scene.headRect.Height * style.blushYRatio - poseBlushLift,
+        scene.centerX + scene.headRect.Width * style.blushXRatio - style.blushWidthPx * skinTuning.blushWidthScale +
+            transformFaceXOffset * 0.55f,
+        scene.headRect.Y + scene.headRect.Height * style.blushYRatio - poseBlushLift + transformFaceYOffset,
         style.blushWidthPx * skinTuning.blushWidthScale,
         style.blushHeightPx);
     scene.leftCheekContourRect = Gdiplus::RectF(
@@ -127,14 +135,16 @@ void BuildWin32MouseCompanionRealRendererFace(
         scene.headRect.Width * style.jawContourWidthRatio,
         scene.headRect.Height * style.jawContourHeightRatio * skinTuning.jawHeightScale);
     scene.muzzlePadRect = Gdiplus::RectF(
-        scene.centerX - scene.headRect.Width * style.muzzlePadWidthRatio * skinTuning.muzzleWidthScale * 0.5f,
-        scene.headRect.Y + scene.headRect.Height * style.muzzlePadYRatio,
-        scene.headRect.Width * style.muzzlePadWidthRatio * skinTuning.muzzleWidthScale,
+        scene.centerX - scene.headRect.Width * style.muzzlePadWidthRatio * skinTuning.muzzleWidthScale * 0.5f +
+            transformFaceXOffset * 0.35f,
+        scene.headRect.Y + scene.headRect.Height * style.muzzlePadYRatio + transformFaceYOffset * 0.55f,
+        scene.headRect.Width * style.muzzlePadWidthRatio * skinTuning.muzzleWidthScale * transformFaceScale,
         scene.headRect.Height * style.muzzlePadHeightRatio * skinTuning.muzzleHeightScale);
     scene.foreheadPadRect = Gdiplus::RectF(
-        scene.centerX - scene.headRect.Width * style.foreheadPadWidthRatio * skinTuning.foreheadWidthScale * 0.5f,
-        scene.headRect.Y + scene.headRect.Height * style.foreheadPadYRatio,
-        scene.headRect.Width * style.foreheadPadWidthRatio * skinTuning.foreheadWidthScale,
+        scene.centerX - scene.headRect.Width * style.foreheadPadWidthRatio * skinTuning.foreheadWidthScale * 0.5f +
+            transformFaceXOffset * 0.20f,
+        scene.headRect.Y + scene.headRect.Height * style.foreheadPadYRatio + transformFaceYOffset * 0.25f,
+        scene.headRect.Width * style.foreheadPadWidthRatio * skinTuning.foreheadWidthScale * transformFaceScale,
         scene.headRect.Height * style.foreheadPadHeightRatio * skinTuning.foreheadHeightScale);
     scene.crownPadRect = Gdiplus::RectF(
         scene.centerX - scene.headRect.Width * style.crownPadWidthRatio * 0.5f,
@@ -243,8 +253,9 @@ void BuildWin32MouseCompanionRealRendererFace(
     const float rightWhiskerX = scene.centerX + scene.headRect.Width * style.whiskerInnerXRatio;
     const float whiskerSpread =
         profile.whiskerSpread * style.whiskerSpreadScale * skinTuning.whiskerSpreadScale +
-        poseWhiskerBias;
-    const float whiskerTilt = profile.whiskerTilt * style.whiskerTiltScale + poseWhiskerBias * 1.8f;
+        poseWhiskerBias + (transformFaceScale - 1.0f) * 0.5f;
+    const float whiskerTilt =
+        profile.whiskerTilt * style.whiskerTiltScale + poseWhiskerBias * 1.8f + transformFaceYOffset * 0.25f;
     SetWhiskerPair(
         leftWhiskerX,
         whiskerAnchorY,

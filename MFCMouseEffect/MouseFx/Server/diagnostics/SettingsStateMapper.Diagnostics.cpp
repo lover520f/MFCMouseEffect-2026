@@ -331,6 +331,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeBindingPathBrief},
         {"scene_runtime_asset_node_binding_weight_brief",
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeBindingWeightBrief},
+        {"scene_runtime_asset_node_transform_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTransformState},
+        {"scene_runtime_asset_node_transform_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTransformEntryCount},
+        {"scene_runtime_asset_node_transform_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTransformResolvedEntryCount},
+        {"scene_runtime_asset_node_transform_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTransformBrief},
+        {"scene_runtime_asset_node_transform_path_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTransformPathBrief},
+        {"scene_runtime_asset_node_transform_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTransformValueBrief},
         {"scene_runtime_pose_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
         {"scene_runtime_pose_readability_bias",
@@ -477,6 +489,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeAssetNodeBindingPathBrief;
     out["renderer_runtime_scene_runtime_asset_node_binding_weight_brief"] =
         status.rendererRuntimeSceneRuntimeAssetNodeBindingWeightBrief;
+    out["renderer_runtime_scene_runtime_asset_node_transform_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTransformState;
+    out["renderer_runtime_scene_runtime_asset_node_transform_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTransformEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_transform_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTransformResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_transform_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTransformBrief;
+    out["renderer_runtime_scene_runtime_asset_node_transform_path_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTransformPathBrief;
+    out["renderer_runtime_scene_runtime_asset_node_transform_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTransformValueBrief;
     out["renderer_runtime_scene_runtime_pose_adapter_influence"] =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     out["renderer_runtime_scene_runtime_pose_readability_bias"] =

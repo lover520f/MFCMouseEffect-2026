@@ -111,6 +111,7 @@ void BuildWin32MouseCompanionRealRendererAdornment(
     const auto& nodeBinding = runtime.modelNodeBindingProfile;
     const auto& nodeRegistry = runtime.modelNodeRegistryProfile;
     const auto& assetBinding = runtime.assetNodeBindingProfile;
+    const auto& assetTransform = runtime.assetNodeTransformProfile;
     const float registryAppendageWeight =
         nodeRegistry.appendageEntry.resolved ? nodeRegistry.appendageEntry.registryWeight : 0.0f;
     const float assetAppendageWeight =
@@ -119,13 +120,19 @@ void BuildWin32MouseCompanionRealRendererAdornment(
         nodeBinding.appendageEntry.worldOffsetX * metrics.bodyWidth;
     const float poseAdornmentY =
         nodeBinding.appendageEntry.worldOffsetY * metrics.bodyHeight;
+    const float transformAdornmentX =
+        assetTransform.appendageEntry.resolved ? assetTransform.appendageEntry.offsetX * metrics.bodyWidth : 0.0f;
+    const float transformAdornmentY =
+        assetTransform.appendageEntry.resolved ? assetTransform.appendageEntry.offsetY * metrics.bodyHeight : 0.0f;
+    const float transformAdornmentScale =
+        assetTransform.appendageEntry.resolved ? assetTransform.appendageEntry.anchorScale : 1.0f;
     scene.poseBadgeAlpha = 180.0f + poseReadabilityBias * 75.0f;
     scene.accessoryAlphaScale =
         1.0f + poseReadabilityBias * 0.12f + nodeBinding.appendageEntry.bindWeight * 0.05f +
-        registryAppendageWeight * 0.08f + assetAppendageWeight * 0.07f;
+        registryAppendageWeight * 0.08f + assetAppendageWeight * 0.07f + (transformAdornmentScale - 1.0f) * 0.45f;
     scene.accessoryStrokeWidth =
         1.0f + poseReadabilityBias * 0.22f + nodeBinding.appendageEntry.bindWeight * 0.08f +
-        registryAppendageWeight * 0.12f + assetAppendageWeight * 0.10f;
+        registryAppendageWeight * 0.12f + assetAppendageWeight * 0.10f + (transformAdornmentScale - 1.0f) * 0.60f;
 
     scene.poseBadgeVisible =
         runtime.poseBindingConfigured ||
@@ -133,7 +140,8 @@ void BuildWin32MouseCompanionRealRendererAdornment(
         runtime.sceneRuntimePoseSampleCount > 0;
     scene.poseBadgeRect = Gdiplus::RectF(
         scene.headRect.GetRight() - scene.headRect.Width * style.poseBadgeXRatio,
-        scene.headRect.Y - scene.headRect.Height * style.poseBadgeYRatio + poseAdornmentY * 0.35f,
+        scene.headRect.Y - scene.headRect.Height * style.poseBadgeYRatio + poseAdornmentY * 0.35f +
+            transformAdornmentY * 0.20f,
         scene.headRect.Width * style.poseBadgeSizeRatio,
         scene.headRect.Width * style.poseBadgeSizeRatio);
 
@@ -147,9 +155,10 @@ void BuildWin32MouseCompanionRealRendererAdornment(
 
     float centerX =
         scene.headRect.GetRight() - scene.headRect.Width * (style.accessoryXRatio - adornment.xOffsetRatio) +
-        poseAdornmentX;
+        poseAdornmentX + transformAdornmentX;
     float centerY =
-        scene.headRect.Y + scene.headRect.Height * (style.accessoryYRatio + adornment.yOffsetRatio) + poseAdornmentY;
+        scene.headRect.Y + scene.headRect.Height * (style.accessoryYRatio + adornment.yOffsetRatio) + poseAdornmentY +
+        transformAdornmentY;
     const float baseWidth = scene.headRect.Width * style.accessoryOuterRatio * 2.0f * adornment.widthScale;
     const float baseHeight = scene.headRect.Width * style.accessoryOuterRatio * 2.0f * adornment.heightScale;
     const float actionIntensity = std::clamp(runtime.actionIntensity + runtime.reactiveActionIntensity * 0.6f, 0.0f, 1.0f);
@@ -175,8 +184,8 @@ void BuildWin32MouseCompanionRealRendererAdornment(
             centerY - baseHeight * 0.5f,
             baseWidth,
             baseHeight),
-            runtime.follow ? style.moonFollowScale : 1.0f,
-            runtime.scroll ? style.moonScrollScale : 1.0f);
+            (runtime.follow ? style.moonFollowScale : 1.0f) * transformAdornmentScale,
+            (runtime.scroll ? style.moonScrollScale : 1.0f) * transformAdornmentScale);
         scene.accessoryMoon = BuildMoonPoints(scene.accessoryBounds, style.accessoryMoonInsetRatio);
         scene.accessoryMoonInsetRect = Gdiplus::RectF(
             scene.accessoryBounds.X + scene.accessoryBounds.Width * 0.38f,
@@ -192,8 +201,8 @@ void BuildWin32MouseCompanionRealRendererAdornment(
         scene.accessoryBounds = Gdiplus::RectF(
             centerX - baseWidth * 0.5f,
             centerY - baseHeight * 0.5f,
-            baseWidth,
-            baseHeight);
+            baseWidth * transformAdornmentScale,
+            baseHeight * transformAdornmentScale);
         const float dragMix = runtime.drag ? actionIntensity : 0.0f;
         const float scrollMix = runtime.scroll ? actionIntensity : 0.0f;
         const float leafWidthScale =
@@ -228,8 +237,10 @@ void BuildWin32MouseCompanionRealRendererAdornment(
             centerY - baseHeight * 0.5f,
             baseWidth,
             baseHeight),
-            runtime.click ? style.ribbonClickWidthScale : (runtime.hold ? style.ribbonHoldWidthScale : 1.0f),
-            runtime.click ? style.ribbonClickHeightScale : (runtime.hold ? style.ribbonHoldHeightScale : 1.0f));
+            (runtime.click ? style.ribbonClickWidthScale : (runtime.hold ? style.ribbonHoldWidthScale : 1.0f)) *
+                transformAdornmentScale,
+            (runtime.click ? style.ribbonClickHeightScale : (runtime.hold ? style.ribbonHoldHeightScale : 1.0f)) *
+                transformAdornmentScale);
         const Gdiplus::RectF ribbonBounds(
             scene.accessoryBounds.X + scene.accessoryBounds.Width * (1.0f - style.accessoryRibbonWidthScale) * 0.5f,
             scene.accessoryBounds.Y + scene.accessoryBounds.Height * (1.0f - style.accessoryRibbonHeightScale) * 0.5f,

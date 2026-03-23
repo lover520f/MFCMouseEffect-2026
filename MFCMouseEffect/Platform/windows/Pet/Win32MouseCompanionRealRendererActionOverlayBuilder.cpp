@@ -34,14 +34,28 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         runtime.modelNodeRegistryProfile.overlayEntry.resolved
             ? runtime.modelNodeRegistryProfile.overlayEntry.registryWeight
             : 0.0f;
+    const float transformOverlayWeight =
+        runtime.assetNodeTransformProfile.overlayEntry.resolved
+            ? runtime.assetNodeTransformProfile.overlayEntry.transformWeight
+            : 0.0f;
     const float overlayAlphaScale =
-        1.0f + poseReadabilityBias * 0.10f + registryOverlayWeight * 0.08f + assetOverlayWeight * 0.06f;
+        1.0f + poseReadabilityBias * 0.10f + registryOverlayWeight * 0.08f + assetOverlayWeight * 0.06f +
+        transformOverlayWeight * 0.05f;
     const float overlayStrokeScale =
-        1.0f + poseReadabilityBias * 0.08f + registryOverlayWeight * 0.10f + assetOverlayWeight * 0.08f;
+        1.0f + poseReadabilityBias * 0.08f + registryOverlayWeight * 0.10f + assetOverlayWeight * 0.08f +
+        transformOverlayWeight * 0.07f;
     const float poseOverlayCenterX =
         runtime.modelNodeBindingProfile.overlayEntry.worldOffsetX * metrics.bodyWidth;
     const float poseOverlayCenterY =
         runtime.modelNodeBindingProfile.overlayEntry.worldOffsetY * metrics.bodyHeight;
+    const float transformOverlayCenterX =
+        runtime.assetNodeTransformProfile.overlayEntry.resolved
+            ? runtime.assetNodeTransformProfile.overlayEntry.offsetX * metrics.bodyWidth
+            : 0.0f;
+    const float transformOverlayCenterY =
+        runtime.assetNodeTransformProfile.overlayEntry.resolved
+            ? runtime.assetNodeTransformProfile.overlayEntry.offsetY * metrics.bodyHeight
+            : 0.0f;
     scene.actionOverlay.accentColor = profile.overlayAccentColor;
 
     if (runtime.click) {
@@ -53,8 +67,9 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         scene.actionOverlay.clickRingAlpha =
             ClampAlpha((205.0f + profile.actionIntensity * 36.0f) * mood.clickRingAlphaScale * overlayAlphaScale);
         scene.actionOverlay.clickRingRect = MakeCenteredRect(
-            scene.centerX + poseOverlayCenterX * 0.55f,
-            scene.headRect.Y + scene.headRect.Height * style.clickRingCenterYRatio + poseOverlayCenterY * 0.45f,
+            scene.centerX + poseOverlayCenterX * 0.55f + transformOverlayCenterX * 0.45f,
+            scene.headRect.Y + scene.headRect.Height * style.clickRingCenterYRatio + poseOverlayCenterY * 0.45f +
+                transformOverlayCenterY * 0.30f,
             ringSize,
             ringSize * style.clickRingHeightScale);
     }
@@ -66,7 +81,7 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         scene.actionOverlay.holdBandRect = Gdiplus::RectF(
             scene.leftHandRect.X + scene.leftHandRect.Width * style.holdBandInsetRatio,
             std::min(scene.leftHandRect.Y, scene.rightHandRect.Y) + metrics.bodyHeight * style.holdBandYOffsetRatio +
-                poseOverlayCenterY * 0.35f,
+                poseOverlayCenterY * 0.35f + transformOverlayCenterY * 0.25f,
             (scene.rightHandRect.GetRight() - scene.leftHandRect.X) - scene.leftHandRect.Width * style.holdBandWidthInsetRatio,
             metrics.bodyHeight * style.holdBandHeightRatio);
     }
@@ -78,8 +93,9 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         scene.actionOverlay.scrollArcAlpha =
             ClampAlpha((180.0f + profile.scrollIntensity * 56.0f) * mood.scrollArcAlphaScale * overlayAlphaScale);
         scene.actionOverlay.scrollArcRect = MakeCenteredRect(
-            scene.centerX + poseOverlayCenterX * 0.35f,
-            scene.centerY - metrics.bodyHeight * style.scrollArcCenterYRatio + poseOverlayCenterY * 0.30f,
+            scene.centerX + poseOverlayCenterX * 0.35f + transformOverlayCenterX * 0.40f,
+            scene.centerY - metrics.bodyHeight * style.scrollArcCenterYRatio + poseOverlayCenterY * 0.30f +
+                transformOverlayCenterY * 0.25f,
             metrics.bodyWidth * style.scrollArcWidthRatio,
             metrics.bodyHeight * style.scrollArcHeightRatio);
         scene.actionOverlay.scrollArcStartDeg = runtime.scrollSignedIntensity >= 0.0f ? 204.0f : 24.0f;
@@ -93,11 +109,15 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         scene.actionOverlay.dragLineAlpha =
             ClampAlpha((178.0f + profile.actionIntensity * 52.0f) * mood.dragLineAlphaScale * overlayAlphaScale);
         scene.actionOverlay.dragLineStart = Gdiplus::PointF(
-            scene.centerX - runtime.facingSign * metrics.bodyWidth * style.dragLineStartXRatio + poseOverlayCenterX,
-            scene.centerY - metrics.bodyHeight * style.dragLineStartYRatio + poseOverlayCenterY * 0.45f);
+            scene.centerX - runtime.facingSign * metrics.bodyWidth * style.dragLineStartXRatio + poseOverlayCenterX +
+                transformOverlayCenterX,
+            scene.centerY - metrics.bodyHeight * style.dragLineStartYRatio + poseOverlayCenterY * 0.45f +
+                transformOverlayCenterY * 0.30f);
         scene.actionOverlay.dragLineEnd = Gdiplus::PointF(
-            scene.centerX + runtime.facingSign * metrics.bodyWidth * style.dragLineEndXRatio + poseOverlayCenterX,
-            scene.centerY - metrics.bodyHeight * style.dragLineEndYRatio + poseOverlayCenterY * 0.25f);
+            scene.centerX + runtime.facingSign * metrics.bodyWidth * style.dragLineEndXRatio + poseOverlayCenterX +
+                transformOverlayCenterX * 0.85f,
+            scene.centerY - metrics.bodyHeight * style.dragLineEndYRatio + poseOverlayCenterY * 0.25f +
+                transformOverlayCenterY * 0.20f);
     }
 
     if (runtime.follow) {
@@ -105,9 +125,11 @@ void BuildWin32MouseCompanionRealRendererActionOverlay(
         scene.actionOverlay.followTrailBaseAlpha =
             ClampAlpha((150.0f + profile.actionIntensity * 68.0f) * mood.followTrailAlphaScale * overlayAlphaScale);
         const float trailBaseX =
-            scene.centerX - runtime.facingSign * metrics.bodyWidth * style.followTrailBaseXRatio + poseOverlayCenterX;
+            scene.centerX - runtime.facingSign * metrics.bodyWidth * style.followTrailBaseXRatio + poseOverlayCenterX +
+            transformOverlayCenterX;
         const float trailBaseY =
-            scene.centerY + metrics.bodyHeight * style.followTrailBaseYRatio + poseOverlayCenterY * 0.25f;
+            scene.centerY + metrics.bodyHeight * style.followTrailBaseYRatio + poseOverlayCenterY * 0.25f +
+            transformOverlayCenterY * 0.20f;
         for (size_t i = 0; i < scene.actionOverlay.followTrailRects.size(); ++i) {
             const float scale = 1.0f - static_cast<float>(i) * style.followTrailShrinkPerStep;
             scene.actionOverlay.followTrailRects[i] = MakeCenteredRect(
