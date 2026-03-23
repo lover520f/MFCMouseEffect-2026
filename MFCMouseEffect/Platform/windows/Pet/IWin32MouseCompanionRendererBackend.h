@@ -177,6 +177,22 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
         "body:joint.body.spine|head:joint.head.look|appendage:joint.appendage.reach|overlay:joint.overlay.fx|grounding:joint.grounding.balance"};
     std::string sceneRuntimeAssetNodeJointHintValueBrief{
         "body:(0.00,0.0,0.0,0.0)|head:(0.00,0.0,0.0,0.0)|appendage:(0.00,0.0,0.0,0.0)|overlay:(0.00,0.0,0.0,0.0)|grounding:(0.00,0.0,0.0,0.0)"};
+    std::string sceneRuntimeAssetNodeArticulationState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeArticulationEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeArticulationResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeArticulationBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeArticulationNameBrief{
+        "body:articulation.body.spine|head:articulation.head.look|appendage:articulation.appendage.reach|overlay:articulation.overlay.fx|grounding:articulation.grounding.balance"};
+    std::string sceneRuntimeAssetNodeArticulationValueBrief{
+        "body:(0.00,0.0,1.00,0.0)|head:(0.00,0.0,1.00,0.0)|appendage:(0.00,0.0,1.00,0.0)|overlay:(0.00,0.0,1.00,0.0)|grounding:(0.00,0.0,1.00,0.0)"};
+    std::string sceneRuntimeAssetNodeLocalJointRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeLocalJointRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeLocalJointRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeLocalJointRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeLocalJointRegistryJointBrief{
+        "body:local.body.spine|head:local.head.look|appendage:local.appendage.reach|overlay:local.overlay.fx|grounding:local.grounding.balance"};
+    std::string sceneRuntimeAssetNodeLocalJointRegistryWeightBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

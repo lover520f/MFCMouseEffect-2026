@@ -815,6 +815,30 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.sceneRuntimeAssetNodeJointHintNameBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeJointHintValueBrief =
         diagnostics.rendererRuntime.sceneRuntimeAssetNodeJointHintValueBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeArticulationState =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeArticulationEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeArticulationResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeArticulationBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeArticulationNameBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationNameBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeArticulationValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationValueBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryState =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryJointBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryJointBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryWeightBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryWeightBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterInfluence =
         diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseReadabilityBias =

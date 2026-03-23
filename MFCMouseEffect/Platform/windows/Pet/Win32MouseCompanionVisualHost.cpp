@@ -384,6 +384,30 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeAssetNodeJointHintNameBrief;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeJointHintValueBrief =
         rendererRuntime.sceneRuntimeAssetNodeJointHintValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationState =
+        rendererRuntime.sceneRuntimeAssetNodeArticulationState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeArticulationEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeArticulationResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationBrief =
+        rendererRuntime.sceneRuntimeAssetNodeArticulationBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationNameBrief =
+        rendererRuntime.sceneRuntimeAssetNodeArticulationNameBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodeArticulationValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryState =
+        rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryBrief =
+        rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryJointBrief =
+        rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryJointBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryWeightBrief =
+        rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryWeightBrief;
     diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence =
         rendererRuntime.sceneRuntimePoseAdapterInfluence;
     diagnostics.rendererRuntime.sceneRuntimePoseReadabilityBias =

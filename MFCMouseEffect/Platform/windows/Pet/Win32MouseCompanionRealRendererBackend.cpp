@@ -11,6 +11,8 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseConstraintProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseSolveProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeJointHintProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeArticulationProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeLocalJointRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseResolverProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeTargetProfile.h"
@@ -121,6 +123,18 @@ void Win32MouseCompanionRealRendererBackend::Render(
             poseSolveProfile);
     ApplyWin32MouseCompanionRealRendererAssetNodeJointHintProfile(
         jointHintProfile,
+        scene);
+    const auto articulationProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodeArticulationProfile(
+            jointHintProfile);
+    ApplyWin32MouseCompanionRealRendererAssetNodeArticulationProfile(
+        articulationProfile,
+        scene);
+    const auto localJointRegistryProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodeLocalJointRegistryProfile(
+            articulationProfile);
+    ApplyWin32MouseCompanionRealRendererAssetNodeLocalJointRegistryProfile(
+        localJointRegistryProfile,
         scene);
     const auto pluginSelection = ResolveWin32MouseCompanionRenderPluginSelection();
     const Win32MouseCompanionRealRendererPainter painter{};
@@ -346,6 +360,30 @@ void Win32MouseCompanionRealRendererBackend::Render(
         jointHintProfile.jointHintBrief;
     diagnostics.sceneRuntimeAssetNodeJointHintValueBrief =
         jointHintProfile.valueBrief;
+    diagnostics.sceneRuntimeAssetNodeArticulationState =
+        articulationProfile.articulationState;
+    diagnostics.sceneRuntimeAssetNodeArticulationEntryCount =
+        articulationProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodeArticulationResolvedEntryCount =
+        articulationProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeArticulationBrief =
+        articulationProfile.brief;
+    diagnostics.sceneRuntimeAssetNodeArticulationNameBrief =
+        articulationProfile.articulationBrief;
+    diagnostics.sceneRuntimeAssetNodeArticulationValueBrief =
+        articulationProfile.valueBrief;
+    diagnostics.sceneRuntimeAssetNodeLocalJointRegistryState =
+        localJointRegistryProfile.registryState;
+    diagnostics.sceneRuntimeAssetNodeLocalJointRegistryEntryCount =
+        localJointRegistryProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodeLocalJointRegistryResolvedEntryCount =
+        localJointRegistryProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeLocalJointRegistryBrief =
+        localJointRegistryProfile.brief;
+    diagnostics.sceneRuntimeAssetNodeLocalJointRegistryJointBrief =
+        localJointRegistryProfile.localJointBrief;
+    diagnostics.sceneRuntimeAssetNodeLocalJointRegistryWeightBrief =
+        localJointRegistryProfile.weightBrief;
     const auto& poseAdapterProfile = sceneRuntime.poseAdapterProfile;
     diagnostics.sceneRuntimePoseAdapterInfluence = poseAdapterProfile.influence;
     diagnostics.sceneRuntimePoseReadabilityBias = poseAdapterProfile.readabilityBias;

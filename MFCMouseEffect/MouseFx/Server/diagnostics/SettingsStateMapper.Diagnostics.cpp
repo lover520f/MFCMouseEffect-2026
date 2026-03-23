@@ -499,6 +499,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintNameBrief},
         {"scene_runtime_asset_node_joint_hint_value_brief",
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintValueBrief},
+        {"scene_runtime_asset_node_articulation_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationState},
+        {"scene_runtime_asset_node_articulation_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationEntryCount},
+        {"scene_runtime_asset_node_articulation_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationResolvedEntryCount},
+        {"scene_runtime_asset_node_articulation_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationBrief},
+        {"scene_runtime_asset_node_articulation_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationNameBrief},
+        {"scene_runtime_asset_node_articulation_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationValueBrief},
+        {"scene_runtime_asset_node_local_joint_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeLocalJointRegistryState},
+        {"scene_runtime_asset_node_local_joint_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeLocalJointRegistryEntryCount},
+        {"scene_runtime_asset_node_local_joint_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeLocalJointRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_local_joint_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeLocalJointRegistryBrief},
+        {"scene_runtime_asset_node_local_joint_registry_joint_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeLocalJointRegistryJointBrief},
+        {"scene_runtime_asset_node_local_joint_registry_weight_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeLocalJointRegistryWeightBrief},
         {"scene_runtime_pose_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
         {"scene_runtime_pose_readability_bias",
@@ -813,6 +837,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeAssetNodeJointHintNameBrief;
     out["renderer_runtime_scene_runtime_asset_node_joint_hint_value_brief"] =
         status.rendererRuntimeSceneRuntimeAssetNodeJointHintValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationState;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationBrief;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_local_joint_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_local_joint_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_local_joint_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_local_joint_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_local_joint_registry_joint_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryJointBrief;
+    out["renderer_runtime_scene_runtime_asset_node_local_joint_registry_weight_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryWeightBrief;
     out["renderer_runtime_scene_runtime_pose_adapter_influence"] =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     out["renderer_runtime_scene_runtime_pose_readability_bias"] =

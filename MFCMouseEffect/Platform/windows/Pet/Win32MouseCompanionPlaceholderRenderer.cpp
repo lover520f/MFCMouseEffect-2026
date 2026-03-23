@@ -269,6 +269,22 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "body:joint.body.spine|head:joint.head.look|appendage:joint.appendage.reach|overlay:joint.overlay.fx|grounding:joint.grounding.balance";
     diagnostics.sceneRuntimeAssetNodeJointHintValueBrief =
         "body:(0.00,0.0,0.0,0.0)|head:(0.00,0.0,0.0,0.0)|appendage:(0.00,0.0,0.0,0.0)|overlay:(0.00,0.0,0.0,0.0)|grounding:(0.00,0.0,0.0,0.0)";
+    diagnostics.sceneRuntimeAssetNodeArticulationState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeArticulationEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeArticulationResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeArticulationBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeArticulationNameBrief =
+        "body:articulation.body.spine|head:articulation.head.look|appendage:articulation.appendage.reach|overlay:articulation.overlay.fx|grounding:articulation.grounding.balance";
+    diagnostics.sceneRuntimeAssetNodeArticulationValueBrief =
+        "body:(0.00,0.0,1.00,0.0)|head:(0.00,0.0,1.00,0.0)|appendage:(0.00,0.0,1.00,0.0)|overlay:(0.00,0.0,1.00,0.0)|grounding:(0.00,0.0,1.00,0.0)";
+    diagnostics.sceneRuntimeAssetNodeLocalJointRegistryState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeLocalJointRegistryEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeLocalJointRegistryResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeLocalJointRegistryBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeLocalJointRegistryJointBrief =
+        "body:local.body.spine|head:local.head.look|appendage:local.appendage.reach|overlay:local.overlay.fx|grounding:local.grounding.balance";
+    diagnostics.sceneRuntimeAssetNodeLocalJointRegistryWeightBrief =
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
     diagnostics.appearanceSkinVariantId = input.appearanceProfile.skinVariantId;
     diagnostics.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;
     const auto accessoryFamily =

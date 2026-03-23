@@ -281,6 +281,30 @@ export function getMouseCompanionSectionMarkup() {
         <label>Joint Hint Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_joint_hint_value_brief">-</output>
 
+        <label>Articulation</label>
+        <output id="mc_runtime_scene_runtime_asset_node_articulation_brief">-</output>
+
+        <label>Resolved Articulations</label>
+        <output id="mc_runtime_scene_runtime_asset_node_articulation_resolved_count">-</output>
+
+        <label>Articulation Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_articulation_name_brief">-</output>
+
+        <label>Articulation Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_articulation_value_brief">-</output>
+
+        <label>Local Joint Registry</label>
+        <output id="mc_runtime_scene_runtime_asset_node_local_joint_registry_brief">-</output>
+
+        <label>Resolved Local Joints</label>
+        <output id="mc_runtime_scene_runtime_asset_node_local_joint_registry_resolved_count">-</output>
+
+        <label>Local Joint Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_local_joint_registry_joint_brief">-</output>
+
+        <label>Local Joint Weights</label>
+        <output id="mc_runtime_scene_runtime_asset_node_local_joint_registry_weight_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 
