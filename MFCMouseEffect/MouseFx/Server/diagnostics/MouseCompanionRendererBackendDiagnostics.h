@@ -243,6 +243,22 @@ struct MouseCompanionRealRendererPreviewDiagnostics {
         "body:surface.driver.body.spine|head:surface.driver.head.look|appendage:surface.driver.appendage.reach|overlay:surface.driver.overlay.fx|grounding:surface.driver.grounding.balance"};
     std::string sceneRuntimeAssetNodeSurfaceDriverValueBrief{
         "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodePoseBusState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodePoseBusEntryCount{0};
+    uint32_t sceneRuntimeAssetNodePoseBusResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodePoseBusBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodePoseBusNameBrief{
+        "body:pose.bus.body.spine|head:pose.bus.head.look|appendage:pose.bus.appendage.reach|overlay:pose.bus.overlay.fx|grounding:pose.bus.grounding.balance"};
+    std::string sceneRuntimeAssetNodePoseBusValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeControllerTableState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeControllerTableEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeControllerTableResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeControllerTableBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeControllerTableNameBrief{
+        "body:controller.body.spine|head:controller.head.look|appendage:controller.appendage.reach|overlay:controller.overlay.fx|grounding:controller.grounding.balance"};
+    std::string sceneRuntimeAssetNodeControllerTableValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

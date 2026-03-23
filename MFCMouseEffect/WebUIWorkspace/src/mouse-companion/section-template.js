@@ -377,6 +377,30 @@ export function getMouseCompanionSectionMarkup() {
         <label>Surface Driver Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_surface_driver_value_brief">-</output>
 
+        <label>Pose Bus</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_bus_brief">-</output>
+
+        <label>Resolved Pose Bus Entries</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_bus_resolved_count">-</output>
+
+        <label>Pose Bus Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_bus_name_brief">-</output>
+
+        <label>Pose Bus Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_bus_value_brief">-</output>
+
+        <label>Controller Table</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_table_brief">-</output>
+
+        <label>Resolved Controller Entries</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_table_resolved_count">-</output>
+
+        <label>Controller Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_table_name_brief">-</output>
+
+        <label>Controller Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_table_value_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 

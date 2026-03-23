@@ -1246,6 +1246,62 @@ function writeRuntimeDiagnostics(runtimeState) {
     ),
   );
   writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_pose_bus_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_asset_node_pose_bus_brief,
+      'preview_only/0/0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_pose_bus_resolved_count',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_asset_node_pose_bus_resolved_entry_count,
+      '0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_pose_bus_name_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_asset_node_pose_bus_name_brief,
+      'body:pose.bus.body.spine|head:pose.bus.head.look|appendage:pose.bus.appendage.reach|overlay:pose.bus.overlay.fx|grounding:pose.bus.grounding.balance',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_pose_bus_value_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_asset_node_pose_bus_value_brief,
+      'body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_controller_table_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_asset_node_controller_table_brief,
+      'preview_only/0/0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_controller_table_resolved_count',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_asset_node_controller_table_resolved_entry_count,
+      '0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_controller_table_name_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_asset_node_controller_table_name_brief,
+      'body:controller.body.spine|head:controller.head.look|appendage:controller.appendage.reach|overlay:controller.overlay.fx|grounding:controller.grounding.balance',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_asset_node_controller_table_value_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_asset_node_controller_table_value_brief,
+      'body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)',
+    ),
+  );
+  writeTextValue(
     'mc_runtime_scene_runtime_pose_adapter_brief',
     normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_pose_adapter_brief, 'runtime_only/0.00/0.00'),
   );

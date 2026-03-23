@@ -317,6 +317,22 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "body:surface.body.spine|head:surface.head.look|appendage:surface.appendage.reach|overlay:surface.overlay.fx|grounding:surface.grounding.balance";
     diagnostics.sceneRuntimeAssetNodeControlSurfaceValueBrief =
         "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
+    diagnostics.sceneRuntimeAssetNodePoseBusState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodePoseBusEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodePoseBusResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodePoseBusBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodePoseBusNameBrief =
+        "body:pose.bus.body.spine|head:pose.bus.head.look|appendage:pose.bus.appendage.reach|overlay:pose.bus.overlay.fx|grounding:pose.bus.grounding.balance";
+    diagnostics.sceneRuntimeAssetNodePoseBusValueBrief =
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
+    diagnostics.sceneRuntimeAssetNodeControllerTableState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeControllerTableEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeControllerTableResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeControllerTableBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeControllerTableNameBrief =
+        "body:controller.body.spine|head:controller.head.look|appendage:controller.appendage.reach|overlay:controller.overlay.fx|grounding:controller.grounding.balance";
+    diagnostics.sceneRuntimeAssetNodeControllerTableValueBrief =
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
     diagnostics.appearanceSkinVariantId = input.appearanceProfile.skinVariantId;
     diagnostics.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;
     const auto accessoryFamily =

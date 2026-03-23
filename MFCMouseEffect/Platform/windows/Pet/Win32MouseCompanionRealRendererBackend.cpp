@@ -18,6 +18,8 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeControlSurfaceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeRigDriverProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeSurfaceDriverProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseBusProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeControllerTableProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeLocalJointRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseResolverProfile.h"
@@ -177,6 +179,18 @@ void Win32MouseCompanionRealRendererBackend::Render(
             rigDriverProfile);
     ApplyWin32MouseCompanionRealRendererAssetNodeSurfaceDriverProfile(
         surfaceDriverProfile,
+        scene);
+    const auto poseBusProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodePoseBusProfile(
+            surfaceDriverProfile);
+    ApplyWin32MouseCompanionRealRendererAssetNodePoseBusProfile(
+        poseBusProfile,
+        scene);
+    const auto controllerTableProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodeControllerTableProfile(
+            poseBusProfile);
+    ApplyWin32MouseCompanionRealRendererAssetNodeControllerTableProfile(
+        controllerTableProfile,
         scene);
     const auto pluginSelection = ResolveWin32MouseCompanionRenderPluginSelection();
     const Win32MouseCompanionRealRendererPainter painter{};
@@ -498,6 +512,25 @@ void Win32MouseCompanionRealRendererBackend::Render(
         surfaceDriverProfile.driverBrief;
     diagnostics.sceneRuntimeAssetNodeSurfaceDriverValueBrief =
         surfaceDriverProfile.valueBrief;
+    diagnostics.sceneRuntimeAssetNodePoseBusState = poseBusProfile.busState;
+    diagnostics.sceneRuntimeAssetNodePoseBusEntryCount = poseBusProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodePoseBusResolvedEntryCount =
+        poseBusProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodePoseBusBrief = poseBusProfile.brief;
+    diagnostics.sceneRuntimeAssetNodePoseBusNameBrief = poseBusProfile.busBrief;
+    diagnostics.sceneRuntimeAssetNodePoseBusValueBrief = poseBusProfile.valueBrief;
+    diagnostics.sceneRuntimeAssetNodeControllerTableState =
+        controllerTableProfile.tableState;
+    diagnostics.sceneRuntimeAssetNodeControllerTableEntryCount =
+        controllerTableProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodeControllerTableResolvedEntryCount =
+        controllerTableProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeControllerTableBrief =
+        controllerTableProfile.brief;
+    diagnostics.sceneRuntimeAssetNodeControllerTableNameBrief =
+        controllerTableProfile.controllerBrief;
+    diagnostics.sceneRuntimeAssetNodeControllerTableValueBrief =
+        controllerTableProfile.valueBrief;
     const auto& poseAdapterProfile = sceneRuntime.poseAdapterProfile;
     diagnostics.sceneRuntimePoseAdapterInfluence = poseAdapterProfile.influence;
     diagnostics.sceneRuntimePoseReadabilityBias = poseAdapterProfile.readabilityBias;

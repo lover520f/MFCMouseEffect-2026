@@ -364,6 +364,22 @@ public:
             "body:surface.driver.body.spine|head:surface.driver.head.look|appendage:surface.driver.appendage.reach|overlay:surface.driver.overlay.fx|grounding:surface.driver.grounding.balance"};
         std::string rendererRuntimeSceneRuntimeAssetNodeSurfaceDriverValueBrief{
             "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodePoseBusState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodePoseBusEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodePoseBusResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodePoseBusBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodePoseBusNameBrief{
+            "body:pose.bus.body.spine|head:pose.bus.head.look|appendage:pose.bus.appendage.reach|overlay:pose.bus.overlay.fx|grounding:pose.bus.grounding.balance"};
+        std::string rendererRuntimeSceneRuntimeAssetNodePoseBusValueBrief{
+            "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControllerTableState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeControllerTableEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeControllerTableResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControllerTableBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControllerTableNameBrief{
+            "body:controller.body.spine|head:controller.head.look|appendage:controller.appendage.reach|overlay:controller.overlay.fx|grounding:controller.grounding.balance"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControllerTableValueBrief{
+            "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};
