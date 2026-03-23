@@ -403,6 +403,14 @@ struct MouseCompanionRealRendererPreviewDiagnostics {
         "body:surface.route.bus.driver.registry.body.shell|head:surface.route.bus.driver.registry.head.mask|appendage:surface.route.bus.driver.registry.appendage.trim|overlay:surface.route.bus.driver.registry.overlay.fx|grounding:surface.route.bus.driver.registry.grounding.base"};
     std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryValueBrief{
         "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterNameBrief{
+        "body:surface.route.bus.driver.registry.router.body.shell|head:surface.route.bus.driver.registry.router.head.mask|appendage:surface.route.bus.driver.registry.router.appendage.trim|overlay:surface.route.bus.driver.registry.router.overlay.fx|grounding:surface.route.bus.driver.registry.router.grounding.base"};
+    std::string sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
     std::string sceneRuntimeAssetNodeExecutionDriverTableState{"preview_only"};
     uint32_t sceneRuntimeAssetNodeExecutionDriverTableEntryCount{0};
     uint32_t sceneRuntimeAssetNodeExecutionDriverTableResolvedEntryCount{0};
@@ -434,6 +442,14 @@ struct MouseCompanionRealRendererPreviewDiagnostics {
     std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusNameBrief{
         "body:execution.driver.router.registry.bus.body.shell|head:execution.driver.router.registry.bus.head.mask|appendage:execution.driver.router.registry.bus.appendage.trim|overlay:execution.driver.router.registry.bus.overlay.fx|grounding:execution.driver.router.registry.bus.grounding.base"};
     std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryNameBrief{
+        "body:execution.driver.router.registry.bus.registry.body.shell|head:execution.driver.router.registry.bus.registry.head.mask|appendage:execution.driver.router.registry.bus.registry.appendage.trim|overlay:execution.driver.router.registry.bus.registry.overlay.fx|grounding:execution.driver.router.registry.bus.registry.grounding.base"};
+    std::string sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryValueBrief{
         "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};

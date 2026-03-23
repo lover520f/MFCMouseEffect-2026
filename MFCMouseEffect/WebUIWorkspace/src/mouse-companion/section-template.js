@@ -617,6 +617,18 @@ export function getMouseCompanionSectionMarkup() {
         <label>Surface Route Bus Driver Registry Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_value_brief">-</output>
 
+        <label>Surface Route Bus Driver Registry Router</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_router_brief">-</output>
+
+        <label>Resolved Surface Route Bus Driver Registry Routers</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_router_resolved_count">-</output>
+
+        <label>Surface Route Bus Driver Registry Router Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_router_name_brief">-</output>
+
+        <label>Surface Route Bus Driver Registry Router Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_router_value_brief">-</output>
+
         <label>Execution Driver Table</label>
         <output id="mc_runtime_scene_runtime_asset_node_execution_driver_table_brief">-</output>
 
@@ -664,6 +676,18 @@ export function getMouseCompanionSectionMarkup() {
 
         <label>Execution Driver Router Registry Bus Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_value_brief">-</output>
+
+        <label>Execution Driver Router Registry Bus Registry</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_registry_brief">-</output>
+
+        <label>Resolved Execution Driver Router Registry Bus Registries</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_registry_resolved_count">-</output>
+
+        <label>Execution Driver Router Registry Bus Registry Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_registry_name_brief">-</output>
+
+        <label>Execution Driver Router Registry Bus Registry Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_registry_value_brief">-</output>
 
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
