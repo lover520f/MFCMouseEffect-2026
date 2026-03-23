@@ -88,6 +88,21 @@ function Resolve-WasmV1StyleIntent([string]$Style) {
     }
 }
 
+function Format-DefaultLaneSummary($Node) {
+    if ($null -eq $Node) {
+        return "-/-/-/-"
+    }
+    $candidate = [string]$Node.default_lane_candidate
+    $source = [string]$Node.default_lane_source
+    $rollout = [string]$Node.default_lane_rollout_status
+    $styleIntent = [string]$Node.default_lane_style_intent
+    if ([string]::IsNullOrWhiteSpace($candidate)) { $candidate = "-" }
+    if ([string]::IsNullOrWhiteSpace($source)) { $source = "-" }
+    if ([string]::IsNullOrWhiteSpace($rollout)) { $rollout = "-" }
+    if ([string]::IsNullOrWhiteSpace($styleIntent)) { $styleIntent = "-" }
+    return "{0}/{1}/{2}/{3}" -f $candidate, $source, $rollout, $styleIntent
+}
+
 function Show-RealPreviewSmokeHint {
     @'
 [mfx:info] real-preview-smoke preset
@@ -782,12 +797,13 @@ if ($Route -eq "sweep") {
         $proof = $item.proof
         $deltaNode = $proof.renderer_runtime_delta
         $preview = $item.real_renderer_preview
-        Write-Host ("  - {0}: status={1} frame_delta={2} backend={3} preview_active={4} preset={5}->{6} combo={7}" -f `
+        Write-Host ("  - {0}: status={1} frame_delta={2} backend={3} preview_active={4} default_lane={5} preset={6}->{7} combo={8}" -f `
             $item.event, `
             $proof.renderer_runtime_expectation_status, `
             $deltaNode.frame_count_delta, `
             $item.selected_renderer_backend, `
             $preview.preview_active, `
+            (Format-DefaultLaneSummary $preview), `
             $preview.appearance_requested_preset_id, `
             $preview.appearance_resolved_preset_id, `
             $preview.appearance_combo_preset)
@@ -886,6 +902,8 @@ if ((-not [string]::IsNullOrWhiteSpace($ExpectedAppearancePluginKind)) -or
         $response.real_renderer_preview.default_lane_rollout_status, `
         $response.real_renderer_preview.default_lane_style_intent, `
         $pluginExpectationMet)
+    Write-Host ("  - default_lane_summary={0}" -f `
+        (Format-DefaultLaneSummary $response.real_renderer_preview))
 }
 Write-Host ("  - appearance preset={0}->{1} skin={2} accessory_family={3} combo={4}" -f `
     $response.real_renderer_preview.appearance_requested_preset_id, `

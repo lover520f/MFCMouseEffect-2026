@@ -277,6 +277,7 @@
    - when the matrix recommends one of the expanded `wasm_v1_*` lanes, it now also records `recommendation_style_intent`, so you can see whether the machine is currently leaning toward `agile_follow_drag`, `dreamy_follow_scroll`, or `charming_click_hold`
    - the same recommendation now also records `recommended_sample_path`, so the next checked-in sidecar candidate can be picked up directly
    - machine recommendation priority now prefers runtime `default_lane_style_intent` plus the current configured sample contract, rather than depending only on a fixed lane-name order
+   - `render-proof` console output now also prints `default_lane_summary = candidate/source/rollout/style_intent`, so single-lane smoke and sweep logs use the same vocabulary as runtime and lane matrix
    - the same run now also emits `observation-template.md`, which is the shortest place to record the human-side outcome for `follow / drag / click / hold / scroll` without losing the matching machine summary
    - current stable preflight failure codes include:
      - `renderer_plugin_manifest_io_error`
