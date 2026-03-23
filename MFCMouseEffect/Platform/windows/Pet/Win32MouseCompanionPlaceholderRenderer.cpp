@@ -253,6 +253,22 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "body:constraint.body.posture|head:constraint.head.expression|appendage:constraint.appendage.motion|overlay:constraint.overlay.fx|grounding:constraint.grounding.shadow";
     diagnostics.sceneRuntimeAssetNodePoseConstraintValueBrief =
         "body:(0.00,0.0,0.0,1.00,0.0)|head:(0.00,0.0,0.0,1.00,0.0)|appendage:(0.00,0.0,0.0,1.00,0.0)|overlay:(0.00,0.0,0.0,1.00,0.0)|grounding:(0.00,0.0,0.0,1.00,0.0)";
+    diagnostics.sceneRuntimeAssetNodePoseSolveState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodePoseSolveEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodePoseSolveResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodePoseSolveBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodePoseSolvePathBrief =
+        "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding";
+    diagnostics.sceneRuntimeAssetNodePoseSolveValueBrief =
+        "body:(0.00,0.0,0.0,1.00,0.0)|head:(0.00,0.0,0.0,1.00,0.0)|appendage:(0.00,0.0,0.0,1.00,0.0)|overlay:(0.00,0.0,0.0,1.00,0.0)|grounding:(0.00,0.0,0.0,1.00,0.0)";
+    diagnostics.sceneRuntimeAssetNodeJointHintState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeJointHintEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeJointHintResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeJointHintBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeJointHintNameBrief =
+        "body:joint.body.spine|head:joint.head.look|appendage:joint.appendage.reach|overlay:joint.overlay.fx|grounding:joint.grounding.balance";
+    diagnostics.sceneRuntimeAssetNodeJointHintValueBrief =
+        "body:(0.00,0.0,0.0,0.0)|head:(0.00,0.0,0.0,0.0)|appendage:(0.00,0.0,0.0,0.0)|overlay:(0.00,0.0,0.0,0.0)|grounding:(0.00,0.0,0.0,0.0)";
     diagnostics.appearanceSkinVariantId = input.appearanceProfile.skinVariantId;
     diagnostics.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;
     const auto accessoryFamily =

@@ -284,6 +284,22 @@ public:
             "body:constraint.body.posture|head:constraint.head.expression|appendage:constraint.appendage.motion|overlay:constraint.overlay.fx|grounding:constraint.grounding.shadow"};
         std::string rendererRuntimeSceneRuntimeAssetNodePoseConstraintValueBrief{
             "body:(0.00,0.0,0.0,1.00,0.0)|head:(0.00,0.0,0.0,1.00,0.0)|appendage:(0.00,0.0,0.0,1.00,0.0)|overlay:(0.00,0.0,0.0,1.00,0.0)|grounding:(0.00,0.0,0.0,1.00,0.0)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodePoseSolveState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodePoseSolveEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodePoseSolveResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodePoseSolveBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodePoseSolvePathBrief{
+            "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
+        std::string rendererRuntimeSceneRuntimeAssetNodePoseSolveValueBrief{
+            "body:(0.00,0.0,0.0,1.00,0.0)|head:(0.00,0.0,0.0,1.00,0.0)|appendage:(0.00,0.0,0.0,1.00,0.0)|overlay:(0.00,0.0,0.0,1.00,0.0)|grounding:(0.00,0.0,0.0,1.00,0.0)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeJointHintState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeJointHintEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeJointHintResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeJointHintBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeJointHintNameBrief{
+            "body:joint.body.spine|head:joint.head.look|appendage:joint.appendage.reach|overlay:joint.overlay.fx|grounding:joint.grounding.balance"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeJointHintValueBrief{
+            "body:(0.00,0.0,0.0,0.0)|head:(0.00,0.0,0.0,0.0)|appendage:(0.00,0.0,0.0,0.0)|overlay:(0.00,0.0,0.0,0.0)|grounding:(0.00,0.0,0.0,0.0)"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

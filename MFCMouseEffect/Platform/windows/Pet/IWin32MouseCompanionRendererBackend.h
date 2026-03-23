@@ -161,6 +161,22 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
         "body:constraint.body.posture|head:constraint.head.expression|appendage:constraint.appendage.motion|overlay:constraint.overlay.fx|grounding:constraint.grounding.shadow"};
     std::string sceneRuntimeAssetNodePoseConstraintValueBrief{
         "body:(0.00,0.0,0.0,1.00,0.0)|head:(0.00,0.0,0.0,1.00,0.0)|appendage:(0.00,0.0,0.0,1.00,0.0)|overlay:(0.00,0.0,0.0,1.00,0.0)|grounding:(0.00,0.0,0.0,1.00,0.0)"};
+    std::string sceneRuntimeAssetNodePoseSolveState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodePoseSolveEntryCount{0};
+    uint32_t sceneRuntimeAssetNodePoseSolveResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodePoseSolveBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodePoseSolvePathBrief{
+        "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
+    std::string sceneRuntimeAssetNodePoseSolveValueBrief{
+        "body:(0.00,0.0,0.0,1.00,0.0)|head:(0.00,0.0,0.0,1.00,0.0)|appendage:(0.00,0.0,0.0,1.00,0.0)|overlay:(0.00,0.0,0.0,1.00,0.0)|grounding:(0.00,0.0,0.0,1.00,0.0)"};
+    std::string sceneRuntimeAssetNodeJointHintState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeJointHintEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeJointHintResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeJointHintBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeJointHintNameBrief{
+        "body:joint.body.spine|head:joint.head.look|appendage:joint.appendage.reach|overlay:joint.overlay.fx|grounding:joint.grounding.balance"};
+    std::string sceneRuntimeAssetNodeJointHintValueBrief{
+        "body:(0.00,0.0,0.0,0.0)|head:(0.00,0.0,0.0,0.0)|appendage:(0.00,0.0,0.0,0.0)|overlay:(0.00,0.0,0.0,0.0)|grounding:(0.00,0.0,0.0,0.0)"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

@@ -257,6 +257,30 @@ export function getMouseCompanionSectionMarkup() {
         <label>Pose Constraint Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_pose_constraint_value_brief">-</output>
 
+        <label>Pose Solve</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_solve_brief">-</output>
+
+        <label>Resolved Pose Solves</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_solve_resolved_count">-</output>
+
+        <label>Pose Solve Paths</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_solve_path_brief">-</output>
+
+        <label>Pose Solve Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_solve_value_brief">-</output>
+
+        <label>Joint Hint</label>
+        <output id="mc_runtime_scene_runtime_asset_node_joint_hint_brief">-</output>
+
+        <label>Resolved Joint Hints</label>
+        <output id="mc_runtime_scene_runtime_asset_node_joint_hint_resolved_count">-</output>
+
+        <label>Joint Hint Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_joint_hint_name_brief">-</output>
+
+        <label>Joint Hint Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_joint_hint_value_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 

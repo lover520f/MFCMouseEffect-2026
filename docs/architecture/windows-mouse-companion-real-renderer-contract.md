@@ -342,6 +342,18 @@ It should **not** own:
     - `scene_runtime_asset_node_pose_constraint_brief = constraint_state/entry_count/resolved_entry_count`
     - `scene_runtime_asset_node_pose_constraint_name_brief = body:constraint.body.posture|head:constraint.head.expression|appendage:constraint.appendage.motion|overlay:constraint.overlay.fx|grounding:constraint.grounding.shadow`
     - `scene_runtime_asset_node_pose_constraint_value_brief = body:(strength,x,y,scale,tilt)|...`
+    - `scene_runtime_asset_node_pose_solve_state`
+    - `scene_runtime_asset_node_pose_solve_entry_count`
+    - `scene_runtime_asset_node_pose_solve_resolved_entry_count`
+    - `scene_runtime_asset_node_pose_solve_brief = solve_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_pose_solve_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
+    - `scene_runtime_asset_node_pose_solve_value_brief = body:(weight,x,y,scale,tilt)|...`
+    - `scene_runtime_asset_node_joint_hint_state`
+    - `scene_runtime_asset_node_joint_hint_entry_count`
+    - `scene_runtime_asset_node_joint_hint_resolved_entry_count`
+    - `scene_runtime_asset_node_joint_hint_brief = hint_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_joint_hint_name_brief = body:joint.body.spine|head:joint.head.look|appendage:joint.appendage.reach|overlay:joint.overlay.fx|grounding:joint.grounding.balance`
+    - `scene_runtime_asset_node_joint_hint_value_brief = body:(weight,reach,spread,tilt)|...`
   - scene build/runtime diagnostics should also expose a derived `assetNodeAnchorProfile` over the same five logical lanes:
     - `scene_runtime_asset_node_anchor_state`
     - `scene_runtime_asset_node_anchor_entry_count`

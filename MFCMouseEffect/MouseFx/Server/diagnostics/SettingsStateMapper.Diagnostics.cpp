@@ -475,6 +475,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseConstraintNameBrief},
         {"scene_runtime_asset_node_pose_constraint_value_brief",
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseConstraintValueBrief},
+        {"scene_runtime_asset_node_pose_solve_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseSolveState},
+        {"scene_runtime_asset_node_pose_solve_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseSolveEntryCount},
+        {"scene_runtime_asset_node_pose_solve_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseSolveResolvedEntryCount},
+        {"scene_runtime_asset_node_pose_solve_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseSolveBrief},
+        {"scene_runtime_asset_node_pose_solve_path_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseSolvePathBrief},
+        {"scene_runtime_asset_node_pose_solve_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseSolveValueBrief},
+        {"scene_runtime_asset_node_joint_hint_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintState},
+        {"scene_runtime_asset_node_joint_hint_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintEntryCount},
+        {"scene_runtime_asset_node_joint_hint_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintResolvedEntryCount},
+        {"scene_runtime_asset_node_joint_hint_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintBrief},
+        {"scene_runtime_asset_node_joint_hint_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintNameBrief},
+        {"scene_runtime_asset_node_joint_hint_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintValueBrief},
         {"scene_runtime_pose_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
         {"scene_runtime_pose_readability_bias",
@@ -765,6 +789,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeAssetNodePoseConstraintNameBrief;
     out["renderer_runtime_scene_runtime_asset_node_pose_constraint_value_brief"] =
         status.rendererRuntimeSceneRuntimeAssetNodePoseConstraintValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_solve_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseSolveState;
+    out["renderer_runtime_scene_runtime_asset_node_pose_solve_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseSolveEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_solve_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseSolveResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_solve_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseSolveBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_solve_path_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseSolvePathBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_solve_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseSolveValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_joint_hint_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeJointHintState;
+    out["renderer_runtime_scene_runtime_asset_node_joint_hint_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeJointHintEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_joint_hint_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeJointHintResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_joint_hint_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeJointHintBrief;
+    out["renderer_runtime_scene_runtime_asset_node_joint_hint_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeJointHintNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_joint_hint_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeJointHintValueBrief;
     out["renderer_runtime_scene_runtime_pose_adapter_influence"] =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     out["renderer_runtime_scene_runtime_pose_readability_bias"] =
