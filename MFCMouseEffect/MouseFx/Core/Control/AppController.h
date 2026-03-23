@@ -396,6 +396,22 @@ public:
             "body:driver.bus.body.spine|head:driver.bus.head.look|appendage:driver.bus.appendage.reach|overlay:driver.bus.overlay.fx|grounding:driver.bus.grounding.balance"};
         std::string rendererRuntimeSceneRuntimeAssetNodeDriverBusValueBrief{
             "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryNameBrief{
+            "body:controller.driver.body.spine|head:controller.driver.head.look|appendage:controller.driver.appendage.reach|overlay:controller.driver.overlay.fx|grounding:controller.driver.grounding.balance"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryValueBrief{
+            "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeExecutionLaneState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeExecutionLaneEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeExecutionLaneResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeExecutionLaneBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeExecutionLaneNameBrief{
+            "body:execution.lane.body.spine|head:execution.lane.head.look|appendage:execution.lane.appendage.reach|overlay:execution.lane.overlay.fx|grounding:execution.lane.grounding.balance"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeExecutionLaneValueBrief{
+            "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

@@ -425,6 +425,30 @@ export function getMouseCompanionSectionMarkup() {
         <label>Driver Bus Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_driver_bus_value_brief">-</output>
 
+        <label>Controller Driver Registry</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_driver_registry_brief">-</output>
+
+        <label>Resolved Controller Driver Entries</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_driver_registry_resolved_count">-</output>
+
+        <label>Controller Driver Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_driver_registry_name_brief">-</output>
+
+        <label>Controller Driver Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_driver_registry_value_brief">-</output>
+
+        <label>Execution Lane</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_lane_brief">-</output>
+
+        <label>Resolved Execution Lanes</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_lane_resolved_count">-</output>
+
+        <label>Execution Lane Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_lane_name_brief">-</output>
+
+        <label>Execution Lane Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_lane_value_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 

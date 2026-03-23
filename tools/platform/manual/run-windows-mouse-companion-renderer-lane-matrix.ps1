@@ -685,6 +685,26 @@ function New-LaneSummary(
     } else {
         ""
     }
+    $runtimeAssetNodeControllerDriverRegistryBrief = if ($null -ne $preview) {
+        $existingAssetNodeControllerDriverRegistryBrief = [string]$preview.scene_runtime_asset_node_controller_driver_registry_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingAssetNodeControllerDriverRegistryBrief)) {
+            $existingAssetNodeControllerDriverRegistryBrief
+        } else {
+            "preview_only/0/0"
+        }
+    } else {
+        ""
+    }
+    $runtimeAssetNodeExecutionLaneBrief = if ($null -ne $preview) {
+        $existingAssetNodeExecutionLaneBrief = [string]$preview.scene_runtime_asset_node_execution_lane_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingAssetNodeExecutionLaneBrief)) {
+            $existingAssetNodeExecutionLaneBrief
+        } else {
+            "preview_only/0/0"
+        }
+    } else {
+        ""
+    }
     $selectedBackend = [string]$json.selected_renderer_backend
     $expectationState = if ($expectationMet) { "pass" } else { "fail" }
     $laneVerdict = "{0}/{1}/{2}/{3}" -f $selectedBackend, $pluginKind, $semanticsMode, $expectationState
@@ -755,6 +775,8 @@ function New-LaneSummary(
         runtime_asset_node_controller_table_brief = $runtimeAssetNodeControllerTableBrief
         runtime_asset_node_controller_registry_brief = $runtimeAssetNodeControllerRegistryBrief
         runtime_asset_node_driver_bus_brief = $runtimeAssetNodeDriverBusBrief
+        runtime_asset_node_controller_driver_registry_brief = $runtimeAssetNodeControllerDriverRegistryBrief
+        runtime_asset_node_execution_lane_brief = $runtimeAssetNodeExecutionLaneBrief
         runtime_pose_adapter_brief = $runtimePoseAdapterBrief
         default_lane_brief = (Format-DefaultLaneBrief `
             $defaultLaneCandidate `

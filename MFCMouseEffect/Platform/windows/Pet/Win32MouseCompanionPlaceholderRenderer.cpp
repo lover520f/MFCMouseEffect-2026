@@ -349,6 +349,22 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "body:driver.bus.body.spine|head:driver.bus.head.look|appendage:driver.bus.appendage.reach|overlay:driver.bus.overlay.fx|grounding:driver.bus.grounding.balance";
     diagnostics.sceneRuntimeAssetNodeDriverBusValueBrief =
         "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
+    diagnostics.sceneRuntimeAssetNodeControllerDriverRegistryState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeControllerDriverRegistryEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeControllerDriverRegistryResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeControllerDriverRegistryBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeControllerDriverRegistryNameBrief =
+        "body:controller.driver.body.spine|head:controller.driver.head.look|appendage:controller.driver.appendage.reach|overlay:controller.driver.overlay.fx|grounding:controller.driver.grounding.balance";
+    diagnostics.sceneRuntimeAssetNodeControllerDriverRegistryValueBrief =
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
+    diagnostics.sceneRuntimeAssetNodeExecutionLaneState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeExecutionLaneEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeExecutionLaneResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeExecutionLaneBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeExecutionLaneNameBrief =
+        "body:execution.lane.body.spine|head:execution.lane.head.look|appendage:execution.lane.appendage.reach|overlay:execution.lane.overlay.fx|grounding:execution.lane.grounding.balance";
+    diagnostics.sceneRuntimeAssetNodeExecutionLaneValueBrief =
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
     diagnostics.appearanceSkinVariantId = input.appearanceProfile.skinVariantId;
     diagnostics.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;
     const auto accessoryFamily =

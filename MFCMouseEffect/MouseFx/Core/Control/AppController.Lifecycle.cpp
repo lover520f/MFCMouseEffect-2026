@@ -959,6 +959,30 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.sceneRuntimeAssetNodeDriverBusNameBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeDriverBusValueBrief =
         diagnostics.rendererRuntime.sceneRuntimeAssetNodeDriverBusValueBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryState =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerDriverRegistryState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerDriverRegistryEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerDriverRegistryResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerDriverRegistryBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryNameBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerDriverRegistryNameBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerDriverRegistryValueBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneState =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionLaneState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionLaneEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionLaneResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionLaneBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneNameBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionLaneNameBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeExecutionLaneValueBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterInfluence =
         diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseReadabilityBias =

@@ -22,6 +22,8 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeControllerTableProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeControllerRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeDriverBusProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeControllerDriverRegistryProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeExecutionLaneProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeLocalJointRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseResolverProfile.h"
@@ -205,6 +207,18 @@ void Win32MouseCompanionRealRendererBackend::Render(
             controllerRegistryProfile);
     ApplyWin32MouseCompanionRealRendererAssetNodeDriverBusProfile(
         driverBusProfile,
+        scene);
+    const auto controllerDriverRegistryProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodeControllerDriverRegistryProfile(
+            driverBusProfile);
+    ApplyWin32MouseCompanionRealRendererAssetNodeControllerDriverRegistryProfile(
+        controllerDriverRegistryProfile,
+        scene);
+    const auto executionLaneProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodeExecutionLaneProfile(
+            controllerDriverRegistryProfile);
+    ApplyWin32MouseCompanionRealRendererAssetNodeExecutionLaneProfile(
+        executionLaneProfile,
         scene);
     const auto pluginSelection = ResolveWin32MouseCompanionRenderPluginSelection();
     const Win32MouseCompanionRealRendererPainter painter{};
@@ -567,6 +581,30 @@ void Win32MouseCompanionRealRendererBackend::Render(
         driverBusProfile.driverBusBrief;
     diagnostics.sceneRuntimeAssetNodeDriverBusValueBrief =
         driverBusProfile.valueBrief;
+    diagnostics.sceneRuntimeAssetNodeControllerDriverRegistryState =
+        controllerDriverRegistryProfile.registryState;
+    diagnostics.sceneRuntimeAssetNodeControllerDriverRegistryEntryCount =
+        controllerDriverRegistryProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodeControllerDriverRegistryResolvedEntryCount =
+        controllerDriverRegistryProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeControllerDriverRegistryBrief =
+        controllerDriverRegistryProfile.brief;
+    diagnostics.sceneRuntimeAssetNodeControllerDriverRegistryNameBrief =
+        controllerDriverRegistryProfile.registryBrief;
+    diagnostics.sceneRuntimeAssetNodeControllerDriverRegistryValueBrief =
+        controllerDriverRegistryProfile.valueBrief;
+    diagnostics.sceneRuntimeAssetNodeExecutionLaneState =
+        executionLaneProfile.laneState;
+    diagnostics.sceneRuntimeAssetNodeExecutionLaneEntryCount =
+        executionLaneProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodeExecutionLaneResolvedEntryCount =
+        executionLaneProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeExecutionLaneBrief =
+        executionLaneProfile.brief;
+    diagnostics.sceneRuntimeAssetNodeExecutionLaneNameBrief =
+        executionLaneProfile.laneBrief;
+    diagnostics.sceneRuntimeAssetNodeExecutionLaneValueBrief =
+        executionLaneProfile.valueBrief;
     const auto& poseAdapterProfile = sceneRuntime.poseAdapterProfile;
     diagnostics.sceneRuntimePoseAdapterInfluence = poseAdapterProfile.influence;
     diagnostics.sceneRuntimePoseReadabilityBias = poseAdapterProfile.readabilityBias;
