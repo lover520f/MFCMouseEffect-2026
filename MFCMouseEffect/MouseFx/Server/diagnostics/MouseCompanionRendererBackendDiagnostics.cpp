@@ -1007,6 +1007,26 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRouterBusValueBrief).empty()
             ? "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"
             : status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRouterBusValueBrief;
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryState;
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryEntryCount;
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryBrief;
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryNameBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryNameBrief).empty()
+            ? "body:surface.route.bus.registry.body.shell|head:surface.route.bus.registry.head.mask|appendage:surface.route.bus.registry.appendage.trim|overlay:surface.route.bus.registry.overlay.fx|grounding:surface.route.bus.registry.grounding.base"
+            : status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryNameBrief;
+    diagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryValueBrief).empty()
+            ? "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"
+            : status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryValueBrief;
     diagnostics.sceneRuntimeAssetNodeExecutionDriverTableState =
         TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableState).empty()
             ? "preview_only"
@@ -1027,6 +1047,26 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableValueBrief).empty()
             ? "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"
             : status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableValueBrief;
+    diagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableState;
+    diagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableEntryCount;
+    diagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableBrief;
+    diagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableNameBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableNameBrief).empty()
+            ? "body:execution.driver.router.body.shell|head:execution.driver.router.head.mask|appendage:execution.driver.router.appendage.trim|overlay:execution.driver.router.overlay.fx|grounding:execution.driver.router.grounding.base"
+            : status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableNameBrief;
+    diagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableValueBrief).empty()
+            ? "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"
+            : status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableValueBrief;
     diagnostics.sceneRuntimePoseAdapterInfluence =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     diagnostics.sceneRuntimePoseReadabilityBias =

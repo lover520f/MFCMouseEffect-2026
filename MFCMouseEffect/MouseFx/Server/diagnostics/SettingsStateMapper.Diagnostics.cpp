@@ -775,6 +775,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRouterBusNameBrief},
         {"scene_runtime_asset_node_surface_route_router_bus_value_brief",
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRouterBusValueBrief},
+        {"scene_runtime_asset_node_surface_route_bus_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryState},
+        {"scene_runtime_asset_node_surface_route_bus_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryEntryCount},
+        {"scene_runtime_asset_node_surface_route_bus_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_surface_route_bus_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryBrief},
+        {"scene_runtime_asset_node_surface_route_bus_registry_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryNameBrief},
+        {"scene_runtime_asset_node_surface_route_bus_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryValueBrief},
         {"scene_runtime_asset_node_execution_driver_table_state",
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverTableState},
         {"scene_runtime_asset_node_execution_driver_table_entry_count",
@@ -787,6 +799,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverTableNameBrief},
         {"scene_runtime_asset_node_execution_driver_table_value_brief",
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverTableValueBrief},
+        {"scene_runtime_asset_node_execution_driver_router_table_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableState},
+        {"scene_runtime_asset_node_execution_driver_router_table_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableEntryCount},
+        {"scene_runtime_asset_node_execution_driver_router_table_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableResolvedEntryCount},
+        {"scene_runtime_asset_node_execution_driver_router_table_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableBrief},
+        {"scene_runtime_asset_node_execution_driver_router_table_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableNameBrief},
+        {"scene_runtime_asset_node_execution_driver_router_table_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableValueBrief},
         {"scene_runtime_pose_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
         {"scene_runtime_pose_readability_bias",
@@ -1401,6 +1425,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRouterBusNameBrief;
     out["renderer_runtime_scene_runtime_asset_node_surface_route_router_bus_value_brief"] =
         status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRouterBusValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_registry_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryValueBrief;
     out["renderer_runtime_scene_runtime_asset_node_execution_driver_table_state"] =
         status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableState;
     out["renderer_runtime_scene_runtime_asset_node_execution_driver_table_entry_count"] =
@@ -1413,6 +1449,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableNameBrief;
     out["renderer_runtime_scene_runtime_asset_node_execution_driver_table_value_brief"] =
         status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_table_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableState;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_table_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_table_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_table_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_table_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_table_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableValueBrief;
     out["renderer_runtime_scene_runtime_pose_adapter_influence"] =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     out["renderer_runtime_scene_runtime_pose_readability_bias"] =

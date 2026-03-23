@@ -581,6 +581,18 @@ export function getMouseCompanionSectionMarkup() {
         <label>Surface Route Router Bus Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_surface_route_router_bus_value_brief">-</output>
 
+        <label>Surface Route Bus Registry</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_bus_registry_brief">-</output>
+
+        <label>Resolved Surface Route Bus Registries</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_bus_registry_resolved_count">-</output>
+
+        <label>Surface Route Bus Registry Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_bus_registry_name_brief">-</output>
+
+        <label>Surface Route Bus Registry Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_surface_route_bus_registry_value_brief">-</output>
+
         <label>Execution Driver Table</label>
         <output id="mc_runtime_scene_runtime_asset_node_execution_driver_table_brief">-</output>
 
@@ -592,6 +604,18 @@ export function getMouseCompanionSectionMarkup() {
 
         <label>Execution Driver Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_execution_driver_table_value_brief">-</output>
+
+        <label>Execution Driver Router Table</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_driver_router_table_brief">-</output>
+
+        <label>Resolved Execution Driver Routers</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_driver_router_table_resolved_count">-</output>
+
+        <label>Execution Driver Router Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_driver_router_table_name_brief">-</output>
+
+        <label>Execution Driver Router Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_execution_driver_router_table_value_brief">-</output>
 
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>

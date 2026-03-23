@@ -500,16 +500,32 @@ public:
         "body:surface.route.router.bus.body.shell|head:surface.route.router.bus.head.mask|appendage:surface.route.router.bus.appendage.trim|overlay:surface.route.router.bus.overlay.fx|grounding:surface.route.router.bus.grounding.base"};
     std::string rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRouterBusValueBrief{
         "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
-        std::string rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableState{"preview_only"};
-        uint32_t rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableEntryCount{0};
-        uint32_t rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableResolvedEntryCount{0};
-        std::string rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableBrief{"preview_only/0/0"};
-        std::string rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableNameBrief{
-            "body:execution.driver.body.shell|head:execution.driver.head.mask|appendage:execution.driver.appendage.trim|overlay:execution.driver.overlay.fx|grounding:execution.driver.grounding.base"};
-        std::string rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableValueBrief{
-            "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
-        float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
-        float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
+    std::string rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryState{"preview_only"};
+    uint32_t rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryEntryCount{0};
+    uint32_t rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryResolvedEntryCount{0};
+    std::string rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryBrief{"preview_only/0/0"};
+    std::string rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryNameBrief{
+        "body:surface.route.bus.registry.body.shell|head:surface.route.bus.registry.head.mask|appendage:surface.route.bus.registry.appendage.trim|overlay:surface.route.bus.registry.overlay.fx|grounding:surface.route.bus.registry.grounding.base"};
+    std::string rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableState{"preview_only"};
+    uint32_t rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableEntryCount{0};
+    uint32_t rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableResolvedEntryCount{0};
+    std::string rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableBrief{"preview_only/0/0"};
+    std::string rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableNameBrief{
+        "body:execution.driver.body.shell|head:execution.driver.head.mask|appendage:execution.driver.appendage.trim|overlay:execution.driver.overlay.fx|grounding:execution.driver.grounding.base"};
+    std::string rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableState{"preview_only"};
+    uint32_t rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableEntryCount{0};
+    uint32_t rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableResolvedEntryCount{0};
+    std::string rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableBrief{"preview_only/0/0"};
+    std::string rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableNameBrief{
+        "body:execution.driver.router.body.shell|head:execution.driver.router.head.mask|appendage:execution.driver.router.appendage.trim|overlay:execution.driver.router.overlay.fx|grounding:execution.driver.router.grounding.base"};
+    std::string rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
+    float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};
         int rendererRuntimeFacingDirection{1};
         int rendererRuntimeSurfaceWidth{0};
