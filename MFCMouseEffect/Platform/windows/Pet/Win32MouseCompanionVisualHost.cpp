@@ -504,6 +504,30 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeAssetNodeControllerTableNameBrief;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerTableValueBrief =
         rendererRuntime.sceneRuntimeAssetNodeControllerTableValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerRegistryState =
+        rendererRuntime.sceneRuntimeAssetNodeControllerRegistryState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerRegistryEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeControllerRegistryEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerRegistryResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeControllerRegistryResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerRegistryBrief =
+        rendererRuntime.sceneRuntimeAssetNodeControllerRegistryBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerRegistryNameBrief =
+        rendererRuntime.sceneRuntimeAssetNodeControllerRegistryNameBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeControllerRegistryValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodeControllerRegistryValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeDriverBusState =
+        rendererRuntime.sceneRuntimeAssetNodeDriverBusState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeDriverBusEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeDriverBusEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeDriverBusResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeDriverBusResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeDriverBusBrief =
+        rendererRuntime.sceneRuntimeAssetNodeDriverBusBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeDriverBusNameBrief =
+        rendererRuntime.sceneRuntimeAssetNodeDriverBusNameBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeDriverBusValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodeDriverBusValueBrief;
     diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence =
         rendererRuntime.sceneRuntimePoseAdapterInfluence;
     diagnostics.rendererRuntime.sceneRuntimePoseReadabilityBias =

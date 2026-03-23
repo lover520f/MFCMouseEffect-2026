@@ -259,6 +259,22 @@ struct MouseCompanionRealRendererPreviewDiagnostics {
         "body:controller.body.spine|head:controller.head.look|appendage:controller.appendage.reach|overlay:controller.overlay.fx|grounding:controller.grounding.balance"};
     std::string sceneRuntimeAssetNodeControllerTableValueBrief{
         "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeControllerRegistryState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeControllerRegistryEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeControllerRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeControllerRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeControllerRegistryNameBrief{
+        "body:registry.body.spine|head:registry.head.look|appendage:registry.appendage.reach|overlay:registry.overlay.fx|grounding:registry.grounding.balance"};
+    std::string sceneRuntimeAssetNodeControllerRegistryValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
+    std::string sceneRuntimeAssetNodeDriverBusState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeDriverBusEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeDriverBusResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeDriverBusBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeDriverBusNameBrief{
+        "body:driver.bus.body.spine|head:driver.bus.head.look|appendage:driver.bus.appendage.reach|overlay:driver.bus.overlay.fx|grounding:driver.bus.grounding.balance"};
+    std::string sceneRuntimeAssetNodeDriverBusValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

@@ -333,6 +333,22 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "body:controller.body.spine|head:controller.head.look|appendage:controller.appendage.reach|overlay:controller.overlay.fx|grounding:controller.grounding.balance";
     diagnostics.sceneRuntimeAssetNodeControllerTableValueBrief =
         "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
+    diagnostics.sceneRuntimeAssetNodeControllerRegistryState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeControllerRegistryEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeControllerRegistryResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeControllerRegistryBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeControllerRegistryNameBrief =
+        "body:registry.body.spine|head:registry.head.look|appendage:registry.appendage.reach|overlay:registry.overlay.fx|grounding:registry.grounding.balance";
+    diagnostics.sceneRuntimeAssetNodeControllerRegistryValueBrief =
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
+    diagnostics.sceneRuntimeAssetNodeDriverBusState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeDriverBusEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeDriverBusResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeDriverBusBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeDriverBusNameBrief =
+        "body:driver.bus.body.spine|head:driver.bus.head.look|appendage:driver.bus.appendage.reach|overlay:driver.bus.overlay.fx|grounding:driver.bus.grounding.balance";
+    diagnostics.sceneRuntimeAssetNodeDriverBusValueBrief =
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
     diagnostics.appearanceSkinVariantId = input.appearanceProfile.skinVariantId;
     diagnostics.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;
     const auto accessoryFamily =

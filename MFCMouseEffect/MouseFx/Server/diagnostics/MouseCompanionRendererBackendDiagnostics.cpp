@@ -707,6 +707,46 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeControllerTableValueBrief).empty()
             ? "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"
             : status.rendererRuntimeSceneRuntimeAssetNodeControllerTableValueBrief;
+    diagnostics.sceneRuntimeAssetNodeControllerRegistryState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryState;
+    diagnostics.sceneRuntimeAssetNodeControllerRegistryEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryEntryCount;
+    diagnostics.sceneRuntimeAssetNodeControllerRegistryResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeControllerRegistryBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryBrief;
+    diagnostics.sceneRuntimeAssetNodeControllerRegistryNameBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryNameBrief).empty()
+            ? "body:registry.body.spine|head:registry.head.look|appendage:registry.appendage.reach|overlay:registry.overlay.fx|grounding:registry.grounding.balance"
+            : status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryNameBrief;
+    diagnostics.sceneRuntimeAssetNodeControllerRegistryValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryValueBrief).empty()
+            ? "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"
+            : status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryValueBrief;
+    diagnostics.sceneRuntimeAssetNodeDriverBusState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeDriverBusState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeAssetNodeDriverBusState;
+    diagnostics.sceneRuntimeAssetNodeDriverBusEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeDriverBusEntryCount;
+    diagnostics.sceneRuntimeAssetNodeDriverBusResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeAssetNodeDriverBusResolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodeDriverBusBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeDriverBusBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeAssetNodeDriverBusBrief;
+    diagnostics.sceneRuntimeAssetNodeDriverBusNameBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeDriverBusNameBrief).empty()
+            ? "body:driver.bus.body.spine|head:driver.bus.head.look|appendage:driver.bus.appendage.reach|overlay:driver.bus.overlay.fx|grounding:driver.bus.grounding.balance"
+            : status.rendererRuntimeSceneRuntimeAssetNodeDriverBusNameBrief;
+    diagnostics.sceneRuntimeAssetNodeDriverBusValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeDriverBusValueBrief).empty()
+            ? "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"
+            : status.rendererRuntimeSceneRuntimeAssetNodeDriverBusValueBrief;
     diagnostics.sceneRuntimePoseAdapterInfluence =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     diagnostics.sceneRuntimePoseReadabilityBias =

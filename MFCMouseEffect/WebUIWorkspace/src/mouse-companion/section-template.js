@@ -401,6 +401,30 @@ export function getMouseCompanionSectionMarkup() {
         <label>Controller Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_controller_table_value_brief">-</output>
 
+        <label>Controller Registry</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_registry_brief">-</output>
+
+        <label>Resolved Controller Registry Entries</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_registry_resolved_count">-</output>
+
+        <label>Controller Registry Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_registry_name_brief">-</output>
+
+        <label>Controller Registry Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_controller_registry_value_brief">-</output>
+
+        <label>Driver Bus</label>
+        <output id="mc_runtime_scene_runtime_asset_node_driver_bus_brief">-</output>
+
+        <label>Resolved Driver Bus Entries</label>
+        <output id="mc_runtime_scene_runtime_asset_node_driver_bus_resolved_count">-</output>
+
+        <label>Driver Bus Names</label>
+        <output id="mc_runtime_scene_runtime_asset_node_driver_bus_name_brief">-</output>
+
+        <label>Driver Bus Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_driver_bus_value_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 
