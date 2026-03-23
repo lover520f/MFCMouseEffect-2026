@@ -282,6 +282,7 @@
    - each lane row now also reports `default_lane_brief = candidate/source/rollout/style_intent`, so the runtime default-lane call can be skimmed without opening the raw per-lane json
    - each lane row now also reports `configured_style` and `configured_sample_path`, so the checked-in sample contract used for that lane is visible in the summary itself
    - each lane row now also reports `configured_sample_tier`, so ship-default candidates and experimental styles are not mixed together
+   - each lane row now also reports `runtime_sample_tier`, so summary can confirm whether runtime diagnostics still match the checked-in sample contract
    - each lane row now also reports a short `style` field, so `wasm_v1_agile / dreamy / charming` can be skimmed directly from the summary without re-parsing the lane label
    - the same summary now also carries a conservative machine recommendation for `recommended_default_lane`; treat it as a triage hint first, not an automatic ship decision
    - when the matrix recommends one of the expanded `wasm_v1_*` lanes, it now also records `recommendation_style_intent`, so you can see whether the machine is currently leaning toward `agile_follow_drag`, `dreamy_follow_scroll`, or `charming_click_hold`

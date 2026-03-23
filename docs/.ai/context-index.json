@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-23T02:52:57.127Z",
+  "generated_at": "2026-03-23T03:06:44.537Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -86,13 +86,13 @@
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
       "line_count": 220,
-      "size_bytes": 14940,
-      "estimated_tokens": 3735,
+      "size_bytes": 14979,
+      "estimated_tokens": 3745,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": false,
-      "hash_sha1": "1c59440e05f2eb019ac5fb62efe5225db317fca1",
-      "updated_at": "2026-03-23T02:39:05.429Z"
+      "hash_sha1": "3a445b50303aa8aa88afac4198dd615dc7494d88",
+      "updated_at": "2026-03-23T03:06:08.053Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -1186,14 +1186,14 @@
       ],
       "summary": "Common manual commands for local iteration and debugging.",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 206,
-      "size_bytes": 14989,
-      "estimated_tokens": 3748,
+      "line_count": 207,
+      "size_bytes": 15147,
+      "estimated_tokens": 3787,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "01d05a9b036affe2b2872abbc3e7ee204494cecd",
-      "updated_at": "2026-03-23T02:39:12.836Z"
+      "hash_sha1": "652a96cc6109d13f925c9c3a799ba4b166556d29",
+      "updated_at": "2026-03-23T03:05:44.129Z"
     },
     {
       "id": "docs/ops/windows-installer-packaging.md",
@@ -1249,14 +1249,14 @@
       ],
       "summary": "1. Build [MFCMouseEffect.vcxproj](/f:/language/cpp/code/MFCMouseEffect/MFCMouseEffect/MFCMouseEffect.vcxproj) with `Release|x64`.",
       "when_to_read": "Read when task touches wasm runtime, plugin ABI, or sample behavior.",
-      "line_count": 663,
-      "size_bytes": 47600,
-      "estimated_tokens": 11900,
+      "line_count": 664,
+      "size_bytes": 47753,
+      "estimated_tokens": 11939,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "1ebe34ece54d761b38305ff66e24f413427bdb0c",
-      "updated_at": "2026-03-23T02:39:17.443Z"
+      "hash_sha1": "b3c69ed5fffdb8f7140e3a0dbcbabdd984f59e09",
+      "updated_at": "2026-03-23T03:05:51.448Z"
     },
     {
       "id": "docs/README.md",

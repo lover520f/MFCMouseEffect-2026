@@ -121,11 +121,11 @@
   - compact lane verdicts
   - per-lane default-lane snapshots
   - per-lane configured sample metadata
+  - per-lane runtime sample-tier snapshot
   - compare-vs-builtin summary
   - per-lane `style`
   - conservative `recommended_default_lane`
-  - `recommendation_style_intent`
-  - `recommended_sample_path`
+  - `recommendation_style_intent`, `recommended_sample_path`
   - `rollout_contract_status`
 - Default lane rollout contract: machine summary may nominate a candidate, but actual default switch still requires later manual confirmation.
 - Runtime default-lane diagnostics are surfaced directly:

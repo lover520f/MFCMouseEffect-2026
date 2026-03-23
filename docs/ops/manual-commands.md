@@ -149,6 +149,7 @@ Keep P1 concise; add details here when needed.
   - each lane summary row now also carries a compact `default_lane_brief = candidate/source/rollout/style_intent` snapshot
   - each lane summary row now also carries `configured_style` and `configured_sample_path`
   - each lane summary row now also carries `configured_sample_tier`
+  - each lane summary row now also carries `runtime_sample_tier`, so matrix output can be compared against the runtime value without reopening raw proof json
   - each lane summary row now also carries a compact `style` tag, so expanded `wasm_v1_*` lanes can be skimmed without inferring style only from the lane name
   - the same summary bundle now also emits a conservative machine recommendation for `recommended_default_lane`, based only on:
     - lane proof pass/fail

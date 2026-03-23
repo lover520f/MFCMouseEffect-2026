@@ -277,6 +277,7 @@ function New-LaneSummary(
     $defaultLaneSource = if ($null -ne $preview) { [string]$preview.default_lane_source } else { "" }
     $defaultLaneRolloutStatus = if ($null -ne $preview) { [string]$preview.default_lane_rollout_status } else { "" }
     $defaultLaneStyleIntent = if ($null -ne $preview) { [string]$preview.default_lane_style_intent } else { "" }
+    $runtimeSampleTier = if ($null -ne $preview) { [string]$preview.appearance_plugin_sample_tier } else { "" }
     $selectedBackend = [string]$json.selected_renderer_backend
     $expectationState = if ($expectationMet) { "pass" } else { "fail" }
     $laneVerdict = "{0}/{1}/{2}/{3}" -f $selectedBackend, $pluginKind, $semanticsMode, $expectationState
@@ -309,6 +310,7 @@ function New-LaneSummary(
         default_lane_source = $defaultLaneSource
         default_lane_rollout_status = $defaultLaneRolloutStatus
         default_lane_style_intent = $defaultLaneStyleIntent
+        runtime_sample_tier = $runtimeSampleTier
         default_lane_brief = (Format-DefaultLaneBrief `
             $defaultLaneCandidate `
             $defaultLaneSource `
@@ -344,6 +346,7 @@ function Compare-LaneAgainstBaseline(
         @{ name = "default_lane_source"; baseline = [string]$Baseline.default_lane_source; current = [string]$Lane.default_lane_source },
         @{ name = "default_lane_rollout_status"; baseline = [string]$Baseline.default_lane_rollout_status; current = [string]$Lane.default_lane_rollout_status },
         @{ name = "default_lane_style_intent"; baseline = [string]$Baseline.default_lane_style_intent; current = [string]$Lane.default_lane_style_intent },
+        @{ name = "runtime_sample_tier"; baseline = [string]$Baseline.runtime_sample_tier; current = [string]$Lane.runtime_sample_tier },
         @{ name = "combo_preset"; baseline = [string]$Baseline.combo_preset; current = [string]$Lane.combo_preset },
         @{ name = "selection_reason"; baseline = [string]$Baseline.selection_reason; current = [string]$Lane.selection_reason },
         @{ name = "failure_reason"; baseline = [string]$Baseline.failure_reason; current = [string]$Lane.failure_reason },
@@ -392,12 +395,18 @@ function New-LaneRecommendation(
         if ([string]::IsNullOrWhiteSpace($styleIntent)) {
             $styleIntent = "style_candidate:none"
         }
+        $runtimeSampleTier = [string]$lane.runtime_sample_tier
+        $effectiveSampleTier = if ([string]::IsNullOrWhiteSpace($runtimeSampleTier)) {
+            [string]$lane.configured_sample_tier
+        } else {
+            $runtimeSampleTier
+        }
         $candidates.Add([ordered]@{
             lane = $lane
             comparison = $comparison
             style_intent = $styleIntent
-            sample_tier = [string]$lane.configured_sample_tier
-            tier_rank = (Get-SampleTierRecommendationRank ([string]$lane.configured_sample_tier))
+            sample_tier = $effectiveSampleTier
+            tier_rank = (Get-SampleTierRecommendationRank $effectiveSampleTier)
             rank = (Get-StyleIntentRecommendationRank $styleIntent)
         })
     }
@@ -413,7 +422,7 @@ function New-LaneRecommendation(
             recommendation_style_intent = $bestCandidate.style_intent
             runtime_default_lane_brief = [string]$lane.default_lane_brief
             recommended_sample_path = [string]$lane.configured_sample_path
-            recommended_sample_tier = [string]$lane.configured_sample_tier
+            recommended_sample_tier = [string]$bestCandidate.sample_tier
             fallback_default_lane = if ($null -ne $baseline) { $baseline.lane } else { "builtin" }
             recommendation_confidence = "low"
             rollout_contract_status = "candidate_pending_manual_confirmation"
@@ -493,6 +502,9 @@ function Write-LaneMatrixSummary(
         }
         if (-not [string]::IsNullOrWhiteSpace([string]$lane.configured_sample_tier)) {
             $lines.Add(("  configured_sample_tier: `{0}`" -f $lane.configured_sample_tier))
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_sample_tier)) {
+            $lines.Add(("  runtime_sample_tier: `{0}`" -f $lane.runtime_sample_tier))
         }
         $lines.Add(("  json: `{0}`" -f $lane.json_path))
         if (-not [string]::IsNullOrWhiteSpace([string]$lane.selection_reason)) {
