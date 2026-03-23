@@ -316,6 +316,22 @@ public:
             "body:local.body.spine|head:local.head.look|appendage:local.appendage.reach|overlay:local.overlay.fx|grounding:local.grounding.balance"};
         std::string rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryWeightBrief{
             "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeArticulationMapState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeArticulationMapEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeArticulationMapResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeArticulationMapBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeArticulationMapNameBrief{
+            "body:map.body.spine|head:map.head.look|appendage:map.appendage.reach|overlay:map.overlay.fx|grounding:map.grounding.balance"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeArticulationMapValueBrief{
+            "body:(0.00,0.0,0.00)|head:(0.00,0.0,0.00)|appendage:(0.00,0.0,0.00)|overlay:(0.00,0.0,0.00)|grounding:(0.00,0.0,0.00)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControlRigHintState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeControlRigHintEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodeControlRigHintResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControlRigHintBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControlRigHintNameBrief{
+            "body:rig.body.spine|head:rig.head.look|appendage:rig.appendage.reach|overlay:rig.overlay.fx|grounding:rig.grounding.balance"};
+        std::string rendererRuntimeSceneRuntimeAssetNodeControlRigHintValueBrief{
+            "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

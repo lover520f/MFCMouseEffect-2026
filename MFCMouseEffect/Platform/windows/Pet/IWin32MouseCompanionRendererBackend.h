@@ -193,6 +193,22 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
         "body:local.body.spine|head:local.head.look|appendage:local.appendage.reach|overlay:local.overlay.fx|grounding:local.grounding.balance"};
     std::string sceneRuntimeAssetNodeLocalJointRegistryWeightBrief{
         "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
+    std::string sceneRuntimeAssetNodeArticulationMapState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeArticulationMapEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeArticulationMapResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeArticulationMapBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeArticulationMapNameBrief{
+        "body:map.body.spine|head:map.head.look|appendage:map.appendage.reach|overlay:map.overlay.fx|grounding:map.grounding.balance"};
+    std::string sceneRuntimeAssetNodeArticulationMapValueBrief{
+        "body:(0.00,0.0,0.00)|head:(0.00,0.0,0.00)|appendage:(0.00,0.0,0.00)|overlay:(0.00,0.0,0.00)|grounding:(0.00,0.0,0.00)"};
+    std::string sceneRuntimeAssetNodeControlRigHintState{"preview_only"};
+    uint32_t sceneRuntimeAssetNodeControlRigHintEntryCount{0};
+    uint32_t sceneRuntimeAssetNodeControlRigHintResolvedEntryCount{0};
+    std::string sceneRuntimeAssetNodeControlRigHintBrief{"preview_only/0/0"};
+    std::string sceneRuntimeAssetNodeControlRigHintNameBrief{
+        "body:rig.body.spine|head:rig.head.look|appendage:rig.appendage.reach|overlay:rig.overlay.fx|grounding:rig.grounding.balance"};
+    std::string sceneRuntimeAssetNodeControlRigHintValueBrief{
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)"};
     float sceneRuntimePoseAdapterInfluence{0.0f};
     float sceneRuntimePoseReadabilityBias{0.0f};
     std::string sceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

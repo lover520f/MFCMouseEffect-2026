@@ -285,6 +285,22 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "body:local.body.spine|head:local.head.look|appendage:local.appendage.reach|overlay:local.overlay.fx|grounding:local.grounding.balance";
     diagnostics.sceneRuntimeAssetNodeLocalJointRegistryWeightBrief =
         "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
+    diagnostics.sceneRuntimeAssetNodeArticulationMapState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeArticulationMapEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeArticulationMapResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeArticulationMapBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeArticulationMapNameBrief =
+        "body:map.body.spine|head:map.head.look|appendage:map.appendage.reach|overlay:map.overlay.fx|grounding:map.grounding.balance";
+    diagnostics.sceneRuntimeAssetNodeArticulationMapValueBrief =
+        "body:(0.00,0.0,0.00)|head:(0.00,0.0,0.00)|appendage:(0.00,0.0,0.00)|overlay:(0.00,0.0,0.00)|grounding:(0.00,0.0,0.00)";
+    diagnostics.sceneRuntimeAssetNodeControlRigHintState = "preview_only";
+    diagnostics.sceneRuntimeAssetNodeControlRigHintEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeControlRigHintResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeAssetNodeControlRigHintBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeAssetNodeControlRigHintNameBrief =
+        "body:rig.body.spine|head:rig.head.look|appendage:rig.appendage.reach|overlay:rig.overlay.fx|grounding:rig.grounding.balance";
+    diagnostics.sceneRuntimeAssetNodeControlRigHintValueBrief =
+        "body:(0.00,0.00,0.00)|head:(0.00,0.00,0.00)|appendage:(0.00,0.00,0.00)|overlay:(0.00,0.00,0.00)|grounding:(0.00,0.00,0.00)";
     diagnostics.appearanceSkinVariantId = input.appearanceProfile.skinVariantId;
     diagnostics.appearanceAccessoryIds = input.appearanceProfile.enabledAccessoryIds;
     const auto accessoryFamily =

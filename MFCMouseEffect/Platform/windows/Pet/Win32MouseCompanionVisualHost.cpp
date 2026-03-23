@@ -408,6 +408,30 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryJointBrief;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryWeightBrief =
         rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryWeightBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationMapState =
+        rendererRuntime.sceneRuntimeAssetNodeArticulationMapState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationMapEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeArticulationMapEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationMapResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeArticulationMapResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationMapBrief =
+        rendererRuntime.sceneRuntimeAssetNodeArticulationMapBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationMapNameBrief =
+        rendererRuntime.sceneRuntimeAssetNodeArticulationMapNameBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationMapValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodeArticulationMapValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeControlRigHintState =
+        rendererRuntime.sceneRuntimeAssetNodeControlRigHintState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeControlRigHintEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeControlRigHintEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeControlRigHintResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodeControlRigHintResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeControlRigHintBrief =
+        rendererRuntime.sceneRuntimeAssetNodeControlRigHintBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeControlRigHintNameBrief =
+        rendererRuntime.sceneRuntimeAssetNodeControlRigHintNameBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodeControlRigHintValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodeControlRigHintValueBrief;
     diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence =
         rendererRuntime.sceneRuntimePoseAdapterInfluence;
     diagnostics.rendererRuntime.sceneRuntimePoseReadabilityBias =

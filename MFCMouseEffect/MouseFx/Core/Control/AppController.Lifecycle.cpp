@@ -839,6 +839,30 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryJointBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryWeightBrief =
         diagnostics.rendererRuntime.sceneRuntimeAssetNodeLocalJointRegistryWeightBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeArticulationMapState =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationMapState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeArticulationMapEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationMapEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeArticulationMapResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationMapResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeArticulationMapBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationMapBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeArticulationMapNameBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationMapNameBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeArticulationMapValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeArticulationMapValueBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeControlRigHintState =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeControlRigHintState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeControlRigHintEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeControlRigHintEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeControlRigHintResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeControlRigHintResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeControlRigHintBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeControlRigHintBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeControlRigHintNameBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeControlRigHintNameBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeControlRigHintValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodeControlRigHintValueBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterInfluence =
         diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseReadabilityBias =
