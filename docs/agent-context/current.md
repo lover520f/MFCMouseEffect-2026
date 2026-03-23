@@ -140,7 +140,7 @@
   - `runtime_plugin_candidate`
 - `default_lane_style_intent` stable machine values currently include:
   - `style_candidate:none`, `style_candidate:builtin_passthrough_baseline`, `style_candidate:balanced_default_candidate`, `style_candidate:agile_follow_drag`, `style_candidate:dreamy_follow_scroll`, `style_candidate:charming_click_hold`
-- Lane matrix recommendation now prefers runtime `default_lane_candidate_tier` first, then `sample_tier`, then runtime `default_lane_style_intent`, instead of hardcoded lane-name priority.
+- Lane matrix recommendation now prefers runtime `default_lane_candidate_tier` first, then `sample_tier`, then runtime `default_lane_style_intent`; `observation-template.md` also pre-fills `candidate_tier`, `runtime_default_lane_brief`, and `recommended_sample_tier`, so final manual decisions stay on the same contract vocabulary as runtime and summary.
 - `default_lane_candidate_tier` currently uses short machine values to distinguish runtime recommendation semantics: `builtin_shipped_default`, `baseline_reference_candidate`, `ship_default_candidate`, `experimental_style_candidate`, `unclassified_candidate`.
 - Mouse Companion WebUI mirrors runtime lane state in `Runtime Diagnostics`, including a short `Lane Verdict`, `Style Intent`, `Candidate Tier`, `Sample Tier`, and `Contract Brief`.
 

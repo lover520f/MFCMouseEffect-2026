@@ -697,8 +697,13 @@ function Write-LaneMatrixSummary(
     $observationLines.Add(("- recommended default lane now: `{0}`" -f $recommendation.recommended_default_lane))
     $observationLines.Add(("- machine suggestion reason: `{0}`" -f $recommendation.recommendation_reason))
     $observationLines.Add(("- machine style intent: `{0}`" -f $recommendation.recommendation_style_intent))
+    $observationLines.Add(("- machine candidate tier: `{0}`" -f $recommendation.recommendation_candidate_tier))
+    $observationLines.Add(("- machine runtime default lane: `{0}`" -f $recommendation.runtime_default_lane_brief))
     if (-not [string]::IsNullOrWhiteSpace($recommendationSamplePath)) {
         $observationLines.Add(("- machine recommended sample: `{0}`" -f $recommendationSamplePath))
+    }
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.recommended_sample_tier)) {
+        $observationLines.Add(("- machine recommended sample tier: `{0}`" -f $recommendation.recommended_sample_tier))
     }
     $observationLines.Add(("- rollout contract status: `{0}`" -f $recommendation.rollout_contract_status))
     $observationLines.Add("- manual confirmation result: `approve_default_switch|reject_default_switch|needs_more_tuning`")

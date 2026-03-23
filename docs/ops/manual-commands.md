@@ -181,6 +181,9 @@ Keep P1 concise; add details here when needed.
   - the same template now also carries final decision slots for:
     - `best lane for current Win pet`
     - `recommended default lane now`
+    - `machine candidate tier`
+    - `machine runtime default lane`
+    - `machine recommended sample tier`
     - `manual confirmation result`
     - `recommended next tuning target`
   - if `-JsonOutput` is omitted, the matrix script auto-picks a temp prefix and prints the resulting summary paths

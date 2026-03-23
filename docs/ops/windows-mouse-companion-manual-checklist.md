@@ -359,6 +359,9 @@
    - that same template now also has final decision fields for:
      - `best lane for current Win pet`
      - `recommended default lane now`
+     - `machine candidate tier`
+     - `machine runtime default lane`
+     - `machine recommended sample tier`
      - `manual confirmation result`
      - `recommended next tuning target`
 14. Use the compact lane verdict as the shortest machine summary first:
