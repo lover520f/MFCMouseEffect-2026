@@ -136,6 +136,22 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "model:-|action:-|appearance:default";
     diagnostics.sceneRuntimeModelAssetManifestValueBrief =
         "model:(0,0.00)|action:(0,0.00)|appearance:(0,0.00)";
+    diagnostics.sceneRuntimeModelAssetCatalogState = "preview_only";
+    diagnostics.sceneRuntimeModelAssetCatalogEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetCatalogResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetCatalogBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeModelAssetCatalogEntryBrief =
+        "model:-|action:-|appearance:default";
+    diagnostics.sceneRuntimeModelAssetCatalogValueBrief =
+        "model:0.00|action:0.00|appearance:0.00";
+    diagnostics.sceneRuntimeModelAssetBindingTableState = "preview_only";
+    diagnostics.sceneRuntimeModelAssetBindingTableEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetBindingTableResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetBindingTableBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeModelAssetBindingTableSlotBrief =
+        "model:-|action:-|appearance:-";
+    diagnostics.sceneRuntimeModelAssetBindingTableValueBrief =
+        "model:0.00|action:0.00|appearance:0.00";
     diagnostics.sceneRuntimeModelNodeAdapterInfluence = 0.0f;
     diagnostics.sceneRuntimeModelNodeAdapterBrief =
         modelSceneAdapterProfile.seamState + "/0.00";

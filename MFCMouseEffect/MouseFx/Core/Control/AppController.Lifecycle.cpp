@@ -605,6 +605,30 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.sceneRuntimeModelAssetManifestEntryBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetManifestValueBrief =
         diagnostics.rendererRuntime.sceneRuntimeModelAssetManifestValueBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetCatalogState =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetCatalogState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetCatalogEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetCatalogEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetCatalogResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetCatalogResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetCatalogBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetCatalogBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetCatalogEntryBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetCatalogEntryBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetCatalogValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetCatalogValueBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableState =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetBindingTableState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetBindingTableEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetBindingTableResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetBindingTableBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableSlotBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetBindingTableSlotBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetBindingTableValueBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelSceneAdapterState =
         diagnostics.rendererRuntime.sceneRuntimeModelSceneAdapterState;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelSceneSeamReadiness =
@@ -1357,6 +1381,26 @@ void AppController::ClearPetVisualHostDiagnostics() {
         "model:-|action:-|appearance:default";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetManifestValueBrief =
         "model:(0,0.00)|action:(0,0.00)|appearance:(0,0.00)";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetCatalogState =
+        "preview_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetCatalogEntryCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetCatalogResolvedEntryCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetCatalogBrief =
+        "preview_only/0/0";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetCatalogEntryBrief =
+        "model:-|action:-|appearance:default";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetCatalogValueBrief =
+        "model:0.00|action:0.00|appearance:0.00";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableState =
+        "preview_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableEntryCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableResolvedEntryCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableBrief =
+        "preview_only/0/0";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableSlotBrief =
+        "model:-|action:-|appearance:-";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetBindingTableValueBrief =
+        "model:0.00|action:0.00|appearance:0.00";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelSceneAdapterState =
         "preview_only";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelSceneSeamReadiness =

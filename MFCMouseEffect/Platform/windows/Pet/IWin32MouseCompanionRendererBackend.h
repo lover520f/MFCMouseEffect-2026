@@ -37,6 +37,18 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
     std::string sceneRuntimeModelAssetManifestBrief{"preview_only/0/0"};
     std::string sceneRuntimeModelAssetManifestEntryBrief{"model:-|action:-|appearance:default"};
     std::string sceneRuntimeModelAssetManifestValueBrief{"model:(0,0.00)|action:(0,0.00)|appearance:(0,0.00)"};
+    std::string sceneRuntimeModelAssetCatalogState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetCatalogEntryCount{0};
+    uint32_t sceneRuntimeModelAssetCatalogResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetCatalogBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetCatalogEntryBrief{"model:-|action:-|appearance:default"};
+    std::string sceneRuntimeModelAssetCatalogValueBrief{"model:0.00|action:0.00|appearance:0.00"};
+    std::string sceneRuntimeModelAssetBindingTableState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetBindingTableEntryCount{0};
+    uint32_t sceneRuntimeModelAssetBindingTableResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetBindingTableBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetBindingTableSlotBrief{"model:-|action:-|appearance:-"};
+    std::string sceneRuntimeModelAssetBindingTableValueBrief{"model:0.00|action:0.00|appearance:0.00"};
     std::string sceneRuntimeModelSceneAdapterState{"preview_only"};
     float sceneRuntimeModelSceneSeamReadiness{0.0f};
     std::string sceneRuntimeModelSceneAdapterBrief{"preview_only/unknown/runtime_only"};

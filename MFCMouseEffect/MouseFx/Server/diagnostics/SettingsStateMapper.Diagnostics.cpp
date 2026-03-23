@@ -289,6 +289,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestEntryBrief},
         {"scene_runtime_model_asset_manifest_value_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestValueBrief},
+        {"scene_runtime_model_asset_catalog_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetCatalogState},
+        {"scene_runtime_model_asset_catalog_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetCatalogEntryCount},
+        {"scene_runtime_model_asset_catalog_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetCatalogResolvedEntryCount},
+        {"scene_runtime_model_asset_catalog_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetCatalogBrief},
+        {"scene_runtime_model_asset_catalog_entry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetCatalogEntryBrief},
+        {"scene_runtime_model_asset_catalog_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetCatalogValueBrief},
+        {"scene_runtime_model_asset_binding_table_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableState},
+        {"scene_runtime_model_asset_binding_table_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableEntryCount},
+        {"scene_runtime_model_asset_binding_table_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableResolvedEntryCount},
+        {"scene_runtime_model_asset_binding_table_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableBrief},
+        {"scene_runtime_model_asset_binding_table_slot_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableSlotBrief},
+        {"scene_runtime_model_asset_binding_table_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableValueBrief},
         {"scene_runtime_model_scene_adapter_state",
          realRendererPreviewDiagnostics.sceneRuntimeModelSceneAdapterState},
         {"scene_runtime_model_scene_seam_readiness",
@@ -1009,6 +1033,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeModelAssetManifestEntryBrief;
     out["renderer_runtime_scene_runtime_model_asset_manifest_value_brief"] =
         status.rendererRuntimeSceneRuntimeModelAssetManifestValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_catalog_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetCatalogState;
+    out["renderer_runtime_scene_runtime_model_asset_catalog_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetCatalogEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_catalog_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetCatalogResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_catalog_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetCatalogBrief;
+    out["renderer_runtime_scene_runtime_model_asset_catalog_entry_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetCatalogEntryBrief;
+    out["renderer_runtime_scene_runtime_model_asset_catalog_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetCatalogValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_binding_table_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindingTableState;
+    out["renderer_runtime_scene_runtime_model_asset_binding_table_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindingTableEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_binding_table_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindingTableResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_binding_table_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindingTableBrief;
+    out["renderer_runtime_scene_runtime_model_asset_binding_table_slot_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindingTableSlotBrief;
+    out["renderer_runtime_scene_runtime_model_asset_binding_table_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindingTableValueBrief;
     out["renderer_runtime_scene_runtime_model_scene_adapter_state"] =
         status.rendererRuntimeSceneRuntimeModelSceneAdapterState;
     out["renderer_runtime_scene_runtime_model_scene_seam_readiness"] =

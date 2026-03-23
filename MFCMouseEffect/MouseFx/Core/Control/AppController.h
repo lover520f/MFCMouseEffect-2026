@@ -164,6 +164,24 @@ public:
             "model:-|action:-|appearance:default"};
         std::string rendererRuntimeSceneRuntimeModelAssetManifestValueBrief{
             "model:(0,0.00)|action:(0,0.00)|appearance:(0,0.00)"};
+        std::string rendererRuntimeSceneRuntimeModelAssetCatalogState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetCatalogEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetCatalogResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetCatalogBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetCatalogEntryBrief{
+            "model:-|action:-|appearance:default"};
+        std::string rendererRuntimeSceneRuntimeModelAssetCatalogValueBrief{
+            "model:0.00|action:0.00|appearance:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetBindingTableState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetBindingTableEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetBindingTableResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetBindingTableBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetBindingTableSlotBrief{
+            "model:-|action:-|appearance:-"};
+        std::string rendererRuntimeSceneRuntimeModelAssetBindingTableValueBrief{
+            "model:0.00|action:0.00|appearance:0.00"};
         std::string rendererRuntimeSceneRuntimeModelSceneAdapterState{"preview_only"};
         float rendererRuntimeSceneRuntimeModelSceneSeamReadiness{0.0f};
         std::string rendererRuntimeSceneRuntimeModelSceneAdapterBrief{
