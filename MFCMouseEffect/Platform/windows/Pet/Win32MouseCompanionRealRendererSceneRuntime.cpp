@@ -57,6 +57,10 @@ Win32MouseCompanionRealRendererSceneRuntime BuildWin32MouseCompanionRealRenderer
         BuildWin32MouseCompanionRealRendererModelAssetRegistryProfile(sceneRuntime);
     sceneRuntime.modelAssetLoadProfile =
         BuildWin32MouseCompanionRealRendererModelAssetLoadProfile(sceneRuntime);
+    sceneRuntime.modelAssetDecodeProfile =
+        BuildWin32MouseCompanionRealRendererModelAssetDecodeProfile(sceneRuntime);
+    sceneRuntime.modelAssetResidencyProfile =
+        BuildWin32MouseCompanionRealRendererModelAssetResidencyProfile(sceneRuntime);
     sceneRuntime.modelSceneAdapterProfile =
         BuildWin32MouseCompanionRealRendererModelSceneAdapterProfile(
             assets,

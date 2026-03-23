@@ -54,9 +54,11 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererCapabilities.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetBindingTableProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetCatalogProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetDecodeProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetLoadProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetManifestProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetRegistryProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetResidencyProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSourceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelSceneAdapterProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererPainter.h"
@@ -145,6 +147,16 @@ void Win32MouseCompanionRealRendererBackend::Render(
         sceneRuntime.modelAssetLoadProfile;
     ApplyWin32MouseCompanionRealRendererModelAssetLoadProfile(
         modelAssetLoadProfile,
+        scene);
+    const auto modelAssetDecodeProfile =
+        sceneRuntime.modelAssetDecodeProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetDecodeProfile(
+        modelAssetDecodeProfile,
+        scene);
+    const auto modelAssetResidencyProfile =
+        sceneRuntime.modelAssetResidencyProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetResidencyProfile(
+        modelAssetResidencyProfile,
         scene);
     const auto resolverProfile = sceneRuntime.assetNodeResolverProfile;
     const auto parentSpaceProfile = sceneRuntime.assetNodeParentSpaceProfile;
@@ -486,6 +498,30 @@ void Win32MouseCompanionRealRendererBackend::Render(
         modelAssetLoadProfile.planBrief;
     diagnostics.sceneRuntimeModelAssetLoadValueBrief =
         modelAssetLoadProfile.valueBrief;
+    diagnostics.sceneRuntimeModelAssetDecodeState =
+        modelAssetDecodeProfile.decodeState;
+    diagnostics.sceneRuntimeModelAssetDecodeEntryCount =
+        modelAssetDecodeProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetDecodeResolvedEntryCount =
+        modelAssetDecodeProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetDecodeBrief =
+        modelAssetDecodeProfile.brief;
+    diagnostics.sceneRuntimeModelAssetDecodePipelineBrief =
+        modelAssetDecodeProfile.pipelineBrief;
+    diagnostics.sceneRuntimeModelAssetDecodeValueBrief =
+        modelAssetDecodeProfile.valueBrief;
+    diagnostics.sceneRuntimeModelAssetResidencyState =
+        modelAssetResidencyProfile.residencyState;
+    diagnostics.sceneRuntimeModelAssetResidencyEntryCount =
+        modelAssetResidencyProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetResidencyResolvedEntryCount =
+        modelAssetResidencyProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetResidencyBrief =
+        modelAssetResidencyProfile.brief;
+    diagnostics.sceneRuntimeModelAssetResidencyCacheBrief =
+        modelAssetResidencyProfile.cacheBrief;
+    diagnostics.sceneRuntimeModelAssetResidencyValueBrief =
+        modelAssetResidencyProfile.valueBrief;
     diagnostics.sceneRuntimeModelSceneAdapterState =
         sceneRuntime.modelSceneAdapterProfile.seamState;
     diagnostics.sceneRuntimeModelSceneSeamReadiness =

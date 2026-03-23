@@ -231,7 +231,7 @@ It should **not** own:
     - `unclassified_candidate`
   - runtime may also expose `appearance_plugin_contract_brief = semantics_mode/style_intent/sample_tier`, so higher-level tools can reuse one short summary instead of recomposing those fields
   - `Win32MouseCompanionRealRendererSceneRuntime` now also carries a cached `poseAdapterProfile`; builder/painter/backend code should consume that shared profile instead of recomputing pose adapter influence/readability independently
-  - `Win32MouseCompanionRealRendererSceneRuntime` should now also carry cached `modelAssetSourceProfile`, `modelAssetManifestProfile`, `modelAssetCatalogProfile`, `modelAssetBindingTableProfile`, `modelAssetRegistryProfile`, and `modelAssetLoadProfile`; runtime/proof/WebUI may expose:
+  - `Win32MouseCompanionRealRendererSceneRuntime` should now also carry cached `modelAssetSourceProfile`, `modelAssetManifestProfile`, `modelAssetCatalogProfile`, `modelAssetBindingTableProfile`, `modelAssetRegistryProfile`, `modelAssetLoadProfile`, `modelAssetDecodeProfile`, and `modelAssetResidencyProfile`; runtime/proof/WebUI may expose:
     - `scene_runtime_model_asset_source_state`
     - `scene_runtime_model_asset_source_brief = source_state/source_format/model:0|1/action:0|1/appearance:0|1`
     - `scene_runtime_model_asset_manifest_state`
@@ -244,6 +244,10 @@ It should **not** own:
     - `scene_runtime_model_asset_registry_brief = registry_state/entry_count/resolved_entry_count`
     - `scene_runtime_model_asset_load_state`
     - `scene_runtime_model_asset_load_brief = load_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_decode_state`
+    - `scene_runtime_model_asset_decode_brief = decode_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_residency_state`
+    - `scene_runtime_model_asset_residency_brief = residency_state/entry_count/resolved_entry_count`
   - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `modelSceneAdapterProfile`; runtime/proof/WebUI may expose:
     - `scene_runtime_model_scene_adapter_state`
     - `scene_runtime_model_scene_seam_readiness`

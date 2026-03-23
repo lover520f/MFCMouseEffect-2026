@@ -63,6 +63,22 @@ struct MouseCompanionRealRendererPreviewDiagnostics {
     std::string sceneRuntimeModelAssetLoadBrief{"preview_only/0/0"};
     std::string sceneRuntimeModelAssetLoadPlanBrief{"decode:-|actions:-|appearance:-|transforms:-|pose:runtime_only"};
     std::string sceneRuntimeModelAssetLoadValueBrief{"model:0.00|actions:0.00|appearance:0.00|transforms:0.00|pose:0.00"};
+    std::string sceneRuntimeModelAssetDecodeState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetDecodeEntryCount{0};
+    uint32_t sceneRuntimeModelAssetDecodeResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetDecodeBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetDecodePipelineBrief{
+        "model:stub|action:stub|appearance:stub|transforms:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetDecodeValueBrief{
+        "model:0.00|action:0.00|appearance:0.00|transforms:0.00|adapter:0.00"};
+    std::string sceneRuntimeModelAssetResidencyState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetResidencyEntryCount{0};
+    uint32_t sceneRuntimeModelAssetResidencyResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetResidencyBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetResidencyCacheBrief{
+        "model:cold|action:cold|appearance:cold|pose:cold|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetResidencyValueBrief{
+        "model:0.00|action:0.00|appearance:0.00|pose:0.00|adapter:0.00"};
     std::string sceneRuntimeModelSceneAdapterState{"preview_only"};
     float sceneRuntimeModelSceneSeamReadiness{0.0f};
     std::string sceneRuntimeModelSceneAdapterBrief{"preview_only/unknown/runtime_only"};

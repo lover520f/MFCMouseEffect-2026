@@ -200,6 +200,24 @@ public:
             "decode:-|actions:-|appearance:-|transforms:-|pose:runtime_only"};
         std::string rendererRuntimeSceneRuntimeModelAssetLoadValueBrief{
             "model:0.00|actions:0.00|appearance:0.00|transforms:0.00|pose:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetDecodeState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetDecodeEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetDecodeResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetDecodeBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetDecodePipelineBrief{
+            "model:stub|action:stub|appearance:stub|transforms:stub|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetDecodeValueBrief{
+            "model:0.00|action:0.00|appearance:0.00|transforms:0.00|adapter:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetResidencyState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetResidencyEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetResidencyResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetResidencyBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetResidencyCacheBrief{
+            "model:cold|action:cold|appearance:cold|pose:cold|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetResidencyValueBrief{
+            "model:0.00|action:0.00|appearance:0.00|pose:0.00|adapter:0.00"};
         std::string rendererRuntimeSceneRuntimeModelSceneAdapterState{"preview_only"};
         float rendererRuntimeSceneRuntimeModelSceneSeamReadiness{0.0f};
         std::string rendererRuntimeSceneRuntimeModelSceneAdapterBrief{

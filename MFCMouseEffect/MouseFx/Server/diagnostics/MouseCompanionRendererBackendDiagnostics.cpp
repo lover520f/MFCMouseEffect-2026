@@ -241,6 +241,46 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetLoadValueBrief).empty()
             ? "model:0.00|actions:0.00|appearance:0.00|transforms:0.00|pose:0.00"
             : status.rendererRuntimeSceneRuntimeModelAssetLoadValueBrief;
+    diagnostics.sceneRuntimeModelAssetDecodeState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetDecodeState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetDecodeState;
+    diagnostics.sceneRuntimeModelAssetDecodeEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodeEntryCount;
+    diagnostics.sceneRuntimeModelAssetDecodeResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodeResolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetDecodeBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetDecodeBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeModelAssetDecodeBrief;
+    diagnostics.sceneRuntimeModelAssetDecodePipelineBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetDecodePipelineBrief).empty()
+            ? "model:stub|action:stub|appearance:stub|transforms:stub|adapter:runtime_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetDecodePipelineBrief;
+    diagnostics.sceneRuntimeModelAssetDecodeValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetDecodeValueBrief).empty()
+            ? "model:0.00|action:0.00|appearance:0.00|transforms:0.00|adapter:0.00"
+            : status.rendererRuntimeSceneRuntimeModelAssetDecodeValueBrief;
+    diagnostics.sceneRuntimeModelAssetResidencyState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetResidencyState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetResidencyState;
+    diagnostics.sceneRuntimeModelAssetResidencyEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyEntryCount;
+    diagnostics.sceneRuntimeModelAssetResidencyResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyResolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetResidencyBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetResidencyBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeModelAssetResidencyBrief;
+    diagnostics.sceneRuntimeModelAssetResidencyCacheBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetResidencyCacheBrief).empty()
+            ? "model:cold|action:cold|appearance:cold|pose:cold|adapter:runtime_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetResidencyCacheBrief;
+    diagnostics.sceneRuntimeModelAssetResidencyValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetResidencyValueBrief).empty()
+            ? "model:0.00|action:0.00|appearance:0.00|pose:0.00|adapter:0.00"
+            : status.rendererRuntimeSceneRuntimeModelAssetResidencyValueBrief;
     diagnostics.sceneRuntimeModelSceneAdapterState =
         TrimAscii(status.rendererRuntimeSceneRuntimeModelSceneAdapterState).empty()
             ? "preview_only"

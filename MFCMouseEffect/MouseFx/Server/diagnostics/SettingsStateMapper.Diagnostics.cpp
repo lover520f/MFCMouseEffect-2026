@@ -337,6 +337,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadPlanBrief},
         {"scene_runtime_model_asset_load_value_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadValueBrief},
+        {"scene_runtime_model_asset_decode_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetDecodeState},
+        {"scene_runtime_model_asset_decode_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetDecodeEntryCount},
+        {"scene_runtime_model_asset_decode_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetDecodeResolvedEntryCount},
+        {"scene_runtime_model_asset_decode_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetDecodeBrief},
+        {"scene_runtime_model_asset_decode_pipeline_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetDecodePipelineBrief},
+        {"scene_runtime_model_asset_decode_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetDecodeValueBrief},
+        {"scene_runtime_model_asset_residency_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetResidencyState},
+        {"scene_runtime_model_asset_residency_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetResidencyEntryCount},
+        {"scene_runtime_model_asset_residency_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetResidencyResolvedEntryCount},
+        {"scene_runtime_model_asset_residency_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetResidencyBrief},
+        {"scene_runtime_model_asset_residency_cache_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetResidencyCacheBrief},
+        {"scene_runtime_model_asset_residency_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetResidencyValueBrief},
         {"scene_runtime_model_scene_adapter_state",
          realRendererPreviewDiagnostics.sceneRuntimeModelSceneAdapterState},
         {"scene_runtime_model_scene_seam_readiness",
@@ -1105,6 +1129,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeModelAssetLoadPlanBrief;
     out["renderer_runtime_scene_runtime_model_asset_load_value_brief"] =
         status.rendererRuntimeSceneRuntimeModelAssetLoadValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_decode_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodeState;
+    out["renderer_runtime_scene_runtime_model_asset_decode_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodeEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_decode_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodeResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_decode_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodeBrief;
+    out["renderer_runtime_scene_runtime_model_asset_decode_pipeline_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodePipelineBrief;
+    out["renderer_runtime_scene_runtime_model_asset_decode_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodeValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_residency_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyState;
+    out["renderer_runtime_scene_runtime_model_asset_residency_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_residency_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_residency_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyBrief;
+    out["renderer_runtime_scene_runtime_model_asset_residency_cache_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyCacheBrief;
+    out["renderer_runtime_scene_runtime_model_asset_residency_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyValueBrief;
     out["renderer_runtime_scene_runtime_model_scene_adapter_state"] =
         status.rendererRuntimeSceneRuntimeModelSceneAdapterState;
     out["renderer_runtime_scene_runtime_model_scene_seam_readiness"] =

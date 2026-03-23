@@ -86,6 +86,18 @@ export function getMouseCompanionSectionMarkup() {
         <label>Model Load Plan</label>
         <output id="mc_runtime_scene_runtime_model_asset_load_plan_brief">-</output>
 
+        <label>Model Asset Decode</label>
+        <output id="mc_runtime_scene_runtime_model_asset_decode_brief">-</output>
+
+        <label>Model Decode Pipeline</label>
+        <output id="mc_runtime_scene_runtime_model_asset_decode_pipeline_brief">-</output>
+
+        <label>Model Asset Residency</label>
+        <output id="mc_runtime_scene_runtime_model_asset_residency_brief">-</output>
+
+        <label>Model Residency Cache</label>
+        <output id="mc_runtime_scene_runtime_model_asset_residency_cache_brief">-</output>
+
         <label>Model Scene Adapter</label>
         <output id="mc_runtime_scene_runtime_model_scene_adapter_brief">-</output>
 

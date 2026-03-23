@@ -441,6 +441,34 @@ function New-LaneSummary(
     } else {
         ""
     }
+    $runtimeModelAssetDecodeBrief = if ($null -ne $preview) {
+        $existingModelAssetDecodeBrief = [string]$preview.scene_runtime_model_asset_decode_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingModelAssetDecodeBrief)) {
+            $existingModelAssetDecodeBrief
+        } else {
+            $state = [string]$preview.scene_runtime_model_asset_decode_state
+            if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+            $entryCount = [int]([string]$preview.scene_runtime_model_asset_decode_entry_count)
+            $resolved = [int]([string]$preview.scene_runtime_model_asset_decode_resolved_entry_count)
+            "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+        }
+    } else {
+        ""
+    }
+    $runtimeModelAssetResidencyBrief = if ($null -ne $preview) {
+        $existingModelAssetResidencyBrief = [string]$preview.scene_runtime_model_asset_residency_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingModelAssetResidencyBrief)) {
+            $existingModelAssetResidencyBrief
+        } else {
+            $state = [string]$preview.scene_runtime_model_asset_residency_state
+            if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+            $entryCount = [int]([string]$preview.scene_runtime_model_asset_residency_entry_count)
+            $resolved = [int]([string]$preview.scene_runtime_model_asset_residency_resolved_entry_count)
+            "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+        }
+    } else {
+        ""
+    }
     $runtimeModelNodeAdapterBrief = if ($null -ne $preview) {
         $existingModelNodeBrief = [string]$preview.scene_runtime_model_node_adapter_brief
         if (-not [string]::IsNullOrWhiteSpace($existingModelNodeBrief)) {
@@ -1034,6 +1062,8 @@ function New-LaneSummary(
         runtime_model_asset_binding_table_brief = $runtimeModelAssetBindingTableBrief
         runtime_model_asset_registry_brief = $runtimeModelAssetRegistryBrief
         runtime_model_asset_load_brief = $runtimeModelAssetLoadBrief
+        runtime_model_asset_decode_brief = $runtimeModelAssetDecodeBrief
+        runtime_model_asset_residency_brief = $runtimeModelAssetResidencyBrief
         runtime_model_scene_adapter_brief = $runtimeModelSceneAdapterBrief
         runtime_model_node_adapter_brief = $runtimeModelNodeAdapterBrief
         runtime_model_node_channel_brief = $runtimeModelNodeChannelBrief
@@ -1135,6 +1165,8 @@ function Compare-LaneAgainstBaseline(
         @{ name = "runtime_model_asset_binding_table_brief"; baseline = [string]$Baseline.runtime_model_asset_binding_table_brief; current = [string]$Lane.runtime_model_asset_binding_table_brief },
         @{ name = "runtime_model_asset_registry_brief"; baseline = [string]$Baseline.runtime_model_asset_registry_brief; current = [string]$Lane.runtime_model_asset_registry_brief },
         @{ name = "runtime_model_asset_load_brief"; baseline = [string]$Baseline.runtime_model_asset_load_brief; current = [string]$Lane.runtime_model_asset_load_brief },
+        @{ name = "runtime_model_asset_decode_brief"; baseline = [string]$Baseline.runtime_model_asset_decode_brief; current = [string]$Lane.runtime_model_asset_decode_brief },
+        @{ name = "runtime_model_asset_residency_brief"; baseline = [string]$Baseline.runtime_model_asset_residency_brief; current = [string]$Lane.runtime_model_asset_residency_brief },
         @{ name = "runtime_model_scene_adapter_brief"; baseline = [string]$Baseline.runtime_model_scene_adapter_brief; current = [string]$Lane.runtime_model_scene_adapter_brief },
         @{ name = "runtime_model_node_adapter_brief"; baseline = [string]$Baseline.runtime_model_node_adapter_brief; current = [string]$Lane.runtime_model_node_adapter_brief },
         @{ name = "runtime_model_node_channel_brief"; baseline = [string]$Baseline.runtime_model_node_channel_brief; current = [string]$Lane.runtime_model_node_channel_brief },
@@ -1270,6 +1302,8 @@ function New-LaneRecommendation(
             runtime_model_asset_binding_table_brief = [string]$lane.runtime_model_asset_binding_table_brief
             runtime_model_asset_registry_brief = [string]$lane.runtime_model_asset_registry_brief
             runtime_model_asset_load_brief = [string]$lane.runtime_model_asset_load_brief
+            runtime_model_asset_decode_brief = [string]$lane.runtime_model_asset_decode_brief
+            runtime_model_asset_residency_brief = [string]$lane.runtime_model_asset_residency_brief
             runtime_model_node_adapter_brief = [string]$lane.runtime_model_node_adapter_brief
             runtime_model_node_channel_brief = [string]$lane.runtime_model_node_channel_brief
             runtime_model_node_graph_brief = [string]$lane.runtime_model_node_graph_brief
@@ -1299,6 +1333,8 @@ function New-LaneRecommendation(
         runtime_model_asset_binding_table_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_asset_binding_table_brief } else { "preview_only/0/0" }
         runtime_model_asset_registry_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_asset_registry_brief } else { "preview_only/0/0" }
         runtime_model_asset_load_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_asset_load_brief } else { "preview_only/0/0" }
+        runtime_model_asset_decode_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_asset_decode_brief } else { "preview_only/0/0" }
+        runtime_model_asset_residency_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_asset_residency_brief } else { "preview_only/0/0" }
         runtime_model_node_adapter_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_node_adapter_brief } else { "preview_only/0.00" }
         runtime_model_node_channel_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_node_channel_brief } else { "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00" }
         runtime_model_node_graph_brief = if ($null -ne $baseline) { [string]$baseline.runtime_model_node_graph_brief } else { "preview_only/0/0" }
@@ -1405,6 +1441,12 @@ function Write-LaneMatrixSummary(
         }
         if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_model_asset_load_brief)) {
             $lines.Add(("  runtime_model_asset_load_brief: `{0}`" -f $lane.runtime_model_asset_load_brief))
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_model_asset_decode_brief)) {
+            $lines.Add(("  runtime_model_asset_decode_brief: `{0}`" -f $lane.runtime_model_asset_decode_brief))
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_model_asset_residency_brief)) {
+            $lines.Add(("  runtime_model_asset_residency_brief: `{0}`" -f $lane.runtime_model_asset_residency_brief))
         }
         if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_model_scene_adapter_brief)) {
             $lines.Add(("  runtime_model_scene_adapter_brief: `{0}`" -f $lane.runtime_model_scene_adapter_brief))
@@ -1608,6 +1650,12 @@ function Write-LaneMatrixSummary(
     if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_load_brief)) {
         $lines.Add(("- runtime_model_asset_load_brief: `{0}`" -f $recommendation.runtime_model_asset_load_brief))
     }
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_decode_brief)) {
+        $lines.Add(("- runtime_model_asset_decode_brief: `{0}`" -f $recommendation.runtime_model_asset_decode_brief))
+    }
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_residency_brief)) {
+        $lines.Add(("- runtime_model_asset_residency_brief: `{0}`" -f $recommendation.runtime_model_asset_residency_brief))
+    }
     if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_node_adapter_brief)) {
         $lines.Add(("- runtime_model_node_adapter_brief: `{0}`" -f $recommendation.runtime_model_node_adapter_brief))
     }
@@ -1769,6 +1817,12 @@ function Write-LaneMatrixSummary(
     }
     if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_load_brief)) {
         $observationLines.Add(("- machine model asset load: `{0}`" -f $recommendation.runtime_model_asset_load_brief))
+    }
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_decode_brief)) {
+        $observationLines.Add(("- machine model asset decode: `{0}`" -f $recommendation.runtime_model_asset_decode_brief))
+    }
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_residency_brief)) {
+        $observationLines.Add(("- machine model asset residency: `{0}`" -f $recommendation.runtime_model_asset_residency_brief))
     }
     if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_node_adapter_brief)) {
         $observationLines.Add(("- machine model node adapter: `{0}`" -f $recommendation.runtime_model_node_adapter_brief))
