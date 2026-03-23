@@ -157,6 +157,7 @@ Keep P1 concise; add details here when needed.
     - `default_lane_rollout_status`
     - `default_lane_style_intent`
   - `render-proof` console output now also prints `default_lane_summary = candidate/source/rollout/style_intent`
+  - saved `render-proof` JSON now also carries `default_lane_summary` under `real_renderer_preview` and `renderer_runtime_after`
   - the Mouse Companion WebUI section now also mirrors those runtime values in a dedicated `Runtime Diagnostics` block, together with `appearance_plugin_kind`, `appearance_plugin_appearance_semantics_mode`, and `appearance_plugin_selection_reason`
   - that same block now also derives a short `Lane Verdict`, so Win bring-up can read `stay on builtin` vs `candidate pending manual confirmation` without manually interpreting the three machine-coded default-lane fields first
   - `observation-template.md` is the operator-facing follow-up note sheet for `follow / drag / click / hold / scroll`, so manual visual conclusions can be stored next to the machine summary instead of in ad-hoc chat notes

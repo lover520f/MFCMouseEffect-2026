@@ -103,6 +103,18 @@ function Format-DefaultLaneSummary($Node) {
     return "{0}/{1}/{2}/{3}" -f $candidate, $source, $rollout, $styleIntent
 }
 
+function Add-DefaultLaneSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $summary = Format-DefaultLaneSummary $Node
+    if ($Node.PSObject.Properties.Match("default_lane_summary").Count -gt 0) {
+        $Node.default_lane_summary = $summary
+        return
+    }
+    $Node | Add-Member -NotePropertyName "default_lane_summary" -NotePropertyValue $summary
+}
+
 function Show-RealPreviewSmokeHint {
     @'
 [mfx:info] real-preview-smoke preset
@@ -708,6 +720,20 @@ try {
     $response = Invoke-RestMethod -Method Post -Uri $endpoint -Headers $headers -Body $payloadJson
 } catch {
     Fail "request failed: $($_.Exception.Message)"
+}
+
+if ($Route -eq "sweep") {
+    foreach ($item in @($response.results)) {
+        if ($null -ne $item) {
+            Add-DefaultLaneSummaryProperty $item.real_renderer_preview
+            if ($null -ne $item.proof) {
+                Add-DefaultLaneSummaryProperty $item.proof.renderer_runtime_after
+            }
+        }
+    }
+} else {
+    Add-DefaultLaneSummaryProperty $response.real_renderer_preview
+    Add-DefaultLaneSummaryProperty $response.renderer_runtime_after
 }
 
 $responseJson = $response | ConvertTo-Json -Depth 16
