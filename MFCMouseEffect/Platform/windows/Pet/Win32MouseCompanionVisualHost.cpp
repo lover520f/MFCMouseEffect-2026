@@ -300,6 +300,18 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeAssetNodeWorldSpacePathBrief;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeWorldSpaceValueBrief =
         rendererRuntime.sceneRuntimeAssetNodeWorldSpaceValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseState =
+        rendererRuntime.sceneRuntimeAssetNodePoseState;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodePoseEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseResolvedEntryCount =
+        rendererRuntime.sceneRuntimeAssetNodePoseResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseBrief =
+        rendererRuntime.sceneRuntimeAssetNodePoseBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePosePathBrief =
+        rendererRuntime.sceneRuntimeAssetNodePosePathBrief;
+    diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseValueBrief =
+        rendererRuntime.sceneRuntimeAssetNodePoseValueBrief;
     diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence =
         rendererRuntime.sceneRuntimePoseAdapterInfluence;
     diagnostics.rendererRuntime.sceneRuntimePoseReadabilityBias =

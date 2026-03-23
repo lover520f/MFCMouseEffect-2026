@@ -6,6 +6,7 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetResources.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeAnchorProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeParentSpaceProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodePoseProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeTargetProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeWorldSpaceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAppearanceSemantics.h"
@@ -81,6 +82,12 @@ void Win32MouseCompanionRealRendererBackend::Render(
     const auto worldSpaceProfile =
         BuildWin32MouseCompanionRealRendererAssetNodeWorldSpaceProfile(sceneRuntime, scene);
     ApplyWin32MouseCompanionRealRendererAssetNodeWorldSpaceProfile(worldSpaceProfile, scene);
+    const auto poseProfile =
+        BuildWin32MouseCompanionRealRendererAssetNodePoseProfile(
+            sceneRuntime,
+            scene,
+            worldSpaceProfile);
+    ApplyWin32MouseCompanionRealRendererAssetNodePoseProfile(poseProfile, scene);
     const auto pluginSelection = ResolveWin32MouseCompanionRenderPluginSelection();
     const Win32MouseCompanionRealRendererPainter painter{};
     painter.Paint(scene, graphics, width, height);
@@ -226,6 +233,13 @@ void Win32MouseCompanionRealRendererBackend::Render(
         worldSpaceProfile.pathBrief;
     diagnostics.sceneRuntimeAssetNodeWorldSpaceValueBrief =
         worldSpaceProfile.valueBrief;
+    diagnostics.sceneRuntimeAssetNodePoseState = poseProfile.poseState;
+    diagnostics.sceneRuntimeAssetNodePoseEntryCount = poseProfile.entryCount;
+    diagnostics.sceneRuntimeAssetNodePoseResolvedEntryCount =
+        poseProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeAssetNodePoseBrief = poseProfile.brief;
+    diagnostics.sceneRuntimeAssetNodePosePathBrief = poseProfile.pathBrief;
+    diagnostics.sceneRuntimeAssetNodePoseValueBrief = poseProfile.valueBrief;
     const auto& poseAdapterProfile = sceneRuntime.poseAdapterProfile;
     diagnostics.sceneRuntimePoseAdapterInfluence = poseAdapterProfile.influence;
     diagnostics.sceneRuntimePoseReadabilityBias = poseAdapterProfile.readabilityBias;

@@ -495,6 +495,16 @@ function New-LaneSummary(
     } else {
         ""
     }
+    $runtimeAssetNodePoseBrief = if ($null -ne $preview) {
+        $existingAssetNodePoseBrief = [string]$preview.scene_runtime_asset_node_pose_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingAssetNodePoseBrief)) {
+            $existingAssetNodePoseBrief
+        } else {
+            "preview_only/0/0"
+        }
+    } else {
+        ""
+    }
     $selectedBackend = [string]$json.selected_renderer_backend
     $expectationState = if ($expectationMet) { "pass" } else { "fail" }
     $laneVerdict = "{0}/{1}/{2}/{3}" -f $selectedBackend, $pluginKind, $semanticsMode, $expectationState
@@ -546,6 +556,7 @@ function New-LaneSummary(
         runtime_asset_node_target_brief = $runtimeAssetNodeTargetBrief
         runtime_asset_node_target_resolver_brief = $runtimeAssetNodeTargetResolverBrief
         runtime_asset_node_world_space_brief = $runtimeAssetNodeWorldSpaceBrief
+        runtime_asset_node_pose_brief = $runtimeAssetNodePoseBrief
         runtime_pose_adapter_brief = $runtimePoseAdapterBrief
         default_lane_brief = (Format-DefaultLaneBrief `
             $defaultLaneCandidate `
@@ -600,6 +611,7 @@ function Compare-LaneAgainstBaseline(
         @{ name = "runtime_asset_node_target_brief"; baseline = [string]$Baseline.runtime_asset_node_target_brief; current = [string]$Lane.runtime_asset_node_target_brief },
         @{ name = "runtime_asset_node_target_resolver_brief"; baseline = [string]$Baseline.runtime_asset_node_target_resolver_brief; current = [string]$Lane.runtime_asset_node_target_resolver_brief },
         @{ name = "runtime_asset_node_world_space_brief"; baseline = [string]$Baseline.runtime_asset_node_world_space_brief; current = [string]$Lane.runtime_asset_node_world_space_brief },
+        @{ name = "runtime_asset_node_pose_brief"; baseline = [string]$Baseline.runtime_asset_node_pose_brief; current = [string]$Lane.runtime_asset_node_pose_brief },
         @{ name = "runtime_pose_adapter_brief"; baseline = [string]$Baseline.runtime_pose_adapter_brief; current = [string]$Lane.runtime_pose_adapter_brief },
         @{ name = "combo_preset"; baseline = [string]$Baseline.combo_preset; current = [string]$Lane.combo_preset },
         @{ name = "selection_reason"; baseline = [string]$Baseline.selection_reason; current = [string]$Lane.selection_reason },
@@ -835,6 +847,9 @@ function Write-LaneMatrixSummary(
         }
         if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_asset_node_world_space_brief)) {
             $lines.Add(("  runtime_asset_node_world_space_brief: `{0}`" -f $lane.runtime_asset_node_world_space_brief))
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_asset_node_pose_brief)) {
+            $lines.Add(("  runtime_asset_node_pose_brief: `{0}`" -f $lane.runtime_asset_node_pose_brief))
         }
         if (-not [string]::IsNullOrWhiteSpace([string]$lane.runtime_pose_adapter_brief)) {
             $lines.Add(("  runtime_pose_adapter_brief: `{0}`" -f $lane.runtime_pose_adapter_brief))

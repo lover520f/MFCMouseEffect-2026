@@ -312,6 +312,12 @@ It should **not** own:
     - `scene_runtime_asset_node_world_space_brief = world_space_state/entry_count/resolved_entry_count`
     - `scene_runtime_asset_node_world_space_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
     - `scene_runtime_asset_node_world_space_value_brief = body:(x,y,s)|head:(x,y,s)|appendage:(x,y,s)|overlay:(x,y,s)|grounding:(x,y,s)`
+    - `scene_runtime_asset_node_pose_state`
+    - `scene_runtime_asset_node_pose_entry_count`
+    - `scene_runtime_asset_node_pose_resolved_entry_count`
+    - `scene_runtime_asset_node_pose_brief = pose_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_pose_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
+    - `scene_runtime_asset_node_pose_value_brief = body:(x,y,s,tilt)|head:(x,y,s,tilt)|appendage:(x,y,s,tilt)|overlay:(x,y,s,tilt)|grounding:(x,y,s,tilt)`
   - scene build/runtime diagnostics should also expose a derived `assetNodeAnchorProfile` over the same five logical lanes:
     - `scene_runtime_asset_node_anchor_state`
     - `scene_runtime_asset_node_anchor_entry_count`

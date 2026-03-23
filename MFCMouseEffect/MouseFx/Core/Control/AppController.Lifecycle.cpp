@@ -731,6 +731,18 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.sceneRuntimeAssetNodeWorldSpacePathBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceValueBrief =
         diagnostics.rendererRuntime.sceneRuntimeAssetNodeWorldSpaceValueBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodePoseState =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodePoseEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodePoseResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodePoseBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodePosePathBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodePosePathBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAssetNodePoseValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeAssetNodePoseValueBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseAdapterInfluence =
         diagnostics.rendererRuntime.sceneRuntimePoseAdapterInfluence;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseReadabilityBias =

@@ -244,6 +244,14 @@ public:
             "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
         std::string rendererRuntimeSceneRuntimeAssetNodeWorldSpaceValueBrief{
             "body:(0.0,0.0,1.00)|head:(0.0,0.0,1.00)|appendage:(0.0,0.0,1.00)|overlay:(0.0,0.0,1.00)|grounding:(0.0,0.0,1.00)"};
+        std::string rendererRuntimeSceneRuntimeAssetNodePoseState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodePoseEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeAssetNodePoseResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeAssetNodePoseBrief{"preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeAssetNodePosePathBrief{
+            "body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding"};
+        std::string rendererRuntimeSceneRuntimeAssetNodePoseValueBrief{
+            "body:(0.0,0.0,1.00,0.0)|head:(0.0,0.0,1.00,0.0)|appendage:(0.0,0.0,1.00,0.0)|overlay:(0.0,0.0,1.00,0.0)|grounding:(0.0,0.0,1.00,0.0)"};
         float rendererRuntimeSceneRuntimePoseAdapterInfluence{0.0f};
         float rendererRuntimeSceneRuntimePoseReadabilityBias{0.0f};
         std::string rendererRuntimeSceneRuntimePoseAdapterBrief{"runtime_only/0.00/0.00"};

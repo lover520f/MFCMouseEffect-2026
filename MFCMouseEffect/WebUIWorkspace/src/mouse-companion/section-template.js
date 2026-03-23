@@ -197,6 +197,18 @@ export function getMouseCompanionSectionMarkup() {
         <label>World Space Values</label>
         <output id="mc_runtime_scene_runtime_asset_node_world_space_value_brief">-</output>
 
+        <label>Asset Node Pose</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_brief">-</output>
+
+        <label>Resolved Node Poses</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_resolved_count">-</output>
+
+        <label>Node Pose Paths</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_path_brief">-</output>
+
+        <label>Node Pose Values</label>
+        <output id="mc_runtime_scene_runtime_asset_node_pose_value_brief">-</output>
+
         <label>Pose Adapter Brief</label>
         <output id="mc_runtime_scene_runtime_pose_adapter_brief">-</output>
 

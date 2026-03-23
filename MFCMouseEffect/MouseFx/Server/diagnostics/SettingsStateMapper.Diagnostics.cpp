@@ -415,6 +415,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpacePathBrief},
         {"scene_runtime_asset_node_world_space_value_brief",
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpaceValueBrief},
+        {"scene_runtime_asset_node_pose_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseState},
+        {"scene_runtime_asset_node_pose_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseEntryCount},
+        {"scene_runtime_asset_node_pose_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseResolvedEntryCount},
+        {"scene_runtime_asset_node_pose_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseBrief},
+        {"scene_runtime_asset_node_pose_path_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePosePathBrief},
+        {"scene_runtime_asset_node_pose_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseValueBrief},
         {"scene_runtime_pose_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
         {"scene_runtime_pose_readability_bias",
@@ -645,6 +657,18 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeAssetNodeWorldSpacePathBrief;
     out["renderer_runtime_scene_runtime_asset_node_world_space_value_brief"] =
         status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseState;
+    out["renderer_runtime_scene_runtime_asset_node_pose_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_path_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePosePathBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseValueBrief;
     out["renderer_runtime_scene_runtime_pose_adapter_influence"] =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     out["renderer_runtime_scene_runtime_pose_readability_bias"] =
