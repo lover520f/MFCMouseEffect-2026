@@ -210,10 +210,12 @@ void AppController::SetMouseCompanionConfig(const MouseCompanionConfig& cfg) {
         mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceProfileReady = false;
         mouseCompanionRuntimeStatus_.rendererRuntimePoseFrameAvailable = false;
         mouseCompanionRuntimeStatus_.rendererRuntimePoseBindingConfigured = false;
+        #if !defined(MFX_SHIPPING_BUILD)
         mouseCompanionRuntimeStatus_.rendererRuntimeFacingDirection = 1;
         mouseCompanionRuntimeStatus_.rendererRuntimeSurfaceWidth = 0;
         mouseCompanionRuntimeStatus_.rendererRuntimeSurfaceHeight = 0;
         mouseCompanionRuntimeStatus_.rendererRuntimeModelSourceFormat = "unknown";
+        #endif
         mouseCompanionRuntimeStatus_.configuredModelPath = normalized.modelPath;
         mouseCompanionRuntimeStatus_.configuredActionLibraryPath = normalized.actionLibraryPath;
         mouseCompanionRuntimeStatus_.configuredEffectProfilePath = "MFCMouseEffect/Assets/Pet3D/source/pet-effects.json";

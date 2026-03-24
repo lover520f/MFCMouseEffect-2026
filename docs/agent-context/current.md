@@ -173,7 +173,7 @@
 - Default non-debug run avoids high-volume debug lanes.
 - WebUI debug polling is adaptive and focus-aware.
 - Mouse companion test route remains gated behind `MFX_ENABLE_MOUSE_COMPANION_TEST_API=1`; `Shipping|x64` keeps the main runtime/WebUI path but excludes `/api/test` compilation, skips the heavy `/api/state` render-proof/lane-matrix diagnostics composition, and now also strips the large Windows mouse-companion scene/runtime verbose contract from `AppController`, `IPetVisualHost`, and `IWin32MouseCompanionRendererBackend` after the core readiness/action booleans, so `*_brief / *_value_brief / *_path_brief` plus lane-style contract strings no longer compile into the shipping executable.
-- `Shipping|x64` must exist on both Windows build projects: the main host app and `WasmRuntimeBridge/mfx_wasm_runtime.vcxproj`; if only the host project defines Shipping, `./mfx build --shipping` will fail on the project reference with `MSB8013`.
+- `Shipping|x64` must exist on both Windows build projects, and any `MFX_SHIPPING_BUILD` runtime-contract trim must guard the matching `AppController` reset/sync assignments too; otherwise `./mfx build --shipping` will fail on project-reference `MSB8013` or removed-member errors in `AppController.ConfigUpdates.cpp`.
 
 ## Regression Gates
 - Canonical regression entry: `./tools/platform/regression/run-posix-regression-suite.sh --platform auto`
