@@ -93,6 +93,7 @@ void BuildWin32MouseCompanionRealRendererModelProxyLayer(
     const Win32MouseCompanionRealRendererAssetNodeWorldSpaceProfile& worldSpaceProfile,
     Win32MouseCompanionRealRendererScene& scene) {
     scene.modelProxyVisible = false;
+    scene.modelProxySilhouettes.clear();
     scene.modelProxySurfaces.clear();
     scene.modelProxyNodes.clear();
     scene.modelProxyLinks.clear();

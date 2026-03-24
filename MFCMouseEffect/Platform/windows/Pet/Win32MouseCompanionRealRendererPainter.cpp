@@ -220,6 +220,15 @@ void DrawModelProxyLayer(
         return;
     }
 
+    for (const auto& silhouette : scene.modelProxySilhouettes) {
+        FillEllipse(
+            graphics,
+            silhouette.bounds,
+            WithAlpha(silhouette.fill, silhouette.alpha),
+            Gdiplus::Color(0, 0, 0, 0),
+            0.0f);
+    }
+
     for (const auto& surface : scene.modelProxySurfaces) {
         if (surface.polygon.size() < 3) {
             continue;
