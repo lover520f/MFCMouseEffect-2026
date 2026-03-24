@@ -110,6 +110,10 @@ done
 
 require_windows_host
 
+if [[ -z "$package_name" && "$enable_windows_gpu_effects" == "true" ]]; then
+    package_name="MFCMouseEffect-windows-x64-gpu-setup-1.3.1"
+fi
+
 if [[ "$skip_webui_build" == "1" ]]; then
     echo "[info] --skip-webui-build is currently a no-op on Windows packaging; using existing generated WebUI assets" >&2
 fi

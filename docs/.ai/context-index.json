@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-24T04:41:20.991Z",
+  "generated_at": "2026-03-24T05:03:17.744Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -85,14 +85,14 @@
       ],
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 219,
-      "size_bytes": 24422,
-      "estimated_tokens": 6106,
+      "line_count": 220,
+      "size_bytes": 24635,
+      "estimated_tokens": 6159,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": false,
-      "hash_sha1": "6eb7059278f1af6ff72b54374773586fc5035451",
-      "updated_at": "2026-03-24T04:41:05.570Z"
+      "hash_sha1": "7a136fc51edbd7ddfbc7625f654d1705cc0591bf",
+      "updated_at": "2026-03-24T05:03:02.793Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -1215,14 +1215,14 @@
       ],
       "summary": "1. Build Windows release:",
       "when_to_read": "Read when executing manual/regression workflows.",
-      "line_count": 64,
-      "size_bytes": 2766,
-      "estimated_tokens": 692,
+      "line_count": 67,
+      "size_bytes": 2938,
+      "estimated_tokens": 735,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "10d068f4527c45d1975a19e1573f46c81b57d266",
-      "updated_at": "2026-03-24T04:37:08.861Z"
+      "hash_sha1": "23420859d4eb48b32b90d2330f5e2e66e44f16de",
+      "updated_at": "2026-03-24T05:02:33.280Z"
     },
     {
       "id": "docs/ops/windows-mouse-companion-manual-checklist.md",

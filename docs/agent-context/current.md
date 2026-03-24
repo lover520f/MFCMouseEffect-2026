@@ -200,6 +200,7 @@
 - Windows Release/Shipping now supports build-time GPU selection through `MfxEnableWindowsGpuEffects=true|false`, and the default is now `false`:
   - `true`: compile/package the current GPU hold runtime and bundle `webgpu_dawn.dll`
   - `false` (default): exclude Windows GPU hold compile units, hide GPU-only hold choices, normalize old GPU hold configs to compatible non-GPU routes, and omit `webgpu_dawn.dll` from build output + installer payload
+- Windows package naming now reflects the GPU variant by default: `--no-gpu` keeps `MFCMouseEffect-windows-x64-setup-<version>.exe`, while `--gpu` switches to `MFCMouseEffect-windows-x64-gpu-setup-<version>.exe`.
 - macOS package output remains `MFCMouseEffect.app`, `Install/macos`, folder + `.zip` + unsigned `.dmg`.
 - Current package policy: minimal pet runtime assets only, wasm demo plugin ships runtime files only, packaged host binary is stripped in-bundle, `Install/macos/` is git-ignored, and Gatekeeper/notarization is still deferred.
 ### Local Dev Sync

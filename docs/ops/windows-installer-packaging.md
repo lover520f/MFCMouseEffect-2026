@@ -32,6 +32,9 @@
 ## Artifact Naming
 - Current setup artifact name:
   - `MFCMouseEffect-windows-x64-setup-<version>.exe`
+- GPU package setup artifact name:
+  - `MFCMouseEffect-windows-x64-gpu-setup-<version>.exe`
+- If `--package-name` is explicitly provided, it still overrides both defaults.
 - Output root stays:
   - `Install/windows/`
 
