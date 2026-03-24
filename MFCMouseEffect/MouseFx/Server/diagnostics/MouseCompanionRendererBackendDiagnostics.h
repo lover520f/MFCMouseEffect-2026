@@ -302,6 +302,22 @@ struct MouseCompanionRealRendererPreviewDiagnostics {
         "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
     std::string sceneRuntimeModelAssetNodeProjectionRegistryValueBrief{
         "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+    std::string sceneRuntimeModelAssetNodeRealizationState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetNodeRealizationEntryCount{0};
+    uint32_t sceneRuntimeModelAssetNodeRealizationResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetNodeRealizationBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetNodeRealizationRealizationBrief{
+        "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetNodeRealizationValueBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+    std::string sceneRuntimeModelAssetNodeRealizationRegistryState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetNodeRealizationRegistryEntryCount{0};
+    uint32_t sceneRuntimeModelAssetNodeRealizationRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetNodeRealizationRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetNodeRealizationRegistryRegistryBrief{
+        "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetNodeRealizationRegistryValueBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
     std::string sceneRuntimeAssetNodeBindingState{"preview_only"};
     uint32_t sceneRuntimeAssetNodeBindingEntryCount{0};
     uint32_t sceneRuntimeAssetNodeBindingResolvedEntryCount{0};

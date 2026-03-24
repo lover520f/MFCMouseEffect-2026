@@ -586,6 +586,30 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeModelAssetNodeProjectionRegistryRegistryBrief;
     diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeProjectionRegistryValueBrief =
         rendererRuntime.sceneRuntimeModelAssetNodeProjectionRegistryValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeRealizationState =
+        rendererRuntime.sceneRuntimeModelAssetNodeRealizationState;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeRealizationEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetNodeRealizationEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeRealizationResolvedEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetNodeRealizationResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeRealizationBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeRealizationBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeRealizationRealizationBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeRealizationRealizationBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeRealizationValueBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeRealizationValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeRealizationRegistryState =
+        rendererRuntime.sceneRuntimeModelAssetNodeRealizationRegistryState;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeRealizationRegistryEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetNodeRealizationRegistryEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeRealizationRegistryResolvedEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetNodeRealizationRegistryResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeRealizationRegistryBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeRealizationRegistryBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeRealizationRegistryRegistryBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeRealizationRegistryRegistryBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeRealizationRegistryValueBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeRealizationRegistryValueBrief;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeBindingState =
         rendererRuntime.sceneRuntimeAssetNodeBindingState;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeBindingEntryCount =
