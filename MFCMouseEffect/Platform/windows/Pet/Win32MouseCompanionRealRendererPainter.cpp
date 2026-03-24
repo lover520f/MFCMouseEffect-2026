@@ -707,6 +707,150 @@ void DrawModelProxyFrameLayer(
         scene.limbStrokeWidth * layer.strokeWidthScale);
 }
 
+void DrawModelProxyContourLayer(
+    Gdiplus::Graphics* graphics,
+    const Win32MouseCompanionRealRendererScene& scene) {
+    if (!graphics || !scene.modelProxyContourLayer.visible) {
+        return;
+    }
+
+    const auto& layer = scene.modelProxyContourLayer;
+    FillEllipse(
+        graphics,
+        layer.leftEarRootCuffRect,
+        WithScaledAlpha(scene.earRootCuffFillRear, scene.earRootCuffFillRear.GetA(), layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.rightEarRootCuffRect,
+        WithScaledAlpha(scene.earRootCuffFill, scene.earRootCuffFill.GetA(), layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEar(
+        graphics,
+        layer.leftEar,
+        scene.earFill,
+        scene.earInner,
+        WithScaledAlpha(scene.earStroke, scene.earStroke.GetA(), layer.strokeAlphaScale),
+        scene.earStrokeWidth,
+        scene.earInnerBaseInsetPx,
+        scene.earInnerMidInsetPx,
+        scene.earInnerTipInsetPx);
+    FillEar(
+        graphics,
+        layer.rightEar,
+        scene.earFillRear,
+        scene.earInnerRear,
+        WithScaledAlpha(scene.earStrokeRear, scene.earStrokeRear.GetA(), layer.strokeAlphaScale),
+        scene.earStrokeWidthRear,
+        scene.earInnerBaseInsetPxRear,
+        scene.earInnerMidInsetPxRear,
+        scene.earInnerTipInsetPxRear);
+    FillEllipse(
+        graphics,
+        layer.leftEarOcclusionCapRect,
+        WithScaledAlpha(scene.headFill, scene.earOcclusionCapAlpha, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.rightEarOcclusionCapRect,
+        WithScaledAlpha(scene.headFill, scene.earOcclusionCapAlpha, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.leftHeadShoulderBridgeRect,
+        WithScaledAlpha(scene.headFillRear, 174.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.rightHeadShoulderBridgeRect,
+        WithScaledAlpha(scene.headFillRear, 174.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.leftShoulderPatchRect,
+        WithScaledAlpha(scene.bodyFillRear, 176.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.rightShoulderPatchRect,
+        WithScaledAlpha(scene.bodyFillRear, 176.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.leftHipPatchRect,
+        WithScaledAlpha(scene.bodyFillRear, 166.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.rightHipPatchRect,
+        WithScaledAlpha(scene.bodyFillRear, 166.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.bellyContourRect,
+        WithScaledAlpha(scene.headFillRear, 138.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.sternumContourRect,
+        WithScaledAlpha(scene.headFillRear, 122.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.upperTorsoContourRect,
+        WithScaledAlpha(scene.headFillRear, 132.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.leftTorsoCadenceBridgeRect,
+        WithScaledAlpha(scene.headFillRear, 126.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.rightTorsoCadenceBridgeRect,
+        WithScaledAlpha(scene.headFillRear, 126.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.leftBackContourRect,
+        WithScaledAlpha(scene.headFillRear, 122.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.rightBackContourRect,
+        WithScaledAlpha(scene.headFillRear, 122.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.leftFlankContourRect,
+        WithScaledAlpha(scene.headFillRear, 118.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.rightFlankContourRect,
+        WithScaledAlpha(scene.headFillRear, 118.0f, layer.rearAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+}
+
 } // namespace
 
 void Win32MouseCompanionRealRendererPainter::Paint(
@@ -730,6 +874,7 @@ void Win32MouseCompanionRealRendererPainter::Paint(
     DrawModelSceneGraph(graphics, scene);
     DrawModelProxyLayer(graphics, scene);
     DrawModelProxyFrameLayer(graphics, scene);
+    DrawModelProxyContourLayer(graphics, scene);
     DrawModelProxyDetailLayer(graphics, scene);
     DrawModelProxyAdornmentLayer(graphics, scene);
     DrawModelProxyActionLayer(graphics, scene.modelProxyActionLayer);

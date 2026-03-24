@@ -137,6 +137,33 @@ struct Win32MouseCompanionRealRendererModelProxyFrameLayer final {
     float strokeWidthScale{1.0f};
 };
 
+struct Win32MouseCompanionRealRendererModelProxyContourLayer final {
+    bool visible{false};
+    std::array<Gdiplus::PointF, 4> leftEar{};
+    std::array<Gdiplus::PointF, 4> rightEar{};
+    Gdiplus::RectF leftEarRootCuffRect{};
+    Gdiplus::RectF rightEarRootCuffRect{};
+    Gdiplus::RectF leftEarOcclusionCapRect{};
+    Gdiplus::RectF rightEarOcclusionCapRect{};
+    Gdiplus::RectF leftShoulderPatchRect{};
+    Gdiplus::RectF rightShoulderPatchRect{};
+    Gdiplus::RectF leftHipPatchRect{};
+    Gdiplus::RectF rightHipPatchRect{};
+    Gdiplus::RectF bellyContourRect{};
+    Gdiplus::RectF sternumContourRect{};
+    Gdiplus::RectF upperTorsoContourRect{};
+    Gdiplus::RectF leftTorsoCadenceBridgeRect{};
+    Gdiplus::RectF rightTorsoCadenceBridgeRect{};
+    Gdiplus::RectF leftBackContourRect{};
+    Gdiplus::RectF rightBackContourRect{};
+    Gdiplus::RectF leftFlankContourRect{};
+    Gdiplus::RectF rightFlankContourRect{};
+    Gdiplus::RectF leftHeadShoulderBridgeRect{};
+    Gdiplus::RectF rightHeadShoulderBridgeRect{};
+    float rearAlphaScale{1.0f};
+    float strokeAlphaScale{1.0f};
+};
+
 struct Win32MouseCompanionRealRendererSceneGraphNode final {
     uint32_t nodeIndex{0};
     std::string nodeName;
@@ -381,6 +408,7 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::PointF accessoryRibbonRightFoldStart{};
     Gdiplus::PointF accessoryRibbonRightFoldEnd{};
     Win32MouseCompanionRealRendererActionOverlay actionOverlay{};
+    Win32MouseCompanionRealRendererModelProxyContourLayer modelProxyContourLayer{};
     Win32MouseCompanionRealRendererModelProxyFrameLayer modelProxyFrameLayer{};
     Win32MouseCompanionRealRendererModelProxyDetailLayer modelProxyDetailLayer{};
     Win32MouseCompanionRealRendererModelProxyAdornmentLayer modelProxyAdornmentLayer{};
