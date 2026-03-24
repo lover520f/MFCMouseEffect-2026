@@ -21,7 +21,7 @@ Commands:
   package [platform options...]
       Build native package for current host platform.
       macOS: .app + zip + dmg
-      Windows: installer exe
+      Windows: installer exe (`--gpu` or `--no-gpu`)
 
   package-no-build [platform options...]
       Produce native package for current host platform without rebuilding.
@@ -145,6 +145,15 @@ run_package() {
             [[ $# -ge 2 ]] || { echo "missing value for $1" >&2; exit 2; }
             args+=("$1" "$2")
             shift 2
+            ;;
+        --gpu|--no-gpu)
+            if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* || "$OSTYPE" == win32* ]]; then
+                args+=("$1")
+            else
+                echo "$1 is only supported on Windows packaging" >&2
+                exit 2
+            fi
+            shift
             ;;
         --no-zip|--no-dmg)
             if [[ "$OSTYPE" == darwin* ]]; then

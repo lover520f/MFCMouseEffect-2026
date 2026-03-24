@@ -29,6 +29,11 @@
     <RootNamespace>MFCMouseEffect</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
+  <PropertyGroup>
+    <MfxEnableWindowsGpuEffects Condition="'$(MfxEnableWindowsGpuEffects)'==''">true</MfxEnableWindowsGpuEffects>
+    <MfxEnableWindowsGpuEffectsDefine Condition="'$(MfxEnableWindowsGpuEffects)'=='true'">1</MfxEnableWindowsGpuEffectsDefine>
+    <MfxEnableWindowsGpuEffectsDefine Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">0</MfxEnableWindowsGpuEffectsDefine>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -119,7 +124,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_DEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -130,7 +135,7 @@
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <ValidateAllParameters>true</ValidateAllParameters>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </Midl>
     <ResourceCompile>
       <Culture>0x0804</Culture>
@@ -140,7 +145,8 @@
     <PostBuildEvent>
       <Command>if exist "$(OutDir)webui" rmdir /S /Q "$(OutDir)webui"
 if exist "$(ProjectDir)WebUI" xcopy /E /Y /I "$(ProjectDir)WebUI" "$(OutDir)webui\\"
-if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
+if /I "$(MfxEnableWindowsGpuEffects)"=="true" if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
+if /I not "$(MfxEnableWindowsGpuEffects)"=="true" if exist "$(OutDir)webgpu_dawn.dll" del /Q "$(OutDir)webgpu_dawn.dll"
 if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -149,7 +155,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -160,7 +166,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <ValidateAllParameters>true</ValidateAllParameters>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </Midl>
     <ResourceCompile>
       <Culture>0x0804</Culture>
@@ -175,7 +181,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -188,7 +194,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <ValidateAllParameters>true</ValidateAllParameters>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </Midl>
     <ResourceCompile>
       <Culture>0x0804</Culture>
@@ -203,7 +209,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;NDEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -216,7 +222,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <ValidateAllParameters>true</ValidateAllParameters>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </Midl>
     <ResourceCompile>
       <Culture>0x0804</Culture>
@@ -226,7 +232,8 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <PostBuildEvent>
       <Command>if exist "$(OutDir)webui" rmdir /S /Q "$(OutDir)webui"
 if exist "$(ProjectDir)WebUI" xcopy /E /Y /I "$(ProjectDir)WebUI" "$(OutDir)webui\\"
-if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
+if /I "$(MfxEnableWindowsGpuEffects)"=="true" if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
+if /I not "$(MfxEnableWindowsGpuEffects)"=="true" if exist "$(OutDir)webgpu_dawn.dll" del /Q "$(OutDir)webgpu_dawn.dll"
 if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -239,7 +246,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
       <SDLCheck>true</SDLCheck>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <AdditionalOptions>/Gw %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>_WINDOWS;NDEBUG;MFX_SHIPPING_BUILD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;NDEBUG;MFX_SHIPPING_BUILD=1;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -258,13 +265,14 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     </Midl>
     <ResourceCompile>
       <Culture>0x0804</Culture>
-      <PreprocessorDefinitions>NDEBUG;MFX_SHIPPING_BUILD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;MFX_SHIPPING_BUILD=1;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
       <Command>if exist "$(OutDir)webui" rmdir /S /Q "$(OutDir)webui"
 if exist "$(ProjectDir)WebUI" xcopy /E /Y /I "$(ProjectDir)WebUI" "$(OutDir)webui\\"
-if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
+if /I "$(MfxEnableWindowsGpuEffects)"=="true" if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
+if /I not "$(MfxEnableWindowsGpuEffects)"=="true" if exist "$(OutDir)webgpu_dawn.dll" del /Q "$(OutDir)webgpu_dawn.dll"
 if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -742,18 +750,34 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\HoldRendererLinkage.cpp" />
     <ClCompile Include="Platform\windows\Renderers\Hold\Win32HoldRendererLinkage.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ShaderPipeline.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2Presenter.cpp" />
+    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ShaderPipeline.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2Presenter.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterBackendRegistry.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterHost.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterSelection.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ComputeEngine.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\HoldQuantumHaloGpuV2D2DBackend.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldGpuV2ComputeEngine.cpp" />
+    <ClCompile Include="Platform\windows\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ComputeEngine.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\HoldQuantumHaloGpuV2D2DBackend.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldGpuV2ComputeEngine.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="MouseFx\Effects\HoldRouteCatalog.cpp" />
-    <ClCompile Include="Platform\windows\Effects\Win32HoldQuantumHaloGpuV2DirectRuntime.cpp" />
+    <ClCompile Include="Platform\windows\Effects\Win32HoldQuantumHaloGpuV2DirectRuntime.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="MouseFx\Renderers\Hold\Neon3D\Neon3DFx.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.ApplySettings.cpp" />

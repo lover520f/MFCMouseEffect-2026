@@ -15,6 +15,8 @@ Options:
   --package-name <name>   Installer base filename without .exe (default: script default)
   --skip-build            Skip rebuilding Windows Release|x64 project
   --skip-webui-build      Accepted for CLI parity; currently no-op on Windows
+  --gpu                   Build/package the Windows GPU runtime (default)
+  --no-gpu                Exclude Windows GPU runtime and do not package webgpu_dawn.dll
   -h, --help              Show this help
 EOF
 }
@@ -83,6 +85,7 @@ output_dir="$repo_root/Install/windows"
 package_name=""
 skip_build=0
 skip_webui_build=0
+enable_windows_gpu_effects=true
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -102,6 +105,14 @@ while [[ $# -gt 0 ]]; do
         ;;
     --skip-webui-build)
         skip_webui_build=1
+        shift
+        ;;
+    --gpu)
+        enable_windows_gpu_effects=true
+        shift
+        ;;
+    --no-gpu)
+        enable_windows_gpu_effects=false
         shift
         ;;
     -h|--help)
@@ -142,6 +153,7 @@ if [[ "$skip_build" != "1" ]]; then
         /t:Build \
         /p:Configuration=Release \
         /p:Platform=x64 \
+        "/p:MfxEnableWindowsGpuEffects=$enable_windows_gpu_effects" \
         /nologo \
         /v:minimal
 fi
@@ -150,6 +162,7 @@ iscc_exe="$(find_iscc)"
 
 iscc_args=(
     "/O$(cygpath -w "$output_dir")"
+    "/DMfxEnableWindowsGpuEffects=$enable_windows_gpu_effects"
 )
 if [[ -n "$package_name" ]]; then
     iscc_args+=("/F$package_name")

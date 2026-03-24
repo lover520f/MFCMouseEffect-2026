@@ -120,11 +120,13 @@ void AppendSettingsSchemaOptionsSections(const EffectConfig& config, json* out) 
         {"value", "auto"},
         {"label", LabelByLang(L"\u81ea\u52a8\u9009\u62e9\uff08\u63a8\u8350\uff09", L"Auto (Recommended)", lang)}
     });
-    for (const auto& backend : QuantumHaloPresenterBackendRegistry::Instance().ListByPriority()) {
-        presenterBackends.push_back({
-            {"value", backend.name},
-            {"label", backend.name}
-        });
+    if (hold_route::IsGpuHoldRouteEnabledForCurrentBuild()) {
+        for (const auto& backend : QuantumHaloPresenterBackendRegistry::Instance().ListByPriority()) {
+            presenterBackends.push_back({
+                {"value", backend.name},
+                {"label", backend.name}
+            });
+        }
     }
     (*out)["hold_presenter_backends"] = std::move(presenterBackends);
 

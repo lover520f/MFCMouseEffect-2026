@@ -18,6 +18,15 @@ Keep P1 concise; add details here when needed.
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-gesture-calibration-sweep.sh --skip-build`
 
 ## Windows Mouse Companion Bring-Up
+- Release with GPU:
+  - `C:\Program Files\Microsoft Visual Studio\18\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe F:\language\cpp\code\MFCMouseEffect\MFCMouseEffect\MFCMouseEffect.vcxproj /t:Build /p:Configuration=Release;Platform=x64 /p:MfxEnableWindowsGpuEffects=true`
+- Release without GPU:
+  - `C:\Program Files\Microsoft Visual Studio\18\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe F:\language\cpp\code\MFCMouseEffect\MFCMouseEffect\MFCMouseEffect.vcxproj /t:Build /p:Configuration=Release;Platform=x64 /p:MfxEnableWindowsGpuEffects=false`
+  - behavior:
+    - excludes Windows GPU hold compile units
+    - removes copied `webgpu_dawn.dll` from the output directory
+    - hides GPU-only hold routes from settings schema
+    - auto-normalizes persisted GPU hold types onto compatible non-GPU routes
 - minimal shipping build command:
   - `C:\Program Files\Microsoft Visual Studio\18\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe F:\language\cpp\code\MFCMouseEffect\MFCMouseEffect\MFCMouseEffect.vcxproj /t:Build /p:Configuration=Shipping;Platform=x64`
   - intent:
@@ -25,6 +34,8 @@ Keep P1 concise; add details here when needed.
     - keep normal WebUI/static asset serving
     - exclude `/api/test` routes and the heavy runtime diagnostics composition used for deep proof / lane-matrix inspection
     - exclude embedded WebUI fallback `RCDATA`; `Shipping` depends on the copied `$(OutDir)webui` folder instead of baking those fallback assets into the exe
+  - GPU selection also applies here:
+    - append `/p:MfxEnableWindowsGpuEffects=true|false`
 - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -BaseUrl <url> -Token <token> -Route sweep`
 - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -BaseUrl <url> -Token <token> -Route proof -Event click`
 - `D:\code\MFCMouseEffect\tools\platform\manual\run-windows-mouse-companion-render-proof.cmd -BaseUrl <url> -Token <token> -Preset real-preview-smoke`

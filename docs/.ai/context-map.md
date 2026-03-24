@@ -1,6 +1,6 @@
 # AI Context Map
 
-Generated: 2026-03-24T02:49:02.313Z
+Generated: 2026-03-24T03:13:10.185Z
 
 ## Goal
 Load minimal docs by task keyword while keeping AGENTS + current context as mandatory baseline.
@@ -27,6 +27,7 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 - `docs/architecture/click-ripple-cross-platform-alignment.md` (P2, 750 tok)
 - `docs/architecture/mouse-companion-action-clip-contract.zh-CN.md` (P2, 750 tok)
 - `docs/architecture/mouse-companion-procedural-effect-profile-contract.zh-CN.md` (P2, 750 tok)
+- `docs/ops/windows-installer-packaging.md` (P2, 708 tok)
 
 ### input-indicator
 - `docs/architecture/mouse-companion-position-mode-contract.zh-CN.md` (P2, 750 tok)
@@ -55,11 +56,11 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 - `docs/architecture/windows-mouse-companion-real-renderer-contract.md` -> ~17073 tok
 - `docs/ops/windows-mouse-companion-manual-checklist.md` -> ~16055 tok
 - `docs/architecture/windows-mouse-companion-phase1-plan.md` -> ~7479 tok
+- `docs/ops/manual-commands.md` -> ~7097 tok
 - `docs/architecture/custom-effects-wasm-route.zh-CN.md` -> ~6872 tok
-- `docs/ops/manual-commands.md` -> ~6870 tok
 - `docs/architecture/custom-effects-wasm-route.md` -> ~6707 tok
+- `docs/agent-context/current.md` -> ~5934 tok
 - `docs/refactoring/phase-roadmap-macos-m1-status.md` -> ~5868 tok
-- `docs/agent-context/current.md` -> ~5832 tok
 
 ## Notes
 - Index is machine-readable: `docs/.ai/context-index.json`.

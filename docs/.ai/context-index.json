@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-24T02:49:02.313Z",
+  "generated_at": "2026-03-24T03:13:10.185Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -85,14 +85,14 @@
       ],
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 212,
-      "size_bytes": 23328,
-      "estimated_tokens": 5832,
+      "line_count": 215,
+      "size_bytes": 23735,
+      "estimated_tokens": 5934,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": false,
-      "hash_sha1": "63a82f0f0b61f08027547daaad5ac6aaa6512f62",
-      "updated_at": "2026-03-24T02:46:16.110Z"
+      "hash_sha1": "4cca3e5a0b3260e329723463f486fbf7fe9dab7a",
+      "updated_at": "2026-03-24T03:11:25.783Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -1187,14 +1187,14 @@
       ],
       "summary": "Common manual commands for local iteration and debugging.",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 246,
-      "size_bytes": 27480,
-      "estimated_tokens": 6870,
+      "line_count": 257,
+      "size_bytes": 28388,
+      "estimated_tokens": 7097,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "4f7f79e3297110b4b59786bd220926feceb6aeb2",
-      "updated_at": "2026-03-24T02:46:16.112Z"
+      "hash_sha1": "fa587e7e53e479d797c3c769427cb9a622567687",
+      "updated_at": "2026-03-24T03:11:37.217Z"
     },
     {
       "id": "docs/ops/windows-installer-packaging.md",
@@ -1202,25 +1202,27 @@
       "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/ops/windows-installer-packaging.md",
       "priority": "P2",
       "role": "capability",
-      "topic": "workflow",
+      "topic": "effects",
       "first_read_rank": 0,
       "tags": [
         "ops",
         "windows",
         "installer",
         "packaging",
-        "workflow"
+        "effects",
+        "workflow",
+        "contract"
       ],
       "summary": "1. Build Windows release:",
       "when_to_read": "Read when executing manual/regression workflows.",
-      "line_count": 44,
-      "size_bytes": 1798,
-      "estimated_tokens": 450,
-      "max_read_tokens": 570,
+      "line_count": 53,
+      "size_bytes": 2350,
+      "estimated_tokens": 588,
+      "max_read_tokens": 708,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "75bb4e061b9a9da713830da6c2d0b2dbdee56c7f",
-      "updated_at": "2026-03-21T08:12:52.435Z"
+      "hash_sha1": "69ba4384fb6048d7afd52498250a1ca302dd71ae",
+      "updated_at": "2026-03-24T03:11:50.431Z"
     },
     {
       "id": "docs/ops/windows-mouse-companion-manual-checklist.md",

@@ -139,8 +139,12 @@ std::string AppController::ResolveRuntimeEffectType(
     case EffectCategory::Hover:
         return NormalizeHoverEffectType(requestedType);
     case EffectCategory::Hold: {
+        const std::string requestedNormalized = hold_route::NormalizeHoldEffectTypeAlias(requestedType);
         const std::string normalizedType = NormalizeHoldEffectType(requestedType);
         const char* reason = hold_route::RouteReasonForType(normalizedType);
+        if ((reason == nullptr || reason[0] == '\0') && requestedNormalized != normalizedType) {
+            reason = hold_route::FallbackReasonForCurrentBuild(requestedNormalized);
+        }
         if (outReason && reason && reason[0] != '\0') {
             *outReason = reason;
         }
