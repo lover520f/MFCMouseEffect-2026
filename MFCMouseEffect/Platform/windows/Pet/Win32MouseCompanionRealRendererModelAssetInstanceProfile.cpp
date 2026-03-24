@@ -163,8 +163,8 @@ BuildWin32MouseCompanionRealRendererModelAssetInstanceProfile(
 void ApplyWin32MouseCompanionRealRendererModelAssetInstanceProfile(
     const Win32MouseCompanionRealRendererModelAssetInstanceProfile& profile,
     Win32MouseCompanionRealRendererScene& scene) {
-    scene.headAnchorX += profile.instanceWeight * 0.60f;
-    scene.headAnchorY -= profile.instanceWeight * 0.45f;
+    scene.headAnchor.X += profile.instanceWeight * 0.60f;
+    scene.headAnchor.Y -= profile.instanceWeight * 0.45f;
     scene.bodyAnchorScale *= 1.0f + profile.instanceWeight * 0.020f;
     scene.poseBadgeAlpha = std::clamp(
         scene.poseBadgeAlpha + profile.instanceWeight * 7.0f,

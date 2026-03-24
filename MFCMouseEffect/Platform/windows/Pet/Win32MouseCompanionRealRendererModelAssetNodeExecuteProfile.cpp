@@ -128,7 +128,7 @@ BuildWin32MouseCompanionRealRendererModelAssetNodeExecuteProfile(
 void ApplyWin32MouseCompanionRealRendererModelAssetNodeExecuteProfile(
     const Win32MouseCompanionRealRendererModelAssetNodeExecuteProfile& profile,
     Win32MouseCompanionRealRendererScene& scene) {
-    scene.shadowAlpha = std::clamp(scene.shadowAlpha + profile.executeWeight * 2.0f, 0.0f, 255.0f);
+    scene.shadowAlphaScale *= 1.0f + profile.executeWeight * 0.012f;
     scene.accessoryAlphaScale *= 1.0f + profile.executeWeight * 0.015f;
     scene.poseBadgeAlpha = std::clamp(scene.poseBadgeAlpha + profile.executeWeight * 2.0f, 0.0f, 255.0f);
     scene.actionOverlay.clickRingAlpha = std::clamp(
