@@ -413,6 +413,24 @@ public:
             "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
         std::string rendererRuntimeSceneRuntimeModelAssetNodeControllerValueBrief{
             "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeDriverState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeDriverEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeDriverResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeDriverBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeDriverDriverBrief{
+            "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeDriverValueBrief{
+            "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeDriverRegistryState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeDriverRegistryEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeDriverRegistryResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeDriverRegistryBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeDriverRegistryRegistryBrief{
+            "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeDriverRegistryValueBrief{
+            "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
         std::string rendererRuntimeSceneRuntimeAssetNodeBindingState{"preview_only"};
         uint32_t rendererRuntimeSceneRuntimeAssetNodeBindingEntryCount{0};
         uint32_t rendererRuntimeSceneRuntimeAssetNodeBindingResolvedEntryCount{0};

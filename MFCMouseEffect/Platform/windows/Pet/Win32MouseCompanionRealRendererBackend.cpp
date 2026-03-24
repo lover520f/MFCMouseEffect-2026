@@ -73,6 +73,8 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeMountProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeExecuteProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeControllerProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeDriverProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeDriverRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeResolveProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeRouteProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSceneBindingProfile.h"
@@ -280,6 +282,16 @@ void Win32MouseCompanionRealRendererBackend::Render(
         sceneRuntime.modelAssetNodeControllerProfile;
     ApplyWin32MouseCompanionRealRendererModelAssetNodeControllerProfile(
         modelAssetNodeControllerProfile,
+        scene);
+    const auto modelAssetNodeDriverProfile =
+        sceneRuntime.modelAssetNodeDriverProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetNodeDriverProfile(
+        modelAssetNodeDriverProfile,
+        scene);
+    const auto modelAssetNodeDriverRegistryProfile =
+        sceneRuntime.modelAssetNodeDriverRegistryProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetNodeDriverRegistryProfile(
+        modelAssetNodeDriverRegistryProfile,
         scene);
     const auto poseResolverProfile =
         BuildWin32MouseCompanionRealRendererAssetNodePoseResolverProfile(
@@ -898,6 +910,30 @@ void Win32MouseCompanionRealRendererBackend::Render(
         sceneRuntime.modelAssetNodeControllerProfile.controllerBrief;
     diagnostics.sceneRuntimeModelAssetNodeControllerValueBrief =
         sceneRuntime.modelAssetNodeControllerProfile.valueBrief;
+    diagnostics.sceneRuntimeModelAssetNodeDriverState =
+        sceneRuntime.modelAssetNodeDriverProfile.driverState;
+    diagnostics.sceneRuntimeModelAssetNodeDriverEntryCount =
+        sceneRuntime.modelAssetNodeDriverProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetNodeDriverResolvedEntryCount =
+        sceneRuntime.modelAssetNodeDriverProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodeDriverBrief =
+        sceneRuntime.modelAssetNodeDriverProfile.brief;
+    diagnostics.sceneRuntimeModelAssetNodeDriverDriverBrief =
+        sceneRuntime.modelAssetNodeDriverProfile.driverBrief;
+    diagnostics.sceneRuntimeModelAssetNodeDriverValueBrief =
+        sceneRuntime.modelAssetNodeDriverProfile.valueBrief;
+    diagnostics.sceneRuntimeModelAssetNodeDriverRegistryState =
+        sceneRuntime.modelAssetNodeDriverRegistryProfile.driverRegistryState;
+    diagnostics.sceneRuntimeModelAssetNodeDriverRegistryEntryCount =
+        sceneRuntime.modelAssetNodeDriverRegistryProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetNodeDriverRegistryResolvedEntryCount =
+        sceneRuntime.modelAssetNodeDriverRegistryProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodeDriverRegistryBrief =
+        sceneRuntime.modelAssetNodeDriverRegistryProfile.brief;
+    diagnostics.sceneRuntimeModelAssetNodeDriverRegistryRegistryBrief =
+        sceneRuntime.modelAssetNodeDriverRegistryProfile.registryBrief;
+    diagnostics.sceneRuntimeModelAssetNodeDriverRegistryValueBrief =
+        sceneRuntime.modelAssetNodeDriverRegistryProfile.valueBrief;
     diagnostics.sceneRuntimeAssetNodeBindingState =
         sceneRuntime.assetNodeBindingProfile.bindingState;
     diagnostics.sceneRuntimeAssetNodeBindingEntryCount =
