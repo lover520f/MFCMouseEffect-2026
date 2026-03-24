@@ -173,6 +173,12 @@ export function getMouseCompanionSectionMarkup() {
         <label>Model Node Bind</label>
         <output id="mc_runtime_scene_runtime_model_asset_node_bind_bind_brief">-</output>
 
+        <label>Model Asset Node Resolve</label>
+        <output id="mc_runtime_scene_runtime_model_asset_node_resolve_brief">-</output>
+
+        <label>Model Node Resolve</label>
+        <output id="mc_runtime_scene_runtime_model_asset_node_resolve_resolve_brief">-</output>
+
         <label>Model Node Graph</label>
         <output id="mc_runtime_scene_runtime_model_node_graph_brief">-</output>
 
@@ -187,6 +193,12 @@ export function getMouseCompanionSectionMarkup() {
 
         <label>Binding Weights</label>
         <output id="mc_runtime_scene_runtime_model_node_binding_weight_brief">-</output>
+
+        <label>Model Asset Node Drive</label>
+        <output id="mc_runtime_scene_runtime_model_asset_node_drive_brief">-</output>
+
+        <label>Model Node Drive</label>
+        <output id="mc_runtime_scene_runtime_model_asset_node_drive_drive_brief">-</output>
 
         <label>Model Node Slots</label>
         <output id="mc_runtime_scene_runtime_model_node_slot_brief">-</output>

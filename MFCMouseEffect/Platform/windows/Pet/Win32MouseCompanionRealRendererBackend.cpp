@@ -66,7 +66,9 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetHandleProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeAttachProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeBindProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeDriveProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeLiftProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeResolveProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSceneBindingProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSceneHookProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSourceProfile.h"
@@ -218,6 +220,11 @@ void Win32MouseCompanionRealRendererBackend::Render(
     ApplyWin32MouseCompanionRealRendererModelAssetNodeBindProfile(
         modelAssetNodeBindProfile,
         scene);
+    const auto modelAssetNodeResolveProfile =
+        sceneRuntime.modelAssetNodeResolveProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetNodeResolveProfile(
+        modelAssetNodeResolveProfile,
+        scene);
     const auto resolverProfile = sceneRuntime.assetNodeResolverProfile;
     const auto parentSpaceProfile = sceneRuntime.assetNodeParentSpaceProfile;
     const auto targetProfile = sceneRuntime.assetNodeTargetProfile;
@@ -233,6 +240,11 @@ void Win32MouseCompanionRealRendererBackend::Render(
             scene,
             worldSpaceProfile);
     ApplyWin32MouseCompanionRealRendererAssetNodePoseProfile(poseProfile, scene);
+    const auto modelAssetNodeDriveProfile =
+        sceneRuntime.modelAssetNodeDriveProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetNodeDriveProfile(
+        modelAssetNodeDriveProfile,
+        scene);
     const auto poseResolverProfile =
         BuildWin32MouseCompanionRealRendererAssetNodePoseResolverProfile(
             poseProfile);
@@ -714,6 +726,18 @@ void Win32MouseCompanionRealRendererBackend::Render(
         modelAssetNodeBindProfile.bindBrief;
     diagnostics.sceneRuntimeModelAssetNodeBindValueBrief =
         modelAssetNodeBindProfile.valueBrief;
+    diagnostics.sceneRuntimeModelAssetNodeResolveState =
+        modelAssetNodeResolveProfile.resolveState;
+    diagnostics.sceneRuntimeModelAssetNodeResolveEntryCount =
+        modelAssetNodeResolveProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetNodeResolveResolvedEntryCount =
+        modelAssetNodeResolveProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodeResolveBrief =
+        modelAssetNodeResolveProfile.brief;
+    diagnostics.sceneRuntimeModelAssetNodeResolveResolveBrief =
+        modelAssetNodeResolveProfile.resolveBrief;
+    diagnostics.sceneRuntimeModelAssetNodeResolveValueBrief =
+        modelAssetNodeResolveProfile.valueBrief;
     diagnostics.sceneRuntimeModelNodeGraphState =
         sceneRuntime.modelNodeGraphProfile.graphState;
     diagnostics.sceneRuntimeModelNodeGraphNodeCount =
@@ -732,6 +756,18 @@ void Win32MouseCompanionRealRendererBackend::Render(
         sceneRuntime.modelNodeBindingProfile.brief;
     diagnostics.sceneRuntimeModelNodeBindingWeightBrief =
         sceneRuntime.modelNodeBindingProfile.weightBrief;
+    diagnostics.sceneRuntimeModelAssetNodeDriveState =
+        modelAssetNodeDriveProfile.driveState;
+    diagnostics.sceneRuntimeModelAssetNodeDriveEntryCount =
+        modelAssetNodeDriveProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetNodeDriveResolvedEntryCount =
+        modelAssetNodeDriveProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodeDriveBrief =
+        modelAssetNodeDriveProfile.brief;
+    diagnostics.sceneRuntimeModelAssetNodeDriveDriveBrief =
+        modelAssetNodeDriveProfile.driveBrief;
+    diagnostics.sceneRuntimeModelAssetNodeDriveValueBrief =
+        modelAssetNodeDriveProfile.valueBrief;
     diagnostics.sceneRuntimeModelNodeSlotState =
         sceneRuntime.modelNodeSlotProfile.slotState;
     diagnostics.sceneRuntimeModelNodeSlotCount =

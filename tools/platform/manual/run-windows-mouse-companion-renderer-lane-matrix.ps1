@@ -630,6 +630,34 @@ function New-LaneSummary(
     } else {
         ""
     }
+    $runtimeModelAssetNodeResolveBrief = if ($null -ne $preview) {
+        $existingModelAssetNodeResolveBrief = [string]$preview.scene_runtime_model_asset_node_resolve_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingModelAssetNodeResolveBrief)) {
+            $existingModelAssetNodeResolveBrief
+        } else {
+            $state = [string]$preview.scene_runtime_model_asset_node_resolve_state
+            if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+            $entryCount = [int]([string]$preview.scene_runtime_model_asset_node_resolve_entry_count)
+            $resolved = [int]([string]$preview.scene_runtime_model_asset_node_resolve_resolved_entry_count)
+            "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+        }
+    } else {
+        ""
+    }
+    $runtimeModelAssetNodeDriveBrief = if ($null -ne $preview) {
+        $existingModelAssetNodeDriveBrief = [string]$preview.scene_runtime_model_asset_node_drive_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingModelAssetNodeDriveBrief)) {
+            $existingModelAssetNodeDriveBrief
+        } else {
+            $state = [string]$preview.scene_runtime_model_asset_node_drive_state
+            if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+            $entryCount = [int]([string]$preview.scene_runtime_model_asset_node_drive_entry_count)
+            $resolved = [int]([string]$preview.scene_runtime_model_asset_node_drive_resolved_entry_count)
+            "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+        }
+    } else {
+        ""
+    }
     $runtimeModelNodeGraphBrief = if ($null -ne $preview) {
         $existingModelNodeGraphBrief = [string]$preview.scene_runtime_model_node_graph_brief
         if (-not [string]::IsNullOrWhiteSpace($existingModelNodeGraphBrief)) {
@@ -1217,6 +1245,8 @@ function New-LaneSummary(
         runtime_model_asset_node_attach_brief = $runtimeModelAssetNodeAttachBrief
         runtime_model_asset_node_lift_brief = $runtimeModelAssetNodeLiftBrief
         runtime_model_asset_node_bind_brief = $runtimeModelAssetNodeBindBrief
+        runtime_model_asset_node_resolve_brief = $runtimeModelAssetNodeResolveBrief
+        runtime_model_asset_node_drive_brief = $runtimeModelAssetNodeDriveBrief
         runtime_model_node_graph_brief = $runtimeModelNodeGraphBrief
         runtime_model_node_binding_brief = $runtimeModelNodeBindingBrief
         runtime_model_node_slot_brief = $runtimeModelNodeSlotBrief
@@ -1330,6 +1360,8 @@ function Compare-LaneAgainstBaseline(
         @{ name = "runtime_model_asset_node_attach_brief"; baseline = [string]$Baseline.runtime_model_asset_node_attach_brief; current = [string]$Lane.runtime_model_asset_node_attach_brief },
         @{ name = "runtime_model_asset_node_lift_brief"; baseline = [string]$Baseline.runtime_model_asset_node_lift_brief; current = [string]$Lane.runtime_model_asset_node_lift_brief },
         @{ name = "runtime_model_asset_node_bind_brief"; baseline = [string]$Baseline.runtime_model_asset_node_bind_brief; current = [string]$Lane.runtime_model_asset_node_bind_brief },
+        @{ name = "runtime_model_asset_node_resolve_brief"; baseline = [string]$Baseline.runtime_model_asset_node_resolve_brief; current = [string]$Lane.runtime_model_asset_node_resolve_brief },
+        @{ name = "runtime_model_asset_node_drive_brief"; baseline = [string]$Baseline.runtime_model_asset_node_drive_brief; current = [string]$Lane.runtime_model_asset_node_drive_brief },
         @{ name = "runtime_model_node_graph_brief"; baseline = [string]$Baseline.runtime_model_node_graph_brief; current = [string]$Lane.runtime_model_node_graph_brief },
         @{ name = "runtime_model_node_binding_brief"; baseline = [string]$Baseline.runtime_model_node_binding_brief; current = [string]$Lane.runtime_model_node_binding_brief },
         @{ name = "runtime_model_node_slot_brief"; baseline = [string]$Baseline.runtime_model_node_slot_brief; current = [string]$Lane.runtime_model_node_slot_brief },
@@ -1476,6 +1508,8 @@ function New-LaneRecommendation(
             runtime_model_asset_node_attach_brief = [string]$lane.runtime_model_asset_node_attach_brief
             runtime_model_asset_node_lift_brief = [string]$lane.runtime_model_asset_node_lift_brief
             runtime_model_asset_node_bind_brief = [string]$lane.runtime_model_asset_node_bind_brief
+            runtime_model_asset_node_resolve_brief = [string]$lane.runtime_model_asset_node_resolve_brief
+            runtime_model_asset_node_drive_brief = [string]$lane.runtime_model_asset_node_drive_brief
             runtime_model_node_graph_brief = [string]$lane.runtime_model_node_graph_brief
             runtime_model_node_binding_brief = [string]$lane.runtime_model_node_binding_brief
             runtime_model_node_slot_brief = [string]$lane.runtime_model_node_slot_brief
@@ -2023,6 +2057,12 @@ function Write-LaneMatrixSummary(
     }
     if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_node_bind_brief)) {
         $observationLines.Add(("- machine model asset node-bind: `{0}`" -f $recommendation.runtime_model_asset_node_bind_brief))
+    }
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_node_resolve_brief)) {
+        $observationLines.Add(("- machine model asset node-resolve: `{0}`" -f $recommendation.runtime_model_asset_node_resolve_brief))
+    }
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_node_drive_brief)) {
+        $observationLines.Add(("- machine model asset node-drive: `{0}`" -f $recommendation.runtime_model_asset_node_drive_brief))
     }
     if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_node_adapter_brief)) {
         $observationLines.Add(("- machine model node adapter: `{0}`" -f $recommendation.runtime_model_node_adapter_brief))

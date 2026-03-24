@@ -268,6 +268,8 @@ It should **not** own:
     - `scene_runtime_model_asset_node_lift_brief = node_lift_state/entry_count/resolved_entry_count`
     - `scene_runtime_model_asset_node_bind_state`
     - `scene_runtime_model_asset_node_bind_brief = node_bind_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_node_resolve_state`
+    - `scene_runtime_model_asset_node_resolve_brief = node_resolve_state/entry_count/resolved_entry_count`
   - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `modelSceneAdapterProfile`; runtime/proof/WebUI may expose:
     - `scene_runtime_model_scene_adapter_state`
     - `scene_runtime_model_scene_seam_readiness`
@@ -287,6 +289,8 @@ It should **not** own:
     - `scene_runtime_model_node_binding_bound_entry_count`
     - `scene_runtime_model_node_binding_brief = binding_state/entry_count/bound_entry_count`
     - `scene_runtime_model_node_binding_weight_brief = body:x|head:y|appendage:z|overlay:w|grounding:v`
+    - `scene_runtime_model_asset_node_drive_state`
+    - `scene_runtime_model_asset_node_drive_brief = node_drive_state/entry_count/resolved_entry_count`
   - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `modelNodeSlotProfile`; runtime/proof/WebUI may expose:
     - `scene_runtime_model_node_slot_state`
     - `scene_runtime_model_node_slot_count`

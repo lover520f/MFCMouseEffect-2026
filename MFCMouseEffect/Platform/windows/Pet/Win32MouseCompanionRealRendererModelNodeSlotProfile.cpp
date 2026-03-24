@@ -11,15 +11,16 @@ namespace {
 
 std::string ResolveSlotState(
     const Win32MouseCompanionRealRendererSceneRuntime& runtime) {
-    const std::string& bindingState = runtime.modelNodeBindingProfile.bindingState;
-    if (bindingState == "binding_ready" && runtime.assets &&
+    const std::string& driveState = runtime.modelAssetNodeDriveProfile.driveState;
+    if (driveState == "model_asset_node_drive_bound" && runtime.assets &&
         runtime.assets->modelNodeSlotsReady) {
         return "slot_binding_ready";
     }
-    if (bindingState == "binding_stub_ready") {
+    if (driveState == "model_asset_node_drive_pose_ready") {
         return "slot_stub_ready";
     }
-    if (bindingState == "binding_scaffold") {
+    if (driveState == "model_asset_node_drive_ready" ||
+        driveState == "model_asset_node_drive_partial") {
         return "slot_scaffold";
     }
     return "preview_only";
@@ -90,30 +91,31 @@ BuildWin32MouseCompanionRealRendererModelNodeSlotProfile(
 
     const bool slotsReady = runtime.assets && runtime.assets->modelNodeSlotsReady;
     const auto& binding = runtime.modelNodeBindingProfile;
+    const float driveWeight = runtime.modelAssetNodeDriveProfile.driveWeight;
     profile.bodySlot = BuildSlotEntry(
         "body",
         "body_root",
-        binding.bodyEntry.bindWeight,
+        binding.bodyEntry.bindWeight * driveWeight,
         slotsReady);
     profile.headSlot = BuildSlotEntry(
         "head",
         "head_anchor",
-        binding.headEntry.bindWeight,
+        binding.headEntry.bindWeight * driveWeight,
         slotsReady);
     profile.appendageSlot = BuildSlotEntry(
         "appendage",
         "appendage_anchor",
-        binding.appendageEntry.bindWeight,
+        binding.appendageEntry.bindWeight * driveWeight,
         slotsReady);
     profile.overlaySlot = BuildSlotEntry(
         "overlay",
         "overlay_anchor",
-        binding.overlayEntry.bindWeight,
+        binding.overlayEntry.bindWeight * driveWeight,
         slotsReady);
     profile.groundingSlot = BuildSlotEntry(
         "grounding",
         "grounding_anchor",
-        binding.groundingEntry.bindWeight,
+        binding.groundingEntry.bindWeight * driveWeight,
         slotsReady);
 
     profile.readySlotCount = CountReadySlots(profile);

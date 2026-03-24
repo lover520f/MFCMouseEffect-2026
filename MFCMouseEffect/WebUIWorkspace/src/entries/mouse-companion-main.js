@@ -830,6 +830,20 @@ function writeRuntimeDiagnostics(runtimeState) {
     ),
   );
   writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_node_resolve_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_node_resolve_brief,
+      'preview_only/0/0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_node_resolve_resolve_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_node_resolve_resolve_brief,
+      'body:stub|head:stub|appendage:stub|grounding:stub|adapter:runtime_only',
+    ),
+  );
+  writeTextValue(
     'mc_runtime_scene_runtime_model_node_graph_brief',
     normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_model_node_graph_brief, 'preview_only/0/0'),
   );
@@ -850,6 +864,20 @@ function writeRuntimeDiagnostics(runtimeState) {
     normalizeRuntimeText(
       runtimeState.renderer_runtime_scene_runtime_model_node_binding_weight_brief,
       'body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_node_drive_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_node_drive_brief,
+      'preview_only/0/0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_node_drive_drive_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_node_drive_drive_brief,
+      'body:stub|head:stub|appendage:stub|overlay:stub|adapter:runtime_only',
     ),
   );
   writeTextValue(

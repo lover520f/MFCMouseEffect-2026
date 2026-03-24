@@ -317,6 +317,15 @@ public:
             "body:stub|head:stub|appendage:stub|grounding:stub|adapter:runtime_only"};
         std::string rendererRuntimeSceneRuntimeModelAssetNodeBindValueBrief{
             "body:0.00|head:0.00|appendage:0.00|grounding:0.00|adapter:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeResolveState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeResolveEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeResolveResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeResolveBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeResolveResolveBrief{
+            "body:stub|head:stub|appendage:stub|grounding:stub|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeResolveValueBrief{
+            "body:0.00|head:0.00|appendage:0.00|grounding:0.00|adapter:0.00"};
         std::string rendererRuntimeSceneRuntimeModelNodeGraphState{"preview_only"};
         uint32_t rendererRuntimeSceneRuntimeModelNodeGraphNodeCount{0};
         uint32_t rendererRuntimeSceneRuntimeModelNodeGraphBoundNodeCount{0};
@@ -327,6 +336,15 @@ public:
         std::string rendererRuntimeSceneRuntimeModelNodeBindingBrief{"preview_only/0/0"};
         std::string rendererRuntimeSceneRuntimeModelNodeBindingWeightBrief{
             "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeDriveState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeDriveEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeDriveResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeDriveBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeDriveDriveBrief{
+            "body:stub|head:stub|appendage:stub|overlay:stub|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeDriveValueBrief{
+            "body:0.00|head:0.00|appendage:0.00|overlay:0.00|adapter:0.00"};
         std::string rendererRuntimeSceneRuntimeModelNodeSlotState{"preview_only"};
         uint32_t rendererRuntimeSceneRuntimeModelNodeSlotCount{0};
         uint32_t rendererRuntimeSceneRuntimeModelNodeReadySlotCount{0};

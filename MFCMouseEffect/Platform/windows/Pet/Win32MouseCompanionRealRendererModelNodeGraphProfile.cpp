@@ -11,14 +11,14 @@ namespace {
 
 std::string ResolveGraphState(
     const Win32MouseCompanionRealRendererSceneRuntime& runtime) {
-    if (runtime.modelAssetNodeLiftProfile.liftState == "model_asset_node_lift_bound") {
+    if (runtime.modelAssetNodeResolveProfile.resolveState == "model_asset_node_resolve_bound") {
         return "channel_bound_preview";
     }
-    if (runtime.modelAssetNodeLiftProfile.liftState == "model_asset_node_lift_pose_ready") {
+    if (runtime.modelAssetNodeResolveProfile.resolveState == "model_asset_node_resolve_pose_ready") {
         return "channel_stub_ready";
     }
-    if (runtime.modelAssetNodeLiftProfile.liftState == "model_asset_node_lift_ready" ||
-        runtime.modelAssetNodeLiftProfile.liftState == "model_asset_node_lift_partial") {
+    if (runtime.modelAssetNodeResolveProfile.resolveState == "model_asset_node_resolve_ready" ||
+        runtime.modelAssetNodeResolveProfile.resolveState == "model_asset_node_resolve_partial") {
         return "scaffold_ready";
     }
     return "preview_only";
@@ -60,15 +60,15 @@ BuildWin32MouseCompanionRealRendererModelNodeGraphProfile(
     profile.nodeCount = 5;
 
     const auto& adapter = runtime.modelNodeAdapterProfile;
-    const float liftWeight = runtime.modelAssetNodeLiftProfile.liftWeight;
+    const float resolveWeight = runtime.modelAssetNodeResolveProfile.resolveWeight;
 
-    profile.bodyNode.influence = adapter.bodyChannel.influence * liftWeight;
+    profile.bodyNode.influence = adapter.bodyChannel.influence * resolveWeight;
     profile.bodyNode.localOffsetX = adapter.bodyChannel.offsetX;
     profile.bodyNode.localOffsetY = adapter.bodyChannel.offsetY;
     profile.bodyNode.worldOffsetX = adapter.bodyChannel.offsetX * profile.bodyNode.influence;
     profile.bodyNode.worldOffsetY = adapter.bodyChannel.offsetY * profile.bodyNode.influence;
 
-    profile.headNode.influence = adapter.faceChannel.influence * liftWeight;
+    profile.headNode.influence = adapter.faceChannel.influence * resolveWeight;
     profile.headNode.localOffsetX = adapter.faceChannel.offsetX;
     profile.headNode.localOffsetY = adapter.faceChannel.offsetY;
     profile.headNode.worldOffsetX =
@@ -76,7 +76,7 @@ BuildWin32MouseCompanionRealRendererModelNodeGraphProfile(
     profile.headNode.worldOffsetY =
         profile.bodyNode.worldOffsetY + adapter.faceChannel.offsetY * profile.headNode.influence;
 
-    profile.appendageNode.influence = adapter.appendageChannel.influence * liftWeight;
+    profile.appendageNode.influence = adapter.appendageChannel.influence * resolveWeight;
     profile.appendageNode.localOffsetX = adapter.appendageChannel.offsetX;
     profile.appendageNode.localOffsetY = adapter.appendageChannel.offsetY;
     profile.appendageNode.worldOffsetX =
@@ -84,7 +84,7 @@ BuildWin32MouseCompanionRealRendererModelNodeGraphProfile(
     profile.appendageNode.worldOffsetY =
         profile.bodyNode.worldOffsetY + adapter.appendageChannel.offsetY * profile.appendageNode.influence;
 
-    profile.overlayNode.influence = adapter.overlayChannel.influence * liftWeight;
+    profile.overlayNode.influence = adapter.overlayChannel.influence * resolveWeight;
     profile.overlayNode.localOffsetX = adapter.overlayChannel.offsetX;
     profile.overlayNode.localOffsetY = adapter.overlayChannel.offsetY;
     profile.overlayNode.worldOffsetX =
@@ -92,7 +92,7 @@ BuildWin32MouseCompanionRealRendererModelNodeGraphProfile(
     profile.overlayNode.worldOffsetY =
         profile.bodyNode.worldOffsetY + adapter.overlayChannel.offsetY * profile.overlayNode.influence;
 
-    profile.groundingNode.influence = adapter.groundingChannel.influence * liftWeight;
+    profile.groundingNode.influence = adapter.groundingChannel.influence * resolveWeight;
     profile.groundingNode.localOffsetX = adapter.groundingChannel.offsetX;
     profile.groundingNode.localOffsetY = adapter.groundingChannel.offsetY;
     profile.groundingNode.worldOffsetX =

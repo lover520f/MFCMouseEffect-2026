@@ -269,6 +269,14 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "body:stub|head:stub|appendage:stub|grounding:stub|adapter:runtime_only";
     diagnostics.sceneRuntimeModelAssetNodeBindValueBrief =
         "body:0.00|head:0.00|appendage:0.00|grounding:0.00|adapter:0.00";
+    diagnostics.sceneRuntimeModelAssetNodeResolveState = "preview_only";
+    diagnostics.sceneRuntimeModelAssetNodeResolveEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetNodeResolveResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetNodeResolveBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeModelAssetNodeResolveResolveBrief =
+        "body:stub|head:stub|appendage:stub|grounding:stub|adapter:runtime_only";
+    diagnostics.sceneRuntimeModelAssetNodeResolveValueBrief =
+        "body:0.00|head:0.00|appendage:0.00|grounding:0.00|adapter:0.00";
     diagnostics.sceneRuntimeModelNodeGraphState = "preview_only";
     diagnostics.sceneRuntimeModelNodeGraphNodeCount = 0;
     diagnostics.sceneRuntimeModelNodeGraphBoundNodeCount = 0;
@@ -279,6 +287,14 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
     diagnostics.sceneRuntimeModelNodeBindingBrief = "preview_only/0/0";
     diagnostics.sceneRuntimeModelNodeBindingWeightBrief =
         "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
+    diagnostics.sceneRuntimeModelAssetNodeDriveState = "preview_only";
+    diagnostics.sceneRuntimeModelAssetNodeDriveEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetNodeDriveResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetNodeDriveBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeModelAssetNodeDriveDriveBrief =
+        "body:stub|head:stub|appendage:stub|overlay:stub|adapter:runtime_only";
+    diagnostics.sceneRuntimeModelAssetNodeDriveValueBrief =
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|adapter:0.00";
     diagnostics.sceneRuntimeModelNodeSlotState = "preview_only";
     diagnostics.sceneRuntimeModelNodeSlotCount = 0;
     diagnostics.sceneRuntimeModelNodeReadySlotCount = 0;

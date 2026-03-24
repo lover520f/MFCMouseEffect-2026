@@ -164,6 +164,14 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
         "body:stub|head:stub|appendage:stub|grounding:stub|adapter:runtime_only"};
     std::string sceneRuntimeModelAssetNodeBindValueBrief{
         "body:0.00|head:0.00|appendage:0.00|grounding:0.00|adapter:0.00"};
+    std::string sceneRuntimeModelAssetNodeResolveState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetNodeResolveEntryCount{0};
+    uint32_t sceneRuntimeModelAssetNodeResolveResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetNodeResolveBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetNodeResolveResolveBrief{
+        "body:stub|head:stub|appendage:stub|grounding:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetNodeResolveValueBrief{
+        "body:0.00|head:0.00|appendage:0.00|grounding:0.00|adapter:0.00"};
     std::string sceneRuntimeModelNodeGraphState{"preview_only"};
     uint32_t sceneRuntimeModelNodeGraphNodeCount{0};
     uint32_t sceneRuntimeModelNodeGraphBoundNodeCount{0};
@@ -174,6 +182,14 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
     std::string sceneRuntimeModelNodeBindingBrief{"preview_only/0/0"};
     std::string sceneRuntimeModelNodeBindingWeightBrief{
         "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
+    std::string sceneRuntimeModelAssetNodeDriveState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetNodeDriveEntryCount{0};
+    uint32_t sceneRuntimeModelAssetNodeDriveResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetNodeDriveBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetNodeDriveDriveBrief{
+        "body:stub|head:stub|appendage:stub|overlay:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetNodeDriveValueBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|adapter:0.00"};
     std::string sceneRuntimeModelNodeSlotState{"preview_only"};
     uint32_t sceneRuntimeModelNodeSlotCount{0};
     uint32_t sceneRuntimeModelNodeReadySlotCount{0};
