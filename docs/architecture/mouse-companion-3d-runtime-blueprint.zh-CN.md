@@ -84,7 +84,7 @@
   - 解析 `pet-main.glb` 的 header + JSON chunk
   - 产出 `node index / parent / children / path`
   - 首轮节点匹配从 `assetNodeMatchGraphProfile` 开始优先消费这组真实节点摘要，并通过独立的 naming/matcher 小组件做 token 标准化和候选命中；命中结果继续补充 `parent/depth/semanticTag`，供 `world-space / joint-hint / frame / adornment / overlay` 这条显示链直接消费，失败时仍回退 preview
-  - Windows real renderer 现在还会把这组真实节点树绘制成一层 `scene-graph overlay`，并通过逻辑 anchor 到命中节点的虚线连接，把 preview contract 和真实 `glb` 节点拓扑先桥接到同一张画布上
+  - Windows real renderer 现在还会把这组真实节点树绘制成一层 `scene-graph overlay`，并通过逻辑 anchor 到命中节点的虚线连接，把 preview contract 和真实 `glb` 节点拓扑先桥接到同一张画布上；`assetNodeWorldSpaceProfile` 也开始把命中节点中心当成真实 world-space 输入，后面的 pose/joint-hint/显示链不再只吃 preview anchor
 - `AppController::Start()` 现在会尝试加载默认模型路径：
   - `Assets/Pet3D/source/pet-main.glb`
   - `MFCMouseEffect/Assets/Pet3D/source/pet-main.glb`

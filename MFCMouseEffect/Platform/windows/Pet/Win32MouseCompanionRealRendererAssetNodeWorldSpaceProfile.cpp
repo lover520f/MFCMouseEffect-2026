@@ -42,22 +42,57 @@ float ResolveWorldSpaceWeight(const std::string& logicalNode, float resolvedWeig
     return resolvedWeight;
 }
 
+struct ResolvedGraphNodeCenter final {
+    Gdiplus::PointF center{};
+    std::string path{};
+    bool found{false};
+};
+
+ResolvedGraphNodeCenter ResolveGraphNodeCenter(
+    const Win32MouseCompanionRealRendererScene& scene,
+    uint32_t matchedNodeIndex) {
+    for (const auto& node : scene.modelSceneGraphNodes) {
+        if (node.nodeIndex != matchedNodeIndex) {
+            continue;
+        }
+        return ResolvedGraphNodeCenter{
+            Gdiplus::PointF(
+                node.bounds.X + node.bounds.Width * 0.5f,
+                node.bounds.Y + node.bounds.Height * 0.5f),
+            node.nodePath,
+            true,
+        };
+    }
+    return ResolvedGraphNodeCenter{};
+}
+
 Win32MouseCompanionRealRendererAssetNodeWorldSpaceEntry BuildWorldSpaceEntry(
     const char* logicalNode,
     const Gdiplus::PointF& point,
     float scale,
     const Win32MouseCompanionRealRendererAssetNodeTargetResolverEntry& targetResolverEntry,
-    const Win32MouseCompanionRealRendererAssetNodeMatchCatalogEntry& matchCatalogEntry) {
+    const Win32MouseCompanionRealRendererAssetNodeMatchCatalogEntry& matchCatalogEntry,
+    const Win32MouseCompanionRealRendererAssetNodeMatchGraphEntry& matchGraphEntry,
+    const Win32MouseCompanionRealRendererScene& scene) {
     Win32MouseCompanionRealRendererAssetNodeWorldSpaceEntry entry{};
     entry.logicalNode = logicalNode ? logicalNode : "";
     entry.assetNodePath = targetResolverEntry.assetNodePath;
     entry.resolvedNodeKey = matchCatalogEntry.canonicalNodeKey;
     entry.resolvedNodeLabel = matchCatalogEntry.canonicalNodeLabel;
     entry.matchConfidence = matchCatalogEntry.matchConfidence;
-    entry.worldX = point.X;
-    entry.worldY = point.Y;
-    entry.worldScale = scale;
+    const auto graphNodeCenter = ResolveGraphNodeCenter(scene, matchGraphEntry.matchedNodeIndex);
+    entry.worldX = graphNodeCenter.found ? graphNodeCenter.center.X : point.X;
+    entry.worldY = graphNodeCenter.found ? graphNodeCenter.center.Y : point.Y;
+    entry.worldScale = graphNodeCenter.found
+        ? scale * (1.0f + std::min(matchGraphEntry.graphConfidence, 1.0f) * 0.04f)
+        : scale;
     entry.worldWeight = ResolveWorldSpaceWeight(entry.logicalNode, targetResolverEntry.resolvedWeight);
+    if (graphNodeCenter.found) {
+        entry.worldWeight = std::min(
+            1.25f,
+            entry.worldWeight * (1.0f + matchGraphEntry.graphConfidence * 0.10f));
+        entry.resolvedNodePath = graphNodeCenter.path;
+    }
     entry.resolved = targetResolverEntry.resolved && entry.worldWeight > 0.0f;
     return entry;
 }
@@ -146,31 +181,41 @@ BuildWin32MouseCompanionRealRendererAssetNodeWorldSpaceProfile(
         scene.bodyAnchor,
         scene.bodyAnchorScale,
         targetResolver.bodyEntry,
-        matchCatalog.bodyEntry);
+        matchCatalog.bodyEntry,
+        matchGraph.bodyEntry,
+        scene);
     profile.headEntry = BuildWorldSpaceEntry(
         "head",
         scene.headAnchor,
         scene.headAnchorScale,
         targetResolver.headEntry,
-        matchCatalog.headEntry);
+        matchCatalog.headEntry,
+        matchGraph.headEntry,
+        scene);
     profile.appendageEntry = BuildWorldSpaceEntry(
         "appendage",
         scene.appendageAnchor,
         scene.appendageAnchorScale,
         targetResolver.appendageEntry,
-        matchCatalog.appendageEntry);
+        matchCatalog.appendageEntry,
+        matchGraph.appendageEntry,
+        scene);
     profile.overlayEntry = BuildWorldSpaceEntry(
         "overlay",
         scene.overlayAnchor,
         scene.overlayAnchorScale,
         targetResolver.overlayEntry,
-        matchCatalog.overlayEntry);
+        matchCatalog.overlayEntry,
+        matchGraph.overlayEntry,
+        scene);
     profile.groundingEntry = BuildWorldSpaceEntry(
         "grounding",
         scene.groundingAnchor,
         scene.groundingAnchorScale,
         targetResolver.groundingEntry,
-        matchCatalog.groundingEntry);
+        matchCatalog.groundingEntry,
+        matchGraph.groundingEntry,
+        scene);
 
     profile.bodyEntry.resolvedNodeKey = matchGraph.bodyEntry.graphNodeKey;
     profile.headEntry.resolvedNodeKey = matchGraph.headEntry.graphNodeKey;
