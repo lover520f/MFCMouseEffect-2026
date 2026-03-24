@@ -8,7 +8,6 @@
 - Primary host: macOS.
 - Delivery order: macOS first, Windows regression-free, Linux compile/contract-level.
 - macOS stack rule: new capability modules are Swift-first; avoid expanding `.mm` for large new modules.
-- Windows VS2026 direct project build should stay healthy; any remaining `MFCMouseEffect.slnx` `ValidateSolutionConfiguration` issue is solution-metadata work, not a C++ compile regression.
 - Cross-machine workflow: macOS is the development source, Windows is the synced validation workspace via `Syncthing`, and Windows handoff should default to `F:\language\cpp\code\MFCMouseEffect`.
 
 ## Active Product Goals
@@ -143,6 +142,7 @@
 - Backend lifecycle seam treats `Start() / IsReady() / LastErrorReason()` as first-class fallback signals.
 - Placeholder backend remains the always-ready reference implementation.
 - `real` backend now defaults to enabled when available; `MFX_WIN32_MOUSE_COMPANION_REAL_RENDERER_ENABLE=0|false|off|no` is the explicit opt-out gate, and Windows visual host now auto-promotes `auto` backend preference to `real` after `LoadModel()` succeeds unless the user explicitly pinned another backend.
+- Default Windows renderer backend preference now resolves directly to `real` instead of `auto`, and once `modelMeshVisible` is true the real-renderer painter short-circuits into a mesh-first path so the old full 2D preview stack no longer visually masks the first GLB triangle layer.
 - Real-preview dynamic readability is already stronger:
   - `dreamy` biases `follow` toward lighter lift and softer grounding
   - `agile` biases `drag/follow` toward sharper lean and reach

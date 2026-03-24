@@ -65,7 +65,7 @@ Win32MouseCompanionRendererBackendPreferenceResolution ResolveDefaultRendererBac
     Win32MouseCompanionRendererBackendPreferenceResolution resolution{};
     resolution.matched = true;
     resolution.preference.source = "default";
-    resolution.preference.backendName = kAutoBackend;
+    resolution.preference.backendName = "real";
     return resolution;
 }
 
@@ -106,7 +106,7 @@ Win32MouseCompanionRendererBackendPreference ResolveWin32MouseCompanionRendererB
 
     Win32MouseCompanionRendererBackendPreference preference{};
     preference.source = "default";
-    preference.backendName = kAutoBackend;
+    preference.backendName = "real";
     return preference;
 }
 

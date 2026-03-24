@@ -312,6 +312,32 @@ void DrawModelMeshLayer(
     }
 }
 
+void DrawMeshFirstScene(
+    Gdiplus::Graphics* graphics,
+    const Win32MouseCompanionRealRendererScene& scene) {
+    if (!graphics) {
+        return;
+    }
+
+    const BYTE glowAlpha = static_cast<BYTE>(std::clamp(scene.glowAlpha * 0.72f, 0.0f, 255.0f));
+    Gdiplus::SolidBrush glowBrush(Gdiplus::Color(
+        glowAlpha,
+        scene.glowColor.GetR(),
+        scene.glowColor.GetG(),
+        scene.glowColor.GetB()));
+    Gdiplus::SolidBrush shadowBrush(WithAlpha(scene.shadowFill, scene.shadowFill.GetA() * scene.shadowAlphaScale));
+    graphics->FillEllipse(&glowBrush, scene.glowRect);
+    graphics->FillEllipse(&shadowBrush, scene.shadowRect);
+    FillRoundedRect(
+        graphics,
+        scene.pedestalRect,
+        WithAlpha(scene.pedestalFill, scene.pedestalFill.GetA() * scene.pedestalAlphaScale),
+        WithAlpha(scene.pedestalFill, scene.pedestalFill.GetA() * scene.pedestalAlphaScale),
+        0.0f);
+    DrawModelMeshLayer(graphics, scene);
+    DrawActionOverlay(graphics, scene.actionOverlay, scene.bodyStroke);
+}
+
 Gdiplus::Color ResolveImprintColor(
     const Win32MouseCompanionRealRendererScene& scene,
     const std::string& logicalNode) {
@@ -936,6 +962,11 @@ void Win32MouseCompanionRealRendererPainter::Paint(
     int width,
     int height) const {
     if (!graphics || width <= 0 || height <= 0) {
+        return;
+    }
+
+    if (scene.modelMeshVisible && !scene.modelMeshTriangles.empty()) {
+        DrawMeshFirstScene(graphics, scene);
         return;
     }
 

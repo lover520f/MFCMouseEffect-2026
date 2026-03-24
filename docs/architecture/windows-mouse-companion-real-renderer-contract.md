@@ -31,8 +31,10 @@ Expected long-term stack:
 
 ## Current Rollout Rule
 - Windows real renderer is now default-on when its availability probes pass.
+- Default backend preference resolution now also points at `real` instead of `auto`, so a normal Windows run no longer depends on priority-based auto fallback to escape placeholder.
 - `MFX_WIN32_MOUSE_COMPANION_REAL_RENDERER_ENABLE=0|false|off|no` is the explicit opt-out switch for forcing fallback/placeholder validation.
 - When backend preference is still `auto`, a successful Windows `LoadModel()` call should now reselect the backend toward `real`; only explicit pinned backend preferences are allowed to keep placeholder active after a real model asset is present.
+- Once the first GLB triangle layer is available, the painter now switches to a mesh-first scene path and skips the old full preview-body/head/tail draw stack, so legacy 2D fallback geometry cannot continue masking the first visible real mesh.
 
 Conceptually:
 - `asset coordinator -> presenter/runtime -> renderer backend`
