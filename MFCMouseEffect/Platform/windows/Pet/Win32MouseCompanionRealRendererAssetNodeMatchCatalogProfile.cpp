@@ -2,6 +2,7 @@
 
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeMatchCatalogProfile.h"
 
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeMatchCandidateProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererSceneRuntime.h"
 
 #include <cstdio>
@@ -25,58 +26,66 @@ std::string ResolveCatalogState(
 }
 
 std::string ResolveMatchSource(
-    const Win32MouseCompanionRealRendererAssetNodeTargetResolverEntry& entry) {
-    if (!entry.selectorKey.empty() && !entry.candidateNodeName.empty() &&
-        entry.candidateNodeName != "unknown") {
-        return "selector_candidate";
+    const Win32MouseCompanionRealRendererAssetNodeTargetResolverEntry& entry,
+    const Win32MouseCompanionRealRendererAssetNodeMatchCandidateEntry& candidateEntry) {
+    if (!entry.selectorKey.empty() && !candidateEntry.primaryCandidateName.empty()) {
+        return "candidate_catalog";
     }
     if (!entry.selectorKey.empty()) {
         return "selector_only";
     }
-    if (!entry.candidateNodeName.empty() && entry.candidateNodeName != "unknown") {
+    if (!candidateEntry.primaryCandidateName.empty()) {
         return "candidate_only";
     }
     return "preview_stub";
 }
 
 std::string ResolveCanonicalNodeKey(
-    const Win32MouseCompanionRealRendererAssetNodeTargetResolverEntry& entry) {
+    const Win32MouseCompanionRealRendererAssetNodeTargetResolverEntry& entry,
+    const Win32MouseCompanionRealRendererAssetNodeMatchCandidateEntry& candidateEntry) {
     if (!entry.resolvedNodeKey.empty()) {
         return entry.resolvedNodeKey;
+    }
+    if (!candidateEntry.candidatePath.empty()) {
+        return entry.logicalNode + "|" + candidateEntry.candidatePath;
     }
     if (!entry.selectorKey.empty()) {
         return entry.selectorKey;
     }
-    if (!entry.candidateNodeName.empty()) {
-        return entry.logicalNode + "|candidate:" + entry.candidateNodeName;
+    if (!candidateEntry.primaryCandidateName.empty()) {
+        return entry.logicalNode + "|candidate:" + candidateEntry.primaryCandidateName;
     }
     return entry.logicalNode + "|preview";
 }
 
 std::string ResolveCanonicalNodeLabel(
     const Win32MouseCompanionRealRendererAssetNodeTargetResolverEntry& entry,
+    const Win32MouseCompanionRealRendererAssetNodeMatchCandidateEntry& candidateEntry,
     const std::string& matchSource) {
     if (!entry.resolvedNodeLabel.empty()) {
         return entry.resolvedNodeLabel + "@" + matchSource;
     }
-    if (!entry.candidateNodeName.empty()) {
-        return entry.logicalNode + "@" + entry.candidateNodeName + "@" + matchSource;
+    if (!candidateEntry.primaryCandidateName.empty()) {
+        return entry.logicalNode + "@" + candidateEntry.primaryCandidateName + "@" + matchSource;
     }
     return entry.logicalNode + "@preview";
 }
 
 Win32MouseCompanionRealRendererAssetNodeMatchCatalogEntry BuildCatalogEntry(
-    const Win32MouseCompanionRealRendererAssetNodeTargetResolverEntry& entry) {
+    const Win32MouseCompanionRealRendererAssetNodeTargetResolverEntry& entry,
+    const Win32MouseCompanionRealRendererAssetNodeMatchCandidateEntry& candidateEntry) {
     Win32MouseCompanionRealRendererAssetNodeMatchCatalogEntry catalogEntry{};
     catalogEntry.logicalNode = entry.logicalNode;
     catalogEntry.selectorKey = entry.selectorKey;
-    catalogEntry.candidateNodeName = entry.candidateNodeName;
+    catalogEntry.candidateNodeName = candidateEntry.primaryCandidateName;
+    catalogEntry.candidatePath = candidateEntry.candidatePath;
+    catalogEntry.candidateTokenSeed = candidateEntry.candidateTokenSeed;
     catalogEntry.resolvedNodeKey = entry.resolvedNodeKey;
     catalogEntry.resolvedNodeLabel = entry.resolvedNodeLabel;
-    catalogEntry.matchSource = ResolveMatchSource(entry);
-    catalogEntry.canonicalNodeKey = ResolveCanonicalNodeKey(entry);
+    catalogEntry.matchSource = ResolveMatchSource(entry, candidateEntry);
+    catalogEntry.canonicalNodeKey = ResolveCanonicalNodeKey(entry, candidateEntry);
     catalogEntry.canonicalNodeLabel =
-        ResolveCanonicalNodeLabel(entry, catalogEntry.matchSource);
+        ResolveCanonicalNodeLabel(entry, candidateEntry, catalogEntry.matchSource);
     catalogEntry.matchConfidence = entry.matchConfidence;
     catalogEntry.resolved = entry.resolved;
     return catalogEntry;
@@ -148,11 +157,15 @@ BuildWin32MouseCompanionRealRendererAssetNodeMatchCatalogProfile(
     profile.entryCount = 5;
 
     const auto& resolverProfile = runtime.assetNodeTargetResolverProfile;
-    profile.bodyEntry = BuildCatalogEntry(resolverProfile.bodyEntry);
-    profile.headEntry = BuildCatalogEntry(resolverProfile.headEntry);
-    profile.appendageEntry = BuildCatalogEntry(resolverProfile.appendageEntry);
-    profile.overlayEntry = BuildCatalogEntry(resolverProfile.overlayEntry);
-    profile.groundingEntry = BuildCatalogEntry(resolverProfile.groundingEntry);
+    const auto& candidateProfile = runtime.assetNodeMatchCandidateProfile;
+    profile.bodyEntry = BuildCatalogEntry(resolverProfile.bodyEntry, candidateProfile.bodyEntry);
+    profile.headEntry = BuildCatalogEntry(resolverProfile.headEntry, candidateProfile.headEntry);
+    profile.appendageEntry =
+        BuildCatalogEntry(resolverProfile.appendageEntry, candidateProfile.appendageEntry);
+    profile.overlayEntry =
+        BuildCatalogEntry(resolverProfile.overlayEntry, candidateProfile.overlayEntry);
+    profile.groundingEntry =
+        BuildCatalogEntry(resolverProfile.groundingEntry, candidateProfile.groundingEntry);
 
     profile.resolvedEntryCount = CountResolvedEntries(profile);
     profile.brief =

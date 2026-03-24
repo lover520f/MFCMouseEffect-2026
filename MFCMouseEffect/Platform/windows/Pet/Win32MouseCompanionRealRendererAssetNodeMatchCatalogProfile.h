@@ -11,6 +11,8 @@ struct Win32MouseCompanionRealRendererAssetNodeMatchCatalogEntry final {
     std::string logicalNode;
     std::string selectorKey;
     std::string candidateNodeName;
+    std::string candidatePath;
+    std::string candidateTokenSeed;
     std::string resolvedNodeKey;
     std::string resolvedNodeLabel;
     std::string canonicalNodeKey;

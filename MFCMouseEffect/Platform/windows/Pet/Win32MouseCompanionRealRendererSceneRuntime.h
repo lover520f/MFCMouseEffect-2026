@@ -10,6 +10,7 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelNodeBindingProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeBindingProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeAnchorProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeMatchCandidateProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeParentSpaceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeMatchCatalogProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererAssetNodeResolverProfile.h"
@@ -196,6 +197,8 @@ struct Win32MouseCompanionRealRendererSceneRuntime final {
     Win32MouseCompanionRealRendererAssetNodeTargetProfile assetNodeTargetProfile{};
     Win32MouseCompanionRealRendererAssetNodeTargetResolverProfile
         assetNodeTargetResolverProfile{};
+    Win32MouseCompanionRealRendererAssetNodeMatchCandidateProfile
+        assetNodeMatchCandidateProfile{};
     Win32MouseCompanionRealRendererAssetNodeMatchCatalogProfile
         assetNodeMatchCatalogProfile{};
     Win32MouseCompanionRealRendererAssetNodeAnchorProfile assetNodeAnchorProfile{};
