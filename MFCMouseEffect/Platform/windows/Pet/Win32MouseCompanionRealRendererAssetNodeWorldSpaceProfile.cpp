@@ -140,7 +140,7 @@ BuildWin32MouseCompanionRealRendererAssetNodeWorldSpaceProfile(
 
     const auto& targetResolver = runtime.assetNodeTargetResolverProfile;
     const auto& matchCatalog = runtime.assetNodeMatchCatalogProfile;
-    const auto& matchQuery = runtime.assetNodeMatchQueryProfile;
+    const auto& matchGraph = runtime.assetNodeMatchGraphProfile;
     profile.bodyEntry = BuildWorldSpaceEntry(
         "body",
         scene.bodyAnchor,
@@ -172,23 +172,23 @@ BuildWin32MouseCompanionRealRendererAssetNodeWorldSpaceProfile(
         targetResolver.groundingEntry,
         matchCatalog.groundingEntry);
 
-    profile.bodyEntry.resolvedNodeKey = matchQuery.bodyEntry.queryNodeKey;
-    profile.headEntry.resolvedNodeKey = matchQuery.headEntry.queryNodeKey;
-    profile.appendageEntry.resolvedNodeKey = matchQuery.appendageEntry.queryNodeKey;
-    profile.overlayEntry.resolvedNodeKey = matchQuery.overlayEntry.queryNodeKey;
-    profile.groundingEntry.resolvedNodeKey = matchQuery.groundingEntry.queryNodeKey;
+    profile.bodyEntry.resolvedNodeKey = matchGraph.bodyEntry.graphNodeKey;
+    profile.headEntry.resolvedNodeKey = matchGraph.headEntry.graphNodeKey;
+    profile.appendageEntry.resolvedNodeKey = matchGraph.appendageEntry.graphNodeKey;
+    profile.overlayEntry.resolvedNodeKey = matchGraph.overlayEntry.graphNodeKey;
+    profile.groundingEntry.resolvedNodeKey = matchGraph.groundingEntry.graphNodeKey;
 
-    profile.bodyEntry.resolvedNodeLabel = matchQuery.bodyEntry.queryNodeLabel;
-    profile.headEntry.resolvedNodeLabel = matchQuery.headEntry.queryNodeLabel;
-    profile.appendageEntry.resolvedNodeLabel = matchQuery.appendageEntry.queryNodeLabel;
-    profile.overlayEntry.resolvedNodeLabel = matchQuery.overlayEntry.queryNodeLabel;
-    profile.groundingEntry.resolvedNodeLabel = matchQuery.groundingEntry.queryNodeLabel;
+    profile.bodyEntry.resolvedNodeLabel = matchGraph.bodyEntry.graphNodeLabel;
+    profile.headEntry.resolvedNodeLabel = matchGraph.headEntry.graphNodeLabel;
+    profile.appendageEntry.resolvedNodeLabel = matchGraph.appendageEntry.graphNodeLabel;
+    profile.overlayEntry.resolvedNodeLabel = matchGraph.overlayEntry.graphNodeLabel;
+    profile.groundingEntry.resolvedNodeLabel = matchGraph.groundingEntry.graphNodeLabel;
 
-    profile.bodyEntry.matchConfidence = matchQuery.bodyEntry.queryConfidence;
-    profile.headEntry.matchConfidence = matchQuery.headEntry.queryConfidence;
-    profile.appendageEntry.matchConfidence = matchQuery.appendageEntry.queryConfidence;
-    profile.overlayEntry.matchConfidence = matchQuery.overlayEntry.queryConfidence;
-    profile.groundingEntry.matchConfidence = matchQuery.groundingEntry.queryConfidence;
+    profile.bodyEntry.matchConfidence = matchGraph.bodyEntry.graphConfidence;
+    profile.headEntry.matchConfidence = matchGraph.headEntry.graphConfidence;
+    profile.appendageEntry.matchConfidence = matchGraph.appendageEntry.graphConfidence;
+    profile.overlayEntry.matchConfidence = matchGraph.overlayEntry.graphConfidence;
+    profile.groundingEntry.matchConfidence = matchGraph.groundingEntry.graphConfidence;
 
     profile.resolvedEntryCount = CountResolvedEntries(profile);
     profile.brief = BuildBrief(

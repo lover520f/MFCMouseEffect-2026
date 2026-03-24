@@ -186,7 +186,7 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
     const auto& nodeRegistry = runtime.modelNodeRegistryProfile;
     const auto& assetBinding = runtime.assetNodeBindingProfile;
     const auto& assetTargetResolver = runtime.assetNodeTargetResolverProfile;
-    const auto& matchQuery = runtime.assetNodeMatchQueryProfile;
+    const auto& matchGraph = runtime.assetNodeMatchGraphProfile;
     const float bodyRegistryWeight =
         nodeRegistry.bodyEntry.resolved ? nodeRegistry.bodyEntry.registryWeight : 0.0f;
     const float headRegistryWeight =
@@ -211,9 +211,9 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
                     finalTargetResolver.bodyEntry.selectorKey,
                     finalTargetResolver.bodyEntry.candidateNodeName) +
                 ResolvePlanSignal(
-                    matchQuery.bodyEntry.queryLocator,
-                    matchQuery.bodyEntry.queryNodeLabel,
-                    matchQuery.bodyEntry.queryConfidence));
+                    matchGraph.bodyEntry.graphLocator,
+                    matchGraph.bodyEntry.graphNodeLabel,
+                    matchGraph.bodyEntry.graphConfidence));
     const float headIdentitySignal =
         ResolveNodeSourceConfidence(finalTargetResolver.headEntry.sourceTag) *
         std::min(
@@ -225,9 +225,9 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
                     finalTargetResolver.headEntry.selectorKey,
                     finalTargetResolver.headEntry.candidateNodeName) +
                 ResolvePlanSignal(
-                    matchQuery.headEntry.queryLocator,
-                    matchQuery.headEntry.queryNodeLabel,
-                    matchQuery.headEntry.queryConfidence));
+                    matchGraph.headEntry.graphLocator,
+                    matchGraph.headEntry.graphNodeLabel,
+                    matchGraph.headEntry.graphConfidence));
     const float groundingIdentitySignal =
         ResolveNodeSourceConfidence(finalTargetResolver.groundingEntry.sourceTag) *
         std::min(
@@ -239,9 +239,9 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
                     finalTargetResolver.groundingEntry.selectorKey,
                     finalTargetResolver.groundingEntry.candidateNodeName) +
                 ResolvePlanSignal(
-                    matchQuery.groundingEntry.queryLocator,
-                    matchQuery.groundingEntry.queryNodeLabel,
-                    matchQuery.groundingEntry.queryConfidence));
+                    matchGraph.groundingEntry.graphLocator,
+                    matchGraph.groundingEntry.graphNodeLabel,
+                    matchGraph.groundingEntry.graphConfidence));
     const float poseAnchorX = nodeBinding.bodyEntry.worldOffsetX * metrics.bodyWidth;
     const float poseAnchorY = nodeBinding.bodyEntry.worldOffsetY * metrics.bodyHeight;
     const float poseHeadX = nodeBinding.headEntry.worldOffsetX * metrics.headWidth;
