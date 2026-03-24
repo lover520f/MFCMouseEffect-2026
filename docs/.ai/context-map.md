@@ -1,6 +1,6 @@
 # AI Context Map
 
-Generated: 2026-03-24T12:18:37.740Z
+Generated: 2026-03-24T12:21:24.692Z
 
 ## Goal
 Load minimal docs by task keyword while keeping AGENTS + current context as mandatory baseline.
@@ -55,7 +55,7 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 ## Largest Docs (Trim Candidates)
 - `docs/architecture/windows-mouse-companion-real-renderer-contract.md` -> ~17073 tok
 - `docs/ops/windows-mouse-companion-manual-checklist.md` -> ~16055 tok
-- `docs/agent-context/current.md` -> ~7483 tok
+- `docs/agent-context/current.md` -> ~7487 tok
 - `docs/architecture/windows-mouse-companion-phase1-plan.md` -> ~7479 tok
 - `docs/ops/manual-commands.md` -> ~7303 tok
 - `docs/architecture/custom-effects-wasm-route.zh-CN.md` -> ~6872 tok

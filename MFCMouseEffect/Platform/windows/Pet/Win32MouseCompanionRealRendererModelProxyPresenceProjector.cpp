@@ -41,6 +41,9 @@ void ApplyWin32MouseCompanionRealRendererModelProxyPresenceProjector(
     scene.previewTailAlphaScale = 1.0f;
     scene.previewHandAlphaScale = 1.0f;
     scene.previewLegAlphaScale = 1.0f;
+    scene.previewTailStrokeScale = 1.0f;
+    scene.previewHandStrokeScale = 1.0f;
+    scene.previewLegStrokeScale = 1.0f;
     scene.previewDetailAlphaScale = 1.0f;
     scene.previewAdornmentAlphaScale = 1.0f;
 

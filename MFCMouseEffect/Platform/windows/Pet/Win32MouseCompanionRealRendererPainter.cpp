@@ -950,7 +950,7 @@ void Win32MouseCompanionRealRendererPainter::Paint(
         scene.tailRect,
         WithScaledAlpha(scene.tailFill, scene.tailFill.GetA(), scene.previewTailAlphaScale),
         WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), scene.previewTailAlphaScale),
-        scene.tailStrokeWidth);
+        scene.tailStrokeWidth * scene.previewTailStrokeScale);
     FillEllipse(
         graphics,
         scene.tailRootCuffRect,
@@ -980,7 +980,7 @@ void Win32MouseCompanionRealRendererPainter::Paint(
         scene.tailTipRect,
         WithScaledAlpha(scene.tailTipFill, scene.tailTipFill.GetA(), scene.previewTailAlphaScale),
         WithScaledAlpha(scene.tailStroke, scene.tailStroke.GetA(), scene.previewTailAlphaScale),
-        std::max(0.9f, scene.tailStrokeWidth - 0.2f));
+        std::max(0.72f, (scene.tailStrokeWidth - 0.2f) * scene.previewTailStrokeScale));
     FillEllipse(
         graphics,
         scene.leftEarRootCuffRect,
@@ -1055,13 +1055,13 @@ void Win32MouseCompanionRealRendererPainter::Paint(
         scene.leftLegRect,
         WithScaledAlpha(scene.bodyFillRear, scene.bodyFillRear.GetA(), scene.previewLegAlphaScale),
         WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), scene.previewLegAlphaScale),
-        scene.limbStrokeWidth);
+        scene.limbStrokeWidth * scene.previewLegStrokeScale);
     FillRoundedRect(
         graphics,
         scene.rightLegRect,
         WithScaledAlpha(scene.bodyFillRear, scene.bodyFillRear.GetA(), scene.previewLegAlphaScale),
         WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), scene.previewLegAlphaScale),
-        scene.limbStrokeWidth);
+        scene.limbStrokeWidth * scene.previewLegStrokeScale);
     FillEllipse(
         graphics,
         scene.leftLegSilhouetteBridgeRect,
@@ -1244,13 +1244,13 @@ void Win32MouseCompanionRealRendererPainter::Paint(
         scene.leftHandRect,
         WithScaledAlpha(scene.headFillRear, scene.headFillRear.GetA(), scene.previewHandAlphaScale),
         WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), scene.previewHandAlphaScale),
-        scene.limbStrokeWidth);
+        scene.limbStrokeWidth * scene.previewHandStrokeScale);
     FillRoundedRect(
         graphics,
         scene.rightHandRect,
         WithScaledAlpha(scene.headFillRear, scene.headFillRear.GetA(), scene.previewHandAlphaScale),
         WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), scene.previewHandAlphaScale),
-        scene.limbStrokeWidth);
+        scene.limbStrokeWidth * scene.previewHandStrokeScale);
     FillEllipse(
         graphics,
         scene.leftHandSilhouetteBridgeRect,
