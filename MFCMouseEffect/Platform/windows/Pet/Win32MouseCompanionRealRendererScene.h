@@ -66,6 +66,35 @@ struct Win32MouseCompanionRealRendererModelProxyActionLayer final {
     float followShellBaseAlpha{138.0f};
 };
 
+struct Win32MouseCompanionRealRendererModelProxyAdornmentLayer final {
+    bool visible{false};
+    std::array<Gdiplus::RectF, 3> laneBadgeRects{};
+    std::array<bool, 3> laneReady{};
+    float laneAlphaScale{1.0f};
+    bool poseBadgeVisible{false};
+    Gdiplus::RectF poseBadgeRect{};
+    float poseBadgeAlphaScale{1.0f};
+    bool accessoryVisible{false};
+    Win32MouseCompanionRealRendererAccessoryShape accessoryShape{
+        Win32MouseCompanionRealRendererAccessoryShape::None};
+    Gdiplus::RectF accessoryBounds{};
+    std::array<Gdiplus::PointF, 5> accessoryStar{};
+    std::array<Gdiplus::PointF, 6> accessoryMoon{};
+    Gdiplus::RectF accessoryMoonInsetRect{};
+    std::array<Gdiplus::PointF, 4> accessoryLeaf{};
+    Gdiplus::PointF accessoryLeafVeinStart{};
+    Gdiplus::PointF accessoryLeafVeinEnd{};
+    std::array<Gdiplus::PointF, 4> accessoryRibbonLeft{};
+    std::array<Gdiplus::PointF, 4> accessoryRibbonRight{};
+    Gdiplus::RectF accessoryRibbonCenter{};
+    Gdiplus::PointF accessoryRibbonLeftFoldStart{};
+    Gdiplus::PointF accessoryRibbonLeftFoldEnd{};
+    Gdiplus::PointF accessoryRibbonRightFoldStart{};
+    Gdiplus::PointF accessoryRibbonRightFoldEnd{};
+    float accessoryAlphaScale{1.0f};
+    float accessoryStrokeScale{1.0f};
+};
+
 struct Win32MouseCompanionRealRendererSceneGraphNode final {
     uint32_t nodeIndex{0};
     std::string nodeName;
@@ -310,6 +339,7 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::PointF accessoryRibbonRightFoldStart{};
     Gdiplus::PointF accessoryRibbonRightFoldEnd{};
     Win32MouseCompanionRealRendererActionOverlay actionOverlay{};
+    Win32MouseCompanionRealRendererModelProxyAdornmentLayer modelProxyAdornmentLayer{};
     Win32MouseCompanionRealRendererModelProxyActionLayer modelProxyActionLayer{};
     bool modelSceneGraphVisible{false};
     Gdiplus::RectF modelSceneGraphBounds{};

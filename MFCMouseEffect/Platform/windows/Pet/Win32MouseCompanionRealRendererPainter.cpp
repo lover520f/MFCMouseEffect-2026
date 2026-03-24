@@ -463,6 +463,99 @@ void DrawModelProxyActionLayer(
     }
 }
 
+void DrawModelProxyAdornmentLayer(
+    Gdiplus::Graphics* graphics,
+    const Win32MouseCompanionRealRendererScene& scene) {
+    if (!graphics || !scene.modelProxyAdornmentLayer.visible) {
+        return;
+    }
+
+    const auto& layer = scene.modelProxyAdornmentLayer;
+    for (size_t i = 0; i < layer.laneBadgeRects.size(); ++i) {
+        const auto fill = layer.laneReady[i] ? scene.badgeReadyFill : scene.badgePendingFill;
+        FillRoundedRect(
+            graphics,
+            layer.laneBadgeRects[i],
+            WithScaledAlpha(fill, fill.GetA(), layer.laneAlphaScale),
+            WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), layer.laneAlphaScale),
+            0.9f);
+    }
+
+    if (layer.poseBadgeVisible) {
+        FillEllipse(
+            graphics,
+            layer.poseBadgeRect,
+            WithScaledAlpha(scene.accentFill, scene.poseBadgeAlpha, layer.poseBadgeAlphaScale),
+            WithScaledAlpha(scene.headFill, scene.poseBadgeAlpha * 0.85f, layer.poseBadgeAlphaScale),
+            1.0f);
+    }
+
+    if (!layer.accessoryVisible) {
+        return;
+    }
+
+    const auto accessoryFill = WithScaledAlpha(
+        scene.accessoryFill,
+        scene.accessoryFill.GetA() * layer.accessoryAlphaScale,
+        1.0f);
+    const auto accessoryStroke = WithScaledAlpha(
+        scene.accessoryStroke,
+        scene.accessoryStroke.GetA() * std::min(1.0f, layer.accessoryAlphaScale * 0.96f),
+        1.0f);
+    const float strokeWidth = scene.accessoryStrokeWidth * layer.accessoryStrokeScale;
+
+    switch (layer.accessoryShape) {
+    case Win32MouseCompanionRealRendererAccessoryShape::Moon:
+        DrawPolygonAdornment(graphics, layer.accessoryMoon, accessoryFill, accessoryStroke, strokeWidth);
+        FillEllipse(
+            graphics,
+            layer.accessoryMoonInsetRect,
+            WithAlpha(accessoryStroke, 54.0f * layer.accessoryAlphaScale),
+            Gdiplus::Color(0, 0, 0, 0),
+            0.0f);
+        break;
+    case Win32MouseCompanionRealRendererAccessoryShape::Leaf:
+        DrawPolygonAdornment(graphics, layer.accessoryLeaf, accessoryFill, accessoryStroke, strokeWidth);
+        DrawAdornmentLine(
+            graphics,
+            layer.accessoryLeafVeinStart,
+            layer.accessoryLeafVeinEnd,
+            accessoryStroke,
+            164.0f * layer.accessoryAlphaScale,
+            strokeWidth);
+        break;
+    case Win32MouseCompanionRealRendererAccessoryShape::RibbonBow:
+        DrawRibbonAdornment(
+            graphics,
+            layer.accessoryRibbonLeft,
+            layer.accessoryRibbonRight,
+            layer.accessoryRibbonCenter,
+            accessoryFill,
+            accessoryStroke);
+        DrawAdornmentLine(
+            graphics,
+            layer.accessoryRibbonLeftFoldStart,
+            layer.accessoryRibbonLeftFoldEnd,
+            accessoryStroke,
+            162.0f * layer.accessoryAlphaScale,
+            strokeWidth);
+        DrawAdornmentLine(
+            graphics,
+            layer.accessoryRibbonRightFoldStart,
+            layer.accessoryRibbonRightFoldEnd,
+            accessoryStroke,
+            162.0f * layer.accessoryAlphaScale,
+            strokeWidth);
+        break;
+    case Win32MouseCompanionRealRendererAccessoryShape::Star:
+        DrawStar(graphics, layer.accessoryStar, accessoryFill, accessoryStroke);
+        break;
+    case Win32MouseCompanionRealRendererAccessoryShape::None:
+    default:
+        break;
+    }
+}
+
 } // namespace
 
 void Win32MouseCompanionRealRendererPainter::Paint(
@@ -485,6 +578,7 @@ void Win32MouseCompanionRealRendererPainter::Paint(
     graphics->FillEllipse(&shadowBrush, scene.shadowRect);
     DrawModelSceneGraph(graphics, scene);
     DrawModelProxyLayer(graphics, scene);
+    DrawModelProxyAdornmentLayer(graphics, scene);
     DrawModelProxyActionLayer(graphics, scene.modelProxyActionLayer);
     DrawActionOverlay(graphics, scene.actionOverlay, scene.bodyStroke);
     FillRoundedRect(
