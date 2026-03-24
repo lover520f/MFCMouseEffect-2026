@@ -144,6 +144,7 @@ public:
         bool rendererRuntimeAppearanceProfileReady{false};
         bool rendererRuntimePoseFrameAvailable{false};
         bool rendererRuntimePoseBindingConfigured{false};
+        #if !defined(MFX_SHIPPING_BUILD)
         std::string rendererRuntimeSceneRuntimeAdapterMode{"runtime_only"};
         uint32_t rendererRuntimeSceneRuntimePoseSampleCount{0};
         uint32_t rendererRuntimeSceneRuntimeBoundPoseSampleCount{0};
@@ -1022,6 +1023,7 @@ public:
         std::string rendererRuntimeDefaultLaneRolloutStatus{"stay_on_builtin"};
         std::string rendererRuntimeDefaultLaneStyleIntent{"style_candidate:none"};
         std::string rendererRuntimeDefaultLaneCandidateTier{"builtin_shipped_default"};
+        #endif
         std::string configuredModelPath;
         std::string configuredActionLibraryPath;
         std::string configuredEffectProfilePath;

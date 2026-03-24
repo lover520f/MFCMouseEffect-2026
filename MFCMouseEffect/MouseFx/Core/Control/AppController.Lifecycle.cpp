@@ -577,6 +577,7 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.poseFrameAvailable;
     mouseCompanionRuntimeStatus_.rendererRuntimePoseBindingConfigured =
         diagnostics.rendererRuntime.poseBindingConfigured;
+    #if !defined(MFX_SHIPPING_BUILD)
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAdapterMode =
         diagnostics.rendererRuntime.sceneRuntimeAdapterMode;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseSampleCount =
@@ -1857,6 +1858,7 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.defaultLaneStyleIntent;
     mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneCandidateTier =
         diagnostics.rendererRuntime.defaultLaneCandidateTier;
+    #endif
 }
 
 void AppController::ClearPetVisualHostDiagnostics() {
@@ -1884,6 +1886,7 @@ void AppController::ClearPetVisualHostDiagnostics() {
     mouseCompanionRuntimeStatus_.rendererRuntimeAppearanceProfileReady = false;
     mouseCompanionRuntimeStatus_.rendererRuntimePoseFrameAvailable = false;
     mouseCompanionRuntimeStatus_.rendererRuntimePoseBindingConfigured = false;
+    #if !defined(MFX_SHIPPING_BUILD)
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeAdapterMode = "runtime_only";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimePoseSampleCount = 0;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeBoundPoseSampleCount = 0;
@@ -2494,6 +2497,7 @@ void AppController::ClearPetVisualHostDiagnostics() {
         "style_candidate:none";
     mouseCompanionRuntimeStatus_.rendererRuntimeDefaultLaneCandidateTier =
         "builtin_shipped_default";
+    #endif
 }
 
 void AppController::EnsurePetVisualHost() {

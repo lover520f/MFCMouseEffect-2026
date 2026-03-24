@@ -172,8 +172,7 @@
 - Runtime diagnostics are gated by debug mode where required.
 - Default non-debug run avoids high-volume debug lanes.
 - WebUI debug polling is adaptive and focus-aware.
-- Mouse companion test route remains gated behind `MFX_ENABLE_MOUSE_COMPANION_TEST_API=1`.
-- Windows now also has a separate `Shipping|x64` project configuration for minimal release size: it keeps the main runtime/WebUI path but excludes `/api/test` route compilation plus the heavy `/api/state` runtime-diagnostics composition used for render-proof/lane-matrix style inspection.
+- Mouse companion test route remains gated behind `MFX_ENABLE_MOUSE_COMPANION_TEST_API=1`; `Shipping|x64` keeps the main runtime/WebUI path but excludes `/api/test` compilation, skips the heavy `/api/state` render-proof/lane-matrix diagnostics composition, and now also strips the large Windows mouse-companion scene/runtime verbose contract from `AppController`, `IPetVisualHost`, and `IWin32MouseCompanionRendererBackend` after the core readiness/action booleans, so `*_brief / *_value_brief / *_path_brief` plus lane-style contract strings no longer compile into the shipping executable.
 
 ## Regression Gates
 - Canonical regression entry: `./tools/platform/regression/run-posix-regression-suite.sh --platform auto`

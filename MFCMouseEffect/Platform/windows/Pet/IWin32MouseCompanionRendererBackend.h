@@ -23,6 +23,7 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
     bool appearanceProfileReady{false};
     bool poseFrameAvailable{false};
     bool poseBindingConfigured{false};
+    #if !defined(MFX_SHIPPING_BUILD)
     std::string sceneRuntimeAdapterMode{"runtime_only"};
     uint32_t sceneRuntimePoseSampleCount{0};
     uint32_t sceneRuntimeBoundPoseSampleCount{0};
@@ -818,6 +819,7 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
     std::string defaultLaneRolloutStatus{"stay_on_builtin"};
     std::string defaultLaneStyleIntent{"style_candidate:none"};
     std::string defaultLaneCandidateTier{"builtin_shipped_default"};
+    #endif
 };
 
 class IWin32MouseCompanionRendererBackend {

@@ -146,6 +146,7 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
     diagnostics.rendererRuntime.appearanceProfileReady = rendererRuntime.appearanceProfileReady;
     diagnostics.rendererRuntime.poseFrameAvailable = rendererRuntime.poseFrameAvailable;
     diagnostics.rendererRuntime.poseBindingConfigured = rendererRuntime.poseBindingConfigured;
+    #if !defined(MFX_SHIPPING_BUILD)
     diagnostics.rendererRuntime.sceneRuntimeAdapterMode =
         rendererRuntime.sceneRuntimeAdapterMode;
     diagnostics.rendererRuntime.sceneRuntimePoseSampleCount =
@@ -1380,6 +1381,7 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.defaultLaneStyleIntent;
     diagnostics.rendererRuntime.defaultLaneCandidateTier =
         rendererRuntime.defaultLaneCandidateTier;
+    #endif
     for (const auto& descriptor : Win32MouseCompanionRendererBackendRegistry::Instance().ListByPriority()) {
         PetVisualHostRendererBackendCatalogEntry entry{};
         entry.name = descriptor.name;

@@ -640,6 +640,7 @@ void Win32MouseCompanionRealRendererBackend::Render(
     diagnostics.appearanceProfileReady = resources.appearanceProfileReady;
     diagnostics.poseFrameAvailable = sceneRuntime.poseFrameAvailable;
     diagnostics.poseBindingConfigured = sceneRuntime.poseBindingConfigured;
+    #if !defined(MFX_SHIPPING_BUILD)
     diagnostics.sceneRuntimeAdapterMode = sceneRuntime.sceneRuntimeAdapterMode;
     diagnostics.sceneRuntimePoseSampleCount = sceneRuntime.sceneRuntimePoseSampleCount;
     diagnostics.sceneRuntimeBoundPoseSampleCount =
@@ -1824,6 +1825,7 @@ void Win32MouseCompanionRealRendererBackend::Render(
             diagnostics.appearancePluginAppearanceSemanticsMode,
             diagnostics.defaultLaneStyleIntent,
             diagnostics.appearancePluginSampleTier);
+    #endif
     std::lock_guard<std::mutex> guard(runtimeDiagnosticsMutex_);
     diagnostics.renderedFrameCount = runtimeDiagnostics_.renderedFrameCount + 1;
     runtimeDiagnostics_ = std::move(diagnostics);

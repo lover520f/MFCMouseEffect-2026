@@ -87,6 +87,7 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
     diagnostics.appearanceProfileReady = true;
     diagnostics.poseFrameAvailable = input.poseFrameAvailable;
     diagnostics.poseBindingConfigured = input.poseBindingConfigured;
+    #if !defined(MFX_SHIPPING_BUILD)
     diagnostics.sceneRuntimeAdapterMode = runtime.sceneRuntimeAdapterMode;
     diagnostics.sceneRuntimePoseSampleCount = runtime.sceneRuntimePoseSampleCount;
     diagnostics.sceneRuntimeBoundPoseSampleCount =
@@ -840,6 +841,7 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
             diagnostics.appearancePluginAppearanceSemanticsMode,
             diagnostics.defaultLaneStyleIntent,
             diagnostics.appearancePluginSampleTier);
+    #endif
     std::lock_guard<std::mutex> guard(runtimeDiagnosticsMutex_);
     diagnostics.renderedFrameCount = runtimeDiagnostics_.renderedFrameCount + 1;
     runtimeDiagnostics_ = std::move(diagnostics);
