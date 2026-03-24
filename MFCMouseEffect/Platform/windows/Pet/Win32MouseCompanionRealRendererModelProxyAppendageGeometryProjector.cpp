@@ -55,6 +55,20 @@ float ResolveGeometryMix(const Win32MouseCompanionRealRendererScene& scene) {
     return std::clamp(mix, 0.0f, 0.78f);
 }
 
+float ResolveShellMix(const Win32MouseCompanionRealRendererScene& scene) {
+    float mix = std::clamp(scene.proxyDominance, 0.0f, 1.0f) * 0.34f;
+    if (scene.modelProxyActionLayer.holdShellVisible) {
+        mix += 0.10f;
+    }
+    if (scene.modelProxyActionLayer.dragShellVisible) {
+        mix += 0.10f;
+    }
+    if (scene.modelProxyActionLayer.followShellVisible) {
+        mix += 0.08f;
+    }
+    return std::clamp(mix, 0.0f, 0.64f);
+}
+
 } // namespace
 
 void ApplyWin32MouseCompanionRealRendererModelProxyAppendageGeometryProjector(
@@ -69,6 +83,21 @@ void ApplyWin32MouseCompanionRealRendererModelProxyAppendageGeometryProjector(
     }
 
     const auto& layer = scene.modelProxyAppendageLayer;
+    const auto& frameLayer = scene.modelProxyFrameLayer;
+    const float shellMix =
+        frameLayer.visible ? ResolveShellMix(scene) : mix * 0.72f;
+
+    if (frameLayer.visible) {
+        BlendRect(&scene.tailRect, frameLayer.tailRect, shellMix);
+        BlendRect(&scene.leftHandRect, frameLayer.leftHandRect, shellMix);
+        BlendRect(&scene.rightHandRect, frameLayer.rightHandRect, shellMix);
+        BlendRect(&scene.leftLegRect, frameLayer.leftLegRect, shellMix);
+        BlendRect(&scene.rightLegRect, frameLayer.rightLegRect, shellMix);
+        scene.appendageAnchorScale = Blend(
+            scene.appendageAnchorScale,
+            1.04f + scene.proxyDominance * 0.10f,
+            shellMix);
+    }
 
     BlendRect(&scene.tailRootCuffRect, layer.tailRootCuffRect, mix);
     BlendRect(&scene.tailBridgeRect, layer.tailBridgeRect, mix);
