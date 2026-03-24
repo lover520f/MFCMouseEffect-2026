@@ -192,9 +192,9 @@
 ### Packaging
 - Preferred packaging entrypoint is `./mfx package`.
 - Windows installer remains Inno Setup based.
-- Windows Release/Shipping now supports build-time GPU selection through `MfxEnableWindowsGpuEffects=true|false`:
+- Windows Release/Shipping now supports build-time GPU selection through `MfxEnableWindowsGpuEffects=true|false`, and the default is now `false`:
   - `true`: compile/package the current GPU hold runtime and bundle `webgpu_dawn.dll`
-  - `false`: exclude Windows GPU hold compile units, hide GPU-only hold choices, normalize old GPU hold configs to compatible non-GPU routes, and omit `webgpu_dawn.dll` from build output + installer payload
+  - `false` (default): exclude Windows GPU hold compile units, hide GPU-only hold choices, normalize old GPU hold configs to compatible non-GPU routes, and omit `webgpu_dawn.dll` from build output + installer payload
 - macOS package output remains `MFCMouseEffect.app`, `Install/macos`, folder + `.zip` + unsigned `.dmg`.
 - Current package policy: minimal pet runtime assets only, wasm demo plugin ships runtime files only, packaged host binary is stripped in-bundle, `Install/macos/` is git-ignored, and Gatekeeper/notarization is still deferred.
 

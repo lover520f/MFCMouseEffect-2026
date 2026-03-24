@@ -30,7 +30,7 @@
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <MfxEnableWindowsGpuEffects Condition="'$(MfxEnableWindowsGpuEffects)'==''">true</MfxEnableWindowsGpuEffects>
+    <MfxEnableWindowsGpuEffects Condition="'$(MfxEnableWindowsGpuEffects)'==''">false</MfxEnableWindowsGpuEffects>
     <MfxEnableWindowsGpuEffectsDefine Condition="'$(MfxEnableWindowsGpuEffects)'=='true'">1</MfxEnableWindowsGpuEffectsDefine>
     <MfxEnableWindowsGpuEffectsDefine Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">0</MfxEnableWindowsGpuEffectsDefine>
   </PropertyGroup>

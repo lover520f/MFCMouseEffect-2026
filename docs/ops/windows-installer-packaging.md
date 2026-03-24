@@ -15,8 +15,10 @@
   - `webui/`
   - runtime DLLs required by the current Windows lane
 - Windows package build now accepts an explicit GPU toggle:
+  - `./mfx package`
   - `./mfx package --gpu`
   - `./mfx package --no-gpu`
+  - default is now `--no-gpu`
   - `--no-gpu` forwards `MfxEnableWindowsGpuEffects=false`, excludes Windows GPU hold compile units from the Release build, and removes `webgpu_dawn.dll` from the installer payload
 - Do not copy optional repo docs like `README.md` or `LICENSE` into the install directory.
 - Do not expose installer-side launch-at-startup configuration.
@@ -30,8 +32,9 @@
 
 ## Validation
 1. Build Windows release:
-  - `./mfx package`
-  - or `./mfx package-no-build` when reusing the current `Release|x64` output
+   - `./mfx package`
+     - default: no GPU
+   - or `./mfx package-no-build` when reusing the current `Release|x64` output
   - GPU-selectable examples:
     - `./mfx package --gpu`
     - `./mfx package --no-gpu`
@@ -39,8 +42,8 @@
    - internal implementation still uses Inno Setup, but `ISCC.exe` is no longer the user-facing workflow entry
 3. Verify installer contents:
    - install directory contains runtime payload only
+   - default / `--no-gpu`: must not include `webgpu_dawn.dll`
    - `--gpu`: includes `webgpu_dawn.dll`
-   - `--no-gpu`: must not include `webgpu_dawn.dll`
    - installer UI no longer shows a startup task
 4. Verify startup policy:
    - use Web settings `launch_at_startup`

@@ -15,7 +15,7 @@ Options:
   --package-name <name>   Installer base filename without .exe (default: script default)
   --skip-build            Skip rebuilding Windows Release|x64 project
   --skip-webui-build      Accepted for CLI parity; currently no-op on Windows
-  --gpu                   Build/package the Windows GPU runtime (default)
+  --gpu                   Build/package the Windows GPU runtime
   --no-gpu                Exclude Windows GPU runtime and do not package webgpu_dawn.dll
   -h, --help              Show this help
 EOF
@@ -85,7 +85,7 @@ output_dir="$repo_root/Install/windows"
 package_name=""
 skip_build=0
 skip_webui_build=0
-enable_windows_gpu_effects=true
+enable_windows_gpu_effects=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in

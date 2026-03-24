@@ -21,7 +21,7 @@ Commands:
   package [platform options...]
       Build native package for current host platform.
       macOS: .app + zip + dmg
-      Windows: installer exe (`--gpu` or `--no-gpu`)
+      Windows: installer exe (default `--no-gpu`, optional `--gpu`)
 
   package-no-build [platform options...]
       Produce native package for current host platform without rebuilding.

@@ -18,15 +18,16 @@ Keep P1 concise; add details here when needed.
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-gesture-calibration-sweep.sh --skip-build`
 
 ## Windows Mouse Companion Bring-Up
-- Release with GPU:
-  - `C:\Program Files\Microsoft Visual Studio\18\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe F:\language\cpp\code\MFCMouseEffect\MFCMouseEffect\MFCMouseEffect.vcxproj /t:Build /p:Configuration=Release;Platform=x64 /p:MfxEnableWindowsGpuEffects=true`
 - Release without GPU:
   - `C:\Program Files\Microsoft Visual Studio\18\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe F:\language\cpp\code\MFCMouseEffect\MFCMouseEffect\MFCMouseEffect.vcxproj /t:Build /p:Configuration=Release;Platform=x64 /p:MfxEnableWindowsGpuEffects=false`
+  - this is now the default if `/p:MfxEnableWindowsGpuEffects` is omitted
   - behavior:
     - excludes Windows GPU hold compile units
     - removes copied `webgpu_dawn.dll` from the output directory
     - hides GPU-only hold routes from settings schema
     - auto-normalizes persisted GPU hold types onto compatible non-GPU routes
+- Release with GPU:
+  - `C:\Program Files\Microsoft Visual Studio\18\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe F:\language\cpp\code\MFCMouseEffect\MFCMouseEffect\MFCMouseEffect.vcxproj /t:Build /p:Configuration=Release;Platform=x64 /p:MfxEnableWindowsGpuEffects=true`
 - minimal shipping build command:
   - `C:\Program Files\Microsoft Visual Studio\18\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe F:\language\cpp\code\MFCMouseEffect\MFCMouseEffect\MFCMouseEffect.vcxproj /t:Build /p:Configuration=Shipping;Platform=x64`
   - intent:

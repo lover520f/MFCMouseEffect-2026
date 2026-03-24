@@ -9,7 +9,7 @@
   #define BuildConfiguration "Release"
 #endif
 #ifndef MfxEnableWindowsGpuEffects
-  #define MfxEnableWindowsGpuEffects "true"
+  #define MfxEnableWindowsGpuEffects "false"
 #endif
 #if MfxEnableWindowsGpuEffects == "true"
   #define EnableWindowsGpuEffects 1
