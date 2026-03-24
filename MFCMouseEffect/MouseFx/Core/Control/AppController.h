@@ -276,11 +276,29 @@ public:
             "scene:stub|pose:stub|grounding:stub|overlay:stub|adapter:runtime_only"};
         std::string rendererRuntimeSceneRuntimeModelAssetSceneHookValueBrief{
             "scene:0.00|pose:0.00|grounding:0.00|overlay:0.00|adapter:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetSceneBindingState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetSceneBindingEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetSceneBindingResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetSceneBindingBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetSceneBindingBindingBrief{
+            "scene:stub|grounding:stub|overlay:stub|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetSceneBindingValueBrief{
+            "scene:0.00|grounding:0.00|overlay:0.00|adapter:0.00"};
         float rendererRuntimeSceneRuntimeModelNodeAdapterInfluence{0.0f};
         std::string rendererRuntimeSceneRuntimeModelNodeAdapterBrief{
             "preview_only/0.00"};
         std::string rendererRuntimeSceneRuntimeModelNodeChannelBrief{
             "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeAttachState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeAttachEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeAttachResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeAttachBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeAttachAttachBrief{
+            "body:stub|head:stub|appendage:stub|overlay:stub|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeAttachValueBrief{
+            "body:0.00|head:0.00|appendage:0.00|overlay:0.00|adapter:0.00"};
         std::string rendererRuntimeSceneRuntimeModelNodeGraphState{"preview_only"};
         uint32_t rendererRuntimeSceneRuntimeModelNodeGraphNodeCount{0};
         uint32_t rendererRuntimeSceneRuntimeModelNodeGraphBoundNodeCount{0};

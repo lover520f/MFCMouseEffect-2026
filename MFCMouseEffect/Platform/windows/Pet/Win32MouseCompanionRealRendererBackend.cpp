@@ -64,6 +64,8 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetActivationProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetBindReadyProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetHandleProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeAttachProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSceneBindingProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSceneHookProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSourceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelSceneAdapterProfile.h"
@@ -193,6 +195,16 @@ void Win32MouseCompanionRealRendererBackend::Render(
         sceneRuntime.modelAssetSceneHookProfile;
     ApplyWin32MouseCompanionRealRendererModelAssetSceneHookProfile(
         modelAssetSceneHookProfile,
+        scene);
+    const auto modelAssetSceneBindingProfile =
+        sceneRuntime.modelAssetSceneBindingProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetSceneBindingProfile(
+        modelAssetSceneBindingProfile,
+        scene);
+    const auto modelAssetNodeAttachProfile =
+        sceneRuntime.modelAssetNodeAttachProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetNodeAttachProfile(
+        modelAssetNodeAttachProfile,
         scene);
     const auto resolverProfile = sceneRuntime.assetNodeResolverProfile;
     const auto parentSpaceProfile = sceneRuntime.assetNodeParentSpaceProfile;
@@ -636,12 +648,36 @@ void Win32MouseCompanionRealRendererBackend::Render(
         modelAssetSceneHookProfile.hookBrief;
     diagnostics.sceneRuntimeModelAssetSceneHookValueBrief =
         modelAssetSceneHookProfile.valueBrief;
+    diagnostics.sceneRuntimeModelAssetSceneBindingState =
+        modelAssetSceneBindingProfile.bindingState;
+    diagnostics.sceneRuntimeModelAssetSceneBindingEntryCount =
+        modelAssetSceneBindingProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetSceneBindingResolvedEntryCount =
+        modelAssetSceneBindingProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetSceneBindingBrief =
+        modelAssetSceneBindingProfile.brief;
+    diagnostics.sceneRuntimeModelAssetSceneBindingBindingBrief =
+        modelAssetSceneBindingProfile.bindingBrief;
+    diagnostics.sceneRuntimeModelAssetSceneBindingValueBrief =
+        modelAssetSceneBindingProfile.valueBrief;
     diagnostics.sceneRuntimeModelNodeAdapterInfluence =
         sceneRuntime.modelNodeAdapterProfile.influence;
     diagnostics.sceneRuntimeModelNodeAdapterBrief =
         sceneRuntime.modelNodeAdapterProfile.brief;
     diagnostics.sceneRuntimeModelNodeChannelBrief =
         sceneRuntime.modelNodeAdapterProfile.channelBrief;
+    diagnostics.sceneRuntimeModelAssetNodeAttachState =
+        modelAssetNodeAttachProfile.attachState;
+    diagnostics.sceneRuntimeModelAssetNodeAttachEntryCount =
+        modelAssetNodeAttachProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetNodeAttachResolvedEntryCount =
+        modelAssetNodeAttachProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodeAttachBrief =
+        modelAssetNodeAttachProfile.brief;
+    diagnostics.sceneRuntimeModelAssetNodeAttachAttachBrief =
+        modelAssetNodeAttachProfile.attachBrief;
+    diagnostics.sceneRuntimeModelAssetNodeAttachValueBrief =
+        modelAssetNodeAttachProfile.valueBrief;
     diagnostics.sceneRuntimeModelNodeGraphState =
         sceneRuntime.modelNodeGraphProfile.graphState;
     diagnostics.sceneRuntimeModelNodeGraphNodeCount =

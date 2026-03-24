@@ -8,7 +8,7 @@
 - Primary host: macOS.
 - Delivery order: macOS first, Windows regression-free, Linux compile/contract-level.
 - macOS stack rule: new capability modules are Swift-first; avoid expanding `.mm` for large new modules.
-- Windows VS2026 direct project build is healthy; any remaining `MFCMouseEffect.slnx` `ValidateSolutionConfiguration` issue is solution-metadata work, not a C++ compile regression.
+- Windows VS2026 direct project build should stay healthy; any remaining `MFCMouseEffect.slnx` `ValidateSolutionConfiguration` issue is solution-metadata work, not a C++ compile regression.
 - Cross-machine workflow: macOS is the development source, Windows is the synced validation workspace via `Syncthing`, and Windows handoff should default to `F:\language\cpp\code\MFCMouseEffect`.
 
 ## Active Product Goals
@@ -47,7 +47,7 @@
 
 #### Windows Pet
 - Current stage: `Phase1.5`.
-- Current gap vs macOS: Windows still renders a stylized preview contract, not the real 3D model path.
+- Current gap vs macOS: Windows still renders a stylized preview contract, not the real 3D model path, though the asset chain now reaches `scene-hook -> scene-binding -> node-attach`.
 - Shared placement contract is active: `relative`, `absolute`, legacy `fixed_bottom_left`, `strict / soft / free`, and target-monitor resolution.
 - Active backend path: `window -> backend factory/registry -> renderer input -> renderer runtime -> scene builder -> painter`.
 - Windows appearance validation supports:

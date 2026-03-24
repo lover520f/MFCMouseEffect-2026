@@ -324,12 +324,36 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeModelAssetSceneHookHookBrief;
     diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneHookValueBrief =
         rendererRuntime.sceneRuntimeModelAssetSceneHookValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneBindingState =
+        rendererRuntime.sceneRuntimeModelAssetSceneBindingState;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneBindingEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetSceneBindingEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneBindingResolvedEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetSceneBindingResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneBindingBrief =
+        rendererRuntime.sceneRuntimeModelAssetSceneBindingBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneBindingBindingBrief =
+        rendererRuntime.sceneRuntimeModelAssetSceneBindingBindingBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneBindingValueBrief =
+        rendererRuntime.sceneRuntimeModelAssetSceneBindingValueBrief;
     diagnostics.rendererRuntime.sceneRuntimeModelNodeAdapterInfluence =
         rendererRuntime.sceneRuntimeModelNodeAdapterInfluence;
     diagnostics.rendererRuntime.sceneRuntimeModelNodeAdapterBrief =
         rendererRuntime.sceneRuntimeModelNodeAdapterBrief;
     diagnostics.rendererRuntime.sceneRuntimeModelNodeChannelBrief =
         rendererRuntime.sceneRuntimeModelNodeChannelBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeAttachState =
+        rendererRuntime.sceneRuntimeModelAssetNodeAttachState;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeAttachEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetNodeAttachEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeAttachResolvedEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetNodeAttachResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeAttachBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeAttachBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeAttachAttachBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeAttachAttachBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeAttachValueBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeAttachValueBrief;
     diagnostics.rendererRuntime.sceneRuntimeModelNodeGraphState =
         rendererRuntime.sceneRuntimeModelNodeGraphState;
     diagnostics.rendererRuntime.sceneRuntimeModelNodeGraphNodeCount =

@@ -759,6 +759,20 @@ function writeRuntimeDiagnostics(runtimeState) {
     ),
   );
   writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_scene_binding_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_scene_binding_brief,
+      'preview_only/0/0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_scene_binding_binding_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_scene_binding_binding_brief,
+      'scene:stub|grounding:stub|overlay:stub|adapter:runtime_only',
+    ),
+  );
+  writeTextValue(
     'mc_runtime_scene_runtime_model_node_adapter_brief',
     normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_model_node_adapter_brief, 'preview_only/0.00'),
   );
@@ -771,6 +785,20 @@ function writeRuntimeDiagnostics(runtimeState) {
     normalizeRuntimeText(
       runtimeState.renderer_runtime_scene_runtime_model_node_channel_brief,
       'body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_node_attach_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_node_attach_brief,
+      'preview_only/0/0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_node_attach_attach_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_node_attach_attach_brief,
+      'body:stub|head:stub|appendage:stub|overlay:stub|adapter:runtime_only',
     ),
   );
   writeTextValue(

@@ -233,10 +233,26 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "scene:stub|pose:stub|grounding:stub|overlay:stub|adapter:runtime_only";
     diagnostics.sceneRuntimeModelAssetSceneHookValueBrief =
         "scene:0.00|pose:0.00|grounding:0.00|overlay:0.00|adapter:0.00";
+    diagnostics.sceneRuntimeModelAssetSceneBindingState = "preview_only";
+    diagnostics.sceneRuntimeModelAssetSceneBindingEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetSceneBindingResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetSceneBindingBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeModelAssetSceneBindingBindingBrief =
+        "scene:stub|grounding:stub|overlay:stub|adapter:runtime_only";
+    diagnostics.sceneRuntimeModelAssetSceneBindingValueBrief =
+        "scene:0.00|grounding:0.00|overlay:0.00|adapter:0.00";
     diagnostics.sceneRuntimeModelNodeAdapterBrief =
         modelSceneAdapterProfile.seamState + "/0.00";
     diagnostics.sceneRuntimeModelNodeChannelBrief =
         "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
+    diagnostics.sceneRuntimeModelAssetNodeAttachState = "preview_only";
+    diagnostics.sceneRuntimeModelAssetNodeAttachEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetNodeAttachResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetNodeAttachBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeModelAssetNodeAttachAttachBrief =
+        "body:stub|head:stub|appendage:stub|overlay:stub|adapter:runtime_only";
+    diagnostics.sceneRuntimeModelAssetNodeAttachValueBrief =
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|adapter:0.00";
     diagnostics.sceneRuntimeModelNodeGraphState = "preview_only";
     diagnostics.sceneRuntimeModelNodeGraphNodeCount = 0;
     diagnostics.sceneRuntimeModelNodeGraphBoundNodeCount = 0;

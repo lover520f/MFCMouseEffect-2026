@@ -755,12 +755,36 @@ void AppController::SyncPetVisualHostDiagnostics(const PetVisualHostDiagnostics&
         diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneHookHookBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneHookValueBrief =
         diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneHookValueBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneBindingState =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneBindingState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneBindingEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneBindingEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneBindingResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneBindingResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneBindingBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneBindingBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneBindingBindingBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneBindingBindingBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneBindingValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneBindingValueBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeAdapterInfluence =
         diagnostics.rendererRuntime.sceneRuntimeModelNodeAdapterInfluence;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeAdapterBrief =
         diagnostics.rendererRuntime.sceneRuntimeModelNodeAdapterBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeChannelBrief =
         diagnostics.rendererRuntime.sceneRuntimeModelNodeChannelBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetNodeAttachState =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeAttachState;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetNodeAttachEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeAttachEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetNodeAttachResolvedEntryCount =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeAttachResolvedEntryCount;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetNodeAttachBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeAttachBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetNodeAttachAttachBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeAttachAttachBrief;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetNodeAttachValueBrief =
+        diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeAttachValueBrief;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeGraphState =
         diagnostics.rendererRuntime.sceneRuntimeModelNodeGraphState;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeGraphNodeCount =
@@ -1628,12 +1652,34 @@ void AppController::ClearPetVisualHostDiagnostics() {
         "scene:stub|pose:stub|grounding:stub|overlay:stub|adapter:runtime_only";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneHookValueBrief =
         "scene:0.00|pose:0.00|grounding:0.00|overlay:0.00|adapter:0.00";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneBindingState =
+        "preview_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneBindingEntryCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneBindingResolvedEntryCount =
+        0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneBindingBrief =
+        "preview_only/0/0";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneBindingBindingBrief =
+        "scene:stub|grounding:stub|overlay:stub|adapter:runtime_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetSceneBindingValueBrief =
+        "scene:0.00|grounding:0.00|overlay:0.00|adapter:0.00";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeAdapterInfluence =
         0.0f;
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeAdapterBrief =
         "preview_only/0.00";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeChannelBrief =
         "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetNodeAttachState =
+        "preview_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetNodeAttachEntryCount = 0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetNodeAttachResolvedEntryCount =
+        0;
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetNodeAttachBrief =
+        "preview_only/0/0";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetNodeAttachAttachBrief =
+        "body:stub|head:stub|appendage:stub|overlay:stub|adapter:runtime_only";
+    mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelAssetNodeAttachValueBrief =
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|adapter:0.00";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeGraphState =
         "preview_only";
     mouseCompanionRuntimeStatus_.rendererRuntimeSceneRuntimeModelNodeGraphNodeCount =

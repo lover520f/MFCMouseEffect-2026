@@ -260,6 +260,10 @@ It should **not** own:
     - `scene_runtime_model_asset_handle_brief = handle_state/entry_count/resolved_entry_count`
     - `scene_runtime_model_asset_scene_hook_state`
     - `scene_runtime_model_asset_scene_hook_brief = scene_hook_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_scene_binding_state`
+    - `scene_runtime_model_asset_scene_binding_brief = scene_binding_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_node_attach_state`
+    - `scene_runtime_model_asset_node_attach_brief = node_attach_state/entry_count/resolved_entry_count`
   - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `modelSceneAdapterProfile`; runtime/proof/WebUI may expose:
     - `scene_runtime_model_scene_adapter_state`
     - `scene_runtime_model_scene_seam_readiness`

@@ -140,6 +140,12 @@ export function getMouseCompanionSectionMarkup() {
         <label>Model Scene Hook</label>
         <output id="mc_runtime_scene_runtime_model_asset_scene_hook_hook_brief">-</output>
 
+        <label>Model Asset Scene Binding</label>
+        <output id="mc_runtime_scene_runtime_model_asset_scene_binding_brief">-</output>
+
+        <label>Model Scene Binding</label>
+        <output id="mc_runtime_scene_runtime_model_asset_scene_binding_binding_brief">-</output>
+
         <label>Model Node Adapter</label>
         <output id="mc_runtime_scene_runtime_model_node_adapter_brief">-</output>
 
@@ -148,6 +154,12 @@ export function getMouseCompanionSectionMarkup() {
 
         <label>Model Node Channels</label>
         <output id="mc_runtime_scene_runtime_model_node_channel_brief">-</output>
+
+        <label>Model Asset Node Attach</label>
+        <output id="mc_runtime_scene_runtime_model_asset_node_attach_brief">-</output>
+
+        <label>Model Node Attach</label>
+        <output id="mc_runtime_scene_runtime_model_asset_node_attach_attach_brief">-</output>
 
         <label>Model Node Graph</label>
         <output id="mc_runtime_scene_runtime_model_node_graph_brief">-</output>

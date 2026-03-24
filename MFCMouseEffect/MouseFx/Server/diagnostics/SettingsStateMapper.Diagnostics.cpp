@@ -439,12 +439,36 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneHookHookBrief},
         {"scene_runtime_model_asset_scene_hook_value_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneHookValueBrief},
+        {"scene_runtime_model_asset_scene_binding_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneBindingState},
+        {"scene_runtime_model_asset_scene_binding_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneBindingEntryCount},
+        {"scene_runtime_model_asset_scene_binding_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneBindingResolvedEntryCount},
+        {"scene_runtime_model_asset_scene_binding_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneBindingBrief},
+        {"scene_runtime_model_asset_scene_binding_binding_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneBindingBindingBrief},
+        {"scene_runtime_model_asset_scene_binding_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneBindingValueBrief},
         {"scene_runtime_model_node_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeAdapterInfluence},
         {"scene_runtime_model_node_adapter_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeAdapterBrief},
         {"scene_runtime_model_node_channel_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeChannelBrief},
+        {"scene_runtime_model_asset_node_attach_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeAttachState},
+        {"scene_runtime_model_asset_node_attach_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeAttachEntryCount},
+        {"scene_runtime_model_asset_node_attach_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeAttachResolvedEntryCount},
+        {"scene_runtime_model_asset_node_attach_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeAttachBrief},
+        {"scene_runtime_model_asset_node_attach_attach_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeAttachAttachBrief},
+        {"scene_runtime_model_asset_node_attach_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeAttachValueBrief},
         {"scene_runtime_model_node_graph_state",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeGraphState},
         {"scene_runtime_model_node_graph_node_count",
@@ -1303,12 +1327,36 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeModelAssetSceneHookHookBrief;
     out["renderer_runtime_scene_runtime_model_asset_scene_hook_value_brief"] =
         status.rendererRuntimeSceneRuntimeModelAssetSceneHookValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_scene_binding_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneBindingState;
+    out["renderer_runtime_scene_runtime_model_asset_scene_binding_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneBindingEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_scene_binding_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneBindingResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_scene_binding_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneBindingBrief;
+    out["renderer_runtime_scene_runtime_model_asset_scene_binding_binding_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneBindingBindingBrief;
+    out["renderer_runtime_scene_runtime_model_asset_scene_binding_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneBindingValueBrief;
     out["renderer_runtime_scene_runtime_model_node_adapter_influence"] =
         status.rendererRuntimeSceneRuntimeModelNodeAdapterInfluence;
     out["renderer_runtime_scene_runtime_model_node_adapter_brief"] =
         status.rendererRuntimeSceneRuntimeModelNodeAdapterBrief;
     out["renderer_runtime_scene_runtime_model_node_channel_brief"] =
         status.rendererRuntimeSceneRuntimeModelNodeChannelBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_attach_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeAttachState;
+    out["renderer_runtime_scene_runtime_model_asset_node_attach_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeAttachEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_node_attach_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeAttachResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_node_attach_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeAttachBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_attach_attach_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeAttachAttachBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_attach_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeAttachValueBrief;
     out["renderer_runtime_scene_runtime_model_node_graph_state"] =
         status.rendererRuntimeSceneRuntimeModelNodeGraphState;
     out["renderer_runtime_scene_runtime_model_node_graph_node_count"] =

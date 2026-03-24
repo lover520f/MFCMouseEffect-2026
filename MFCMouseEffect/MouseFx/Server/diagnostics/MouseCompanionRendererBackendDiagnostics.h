@@ -130,10 +130,26 @@ struct MouseCompanionRealRendererPreviewDiagnostics {
         "scene:stub|pose:stub|grounding:stub|overlay:stub|adapter:runtime_only"};
     std::string sceneRuntimeModelAssetSceneHookValueBrief{
         "scene:0.00|pose:0.00|grounding:0.00|overlay:0.00|adapter:0.00"};
+    std::string sceneRuntimeModelAssetSceneBindingState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetSceneBindingEntryCount{0};
+    uint32_t sceneRuntimeModelAssetSceneBindingResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetSceneBindingBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetSceneBindingBindingBrief{
+        "scene:stub|grounding:stub|overlay:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetSceneBindingValueBrief{
+        "scene:0.00|grounding:0.00|overlay:0.00|adapter:0.00"};
     float sceneRuntimeModelNodeAdapterInfluence{0.0f};
     std::string sceneRuntimeModelNodeAdapterBrief{"preview_only/0.00"};
     std::string sceneRuntimeModelNodeChannelBrief{
         "body:0.00|face:0.00|appendage:0.00|overlay:0.00|grounding:0.00"};
+    std::string sceneRuntimeModelAssetNodeAttachState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetNodeAttachEntryCount{0};
+    uint32_t sceneRuntimeModelAssetNodeAttachResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetNodeAttachBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetNodeAttachAttachBrief{
+        "body:stub|head:stub|appendage:stub|overlay:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetNodeAttachValueBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|adapter:0.00"};
     std::string sceneRuntimeModelNodeGraphState{"preview_only"};
     uint32_t sceneRuntimeModelNodeGraphNodeCount{0};
     uint32_t sceneRuntimeModelNodeGraphBoundNodeCount{0};
