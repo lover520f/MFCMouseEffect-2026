@@ -179,7 +179,6 @@
 - Canonical regression entry: `./tools/platform/regression/run-posix-regression-suite.sh --platform auto`
 - macOS daily shortcut: `./mfx run-no-build` / `./mfx fast` skip both core and WebUI rebuilds; `./mfx run` / `./mfx start` perform fresh build preparation.
 ## Packaging / Startup Truth
-
 ### Tray Menus
 - macOS tray menu intentionally exposes only `Star Project`, `Settings`, and `Exit`.
 - Windows tray menu now follows the same product rule.
@@ -201,6 +200,7 @@
   - `false` (default): exclude Windows GPU hold compile units, hide GPU-only hold choices, normalize old GPU hold configs to compatible non-GPU routes, and omit `webgpu_dawn.dll` from build output + installer payload
 - Windows package naming now reflects both configuration and GPU variant: `Release` keeps `MFCMouseEffect-windows-x64-setup-<version>.exe`, `Release --gpu` switches to `...-gpu-setup-...`, `Shipping` uses `...-shipping-setup-...`, and `Shipping --gpu` uses `...-gpu-shipping-setup-...`.
 - Windows pet model-node runtime now carries internal node identity metadata (`modelNodePath` + `sourceTag`) through `modelNodeSlotProfile -> modelNodeRegistryProfile -> assetNodeBindingProfile`, and `FrameBuilder` / `AdornmentBuilder` / `ActionOverlayBuilder` already consume those signals to bias layout, accessory placement, and overlay anchoring toward real asset-backed nodes.
+- Windows pet asset resources now also derive `modelFileName`, `modelRootNodeKey`, and `modelNodeSelectorPrefix` from the incoming model path/format, so slot/registry/binding paths already point at asset-rooted selector prefixes instead of fixed preview-only paths.
 - macOS package output remains `MFCMouseEffect.app`, `Install/macos`, folder + `.zip` + unsigned `.dmg`.
 - Current package policy: minimal pet runtime assets only, wasm demo plugin ships runtime files only, packaged host binary is stripped in-bundle, `Install/macos/` is git-ignored, and Gatekeeper/notarization is still deferred.
 ### Local Dev Sync

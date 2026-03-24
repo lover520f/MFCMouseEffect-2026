@@ -10,6 +10,9 @@ namespace mousefx::windows {
 struct Win32MouseCompanionRealRendererAssetResources final {
     std::string modelPath;
     std::string modelSourceFormat{"phase1_placeholder"};
+    std::string modelFileName;
+    std::string modelRootNodeKey{"preview_root"};
+    std::string modelNodeSelectorPrefix{"/preview/model"};
     std::string actionLibraryPath;
     std::string appearanceProfileSkinVariantId{"default"};
     std::vector<std::string> appearanceAccessoryIds;

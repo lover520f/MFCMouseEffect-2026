@@ -27,23 +27,23 @@ std::string ResolveAssetBindingState(
     return "preview_only";
 }
 
-const char* ResolveAssetNodePath(const std::string& assetNodeName) {
+const char* ResolveAssetNodePathSuffix(const std::string& assetNodeName) {
     if (assetNodeName == "asset.body.root") {
-        return "/pet/body/root";
+        return "body/root";
     }
     if (assetNodeName == "asset.head.anchor") {
-        return "/pet/body/head";
+        return "body/head";
     }
     if (assetNodeName == "asset.appendage.anchor") {
-        return "/pet/body/appendage";
+        return "body/appendage";
     }
     if (assetNodeName == "asset.overlay.anchor") {
-        return "/pet/fx/overlay";
+        return "fx/overlay";
     }
     if (assetNodeName == "asset.grounding.anchor") {
-        return "/pet/fx/grounding";
+        return "fx/grounding";
     }
-    return "/pet/unknown";
+    return "unknown";
 }
 
 float ResolveAssetBindingWeight(const std::string& logicalNode, float registryWeight) {
@@ -67,13 +67,15 @@ float ResolveAssetBindingWeight(const std::string& logicalNode, float registryWe
 
 Win32MouseCompanionRealRendererAssetNodeBindingEntry BuildAssetBindingEntry(
     const Win32MouseCompanionRealRendererModelNodeRegistryEntry& registryEntry,
+    const std::string& assetBindingSelectorPrefix,
     bool assetBindingsReady) {
     Win32MouseCompanionRealRendererAssetNodeBindingEntry entry{};
     entry.logicalNode = registryEntry.logicalNode;
     entry.slotName = registryEntry.slotName;
     entry.modelNodePath = registryEntry.modelNodePath;
     entry.assetNodeName = registryEntry.assetNodeName;
-    entry.assetNodePath = ResolveAssetNodePath(registryEntry.assetNodeName);
+    entry.assetNodePath =
+        assetBindingSelectorPrefix + "/" + ResolveAssetNodePathSuffix(registryEntry.assetNodeName);
     entry.sourceTag = registryEntry.sourceTag;
     entry.bindingWeight =
         ResolveAssetBindingWeight(registryEntry.logicalNode, registryEntry.registryWeight);
@@ -151,19 +153,36 @@ BuildWin32MouseCompanionRealRendererAssetNodeBindingProfile(
     const auto& registry = runtime.modelNodeRegistryProfile;
     const float executeWeight =
         runtime.modelAssetNodeOccupancyRegistryProfile.occupancyRegistryWeight;
-    profile.bodyEntry = BuildAssetBindingEntry(registry.bodyEntry, assetBindingsReady);
+    const std::string assetBindingSelectorPrefix =
+        runtime.assets == nullptr ? "/preview/binding" : runtime.assets->modelNodeSelectorPrefix;
+    profile.bodyEntry = BuildAssetBindingEntry(
+        registry.bodyEntry,
+        assetBindingSelectorPrefix,
+        assetBindingsReady);
     profile.bodyEntry.bindingWeight *= executeWeight;
     profile.bodyEntry.resolved = profile.bodyEntry.resolved && profile.bodyEntry.bindingWeight > 0.0f;
-    profile.headEntry = BuildAssetBindingEntry(registry.headEntry, assetBindingsReady);
+    profile.headEntry = BuildAssetBindingEntry(
+        registry.headEntry,
+        assetBindingSelectorPrefix,
+        assetBindingsReady);
     profile.headEntry.bindingWeight *= executeWeight;
     profile.headEntry.resolved = profile.headEntry.resolved && profile.headEntry.bindingWeight > 0.0f;
-    profile.appendageEntry = BuildAssetBindingEntry(registry.appendageEntry, assetBindingsReady);
+    profile.appendageEntry = BuildAssetBindingEntry(
+        registry.appendageEntry,
+        assetBindingSelectorPrefix,
+        assetBindingsReady);
     profile.appendageEntry.bindingWeight *= executeWeight;
     profile.appendageEntry.resolved = profile.appendageEntry.resolved && profile.appendageEntry.bindingWeight > 0.0f;
-    profile.overlayEntry = BuildAssetBindingEntry(registry.overlayEntry, assetBindingsReady);
+    profile.overlayEntry = BuildAssetBindingEntry(
+        registry.overlayEntry,
+        assetBindingSelectorPrefix,
+        assetBindingsReady);
     profile.overlayEntry.bindingWeight *= executeWeight;
     profile.overlayEntry.resolved = profile.overlayEntry.resolved && profile.overlayEntry.bindingWeight > 0.0f;
-    profile.groundingEntry = BuildAssetBindingEntry(registry.groundingEntry, assetBindingsReady);
+    profile.groundingEntry = BuildAssetBindingEntry(
+        registry.groundingEntry,
+        assetBindingSelectorPrefix,
+        assetBindingsReady);
     profile.groundingEntry.bindingWeight *= executeWeight;
     profile.groundingEntry.resolved = profile.groundingEntry.resolved && profile.groundingEntry.bindingWeight > 0.0f;
 

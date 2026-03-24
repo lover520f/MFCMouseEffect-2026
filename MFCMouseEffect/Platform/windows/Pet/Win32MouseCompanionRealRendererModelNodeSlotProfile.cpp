@@ -11,25 +11,25 @@ namespace {
 
 const char* ResolveModelNodePath(const char* logicalNode) {
     if (logicalNode == nullptr) {
-        return "/preview/unknown";
+        return "unknown";
     }
     const std::string node = logicalNode;
     if (node == "body") {
-        return "/pet/model/body/root";
+        return "body/root";
     }
     if (node == "head") {
-        return "/pet/model/body/head";
+        return "body/head";
     }
     if (node == "appendage") {
-        return "/pet/model/body/appendage";
+        return "body/appendage";
     }
     if (node == "overlay") {
-        return "/pet/model/fx/overlay";
+        return "fx/overlay";
     }
     if (node == "grounding") {
-        return "/pet/model/fx/grounding";
+        return "fx/grounding";
     }
-    return "/preview/unknown";
+    return "unknown";
 }
 
 std::string ResolveSourceTag(
@@ -76,13 +76,14 @@ std::string ResolveSlotState(
 Win32MouseCompanionRealRendererModelNodeSlotEntry BuildSlotEntry(
     const char* logicalNode,
     const char* slotName,
+    const std::string& modelNodeSelectorPrefix,
     const std::string& sourceTag,
     float bindWeight,
     bool slotsReady) {
     Win32MouseCompanionRealRendererModelNodeSlotEntry entry{};
     entry.logicalNode = logicalNode ? logicalNode : "";
     entry.slotName = slotName ? slotName : "";
-    entry.modelNodePath = ResolveModelNodePath(logicalNode);
+    entry.modelNodePath = modelNodeSelectorPrefix + "/" + ResolveModelNodePath(logicalNode);
     entry.sourceTag = sourceTag;
     entry.bindWeight = bindWeight;
     entry.slotReady = slotsReady && bindWeight > 0.0f;
@@ -141,35 +142,42 @@ BuildWin32MouseCompanionRealRendererModelNodeSlotProfile(
 
     const bool slotsReady = runtime.assets && runtime.assets->modelNodeSlotsReady;
     const auto& binding = runtime.modelNodeBindingProfile;
+    const std::string modelNodeSelectorPrefix =
+        runtime.assets == nullptr ? "/preview/model" : runtime.assets->modelNodeSelectorPrefix;
     const std::string sourceTag = ResolveSourceTag(runtime);
     const float driveWeight = runtime.modelAssetNodeDriveProfile.driveWeight;
     profile.bodySlot = BuildSlotEntry(
         "body",
         "body_root",
+        modelNodeSelectorPrefix,
         sourceTag,
         binding.bodyEntry.bindWeight * driveWeight,
         slotsReady);
     profile.headSlot = BuildSlotEntry(
         "head",
         "head_anchor",
+        modelNodeSelectorPrefix,
         sourceTag,
         binding.headEntry.bindWeight * driveWeight,
         slotsReady);
     profile.appendageSlot = BuildSlotEntry(
         "appendage",
         "appendage_anchor",
+        modelNodeSelectorPrefix,
         sourceTag,
         binding.appendageEntry.bindWeight * driveWeight,
         slotsReady);
     profile.overlaySlot = BuildSlotEntry(
         "overlay",
         "overlay_anchor",
+        modelNodeSelectorPrefix,
         sourceTag,
         binding.overlayEntry.bindWeight * driveWeight,
         slotsReady);
     profile.groundingSlot = BuildSlotEntry(
         "grounding",
         "grounding_anchor",
+        modelNodeSelectorPrefix,
         sourceTag,
         binding.groundingEntry.bindWeight * driveWeight,
         slotsReady);
