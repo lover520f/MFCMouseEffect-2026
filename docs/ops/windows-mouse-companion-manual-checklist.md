@@ -552,7 +552,8 @@ If those hidden fields change while the host is already active, the Windows visu
    - this list should no longer include `renderer_draw_execution`; if it reappears, treat it as a regression in the real-renderer draw seam
    - default selection should continue to resolve to the placeholder path until a real backend becomes available
 10. Hidden rollout-gate validation:
-   - set `MFX_WIN32_MOUSE_COMPANION_REAL_RENDERER_ENABLE=1`
+   - archived after the 2026-03-24 native Windows 3D rollback; do not treat this as a normal mainline validation path anymore
+   - if someone intentionally revives the old experimental seam, set `MFX_WIN32_MOUSE_COMPANION_REAL_RENDERER_ENABLE=1`
    - optionally set `MFX_WIN32_MOUSE_COMPANION_RENDERER_BACKEND=real`
    - for test dispatch, you can also send:
      - `wait_for_frame_ms`
