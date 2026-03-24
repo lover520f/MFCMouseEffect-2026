@@ -32,6 +32,14 @@ Expected long-term stack:
 Conceptually:
 - `asset coordinator -> presenter/runtime -> renderer backend`
 
+## Mainline Rollback Note (2026-03-24)
+- The experimental Windows-native 3D branch (`glb` parsing, node-match/proxy/mesh layers, and later deep renderer-owned seam expansion) has been intentionally removed from the shipping mainline.
+- Current repository truth:
+  - keep the cross-platform input/runtime interfaces
+  - keep the macOS model-first implementation
+  - keep Windows on the existing stable stylized preview / placeholder-compatible renderer path
+- Any future Windows 3D work should restart on a separate implementation track instead of reviving the removed native experiment inside the current mainline renderer.
+
 ## Stable Upstream Inputs
 A future Windows real renderer must be able to consume the same conceptual inputs already carried by the current host contract.
 
