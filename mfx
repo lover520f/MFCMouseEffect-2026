@@ -64,6 +64,42 @@ to_positive_int() {
     echo "$value"
 }
 
+detect_windows_host() {
+    case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*)
+        return 0
+        ;;
+    *)
+        return 1
+        ;;
+    esac
+}
+
+require_windows_host() {
+    if ! detect_windows_host; then
+        echo "this Windows build entrypoint is Windows-only" >&2
+        exit 1
+    fi
+}
+
+find_msbuild() {
+    local candidates=(
+        "/c/Program Files/Microsoft Visual Studio/18/Professional/MSBuild/Current/Bin/amd64/MSBuild.exe"
+        "/c/Program Files/Microsoft Visual Studio/18/Professional/MSBuild/Current/Bin/MSBuild.exe"
+        "/c/Program Files/Microsoft Visual Studio/18/Insiders/MSBuild/Current/Bin/amd64/MSBuild.exe"
+        "/c/Program Files/Microsoft Visual Studio/18/Insiders/MSBuild/Current/Bin/MSBuild.exe"
+    )
+    local candidate
+    for candidate in "${candidates[@]}"; do
+        if [[ -x "$candidate" ]]; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+    echo "MSBuild.exe not found in expected VS2026 locations" >&2
+    exit 1
+}
+
 run_start() {
     local skip_build="$1"
     local skip_webui_build="$2"
@@ -195,36 +231,31 @@ run_package() {
 }
 
 run_build() {
-    local -a args=()
-    local build_script=""
-    case "$OSTYPE" in
-    msys*|cygwin*|win32*)
-        build_script="$repo_root/tools/platform/build/build-windows-project.sh"
-        ;;
-    *)
-        echo "build is unsupported on this host platform: $OSTYPE" >&2
-        echo "use the platform-specific entrypoint for this host" >&2
-        exit 2
-        ;;
-    esac
+    require_windows_host
+    local configuration="Release"
+    local enable_windows_gpu_effects=false
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-        --gpu|--no-gpu)
-            args+=("$1")
+        --gpu)
+            enable_windows_gpu_effects=true
+            shift
+            ;;
+        --no-gpu)
+            enable_windows_gpu_effects=false
             shift
             ;;
         --release)
-            args+=(--configuration Release)
+            configuration="Release"
             shift
             ;;
         --shipping)
-            args+=(--configuration Shipping)
+            configuration="Shipping"
             shift
             ;;
         --configuration)
             [[ $# -ge 2 ]] || { echo "missing value for --configuration" >&2; exit 2; }
-            args+=("$1" "$2")
+            configuration="$2"
             shift 2
             ;;
         *)
@@ -234,7 +265,31 @@ run_build() {
         esac
     done
 
-    exec "$build_script" "${args[@]}"
+    case "$configuration" in
+    Release|Shipping)
+        ;;
+    *)
+        echo "unsupported Windows configuration: $configuration" >&2
+        exit 2
+        ;;
+    esac
+
+    local project_path="$repo_root/MFCMouseEffect/MFCMouseEffect.vcxproj"
+    if [[ ! -f "$project_path" ]]; then
+        echo "missing project file: $project_path" >&2
+        exit 1
+    fi
+
+    local msbuild_exe=""
+    msbuild_exe="$(find_msbuild)"
+    exec env MSYS2_ARG_CONV_EXCL='*' "$msbuild_exe" \
+        "$(cygpath -w "$project_path")" \
+        /t:Build \
+        "/p:Configuration=$configuration" \
+        /p:Platform=x64 \
+        "/p:MfxEnableWindowsGpuEffects=$enable_windows_gpu_effects" \
+        /nologo \
+        /v:minimal
 }
 
 run_effects() {

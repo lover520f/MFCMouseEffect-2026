@@ -39,6 +39,24 @@ require_windows_host() {
     fi
 }
 
+find_msbuild() {
+    local candidates=(
+        "/c/Program Files/Microsoft Visual Studio/18/Professional/MSBuild/Current/Bin/amd64/MSBuild.exe"
+        "/c/Program Files/Microsoft Visual Studio/18/Professional/MSBuild/Current/Bin/MSBuild.exe"
+        "/c/Program Files/Microsoft Visual Studio/18/Insiders/MSBuild/Current/Bin/amd64/MSBuild.exe"
+        "/c/Program Files/Microsoft Visual Studio/18/Insiders/MSBuild/Current/Bin/MSBuild.exe"
+    )
+    local candidate
+    for candidate in "${candidates[@]}"; do
+        if [[ -x "$candidate" ]]; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+    echo "MSBuild.exe not found in expected VS2026 locations" >&2
+    exit 1
+}
+
 find_iscc() {
     local candidates=(
         "/d/inno_setup/Inno Setup 6/ISCC.exe"
@@ -116,7 +134,6 @@ fi
 
 project_path="$repo_root/MFCMouseEffect/MFCMouseEffect.vcxproj"
 iss_script_path="$repo_root/Install/MFCMouseEffect.iss"
-build_script_path="$repo_root/tools/platform/build/build-windows-project.sh"
 
 if [[ ! -f "$project_path" ]]; then
     echo "missing project file: $project_path" >&2
@@ -126,17 +143,19 @@ if [[ ! -f "$iss_script_path" ]]; then
     echo "missing installer script: $iss_script_path" >&2
     exit 1
 fi
-if [[ ! -f "$build_script_path" ]]; then
-    echo "missing build script: $build_script_path" >&2
-    exit 1
-fi
 
 mkdir -p "$output_dir"
 
 if [[ "$skip_build" != "1" ]]; then
-    "$build_script_path" \
-        --configuration Release \
-        "--$([[ "$enable_windows_gpu_effects" == "true" ]] && echo gpu || echo no-gpu)"
+    msbuild_exe="$(find_msbuild)"
+    MSYS2_ARG_CONV_EXCL='*' "$msbuild_exe" \
+        "$(cygpath -w "$project_path")" \
+        /t:Build \
+        /p:Configuration=Release \
+        /p:Platform=x64 \
+        "/p:MfxEnableWindowsGpuEffects=$enable_windows_gpu_effects" \
+        /nologo \
+        /v:minimal
 fi
 
 iscc_exe="$(find_iscc)"
