@@ -120,6 +120,23 @@ struct Win32MouseCompanionRealRendererModelProxyDetailLayer final {
     float highlightAlphaScale{1.0f};
 };
 
+struct Win32MouseCompanionRealRendererModelProxyFrameLayer final {
+    bool visible{false};
+    Gdiplus::RectF bodyRect{};
+    Gdiplus::RectF headRect{};
+    Gdiplus::RectF tailRect{};
+    Gdiplus::RectF leftHandRect{};
+    Gdiplus::RectF rightHandRect{};
+    Gdiplus::RectF leftLegRect{};
+    Gdiplus::RectF rightLegRect{};
+    Gdiplus::RectF chestRect{};
+    Gdiplus::RectF neckBridgeRect{};
+    float fillAlphaScale{1.0f};
+    float strokeAlphaScale{1.0f};
+    float appendageAlphaScale{1.0f};
+    float strokeWidthScale{1.0f};
+};
+
 struct Win32MouseCompanionRealRendererSceneGraphNode final {
     uint32_t nodeIndex{0};
     std::string nodeName;
@@ -364,6 +381,7 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::PointF accessoryRibbonRightFoldStart{};
     Gdiplus::PointF accessoryRibbonRightFoldEnd{};
     Win32MouseCompanionRealRendererActionOverlay actionOverlay{};
+    Win32MouseCompanionRealRendererModelProxyFrameLayer modelProxyFrameLayer{};
     Win32MouseCompanionRealRendererModelProxyDetailLayer modelProxyDetailLayer{};
     Win32MouseCompanionRealRendererModelProxyAdornmentLayer modelProxyAdornmentLayer{};
     Win32MouseCompanionRealRendererModelProxyActionLayer modelProxyActionLayer{};

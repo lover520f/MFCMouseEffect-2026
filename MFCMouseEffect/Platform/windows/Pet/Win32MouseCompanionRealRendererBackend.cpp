@@ -112,6 +112,7 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelProxyEarProjector.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelProxyExpressionProjector.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelProxyFaceProjector.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelProxyFrameLayerProjector.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelProxyFrameProjector.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelProxyPaletteProjector.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelProxySurfaceBuilder.h"
@@ -288,6 +289,7 @@ void Win32MouseCompanionRealRendererBackend::Render(
     ApplyWin32MouseCompanionRealRendererModelProxyFaceProjector(scene);
     ApplyWin32MouseCompanionRealRendererModelProxyEarProjector(scene);
     ApplyWin32MouseCompanionRealRendererModelProxyExpressionProjector(scene);
+    ApplyWin32MouseCompanionRealRendererModelProxyFrameLayerProjector(scene);
     ApplyWin32MouseCompanionRealRendererModelProxyDetailLayerProjector(scene);
     ApplyWin32MouseCompanionRealRendererModelProxyAppendageProjector(scene);
     ApplyWin32MouseCompanionRealRendererModelProxyFootprintProjector(scene);

@@ -643,6 +643,70 @@ void DrawModelProxyDetailLayer(
     }
 }
 
+void DrawModelProxyFrameLayer(
+    Gdiplus::Graphics* graphics,
+    const Win32MouseCompanionRealRendererScene& scene) {
+    if (!graphics || !scene.modelProxyFrameLayer.visible) {
+        return;
+    }
+
+    const auto& layer = scene.modelProxyFrameLayer;
+    FillRoundedRect(
+        graphics,
+        layer.bodyRect,
+        WithScaledAlpha(scene.bodyFill, scene.bodyFill.GetA(), layer.fillAlphaScale),
+        WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), layer.strokeAlphaScale),
+        scene.bodyStrokeWidth * layer.strokeWidthScale);
+    FillEllipse(
+        graphics,
+        layer.chestRect,
+        WithScaledAlpha(scene.headFill, scene.chestFillAlpha, layer.fillAlphaScale),
+        WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), layer.strokeAlphaScale),
+        scene.chestStrokeWidth * layer.strokeWidthScale);
+    FillEllipse(
+        graphics,
+        layer.neckBridgeRect,
+        WithScaledAlpha(scene.headFillRear, 178.0f, layer.fillAlphaScale),
+        Gdiplus::Color(0, 0, 0, 0),
+        0.0f);
+    FillEllipse(
+        graphics,
+        layer.headRect,
+        WithScaledAlpha(scene.headFill, scene.headFill.GetA(), layer.fillAlphaScale),
+        WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), layer.strokeAlphaScale),
+        scene.headStrokeWidth * layer.strokeWidthScale);
+    FillEllipse(
+        graphics,
+        layer.tailRect,
+        WithScaledAlpha(scene.tailFill, scene.tailFill.GetA(), layer.fillAlphaScale),
+        WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), layer.strokeAlphaScale),
+        scene.tailStrokeWidth * layer.strokeWidthScale);
+    FillRoundedRect(
+        graphics,
+        layer.leftHandRect,
+        WithScaledAlpha(scene.bodyFillRear, scene.bodyFillRear.GetA(), layer.appendageAlphaScale),
+        WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), layer.strokeAlphaScale),
+        scene.limbStrokeWidth * layer.strokeWidthScale);
+    FillRoundedRect(
+        graphics,
+        layer.rightHandRect,
+        WithScaledAlpha(scene.bodyFillRear, scene.bodyFillRear.GetA(), layer.appendageAlphaScale),
+        WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), layer.strokeAlphaScale),
+        scene.limbStrokeWidth * layer.strokeWidthScale);
+    FillRoundedRect(
+        graphics,
+        layer.leftLegRect,
+        WithScaledAlpha(scene.bodyFillRear, scene.bodyFillRear.GetA(), layer.appendageAlphaScale),
+        WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), layer.strokeAlphaScale),
+        scene.limbStrokeWidth * layer.strokeWidthScale);
+    FillRoundedRect(
+        graphics,
+        layer.rightLegRect,
+        WithScaledAlpha(scene.bodyFillRear, scene.bodyFillRear.GetA(), layer.appendageAlphaScale),
+        WithScaledAlpha(scene.bodyStroke, scene.bodyStroke.GetA(), layer.strokeAlphaScale),
+        scene.limbStrokeWidth * layer.strokeWidthScale);
+}
+
 } // namespace
 
 void Win32MouseCompanionRealRendererPainter::Paint(
@@ -665,6 +729,7 @@ void Win32MouseCompanionRealRendererPainter::Paint(
     graphics->FillEllipse(&shadowBrush, scene.shadowRect);
     DrawModelSceneGraph(graphics, scene);
     DrawModelProxyLayer(graphics, scene);
+    DrawModelProxyFrameLayer(graphics, scene);
     DrawModelProxyDetailLayer(graphics, scene);
     DrawModelProxyAdornmentLayer(graphics, scene);
     DrawModelProxyActionLayer(graphics, scene.modelProxyActionLayer);
