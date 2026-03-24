@@ -395,6 +395,8 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeDriverRegistryProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeConsumerProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeConsumerRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeProjectionProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeProjectionRegistryProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeAdapterProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeBindingProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeBindingProfile.h" />
@@ -840,6 +842,8 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeDriverRegistryProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeConsumerProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeConsumerRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeProjectionProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeProjectionRegistryProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeAdapterProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeBindingProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeBindingProfile.cpp" />

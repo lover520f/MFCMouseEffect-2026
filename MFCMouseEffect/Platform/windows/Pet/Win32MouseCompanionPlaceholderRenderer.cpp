@@ -389,6 +389,22 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only";
     diagnostics.sceneRuntimeModelAssetNodeConsumerRegistryValueBrief =
         "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00";
+    diagnostics.sceneRuntimeModelAssetNodeProjectionState = "preview_only";
+    diagnostics.sceneRuntimeModelAssetNodeProjectionEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetNodeProjectionResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetNodeProjectionBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeModelAssetNodeProjectionProjectionBrief =
+        "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only";
+    diagnostics.sceneRuntimeModelAssetNodeProjectionValueBrief =
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00";
+    diagnostics.sceneRuntimeModelAssetNodeProjectionRegistryState = "preview_only";
+    diagnostics.sceneRuntimeModelAssetNodeProjectionRegistryEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetNodeProjectionRegistryResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetNodeProjectionRegistryBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeModelAssetNodeProjectionRegistryRegistryBrief =
+        "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only";
+    diagnostics.sceneRuntimeModelAssetNodeProjectionRegistryValueBrief =
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00";
     diagnostics.sceneRuntimeAssetNodeBindingState = "preview_only";
     diagnostics.sceneRuntimeAssetNodeBindingEntryCount = 0;
     diagnostics.sceneRuntimeAssetNodeBindingResolvedEntryCount = 0;
