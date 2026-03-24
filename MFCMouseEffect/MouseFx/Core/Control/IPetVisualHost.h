@@ -359,6 +359,22 @@ struct PetVisualHostRendererRuntimeDiagnostics {
         "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
     std::string sceneRuntimeModelAssetNodeMaterializationRegistryValueBrief{
         "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+    std::string sceneRuntimeModelAssetNodePresentationState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetNodePresentationEntryCount{0};
+    uint32_t sceneRuntimeModelAssetNodePresentationResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetNodePresentationBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetNodePresentationPresentationBrief{
+        "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetNodePresentationValueBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+    std::string sceneRuntimeModelAssetNodePresentationRegistryState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetNodePresentationRegistryEntryCount{0};
+    uint32_t sceneRuntimeModelAssetNodePresentationRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetNodePresentationRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetNodePresentationRegistryRegistryBrief{
+        "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetNodePresentationRegistryValueBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
     std::string sceneRuntimeAssetNodeBindingState{"preview_only"};
     uint32_t sceneRuntimeAssetNodeBindingEntryCount{0};
     uint32_t sceneRuntimeAssetNodeBindingResolvedEntryCount{0};

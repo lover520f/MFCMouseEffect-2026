@@ -1,6 +1,6 @@
 # AI Context Map
 
-Generated: 2026-03-24T06:11:52.324Z
+Generated: 2026-03-24T06:22:53.938Z
 
 ## Goal
 Load minimal docs by task keyword while keeping AGENTS + current context as mandatory baseline.
@@ -59,7 +59,7 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 - `docs/ops/manual-commands.md` -> ~7166 tok
 - `docs/architecture/custom-effects-wasm-route.zh-CN.md` -> ~6872 tok
 - `docs/architecture/custom-effects-wasm-route.md` -> ~6707 tok
-- `docs/agent-context/current.md` -> ~6225 tok
+- `docs/agent-context/current.md` -> ~6238 tok
 - `docs/refactoring/phase-roadmap-macos-m1-status.md` -> ~5868 tok
 
 ## Notes

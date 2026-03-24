@@ -401,6 +401,8 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeRealizationRegistryProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeMaterializationProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeMaterializationRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodePresentationProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodePresentationRegistryProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeAdapterProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeBindingProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeBindingProfile.h" />
@@ -852,6 +854,8 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeRealizationRegistryProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeMaterializationProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeMaterializationRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodePresentationProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodePresentationRegistryProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeAdapterProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeBindingProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeBindingProfile.cpp" />

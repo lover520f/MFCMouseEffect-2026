@@ -79,6 +79,8 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeConsumerRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeMaterializationProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeMaterializationRegistryProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodePresentationProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodePresentationRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeProjectionProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeProjectionRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeRealizationProfile.h"
@@ -340,6 +342,16 @@ void Win32MouseCompanionRealRendererBackend::Render(
         sceneRuntime.modelAssetNodeMaterializationRegistryProfile;
     ApplyWin32MouseCompanionRealRendererModelAssetNodeMaterializationRegistryProfile(
         modelAssetNodeMaterializationRegistryProfile,
+        scene);
+    const auto modelAssetNodePresentationProfile =
+        sceneRuntime.modelAssetNodePresentationProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetNodePresentationProfile(
+        modelAssetNodePresentationProfile,
+        scene);
+    const auto modelAssetNodePresentationRegistryProfile =
+        sceneRuntime.modelAssetNodePresentationRegistryProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetNodePresentationRegistryProfile(
+        modelAssetNodePresentationRegistryProfile,
         scene);
     const auto poseResolverProfile =
         BuildWin32MouseCompanionRealRendererAssetNodePoseResolverProfile(
@@ -1079,6 +1091,30 @@ void Win32MouseCompanionRealRendererBackend::Render(
         sceneRuntime.modelAssetNodeMaterializationRegistryProfile.registryBrief;
     diagnostics.sceneRuntimeModelAssetNodeMaterializationRegistryValueBrief =
         sceneRuntime.modelAssetNodeMaterializationRegistryProfile.valueBrief;
+    diagnostics.sceneRuntimeModelAssetNodePresentationState =
+        sceneRuntime.modelAssetNodePresentationProfile.presentationState;
+    diagnostics.sceneRuntimeModelAssetNodePresentationEntryCount =
+        sceneRuntime.modelAssetNodePresentationProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetNodePresentationResolvedEntryCount =
+        sceneRuntime.modelAssetNodePresentationProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodePresentationBrief =
+        sceneRuntime.modelAssetNodePresentationProfile.brief;
+    diagnostics.sceneRuntimeModelAssetNodePresentationPresentationBrief =
+        sceneRuntime.modelAssetNodePresentationProfile.presentationBrief;
+    diagnostics.sceneRuntimeModelAssetNodePresentationValueBrief =
+        sceneRuntime.modelAssetNodePresentationProfile.valueBrief;
+    diagnostics.sceneRuntimeModelAssetNodePresentationRegistryState =
+        sceneRuntime.modelAssetNodePresentationRegistryProfile.presentationRegistryState;
+    diagnostics.sceneRuntimeModelAssetNodePresentationRegistryEntryCount =
+        sceneRuntime.modelAssetNodePresentationRegistryProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetNodePresentationRegistryResolvedEntryCount =
+        sceneRuntime.modelAssetNodePresentationRegistryProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodePresentationRegistryBrief =
+        sceneRuntime.modelAssetNodePresentationRegistryProfile.brief;
+    diagnostics.sceneRuntimeModelAssetNodePresentationRegistryRegistryBrief =
+        sceneRuntime.modelAssetNodePresentationRegistryProfile.registryBrief;
+    diagnostics.sceneRuntimeModelAssetNodePresentationRegistryValueBrief =
+        sceneRuntime.modelAssetNodePresentationRegistryProfile.valueBrief;
     diagnostics.sceneRuntimeAssetNodeBindingState =
         sceneRuntime.assetNodeBindingProfile.bindingState;
     diagnostics.sceneRuntimeAssetNodeBindingEntryCount =
