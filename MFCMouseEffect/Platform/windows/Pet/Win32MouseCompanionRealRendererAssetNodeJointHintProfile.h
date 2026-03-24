@@ -7,7 +7,7 @@ namespace mousefx::windows {
 
 struct Win32MouseCompanionRealRendererAssetNodePoseSolveProfile;
 struct Win32MouseCompanionRealRendererAssetNodeMatchCatalogProfile;
-struct Win32MouseCompanionRealRendererAssetNodeMatchResolveProfile;
+struct Win32MouseCompanionRealRendererAssetNodeMatchQueryProfile;
 struct Win32MouseCompanionRealRendererScene;
 
 struct Win32MouseCompanionRealRendererAssetNodeJointHintEntry final {
@@ -44,7 +44,7 @@ Win32MouseCompanionRealRendererAssetNodeJointHintProfile
 BuildWin32MouseCompanionRealRendererAssetNodeJointHintProfile(
     const Win32MouseCompanionRealRendererAssetNodePoseSolveProfile& solveProfile,
     const Win32MouseCompanionRealRendererAssetNodeMatchCatalogProfile& matchCatalogProfile,
-    const Win32MouseCompanionRealRendererAssetNodeMatchResolveProfile& matchResolveProfile);
+    const Win32MouseCompanionRealRendererAssetNodeMatchQueryProfile& matchQueryProfile);
 
 void ApplyWin32MouseCompanionRealRendererAssetNodeJointHintProfile(
     const Win32MouseCompanionRealRendererAssetNodeJointHintProfile& profile,
