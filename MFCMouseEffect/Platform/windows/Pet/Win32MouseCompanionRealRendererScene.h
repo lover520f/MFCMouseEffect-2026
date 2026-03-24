@@ -66,6 +66,22 @@ struct Win32MouseCompanionRealRendererSceneGraphLink final {
     float alpha{168.0f};
 };
 
+struct Win32MouseCompanionRealRendererModelProxyNode final {
+    std::string logicalNode;
+    Gdiplus::RectF bounds{};
+    Gdiplus::Color fill{};
+    float alpha{164.0f};
+    bool resolved{false};
+};
+
+struct Win32MouseCompanionRealRendererModelProxyLink final {
+    std::string logicalNode;
+    Gdiplus::PointF start{};
+    Gdiplus::PointF end{};
+    Gdiplus::Color color{};
+    float alpha{136.0f};
+};
+
 struct Win32MouseCompanionRealRendererScene final {
     float centerX{0.0f};
     float centerY{0.0f};
@@ -254,6 +270,9 @@ struct Win32MouseCompanionRealRendererScene final {
     std::vector<Win32MouseCompanionRealRendererSceneGraphNode> modelSceneGraphNodes{};
     std::vector<Win32MouseCompanionRealRendererSceneGraphEdge> modelSceneGraphEdges{};
     std::vector<Win32MouseCompanionRealRendererSceneGraphLink> modelSceneGraphLinks{};
+    bool modelProxyVisible{false};
+    std::vector<Win32MouseCompanionRealRendererModelProxyNode> modelProxyNodes{};
+    std::vector<Win32MouseCompanionRealRendererModelProxyLink> modelProxyLinks{};
 };
 
 } // namespace mousefx::windows

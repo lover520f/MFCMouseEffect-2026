@@ -213,6 +213,35 @@ void DrawModelSceneGraph(
     }
 }
 
+void DrawModelProxyLayer(
+    Gdiplus::Graphics* graphics,
+    const Win32MouseCompanionRealRendererScene& scene) {
+    if (!graphics || !scene.modelProxyVisible) {
+        return;
+    }
+
+    Gdiplus::Pen linkPen(Gdiplus::Color(144, 146, 214, 255), 2.0f);
+    linkPen.SetStartCap(Gdiplus::LineCapRound);
+    linkPen.SetEndCap(Gdiplus::LineCapRound);
+    for (const auto& link : scene.modelProxyLinks) {
+        linkPen.SetColor(Gdiplus::Color(
+            static_cast<BYTE>(std::clamp(link.alpha, 0.0f, 255.0f)),
+            link.color.GetR(),
+            link.color.GetG(),
+            link.color.GetB()));
+        graphics->DrawLine(&linkPen, link.start, link.end);
+    }
+
+    for (const auto& node : scene.modelProxyNodes) {
+        FillEllipse(
+            graphics,
+            node.bounds,
+            WithAlpha(node.fill, node.alpha),
+            WithAlpha(node.fill, std::min(255.0f, node.alpha + 36.0f)),
+            1.1f);
+    }
+}
+
 void DrawActionOverlay(
     Gdiplus::Graphics* graphics,
     const Win32MouseCompanionRealRendererActionOverlay& overlay,
@@ -290,6 +319,7 @@ void Win32MouseCompanionRealRendererPainter::Paint(
     graphics->FillEllipse(&glowBrush, scene.glowRect);
     graphics->FillEllipse(&shadowBrush, scene.shadowRect);
     DrawModelSceneGraph(graphics, scene);
+    DrawModelProxyLayer(graphics, scene);
     DrawActionOverlay(graphics, scene.actionOverlay, scene.bodyStroke);
     FillRoundedRect(
         graphics,
