@@ -395,6 +395,24 @@ public:
             "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
         std::string rendererRuntimeSceneRuntimeModelAssetNodeExecuteValueBrief{
             "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeCommandState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeCommandEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeCommandResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeCommandBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeCommandCommandBrief{
+            "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeCommandValueBrief{
+            "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeControllerState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeControllerEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeControllerResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeControllerBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeControllerControllerBrief{
+            "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeControllerValueBrief{
+            "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
         std::string rendererRuntimeSceneRuntimeAssetNodeBindingState{"preview_only"};
         uint32_t rendererRuntimeSceneRuntimeAssetNodeBindingEntryCount{0};
         uint32_t rendererRuntimeSceneRuntimeAssetNodeBindingResolvedEntryCount{0};

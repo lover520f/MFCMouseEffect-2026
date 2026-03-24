@@ -490,6 +490,30 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeModelAssetNodeExecuteExecuteBrief;
     diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeExecuteValueBrief =
         rendererRuntime.sceneRuntimeModelAssetNodeExecuteValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeCommandState =
+        rendererRuntime.sceneRuntimeModelAssetNodeCommandState;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeCommandEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetNodeCommandEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeCommandResolvedEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetNodeCommandResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeCommandBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeCommandBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeCommandCommandBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeCommandCommandBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeCommandValueBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeCommandValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeControllerState =
+        rendererRuntime.sceneRuntimeModelAssetNodeControllerState;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeControllerEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetNodeControllerEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeControllerResolvedEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetNodeControllerResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeControllerBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeControllerBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeControllerControllerBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeControllerControllerBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetNodeControllerValueBrief =
+        rendererRuntime.sceneRuntimeModelAssetNodeControllerValueBrief;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeBindingState =
         rendererRuntime.sceneRuntimeAssetNodeBindingState;
     diagnostics.rendererRuntime.sceneRuntimeAssetNodeBindingEntryCount =

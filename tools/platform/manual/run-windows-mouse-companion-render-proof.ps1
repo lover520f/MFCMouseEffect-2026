@@ -851,6 +851,48 @@ function Add-ModelAssetNodeExecuteSummaryProperty($Node) {
     $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_execute_brief" -NotePropertyValue $brief
 }
 
+function Format-ModelAssetNodeCommandSummary($Node) {
+    if ($null -eq $Node) { return "" }
+    $existing = [string]$Node.scene_runtime_model_asset_node_command_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) { return $existing }
+    $state = [string]$Node.scene_runtime_model_asset_node_command_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_command_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_command_resolved_entry_count)
+    return ("{0}/{1}/{2}" -f $state, $entryCount, $resolved)
+}
+
+function Add-ModelAssetNodeCommandSummaryProperty($Node) {
+    if ($null -eq $Node) { return }
+    $brief = Format-ModelAssetNodeCommandSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_command_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_command_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_command_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetNodeControllerSummary($Node) {
+    if ($null -eq $Node) { return "" }
+    $existing = [string]$Node.scene_runtime_model_asset_node_controller_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) { return $existing }
+    $state = [string]$Node.scene_runtime_model_asset_node_controller_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_controller_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_controller_resolved_entry_count)
+    return ("{0}/{1}/{2}" -f $state, $entryCount, $resolved)
+}
+
+function Add-ModelAssetNodeControllerSummaryProperty($Node) {
+    if ($null -eq $Node) { return }
+    $brief = Format-ModelAssetNodeControllerSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_controller_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_controller_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_controller_brief" -NotePropertyValue $brief
+}
+
 function Format-ModelNodeAdapterSummary($Node) {
     if ($null -eq $Node) {
         return "preview_only/0.00"
@@ -2826,6 +2868,8 @@ if ($Route -eq "sweep") {
                 Add-ModelAssetNodeRouteSummaryProperty $item.real_renderer_preview
                 Add-ModelAssetNodeDispatchSummaryProperty $item.real_renderer_preview
                 Add-ModelAssetNodeExecuteSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeCommandSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeControllerSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeSlotSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeRegistrySummaryProperty $item.real_renderer_preview
                 Add-AssetNodeBindingSummaryProperty $item.real_renderer_preview
@@ -2910,6 +2954,8 @@ if ($Route -eq "sweep") {
                     Add-ModelAssetNodeRouteSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelAssetNodeDispatchSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelAssetNodeExecuteSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeCommandSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeControllerSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeSlotSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeRegistrySummaryProperty $item.proof.renderer_runtime_after
                     Add-AssetNodeBindingSummaryProperty $item.proof.renderer_runtime_after
@@ -2997,6 +3043,8 @@ if ($Route -eq "sweep") {
         Add-ModelAssetNodeRouteSummaryProperty $response.real_renderer_preview
         Add-ModelAssetNodeDispatchSummaryProperty $response.real_renderer_preview
         Add-ModelAssetNodeExecuteSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeCommandSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeControllerSummaryProperty $response.real_renderer_preview
         Add-ModelNodeSlotSummaryProperty $response.real_renderer_preview
         Add-ModelNodeRegistrySummaryProperty $response.real_renderer_preview
         Add-AssetNodeBindingSummaryProperty $response.real_renderer_preview
@@ -3080,6 +3128,8 @@ if ($Route -eq "sweep") {
         Add-ModelAssetNodeRouteSummaryProperty $response.renderer_runtime_after
         Add-ModelAssetNodeDispatchSummaryProperty $response.renderer_runtime_after
         Add-ModelAssetNodeExecuteSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeCommandSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeControllerSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeSlotSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeRegistrySummaryProperty $response.renderer_runtime_after
         Add-AssetNodeBindingSummaryProperty $response.renderer_runtime_after
@@ -3522,6 +3572,10 @@ Write-Host ("  - model_asset_node_dispatch={0}" -f `
     (Format-ModelAssetNodeDispatchSummary $response.real_renderer_preview))
 Write-Host ("  - model_asset_node_execute={0}" -f `
     (Format-ModelAssetNodeExecuteSummary $response.real_renderer_preview))
+Write-Host ("  - model_asset_node_command={0}" -f `
+    (Format-ModelAssetNodeCommandSummary $response.real_renderer_preview))
+Write-Host ("  - model_asset_node_controller={0}" -f `
+    (Format-ModelAssetNodeControllerSummary $response.real_renderer_preview))
 Write-Host ("  - asset_node_binding={0}" -f `
     (Format-AssetNodeBindingSummary $response.real_renderer_preview))
 foreach ($failure in @($appearanceFailures)) {

@@ -236,6 +236,22 @@ struct Win32MouseCompanionRendererBackendRuntimeDiagnostics {
         "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
     std::string sceneRuntimeModelAssetNodeExecuteValueBrief{
         "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+    std::string sceneRuntimeModelAssetNodeCommandState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetNodeCommandEntryCount{0};
+    uint32_t sceneRuntimeModelAssetNodeCommandResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetNodeCommandBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetNodeCommandCommandBrief{
+        "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetNodeCommandValueBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+    std::string sceneRuntimeModelAssetNodeControllerState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetNodeControllerEntryCount{0};
+    uint32_t sceneRuntimeModelAssetNodeControllerResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetNodeControllerBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetNodeControllerControllerBrief{
+        "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetNodeControllerValueBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
     std::string sceneRuntimeAssetNodeBindingState{"preview_only"};
     uint32_t sceneRuntimeAssetNodeBindingEntryCount{0};
     uint32_t sceneRuntimeAssetNodeBindingResolvedEntryCount{0};

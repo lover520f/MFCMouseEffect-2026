@@ -685,6 +685,46 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetNodeExecuteValueBrief).empty()
             ? "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"
             : status.rendererRuntimeSceneRuntimeModelAssetNodeExecuteValueBrief;
+    diagnostics.sceneRuntimeModelAssetNodeCommandState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetNodeCommandState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetNodeCommandState;
+    diagnostics.sceneRuntimeModelAssetNodeCommandEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeCommandEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodeCommandResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeCommandResolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodeCommandBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetNodeCommandBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeModelAssetNodeCommandBrief;
+    diagnostics.sceneRuntimeModelAssetNodeCommandCommandBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetNodeCommandCommandBrief).empty()
+            ? "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetNodeCommandCommandBrief;
+    diagnostics.sceneRuntimeModelAssetNodeCommandValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetNodeCommandValueBrief).empty()
+            ? "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"
+            : status.rendererRuntimeSceneRuntimeModelAssetNodeCommandValueBrief;
+    diagnostics.sceneRuntimeModelAssetNodeControllerState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetNodeControllerState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetNodeControllerState;
+    diagnostics.sceneRuntimeModelAssetNodeControllerEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeControllerEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodeControllerResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeControllerResolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodeControllerBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetNodeControllerBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeModelAssetNodeControllerBrief;
+    diagnostics.sceneRuntimeModelAssetNodeControllerControllerBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetNodeControllerControllerBrief).empty()
+            ? "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetNodeControllerControllerBrief;
+    diagnostics.sceneRuntimeModelAssetNodeControllerValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetNodeControllerValueBrief).empty()
+            ? "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"
+            : status.rendererRuntimeSceneRuntimeModelAssetNodeControllerValueBrief;
     diagnostics.sceneRuntimeAssetNodeBindingState =
         TrimAscii(status.rendererRuntimeSceneRuntimeAssetNodeBindingState).empty()
             ? "preview_only"
