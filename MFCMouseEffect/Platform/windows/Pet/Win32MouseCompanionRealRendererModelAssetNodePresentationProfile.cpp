@@ -137,8 +137,10 @@ BuildWin32MouseCompanionRealRendererModelAssetNodePresentationProfile(
 void ApplyWin32MouseCompanionRealRendererModelAssetNodePresentationProfile(
     const Win32MouseCompanionRealRendererModelAssetNodePresentationProfile& profile,
     Win32MouseCompanionRealRendererScene& scene) {
-    scene.bodyGlowRadius *= 1.0f + profile.presentationWeight * 0.014f;
-    scene.headGlowRadius *= 1.0f + profile.presentationWeight * 0.015f;
+    scene.glowAlpha = std::clamp(
+        scene.glowAlpha + profile.presentationWeight * 4.0f,
+        0.0f,
+        255.0f);
     scene.accessoryAlphaScale *= 1.0f + profile.presentationWeight * 0.010f;
     scene.eyeHighlightAlpha = std::clamp(
         scene.eyeHighlightAlpha + profile.presentationWeight * 2.5f,
