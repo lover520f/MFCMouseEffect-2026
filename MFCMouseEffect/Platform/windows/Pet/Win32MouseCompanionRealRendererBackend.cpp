@@ -97,6 +97,7 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSceneHookProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSourceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelSceneAdapterProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelScenePoseProjector.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererPainter.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererPoseAdapterProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRenderPluginHost.h"
@@ -258,6 +259,7 @@ void Win32MouseCompanionRealRendererBackend::Render(
     const auto worldSpaceProfile =
         BuildWin32MouseCompanionRealRendererAssetNodeWorldSpaceProfile(sceneRuntime, scene);
     ApplyWin32MouseCompanionRealRendererAssetNodeWorldSpaceProfile(worldSpaceProfile, scene);
+    ApplyWin32MouseCompanionRealRendererModelScenePoseProjector(worldSpaceProfile, scene);
     const auto poseProfile =
         BuildWin32MouseCompanionRealRendererAssetNodePoseProfile(
             sceneRuntime,

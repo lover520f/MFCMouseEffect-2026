@@ -829,6 +829,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererMotionProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelSceneAdapterProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelSceneGraphBuilder.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelScenePoseProjector.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSourceProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetManifestProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetCatalogProfile.cpp" />
