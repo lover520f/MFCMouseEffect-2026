@@ -41,6 +41,31 @@ struct Win32MouseCompanionRealRendererActionOverlay final {
     float followTrailBaseAlpha{150.0f};
 };
 
+struct Win32MouseCompanionRealRendererModelProxyActionLayer final {
+    Gdiplus::Color accentColor{};
+    bool clickShellVisible{false};
+    Gdiplus::RectF clickShellRect{};
+    float clickShellStrokeWidth{2.6f};
+    float clickShellAlpha{188.0f};
+    bool holdShellVisible{false};
+    Gdiplus::RectF holdShellRect{};
+    float holdShellAlpha{144.0f};
+    bool scrollShellVisible{false};
+    Gdiplus::RectF scrollShellRect{};
+    float scrollShellStartDeg{0.0f};
+    float scrollShellSweepDeg{0.0f};
+    float scrollShellStrokeWidth{3.4f};
+    float scrollShellAlpha{204.0f};
+    bool dragShellVisible{false};
+    Gdiplus::PointF dragShellStart{};
+    Gdiplus::PointF dragShellEnd{};
+    float dragShellStrokeWidth{2.8f};
+    float dragShellAlpha{196.0f};
+    bool followShellVisible{false};
+    std::array<Gdiplus::RectF, 3> followShellRects{};
+    float followShellBaseAlpha{138.0f};
+};
+
 struct Win32MouseCompanionRealRendererSceneGraphNode final {
     uint32_t nodeIndex{0};
     std::string nodeName;
@@ -285,6 +310,7 @@ struct Win32MouseCompanionRealRendererScene final {
     Gdiplus::PointF accessoryRibbonRightFoldStart{};
     Gdiplus::PointF accessoryRibbonRightFoldEnd{};
     Win32MouseCompanionRealRendererActionOverlay actionOverlay{};
+    Win32MouseCompanionRealRendererModelProxyActionLayer modelProxyActionLayer{};
     bool modelSceneGraphVisible{false};
     Gdiplus::RectF modelSceneGraphBounds{};
     std::vector<Win32MouseCompanionRealRendererSceneGraphNode> modelSceneGraphNodes{};

@@ -401,6 +401,68 @@ void DrawActionOverlay(
     }
 }
 
+void DrawModelProxyActionLayer(
+    Gdiplus::Graphics* graphics,
+    const Win32MouseCompanionRealRendererModelProxyActionLayer& layer) {
+    if (!graphics) {
+        return;
+    }
+
+    if (layer.followShellVisible) {
+        for (size_t i = 0; i < layer.followShellRects.size(); ++i) {
+            const float alpha =
+                std::max(40.0f, layer.followShellBaseAlpha - static_cast<float>(i) * 30.0f);
+            FillEllipse(
+                graphics,
+                layer.followShellRects[i],
+                WithAlpha(layer.accentColor, alpha),
+                Gdiplus::Color(0, 0, 0, 0),
+                0.0f);
+        }
+    }
+
+    if (layer.scrollShellVisible) {
+        Gdiplus::Pen arcPen(
+            WithAlpha(layer.accentColor, layer.scrollShellAlpha),
+            layer.scrollShellStrokeWidth);
+        arcPen.SetStartCap(Gdiplus::LineCapRound);
+        arcPen.SetEndCap(Gdiplus::LineCapRound);
+        graphics->DrawArc(
+            &arcPen,
+            layer.scrollShellRect,
+            layer.scrollShellStartDeg,
+            layer.scrollShellSweepDeg);
+    }
+
+    if (layer.dragShellVisible) {
+        Gdiplus::Pen dashPen(
+            WithAlpha(layer.accentColor, layer.dragShellAlpha),
+            layer.dragShellStrokeWidth);
+        dashPen.SetStartCap(Gdiplus::LineCapRound);
+        dashPen.SetEndCap(Gdiplus::LineCapRound);
+        const Gdiplus::REAL dashPattern[2] = {5.0f, 4.0f};
+        dashPen.SetDashPattern(dashPattern, 2);
+        graphics->DrawLine(&dashPen, layer.dragShellStart, layer.dragShellEnd);
+    }
+
+    if (layer.clickShellVisible) {
+        Gdiplus::Pen ringPen(
+            WithAlpha(layer.accentColor, layer.clickShellAlpha),
+            layer.clickShellStrokeWidth);
+        ringPen.SetAlignment(Gdiplus::PenAlignmentCenter);
+        graphics->DrawEllipse(&ringPen, layer.clickShellRect);
+    }
+
+    if (layer.holdShellVisible) {
+        FillRoundedRect(
+            graphics,
+            layer.holdShellRect,
+            WithAlpha(layer.accentColor, layer.holdShellAlpha),
+            Gdiplus::Color(0, 0, 0, 0),
+            0.0f);
+    }
+}
+
 } // namespace
 
 void Win32MouseCompanionRealRendererPainter::Paint(
@@ -423,6 +485,7 @@ void Win32MouseCompanionRealRendererPainter::Paint(
     graphics->FillEllipse(&shadowBrush, scene.shadowRect);
     DrawModelSceneGraph(graphics, scene);
     DrawModelProxyLayer(graphics, scene);
+    DrawModelProxyActionLayer(graphics, scene.modelProxyActionLayer);
     DrawActionOverlay(graphics, scene.actionOverlay, scene.bodyStroke);
     FillRoundedRect(
         graphics,
