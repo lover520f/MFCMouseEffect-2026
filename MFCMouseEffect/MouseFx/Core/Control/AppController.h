@@ -577,6 +577,27 @@ public:
             "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
         std::string rendererRuntimeSceneRuntimeModelAssetNodePresenceRegistryValueBrief{
             "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeOccupancyState{
+            "preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeOccupancyEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeOccupancyResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeOccupancyBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeOccupancyOccupancyBrief{
+            "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeOccupancyValueBrief{
+            "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeOccupancyRegistryState{
+            "preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeOccupancyRegistryEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetNodeOccupancyRegistryResolvedEntryCount{
+            0};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeOccupancyRegistryBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeOccupancyRegistryRegistryBrief{
+            "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetNodeOccupancyRegistryValueBrief{
+            "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
         std::string rendererRuntimeSceneRuntimeAssetNodeBindingState{"preview_only"};
         uint32_t rendererRuntimeSceneRuntimeAssetNodeBindingEntryCount{0};
         uint32_t rendererRuntimeSceneRuntimeAssetNodeBindingResolvedEntryCount{0};

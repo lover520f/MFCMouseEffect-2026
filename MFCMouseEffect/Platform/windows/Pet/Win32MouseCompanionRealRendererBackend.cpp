@@ -85,6 +85,8 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeVisibilityRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodePresenceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodePresenceRegistryProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeOccupancyProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeOccupancyRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeProjectionProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeProjectionRegistryProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetNodeRealizationProfile.h"
@@ -376,6 +378,16 @@ void Win32MouseCompanionRealRendererBackend::Render(
         sceneRuntime.modelAssetNodePresenceRegistryProfile;
     ApplyWin32MouseCompanionRealRendererModelAssetNodePresenceRegistryProfile(
         modelAssetNodePresenceRegistryProfile,
+        scene);
+    const auto modelAssetNodeOccupancyProfile =
+        sceneRuntime.modelAssetNodeOccupancyProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetNodeOccupancyProfile(
+        modelAssetNodeOccupancyProfile,
+        scene);
+    const auto modelAssetNodeOccupancyRegistryProfile =
+        sceneRuntime.modelAssetNodeOccupancyRegistryProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetNodeOccupancyRegistryProfile(
+        modelAssetNodeOccupancyRegistryProfile,
         scene);
     const auto poseResolverProfile =
         BuildWin32MouseCompanionRealRendererAssetNodePoseResolverProfile(
@@ -1187,6 +1199,30 @@ void Win32MouseCompanionRealRendererBackend::Render(
         sceneRuntime.modelAssetNodePresenceRegistryProfile.registryBrief;
     diagnostics.sceneRuntimeModelAssetNodePresenceRegistryValueBrief =
         sceneRuntime.modelAssetNodePresenceRegistryProfile.valueBrief;
+    diagnostics.sceneRuntimeModelAssetNodeOccupancyState =
+        sceneRuntime.modelAssetNodeOccupancyProfile.occupancyState;
+    diagnostics.sceneRuntimeModelAssetNodeOccupancyEntryCount =
+        sceneRuntime.modelAssetNodeOccupancyProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetNodeOccupancyResolvedEntryCount =
+        sceneRuntime.modelAssetNodeOccupancyProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodeOccupancyBrief =
+        sceneRuntime.modelAssetNodeOccupancyProfile.brief;
+    diagnostics.sceneRuntimeModelAssetNodeOccupancyOccupancyBrief =
+        sceneRuntime.modelAssetNodeOccupancyProfile.occupancyBrief;
+    diagnostics.sceneRuntimeModelAssetNodeOccupancyValueBrief =
+        sceneRuntime.modelAssetNodeOccupancyProfile.valueBrief;
+    diagnostics.sceneRuntimeModelAssetNodeOccupancyRegistryState =
+        sceneRuntime.modelAssetNodeOccupancyRegistryProfile.occupancyRegistryState;
+    diagnostics.sceneRuntimeModelAssetNodeOccupancyRegistryEntryCount =
+        sceneRuntime.modelAssetNodeOccupancyRegistryProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetNodeOccupancyRegistryResolvedEntryCount =
+        sceneRuntime.modelAssetNodeOccupancyRegistryProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetNodeOccupancyRegistryBrief =
+        sceneRuntime.modelAssetNodeOccupancyRegistryProfile.brief;
+    diagnostics.sceneRuntimeModelAssetNodeOccupancyRegistryRegistryBrief =
+        sceneRuntime.modelAssetNodeOccupancyRegistryProfile.registryBrief;
+    diagnostics.sceneRuntimeModelAssetNodeOccupancyRegistryValueBrief =
+        sceneRuntime.modelAssetNodeOccupancyRegistryProfile.valueBrief;
     diagnostics.sceneRuntimeAssetNodeBindingState =
         sceneRuntime.assetNodeBindingProfile.bindingState;
     diagnostics.sceneRuntimeAssetNodeBindingEntryCount =

@@ -382,6 +382,22 @@ struct MouseCompanionRealRendererPreviewDiagnostics {
         "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
     std::string sceneRuntimeModelAssetNodePresenceRegistryValueBrief{
         "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+    std::string sceneRuntimeModelAssetNodeOccupancyState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetNodeOccupancyEntryCount{0};
+    uint32_t sceneRuntimeModelAssetNodeOccupancyResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetNodeOccupancyBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetNodeOccupancyOccupancyBrief{
+        "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetNodeOccupancyValueBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
+    std::string sceneRuntimeModelAssetNodeOccupancyRegistryState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetNodeOccupancyRegistryEntryCount{0};
+    uint32_t sceneRuntimeModelAssetNodeOccupancyRegistryResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetNodeOccupancyRegistryBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetNodeOccupancyRegistryRegistryBrief{
+        "body:stub|head:stub|appendage:stub|overlay:stub|grounding:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetNodeOccupancyRegistryValueBrief{
+        "body:0.00|head:0.00|appendage:0.00|overlay:0.00|grounding:0.00|adapter:0.00"};
     std::string sceneRuntimeAssetNodeBindingState{"preview_only"};
     uint32_t sceneRuntimeAssetNodeBindingEntryCount{0};
     uint32_t sceneRuntimeAssetNodeBindingResolvedEntryCount{0};
