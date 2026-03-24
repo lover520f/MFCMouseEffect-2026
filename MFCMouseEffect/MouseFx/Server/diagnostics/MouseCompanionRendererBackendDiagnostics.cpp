@@ -361,6 +361,26 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetBindReadyValueBrief).empty()
             ? "bind:0.00|pose:0.00|adapter:0.00"
             : status.rendererRuntimeSceneRuntimeModelAssetBindReadyValueBrief;
+    diagnostics.sceneRuntimeModelAssetHandleState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetHandleState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetHandleState;
+    diagnostics.sceneRuntimeModelAssetHandleEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetHandleEntryCount;
+    diagnostics.sceneRuntimeModelAssetHandleResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetHandleResolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetHandleBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetHandleBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeModelAssetHandleBrief;
+    diagnostics.sceneRuntimeModelAssetHandleHandleBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetHandleHandleBrief).empty()
+            ? "model:model_handle|action:action_handle|appearance:appearance_handle|adapter:runtime_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetHandleHandleBrief;
+    diagnostics.sceneRuntimeModelAssetHandleValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetHandleValueBrief).empty()
+            ? "model:0.00|action:0.00|appearance:0.00|adapter:0.00"
+            : status.rendererRuntimeSceneRuntimeModelAssetHandleValueBrief;
     diagnostics.sceneRuntimeModelSceneAdapterState =
         TrimAscii(status.rendererRuntimeSceneRuntimeModelSceneAdapterState).empty()
             ? "preview_only"
@@ -371,6 +391,26 @@ EvaluateMouseCompanionRealRendererPreviewDiagnostics(
         TrimAscii(status.rendererRuntimeSceneRuntimeModelSceneAdapterBrief).empty()
             ? "preview_only/unknown/runtime_only"
             : status.rendererRuntimeSceneRuntimeModelSceneAdapterBrief;
+    diagnostics.sceneRuntimeModelAssetSceneHookState =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetSceneHookState).empty()
+            ? "preview_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetSceneHookState;
+    diagnostics.sceneRuntimeModelAssetSceneHookEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneHookEntryCount;
+    diagnostics.sceneRuntimeModelAssetSceneHookResolvedEntryCount =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneHookResolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetSceneHookBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetSceneHookBrief).empty()
+            ? "preview_only/0/0"
+            : status.rendererRuntimeSceneRuntimeModelAssetSceneHookBrief;
+    diagnostics.sceneRuntimeModelAssetSceneHookHookBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetSceneHookHookBrief).empty()
+            ? "scene:stub|pose:stub|grounding:stub|overlay:stub|adapter:runtime_only"
+            : status.rendererRuntimeSceneRuntimeModelAssetSceneHookHookBrief;
+    diagnostics.sceneRuntimeModelAssetSceneHookValueBrief =
+        TrimAscii(status.rendererRuntimeSceneRuntimeModelAssetSceneHookValueBrief).empty()
+            ? "scene:0.00|pose:0.00|grounding:0.00|overlay:0.00|adapter:0.00"
+            : status.rendererRuntimeSceneRuntimeModelAssetSceneHookValueBrief;
     diagnostics.sceneRuntimeModelNodeAdapterInfluence =
         status.rendererRuntimeSceneRuntimeModelNodeAdapterInfluence;
     diagnostics.sceneRuntimeModelNodeAdapterBrief =

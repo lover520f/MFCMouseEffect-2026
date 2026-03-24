@@ -63,6 +63,8 @@
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSessionProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetActivationProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetBindReadyProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetHandleProfile.h"
+#include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSceneHookProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelAssetSourceProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererModelSceneAdapterProfile.h"
 #include "Platform/windows/Pet/Win32MouseCompanionRealRendererPainter.h"
@@ -181,6 +183,16 @@ void Win32MouseCompanionRealRendererBackend::Render(
         sceneRuntime.modelAssetBindReadyProfile;
     ApplyWin32MouseCompanionRealRendererModelAssetBindReadyProfile(
         modelAssetBindReadyProfile,
+        scene);
+    const auto modelAssetHandleProfile =
+        sceneRuntime.modelAssetHandleProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetHandleProfile(
+        modelAssetHandleProfile,
+        scene);
+    const auto modelAssetSceneHookProfile =
+        sceneRuntime.modelAssetSceneHookProfile;
+    ApplyWin32MouseCompanionRealRendererModelAssetSceneHookProfile(
+        modelAssetSceneHookProfile,
         scene);
     const auto resolverProfile = sceneRuntime.assetNodeResolverProfile;
     const auto parentSpaceProfile = sceneRuntime.assetNodeParentSpaceProfile;
@@ -594,12 +606,36 @@ void Win32MouseCompanionRealRendererBackend::Render(
         modelAssetBindReadyProfile.bindingBrief;
     diagnostics.sceneRuntimeModelAssetBindReadyValueBrief =
         modelAssetBindReadyProfile.valueBrief;
+    diagnostics.sceneRuntimeModelAssetHandleState =
+        modelAssetHandleProfile.handleState;
+    diagnostics.sceneRuntimeModelAssetHandleEntryCount =
+        modelAssetHandleProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetHandleResolvedEntryCount =
+        modelAssetHandleProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetHandleBrief =
+        modelAssetHandleProfile.brief;
+    diagnostics.sceneRuntimeModelAssetHandleHandleBrief =
+        modelAssetHandleProfile.handleBrief;
+    diagnostics.sceneRuntimeModelAssetHandleValueBrief =
+        modelAssetHandleProfile.valueBrief;
     diagnostics.sceneRuntimeModelSceneAdapterState =
         sceneRuntime.modelSceneAdapterProfile.seamState;
     diagnostics.sceneRuntimeModelSceneSeamReadiness =
         sceneRuntime.modelSceneAdapterProfile.seamReadiness;
     diagnostics.sceneRuntimeModelSceneAdapterBrief =
         sceneRuntime.modelSceneAdapterProfile.brief;
+    diagnostics.sceneRuntimeModelAssetSceneHookState =
+        modelAssetSceneHookProfile.hookState;
+    diagnostics.sceneRuntimeModelAssetSceneHookEntryCount =
+        modelAssetSceneHookProfile.entryCount;
+    diagnostics.sceneRuntimeModelAssetSceneHookResolvedEntryCount =
+        modelAssetSceneHookProfile.resolvedEntryCount;
+    diagnostics.sceneRuntimeModelAssetSceneHookBrief =
+        modelAssetSceneHookProfile.brief;
+    diagnostics.sceneRuntimeModelAssetSceneHookHookBrief =
+        modelAssetSceneHookProfile.hookBrief;
+    diagnostics.sceneRuntimeModelAssetSceneHookValueBrief =
+        modelAssetSceneHookProfile.valueBrief;
     diagnostics.sceneRuntimeModelNodeAdapterInfluence =
         sceneRuntime.modelNodeAdapterProfile.influence;
     diagnostics.sceneRuntimeModelNodeAdapterBrief =

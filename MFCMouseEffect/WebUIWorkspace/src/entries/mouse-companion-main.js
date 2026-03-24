@@ -720,6 +720,20 @@ function writeRuntimeDiagnostics(runtimeState) {
     ),
   );
   writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_handle_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_handle_brief,
+      'preview_only/0/0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_handle_handle_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_handle_handle_brief,
+      'model:model_handle|action:action_handle|appearance:appearance_handle|adapter:runtime_only',
+    ),
+  );
+  writeTextValue(
     'mc_runtime_scene_runtime_model_scene_adapter_brief',
     normalizeRuntimeText(
       runtimeState.renderer_runtime_scene_runtime_model_scene_adapter_brief,
@@ -729,6 +743,20 @@ function writeRuntimeDiagnostics(runtimeState) {
   writeTextValue(
     'mc_runtime_scene_runtime_model_scene_seam_readiness',
     normalizeRuntimeText(runtimeState.renderer_runtime_scene_runtime_model_scene_seam_readiness, '0'),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_scene_hook_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_scene_hook_brief,
+      'preview_only/0/0',
+    ),
+  );
+  writeTextValue(
+    'mc_runtime_scene_runtime_model_asset_scene_hook_hook_brief',
+    normalizeRuntimeText(
+      runtimeState.renderer_runtime_scene_runtime_model_asset_scene_hook_hook_brief,
+      'scene:stub|pose:stub|grounding:stub|overlay:stub|adapter:runtime_only',
+    ),
   );
   writeTextValue(
     'mc_runtime_scene_runtime_model_node_adapter_brief',

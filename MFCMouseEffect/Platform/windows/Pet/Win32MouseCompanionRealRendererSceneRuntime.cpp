@@ -69,12 +69,16 @@ Win32MouseCompanionRealRendererSceneRuntime BuildWin32MouseCompanionRealRenderer
         BuildWin32MouseCompanionRealRendererModelAssetSessionProfile(sceneRuntime);
     sceneRuntime.modelAssetBindReadyProfile =
         BuildWin32MouseCompanionRealRendererModelAssetBindReadyProfile(sceneRuntime);
+    sceneRuntime.modelAssetHandleProfile =
+        BuildWin32MouseCompanionRealRendererModelAssetHandleProfile(sceneRuntime);
     sceneRuntime.modelSceneAdapterProfile =
         BuildWin32MouseCompanionRealRendererModelSceneAdapterProfile(
             assets,
             sceneRuntime.sceneRuntimeAdapterMode,
             sceneRuntime.poseFrameAvailable,
             sceneRuntime.poseBindingConfigured);
+    sceneRuntime.modelAssetSceneHookProfile =
+        BuildWin32MouseCompanionRealRendererModelAssetSceneHookProfile(sceneRuntime);
     sceneRuntime.poseAdapterProfile = BuildWin32MouseCompanionRealRendererPoseAdapterProfile(
         sceneRuntime.sceneRuntimeAdapterMode,
         sceneRuntime.sceneRuntimePoseSampleCount,

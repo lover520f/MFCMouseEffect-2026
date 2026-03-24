@@ -563,6 +563,60 @@ function Add-ModelAssetBindReadySummaryProperty($Node) {
     $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_bind_ready_brief" -NotePropertyValue $brief
 }
 
+function Format-ModelAssetHandleSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_handle_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_handle_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_handle_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_handle_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetHandleSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetHandleSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_handle_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_handle_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_handle_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetSceneHookSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_scene_hook_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_scene_hook_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_scene_hook_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_scene_hook_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetSceneHookSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetSceneHookSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_scene_hook_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_scene_hook_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_scene_hook_brief" -NotePropertyValue $brief
+}
+
 function Format-ModelNodeAdapterSummary($Node) {
     if ($null -eq $Node) {
         return "preview_only/0.00"
@@ -2521,7 +2575,9 @@ if ($Route -eq "sweep") {
                 Add-ModelAssetActivationSummaryProperty $item.real_renderer_preview
                 Add-ModelAssetSessionSummaryProperty $item.real_renderer_preview
                 Add-ModelAssetBindReadySummaryProperty $item.real_renderer_preview
+                Add-ModelAssetHandleSummaryProperty $item.real_renderer_preview
                 Add-ModelSceneAdapterSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetSceneHookSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeAdapterSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeChannelSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeGraphSummaryProperty $item.real_renderer_preview
@@ -2593,7 +2649,9 @@ if ($Route -eq "sweep") {
                     Add-ModelAssetActivationSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelAssetSessionSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelAssetBindReadySummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetHandleSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelSceneAdapterSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetSceneHookSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeAdapterSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeChannelSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeGraphSummaryProperty $item.proof.renderer_runtime_after
@@ -2668,7 +2726,9 @@ if ($Route -eq "sweep") {
         Add-ModelAssetActivationSummaryProperty $response.real_renderer_preview
         Add-ModelAssetSessionSummaryProperty $response.real_renderer_preview
         Add-ModelAssetBindReadySummaryProperty $response.real_renderer_preview
+        Add-ModelAssetHandleSummaryProperty $response.real_renderer_preview
         Add-ModelSceneAdapterSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetSceneHookSummaryProperty $response.real_renderer_preview
         Add-ModelNodeAdapterSummaryProperty $response.real_renderer_preview
         Add-ModelNodeChannelSummaryProperty $response.real_renderer_preview
         Add-ModelNodeGraphSummaryProperty $response.real_renderer_preview
@@ -2739,7 +2799,9 @@ if ($Route -eq "sweep") {
         Add-ModelAssetActivationSummaryProperty $response.renderer_runtime_after
         Add-ModelAssetSessionSummaryProperty $response.renderer_runtime_after
         Add-ModelAssetBindReadySummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetHandleSummaryProperty $response.renderer_runtime_after
         Add-ModelSceneAdapterSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetSceneHookSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeAdapterSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeChannelSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeGraphSummaryProperty $response.renderer_runtime_after

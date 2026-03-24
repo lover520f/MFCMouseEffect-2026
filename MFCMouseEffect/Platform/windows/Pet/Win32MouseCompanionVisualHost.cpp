@@ -294,12 +294,36 @@ PetVisualHostDiagnostics Win32MouseCompanionVisualHost::ReadDiagnostics() const 
         rendererRuntime.sceneRuntimeModelAssetBindReadyBindingBrief;
     diagnostics.rendererRuntime.sceneRuntimeModelAssetBindReadyValueBrief =
         rendererRuntime.sceneRuntimeModelAssetBindReadyValueBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetHandleState =
+        rendererRuntime.sceneRuntimeModelAssetHandleState;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetHandleEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetHandleEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetHandleResolvedEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetHandleResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetHandleBrief =
+        rendererRuntime.sceneRuntimeModelAssetHandleBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetHandleHandleBrief =
+        rendererRuntime.sceneRuntimeModelAssetHandleHandleBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetHandleValueBrief =
+        rendererRuntime.sceneRuntimeModelAssetHandleValueBrief;
     diagnostics.rendererRuntime.sceneRuntimeModelSceneAdapterState =
         rendererRuntime.sceneRuntimeModelSceneAdapterState;
     diagnostics.rendererRuntime.sceneRuntimeModelSceneSeamReadiness =
         rendererRuntime.sceneRuntimeModelSceneSeamReadiness;
     diagnostics.rendererRuntime.sceneRuntimeModelSceneAdapterBrief =
         rendererRuntime.sceneRuntimeModelSceneAdapterBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneHookState =
+        rendererRuntime.sceneRuntimeModelAssetSceneHookState;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneHookEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetSceneHookEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneHookResolvedEntryCount =
+        rendererRuntime.sceneRuntimeModelAssetSceneHookResolvedEntryCount;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneHookBrief =
+        rendererRuntime.sceneRuntimeModelAssetSceneHookBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneHookHookBrief =
+        rendererRuntime.sceneRuntimeModelAssetSceneHookHookBrief;
+    diagnostics.rendererRuntime.sceneRuntimeModelAssetSceneHookValueBrief =
+        rendererRuntime.sceneRuntimeModelAssetSceneHookValueBrief;
     diagnostics.rendererRuntime.sceneRuntimeModelNodeAdapterInfluence =
         rendererRuntime.sceneRuntimeModelNodeAdapterInfluence;
     diagnostics.rendererRuntime.sceneRuntimeModelNodeAdapterBrief =

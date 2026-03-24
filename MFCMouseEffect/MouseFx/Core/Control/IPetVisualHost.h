@@ -136,9 +136,25 @@ struct PetVisualHostRendererRuntimeDiagnostics {
         "binding:stub|pose:runtime_only|adapter:runtime_only"};
     std::string sceneRuntimeModelAssetBindReadyValueBrief{
         "bind:0.00|pose:0.00|adapter:0.00"};
+    std::string sceneRuntimeModelAssetHandleState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetHandleEntryCount{0};
+    uint32_t sceneRuntimeModelAssetHandleResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetHandleBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetHandleHandleBrief{
+        "model:model_handle|action:action_handle|appearance:appearance_handle|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetHandleValueBrief{
+        "model:0.00|action:0.00|appearance:0.00|adapter:0.00"};
     std::string sceneRuntimeModelSceneAdapterState{"preview_only"};
     float sceneRuntimeModelSceneSeamReadiness{0.0f};
     std::string sceneRuntimeModelSceneAdapterBrief{"preview_only/unknown/runtime_only"};
+    std::string sceneRuntimeModelAssetSceneHookState{"preview_only"};
+    uint32_t sceneRuntimeModelAssetSceneHookEntryCount{0};
+    uint32_t sceneRuntimeModelAssetSceneHookResolvedEntryCount{0};
+    std::string sceneRuntimeModelAssetSceneHookBrief{"preview_only/0/0"};
+    std::string sceneRuntimeModelAssetSceneHookHookBrief{
+        "scene:stub|pose:stub|grounding:stub|overlay:stub|adapter:runtime_only"};
+    std::string sceneRuntimeModelAssetSceneHookValueBrief{
+        "scene:0.00|pose:0.00|grounding:0.00|overlay:0.00|adapter:0.00"};
     float sceneRuntimeModelNodeAdapterInfluence{0.0f};
     std::string sceneRuntimeModelNodeAdapterBrief{"preview_only/0.00"};
     std::string sceneRuntimeModelNodeChannelBrief{

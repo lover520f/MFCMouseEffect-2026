@@ -525,6 +525,20 @@ function New-LaneSummary(
     } else {
         ""
     }
+    $runtimeModelAssetHandleBrief = if ($null -ne $preview) {
+        $existingModelAssetHandleBrief = [string]$preview.scene_runtime_model_asset_handle_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingModelAssetHandleBrief)) {
+            $existingModelAssetHandleBrief
+        } else {
+            $state = [string]$preview.scene_runtime_model_asset_handle_state
+            if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+            $entryCount = [int]([string]$preview.scene_runtime_model_asset_handle_entry_count)
+            $resolved = [int]([string]$preview.scene_runtime_model_asset_handle_resolved_entry_count)
+            "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+        }
+    } else {
+        ""
+    }
     $runtimeModelNodeAdapterBrief = if ($null -ne $preview) {
         $existingModelNodeBrief = [string]$preview.scene_runtime_model_node_adapter_brief
         if (-not [string]::IsNullOrWhiteSpace($existingModelNodeBrief)) {
@@ -532,6 +546,20 @@ function New-LaneSummary(
         } else {
             $influence = [double]([string]$preview.scene_runtime_model_node_adapter_influence)
             "preview_only/{0}" -f $influence.ToString("0.00")
+        }
+    } else {
+        ""
+    }
+    $runtimeModelAssetSceneHookBrief = if ($null -ne $preview) {
+        $existingModelAssetSceneHookBrief = [string]$preview.scene_runtime_model_asset_scene_hook_brief
+        if (-not [string]::IsNullOrWhiteSpace($existingModelAssetSceneHookBrief)) {
+            $existingModelAssetSceneHookBrief
+        } else {
+            $state = [string]$preview.scene_runtime_model_asset_scene_hook_state
+            if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+            $entryCount = [int]([string]$preview.scene_runtime_model_asset_scene_hook_entry_count)
+            $resolved = [int]([string]$preview.scene_runtime_model_asset_scene_hook_resolved_entry_count)
+            "{0}/{1}/{2}" -f $state, $entryCount, $resolved
         }
     } else {
         ""
@@ -1124,7 +1152,9 @@ function New-LaneSummary(
         runtime_model_asset_activation_brief = $runtimeModelAssetActivationBrief
         runtime_model_asset_session_brief = $runtimeModelAssetSessionBrief
         runtime_model_asset_bind_ready_brief = $runtimeModelAssetBindReadyBrief
+        runtime_model_asset_handle_brief = $runtimeModelAssetHandleBrief
         runtime_model_scene_adapter_brief = $runtimeModelSceneAdapterBrief
+        runtime_model_asset_scene_hook_brief = $runtimeModelAssetSceneHookBrief
         runtime_model_node_adapter_brief = $runtimeModelNodeAdapterBrief
         runtime_model_node_channel_brief = $runtimeModelNodeChannelBrief
         runtime_model_node_graph_brief = $runtimeModelNodeGraphBrief
@@ -1231,7 +1261,9 @@ function Compare-LaneAgainstBaseline(
         @{ name = "runtime_model_asset_activation_brief"; baseline = [string]$Baseline.runtime_model_asset_activation_brief; current = [string]$Lane.runtime_model_asset_activation_brief },
         @{ name = "runtime_model_asset_session_brief"; baseline = [string]$Baseline.runtime_model_asset_session_brief; current = [string]$Lane.runtime_model_asset_session_brief },
         @{ name = "runtime_model_asset_bind_ready_brief"; baseline = [string]$Baseline.runtime_model_asset_bind_ready_brief; current = [string]$Lane.runtime_model_asset_bind_ready_brief },
+        @{ name = "runtime_model_asset_handle_brief"; baseline = [string]$Baseline.runtime_model_asset_handle_brief; current = [string]$Lane.runtime_model_asset_handle_brief },
         @{ name = "runtime_model_scene_adapter_brief"; baseline = [string]$Baseline.runtime_model_scene_adapter_brief; current = [string]$Lane.runtime_model_scene_adapter_brief },
+        @{ name = "runtime_model_asset_scene_hook_brief"; baseline = [string]$Baseline.runtime_model_asset_scene_hook_brief; current = [string]$Lane.runtime_model_asset_scene_hook_brief },
         @{ name = "runtime_model_node_adapter_brief"; baseline = [string]$Baseline.runtime_model_node_adapter_brief; current = [string]$Lane.runtime_model_node_adapter_brief },
         @{ name = "runtime_model_node_channel_brief"; baseline = [string]$Baseline.runtime_model_node_channel_brief; current = [string]$Lane.runtime_model_node_channel_brief },
         @{ name = "runtime_model_node_graph_brief"; baseline = [string]$Baseline.runtime_model_node_graph_brief; current = [string]$Lane.runtime_model_node_graph_brief },
@@ -1372,6 +1404,8 @@ function New-LaneRecommendation(
             runtime_model_asset_activation_brief = [string]$lane.runtime_model_asset_activation_brief
             runtime_model_asset_session_brief = [string]$lane.runtime_model_asset_session_brief
             runtime_model_asset_bind_ready_brief = [string]$lane.runtime_model_asset_bind_ready_brief
+            runtime_model_asset_handle_brief = [string]$lane.runtime_model_asset_handle_brief
+            runtime_model_asset_scene_hook_brief = [string]$lane.runtime_model_asset_scene_hook_brief
             runtime_model_node_adapter_brief = [string]$lane.runtime_model_node_adapter_brief
             runtime_model_node_channel_brief = [string]$lane.runtime_model_node_channel_brief
             runtime_model_node_graph_brief = [string]$lane.runtime_model_node_graph_brief
@@ -1903,6 +1937,12 @@ function Write-LaneMatrixSummary(
     }
     if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_bind_ready_brief)) {
         $observationLines.Add(("- machine model asset bind-ready: `{0}`" -f $recommendation.runtime_model_asset_bind_ready_brief))
+    }
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_handle_brief)) {
+        $observationLines.Add(("- machine model asset handle: `{0}`" -f $recommendation.runtime_model_asset_handle_brief))
+    }
+    if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_asset_scene_hook_brief)) {
+        $observationLines.Add(("- machine model asset scene-hook: `{0}`" -f $recommendation.runtime_model_asset_scene_hook_brief))
     }
     if (-not [string]::IsNullOrWhiteSpace([string]$recommendation.runtime_model_node_adapter_brief)) {
         $observationLines.Add(("- machine model node adapter: `{0}`" -f $recommendation.runtime_model_node_adapter_brief))

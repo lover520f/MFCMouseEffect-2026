@@ -122,11 +122,23 @@ export function getMouseCompanionSectionMarkup() {
         <label>Model Bind Ready</label>
         <output id="mc_runtime_scene_runtime_model_asset_bind_ready_binding_brief">-</output>
 
+        <label>Model Asset Handle</label>
+        <output id="mc_runtime_scene_runtime_model_asset_handle_brief">-</output>
+
+        <label>Model Handle Route</label>
+        <output id="mc_runtime_scene_runtime_model_asset_handle_handle_brief">-</output>
+
         <label>Model Scene Adapter</label>
         <output id="mc_runtime_scene_runtime_model_scene_adapter_brief">-</output>
 
         <label>Model Scene Readiness</label>
         <output id="mc_runtime_scene_runtime_model_scene_seam_readiness">-</output>
+
+        <label>Model Asset Scene Hook</label>
+        <output id="mc_runtime_scene_runtime_model_asset_scene_hook_brief">-</output>
+
+        <label>Model Scene Hook</label>
+        <output id="mc_runtime_scene_runtime_model_asset_scene_hook_hook_brief">-</output>
 
         <label>Model Node Adapter</label>
         <output id="mc_runtime_scene_runtime_model_node_adapter_brief">-</output>

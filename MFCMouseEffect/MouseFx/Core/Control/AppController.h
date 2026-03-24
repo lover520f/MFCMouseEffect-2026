@@ -254,10 +254,28 @@ public:
             "binding:stub|pose:runtime_only|adapter:runtime_only"};
         std::string rendererRuntimeSceneRuntimeModelAssetBindReadyValueBrief{
             "bind:0.00|pose:0.00|adapter:0.00"};
+        std::string rendererRuntimeSceneRuntimeModelAssetHandleState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetHandleEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetHandleResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetHandleBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetHandleHandleBrief{
+            "model:model_handle|action:action_handle|appearance:appearance_handle|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetHandleValueBrief{
+            "model:0.00|action:0.00|appearance:0.00|adapter:0.00"};
         std::string rendererRuntimeSceneRuntimeModelSceneAdapterState{"preview_only"};
         float rendererRuntimeSceneRuntimeModelSceneSeamReadiness{0.0f};
         std::string rendererRuntimeSceneRuntimeModelSceneAdapterBrief{
             "preview_only/unknown/runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetSceneHookState{"preview_only"};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetSceneHookEntryCount{0};
+        uint32_t rendererRuntimeSceneRuntimeModelAssetSceneHookResolvedEntryCount{0};
+        std::string rendererRuntimeSceneRuntimeModelAssetSceneHookBrief{
+            "preview_only/0/0"};
+        std::string rendererRuntimeSceneRuntimeModelAssetSceneHookHookBrief{
+            "scene:stub|pose:stub|grounding:stub|overlay:stub|adapter:runtime_only"};
+        std::string rendererRuntimeSceneRuntimeModelAssetSceneHookValueBrief{
+            "scene:0.00|pose:0.00|grounding:0.00|overlay:0.00|adapter:0.00"};
         float rendererRuntimeSceneRuntimeModelNodeAdapterInfluence{0.0f};
         std::string rendererRuntimeSceneRuntimeModelNodeAdapterBrief{
             "preview_only/0.00"};

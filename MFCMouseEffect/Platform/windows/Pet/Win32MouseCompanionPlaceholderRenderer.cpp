@@ -216,7 +216,23 @@ void Win32MouseCompanionPlaceholderRenderer::Render(
         "binding:stub|pose:runtime_only|adapter:runtime_only";
     diagnostics.sceneRuntimeModelAssetBindReadyValueBrief =
         "bind:0.00|pose:0.00|adapter:0.00";
+    diagnostics.sceneRuntimeModelAssetHandleState = "preview_only";
+    diagnostics.sceneRuntimeModelAssetHandleEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetHandleResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetHandleBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeModelAssetHandleHandleBrief =
+        "model:model_handle|action:action_handle|appearance:appearance_handle|adapter:runtime_only";
+    diagnostics.sceneRuntimeModelAssetHandleValueBrief =
+        "model:0.00|action:0.00|appearance:0.00|adapter:0.00";
     diagnostics.sceneRuntimeModelNodeAdapterInfluence = 0.0f;
+    diagnostics.sceneRuntimeModelAssetSceneHookState = "preview_only";
+    diagnostics.sceneRuntimeModelAssetSceneHookEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetSceneHookResolvedEntryCount = 0;
+    diagnostics.sceneRuntimeModelAssetSceneHookBrief = "preview_only/0/0";
+    diagnostics.sceneRuntimeModelAssetSceneHookHookBrief =
+        "scene:stub|pose:stub|grounding:stub|overlay:stub|adapter:runtime_only";
+    diagnostics.sceneRuntimeModelAssetSceneHookValueBrief =
+        "scene:0.00|pose:0.00|grounding:0.00|overlay:0.00|adapter:0.00";
     diagnostics.sceneRuntimeModelNodeAdapterBrief =
         modelSceneAdapterProfile.seamState + "/0.00";
     diagnostics.sceneRuntimeModelNodeChannelBrief =
