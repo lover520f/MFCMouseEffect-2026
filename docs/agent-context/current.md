@@ -18,7 +18,7 @@
 ## Capability Snapshot
 ### Visual Effects / WASM
 - `click / trail / scroll / hold / hover` are active in `core`.
-- New additive lane `cursor_decoration` is active through the existing input-indicator overlay seam; current built-in decoration plugin ids are `ring`, `orb`, and `meteor_head`, and the lane now appears under `Cursor Effects` as the sixth built-in channel plus an `Effect Plugins -> Cursor Decoration` card while still persisting under `input_indicator.cursor_decoration`.
+- New additive lane `cursor_decoration` is active through the existing input-indicator overlay seam; current built-in decoration plugin ids are `ring` and `orb`, and the lane now appears under `Cursor Effects` as the sixth built-in channel plus an `Effect Plugins -> Cursor Decoration` card while still persisting under `input_indicator.cursor_decoration`.
 - Shared command tail (`blend_mode / sort_key / group_id`) is active.
 - Group-retained model is active; transform/material/pass remain host-owned.
 - Windows blacklist routing root fix is active: pointer suppression resolves the process at the current screen point first, and trail synthetic-follow is limited to a short post-input smoothing window.
@@ -26,7 +26,7 @@
 
 ### Input Indicator
 - macOS/Windows label and streak semantics are aligned (`L xN`, `W+ xN`); indicator wasm dispatch has dedicated lanes, auto-inferred surface loading, immediate runtime sync on apply, and clean native fallback on missing/stale manifests.
-- macOS cursor-decoration visibility is now native too: `MacosInputIndicatorOverlay::OnMove(...)` drives a retained Swift decoration panel, so `ring / orb / meteor_head` now visibly follow the cursor head on mac instead of being Windows-only.
+- macOS cursor-decoration visibility is now native too: `MacosInputIndicatorOverlay::OnMove(...)` drives a retained Swift decoration panel, so `ring / orb` now visibly follow the cursor head on mac instead of being Windows-only.
 
 ### Plugin Management / WebUI
 - Unified top-level `Plugin Management` section is active, and sidebar order is now: `General -> Mouse Companion -> Cursor Effects -> Input Indicator -> Automation Mapping -> Plugin Management`

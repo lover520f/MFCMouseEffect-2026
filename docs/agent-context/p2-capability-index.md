@@ -30,7 +30,7 @@ Use it when P1 (`current.md`) is not enough and you need targeted deep context.
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/wasm-plugin-abi-v3-design.zh-CN.md`
 
 ## Cursor Effects / Decoration
-- Additive cursor decoration plugin lane (`ring / orb / meteor_head`):
+- Additive cursor decoration plugin lane (`ring / orb`):
   - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/architecture/cursor-decoration-plugin-contract.md`
 
 ## Server / WebSettings

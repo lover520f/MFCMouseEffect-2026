@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-25T00:54:58.376Z",
+  "generated_at": "2026-03-25T01:04:06.517Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -86,13 +86,13 @@
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
       "line_count": 220,
-      "size_bytes": 24235,
-      "estimated_tokens": 6059,
+      "size_bytes": 24205,
+      "estimated_tokens": 6052,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": false,
-      "hash_sha1": "83b2dbdca7dee5054e98d5bf0488640bc95ff7ab",
-      "updated_at": "2026-03-25T00:53:08.648Z"
+      "hash_sha1": "29340ad5d484490f2f06d6752acaa1a73b906e7b",
+      "updated_at": "2026-03-25T01:02:53.969Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -124,13 +124,13 @@
       "summary": "This file is a P2 routing map.",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
       "line_count": 86,
-      "size_bytes": 5137,
-      "estimated_tokens": 1285,
+      "size_bytes": 5123,
+      "estimated_tokens": 1281,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "bd65a5e439dcf8e81f9c554419aebaebe7b6a72f",
-      "updated_at": "2026-03-24T15:29:17.245Z"
+      "hash_sha1": "34e09c0ddcb933332f6acaadc641dd4fa5aab27c",
+      "updated_at": "2026-03-25T01:02:53.969Z"
     },
     {
       "id": "docs/architecture/agent-doc-governance.md",
@@ -215,14 +215,14 @@
       ],
       "summary": "cursor-decoration-plugin-contract",
       "when_to_read": "Read when task touches wasm runtime, plugin ABI, or sample behavior.",
-      "line_count": 50,
-      "size_bytes": 2362,
-      "estimated_tokens": 591,
-      "max_read_tokens": 711,
+      "line_count": 49,
+      "size_bytes": 2344,
+      "estimated_tokens": 586,
+      "max_read_tokens": 706,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "45110c5d154b37069d5f3677eb3f2cb85ae1edbe",
-      "updated_at": "2026-03-25T00:52:21.480Z"
+      "hash_sha1": "6a5fea333f2b69afacbc8f4e74972d8a1001d8f2",
+      "updated_at": "2026-03-25T01:02:53.969Z"
     },
     {
       "id": "docs/architecture/custom-effects-wasm-route.md",

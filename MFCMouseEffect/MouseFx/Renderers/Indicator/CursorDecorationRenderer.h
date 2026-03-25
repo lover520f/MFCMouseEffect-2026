@@ -40,11 +40,6 @@ private:
         const InputIndicatorConfig::CursorDecorationConfig& config,
         const CursorDecorationLayout& layout,
         const Gdiplus::Color& accent) const;
-    void RenderMeteorHead(
-        Gdiplus::Graphics& graphics,
-        const InputIndicatorConfig::CursorDecorationConfig& config,
-        const CursorDecorationLayout& layout,
-        const Gdiplus::Color& accent) const;
 };
 
 } // namespace mousefx

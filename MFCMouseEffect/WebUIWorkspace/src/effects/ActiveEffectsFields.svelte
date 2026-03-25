@@ -78,14 +78,25 @@
     return value[key] !== false;
   }
 
+  function resolveCursorDecorationDisabledLabel() {
+    if (typeof document === 'undefined') {
+      return 'None';
+    }
+    const lang = `${document.documentElement?.lang || ''}`.trim().toLowerCase();
+    return lang.startsWith('zh') ? '无' : 'None';
+  }
+
   const effectKeys = ['click', 'trail', 'scroll', 'hold', 'hover'];
-  const cursorDecorationDisabledOption = { value: '__disabled__', label: 'Disabled' };
   $: unsupportedEffects = effectKeys.filter((key) => !isSupported(key));
   $: hasEffectsProfile = !!effectsProfile && typeof effectsProfile === 'object' && Object.keys(effectsProfile).length > 0;
   $: effectsProfileText = hasEffectsProfile ? JSON.stringify(effectsProfile, null, 2) : '';
   $: normalizedCursorDecoration = normalizeCursorDecoration(cursorDecoration);
   $: decorationChannelValue = normalizeCursorDecorationChannelValue(normalizedCursorDecoration);
-  $: decorationChannelOptions = [cursorDecorationDisabledOption, ...(cursorDecorationOptions || [])];
+  $: cursorDecorationDisabledOption = {
+    value: '__disabled__',
+    label: resolveCursorDecorationDisabledLabel(),
+  };
+  $: decorationChannelOptions = [...(cursorDecorationOptions || []), cursorDecorationDisabledOption];
 
   async function copyEffectsProfile() {
     if (!effectsProfileText) {

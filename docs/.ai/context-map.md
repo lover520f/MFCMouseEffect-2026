@@ -1,6 +1,6 @@
 # AI Context Map
 
-Generated: 2026-03-25T00:54:58.376Z
+Generated: 2026-03-25T01:04:06.517Z
 
 ## Goal
 Load minimal docs by task keyword while keeping AGENTS + current context as mandatory baseline.
@@ -18,7 +18,7 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 - `docs/architecture/posix-core-automation-contract-workflow.md` (P2, 750 tok)
 
 ### wasm
-- `docs/architecture/cursor-decoration-plugin-contract.md` (P2, 711 tok)
+- `docs/architecture/cursor-decoration-plugin-contract.md` (P2, 706 tok)
 - `docs/architecture/custom-effects-wasm-route.md` (P2, 750 tok)
 - `docs/architecture/custom-effects-wasm-route.zh-CN.md` (P2, 750 tok)
 - `docs/architecture/mouse-companion-appearance-contract.zh-CN.md` (P2, 750 tok)
@@ -59,7 +59,7 @@ Load minimal docs by task keyword while keeping AGENTS + current context as mand
 - `docs/ops/manual-commands.md` -> ~7303 tok
 - `docs/architecture/custom-effects-wasm-route.zh-CN.md` -> ~6872 tok
 - `docs/architecture/custom-effects-wasm-route.md` -> ~6707 tok
-- `docs/agent-context/current.md` -> ~6059 tok
+- `docs/agent-context/current.md` -> ~6052 tok
 - `docs/refactoring/phase-roadmap-macos-m1-status.md` -> ~5868 tok
 
 ## Notes

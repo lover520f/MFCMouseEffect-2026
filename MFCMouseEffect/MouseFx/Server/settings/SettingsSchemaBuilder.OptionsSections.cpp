@@ -142,7 +142,6 @@ void AppendSettingsSchemaOptionsSections(const EffectConfig& config, json* out) 
         {"plugins", json::array({
             MakeOpt("ring", L"\u6307\u793a\u5708", L"Indicator Ring", lang),
             MakeOpt("orb", L"\u5149\u7403", L"Glow Orb", lang),
-            MakeOpt("meteor_head", L"\u6d41\u661f\u5934", L"Meteor Head", lang),
         })},
         {"size_px_range", {{"min", 12}, {"max", 72}, {"step", 1}}},
         {"alpha_percent_range", {{"min", 15}, {"max", 100}, {"step", 1}}},

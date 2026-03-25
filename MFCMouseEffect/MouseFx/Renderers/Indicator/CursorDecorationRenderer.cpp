@@ -33,14 +33,6 @@ CursorDecorationLayout CursorDecorationRenderer::ResolveLayout(
     const InputIndicatorConfig::CursorDecorationConfig& config) const {
     const int sizePx = std::clamp(config.sizePx, 12, 72);
     CursorDecorationLayout layout{};
-    if (config.pluginId == "meteor_head") {
-        layout.widthPx = std::max(40, sizePx * 6);
-        layout.heightPx = std::max(28, sizePx * 4);
-        layout.anchorOffsetXPx = static_cast<int>(std::lround(layout.widthPx * 0.72));
-        layout.anchorOffsetYPx = static_cast<int>(std::lround(layout.heightPx * 0.52));
-        return layout;
-    }
-
     layout.widthPx = std::max(36, sizePx * 4);
     layout.heightPx = std::max(36, sizePx * 4);
     layout.anchorOffsetXPx = layout.widthPx / 2;
@@ -55,10 +47,6 @@ void CursorDecorationRenderer::Render(
     const Gdiplus::Color accent = ParseHexColor(config.colorHex, config.alphaPercent);
     if (config.pluginId == "orb") {
         RenderOrb(graphics, config, layout, accent);
-        return;
-    }
-    if (config.pluginId == "meteor_head") {
-        RenderMeteorHead(graphics, config, layout, accent);
         return;
     }
     RenderRing(graphics, config, layout, accent);
@@ -176,63 +164,6 @@ void CursorDecorationRenderer::RenderOrb(
         centerY - radius * 0.34f,
         radius * 0.68f,
         radius * 0.68f);
-}
-
-void CursorDecorationRenderer::RenderMeteorHead(
-    Gdiplus::Graphics& graphics,
-    const InputIndicatorConfig::CursorDecorationConfig& config,
-    const CursorDecorationLayout& layout,
-    const Gdiplus::Color& accent) const {
-    const float centerX = static_cast<float>(layout.anchorOffsetXPx);
-    const float centerY = static_cast<float>(layout.anchorOffsetYPx);
-    const float headRadius = static_cast<float>(std::clamp(config.sizePx, 12, 72));
-
-    for (int i = 5; i >= 1; --i) {
-        const float t = static_cast<float>(i) / 5.0f;
-        const float radius = headRadius * (0.18f + 0.22f * t);
-        const float tailX = centerX - headRadius * (0.75f + 1.45f * t);
-        const float tailY = centerY + headRadius * (0.10f - 0.18f * t);
-        FillSoftEllipse(
-            graphics,
-            Gdiplus::RectF(tailX - radius, tailY - radius, radius * 2.0f, radius * 2.0f),
-            WithScaledAlpha(accent, 0.12f + 0.07f * t),
-            Gdiplus::Color(0, accent.GetR(), accent.GetG(), accent.GetB()));
-    }
-
-    for (int i = 0; i < 6; ++i) {
-        const float t = static_cast<float>(i) / 5.0f;
-        const float x0 = centerX - headRadius * (0.35f + 0.78f * t);
-        const float y0 = centerY + headRadius * (0.12f - 0.24f * t);
-        const float x1 = centerX - headRadius * (0.95f + 1.42f * t);
-        const float y1 = centerY + headRadius * (0.18f - 0.31f * t);
-        Gdiplus::Pen tailPen(WithScaledAlpha(accent, 0.14f + 0.08f * (1.0f - t)), std::max(1.0f, headRadius * (0.24f - 0.03f * i)));
-        tailPen.SetStartCap(Gdiplus::LineCapRound);
-        tailPen.SetEndCap(Gdiplus::LineCapRound);
-        graphics.DrawLine(&tailPen, x0, y0, x1, y1);
-    }
-
-    FillSoftEllipse(
-        graphics,
-        Gdiplus::RectF(centerX - headRadius * 1.85f, centerY - headRadius * 1.85f, headRadius * 3.7f, headRadius * 3.7f),
-        WithScaledAlpha(accent, 0.18f),
-        Gdiplus::Color(0, accent.GetR(), accent.GetG(), accent.GetB()));
-    FillSoftEllipse(
-        graphics,
-        Gdiplus::RectF(centerX - headRadius, centerY - headRadius, headRadius * 2.0f, headRadius * 2.0f),
-        WithScaledAlpha(accent, 0.9f),
-        WithScaledAlpha(accent, 0.26f));
-
-    Gdiplus::SolidBrush coreBrush(Gdiplus::Color(
-        static_cast<BYTE>(std::min<int>(255, accent.GetA() + 24)),
-        255,
-        255,
-        255));
-    graphics.FillEllipse(
-        &coreBrush,
-        centerX - headRadius * 0.34f,
-        centerY - headRadius * 0.34f,
-        headRadius * 0.68f,
-        headRadius * 0.68f);
 }
 
 } // namespace mousefx

@@ -194,8 +194,7 @@ MouseCompanionConfig SanitizeMouseCompanionConfig(MouseCompanionConfig config) {
 InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig config) {
     config.cursorDecoration.pluginId = ToLowerAscii(TrimAscii(config.cursorDecoration.pluginId));
     if (config.cursorDecoration.pluginId != "ring" &&
-        config.cursorDecoration.pluginId != "orb" &&
-        config.cursorDecoration.pluginId != "meteor_head") {
+        config.cursorDecoration.pluginId != "orb") {
         config.cursorDecoration.pluginId = "ring";
     }
     config.cursorDecoration.colorHex = TrimAscii(config.cursorDecoration.colorHex);

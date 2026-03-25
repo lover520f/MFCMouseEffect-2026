@@ -17,11 +17,6 @@ private struct MfxCursorDecorationLayout {
 
 private func mfxCursorDecorationLayout(pluginId: String, sizePx: Int) -> MfxCursorDecorationLayout {
     let size = max(12, min(72, sizePx))
-    if pluginId == "meteor_head" {
-        return MfxCursorDecorationLayout(
-            frameSize: CGSize(width: max(40, size * 6), height: max(28, size * 4))
-        )
-    }
     let side = max(36, size * 4)
     return MfxCursorDecorationLayout(frameSize: CGSize(width: side, height: side))
 }
@@ -85,8 +80,6 @@ private final class MfxCursorDecorationView: NSView {
         switch pluginId {
         case "orb":
             drawOrb(accent: accent)
-        case "meteor_head":
-            drawMeteorHead(accent: accent)
         default:
             drawRing(accent: accent)
         }
@@ -127,48 +120,6 @@ private final class MfxCursorDecorationView: NSView {
         NSBezierPath(ovalIn: core).fill()
     }
 
-    private func drawMeteorHead(accent: NSColor) {
-        let headRect = NSRect(
-            x: bounds.width * 0.56,
-            y: bounds.height * 0.25,
-            width: bounds.height * 0.50,
-            height: bounds.height * 0.50
-        )
-
-        for index in 0..<6 {
-            let t = CGFloat(index) / 5.0
-            let radius = CGFloat(sizePx) * (0.10 + 0.11 * (1.0 - t))
-            let cx = headRect.midX - CGFloat(sizePx) * (0.7 + 1.2 * t)
-            let cy = headRect.midY + CGFloat(sizePx) * (0.10 - 0.20 * t)
-            let dotRect = NSRect(x: cx - radius, y: cy - radius, width: radius * 2.0, height: radius * 2.0)
-            mfxCursorDecorationAlpha(accent, scale: 0.10 + 0.08 * (1.0 - t)).setFill()
-            NSBezierPath(ovalIn: dotRect).fill()
-        }
-
-        for index in 0..<5 {
-            let t = CGFloat(index) / 4.0
-            let path = NSBezierPath()
-            path.move(to: NSPoint(
-                x: headRect.midX - CGFloat(sizePx) * (0.35 + 0.55 * t),
-                y: headRect.midY + CGFloat(sizePx) * (0.05 - 0.10 * t)
-            ))
-            path.line(to: NSPoint(
-                x: headRect.midX - CGFloat(sizePx) * (1.10 + 1.15 * t),
-                y: headRect.midY + CGFloat(sizePx) * (0.12 - 0.18 * t)
-            ))
-            mfxCursorDecorationAlpha(accent, scale: 0.12 + 0.07 * (1.0 - t)).setStroke()
-            path.lineWidth = max(1.2, CGFloat(sizePx) * (0.20 - 0.02 * CGFloat(index)))
-            path.lineCapStyle = .round
-            path.stroke()
-        }
-
-        mfxCursorDecorationAlpha(accent, scale: 0.14).setFill()
-        NSBezierPath(ovalIn: headRect.insetBy(dx: -headRect.width * 0.45, dy: -headRect.height * 0.45)).fill()
-        mfxCursorDecorationAlpha(accent, scale: 0.90).setFill()
-        NSBezierPath(ovalIn: headRect).fill()
-        mfxCursorDecorationAlpha(.white, scale: 0.92).setFill()
-        NSBezierPath(ovalIn: headRect.insetBy(dx: headRect.width * 0.34, dy: headRect.height * 0.34)).fill()
-    }
 }
 
 @MainActor

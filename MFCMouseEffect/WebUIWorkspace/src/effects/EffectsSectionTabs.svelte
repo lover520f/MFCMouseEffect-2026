@@ -297,7 +297,7 @@
       <section class="effects-plugin-card">
         <div class="effects-plugin-title" data-i18n="section_cursor_decoration">Cursor Decoration</div>
         <div class="effects-plugin-desc" data-i18n="desc_cursor_decoration">
-          Attach a persistent cursor decorator plugin such as a ring, orb, or meteor head.
+          Attach a persistent cursor decorator plugin such as a ring or orb.
         </div>
         <CursorDecorationFields
           pluginOptions={normalizedEffectProps.cursorDecorationOptions}

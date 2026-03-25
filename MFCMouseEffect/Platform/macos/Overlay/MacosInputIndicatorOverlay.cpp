@@ -28,14 +28,6 @@ CursorDecorationFrame ResolveCursorDecorationFrame(
     const InputIndicatorConfig::CursorDecorationConfig& config) {
     const int sizePx = std::clamp(config.sizePx, 12, 72);
     CursorDecorationFrame frame{};
-    if (config.pluginId == "meteor_head") {
-        frame.widthPx = std::max(40, sizePx * 6);
-        frame.heightPx = std::max(28, sizePx * 4);
-        frame.anchorOffsetXPx = static_cast<int>(std::lround(frame.widthPx * 0.72));
-        frame.anchorOffsetYPx = static_cast<int>(std::lround(frame.heightPx * 0.52));
-        return frame;
-    }
-
     frame.widthPx = std::max(36, sizePx * 4);
     frame.heightPx = std::max(36, sizePx * 4);
     frame.anchorOffsetXPx = frame.widthPx / 2;

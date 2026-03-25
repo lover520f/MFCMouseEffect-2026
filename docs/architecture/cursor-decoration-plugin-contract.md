@@ -11,7 +11,6 @@
 - First built-in plugin ids:
   - `ring`
   - `orb`
-  - `meteor_head`
 
 ## Runtime Contract
 - Stored under `input_indicator.cursor_decoration` in config JSON.
