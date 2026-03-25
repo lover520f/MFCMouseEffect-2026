@@ -17,7 +17,6 @@
 - Rebuild `mouse_companion` on a plugin-first route with click-first visible parity.
 
 ## Capability Snapshot
-
 ### Visual Effects / WASM
 - `click / trail / scroll / hold / hover` are active in `core`.
 - New additive lane `cursor_decoration` is active through the existing input-indicator overlay seam; current built-in decoration plugin ids are `ring`, `orb`, and `meteor_head`, and the lane now appears under `Cursor Effects` as the sixth built-in channel plus an `Effect Plugins -> Cursor Decoration` card while still persisting under `input_indicator.cursor_decoration`.
@@ -33,6 +32,7 @@
 ### Plugin Management / WebUI
 - Unified top-level `Plugin Management` section is active, and sidebar order is now: `General -> Mouse Companion -> Cursor Effects -> Input Indicator -> Automation Mapping -> Plugin Management`
 - WebUI apply flow is backend-state-driven (`post-apply reconcile + refresh`).
+- `section-workspace` is now mount-order tolerant: if `settings_grid` cards are not yet collectable on first pass, it binds a short-lived observer and retries automatically instead of leaving the whole settings body blank behind the shell header.
 - Settings launch lifecycle is shared through `WebSettingsLaunchCoordinator`; platform shells still keep their own `OpenUrlUtf8(...)`.
 - `WebSettingsLaunchCoordinator` destructor must stay out-of-line while `WebSettingsServer` is forward-declared, otherwise libc++/clang host builds can fail on incomplete-type `unique_ptr` destruction.
 - POSIX/mac host runtime source lists must explicitly carry `WebSettingsLaunchCoordinator.cpp`, `PetVisualAssetCoordinator.cpp`, `MouseCompanionRendererBackendDiagnostics.cpp`, and `PlatformPetVisualHost.cpp`; missing any of them can surface as arm64 link failures during `./mfx run`.

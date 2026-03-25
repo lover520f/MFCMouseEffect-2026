@@ -5,6 +5,7 @@ import { readUiState, writeUiState } from './ui-state-storage.js';
 const state = {
   initialized: false,
   hashBound: false,
+  sectionObserverBound: false,
   sections: [],
   activeId: '',
   i18n: null,
@@ -12,6 +13,7 @@ const state = {
   runtimeState: {},
   component: null,
   contextComponent: null,
+  sectionObserver: null,
 };
 
 const WORKSPACE_STATE_STORAGE_NS = 'workspace.v1';
@@ -82,6 +84,36 @@ function collectSections() {
   }
 
   state.sections = out;
+}
+
+function stopSectionObserver() {
+  if (!state.sectionObserver) {
+    return;
+  }
+  state.sectionObserver.disconnect();
+  state.sectionObserver = null;
+  state.sectionObserverBound = false;
+}
+
+function bindSectionObserver() {
+  if (state.sectionObserverBound || typeof MutationObserver !== 'function') {
+    return;
+  }
+  const root = document.getElementById('settings_grid') || document.body || document.documentElement;
+  if (!root) {
+    return;
+  }
+
+  state.sectionObserver = new MutationObserver(() => {
+    collectSections();
+    if (state.sections.length <= 0) {
+      return;
+    }
+    stopSectionObserver();
+    refresh();
+  });
+  state.sectionObserver.observe(root, { childList: true, subtree: true });
+  state.sectionObserverBound = true;
 }
 
 function sectionById(id) {
@@ -224,8 +256,11 @@ function render(options) {
   const opts = options || {};
   state.activeId = pickAvailableSectionId(state.activeId);
   if (!state.activeId) {
+    bindSectionObserver();
     return;
   }
+
+  stopSectionObserver();
 
   writeWorkspaceStorage({
     activeSectionId: state.activeId,
@@ -316,6 +351,9 @@ function ensureContextComponent() {
 
 function init() {
   collectSections();
+  if (state.sections.length <= 0) {
+    bindSectionObserver();
+  }
   ensureSidebarComponent();
   ensureContextComponent();
   bindHashChange();
@@ -333,6 +371,9 @@ function refresh() {
   }
 
   collectSections();
+  if (state.sections.length <= 0) {
+    bindSectionObserver();
+  }
   ensureSidebarComponent();
   ensureContextComponent();
   bindHashChange();
