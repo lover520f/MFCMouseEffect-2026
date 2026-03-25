@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-25T15:18:25.147Z",
+  "generated_at": "2026-03-26T01:56:21.346Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -1160,6 +1160,40 @@
       "line_limit_exceeded": false,
       "hash_sha1": "9e68e144d1447a38c57e817816bcf7d512c118f1",
       "updated_at": "2026-03-13T12:17:04.538Z"
+    },
+    {
+      "id": "docs/marketing/blog-promo.zh-CN.md",
+      "relative_path": "docs/marketing/blog-promo.zh-CN.md",
+      "absolute_path": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect/docs/marketing/blog-promo.zh-CN.md",
+      "priority": "P2",
+      "role": "capability",
+      "topic": "automation",
+      "first_read_rank": 0,
+      "tags": [
+        "marketing",
+        "blog",
+        "promo",
+        "zh",
+        "cn",
+        "automation",
+        "wasm",
+        "plugin",
+        "effects",
+        "indicator",
+        "macos",
+        "windows",
+        "abi"
+      ],
+      "summary": "很多录屏、教程、演示和桌面工具，功能本身已经足够好，但一到“用户看你怎么操作”这一步，体验就会突然掉下来。",
+      "when_to_read": "Read when task touches automation mapping or gesture recognition.",
+      "line_count": 190,
+      "size_bytes": 8251,
+      "estimated_tokens": 2063,
+      "max_read_tokens": 750,
+      "line_limit": 0,
+      "line_limit_exceeded": false,
+      "hash_sha1": "c797c9aaf5bc316ac2ab951a26c027915f4b30f7",
+      "updated_at": "2026-03-25T15:56:03.991Z"
     },
     {
       "id": "docs/ops/macos-portable-packaging.md",

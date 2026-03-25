@@ -26,7 +26,7 @@
 
 ---
 
-## Why This Project Stands Out
+## Project Overview
 
 `MFCMouseEffect` is not just a mouse-click effect app.
 
