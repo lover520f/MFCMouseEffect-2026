@@ -22,18 +22,37 @@
     };
   }
 
+  function sameDecoration(left, right) {
+    const a = normalizeDecoration(left);
+    const b = normalizeDecoration(right);
+    return a.enabled === b.enabled
+      && a.plugin_id === b.plugin_id
+      && a.color_hex === b.color_hex
+      && a.size_px === b.size_px
+      && a.alpha_percent === b.alpha_percent;
+  }
+
   let form = normalizeDecoration(decoration);
   let lastDecorationRef = decoration;
+  let lastEmitted = normalizeDecoration(decoration);
 
   $: if (decoration !== lastDecorationRef) {
     lastDecorationRef = decoration;
     form = normalizeDecoration(decoration);
+    lastEmitted = normalizeDecoration(decoration);
   }
 
-  $: dispatch('change', normalizeDecoration(form));
+  function emitChangeIfNeeded() {
+    const nextValue = normalizeDecoration(form);
+    if (sameDecoration(lastEmitted, nextValue)) {
+      return;
+    }
+    lastEmitted = nextValue;
+    dispatch('change', nextValue);
+  }
 </script>
 
-<div class="grid cursor-decoration-grid">
+<div class="grid cursor-decoration-grid" on:input={emitChangeIfNeeded} on:change={emitChangeIfNeeded}>
   <label class="cursor-decoration-toggle" for="cursor_decoration_enabled">
     <span data-i18n="label_cursor_decoration_enabled">Enable cursor decoration</span>
     <input id="cursor_decoration_enabled" type="checkbox" bind:checked={form.enabled} />

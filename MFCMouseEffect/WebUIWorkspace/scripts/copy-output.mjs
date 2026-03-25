@@ -18,7 +18,6 @@ const generatedFiles = [
   'text-settings.svelte.js',
   'trail-settings.svelte.js',
   'input-indicator-settings.svelte.js',
-  'cursor-decoration-settings.svelte.js',
   'automation-ui.svelte.js',
   'wasm-settings.svelte.js',
 ];

@@ -37,6 +37,16 @@
     };
   }
 
+  function sameActiveSnapshot(left, right) {
+    const a = toSnapshot(left);
+    const b = toSnapshot(right);
+    return a.click === b.click
+      && a.trail === b.trail
+      && a.scroll === b.scroll
+      && a.hold === b.hold
+      && a.hover === b.hover;
+  }
+
   function normalizeCursorDecoration(input) {
     const value = input || {};
     return {
@@ -51,6 +61,16 @@
   function normalizeCursorDecorationChannelValue(input) {
     const value = normalizeCursorDecoration(input);
     return value.enabled ? value.plugin_id : '__disabled__';
+  }
+
+  function sameCursorDecoration(left, right) {
+    const a = normalizeCursorDecoration(left);
+    const b = normalizeCursorDecoration(right);
+    return a.enabled === b.enabled
+      && a.plugin_id === b.plugin_id
+      && a.color_hex === b.color_hex
+      && a.size_px === b.size_px
+      && a.alpha_percent === b.alpha_percent;
   }
 
   function isSupported(key) {
@@ -83,15 +103,35 @@
   let form = normalizeActive(active);
   let lastActiveRef = active;
   let lastCursorDecorationRef = cursorDecoration;
+  let lastEmittedActive = toSnapshot(active);
+  let lastEmittedCursorDecoration = normalizeCursorDecoration(cursorDecoration);
 
   $: if (active !== lastActiveRef) {
     lastActiveRef = active;
     form = normalizeActive(active);
+    lastEmittedActive = toSnapshot(active);
   }
 
   $: if (cursorDecoration !== lastCursorDecorationRef) {
     lastCursorDecorationRef = cursorDecoration;
     decorationChannelValue = normalizeCursorDecorationChannelValue(cursorDecoration);
+    lastEmittedCursorDecoration = normalizeCursorDecoration(cursorDecoration);
+  }
+
+  function emitCombinedChangeIfNeeded(nextDecoration = normalizedCursorDecoration) {
+    const nextActive = toSnapshot(form);
+    if (
+      sameActiveSnapshot(lastEmittedActive, nextActive)
+      && sameCursorDecoration(lastEmittedCursorDecoration, nextDecoration)
+    ) {
+      return;
+    }
+    lastEmittedActive = nextActive;
+    lastEmittedCursorDecoration = normalizeCursorDecoration(nextDecoration);
+    dispatch('change', {
+      active: nextActive,
+      cursor_decoration: lastEmittedCursorDecoration,
+    });
   }
 
   function handleDecorationChannelChange(nextValue) {
@@ -107,49 +147,41 @@
             ...normalizedCursorDecoration,
             enabled: false,
           };
-    dispatch('change', {
-      active: toSnapshot(form),
-      cursor_decoration: nextDecoration,
-    });
+    emitCombinedChangeIfNeeded(nextDecoration);
   }
-
-  $: dispatch('change', {
-    active: toSnapshot(form),
-    cursor_decoration: normalizedCursorDecoration,
-  });
 </script>
 
 <div class="grid">
   <label for="click" data-i18n="label_click">Click</label>
-  <select id="click" bind:value={form.click} disabled={!isSupported('click')}>
+  <select id="click" bind:value={form.click} disabled={!isSupported('click')} on:change={() => emitCombinedChangeIfNeeded()}>
     {#each clickOptions as option}
       <option value={option.value}>{option.label}</option>
     {/each}
   </select>
 
   <label for="trail" data-i18n="label_trail">Trail</label>
-  <select id="trail" bind:value={form.trail} disabled={!isSupported('trail')}>
+  <select id="trail" bind:value={form.trail} disabled={!isSupported('trail')} on:change={() => emitCombinedChangeIfNeeded()}>
     {#each trailOptions as option}
       <option value={option.value}>{option.label}</option>
     {/each}
   </select>
 
   <label for="scroll" data-i18n="label_scroll">Scroll</label>
-  <select id="scroll" bind:value={form.scroll} disabled={!isSupported('scroll')}>
+  <select id="scroll" bind:value={form.scroll} disabled={!isSupported('scroll')} on:change={() => emitCombinedChangeIfNeeded()}>
     {#each scrollOptions as option}
       <option value={option.value}>{option.label}</option>
     {/each}
   </select>
 
   <label for="hold" data-i18n="label_hold">Hold</label>
-  <select id="hold" bind:value={form.hold} disabled={!isSupported('hold')}>
+  <select id="hold" bind:value={form.hold} disabled={!isSupported('hold')} on:change={() => emitCombinedChangeIfNeeded()}>
     {#each holdOptions as option}
       <option value={option.value}>{option.label}</option>
     {/each}
   </select>
 
   <label for="hover" data-i18n="label_hover">Hover</label>
-  <select id="hover" bind:value={form.hover} disabled={!isSupported('hover')}>
+  <select id="hover" bind:value={form.hover} disabled={!isSupported('hover')} on:change={() => emitCombinedChangeIfNeeded()}>
     {#each hoverOptions as option}
       <option value={option.value}>{option.label}</option>
     {/each}
