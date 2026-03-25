@@ -1,7 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import ActiveEffectsFields from "./ActiveEffectsFields.svelte";
-  import CursorDecorationFields from "../cursor-decoration/CursorDecorationFields.svelte";
   import EffectSizeFields from "./EffectSizeFields.svelte";
   import EffectConflictPolicyFields from "./EffectConflictPolicyFields.svelte";
   import EffectsBlacklistFields from "./EffectsBlacklistFields.svelte";
@@ -76,11 +75,6 @@
       ...detail,
       cursor_decoration: localCursorDecoration,
     });
-  }
-
-  function handleCursorDecorationChange(event) {
-    localCursorDecoration = event?.detail || {};
-    dispatch("cursorDecorationChange", localCursorDecoration);
   }
 
   function handleSizeScaleChange(event) {
@@ -295,17 +289,6 @@
   >
     <div class="effects-plugin-stack">
       <section class="effects-plugin-card">
-        <div class="effects-plugin-title" data-i18n="section_cursor_decoration">Cursor Decoration</div>
-        <div class="effects-plugin-desc" data-i18n="desc_cursor_decoration">
-          Attach a persistent cursor decorator plugin such as a ring or orb.
-        </div>
-        <CursorDecorationFields
-          pluginOptions={normalizedEffectProps.cursorDecorationOptions}
-          decoration={localCursorDecoration}
-          on:change={handleCursorDecorationChange}
-        />
-      </section>
-      <section class="effects-plugin-card">
         <div id="wasm_settings_mount"></div>
       </section>
     </div>
@@ -330,18 +313,6 @@
     border: 1px solid rgba(160, 185, 215, 0.3);
     border-radius: 14px;
     background: rgba(255, 255, 255, 0.58);
-  }
-
-  .effects-plugin-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: rgba(20, 42, 72, 0.92);
-  }
-
-  .effects-plugin-desc {
-    font-size: 12px;
-    line-height: 1.5;
-    color: rgba(46, 68, 98, 0.74);
   }
 
   .effects-subtabs-bar {

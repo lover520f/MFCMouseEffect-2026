@@ -18,7 +18,7 @@
 ## Capability Snapshot
 ### Visual Effects / WASM
 - `click / trail / scroll / hold / hover` are active in `core`.
-- New additive lane `cursor_decoration` is active through the existing input-indicator overlay seam; current built-in decoration plugin ids are `ring` and `orb`, and the lane now appears under `Cursor Effects` as the sixth built-in channel plus an `Effect Plugins -> Cursor Decoration` card while still persisting under `input_indicator.cursor_decoration`.
+- New additive lane `cursor_decoration` is active through the existing input-indicator overlay seam; current built-in decoration plugin ids are `ring` and `orb`, and the lane now appears under `Cursor Effects` as the sixth built-in channel plus a sixth `Effect Plugins` row placed directly after `Click / Trail / Scroll / Hold / Hover` while still persisting under `input_indicator.cursor_decoration`.
 - Shared command tail (`blend_mode / sort_key / group_id`) is active.
 - Group-retained model is active; transform/material/pass remain host-owned.
 - Windows blacklist routing root fix is active: pointer suppression resolves the process at the current screen point first, and trail synthetic-follow is limited to a short post-input smoothing window.

@@ -1,5 +1,9 @@
 import WasmPluginFields from '../wasm/WasmPluginFields.svelte';
 import PluginManagerFields from '../wasm/PluginManagerFields.svelte';
+import {
+  emitCursorDecorationChange,
+  subscribeCursorDecorationState,
+} from '../effects/cursor-decoration-bridge.js';
 import { createLazyMountBridge } from './lazy-mount.js';
 import { normalizeWasmState } from '../wasm/state-model.js';
 import { normalizePolicyRanges } from '../wasm/policy-model.js';
@@ -15,13 +19,24 @@ let currentState = normalizeWasmState({});
 let currentSchema = normalizeWasmSchema({});
 let currentI18n = {};
 let currentActionHandler = null;
+let currentCursorDecoration = {
+  enabled: false,
+  plugin_id: 'ring',
+  color_hex: '#ff5a5a',
+  size_px: 22,
+  alpha_percent: 82,
+};
+let currentCursorDecorationOptions = [];
 
 const bridge = createLazyMountBridge({
   mountId: 'wasm_settings_mount',
   initialProps: {
+    cursorDecoration: currentCursorDecoration,
+    cursorDecorationOptions: currentCursorDecorationOptions,
     payloadState: currentState,
     i18n: currentI18n,
     onAction: currentActionHandler,
+    onCursorDecorationChange: emitCursorDecorationChange,
   },
   createComponent: (mountNode, props) => new WasmPluginFields({
     target: mountNode,
@@ -45,9 +60,12 @@ const pluginManagerBridge = createLazyMountBridge({
 
 function refreshView() {
   bridge.updateProps({
+    cursorDecoration: currentCursorDecoration,
+    cursorDecorationOptions: currentCursorDecorationOptions,
     payloadState: currentState,
     i18n: currentI18n,
     onAction: currentActionHandler,
+    onCursorDecorationChange: emitCursorDecorationChange,
   });
   pluginManagerBridge.updateProps({
     schemaState: currentSchema,
@@ -56,6 +74,14 @@ function refreshView() {
     onAction: currentActionHandler,
   });
 }
+
+subscribeCursorDecorationState((detail) => {
+  currentCursorDecoration = detail?.decoration || currentCursorDecoration;
+  currentCursorDecorationOptions = Array.isArray(detail?.pluginOptions)
+    ? detail.pluginOptions
+    : currentCursorDecorationOptions;
+  refreshView();
+});
 
 function render(payload) {
   const value = payload || {};
