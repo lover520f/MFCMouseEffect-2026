@@ -55,8 +55,6 @@ This project is a great fit if you care about:
 
 ## Main Visuals
 
-Each major feature has a main image slot. Missing screenshots currently use placeholders; replace `docs/images/placeholder_*.png` later.
-
 | Feature | Main Image | Feature | Main Image |
 | :--- | :--- | :--- | :--- |
 | Cursor Effects | <img src="./docs/images/ripple_concept.png" width="360" alt="Cursor Effects main image"> | Cursor Decoration | <img src="./docs/images/placeholder_cursor_decoration.png" width="360" alt="Cursor Decoration placeholder"> |
@@ -140,6 +138,23 @@ The repo already has a dedicated plugin-management surface:
 - policy binding for effect lanes, indicator lanes, and cursor-decoration lanes
 - manifest path, enabled-state, failure-state, and fallback visibility
 - apply flow reflects real backend state instead of only mutating a form
+
+### Plugin Quick Start
+
+Plugins are a first-class feature. Start here:
+- Template: `examples/wasm-plugin-template/README.md`
+- Core doc: `docs/architecture/custom-effects-wasm-route.md`
+- ABI spec: `docs/architecture/wasm-plugin-abi-v3-design.md`
+- Load path: WebSettings `Plugin Management` -> choose manifest -> Apply
+
+<details>
+<summary>More guidance (expand)</summary>
+
+- Pick the correct surface: `effects` or `indicator`
+- If Apply reverts, check manifest path and load status first
+- WebSettings shows diagnostics and fallback state for quick triage
+
+</details>
 
 ### 7. Mouse Companion
 

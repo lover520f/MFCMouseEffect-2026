@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-25T15:09:17.815Z",
+  "generated_at": "2026-03-25T15:18:25.147Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -53,7 +53,7 @@
       "line_limit": 260,
       "line_limit_exceeded": false,
       "hash_sha1": "8bdc9fef4e1096de5f7ebd9aafadb348d7f2b3ad",
-      "updated_at": "2026-03-24T04:40:15.440Z"
+      "updated_at": "2026-03-25T15:13:05.677Z"
     },
     {
       "id": "docs/agent-context/current.md",
@@ -92,7 +92,7 @@
       "line_limit": 220,
       "line_limit_exceeded": true,
       "hash_sha1": "61d161f5b0f225770cf32e562e03d201002a7db6",
-      "updated_at": "2026-03-25T13:21:17.179Z"
+      "updated_at": "2026-03-25T15:13:05.736Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -130,7 +130,7 @@
       "line_limit": 0,
       "line_limit_exceeded": false,
       "hash_sha1": "34e09c0ddcb933332f6acaadc641dd4fa5aab27c",
-      "updated_at": "2026-03-25T01:02:53.969Z"
+      "updated_at": "2026-03-25T15:13:05.736Z"
     },
     {
       "id": "docs/architecture/agent-doc-governance.md",
@@ -223,7 +223,7 @@
       "line_limit": 0,
       "line_limit_exceeded": false,
       "hash_sha1": "af8863a69ce57cfbaf2e04245f80f6d4c1a9916d",
-      "updated_at": "2026-03-25T05:02:31.383Z"
+      "updated_at": "2026-03-25T15:13:05.737Z"
     },
     {
       "id": "docs/architecture/custom-effects-wasm-route.md",
@@ -692,7 +692,7 @@
       "line_limit": 0,
       "line_limit_exceeded": false,
       "hash_sha1": "0800d6be6fa891578a6a0f156fad38a49e384c94",
-      "updated_at": "2026-03-25T12:10:38.766Z"
+      "updated_at": "2026-03-25T15:13:05.737Z"
     },
     {
       "id": "docs/architecture/posix-scaffold-regression-workflow.md",
@@ -926,7 +926,7 @@
       "line_limit": 0,
       "line_limit_exceeded": false,
       "hash_sha1": "16116ea4044af5435d8500cda2502b7b89cae056",
-      "updated_at": "2026-03-24T14:09:26.531Z"
+      "updated_at": "2026-03-25T15:13:05.737Z"
     },
     {
       "id": "docs/architecture/windows-mouse-companion-phase15-exit-contract.md",
@@ -994,7 +994,7 @@
       "line_limit": 0,
       "line_limit_exceeded": false,
       "hash_sha1": "f044a25dccb181746d9ba122b7f9054c6bcefb95",
-      "updated_at": "2026-03-24T13:58:49.987Z"
+      "updated_at": "2026-03-25T15:13:05.738Z"
     },
     {
       "id": "docs/archive/architecture/README.md",
@@ -1227,7 +1227,7 @@
       "line_limit": 0,
       "line_limit_exceeded": false,
       "hash_sha1": "92ea5a9350f638859e2c219a9c95f317176441b6",
-      "updated_at": "2026-03-24T08:06:55.536Z"
+      "updated_at": "2026-03-25T15:13:05.763Z"
     },
     {
       "id": "docs/ops/windows-installer-packaging.md",
@@ -1255,7 +1255,7 @@
       "line_limit": 0,
       "line_limit_exceeded": false,
       "hash_sha1": "e76d78c0b1a0978cda678bcdf53f4a901451dd7a",
-      "updated_at": "2026-03-24T08:05:55.222Z"
+      "updated_at": "2026-03-25T15:13:05.764Z"
     },
     {
       "id": "docs/ops/windows-mouse-companion-manual-checklist.md",
@@ -1292,7 +1292,7 @@
       "line_limit": 0,
       "line_limit_exceeded": false,
       "hash_sha1": "fd630adbb12f1894cf44afc34db3cf39a58ca3ef",
-      "updated_at": "2026-03-24T14:09:26.531Z"
+      "updated_at": "2026-03-25T15:13:05.765Z"
     },
     {
       "id": "docs/README.md",
@@ -1327,7 +1327,7 @@
       "line_limit": 140,
       "line_limit_exceeded": false,
       "hash_sha1": "b91f630676c9a8cdbe1c2fbd9d21a747cefcb2df",
-      "updated_at": "2026-03-24T04:37:08.861Z"
+      "updated_at": "2026-03-25T15:13:05.735Z"
     },
     {
       "id": "docs/README.zh-CN.md",
@@ -1364,7 +1364,7 @@
       "line_limit": 140,
       "line_limit_exceeded": false,
       "hash_sha1": "0ee995ee7748bb5d95547ce3b29179618b74daef",
-      "updated_at": "2026-03-24T04:37:08.861Z"
+      "updated_at": "2026-03-25T15:13:05.735Z"
     },
     {
       "id": "docs/refactoring/phase-roadmap-macos-m1-status.md",

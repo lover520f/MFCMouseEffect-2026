@@ -55,8 +55,6 @@
 
 ## 主图预览
 
-以下为每个大功能的主图位。暂缺真实截图的部分先使用占位图，后续替换 `docs/images/placeholder_*.png` 即可。
-
 | 功能 | 主图 | 功能 | 主图 |
 | :--- | :--- | :--- | :--- |
 | Cursor Effects | <img src="./docs/images/ripple_concept.png" width="360" alt="Cursor Effects 主图"> | Cursor Decoration | <img src="./docs/images/placeholder_cursor_decoration.png" width="360" alt="Cursor Decoration 主图占位"> |
@@ -139,6 +137,23 @@ WASM 路线是这个项目最有辨识度的部分之一：
 - 支持 effect lane、indicator lane、cursor decoration lane 的策略绑定
 - 支持插件 manifest 路径、启停、错误状态和回退状态观察
 - 设置页能反映真实后端状态，而不是只改前端表单
+
+### 插件使用指引
+
+插件是核心能力之一，建议直接从以下入口上手：
+- 使用模板：`examples/wasm-plugin-template/README.md`
+- 主文档：`docs/architecture/custom-effects-wasm-route.zh-CN.md`
+- ABI 说明：`docs/architecture/wasm-plugin-abi-v3-design.zh-CN.md`
+- 加载入口：设置页 `Plugin Management` -> 选择 manifest -> Apply
+
+<details>
+<summary>更多使用提示（展开查看）</summary>
+
+- 根据插件目标选择 surface：`effects` 或 `indicator`
+- 如果 Apply 后回滚，优先检查 manifest 路径与加载状态
+- 设置页会显示插件诊断与回退状态，先看这里再排查
+
+</details>
 
 ### 7. Mouse Companion
 
