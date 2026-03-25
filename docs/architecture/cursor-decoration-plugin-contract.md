@@ -35,7 +35,7 @@
 - Web settings:
   - `Cursor Effects -> Effect Channel` now exposes `cursor_decoration` as the sixth built-in lane
   - `Cursor Effects -> Effect Config` now owns `color_hex / size_px / alpha_percent`
-  - `Cursor Effects -> Effect Plugins` stays reserved for real plugin/WASM bindings and no longer carries cursor-decoration controls
+  - `Cursor Effects -> Effect Plugins` keeps a sixth `Cursor Decoration` row so the lane stays visually aligned with the original five effect bindings, but only mirrors `plugin_id + enabled` instead of hosting the full parameter form
   - read/write path still merges back into `input_indicator.cursor_decoration`
   - there is no standalone `cursor-decoration` settings page bundle anymore; the earlier detached bundle path was removed after it left an orphan `lazy-mount` observer on pages that never contained a dedicated cursor-decoration mount
 

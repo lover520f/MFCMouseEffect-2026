@@ -213,7 +213,7 @@
   {/if}
 
   <div class="hint span2" data-i18n="hint_cursor_decoration_channel">
-    Cursor decoration is the sixth additive built-in lane. Use the plugin tab below for color, size, and opacity.
+    Cursor decoration is the sixth additive built-in lane. Tune color, size, and opacity in Effect Config, and keep its type/status aligned in Effect Plugins.
   </div>
 </div>
 
