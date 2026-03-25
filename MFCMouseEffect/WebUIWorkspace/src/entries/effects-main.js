@@ -1,8 +1,4 @@
 import EffectsSectionTabs from '../effects/EffectsSectionTabs.svelte';
-import {
-  emitCursorDecorationState,
-  subscribeCursorDecorationChange,
-} from '../effects/cursor-decoration-bridge.js';
 import { normalizeEffectsProfile } from '../effects/profile-model.js';
 import { normalizeRuntimePlatform } from '../automation/platform.js';
 import { createLazyMountBridge } from './lazy-mount.js';
@@ -248,6 +244,10 @@ const bridge = createLazyMountBridge({
         detail.cursor_decoration || currentCursorDecoration,
       );
     });
+    instance.$on('cursorDecorationChange', (event) => {
+      currentCursorDecoration = normalizeCursorDecoration(event?.detail || {});
+      syncBridgeProps();
+    });
     instance.$on('sizeChange', (event) => {
       const detail = event?.detail || {};
       currentSizeScales = normalizeEffectSizeScales(detail);
@@ -271,16 +271,7 @@ const bridge = createLazyMountBridge({
   },
 });
 
-subscribeCursorDecorationChange((detail) => {
-  currentCursorDecoration = normalizeCursorDecoration(detail || {});
-  syncBridgeProps();
-});
-
 function syncBridgeProps() {
-  emitCursorDecorationState({
-    decoration: currentCursorDecoration,
-    pluginOptions: currentCursorDecorationOptions,
-  });
   bridge.updateProps({
     activeTab: currentActiveTab,
     effectProps: {

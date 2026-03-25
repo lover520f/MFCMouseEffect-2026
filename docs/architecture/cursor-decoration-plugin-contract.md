@@ -34,8 +34,8 @@
   - built-in decoration rendering lives in `Platform/macos/Overlay/MacosCursorDecorationBridge.swift`
 - Web settings:
   - `Cursor Effects -> Effect Channel` now exposes `cursor_decoration` as the sixth built-in lane
-  - `Cursor Effects -> Effect Plugins` now includes `Cursor Decoration` as the sixth plugin row directly after `Click / Trail / Scroll / Hold / Hover`
-  - plugin selection stays on that sixth row, while `color_hex / size_px / alpha_percent` live in the inline detail block directly below the row and above `Runtime plugin details`
+  - `Cursor Effects -> Effect Config` now owns `color_hex / size_px / alpha_percent`
+  - `Cursor Effects -> Effect Plugins` stays reserved for real plugin/WASM bindings and no longer carries cursor-decoration controls
   - read/write path still merges back into `input_indicator.cursor_decoration`
   - there is no standalone `cursor-decoration` settings page bundle anymore; the earlier detached bundle path was removed after it left an orphan `lazy-mount` observer on pages that never contained a dedicated cursor-decoration mount
 

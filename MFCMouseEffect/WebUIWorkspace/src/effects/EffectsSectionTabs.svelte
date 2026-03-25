@@ -81,6 +81,11 @@
     dispatch("sizeChange", event?.detail || {});
   }
 
+  function handleCursorDecorationConfigChange(event) {
+    localCursorDecoration = event?.detail || {};
+    dispatch("cursorDecorationChange", localCursorDecoration);
+  }
+
   function handleConflictPolicyChange(event) {
     dispatch("conflictPolicyChange", event?.detail || {});
   }
@@ -166,7 +171,7 @@
       data-i18n="tab_effect_size"
       on:click={() => selectTab(TAB_SIZE)}
     >
-      Effect Size
+      Effect Config
     </button>
     <button
       type="button"
@@ -251,7 +256,9 @@
   >
     <EffectSizeFields
       scales={normalizedEffectProps.effectSizeScales}
+      cursorDecoration={localCursorDecoration}
       on:change={handleSizeScaleChange}
+      on:cursorDecorationChange={handleCursorDecorationConfigChange}
     />
   </div>
 

@@ -2,6 +2,7 @@
   import { createEventDispatcher } from "svelte";
 
   export let scales = {};
+  export let cursorDecoration = {};
 
   const dispatch = createEventDispatcher();
 
@@ -33,6 +34,27 @@
     };
   }
 
+  function normalizeCursorDecoration(input) {
+    const value = input || {};
+    return {
+      enabled: value.enabled === true,
+      plugin_id: `${value.plugin_id || 'ring'}`.trim() || 'ring',
+      color_hex: `${value.color_hex || '#ff5a5a'}`.trim() || '#ff5a5a',
+      size_px: Math.min(72, Math.max(12, Math.round(toNumber(value.size_px, 22)))),
+      alpha_percent: Math.min(100, Math.max(15, Math.round(toNumber(value.alpha_percent, 82)))),
+    };
+  }
+
+  function sameCursorDecoration(left, right) {
+    const a = normalizeCursorDecoration(left);
+    const b = normalizeCursorDecoration(right);
+    return a.enabled === b.enabled
+      && a.plugin_id === b.plugin_id
+      && a.color_hex === b.color_hex
+      && a.size_px === b.size_px
+      && a.alpha_percent === b.alpha_percent;
+  }
+
   function toSnapshot(form) {
     const value = form || normalizeScales({});
     return {
@@ -57,6 +79,9 @@
 
   let form = normalizeScales(scales);
   let lastScalesRef = scales;
+  let decorationForm = normalizeCursorDecoration(cursorDecoration);
+  let lastCursorDecorationRef = cursorDecoration;
+  let lastDecorationSnapshot = normalizeCursorDecoration(cursorDecoration);
 
   function toSliderFraction(value) {
     return (clampPercent(value) - 50) / 150;
@@ -67,7 +92,22 @@
     form = normalizeScales(scales);
   }
 
+  $: if (cursorDecoration !== lastCursorDecorationRef) {
+    lastCursorDecorationRef = cursorDecoration;
+    decorationForm = normalizeCursorDecoration(cursorDecoration);
+    lastDecorationSnapshot = normalizeCursorDecoration(cursorDecoration);
+  }
+
   $: dispatch("change", toSnapshot(form));
+
+  function emitCursorDecorationIfNeeded() {
+    const nextValue = normalizeCursorDecoration(decorationForm);
+    if (sameCursorDecoration(lastDecorationSnapshot, nextValue)) {
+      return;
+    }
+    lastDecorationSnapshot = nextValue;
+    dispatch("cursorDecorationChange", nextValue);
+  }
 </script>
 
 <div class="grid effect-size-grid">
@@ -115,4 +155,70 @@
   <div class="hint effect-size-hint" data-i18n="hint_effect_size_scale">
     100 means default size. Range is 50% to 200%.
   </div>
+
+  <div class="effect-config-divider span3"></div>
+
+  <div class="effect-config-title span3" data-i18n="section_cursor_decoration">Cursor Decoration</div>
+  <div class="hint effect-config-hint span3" data-i18n="desc_cursor_decoration">
+    Attach a persistent decorator plugin to the cursor head without changing the five main cursor effects.
+  </div>
+
+  <label for="effect_cursor_decoration_color" data-i18n="label_cursor_decoration_color">Accent color</label>
+  <input
+    id="effect_cursor_decoration_color"
+    class="pair"
+    type="color"
+    bind:value={decorationForm.color_hex}
+    disabled={!decorationForm.enabled}
+    on:input={emitCursorDecorationIfNeeded}
+    on:change={emitCursorDecorationIfNeeded}
+  />
+  <div></div>
+
+  <label for="effect_cursor_decoration_size" data-i18n="label_cursor_decoration_size">Decoration size (px)</label>
+  <input
+    id="effect_cursor_decoration_size"
+    class="pair"
+    type="number"
+    min="12"
+    max="72"
+    bind:value={decorationForm.size_px}
+    disabled={!decorationForm.enabled}
+    on:input={emitCursorDecorationIfNeeded}
+    on:change={emitCursorDecorationIfNeeded}
+  />
+  <div></div>
+
+  <label for="effect_cursor_decoration_alpha" data-i18n="label_cursor_decoration_alpha">Opacity (%)</label>
+  <input
+    id="effect_cursor_decoration_alpha"
+    class="pair"
+    type="number"
+    min="15"
+    max="100"
+    bind:value={decorationForm.alpha_percent}
+    disabled={!decorationForm.enabled}
+    on:input={emitCursorDecorationIfNeeded}
+    on:change={emitCursorDecorationIfNeeded}
+  />
+  <div></div>
 </div>
+
+<style>
+  .effect-config-divider {
+    height: 1px;
+    margin: 8px 0 2px;
+    background: rgba(160, 185, 215, 0.28);
+  }
+
+  .effect-config-title {
+    color: rgba(20, 42, 72, 0.92);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .effect-config-hint {
+    margin-top: -6px;
+  }
+</style>
