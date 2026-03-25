@@ -51,7 +51,8 @@ bool HasPreferredWebUiAssets(const std::filesystem::path& baseDir) {
         HasRequiredAsset(baseDir, "app-actions.js") &&
         HasRequiredAsset(baseDir, "app-gesture-debug.js") &&
         HasRequiredAsset(baseDir, "settings-form-input-indicator.js") &&
-        HasRequiredAsset(baseDir, "input-indicator-settings.svelte.js");
+        HasRequiredAsset(baseDir, "input-indicator-settings.svelte.js") &&
+        HasRequiredAsset(baseDir, "cursor-decoration-settings.svelte.js");
 }
 
 void AddWebUiDirIfExistsUnique(

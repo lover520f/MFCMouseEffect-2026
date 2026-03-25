@@ -67,7 +67,7 @@ std::unique_ptr<IMouseEffect> CreateTrailGeneric(const std::string& type, const 
 }
 
 std::unique_ptr<IMouseEffect> CreateScroll(const std::string& type, const EffectConfig& config) {
-    return std::make_unique<ScrollEffect>(config.theme, type);
+    return std::make_unique<ScrollEffect>(config, type);
 }
 
 std::unique_ptr<IMouseEffect> CreateHold(const std::string& type, const EffectConfig& config) {

@@ -18,10 +18,14 @@ Commands:
       Run macOS core host without rebuilding core/WebUI.
       Default auto stop: 30 minutes.
 
+  build [platform options...]
+      Build native project for current host platform.
+      Windows: Release|x64 by default (`--no-gpu`, optional `--gpu`).
+
   package [platform options...]
       Build native package for current host platform.
       macOS: .app + zip + dmg
-      Windows: installer exe
+      Windows: installer exe (default `Release|x64`, `--shipping` for Shipping; default `--no-gpu`, optional `--gpu`)
 
   package-no-build [platform options...]
       Produce native package for current host platform without rebuilding.
@@ -41,6 +45,7 @@ Commands:
 Compatibility aliases:
   start -> run
   fast  -> run-no-build (also skips core/WebUI rebuild)
+  bld   -> build
   pack  -> package
   pkg   -> package
 
@@ -146,6 +151,30 @@ run_package() {
             args+=("$1" "$2")
             shift 2
             ;;
+        --gpu|--no-gpu)
+            if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* || "$OSTYPE" == win32* ]]; then
+                args+=("$1")
+            else
+                echo "$1 is only supported on Windows packaging" >&2
+                exit 2
+            fi
+            shift
+            ;;
+        --shipping|--release|--configuration)
+            if [[ "$OSTYPE" == msys* || "$OSTYPE" == cygwin* || "$OSTYPE" == win32* ]]; then
+                if [[ "$1" == "--configuration" ]]; then
+                    [[ $# -ge 2 ]] || { echo "missing value for --configuration" >&2; exit 2; }
+                    args+=("$1" "$2")
+                    shift 2
+                else
+                    args+=("$1")
+                    shift
+                fi
+            else
+                echo "$1 is only supported on Windows packaging" >&2
+                exit 2
+            fi
+            ;;
         --no-zip|--no-dmg)
             if [[ "$OSTYPE" == darwin* ]]; then
                 args+=("$1")
@@ -178,6 +207,49 @@ run_package() {
     fi
 
     exec "$package_script" "${args[@]}"
+}
+
+run_build() {
+    local -a args=()
+    local build_script=""
+    case "$OSTYPE" in
+    msys*|cygwin*|win32*)
+        build_script="$repo_root/tools/platform/build/build-windows-project.sh"
+        ;;
+    *)
+        echo "build is unsupported on this host platform: $OSTYPE" >&2
+        echo "use the platform-specific entrypoint for this host" >&2
+        exit 2
+        ;;
+    esac
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+        --gpu|--no-gpu)
+            args+=("$1")
+            shift
+            ;;
+        --release)
+            args+=(--configuration Release)
+            shift
+            ;;
+        --shipping)
+            args+=(--configuration Shipping)
+            shift
+            ;;
+        --configuration)
+            [[ $# -ge 2 ]] || { echo "missing value for --configuration" >&2; exit 2; }
+            args+=("$1" "$2")
+            shift 2
+            ;;
+        *)
+            echo "unknown option for build: $1" >&2
+            exit 2
+            ;;
+        esac
+    done
+
+    exec "$build_script" "${args[@]}"
 }
 
 run_effects() {
@@ -277,6 +349,10 @@ package)
     shift
     run_package 0 0 "$@"
     ;;
+build)
+    shift
+    run_build "$@"
+    ;;
 package-no-build)
     shift
     run_package 1 1 "$@"
@@ -288,6 +364,10 @@ start)
 fast)
     shift
     run_start 1 1 "$@"
+    ;;
+bld)
+    shift
+    run_build "$@"
     ;;
 pack)
     shift

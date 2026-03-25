@@ -24,6 +24,31 @@ void ApplyCommonInputIndicatorFields(const nlohmann::json& input, InputIndicator
         GetOr<std::string>(input, keys::input::kKeyLabelLayoutMode, config.keyLabelLayoutMode);
     config.sizePx = GetOr<int>(input, keys::input::kSizePx, config.sizePx);
     config.durationMs = GetOr<int>(input, keys::input::kDurationMs, config.durationMs);
+
+    if (input.contains(keys::input::kCursorDecoration) &&
+        input[keys::input::kCursorDecoration].is_object()) {
+        const auto& cursorDecoration = input[keys::input::kCursorDecoration];
+        config.cursorDecoration.enabled = GetOr<bool>(
+            cursorDecoration,
+            keys::input::cursor_decoration::kEnabled,
+            config.cursorDecoration.enabled);
+        config.cursorDecoration.pluginId = GetOr<std::string>(
+            cursorDecoration,
+            keys::input::cursor_decoration::kPluginId,
+            config.cursorDecoration.pluginId);
+        config.cursorDecoration.colorHex = GetOr<std::string>(
+            cursorDecoration,
+            keys::input::cursor_decoration::kColorHex,
+            config.cursorDecoration.colorHex);
+        config.cursorDecoration.sizePx = GetOr<int>(
+            cursorDecoration,
+            keys::input::cursor_decoration::kSizePx,
+            config.cursorDecoration.sizePx);
+        config.cursorDecoration.alphaPercent = GetOr<int>(
+            cursorDecoration,
+            keys::input::cursor_decoration::kAlphaPercent,
+            config.cursorDecoration.alphaPercent);
+    }
 }
 
 } // namespace

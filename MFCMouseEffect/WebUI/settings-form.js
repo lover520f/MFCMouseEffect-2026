@@ -3,6 +3,9 @@
     schema: null,
     wasmPendingRender: null,
     wasmRenderRetryTimer: 0,
+    mouseCompanionPendingRender: null,
+    mouseCompanionRenderTimer: 0,
+    mouseCompanionHasRendered: false,
   };
 
   function el(id) {
@@ -35,6 +38,28 @@
 
   function inputIndicatorModule() {
     return window.MfxSettingsInputIndicator || null;
+  }
+
+  function clearMouseCompanionRenderTimer() {
+    if (!state.mouseCompanionRenderTimer) {
+      return;
+    }
+    window.cancelAnimationFrame(state.mouseCompanionRenderTimer);
+    state.mouseCompanionRenderTimer = 0;
+  }
+
+  function scheduleMouseCompanionRender() {
+    if (state.mouseCompanionRenderTimer) {
+      return;
+    }
+    state.mouseCompanionRenderTimer = window.requestAnimationFrame(() => {
+      state.mouseCompanionRenderTimer = 0;
+      const pending = state.mouseCompanionPendingRender;
+      if (!pending) {
+        return;
+      }
+      renderMouseCompanionNow(pending.schema, pending.appState);
+    });
   }
 
   function clearWasmRetryTimer() {
@@ -316,6 +341,41 @@
     setNum('k_idle_fade_end', params.idle_fade_end_ms);
   }
 
+  function isMouseCompanionCardVisible() {
+    const mount = el('mouse_companion_settings_mount');
+    const card = mount ? mount.closest('.card') : null;
+    return !!card && !card.hidden;
+  }
+
+  function renderMouseCompanionNow(schema, appState) {
+    const companion = mouseCompanionSection();
+    if (!companion || typeof companion.render !== 'function') {
+      return;
+    }
+    clearMouseCompanionRenderTimer();
+    state.mouseCompanionPendingRender = null;
+    companion.render({
+      schema,
+      state: appState,
+    });
+    state.mouseCompanionHasRendered = true;
+  }
+
+  function renderMouseCompanion(schema, appState) {
+    const companion = mouseCompanionSection();
+    if (!companion || typeof companion.render !== 'function') {
+      return;
+    }
+
+    if (!state.mouseCompanionHasRendered && isMouseCompanionCardVisible()) {
+      state.mouseCompanionPendingRender = { schema, appState };
+      scheduleMouseCompanionRender();
+      return;
+    }
+
+    renderMouseCompanionNow(schema, appState);
+  }
+
   function renderWasm(schema, appState, texts, wasmAction, wasmStatus) {
     const section = wasmSection();
     if (!section || typeof section.render !== 'function') {
@@ -356,13 +416,7 @@
 
     state.schema = schema;
     renderGeneral(schema, appState, generalAction);
-    const companion = mouseCompanionSection();
-    if (companion && typeof companion.render === 'function') {
-      companion.render({
-        schema: schema,
-        state: appState,
-      });
-    }
+    renderMouseCompanion(schema, appState);
     renderEffects(schema, appState);
     renderText(appState);
     renderTrail(appState);
@@ -483,6 +537,13 @@
         size_px: getNum('ii_size_px'),
         duration_ms: getNum('ii_duration_ms'),
       };
+    indicatorState.cursor_decoration = effectsState?.cursor_decoration || {
+      enabled: false,
+      plugin_id: 'ring',
+      color_hex: '#ff5a5a',
+      size_px: 22,
+      alpha_percent: 82,
+    };
     const mouseCompanionState = (companion && typeof companion.read === 'function')
       ? companion.read()
       : {

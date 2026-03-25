@@ -53,7 +53,7 @@ uint32_t ResolveHoldStrokeColor(
 } // namespace
 
 std::string NormalizeHoldEffectType(const std::string& effectType) {
-    const std::string canonical = hold_route::NormalizeHoldEffectTypeAlias(effectType);
+    const std::string canonical = hold_route::NormalizeHoldEffectTypeForCurrentBuild(effectType);
     const std::string lowered = ToLowerAscii(TrimAscii(canonical));
     if (lowered == "none") {
         return "none";

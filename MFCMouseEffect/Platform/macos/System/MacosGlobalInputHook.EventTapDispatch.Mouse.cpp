@@ -7,6 +7,7 @@
 #include "Platform/macos/Control/MacosDispatchMessageCodec.h"
 #include "Platform/macos/System/MacosInputEventUtils.h"
 
+#include <cstdlib>
 #include <new>
 
 namespace mousefx {
@@ -41,15 +42,24 @@ void MacosGlobalInputHook::HandleScrollEvent(CGEventRef event) {
         return;
     }
 
-    const int32_t delta = static_cast<int32_t>(
+    const int32_t verticalDelta = static_cast<int32_t>(
         CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1));
+    const int32_t horizontalDelta = static_cast<int32_t>(
+        CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis2));
+    const bool useHorizontal =
+        (horizontalDelta != 0) && (verticalDelta == 0 || std::abs(horizontalDelta) >= std::abs(verticalDelta));
+    const int32_t delta = useHorizontal ? horizontalDelta : verticalDelta;
     if (delta == 0) {
         return;
     }
     const ScreenPoint pt = macos_input_event::ToScreenPoint(CGEventGetLocation(event));
+    uint32_t scrollFlags = 0;
+    if (useHorizontal) {
+        scrollFlags |= kScrollDispatchFlagHorizontal;
+    }
     dispatchHost_->PostAsync(
         WM_MFX_SCROLL,
-        static_cast<uintptr_t>(delta),
+        PackScrollDispatchPayload(delta, scrollFlags),
         MacosDispatchMessageCodec::PackPointPayload(pt.x, pt.y));
 #else
     (void)event;

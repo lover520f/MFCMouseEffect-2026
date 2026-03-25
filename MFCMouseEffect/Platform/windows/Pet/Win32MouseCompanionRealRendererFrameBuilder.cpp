@@ -116,7 +116,7 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
     const auto& nodeBinding = runtime.modelNodeBindingProfile;
     const auto& nodeRegistry = runtime.modelNodeRegistryProfile;
     const auto& assetBinding = runtime.assetNodeBindingProfile;
-    const auto& assetTransform = runtime.assetNodeTransformProfile;
+    const auto& assetTargetResolver = runtime.assetNodeTargetResolverProfile;
     const float bodyRegistryWeight =
         nodeRegistry.bodyEntry.resolved ? nodeRegistry.bodyEntry.registryWeight : 0.0f;
     const float headRegistryWeight =
@@ -135,24 +135,33 @@ Win32MouseCompanionRealRendererLayoutMetrics BuildWin32MouseCompanionRealRendere
     const float poseHeadY = nodeBinding.headEntry.worldOffsetY * metrics.headHeight;
     const float poseGroundingX = nodeBinding.groundingEntry.worldOffsetX * metrics.bodyWidth;
     const float poseGroundingY = nodeBinding.groundingEntry.worldOffsetY * metrics.bodyHeight;
-    const float bodyTransformX =
-        assetTransform.bodyEntry.resolved ? assetTransform.bodyEntry.offsetX * metrics.bodyWidth : 0.0f;
-    const float bodyTransformY =
-        assetTransform.bodyEntry.resolved ? assetTransform.bodyEntry.offsetY * metrics.bodyHeight : 0.0f;
-    const float headTransformX =
-        assetTransform.headEntry.resolved ? assetTransform.headEntry.offsetX * metrics.headWidth : 0.0f;
-    const float headTransformY =
-        assetTransform.headEntry.resolved ? assetTransform.headEntry.offsetY * metrics.headHeight : 0.0f;
-    const float groundingTransformX =
-        assetTransform.groundingEntry.resolved ? assetTransform.groundingEntry.offsetX * metrics.bodyWidth : 0.0f;
-    const float groundingTransformY =
-        assetTransform.groundingEntry.resolved ? assetTransform.groundingEntry.offsetY * metrics.bodyHeight : 0.0f;
-    const float bodyTransformScale =
-        assetTransform.bodyEntry.resolved ? assetTransform.bodyEntry.anchorScale : 1.0f;
-    const float headTransformScale =
-        assetTransform.headEntry.resolved ? assetTransform.headEntry.anchorScale : 1.0f;
-    const float groundingTransformScale =
-        assetTransform.groundingEntry.resolved ? assetTransform.groundingEntry.anchorScale : 1.0f;
+    const float bodyTransformX = assetTargetResolver.bodyEntry.resolved
+        ? assetTargetResolver.bodyEntry.resolvedOffsetX * metrics.bodyWidth
+        : 0.0f;
+    const float bodyTransformY = assetTargetResolver.bodyEntry.resolved
+        ? assetTargetResolver.bodyEntry.resolvedOffsetY * metrics.bodyHeight
+        : 0.0f;
+    const float headTransformX = assetTargetResolver.headEntry.resolved
+        ? assetTargetResolver.headEntry.resolvedOffsetX * metrics.headWidth
+        : 0.0f;
+    const float headTransformY = assetTargetResolver.headEntry.resolved
+        ? assetTargetResolver.headEntry.resolvedOffsetY * metrics.headHeight
+        : 0.0f;
+    const float groundingTransformX = assetTargetResolver.groundingEntry.resolved
+        ? assetTargetResolver.groundingEntry.resolvedOffsetX * metrics.bodyWidth
+        : 0.0f;
+    const float groundingTransformY = assetTargetResolver.groundingEntry.resolved
+        ? assetTargetResolver.groundingEntry.resolvedOffsetY * metrics.bodyHeight
+        : 0.0f;
+    const float bodyTransformScale = assetTargetResolver.bodyEntry.resolved
+        ? assetTargetResolver.bodyEntry.resolvedScale
+        : 1.0f;
+    const float headTransformScale = assetTargetResolver.headEntry.resolved
+        ? assetTargetResolver.headEntry.resolvedScale
+        : 1.0f;
+    const float groundingTransformScale = assetTargetResolver.groundingEntry.resolved
+        ? assetTargetResolver.groundingEntry.resolvedScale
+        : 1.0f;
     const float poseGroundingScale =
         1.0f + std::abs(nodeBinding.groundingEntry.worldOffsetX) * nodeBinding.groundingEntry.bindWeight * 0.65f;
     scene.shadowAlphaScale =

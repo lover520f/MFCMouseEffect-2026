@@ -27,15 +27,13 @@ Note: this wrapper now keeps macOS WASM runtime selfcheck enabled by default.
    - `run-macos-automation-injection-selfcheck.sh --skip-build --dry-run` (macOS host only, skipped on non-mac hosts)
 5. macOS automation app-scope selfcheck:
    - `run-macos-automation-app-scope-selfcheck.sh --skip-build` (macOS host only, skipped on non-mac hosts)
-6. macOS VM foreground suppression selfcheck:
-   - `run-macos-vm-foreground-suppression-selfcheck.sh --skip-build` (macOS host only, skipped on non-mac hosts)
-7. macOS effects type parity selfcheck:
+6. macOS effects type parity selfcheck:
    - `run-macos-effects-type-parity-selfcheck.sh --skip-build` (macOS host only, skipped on non-mac hosts)
-8. macOS effects tuning selfcheck:
+7. macOS effects tuning selfcheck:
    - `run-macos-effects-profile-tuning-selfcheck.sh --skip-build` (macOS host only, skipped on non-mac hosts)
-9. macOS WASM runtime selfcheck:
+8. macOS WASM runtime selfcheck:
    - `run-macos-wasm-runtime-selfcheck.sh --skip-build` (macOS host only, skipped on non-mac hosts)
-10. Linux compile gate:
+9. Linux compile gate:
    - `run-posix-linux-compile-gate.sh`
    - default includes both `MFX_ENABLE_POSIX_CORE_RUNTIME=OFF/ON` compile lanes.
 11. WebUI automation platform semantic tests:
@@ -66,7 +64,6 @@ Skip phases when needed:
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-core-automation
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-automation-injection-selfcheck
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-automation-app-scope-selfcheck
-./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-vm-suppression-selfcheck
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-effects-type-parity-selfcheck
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-effects-tuning-selfcheck
 ./tools/platform/regression/run-posix-regression-suite.sh --skip-macos-wasm-selfcheck

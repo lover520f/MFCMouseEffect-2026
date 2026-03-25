@@ -32,6 +32,14 @@ Expected long-term stack:
 Conceptually:
 - `asset coordinator -> presenter/runtime -> renderer backend`
 
+## Mainline Rollback Note (2026-03-24)
+- The experimental Windows-native 3D branch (`glb` parsing, node-match/proxy/mesh layers, and later deep renderer-owned seam expansion) has been intentionally removed from the shipping mainline.
+- Current repository truth:
+  - keep the cross-platform input/runtime interfaces
+  - keep the macOS model-first implementation
+  - keep Windows on the existing stable stylized preview / placeholder-compatible renderer path
+- Any future Windows 3D work should restart on a separate implementation track instead of reviving the removed native experiment inside the current mainline renderer.
+
 ## Stable Upstream Inputs
 A future Windows real renderer must be able to consume the same conceptual inputs already carried by the current host contract.
 
@@ -231,6 +239,45 @@ It should **not** own:
     - `unclassified_candidate`
   - runtime may also expose `appearance_plugin_contract_brief = semantics_mode/style_intent/sample_tier`, so higher-level tools can reuse one short summary instead of recomposing those fields
   - `Win32MouseCompanionRealRendererSceneRuntime` now also carries a cached `poseAdapterProfile`; builder/painter/backend code should consume that shared profile instead of recomputing pose adapter influence/readability independently
+  - `Win32MouseCompanionRealRendererSceneRuntime` should now also carry cached `modelAssetSourceProfile`, `modelAssetManifestProfile`, `modelAssetCatalogProfile`, `modelAssetBindingTableProfile`, `modelAssetRegistryProfile`, `modelAssetLoadProfile`, `modelAssetDecodeProfile`, `modelAssetResidencyProfile`, `modelAssetInstanceProfile`, and `modelAssetActivationProfile`; runtime/proof/WebUI may expose:
+    - `scene_runtime_model_asset_source_state`
+    - `scene_runtime_model_asset_source_brief = source_state/source_format/model:0|1/action:0|1/appearance:0|1`
+    - `scene_runtime_model_asset_manifest_state`
+    - `scene_runtime_model_asset_manifest_brief = manifest_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_catalog_state`
+    - `scene_runtime_model_asset_catalog_brief = catalog_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_binding_table_state`
+    - `scene_runtime_model_asset_binding_table_brief = binding_table_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_registry_state`
+    - `scene_runtime_model_asset_registry_brief = registry_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_load_state`
+    - `scene_runtime_model_asset_load_brief = load_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_decode_state`
+    - `scene_runtime_model_asset_decode_brief = decode_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_residency_state`
+    - `scene_runtime_model_asset_residency_brief = residency_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_instance_state`
+    - `scene_runtime_model_asset_instance_brief = instance_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_activation_state`
+    - `scene_runtime_model_asset_activation_brief = activation_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_session_state`
+    - `scene_runtime_model_asset_session_brief = session_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_bind_ready_state`
+    - `scene_runtime_model_asset_bind_ready_brief = bind_ready_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_handle_state`
+    - `scene_runtime_model_asset_handle_brief = handle_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_scene_hook_state`
+    - `scene_runtime_model_asset_scene_hook_brief = scene_hook_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_scene_binding_state`
+    - `scene_runtime_model_asset_scene_binding_brief = scene_binding_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_node_attach_state`
+    - `scene_runtime_model_asset_node_attach_brief = node_attach_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_node_lift_state`
+    - `scene_runtime_model_asset_node_lift_brief = node_lift_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_node_bind_state`
+    - `scene_runtime_model_asset_node_bind_brief = node_bind_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_node_resolve_state`
+    - `scene_runtime_model_asset_node_resolve_brief = node_resolve_state/entry_count/resolved_entry_count`
   - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `modelSceneAdapterProfile`; runtime/proof/WebUI may expose:
     - `scene_runtime_model_scene_adapter_state`
     - `scene_runtime_model_scene_seam_readiness`
@@ -250,6 +297,20 @@ It should **not** own:
     - `scene_runtime_model_node_binding_bound_entry_count`
     - `scene_runtime_model_node_binding_brief = binding_state/entry_count/bound_entry_count`
     - `scene_runtime_model_node_binding_weight_brief = body:x|head:y|appendage:z|overlay:w|grounding:v`
+    - `scene_runtime_model_asset_node_drive_state`
+    - `scene_runtime_model_asset_node_drive_brief = node_drive_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_node_mount_state`
+    - `scene_runtime_model_asset_node_mount_brief = node_mount_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_node_route_state`
+    - `scene_runtime_model_asset_node_route_brief = node_route_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_node_dispatch_state`
+    - `scene_runtime_model_asset_node_dispatch_brief = node_dispatch_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_node_execute_state`
+    - `scene_runtime_model_asset_node_execute_brief = node_execute_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_node_command_state`
+    - `scene_runtime_model_asset_node_command_brief = node_command_state/entry_count/resolved_entry_count`
+    - `scene_runtime_model_asset_node_controller_state`
+    - `scene_runtime_model_asset_node_controller_brief = node_controller_state/entry_count/resolved_entry_count`
   - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `modelNodeSlotProfile`; runtime/proof/WebUI may expose:
     - `scene_runtime_model_node_slot_state`
     - `scene_runtime_model_node_slot_count`
@@ -277,6 +338,119 @@ It should **not** own:
     - `scene_runtime_asset_node_transform_brief = transform_state/entry_count/resolved_entry_count`
     - `scene_runtime_asset_node_transform_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
     - `scene_runtime_asset_node_transform_value_brief = body:(x,y,s)|head:(x,y,s)|appendage:(x,y,s)|overlay:(x,y,s)|grounding:(x,y,s)`
+  - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `assetNodeResolverProfile`; runtime/proof/WebUI may expose:
+    - `scene_runtime_asset_node_resolver_state`
+    - `scene_runtime_asset_node_resolver_entry_count`
+    - `scene_runtime_asset_node_resolver_resolved_entry_count`
+    - `scene_runtime_asset_node_resolver_brief = resolver_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_resolver_parent_brief = body:root|head:body|appendage:body|overlay:head|grounding:body`
+    - `scene_runtime_asset_node_resolver_value_brief = body:(x,y,s)|head:(x,y,s)|appendage:(x,y,s)|overlay:(x,y,s)|grounding:(x,y,s)`
+  - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `assetNodeParentSpaceProfile`; runtime/proof/WebUI may expose:
+    - `scene_runtime_asset_node_parent_space_state`
+    - `scene_runtime_asset_node_parent_space_entry_count`
+    - `scene_runtime_asset_node_parent_space_resolved_entry_count`
+    - `scene_runtime_asset_node_parent_space_brief = parent_space_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_parent_space_parent_brief = body:root|head:body|appendage:body|overlay:head|grounding:body`
+    - `scene_runtime_asset_node_parent_space_value_brief = body:(x,y,s)|head:(x,y,s)|appendage:(x,y,s)|overlay:(x,y,s)|grounding:(x,y,s)`
+  - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `assetNodeTargetProfile`; runtime/proof/WebUI may expose:
+    - `scene_runtime_asset_node_target_state`
+    - `scene_runtime_asset_node_target_entry_count`
+    - `scene_runtime_asset_node_target_resolved_entry_count`
+    - `scene_runtime_asset_node_target_brief = target_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_target_kind_brief = body:body_target|head:head_target|appendage:appendage_target|overlay:overlay_target|grounding:grounding_target`
+    - `scene_runtime_asset_node_target_value_brief = body:(x,y,s)|head:(x,y,s)|appendage:(x,y,s)|overlay:(x,y,s)|grounding:(x,y,s)`
+  - `Win32MouseCompanionRealRendererSceneRuntime` should also carry a cached `assetNodeTargetResolverProfile`; runtime/proof/WebUI may expose:
+    - `scene_runtime_asset_node_target_resolver_state`
+    - `scene_runtime_asset_node_target_resolver_entry_count`
+    - `scene_runtime_asset_node_target_resolver_resolved_entry_count`
+    - `scene_runtime_asset_node_target_resolver_brief = resolver_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_target_resolver_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
+    - `scene_runtime_asset_node_target_resolver_value_brief = body:(x,y,s)|head:(x,y,s)|appendage:(x,y,s)|overlay:(x,y,s)|grounding:(x,y,s)`
+  - after `scene` build, the backend should also derive an `assetNodeWorldSpaceProfile`; runtime/proof/WebUI may expose:
+    - `scene_runtime_asset_node_world_space_state`
+    - `scene_runtime_asset_node_world_space_entry_count`
+    - `scene_runtime_asset_node_world_space_resolved_entry_count`
+    - `scene_runtime_asset_node_world_space_brief = world_space_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_world_space_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
+    - `scene_runtime_asset_node_world_space_value_brief = body:(x,y,s)|head:(x,y,s)|appendage:(x,y,s)|overlay:(x,y,s)|grounding:(x,y,s)`
+    - `scene_runtime_asset_node_pose_state`
+    - `scene_runtime_asset_node_pose_entry_count`
+    - `scene_runtime_asset_node_pose_resolved_entry_count`
+    - `scene_runtime_asset_node_pose_brief = pose_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_pose_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
+    - `scene_runtime_asset_node_pose_value_brief = body:(x,y,s,tilt)|head:(x,y,s,tilt)|appendage:(x,y,s,tilt)|overlay:(x,y,s,tilt)|grounding:(x,y,s,tilt)`
+    - `scene_runtime_asset_node_pose_resolver_state`
+    - `scene_runtime_asset_node_pose_resolver_entry_count`
+    - `scene_runtime_asset_node_pose_resolver_resolved_entry_count`
+    - `scene_runtime_asset_node_pose_resolver_brief = resolver_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_pose_resolver_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
+    - `scene_runtime_asset_node_pose_resolver_value_brief = body:(x,y,s,tilt)|head:(x,y,s,tilt)|appendage:(x,y,s,tilt)|overlay:(x,y,s,tilt)|grounding:(x,y,s,tilt)`
+    - `scene_runtime_asset_node_pose_registry_state`
+    - `scene_runtime_asset_node_pose_registry_entry_count`
+    - `scene_runtime_asset_node_pose_registry_resolved_entry_count`
+    - `scene_runtime_asset_node_pose_registry_brief = registry_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_pose_registry_node_brief = body:pose.body.root|head:pose.head.anchor|appendage:pose.appendage.anchor|overlay:pose.overlay.anchor|grounding:pose.grounding.anchor`
+    - `scene_runtime_asset_node_pose_registry_weight_brief = body:w|head:w|appendage:w|overlay:w|grounding:w`
+    - `scene_runtime_asset_node_pose_channel_state`
+    - `scene_runtime_asset_node_pose_channel_entry_count`
+    - `scene_runtime_asset_node_pose_channel_resolved_entry_count`
+    - `scene_runtime_asset_node_pose_channel_brief = channel_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_pose_channel_name_brief = body:channel.body.posture|head:channel.head.expression|appendage:channel.appendage.motion|overlay:channel.overlay.fx|grounding:channel.grounding.shadow`
+    - `scene_runtime_asset_node_pose_channel_weight_brief = body:w|head:w|appendage:w|overlay:w|grounding:w`
+    - `scene_runtime_asset_node_pose_constraint_state`
+    - `scene_runtime_asset_node_pose_constraint_entry_count`
+    - `scene_runtime_asset_node_pose_constraint_resolved_entry_count`
+    - `scene_runtime_asset_node_pose_constraint_brief = constraint_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_pose_constraint_name_brief = body:constraint.body.posture|head:constraint.head.expression|appendage:constraint.appendage.motion|overlay:constraint.overlay.fx|grounding:constraint.grounding.shadow`
+    - `scene_runtime_asset_node_pose_constraint_value_brief = body:(strength,x,y,scale,tilt)|...`
+    - `scene_runtime_asset_node_pose_solve_state`
+    - `scene_runtime_asset_node_pose_solve_entry_count`
+    - `scene_runtime_asset_node_pose_solve_resolved_entry_count`
+    - `scene_runtime_asset_node_pose_solve_brief = solve_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_pose_solve_path_brief = body:/pet/body/root|head:/pet/body/head|appendage:/pet/body/appendage|overlay:/pet/fx/overlay|grounding:/pet/fx/grounding`
+    - `scene_runtime_asset_node_pose_solve_value_brief = body:(weight,x,y,scale,tilt)|...`
+    - `scene_runtime_asset_node_joint_hint_state`
+    - `scene_runtime_asset_node_joint_hint_entry_count`
+    - `scene_runtime_asset_node_joint_hint_resolved_entry_count`
+    - `scene_runtime_asset_node_joint_hint_brief = hint_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_joint_hint_name_brief = body:joint.body.spine|head:joint.head.look|appendage:joint.appendage.reach|overlay:joint.overlay.fx|grounding:joint.grounding.balance`
+    - `scene_runtime_asset_node_joint_hint_value_brief = body:(weight,reach,spread,tilt)|...`
+    - `scene_runtime_asset_node_articulation_state`
+    - `scene_runtime_asset_node_articulation_entry_count`
+    - `scene_runtime_asset_node_articulation_resolved_entry_count`
+    - `scene_runtime_asset_node_articulation_brief = articulation_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_articulation_name_brief = body:articulation.body.spine|head:articulation.head.look|appendage:articulation.appendage.reach|overlay:articulation.overlay.fx|grounding:articulation.grounding.balance`
+    - `scene_runtime_asset_node_articulation_value_brief = body:(weight,bend,stretch,twist)|...`
+    - `scene_runtime_asset_node_local_joint_registry_state`
+    - `scene_runtime_asset_node_local_joint_registry_entry_count`
+    - `scene_runtime_asset_node_local_joint_registry_resolved_entry_count`
+    - `scene_runtime_asset_node_local_joint_registry_brief = registry_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_local_joint_registry_joint_brief = body:local.body.spine|head:local.head.look|appendage:local.appendage.reach|overlay:local.overlay.fx|grounding:local.grounding.balance`
+    - `scene_runtime_asset_node_local_joint_registry_weight_brief = body:weight|...`
+    - `scene_runtime_asset_node_articulation_map_state`
+    - `scene_runtime_asset_node_articulation_map_entry_count`
+    - `scene_runtime_asset_node_articulation_map_resolved_entry_count`
+    - `scene_runtime_asset_node_articulation_map_brief = map_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_articulation_map_name_brief = body:map.body.spine|head:map.head.look|appendage:map.appendage.reach|overlay:map.overlay.fx|grounding:map.grounding.balance`
+    - `scene_runtime_asset_node_articulation_map_value_brief = body:(weight,rotation,translation)|...`
+    - `scene_runtime_asset_node_control_rig_hint_state`
+    - `scene_runtime_asset_node_control_rig_hint_entry_count`
+    - `scene_runtime_asset_node_control_rig_hint_resolved_entry_count`
+    - `scene_runtime_asset_node_control_rig_hint_brief = hint_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_control_rig_hint_name_brief = body:rig.body.spine|head:rig.head.look|appendage:rig.appendage.reach|overlay:rig.overlay.fx|grounding:rig.grounding.balance`
+    - `scene_runtime_asset_node_control_rig_hint_value_brief = body:(weight,drive,damping)|...`
+    - `scene_runtime_asset_node_rig_channel_state`
+    - `scene_runtime_asset_node_rig_channel_entry_count`
+    - `scene_runtime_asset_node_rig_channel_resolved_entry_count`
+    - `scene_runtime_asset_node_rig_channel_brief = channel_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_rig_channel_name_brief = body:rig.channel.body.spine|head:rig.channel.head.look|appendage:rig.channel.appendage.reach|overlay:rig.channel.overlay.fx|grounding:rig.channel.grounding.balance`
+    - `scene_runtime_asset_node_rig_channel_value_brief = body:(weight,amplitude,response)|...`
+    - `scene_runtime_asset_node_control_surface_state`
+    - `scene_runtime_asset_node_control_surface_entry_count`
+    - `scene_runtime_asset_node_control_surface_resolved_entry_count`
+    - `scene_runtime_asset_node_control_surface_brief = surface_state/entry_count/resolved_entry_count`
+    - `scene_runtime_asset_node_control_surface_name_brief = body:surface.body.spine|head:surface.head.look|appendage:surface.appendage.reach|overlay:surface.overlay.fx|grounding:surface.grounding.balance`
+    - `scene_runtime_asset_node_control_surface_value_brief = body:(weight,alpha,stroke)|...`
   - scene build/runtime diagnostics should also expose a derived `assetNodeAnchorProfile` over the same five logical lanes:
     - `scene_runtime_asset_node_anchor_state`
     - `scene_runtime_asset_node_anchor_entry_count`
@@ -286,10 +460,19 @@ It should **not** own:
     - `scene_runtime_asset_node_anchor_scale_brief = body:s|head:s|appendage:s|overlay:s|grounding:s`
   - current preview seam should now layer `modelNodeAdapterProfile -> modelNodeGraphProfile -> modelNodeBindingProfile`, so later real asset-node binding can replace the binding-profile generator without rewriting downstream builders
   - current preview seam should now also layer `modelNodeBindingProfile -> modelNodeSlotProfile`, so later true model assets can plug real node names/slots into one stable contract before any real graph traversal replaces preview-owned offsets
+  - current real-renderer bring-up should now start from `modelAssetSourceProfile -> modelAssetManifestProfile -> modelSceneAdapterProfile`, so the first true 3D step is no longer “just another preview seam”; it now has a dedicated asset-entry contract for model path, action library, and appearance-profile readiness before node/pose/rig layers consume anything
   - current preview seam should now also layer `modelNodeSlotProfile -> modelNodeRegistryProfile`, so later true asset-node resolution can replace registry generation while keeping builder-facing semantics, diagnostics, and proof vocabulary stable
   - current preview seam should now also layer `modelNodeRegistryProfile -> assetNodeBindingProfile`, so later true asset-node-path lookup can replace this binding-table generator while preserving builder-facing weights and runtime/proof vocabulary
   - current preview seam should now also layer `assetNodeBindingProfile -> assetNodeTransformProfile`, so later real node-local transform resolution can replace this transform-table generator while preserving builder-facing geometry/readability seams and runtime/proof vocabulary
+  - current preview seam should now also layer `assetNodeTransformProfile -> assetNodeResolverProfile`, so later true parent-space or hierarchy-aware node resolution can replace this resolver generator while keeping builder-facing local transform semantics and runtime/proof vocabulary stable
+  - current preview seam should now also layer `assetNodeResolverProfile -> assetNodeParentSpaceProfile`, so later true node-tree accumulation can replace this parent-space generator while keeping builder-facing hierarchy transforms, diagnostics, WebUI, and proof vocabulary stable
+  - current preview seam should now also layer `assetNodeParentSpaceProfile -> assetNodeTargetProfile -> assetNodeTargetResolverProfile`, so later true node-target resolution can replace this target-table generator while preserving builder-facing target semantics, diagnostics, WebUI, and proof vocabulary
+  - after builder-owned anchor generation, current preview seam should also derive `assetNodeWorldSpaceProfile`, so later true model node world transforms can replace this world-table generator while preserving painter-facing diagnostics and proof vocabulary
+  - current preview seam should now also layer `assetNodeWorldSpaceProfile -> assetNodePoseProfile -> assetNodePoseResolverProfile -> assetNodePoseRegistryProfile -> assetNodePoseChannelProfile -> assetNodePoseConstraintProfile -> assetNodePoseSolveProfile -> assetNodeJointHintProfile -> assetNodeArticulationProfile -> assetNodeLocalJointRegistryProfile -> assetNodeArticulationMapProfile -> assetNodeControlRigHintProfile -> assetNodeRigChannelProfile -> assetNodeControlSurfaceProfile -> assetNodeRigDriverProfile -> assetNodeSurfaceDriverProfile`, so later true model pose/control-rig consumption can replace these generators one seam at a time while preserving runtime/proof/WebUI vocabulary and builder-facing readability contracts
   - current preview seam should now also layer `assetNodeTransformProfile -> assetNodeAnchorProfile`, so later true node-local anchor resolution can replace the preview anchor generator while keeping builder-facing centers/scales, diagnostics, WebUI, and proof vocabulary stable
+  - builder code should now prefer consuming the resolver seam over reading raw asset-node transform/binding tables directly, so later real model-node hierarchy work reopens the resolver generator instead of re-fragmenting builder-local math
+  - builder code may now also prefer consuming the parent-space seam over raw local-transform tables whenever hierarchy accumulation matters, so later real model-node graph traversal reopens the parent-space generator instead of scattering parent-child math back into builders
+  - builder code may now also prefer consuming the target seam over raw parent-space values whenever presentation intent is “target node” rather than “intermediate hierarchy transform”, so later real model-node target resolution reopens the target generator instead of re-fragmenting target math back into builders
   - host-side default-lane style-intent inference and metadata support lists should reuse the same helper, so `style_intent` / `sample_tier` machine vocab does not split between validation and runtime
   - runtime/preview diagnostics should also expose scene-runtime adapter state explicitly instead of only `pose_frame_available / pose_binding_configured` booleans:
     - `scene_runtime_adapter_mode = runtime_only|pose_unbound|pose_bound`
@@ -312,6 +495,7 @@ It should **not** own:
     - lightweight adornment/overlay/grounding bias (pose-badge visibility, accessory anchor, click/hold/scroll/drag/follow overlay staging, shadow/pedestal grounding)
     - lightweight painter/readability bias (shadow/pedestal alpha, pose-badge confidence, accessory alpha/stroke emphasis)
     - one shared model-node seam for frame/face/adornment/overlay/grounding offsets, with channel-specific influence instead of one undifferentiated node bias
+    - downstream rig/surface driver seams that bias anchor scales, tilt, overlay stroke, and painter alpha/stroke without reopening builder-local ad-hoc math
   - but it still must remain a bounded preview aid, not a separate controller-visible action taxonomy
 - 新增 renderer-owned semantics 时，应优先扩展 plugin output，而不是把 builder 继续当作事实上的插件层；当前 `wasm_v1` 就是第一步 bounded patch 协议，而不是继续往 `builtin_passthrough` 堆更多 ad-hoc tuning key
 - 当前默认 lane rollout 合同：

@@ -18,12 +18,14 @@ constexpr const char* kEffectsChannelTrail = "trail";
 constexpr const char* kEffectsChannelScroll = "scroll";
 constexpr const char* kEffectsChannelHold = "hold";
 constexpr const char* kEffectsChannelHover = "hover";
-constexpr std::array<const char*, 5> kEffectsChannels = {
+constexpr const char* kEffectsChannelCursorDecoration = "cursor_decoration";
+constexpr std::array<const char*, 6> kEffectsChannels = {
     kEffectsChannelClick,
     kEffectsChannelTrail,
     kEffectsChannelScroll,
     kEffectsChannelHold,
     kEffectsChannelHover,
+    kEffectsChannelCursorDecoration,
 };
 
 const char* ChannelForEventKind(wasm::EventKind kind) {
@@ -81,6 +83,7 @@ bool WasmDispatchFeature::IsRouteActive(const AppController& controller, const c
 
 bool WasmDispatchFeature::TryInvokeAndRender(
     AppController& controller,
+    const char* channel,
     const wasm::EventInvokeInput& input,
     bool* outRenderedByWasm,
     bool* outInvokeOk) {
@@ -91,8 +94,7 @@ bool WasmDispatchFeature::TryInvokeAndRender(
         *outInvokeOk = false;
     }
 
-    const char* channel = ChannelForEventKind(input.kind);
-    auto* wasmHost = controller.WasmEffectsHostForChannel(channel);
+    auto* wasmHost = controller.WasmEffectsHostForChannel(channel ? channel : "");
     if (!wasmHost || !wasmHost->Enabled() || !wasmHost->IsPluginLoaded()) {
         return false;
     }
@@ -137,6 +139,15 @@ bool WasmDispatchFeature::TryInvokeAndRender(
     return true;
 }
 
+bool WasmDispatchFeature::TryInvokeAndRender(
+    AppController& controller,
+    const wasm::EventInvokeInput& input,
+    bool* outRenderedByWasm,
+    bool* outInvokeOk) {
+    const char* channel = ChannelForEventKind(input.kind);
+    return TryInvokeAndRender(controller, channel, input, outRenderedByWasm, outInvokeOk);
+}
+
 bool WasmDispatchFeature::RouteClick(AppController& controller, const ClickEvent& ev, bool* outRenderedByWasm) {
     if (outRenderedByWasm) {
         *outRenderedByWasm = false;
@@ -159,7 +170,9 @@ bool WasmDispatchFeature::RouteMove(AppController& controller, const ScreenPoint
     if (outRenderedByWasm) {
         *outRenderedByWasm = false;
     }
-    if (!IsRouteActive(controller, kEffectsChannelTrail)) {
+    const bool trailActive = IsRouteActive(controller, kEffectsChannelTrail);
+    const bool decorationActive = IsRouteActive(controller, kEffectsChannelCursorDecoration);
+    if (!trailActive && !decorationActive) {
         return false;
     }
 
@@ -169,7 +182,23 @@ bool WasmDispatchFeature::RouteMove(AppController& controller, const ScreenPoint
     invoke.y = pt.y;
     invoke.eventTickMs = controller.CurrentTickMs();
 
-    return TryInvokeAndRender(controller, invoke, outRenderedByWasm, nullptr);
+    bool renderedAny = false;
+    bool routed = false;
+    if (trailActive) {
+        bool rendered = false;
+        routed = TryInvokeAndRender(controller, kEffectsChannelTrail, invoke, &rendered, nullptr) || routed;
+        renderedAny = renderedAny || rendered;
+    }
+    if (decorationActive) {
+        bool rendered = false;
+        routed =
+            TryInvokeAndRender(controller, kEffectsChannelCursorDecoration, invoke, &rendered, nullptr) || routed;
+        renderedAny = renderedAny || rendered;
+    }
+    if (outRenderedByWasm) {
+        *outRenderedByWasm = renderedAny;
+    }
+    return routed;
 }
 
 bool WasmDispatchFeature::RouteScroll(AppController& controller, const ScrollEvent& ev, bool* outRenderedByWasm) {

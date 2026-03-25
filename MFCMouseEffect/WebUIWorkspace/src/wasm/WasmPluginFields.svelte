@@ -28,6 +28,11 @@
     return value[key] || fallback;
   }
 
+  function toNumber(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
   function normalizeCatalogItems(input) {
     const source = Array.isArray(input) ? input : [];
     const out = [];
@@ -95,6 +100,9 @@
     }
     if (id === 'hover') {
       return kinds.includes('hover') || kinds.some((entry) => entry.startsWith('hover_'));
+    }
+    if (id === 'cursor_decoration') {
+      return kinds.includes('move') || kinds.includes('trail') || kinds.includes('hover') || kinds.length === 0;
     }
     return true;
   }
@@ -214,6 +222,7 @@
     { id: 'scroll', labelKey: 'label_scroll', fallback: 'Scroll' },
     { id: 'hold', labelKey: 'label_hold', fallback: 'Hold' },
     { id: 'hover', labelKey: 'label_hover', fallback: 'Hover' },
+    { id: 'cursor_decoration', labelKey: 'section_cursor_decoration', fallback: 'Cursor Decoration' },
   ];
   const EFFECT_CHANNEL_IDS = EFFECT_CHANNELS.map((entry) => entry.id);
 
@@ -224,6 +233,7 @@
       scroll: '',
       hold: '',
       hover: '',
+      cursor_decoration: '',
     };
   }
 
@@ -234,6 +244,7 @@
       scroll: [],
       hold: [],
       hover: [],
+      cursor_decoration: [],
     };
   }
 
@@ -244,6 +255,7 @@
       scroll: null,
       hold: null,
       hover: null,
+      cursor_decoration: null,
     };
   }
 
@@ -280,6 +292,9 @@
     if (id === 'hover') {
       return `${s.configured_manifest_path_hover || ''}`.trim() || `${s.configured_manifest_path || ''}`.trim();
     }
+    if (id === 'cursor_decoration') {
+      return `${s.configured_manifest_path_cursor_decoration || ''}`.trim();
+    }
     return `${s.configured_manifest_path || ''}`.trim();
   }
 
@@ -301,6 +316,9 @@
     if (id === 'hover') {
       return `${s.configured_manifest_path_hover || ''}`.trim();
     }
+    if (id === 'cursor_decoration') {
+      return `${s.configured_manifest_path_cursor_decoration || ''}`.trim();
+    }
     return '';
   }
 
@@ -321,6 +339,9 @@
     }
     if (id === 'hover') {
       return `${s.active_manifest_path_hover || ''}`.trim();
+    }
+    if (id === 'cursor_decoration') {
+      return `${s.active_manifest_path_cursor_decoration || ''}`.trim();
     }
     return `${s.active_manifest_path || ''}`.trim();
   }
@@ -346,7 +367,11 @@
       next.configured_manifest_path_hold = value;
       return next;
     }
-    next.configured_manifest_path_hover = value;
+    if (id === 'hover') {
+      next.configured_manifest_path_hover = value;
+      return next;
+    }
+    next.configured_manifest_path_cursor_decoration = value;
     return next;
   }
 
@@ -358,6 +383,7 @@
       scroll: configuredManifestPathForChannelRaw(source, 'scroll'),
       hold: configuredManifestPathForChannelRaw(source, 'hold'),
       hover: configuredManifestPathForChannelRaw(source, 'hover'),
+      cursor_decoration: configuredManifestPathForChannelRaw(source, 'cursor_decoration'),
     };
   }
 
@@ -414,7 +440,6 @@
   let activePluginTitle = current.active_plugin_name || current.active_plugin_id || text('wasm_text_no_active_plugin', 'Not loaded');
   let manifestPathDisplay = current.active_manifest_path || current.configured_manifest_path || '-';
   let showConfiguredManifestPath = false;
-
   function setSelectedManifestPath(channelId, manifestPath) {
     const id = sanitizeChannelId(channelId);
     selectedManifestPathByChannel = {

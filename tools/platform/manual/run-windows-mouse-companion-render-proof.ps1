@@ -236,6 +236,663 @@ function Add-ModelSceneAdapterSummaryProperty($Node) {
     $Node | Add-Member -NotePropertyName "scene_runtime_model_scene_adapter_brief" -NotePropertyValue $brief
 }
 
+function Format-ModelAssetSourceSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/unknown/model:0/action:0/appearance:0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_source_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_source_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $format = [string]$Node.model_source_format
+    if ([string]::IsNullOrWhiteSpace($format)) { $format = "unknown" }
+    $modelReady = if ($Node.model_ready) { 1 } else { 0 }
+    $actionReady = if ($Node.action_library_ready) { 1 } else { 0 }
+    $appearanceReady = if ($Node.appearance_profile_ready) { 1 } else { 0 }
+    return "{0}/{1}/model:{2}/action:{3}/appearance:{4}" -f $state, $format, $modelReady, $actionReady, $appearanceReady
+}
+
+function Add-ModelAssetSourceSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetSourceSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_source_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_source_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_source_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetManifestSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_manifest_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_manifest_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_manifest_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_manifest_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetManifestSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetManifestSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_manifest_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_manifest_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_manifest_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetCatalogSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_catalog_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_catalog_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_catalog_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_catalog_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetCatalogSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetCatalogSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_catalog_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_catalog_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_catalog_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetBindingTableSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_binding_table_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_binding_table_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_binding_table_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_binding_table_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetBindingTableSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetBindingTableSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_binding_table_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_binding_table_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_binding_table_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_registry_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_registry_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_registry_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_registry_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetLoadSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_load_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_load_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_load_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_load_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetLoadSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetLoadSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_load_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_load_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_load_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetDecodeSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_decode_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_decode_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_decode_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_decode_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetDecodeSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetDecodeSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_decode_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_decode_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_decode_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetResidencySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_residency_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_residency_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_residency_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_residency_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetResidencySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetResidencySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_residency_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_residency_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_residency_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetInstanceSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_instance_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_instance_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_instance_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_instance_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetInstanceSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetInstanceSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_instance_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_instance_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_instance_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetActivationSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_activation_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_activation_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_activation_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_activation_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetActivationSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetActivationSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_activation_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_activation_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_activation_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetSessionSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_session_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_session_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_session_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_session_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetSessionSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetSessionSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_session_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_session_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_session_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetBindReadySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_bind_ready_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_bind_ready_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_bind_ready_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_bind_ready_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetBindReadySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetBindReadySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_bind_ready_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_bind_ready_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_bind_ready_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetHandleSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_handle_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_handle_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_handle_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_handle_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetHandleSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetHandleSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_handle_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_handle_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_handle_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetSceneHookSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_scene_hook_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_scene_hook_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_scene_hook_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_scene_hook_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetSceneHookSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetSceneHookSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_scene_hook_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_scene_hook_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_scene_hook_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetSceneBindingSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_scene_binding_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_scene_binding_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_scene_binding_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_scene_binding_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetSceneBindingSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetSceneBindingSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_scene_binding_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_scene_binding_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_scene_binding_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetNodeAttachSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_node_attach_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_node_attach_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_attach_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_attach_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetNodeAttachSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetNodeAttachSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_attach_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_attach_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_attach_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetNodeLiftSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_node_lift_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_node_lift_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_lift_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_lift_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetNodeLiftSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetNodeLiftSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_lift_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_lift_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_lift_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetNodeBindSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_model_asset_node_bind_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    $state = [string]$Node.scene_runtime_model_asset_node_bind_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_bind_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_bind_resolved_entry_count)
+    return "{0}/{1}/{2}" -f $state, $entryCount, $resolved
+}
+
+function Add-ModelAssetNodeBindSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-ModelAssetNodeBindSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_bind_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_bind_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_bind_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetNodeResolveSummary($Node) {
+    if ($null -eq $Node) { return "" }
+    $existing = [string]$Node.scene_runtime_model_asset_node_resolve_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) { return $existing }
+    $state = [string]$Node.scene_runtime_model_asset_node_resolve_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_resolve_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_resolve_resolved_entry_count)
+    return ("{0}/{1}/{2}" -f $state, $entryCount, $resolved)
+}
+
+function Add-ModelAssetNodeResolveSummaryProperty($Node) {
+    if ($null -eq $Node) { return }
+    $brief = Format-ModelAssetNodeResolveSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_resolve_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_resolve_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_resolve_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetNodeDriveSummary($Node) {
+    if ($null -eq $Node) { return "" }
+    $existing = [string]$Node.scene_runtime_model_asset_node_drive_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) { return $existing }
+    $state = [string]$Node.scene_runtime_model_asset_node_drive_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_drive_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_drive_resolved_entry_count)
+    return ("{0}/{1}/{2}" -f $state, $entryCount, $resolved)
+}
+
+function Add-ModelAssetNodeDriveSummaryProperty($Node) {
+    if ($null -eq $Node) { return }
+    $brief = Format-ModelAssetNodeDriveSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_drive_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_drive_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_drive_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetNodeMountSummary($Node) {
+    if ($null -eq $Node) { return "" }
+    $existing = [string]$Node.scene_runtime_model_asset_node_mount_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) { return $existing }
+    $state = [string]$Node.scene_runtime_model_asset_node_mount_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_mount_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_mount_resolved_entry_count)
+    return ("{0}/{1}/{2}" -f $state, $entryCount, $resolved)
+}
+
+function Add-ModelAssetNodeMountSummaryProperty($Node) {
+    if ($null -eq $Node) { return }
+    $brief = Format-ModelAssetNodeMountSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_mount_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_mount_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_mount_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetNodeRouteSummary($Node) {
+    if ($null -eq $Node) { return "" }
+    $existing = [string]$Node.scene_runtime_model_asset_node_route_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) { return $existing }
+    $state = [string]$Node.scene_runtime_model_asset_node_route_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_route_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_route_resolved_entry_count)
+    return ("{0}/{1}/{2}" -f $state, $entryCount, $resolved)
+}
+
+function Add-ModelAssetNodeRouteSummaryProperty($Node) {
+    if ($null -eq $Node) { return }
+    $brief = Format-ModelAssetNodeRouteSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_route_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_route_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_route_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetNodeDispatchSummary($Node) {
+    if ($null -eq $Node) { return "" }
+    $existing = [string]$Node.scene_runtime_model_asset_node_dispatch_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) { return $existing }
+    $state = [string]$Node.scene_runtime_model_asset_node_dispatch_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_dispatch_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_dispatch_resolved_entry_count)
+    return ("{0}/{1}/{2}" -f $state, $entryCount, $resolved)
+}
+
+function Add-ModelAssetNodeDispatchSummaryProperty($Node) {
+    if ($null -eq $Node) { return }
+    $brief = Format-ModelAssetNodeDispatchSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_dispatch_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_dispatch_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_dispatch_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetNodeExecuteSummary($Node) {
+    if ($null -eq $Node) { return "" }
+    $existing = [string]$Node.scene_runtime_model_asset_node_execute_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) { return $existing }
+    $state = [string]$Node.scene_runtime_model_asset_node_execute_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_execute_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_execute_resolved_entry_count)
+    return ("{0}/{1}/{2}" -f $state, $entryCount, $resolved)
+}
+
+function Add-ModelAssetNodeExecuteSummaryProperty($Node) {
+    if ($null -eq $Node) { return }
+    $brief = Format-ModelAssetNodeExecuteSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_execute_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_execute_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_execute_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetNodeCommandSummary($Node) {
+    if ($null -eq $Node) { return "" }
+    $existing = [string]$Node.scene_runtime_model_asset_node_command_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) { return $existing }
+    $state = [string]$Node.scene_runtime_model_asset_node_command_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_command_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_command_resolved_entry_count)
+    return ("{0}/{1}/{2}" -f $state, $entryCount, $resolved)
+}
+
+function Add-ModelAssetNodeCommandSummaryProperty($Node) {
+    if ($null -eq $Node) { return }
+    $brief = Format-ModelAssetNodeCommandSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_command_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_command_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_command_brief" -NotePropertyValue $brief
+}
+
+function Format-ModelAssetNodeControllerSummary($Node) {
+    if ($null -eq $Node) { return "" }
+    $existing = [string]$Node.scene_runtime_model_asset_node_controller_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) { return $existing }
+    $state = [string]$Node.scene_runtime_model_asset_node_controller_state
+    if ([string]::IsNullOrWhiteSpace($state)) { $state = "preview_only" }
+    $entryCount = [int]([string]$Node.scene_runtime_model_asset_node_controller_entry_count)
+    $resolved = [int]([string]$Node.scene_runtime_model_asset_node_controller_resolved_entry_count)
+    return ("{0}/{1}/{2}" -f $state, $entryCount, $resolved)
+}
+
+function Add-ModelAssetNodeControllerSummaryProperty($Node) {
+    if ($null -eq $Node) { return }
+    $brief = Format-ModelAssetNodeControllerSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_model_asset_node_controller_brief").Count -gt 0) {
+        $Node.scene_runtime_model_asset_node_controller_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_model_asset_node_controller_brief" -NotePropertyValue $brief
+}
+
 function Format-ModelNodeAdapterSummary($Node) {
     if ($null -eq $Node) {
         return "preview_only/0.00"
@@ -444,6 +1101,1064 @@ function Add-AssetNodeAnchorSummaryProperty($Node) {
         return
     }
     $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_anchor_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeResolverSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_resolver_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeResolverSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeResolverSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_resolver_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_resolver_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_resolver_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeParentSpaceSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_parent_space_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeParentSpaceSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeParentSpaceSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_parent_space_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_parent_space_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_parent_space_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeTargetSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_target_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeTargetSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeTargetSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_target_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_target_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_target_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeTargetResolverSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_target_resolver_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeTargetResolverSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeTargetResolverSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_target_resolver_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_target_resolver_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_target_resolver_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeWorldSpaceSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_world_space_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeWorldSpaceSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeWorldSpaceSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_world_space_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_world_space_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_world_space_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodePoseSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_pose_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodePoseSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodePoseSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_pose_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_pose_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_pose_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodePoseResolverSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_pose_resolver_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodePoseResolverSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodePoseResolverSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_pose_resolver_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_pose_resolver_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_pose_resolver_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodePoseRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_pose_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodePoseRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodePoseRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_pose_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_pose_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_pose_registry_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodePoseChannelSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_pose_channel_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodePoseChannelSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodePoseChannelSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_pose_channel_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_pose_channel_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_pose_channel_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodePoseConstraintSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_pose_constraint_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodePoseConstraintSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodePoseConstraintSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_pose_constraint_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_pose_constraint_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_pose_constraint_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodePoseSolveSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_pose_solve_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodePoseSolveSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodePoseSolveSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_pose_solve_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_pose_solve_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_pose_solve_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeJointHintSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_joint_hint_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeJointHintSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeJointHintSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_joint_hint_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_joint_hint_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_joint_hint_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeArticulationSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_articulation_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeArticulationSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeArticulationSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_articulation_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_articulation_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_articulation_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeLocalJointRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_local_joint_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeLocalJointRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeLocalJointRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_local_joint_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_local_joint_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_local_joint_registry_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeArticulationMapSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_articulation_map_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeArticulationMapSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeArticulationMapSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_articulation_map_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_articulation_map_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_articulation_map_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeControlRigHintSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_control_rig_hint_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeControlRigHintSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeControlRigHintSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_control_rig_hint_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_control_rig_hint_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_control_rig_hint_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeRigChannelSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_rig_channel_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeRigChannelSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeRigChannelSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_rig_channel_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_rig_channel_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_rig_channel_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeControlSurfaceSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_control_surface_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeControlSurfaceSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeControlSurfaceSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_control_surface_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_control_surface_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_control_surface_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeRigDriverSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_rig_driver_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeRigDriverSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeRigDriverSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_rig_driver_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_rig_driver_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_rig_driver_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeSurfaceDriverSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_surface_driver_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeSurfaceDriverSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeSurfaceDriverSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_surface_driver_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_surface_driver_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_surface_driver_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodePoseBusSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_pose_bus_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodePoseBusSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodePoseBusSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_pose_bus_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_pose_bus_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_pose_bus_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeControllerTableSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_controller_table_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeControllerTableSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeControllerTableSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_controller_table_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_controller_table_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_controller_table_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeControllerRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_controller_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeControllerRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeControllerRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_controller_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_controller_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_controller_registry_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeDriverBusSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_driver_bus_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeDriverBusSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeDriverBusSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_driver_bus_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_driver_bus_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_driver_bus_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeControllerDriverRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_controller_driver_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeControllerDriverRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeControllerDriverRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_controller_driver_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_controller_driver_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_controller_driver_registry_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeExecutionLaneSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_execution_lane_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeExecutionLaneSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeExecutionLaneSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_execution_lane_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_execution_lane_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_execution_lane_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeControllerPhaseSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_controller_phase_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeControllerPhaseSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeControllerPhaseSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_controller_phase_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_controller_phase_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_controller_phase_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeExecutionSurfaceSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_execution_surface_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeExecutionSurfaceSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeExecutionSurfaceSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_execution_surface_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_execution_surface_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_execution_surface_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeControllerPhaseRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_controller_phase_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeControllerPhaseRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeControllerPhaseRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_controller_phase_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_controller_phase_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_controller_phase_registry_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeSurfaceCompositionBusSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_surface_composition_bus_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeSurfaceCompositionBusSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeSurfaceCompositionBusSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_surface_composition_bus_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_surface_composition_bus_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_surface_composition_bus_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeExecutionStackSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_execution_stack_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeExecutionStackSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeExecutionStackSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_execution_stack_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_execution_stack_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_execution_stack_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeExecutionStackRouterSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_execution_stack_router_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeExecutionStackRouterSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeExecutionStackRouterSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_execution_stack_router_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_execution_stack_router_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_execution_stack_router_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeExecutionStackRouterRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_execution_stack_router_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeExecutionStackRouterRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeExecutionStackRouterRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_execution_stack_router_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_execution_stack_router_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_execution_stack_router_registry_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeCompositionRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_composition_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeCompositionRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeCompositionRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_composition_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_composition_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_composition_registry_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeSurfaceRouteSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_surface_route_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeSurfaceRouteSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeSurfaceRouteSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_surface_route_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_surface_route_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_surface_route_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeSurfaceRouteRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_surface_route_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeSurfaceRouteRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeSurfaceRouteRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_surface_route_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_surface_route_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_surface_route_registry_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeSurfaceRouteRouterBusSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_surface_route_router_bus_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeSurfaceRouteRouterBusSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeSurfaceRouteRouterBusSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_surface_route_router_bus_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_surface_route_router_bus_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_surface_route_router_bus_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeSurfaceRouteBusRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_surface_route_bus_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeSurfaceRouteBusRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeSurfaceRouteBusRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_surface_route_bus_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_surface_route_bus_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_surface_route_bus_registry_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeSurfaceRouteBusDriverSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_surface_route_bus_driver_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeSurfaceRouteBusDriverSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeSurfaceRouteBusDriverSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_surface_route_bus_driver_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_surface_route_bus_driver_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_surface_route_bus_driver_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeSurfaceRouteBusDriverRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_surface_route_bus_driver_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeSurfaceRouteBusDriverRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeSurfaceRouteBusDriverRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_surface_route_bus_driver_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_surface_route_bus_driver_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_surface_route_bus_driver_registry_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeSurfaceRouteBusDriverRegistryRouterSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_surface_route_bus_driver_registry_router_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeSurfaceRouteBusDriverRegistryRouterSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeSurfaceRouteBusDriverRegistryRouterSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_surface_route_bus_driver_registry_router_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_surface_route_bus_driver_registry_router_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_surface_route_bus_driver_registry_router_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeExecutionDriverTableSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_execution_driver_table_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeExecutionDriverTableSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeExecutionDriverTableSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_execution_driver_table_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_execution_driver_table_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_execution_driver_table_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeExecutionDriverRouterTableSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_execution_driver_router_table_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeExecutionDriverRouterTableSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeExecutionDriverRouterTableSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_execution_driver_router_table_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_execution_driver_router_table_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_execution_driver_router_table_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeExecutionDriverRouterRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_execution_driver_router_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeExecutionDriverRouterRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeExecutionDriverRouterRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_execution_driver_router_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_execution_driver_router_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_execution_driver_router_registry_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeExecutionDriverRouterRegistryBusSummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_execution_driver_router_registry_bus_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeExecutionDriverRouterRegistryBusSummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeExecutionDriverRouterRegistryBusSummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_execution_driver_router_registry_bus_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_execution_driver_router_registry_bus_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_execution_driver_router_registry_bus_brief" -NotePropertyValue $brief
+}
+
+function Format-AssetNodeExecutionDriverRouterRegistryBusRegistrySummary($Node) {
+    if ($null -eq $Node) {
+        return "preview_only/0/0"
+    }
+    $existing = [string]$Node.scene_runtime_asset_node_execution_driver_router_registry_bus_registry_brief
+    if (-not [string]::IsNullOrWhiteSpace($existing)) {
+        return $existing
+    }
+    return "preview_only/0/0"
+}
+
+function Add-AssetNodeExecutionDriverRouterRegistryBusRegistrySummaryProperty($Node) {
+    if ($null -eq $Node) {
+        return
+    }
+    $brief = Format-AssetNodeExecutionDriverRouterRegistryBusRegistrySummary $Node
+    if ($Node.PSObject.Properties.Match("scene_runtime_asset_node_execution_driver_router_registry_bus_registry_brief").Count -gt 0) {
+        $Node.scene_runtime_asset_node_execution_driver_router_registry_bus_registry_brief = $brief
+        return
+    }
+    $Node | Add-Member -NotePropertyName "scene_runtime_asset_node_execution_driver_router_registry_bus_registry_brief" -NotePropertyValue $brief
 }
 
 function Show-RealPreviewSmokeHint {
@@ -1124,30 +2839,174 @@ if ($Route -eq "sweep") {
             if ($null -ne $item) {
                 Add-DefaultLaneSummaryProperty $item.real_renderer_preview
                 Add-AppearancePluginContractBriefProperty $item.real_renderer_preview
+                Add-ModelAssetSourceSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetManifestSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetCatalogSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetBindingTableSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetRegistrySummaryProperty $item.real_renderer_preview
+                Add-ModelAssetLoadSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetDecodeSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetResidencySummaryProperty $item.real_renderer_preview
+                Add-ModelAssetInstanceSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetActivationSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetSessionSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetBindReadySummaryProperty $item.real_renderer_preview
+                Add-ModelAssetHandleSummaryProperty $item.real_renderer_preview
                 Add-ModelSceneAdapterSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetSceneHookSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetSceneBindingSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeAdapterSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeChannelSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeAttachSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeLiftSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeBindSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeResolveSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeDriveSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeMountSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeGraphSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeBindingSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeRouteSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeDispatchSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeExecuteSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeCommandSummaryProperty $item.real_renderer_preview
+                Add-ModelAssetNodeControllerSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeSlotSummaryProperty $item.real_renderer_preview
                 Add-ModelNodeRegistrySummaryProperty $item.real_renderer_preview
                 Add-AssetNodeBindingSummaryProperty $item.real_renderer_preview
                 Add-AssetNodeTransformSummaryProperty $item.real_renderer_preview
                 Add-AssetNodeAnchorSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeResolverSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeParentSpaceSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeTargetSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeTargetResolverSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeWorldSpaceSummaryProperty $item.real_renderer_preview
+                Add-AssetNodePoseSummaryProperty $item.real_renderer_preview
+                Add-AssetNodePoseResolverSummaryProperty $item.real_renderer_preview
+                Add-AssetNodePoseRegistrySummaryProperty $item.real_renderer_preview
+                Add-AssetNodePoseChannelSummaryProperty $item.real_renderer_preview
+                Add-AssetNodePoseConstraintSummaryProperty $item.real_renderer_preview
+                Add-AssetNodePoseSolveSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeJointHintSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeArticulationSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeLocalJointRegistrySummaryProperty $item.real_renderer_preview
+                Add-AssetNodeArticulationMapSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeControlRigHintSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeRigChannelSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeControlSurfaceSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeRigDriverSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeSurfaceDriverSummaryProperty $item.real_renderer_preview
+                Add-AssetNodePoseBusSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeControllerTableSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeControllerRegistrySummaryProperty $item.real_renderer_preview
+                Add-AssetNodeDriverBusSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeControllerDriverRegistrySummaryProperty $item.real_renderer_preview
+                Add-AssetNodeExecutionLaneSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeControllerPhaseSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeExecutionSurfaceSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeControllerPhaseRegistrySummaryProperty $item.real_renderer_preview
+                Add-AssetNodeSurfaceCompositionBusSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeExecutionStackSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeExecutionStackRouterSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeExecutionStackRouterRegistrySummaryProperty $item.real_renderer_preview
+                Add-AssetNodeCompositionRegistrySummaryProperty $item.real_renderer_preview
+                Add-AssetNodeSurfaceRouteSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeSurfaceRouteRegistrySummaryProperty $item.real_renderer_preview
+                Add-AssetNodeSurfaceRouteRouterBusSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeSurfaceRouteBusRegistrySummaryProperty $item.real_renderer_preview
+                Add-AssetNodeSurfaceRouteBusDriverSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeSurfaceRouteBusDriverRegistrySummaryProperty $item.real_renderer_preview
+                Add-AssetNodeSurfaceRouteBusDriverRegistryRouterSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeExecutionDriverTableSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeExecutionDriverRouterTableSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeExecutionDriverRouterRegistrySummaryProperty $item.real_renderer_preview
+                Add-AssetNodeExecutionDriverRouterRegistryBusSummaryProperty $item.real_renderer_preview
+                Add-AssetNodeExecutionDriverRouterRegistryBusRegistrySummaryProperty $item.real_renderer_preview
                 Add-PoseAdapterSummaryProperty $item.real_renderer_preview
                 if ($null -ne $item.proof) {
                     Add-DefaultLaneSummaryProperty $item.proof.renderer_runtime_after
                     Add-AppearancePluginContractBriefProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetSourceSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetManifestSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetCatalogSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetBindingTableSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetRegistrySummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetLoadSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetDecodeSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetResidencySummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetInstanceSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetActivationSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetSessionSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetBindReadySummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetHandleSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelSceneAdapterSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetSceneHookSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetSceneBindingSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeAdapterSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeChannelSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeAttachSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeLiftSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeBindSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeResolveSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeDriveSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeMountSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeGraphSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeBindingSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeRouteSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeDispatchSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeExecuteSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeCommandSummaryProperty $item.proof.renderer_runtime_after
+                    Add-ModelAssetNodeControllerSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeSlotSummaryProperty $item.proof.renderer_runtime_after
                     Add-ModelNodeRegistrySummaryProperty $item.proof.renderer_runtime_after
                     Add-AssetNodeBindingSummaryProperty $item.proof.renderer_runtime_after
                     Add-AssetNodeTransformSummaryProperty $item.proof.renderer_runtime_after
                     Add-AssetNodeAnchorSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeResolverSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeParentSpaceSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeTargetSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeTargetResolverSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeWorldSpaceSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodePoseSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodePoseResolverSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodePoseRegistrySummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodePoseChannelSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodePoseConstraintSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodePoseSolveSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeJointHintSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeArticulationSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeLocalJointRegistrySummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeArticulationMapSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeControlRigHintSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeRigChannelSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeControlSurfaceSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeRigDriverSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeSurfaceDriverSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodePoseBusSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeControllerTableSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeControllerRegistrySummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeDriverBusSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeControllerDriverRegistrySummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeExecutionLaneSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeControllerPhaseSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeExecutionSurfaceSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeControllerPhaseRegistrySummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeSurfaceCompositionBusSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeExecutionStackSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeExecutionStackRouterSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeExecutionStackRouterRegistrySummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeCompositionRegistrySummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeSurfaceRouteSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeSurfaceRouteRegistrySummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeSurfaceRouteRouterBusSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeSurfaceRouteBusRegistrySummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeSurfaceRouteBusDriverSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeSurfaceRouteBusDriverRegistrySummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeSurfaceRouteBusDriverRegistryRouterSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeExecutionDriverTableSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeExecutionDriverRouterTableSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeExecutionDriverRouterRegistrySummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeExecutionDriverRouterRegistryBusSummaryProperty $item.proof.renderer_runtime_after
+                    Add-AssetNodeExecutionDriverRouterRegistryBusRegistrySummaryProperty $item.proof.renderer_runtime_after
                     Add-PoseAdapterSummaryProperty $item.proof.renderer_runtime_after
                 }
             }
@@ -1155,29 +3014,173 @@ if ($Route -eq "sweep") {
     } else {
         Add-DefaultLaneSummaryProperty $response.real_renderer_preview
         Add-AppearancePluginContractBriefProperty $response.real_renderer_preview
+        Add-ModelAssetSourceSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetManifestSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetCatalogSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetBindingTableSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetRegistrySummaryProperty $response.real_renderer_preview
+        Add-ModelAssetLoadSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetDecodeSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetResidencySummaryProperty $response.real_renderer_preview
+        Add-ModelAssetInstanceSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetActivationSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetSessionSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetBindReadySummaryProperty $response.real_renderer_preview
+        Add-ModelAssetHandleSummaryProperty $response.real_renderer_preview
         Add-ModelSceneAdapterSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetSceneHookSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetSceneBindingSummaryProperty $response.real_renderer_preview
         Add-ModelNodeAdapterSummaryProperty $response.real_renderer_preview
         Add-ModelNodeChannelSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeAttachSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeLiftSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeBindSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeResolveSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeDriveSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeMountSummaryProperty $response.real_renderer_preview
         Add-ModelNodeGraphSummaryProperty $response.real_renderer_preview
         Add-ModelNodeBindingSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeRouteSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeDispatchSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeExecuteSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeCommandSummaryProperty $response.real_renderer_preview
+        Add-ModelAssetNodeControllerSummaryProperty $response.real_renderer_preview
         Add-ModelNodeSlotSummaryProperty $response.real_renderer_preview
         Add-ModelNodeRegistrySummaryProperty $response.real_renderer_preview
         Add-AssetNodeBindingSummaryProperty $response.real_renderer_preview
         Add-AssetNodeTransformSummaryProperty $response.real_renderer_preview
         Add-AssetNodeAnchorSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeResolverSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeParentSpaceSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeTargetSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeTargetResolverSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeWorldSpaceSummaryProperty $response.real_renderer_preview
+        Add-AssetNodePoseSummaryProperty $response.real_renderer_preview
+        Add-AssetNodePoseResolverSummaryProperty $response.real_renderer_preview
+        Add-AssetNodePoseRegistrySummaryProperty $response.real_renderer_preview
+        Add-AssetNodePoseChannelSummaryProperty $response.real_renderer_preview
+        Add-AssetNodePoseConstraintSummaryProperty $response.real_renderer_preview
+        Add-AssetNodePoseSolveSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeJointHintSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeArticulationSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeLocalJointRegistrySummaryProperty $response.real_renderer_preview
+        Add-AssetNodeArticulationMapSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeControlRigHintSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeRigChannelSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeControlSurfaceSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeRigDriverSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeSurfaceDriverSummaryProperty $response.real_renderer_preview
+        Add-AssetNodePoseBusSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeControllerTableSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeControllerRegistrySummaryProperty $response.real_renderer_preview
+        Add-AssetNodeDriverBusSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeControllerDriverRegistrySummaryProperty $response.real_renderer_preview
+        Add-AssetNodeExecutionLaneSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeControllerPhaseSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeExecutionSurfaceSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeControllerPhaseRegistrySummaryProperty $response.real_renderer_preview
+        Add-AssetNodeSurfaceCompositionBusSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeExecutionStackSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeExecutionStackRouterSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeExecutionStackRouterRegistrySummaryProperty $response.real_renderer_preview
+        Add-AssetNodeCompositionRegistrySummaryProperty $response.real_renderer_preview
+        Add-AssetNodeSurfaceRouteSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeSurfaceRouteRegistrySummaryProperty $response.real_renderer_preview
+        Add-AssetNodeSurfaceRouteRouterBusSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeSurfaceRouteBusRegistrySummaryProperty $response.real_renderer_preview
+        Add-AssetNodeSurfaceRouteBusDriverSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeSurfaceRouteBusDriverRegistrySummaryProperty $response.real_renderer_preview
+        Add-AssetNodeSurfaceRouteBusDriverRegistryRouterSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeExecutionDriverTableSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeExecutionDriverRouterTableSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeExecutionDriverRouterRegistrySummaryProperty $response.real_renderer_preview
+        Add-AssetNodeExecutionDriverRouterRegistryBusSummaryProperty $response.real_renderer_preview
+        Add-AssetNodeExecutionDriverRouterRegistryBusRegistrySummaryProperty $response.real_renderer_preview
         Add-PoseAdapterSummaryProperty $response.real_renderer_preview
         Add-DefaultLaneSummaryProperty $response.renderer_runtime_after
         Add-AppearancePluginContractBriefProperty $response.renderer_runtime_after
+        Add-ModelAssetSourceSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetManifestSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetCatalogSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetBindingTableSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetRegistrySummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetLoadSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetDecodeSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetResidencySummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetInstanceSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetActivationSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetSessionSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetBindReadySummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetHandleSummaryProperty $response.renderer_runtime_after
         Add-ModelSceneAdapterSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetSceneHookSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetSceneBindingSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeAdapterSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeChannelSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeAttachSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeLiftSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeBindSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeResolveSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeDriveSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeMountSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeGraphSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeBindingSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeRouteSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeDispatchSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeExecuteSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeCommandSummaryProperty $response.renderer_runtime_after
+        Add-ModelAssetNodeControllerSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeSlotSummaryProperty $response.renderer_runtime_after
         Add-ModelNodeRegistrySummaryProperty $response.renderer_runtime_after
         Add-AssetNodeBindingSummaryProperty $response.renderer_runtime_after
         Add-AssetNodeTransformSummaryProperty $response.renderer_runtime_after
         Add-AssetNodeAnchorSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeResolverSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeParentSpaceSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeTargetSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeTargetResolverSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeWorldSpaceSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodePoseSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodePoseResolverSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodePoseRegistrySummaryProperty $response.renderer_runtime_after
+        Add-AssetNodePoseChannelSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodePoseConstraintSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodePoseSolveSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeJointHintSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeArticulationSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeLocalJointRegistrySummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeArticulationMapSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeControlRigHintSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeRigChannelSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeControlSurfaceSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeRigDriverSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeSurfaceDriverSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodePoseBusSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeControllerTableSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeControllerRegistrySummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeDriverBusSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeControllerDriverRegistrySummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeExecutionLaneSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeControllerPhaseSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeExecutionSurfaceSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeControllerPhaseRegistrySummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeSurfaceCompositionBusSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeExecutionStackSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeExecutionStackRouterSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeExecutionStackRouterRegistrySummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeCompositionRegistrySummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeSurfaceRouteSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeSurfaceRouteRegistrySummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeSurfaceRouteRouterBusSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeSurfaceRouteBusRegistrySummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeSurfaceRouteBusDriverSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeSurfaceRouteBusDriverRegistrySummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeSurfaceRouteBusDriverRegistryRouterSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeExecutionDriverTableSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeExecutionDriverRouterTableSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeExecutionDriverRouterRegistrySummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeExecutionDriverRouterRegistryBusSummaryProperty $response.renderer_runtime_after
+        Add-AssetNodeExecutionDriverRouterRegistryBusRegistrySummaryProperty $response.renderer_runtime_after
         Add-PoseAdapterSummaryProperty $response.renderer_runtime_after
     }
 
@@ -1457,11 +3460,98 @@ Write-Host ("  - appearance preset={0}->{1} skin={2} accessory_family={3} combo=
     $response.real_renderer_preview.appearance_skin_variant_id, `
     $response.real_renderer_preview.appearance_accessory_family, `
     $response.real_renderer_preview.appearance_combo_preset)
-Write-Host ("  - scene seams pose={0} asset_binding={1} asset_transform={2} asset_anchor={3}" -f `
+Write-Host ("  - scene seams pose={0} asset_binding={1} asset_transform={2} asset_anchor={3} asset_resolver={4}" -f `
     (Format-PoseAdapterSummary $response.real_renderer_preview), `
     (Format-AssetNodeBindingSummary $response.real_renderer_preview), `
     (Format-AssetNodeTransformSummary $response.real_renderer_preview), `
-    (Format-AssetNodeAnchorSummary $response.real_renderer_preview))
+    (Format-AssetNodeAnchorSummary $response.real_renderer_preview), `
+    (Format-AssetNodeResolverSummary $response.real_renderer_preview))
+Write-Host ("  - asset_parent_space={0}" -f `
+    (Format-AssetNodeParentSpaceSummary $response.real_renderer_preview))
+Write-Host ("  - asset_target={0}" -f `
+    (Format-AssetNodeTargetSummary $response.real_renderer_preview))
+Write-Host ("  - asset_target_resolver={0}" -f `
+    (Format-AssetNodeTargetResolverSummary $response.real_renderer_preview))
+Write-Host ("  - asset_world_space={0}" -f `
+    (Format-AssetNodeWorldSpaceSummary $response.real_renderer_preview))
+Write-Host ("  - asset_pose={0}" -f `
+    (Format-AssetNodePoseSummary $response.real_renderer_preview))
+Write-Host ("  - asset_pose_resolver={0}" -f `
+    (Format-AssetNodePoseResolverSummary $response.real_renderer_preview))
+Write-Host ("  - asset_pose_registry={0}" -f `
+    (Format-AssetNodePoseRegistrySummary $response.real_renderer_preview))
+Write-Host ("  - asset_pose_channel={0}" -f `
+    (Format-AssetNodePoseChannelSummary $response.real_renderer_preview))
+Write-Host ("  - asset_pose_constraint={0}" -f `
+    (Format-AssetNodePoseConstraintSummary $response.real_renderer_preview))
+Write-Host ("  - asset_pose_solve={0}" -f `
+    (Format-AssetNodePoseSolveSummary $response.real_renderer_preview))
+Write-Host ("  - asset_joint_hint={0}" -f `
+    (Format-AssetNodeJointHintSummary $response.real_renderer_preview))
+Write-Host ("  - asset_articulation={0}" -f `
+    (Format-AssetNodeArticulationSummary $response.real_renderer_preview))
+Write-Host ("  - asset_local_joint_registry={0}" -f `
+    (Format-AssetNodeLocalJointRegistrySummary $response.real_renderer_preview))
+Write-Host ("  - asset_articulation_map={0}" -f `
+    (Format-AssetNodeArticulationMapSummary $response.real_renderer_preview))
+Write-Host ("  - asset_control_rig_hint={0}" -f `
+    (Format-AssetNodeControlRigHintSummary $response.real_renderer_preview))
+Write-Host ("  - asset_rig_channel={0}" -f `
+    (Format-AssetNodeRigChannelSummary $response.real_renderer_preview))
+Write-Host ("  - asset_control_surface={0}" -f `
+    (Format-AssetNodeControlSurfaceSummary $response.real_renderer_preview))
+Write-Host ("  - asset_pose_bus={0}" -f `
+    (Format-AssetNodePoseBusSummary $response.real_renderer_preview))
+Write-Host ("  - asset_controller_table={0}" -f `
+    (Format-AssetNodeControllerTableSummary $response.real_renderer_preview))
+Write-Host ("  - asset_controller_registry={0}" -f `
+    (Format-AssetNodeControllerRegistrySummary $response.real_renderer_preview))
+Write-Host ("  - asset_driver_bus={0}" -f `
+    (Format-AssetNodeDriverBusSummary $response.real_renderer_preview))
+Write-Host ("  - asset_controller_driver_registry={0}" -f `
+    (Format-AssetNodeControllerDriverRegistrySummary $response.real_renderer_preview))
+Write-Host ("  - asset_execution_lane={0}" -f `
+    (Format-AssetNodeExecutionLaneSummary $response.real_renderer_preview))
+Write-Host ("  - asset_controller_phase={0}" -f `
+    (Format-AssetNodeControllerPhaseSummary $response.real_renderer_preview))
+Write-Host ("  - asset_execution_surface={0}" -f `
+    (Format-AssetNodeExecutionSurfaceSummary $response.real_renderer_preview))
+Write-Host ("  - asset_controller_phase_registry={0}" -f `
+    (Format-AssetNodeControllerPhaseRegistrySummary $response.real_renderer_preview))
+Write-Host ("  - asset_surface_composition_bus={0}" -f `
+    (Format-AssetNodeSurfaceCompositionBusSummary $response.real_renderer_preview))
+Write-Host ("  - asset_execution_stack={0}" -f `
+    (Format-AssetNodeExecutionStackSummary $response.real_renderer_preview))
+Write-Host ("  - asset_execution_stack_router={0}" -f `
+    (Format-AssetNodeExecutionStackRouterSummary $response.real_renderer_preview))
+Write-Host ("  - asset_execution_stack_router_registry={0}" -f `
+    (Format-AssetNodeExecutionStackRouterRegistrySummary $response.real_renderer_preview))
+Write-Host ("  - asset_composition_registry={0}" -f `
+    (Format-AssetNodeCompositionRegistrySummary $response.real_renderer_preview))
+Write-Host ("  - asset_surface_route={0}" -f `
+    (Format-AssetNodeSurfaceRouteSummary $response.real_renderer_preview))
+Write-Host ("  - asset_surface_route_registry={0}" -f `
+    (Format-AssetNodeSurfaceRouteRegistrySummary $response.real_renderer_preview))
+Write-Host ("  - asset_surface_route_router_bus={0}" -f `
+    (Format-AssetNodeSurfaceRouteRouterBusSummary $response.real_renderer_preview))
+Write-Host ("  - asset_surface_route_bus_registry={0}" -f `
+    (Format-AssetNodeSurfaceRouteBusRegistrySummary $response.real_renderer_preview))
+Write-Host ("  - asset_surface_route_bus_driver={0}" -f `
+    (Format-AssetNodeSurfaceRouteBusDriverSummary $response.real_renderer_preview))
+Write-Host ("  - asset_surface_route_bus_driver_registry={0}" -f `
+    (Format-AssetNodeSurfaceRouteBusDriverRegistrySummary $response.real_renderer_preview))
+Write-Host ("  - asset_surface_route_bus_driver_registry_router={0}" -f `
+    (Format-AssetNodeSurfaceRouteBusDriverRegistryRouterSummary $response.real_renderer_preview))
+Write-Host ("  - asset_execution_driver_table={0}" -f `
+    (Format-AssetNodeExecutionDriverTableSummary $response.real_renderer_preview))
+Write-Host ("  - asset_execution_driver_router_table={0}" -f `
+    (Format-AssetNodeExecutionDriverRouterTableSummary $response.real_renderer_preview))
+Write-Host ("  - asset_execution_driver_router_registry={0}" -f `
+    (Format-AssetNodeExecutionDriverRouterRegistrySummary $response.real_renderer_preview))
+Write-Host ("  - asset_execution_driver_router_registry_bus={0}" -f `
+    (Format-AssetNodeExecutionDriverRouterRegistryBusSummary $response.real_renderer_preview))
+Write-Host ("  - asset_execution_driver_router_registry_bus_registry={0}" -f `
+    (Format-AssetNodeExecutionDriverRouterRegistryBusRegistrySummary $response.real_renderer_preview))
 Write-Host ("  - pose_adapter={0}" -f `
     (Format-PoseAdapterSummary $response.real_renderer_preview))
 Write-Host ("  - model_scene_adapter={0}" -f `
@@ -1478,6 +3568,14 @@ Write-Host ("  - model_node_slots={0}" -f `
     (Format-ModelNodeSlotSummary $response.real_renderer_preview))
 Write-Host ("  - model_node_registry={0}" -f `
     (Format-ModelNodeRegistrySummary $response.real_renderer_preview))
+Write-Host ("  - model_asset_node_dispatch={0}" -f `
+    (Format-ModelAssetNodeDispatchSummary $response.real_renderer_preview))
+Write-Host ("  - model_asset_node_execute={0}" -f `
+    (Format-ModelAssetNodeExecuteSummary $response.real_renderer_preview))
+Write-Host ("  - model_asset_node_command={0}" -f `
+    (Format-ModelAssetNodeCommandSummary $response.real_renderer_preview))
+Write-Host ("  - model_asset_node_controller={0}" -f `
+    (Format-ModelAssetNodeControllerSummary $response.real_renderer_preview))
 Write-Host ("  - asset_node_binding={0}" -f `
     (Format-AssetNodeBindingSummary $response.real_renderer_preview))
 foreach ($failure in @($appearanceFailures)) {

@@ -150,6 +150,13 @@ void AppendBaseSettingsState(const EffectConfig& cfg, json* out) {
         {"size_px", cfg.inputIndicator.sizePx},
         {"duration_ms", cfg.inputIndicator.durationMs}
     };
+    (*out)["cursor_decoration"] = {
+        {"enabled", cfg.inputIndicator.cursorDecoration.enabled},
+        {"plugin_id", EnsureUtf8(cfg.inputIndicator.cursorDecoration.pluginId)},
+        {"color_hex", EnsureUtf8(cfg.inputIndicator.cursorDecoration.colorHex)},
+        {"size_px", cfg.inputIndicator.cursorDecoration.sizePx},
+        {"alpha_percent", cfg.inputIndicator.cursorDecoration.alphaPercent},
+    };
 
     (*out)["automation"] = {
         {"enabled", cfg.automation.enabled},

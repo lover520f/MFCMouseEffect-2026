@@ -111,6 +111,24 @@ void ApplyInputIndicatorFields(const json& source, InputIndicatorConfig* dst, bo
     if (source.contains("absolute_y") && source["absolute_y"].is_number_integer()) dst->absoluteY = source["absolute_y"].get<int>();
     if (source.contains("size_px") && source["size_px"].is_number_integer()) dst->sizePx = source["size_px"].get<int>();
     if (source.contains("duration_ms") && source["duration_ms"].is_number_integer()) dst->durationMs = source["duration_ms"].get<int>();
+    if (source.contains("cursor_decoration") && source["cursor_decoration"].is_object()) {
+        const json& cursorDecoration = source["cursor_decoration"];
+        if (cursorDecoration.contains("enabled") && cursorDecoration["enabled"].is_boolean()) {
+            dst->cursorDecoration.enabled = cursorDecoration["enabled"].get<bool>();
+        }
+        if (cursorDecoration.contains("plugin_id") && cursorDecoration["plugin_id"].is_string()) {
+            dst->cursorDecoration.pluginId = cursorDecoration["plugin_id"].get<std::string>();
+        }
+        if (cursorDecoration.contains("color_hex") && cursorDecoration["color_hex"].is_string()) {
+            dst->cursorDecoration.colorHex = cursorDecoration["color_hex"].get<std::string>();
+        }
+        if (cursorDecoration.contains("size_px") && cursorDecoration["size_px"].is_number_integer()) {
+            dst->cursorDecoration.sizePx = cursorDecoration["size_px"].get<int>();
+        }
+        if (cursorDecoration.contains("alpha_percent") && cursorDecoration["alpha_percent"].is_number_integer()) {
+            dst->cursorDecoration.alphaPercent = cursorDecoration["alpha_percent"].get<int>();
+        }
+    }
 
     if (!includeAdvancedFields) {
         return;

@@ -267,18 +267,244 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimePoseSampleCount},
         {"scene_runtime_bound_pose_sample_count",
          realRendererPreviewDiagnostics.sceneRuntimeBoundPoseSampleCount},
+        {"scene_runtime_model_asset_source_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSourceState},
+        {"scene_runtime_model_asset_source_readiness",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSourceReadiness},
+        {"scene_runtime_model_asset_source_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSourceBrief},
+        {"scene_runtime_model_asset_source_path_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSourcePathBrief},
+        {"scene_runtime_model_asset_source_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSourceValueBrief},
+        {"scene_runtime_model_asset_manifest_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestState},
+        {"scene_runtime_model_asset_manifest_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestEntryCount},
+        {"scene_runtime_model_asset_manifest_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestResolvedEntryCount},
+        {"scene_runtime_model_asset_manifest_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestBrief},
+        {"scene_runtime_model_asset_manifest_entry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestEntryBrief},
+        {"scene_runtime_model_asset_manifest_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetManifestValueBrief},
+        {"scene_runtime_model_asset_catalog_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetCatalogState},
+        {"scene_runtime_model_asset_catalog_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetCatalogEntryCount},
+        {"scene_runtime_model_asset_catalog_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetCatalogResolvedEntryCount},
+        {"scene_runtime_model_asset_catalog_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetCatalogBrief},
+        {"scene_runtime_model_asset_catalog_entry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetCatalogEntryBrief},
+        {"scene_runtime_model_asset_catalog_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetCatalogValueBrief},
+        {"scene_runtime_model_asset_binding_table_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableState},
+        {"scene_runtime_model_asset_binding_table_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableEntryCount},
+        {"scene_runtime_model_asset_binding_table_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableResolvedEntryCount},
+        {"scene_runtime_model_asset_binding_table_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableBrief},
+        {"scene_runtime_model_asset_binding_table_slot_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableSlotBrief},
+        {"scene_runtime_model_asset_binding_table_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindingTableValueBrief},
+        {"scene_runtime_model_asset_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetRegistryState},
+        {"scene_runtime_model_asset_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetRegistryEntryCount},
+        {"scene_runtime_model_asset_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetRegistryResolvedEntryCount},
+        {"scene_runtime_model_asset_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetRegistryBrief},
+        {"scene_runtime_model_asset_registry_asset_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetRegistryAssetBrief},
+        {"scene_runtime_model_asset_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetRegistryValueBrief},
+        {"scene_runtime_model_asset_load_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadState},
+        {"scene_runtime_model_asset_load_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadEntryCount},
+        {"scene_runtime_model_asset_load_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadResolvedEntryCount},
+        {"scene_runtime_model_asset_load_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadBrief},
+        {"scene_runtime_model_asset_load_plan_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadPlanBrief},
+        {"scene_runtime_model_asset_load_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetLoadValueBrief},
+        {"scene_runtime_model_asset_decode_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetDecodeState},
+        {"scene_runtime_model_asset_decode_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetDecodeEntryCount},
+        {"scene_runtime_model_asset_decode_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetDecodeResolvedEntryCount},
+        {"scene_runtime_model_asset_decode_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetDecodeBrief},
+        {"scene_runtime_model_asset_decode_pipeline_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetDecodePipelineBrief},
+        {"scene_runtime_model_asset_decode_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetDecodeValueBrief},
+        {"scene_runtime_model_asset_residency_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetResidencyState},
+        {"scene_runtime_model_asset_residency_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetResidencyEntryCount},
+        {"scene_runtime_model_asset_residency_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetResidencyResolvedEntryCount},
+        {"scene_runtime_model_asset_residency_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetResidencyBrief},
+        {"scene_runtime_model_asset_residency_cache_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetResidencyCacheBrief},
+        {"scene_runtime_model_asset_residency_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetResidencyValueBrief},
+        {"scene_runtime_model_asset_instance_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetInstanceState},
+        {"scene_runtime_model_asset_instance_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetInstanceEntryCount},
+        {"scene_runtime_model_asset_instance_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetInstanceResolvedEntryCount},
+        {"scene_runtime_model_asset_instance_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetInstanceBrief},
+        {"scene_runtime_model_asset_instance_slot_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetInstanceSlotBrief},
+        {"scene_runtime_model_asset_instance_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetInstanceValueBrief},
+        {"scene_runtime_model_asset_activation_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetActivationState},
+        {"scene_runtime_model_asset_activation_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetActivationEntryCount},
+        {"scene_runtime_model_asset_activation_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetActivationResolvedEntryCount},
+        {"scene_runtime_model_asset_activation_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetActivationBrief},
+        {"scene_runtime_model_asset_activation_route_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetActivationRouteBrief},
+        {"scene_runtime_model_asset_activation_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetActivationValueBrief},
+        {"scene_runtime_model_asset_session_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSessionState},
+        {"scene_runtime_model_asset_session_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSessionEntryCount},
+        {"scene_runtime_model_asset_session_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSessionResolvedEntryCount},
+        {"scene_runtime_model_asset_session_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSessionBrief},
+        {"scene_runtime_model_asset_session_session_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSessionSessionBrief},
+        {"scene_runtime_model_asset_session_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSessionValueBrief},
+        {"scene_runtime_model_asset_bind_ready_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindReadyState},
+        {"scene_runtime_model_asset_bind_ready_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindReadyEntryCount},
+        {"scene_runtime_model_asset_bind_ready_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindReadyResolvedEntryCount},
+        {"scene_runtime_model_asset_bind_ready_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindReadyBrief},
+        {"scene_runtime_model_asset_bind_ready_binding_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindReadyBindingBrief},
+        {"scene_runtime_model_asset_bind_ready_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetBindReadyValueBrief},
+        {"scene_runtime_model_asset_handle_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetHandleState},
+        {"scene_runtime_model_asset_handle_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetHandleEntryCount},
+        {"scene_runtime_model_asset_handle_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetHandleResolvedEntryCount},
+        {"scene_runtime_model_asset_handle_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetHandleBrief},
+        {"scene_runtime_model_asset_handle_handle_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetHandleHandleBrief},
+        {"scene_runtime_model_asset_handle_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetHandleValueBrief},
         {"scene_runtime_model_scene_adapter_state",
          realRendererPreviewDiagnostics.sceneRuntimeModelSceneAdapterState},
         {"scene_runtime_model_scene_seam_readiness",
          realRendererPreviewDiagnostics.sceneRuntimeModelSceneSeamReadiness},
         {"scene_runtime_model_scene_adapter_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelSceneAdapterBrief},
+        {"scene_runtime_model_asset_scene_hook_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneHookState},
+        {"scene_runtime_model_asset_scene_hook_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneHookEntryCount},
+        {"scene_runtime_model_asset_scene_hook_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneHookResolvedEntryCount},
+        {"scene_runtime_model_asset_scene_hook_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneHookBrief},
+        {"scene_runtime_model_asset_scene_hook_hook_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneHookHookBrief},
+        {"scene_runtime_model_asset_scene_hook_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneHookValueBrief},
+        {"scene_runtime_model_asset_scene_binding_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneBindingState},
+        {"scene_runtime_model_asset_scene_binding_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneBindingEntryCount},
+        {"scene_runtime_model_asset_scene_binding_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneBindingResolvedEntryCount},
+        {"scene_runtime_model_asset_scene_binding_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneBindingBrief},
+        {"scene_runtime_model_asset_scene_binding_binding_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneBindingBindingBrief},
+        {"scene_runtime_model_asset_scene_binding_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetSceneBindingValueBrief},
         {"scene_runtime_model_node_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeAdapterInfluence},
         {"scene_runtime_model_node_adapter_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeAdapterBrief},
         {"scene_runtime_model_node_channel_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeChannelBrief},
+        {"scene_runtime_model_asset_node_attach_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeAttachState},
+        {"scene_runtime_model_asset_node_attach_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeAttachEntryCount},
+        {"scene_runtime_model_asset_node_attach_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeAttachResolvedEntryCount},
+        {"scene_runtime_model_asset_node_attach_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeAttachBrief},
+        {"scene_runtime_model_asset_node_attach_attach_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeAttachAttachBrief},
+        {"scene_runtime_model_asset_node_attach_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeAttachValueBrief},
+        {"scene_runtime_model_asset_node_lift_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeLiftState},
+        {"scene_runtime_model_asset_node_lift_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeLiftEntryCount},
+        {"scene_runtime_model_asset_node_lift_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeLiftResolvedEntryCount},
+        {"scene_runtime_model_asset_node_lift_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeLiftBrief},
+        {"scene_runtime_model_asset_node_lift_lift_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeLiftLiftBrief},
+        {"scene_runtime_model_asset_node_lift_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeLiftValueBrief},
+        {"scene_runtime_model_asset_node_bind_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeBindState},
+        {"scene_runtime_model_asset_node_bind_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeBindEntryCount},
+        {"scene_runtime_model_asset_node_bind_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeBindResolvedEntryCount},
+        {"scene_runtime_model_asset_node_bind_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeBindBrief},
+        {"scene_runtime_model_asset_node_bind_bind_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeBindBindBrief},
+        {"scene_runtime_model_asset_node_bind_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeBindValueBrief},
+        {"scene_runtime_model_asset_node_resolve_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeResolveState},
+        {"scene_runtime_model_asset_node_resolve_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeResolveEntryCount},
+        {"scene_runtime_model_asset_node_resolve_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeResolveResolvedEntryCount},
+        {"scene_runtime_model_asset_node_resolve_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeResolveBrief},
+        {"scene_runtime_model_asset_node_resolve_resolve_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeResolveResolveBrief},
+        {"scene_runtime_model_asset_node_resolve_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeResolveValueBrief},
         {"scene_runtime_model_node_graph_state",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeGraphState},
         {"scene_runtime_model_node_graph_node_count",
@@ -297,6 +523,30 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeBindingBrief},
         {"scene_runtime_model_node_binding_weight_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeBindingWeightBrief},
+        {"scene_runtime_model_asset_node_drive_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeDriveState},
+        {"scene_runtime_model_asset_node_drive_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeDriveEntryCount},
+        {"scene_runtime_model_asset_node_drive_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeDriveResolvedEntryCount},
+        {"scene_runtime_model_asset_node_drive_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeDriveBrief},
+        {"scene_runtime_model_asset_node_drive_drive_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeDriveDriveBrief},
+        {"scene_runtime_model_asset_node_drive_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeDriveValueBrief},
+        {"scene_runtime_model_asset_node_mount_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeMountState},
+        {"scene_runtime_model_asset_node_mount_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeMountEntryCount},
+        {"scene_runtime_model_asset_node_mount_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeMountResolvedEntryCount},
+        {"scene_runtime_model_asset_node_mount_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeMountBrief},
+        {"scene_runtime_model_asset_node_mount_mount_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeMountMountBrief},
+        {"scene_runtime_model_asset_node_mount_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeMountValueBrief},
         {"scene_runtime_model_node_slot_state",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeSlotState},
         {"scene_runtime_model_node_slot_count",
@@ -319,6 +569,66 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeRegistryAssetNodeBrief},
         {"scene_runtime_model_node_registry_weight_brief",
          realRendererPreviewDiagnostics.sceneRuntimeModelNodeRegistryWeightBrief},
+        {"scene_runtime_model_asset_node_route_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeRouteState},
+        {"scene_runtime_model_asset_node_route_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeRouteEntryCount},
+        {"scene_runtime_model_asset_node_route_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeRouteResolvedEntryCount},
+        {"scene_runtime_model_asset_node_route_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeRouteBrief},
+        {"scene_runtime_model_asset_node_route_route_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeRouteRouteBrief},
+        {"scene_runtime_model_asset_node_route_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeRouteValueBrief},
+        {"scene_runtime_model_asset_node_dispatch_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeDispatchState},
+        {"scene_runtime_model_asset_node_dispatch_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeDispatchEntryCount},
+        {"scene_runtime_model_asset_node_dispatch_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeDispatchResolvedEntryCount},
+        {"scene_runtime_model_asset_node_dispatch_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeDispatchBrief},
+        {"scene_runtime_model_asset_node_dispatch_dispatch_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeDispatchDispatchBrief},
+        {"scene_runtime_model_asset_node_dispatch_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeDispatchValueBrief},
+        {"scene_runtime_model_asset_node_execute_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeExecuteState},
+        {"scene_runtime_model_asset_node_execute_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeExecuteEntryCount},
+        {"scene_runtime_model_asset_node_execute_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeExecuteResolvedEntryCount},
+        {"scene_runtime_model_asset_node_execute_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeExecuteBrief},
+        {"scene_runtime_model_asset_node_execute_execute_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeExecuteExecuteBrief},
+        {"scene_runtime_model_asset_node_execute_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeExecuteValueBrief},
+        {"scene_runtime_model_asset_node_command_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeCommandState},
+        {"scene_runtime_model_asset_node_command_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeCommandEntryCount},
+        {"scene_runtime_model_asset_node_command_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeCommandResolvedEntryCount},
+        {"scene_runtime_model_asset_node_command_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeCommandBrief},
+        {"scene_runtime_model_asset_node_command_command_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeCommandCommandBrief},
+        {"scene_runtime_model_asset_node_command_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeCommandValueBrief},
+        {"scene_runtime_model_asset_node_controller_state",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeControllerState},
+        {"scene_runtime_model_asset_node_controller_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeControllerEntryCount},
+        {"scene_runtime_model_asset_node_controller_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeControllerResolvedEntryCount},
+        {"scene_runtime_model_asset_node_controller_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeControllerBrief},
+        {"scene_runtime_model_asset_node_controller_controller_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeControllerControllerBrief},
+        {"scene_runtime_model_asset_node_controller_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeModelAssetNodeControllerValueBrief},
         {"scene_runtime_asset_node_binding_state",
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeBindingState},
         {"scene_runtime_asset_node_binding_entry_count",
@@ -355,6 +665,534 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeAnchorPointBrief},
         {"scene_runtime_asset_node_anchor_scale_brief",
          realRendererPreviewDiagnostics.sceneRuntimeAssetNodeAnchorScaleBrief},
+        {"scene_runtime_asset_node_resolver_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeResolverState},
+        {"scene_runtime_asset_node_resolver_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeResolverEntryCount},
+        {"scene_runtime_asset_node_resolver_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeResolverResolvedEntryCount},
+        {"scene_runtime_asset_node_resolver_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeResolverBrief},
+        {"scene_runtime_asset_node_resolver_parent_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeResolverParentBrief},
+        {"scene_runtime_asset_node_resolver_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeResolverValueBrief},
+        {"scene_runtime_asset_node_parent_space_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeParentSpaceState},
+        {"scene_runtime_asset_node_parent_space_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeParentSpaceEntryCount},
+        {"scene_runtime_asset_node_parent_space_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeParentSpaceResolvedEntryCount},
+        {"scene_runtime_asset_node_parent_space_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeParentSpaceBrief},
+        {"scene_runtime_asset_node_parent_space_parent_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeParentSpaceParentBrief},
+        {"scene_runtime_asset_node_parent_space_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeParentSpaceValueBrief},
+        {"scene_runtime_asset_node_target_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetState},
+        {"scene_runtime_asset_node_target_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetEntryCount},
+        {"scene_runtime_asset_node_target_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetResolvedEntryCount},
+        {"scene_runtime_asset_node_target_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetBrief},
+        {"scene_runtime_asset_node_target_kind_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetKindBrief},
+        {"scene_runtime_asset_node_target_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetValueBrief},
+        {"scene_runtime_asset_node_target_resolver_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetResolverState},
+        {"scene_runtime_asset_node_target_resolver_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetResolverEntryCount},
+        {"scene_runtime_asset_node_target_resolver_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetResolverResolvedEntryCount},
+        {"scene_runtime_asset_node_target_resolver_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetResolverBrief},
+        {"scene_runtime_asset_node_target_resolver_path_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetResolverPathBrief},
+        {"scene_runtime_asset_node_target_resolver_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeTargetResolverValueBrief},
+        {"scene_runtime_asset_node_world_space_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpaceState},
+        {"scene_runtime_asset_node_world_space_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpaceEntryCount},
+        {"scene_runtime_asset_node_world_space_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpaceResolvedEntryCount},
+        {"scene_runtime_asset_node_world_space_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpaceBrief},
+        {"scene_runtime_asset_node_world_space_path_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpacePathBrief},
+        {"scene_runtime_asset_node_world_space_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeWorldSpaceValueBrief},
+        {"scene_runtime_asset_node_pose_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseState},
+        {"scene_runtime_asset_node_pose_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseEntryCount},
+        {"scene_runtime_asset_node_pose_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseResolvedEntryCount},
+        {"scene_runtime_asset_node_pose_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseBrief},
+        {"scene_runtime_asset_node_pose_path_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePosePathBrief},
+        {"scene_runtime_asset_node_pose_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseValueBrief},
+        {"scene_runtime_asset_node_pose_resolver_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseResolverState},
+        {"scene_runtime_asset_node_pose_resolver_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseResolverEntryCount},
+        {"scene_runtime_asset_node_pose_resolver_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseResolverResolvedEntryCount},
+        {"scene_runtime_asset_node_pose_resolver_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseResolverBrief},
+        {"scene_runtime_asset_node_pose_resolver_path_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseResolverPathBrief},
+        {"scene_runtime_asset_node_pose_resolver_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseResolverValueBrief},
+        {"scene_runtime_asset_node_pose_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseRegistryState},
+        {"scene_runtime_asset_node_pose_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseRegistryEntryCount},
+        {"scene_runtime_asset_node_pose_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_pose_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseRegistryBrief},
+        {"scene_runtime_asset_node_pose_registry_node_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseRegistryNodeBrief},
+        {"scene_runtime_asset_node_pose_registry_weight_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseRegistryWeightBrief},
+        {"scene_runtime_asset_node_pose_channel_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseChannelState},
+        {"scene_runtime_asset_node_pose_channel_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseChannelEntryCount},
+        {"scene_runtime_asset_node_pose_channel_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseChannelResolvedEntryCount},
+        {"scene_runtime_asset_node_pose_channel_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseChannelBrief},
+        {"scene_runtime_asset_node_pose_channel_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseChannelNameBrief},
+        {"scene_runtime_asset_node_pose_channel_weight_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseChannelWeightBrief},
+        {"scene_runtime_asset_node_pose_constraint_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseConstraintState},
+        {"scene_runtime_asset_node_pose_constraint_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseConstraintEntryCount},
+        {"scene_runtime_asset_node_pose_constraint_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseConstraintResolvedEntryCount},
+        {"scene_runtime_asset_node_pose_constraint_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseConstraintBrief},
+        {"scene_runtime_asset_node_pose_constraint_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseConstraintNameBrief},
+        {"scene_runtime_asset_node_pose_constraint_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseConstraintValueBrief},
+        {"scene_runtime_asset_node_pose_solve_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseSolveState},
+        {"scene_runtime_asset_node_pose_solve_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseSolveEntryCount},
+        {"scene_runtime_asset_node_pose_solve_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseSolveResolvedEntryCount},
+        {"scene_runtime_asset_node_pose_solve_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseSolveBrief},
+        {"scene_runtime_asset_node_pose_solve_path_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseSolvePathBrief},
+        {"scene_runtime_asset_node_pose_solve_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseSolveValueBrief},
+        {"scene_runtime_asset_node_joint_hint_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintState},
+        {"scene_runtime_asset_node_joint_hint_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintEntryCount},
+        {"scene_runtime_asset_node_joint_hint_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintResolvedEntryCount},
+        {"scene_runtime_asset_node_joint_hint_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintBrief},
+        {"scene_runtime_asset_node_joint_hint_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintNameBrief},
+        {"scene_runtime_asset_node_joint_hint_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeJointHintValueBrief},
+        {"scene_runtime_asset_node_articulation_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationState},
+        {"scene_runtime_asset_node_articulation_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationEntryCount},
+        {"scene_runtime_asset_node_articulation_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationResolvedEntryCount},
+        {"scene_runtime_asset_node_articulation_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationBrief},
+        {"scene_runtime_asset_node_articulation_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationNameBrief},
+        {"scene_runtime_asset_node_articulation_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationValueBrief},
+        {"scene_runtime_asset_node_local_joint_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeLocalJointRegistryState},
+        {"scene_runtime_asset_node_local_joint_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeLocalJointRegistryEntryCount},
+        {"scene_runtime_asset_node_local_joint_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeLocalJointRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_local_joint_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeLocalJointRegistryBrief},
+        {"scene_runtime_asset_node_local_joint_registry_joint_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeLocalJointRegistryJointBrief},
+        {"scene_runtime_asset_node_local_joint_registry_weight_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeLocalJointRegistryWeightBrief},
+        {"scene_runtime_asset_node_articulation_map_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationMapState},
+        {"scene_runtime_asset_node_articulation_map_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationMapEntryCount},
+        {"scene_runtime_asset_node_articulation_map_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationMapResolvedEntryCount},
+        {"scene_runtime_asset_node_articulation_map_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationMapBrief},
+        {"scene_runtime_asset_node_articulation_map_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationMapNameBrief},
+        {"scene_runtime_asset_node_articulation_map_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeArticulationMapValueBrief},
+        {"scene_runtime_asset_node_control_rig_hint_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControlRigHintState},
+        {"scene_runtime_asset_node_control_rig_hint_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControlRigHintEntryCount},
+        {"scene_runtime_asset_node_control_rig_hint_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControlRigHintResolvedEntryCount},
+        {"scene_runtime_asset_node_control_rig_hint_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControlRigHintBrief},
+        {"scene_runtime_asset_node_control_rig_hint_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControlRigHintNameBrief},
+        {"scene_runtime_asset_node_control_rig_hint_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControlRigHintValueBrief},
+        {"scene_runtime_asset_node_rig_channel_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeRigChannelState},
+        {"scene_runtime_asset_node_rig_channel_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeRigChannelEntryCount},
+        {"scene_runtime_asset_node_rig_channel_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeRigChannelResolvedEntryCount},
+        {"scene_runtime_asset_node_rig_channel_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeRigChannelBrief},
+        {"scene_runtime_asset_node_rig_channel_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeRigChannelNameBrief},
+        {"scene_runtime_asset_node_rig_channel_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeRigChannelValueBrief},
+        {"scene_runtime_asset_node_control_surface_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControlSurfaceState},
+        {"scene_runtime_asset_node_control_surface_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControlSurfaceEntryCount},
+        {"scene_runtime_asset_node_control_surface_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControlSurfaceResolvedEntryCount},
+        {"scene_runtime_asset_node_control_surface_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControlSurfaceBrief},
+        {"scene_runtime_asset_node_control_surface_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControlSurfaceNameBrief},
+        {"scene_runtime_asset_node_control_surface_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControlSurfaceValueBrief},
+        {"scene_runtime_asset_node_pose_bus_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseBusState},
+        {"scene_runtime_asset_node_pose_bus_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseBusEntryCount},
+        {"scene_runtime_asset_node_pose_bus_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseBusResolvedEntryCount},
+        {"scene_runtime_asset_node_pose_bus_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseBusBrief},
+        {"scene_runtime_asset_node_pose_bus_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseBusNameBrief},
+        {"scene_runtime_asset_node_pose_bus_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodePoseBusValueBrief},
+        {"scene_runtime_asset_node_controller_table_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerTableState},
+        {"scene_runtime_asset_node_controller_table_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerTableEntryCount},
+        {"scene_runtime_asset_node_controller_table_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerTableResolvedEntryCount},
+        {"scene_runtime_asset_node_controller_table_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerTableBrief},
+        {"scene_runtime_asset_node_controller_table_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerTableNameBrief},
+        {"scene_runtime_asset_node_controller_table_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerTableValueBrief},
+        {"scene_runtime_asset_node_controller_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerRegistryState},
+        {"scene_runtime_asset_node_controller_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerRegistryEntryCount},
+        {"scene_runtime_asset_node_controller_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_controller_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerRegistryBrief},
+        {"scene_runtime_asset_node_controller_registry_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerRegistryNameBrief},
+        {"scene_runtime_asset_node_controller_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerRegistryValueBrief},
+        {"scene_runtime_asset_node_driver_bus_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeDriverBusState},
+        {"scene_runtime_asset_node_driver_bus_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeDriverBusEntryCount},
+        {"scene_runtime_asset_node_driver_bus_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeDriverBusResolvedEntryCount},
+        {"scene_runtime_asset_node_driver_bus_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeDriverBusBrief},
+        {"scene_runtime_asset_node_driver_bus_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeDriverBusNameBrief},
+        {"scene_runtime_asset_node_driver_bus_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeDriverBusValueBrief},
+        {"scene_runtime_asset_node_controller_driver_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerDriverRegistryState},
+        {"scene_runtime_asset_node_controller_driver_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerDriverRegistryEntryCount},
+        {"scene_runtime_asset_node_controller_driver_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerDriverRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_controller_driver_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerDriverRegistryBrief},
+        {"scene_runtime_asset_node_controller_driver_registry_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerDriverRegistryNameBrief},
+        {"scene_runtime_asset_node_controller_driver_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerDriverRegistryValueBrief},
+        {"scene_runtime_asset_node_execution_lane_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionLaneState},
+        {"scene_runtime_asset_node_execution_lane_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionLaneEntryCount},
+        {"scene_runtime_asset_node_execution_lane_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionLaneResolvedEntryCount},
+        {"scene_runtime_asset_node_execution_lane_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionLaneBrief},
+        {"scene_runtime_asset_node_execution_lane_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionLaneNameBrief},
+        {"scene_runtime_asset_node_execution_lane_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionLaneValueBrief},
+        {"scene_runtime_asset_node_controller_phase_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerPhaseState},
+        {"scene_runtime_asset_node_controller_phase_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerPhaseEntryCount},
+        {"scene_runtime_asset_node_controller_phase_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerPhaseResolvedEntryCount},
+        {"scene_runtime_asset_node_controller_phase_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerPhaseBrief},
+        {"scene_runtime_asset_node_controller_phase_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerPhaseNameBrief},
+        {"scene_runtime_asset_node_controller_phase_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerPhaseValueBrief},
+        {"scene_runtime_asset_node_execution_surface_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionSurfaceState},
+        {"scene_runtime_asset_node_execution_surface_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionSurfaceEntryCount},
+        {"scene_runtime_asset_node_execution_surface_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionSurfaceResolvedEntryCount},
+        {"scene_runtime_asset_node_execution_surface_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionSurfaceBrief},
+        {"scene_runtime_asset_node_execution_surface_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionSurfaceNameBrief},
+        {"scene_runtime_asset_node_execution_surface_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionSurfaceValueBrief},
+        {"scene_runtime_asset_node_controller_phase_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerPhaseRegistryState},
+        {"scene_runtime_asset_node_controller_phase_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerPhaseRegistryEntryCount},
+        {"scene_runtime_asset_node_controller_phase_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerPhaseRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_controller_phase_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerPhaseRegistryBrief},
+        {"scene_runtime_asset_node_controller_phase_registry_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerPhaseRegistryNameBrief},
+        {"scene_runtime_asset_node_controller_phase_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeControllerPhaseRegistryValueBrief},
+        {"scene_runtime_asset_node_surface_composition_bus_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceCompositionBusState},
+        {"scene_runtime_asset_node_surface_composition_bus_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceCompositionBusEntryCount},
+        {"scene_runtime_asset_node_surface_composition_bus_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceCompositionBusResolvedEntryCount},
+        {"scene_runtime_asset_node_surface_composition_bus_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceCompositionBusBrief},
+        {"scene_runtime_asset_node_surface_composition_bus_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceCompositionBusNameBrief},
+        {"scene_runtime_asset_node_surface_composition_bus_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceCompositionBusValueBrief},
+        {"scene_runtime_asset_node_execution_stack_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackState},
+        {"scene_runtime_asset_node_execution_stack_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackEntryCount},
+        {"scene_runtime_asset_node_execution_stack_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackResolvedEntryCount},
+        {"scene_runtime_asset_node_execution_stack_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackBrief},
+        {"scene_runtime_asset_node_execution_stack_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackNameBrief},
+        {"scene_runtime_asset_node_execution_stack_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackValueBrief},
+        {"scene_runtime_asset_node_execution_stack_router_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackRouterState},
+        {"scene_runtime_asset_node_execution_stack_router_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackRouterEntryCount},
+        {"scene_runtime_asset_node_execution_stack_router_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackRouterResolvedEntryCount},
+        {"scene_runtime_asset_node_execution_stack_router_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackRouterBrief},
+        {"scene_runtime_asset_node_execution_stack_router_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackRouterNameBrief},
+        {"scene_runtime_asset_node_execution_stack_router_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackRouterValueBrief},
+        {"scene_runtime_asset_node_execution_stack_router_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackRouterRegistryState},
+        {"scene_runtime_asset_node_execution_stack_router_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackRouterRegistryEntryCount},
+        {"scene_runtime_asset_node_execution_stack_router_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackRouterRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_execution_stack_router_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackRouterRegistryBrief},
+        {"scene_runtime_asset_node_execution_stack_router_registry_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackRouterRegistryNameBrief},
+        {"scene_runtime_asset_node_execution_stack_router_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionStackRouterRegistryValueBrief},
+        {"scene_runtime_asset_node_composition_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeCompositionRegistryState},
+        {"scene_runtime_asset_node_composition_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeCompositionRegistryEntryCount},
+        {"scene_runtime_asset_node_composition_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeCompositionRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_composition_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeCompositionRegistryBrief},
+        {"scene_runtime_asset_node_composition_registry_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeCompositionRegistryNameBrief},
+        {"scene_runtime_asset_node_composition_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeCompositionRegistryValueBrief},
+        {"scene_runtime_asset_node_surface_route_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteState},
+        {"scene_runtime_asset_node_surface_route_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteEntryCount},
+        {"scene_runtime_asset_node_surface_route_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteResolvedEntryCount},
+        {"scene_runtime_asset_node_surface_route_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBrief},
+        {"scene_runtime_asset_node_surface_route_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteNameBrief},
+        {"scene_runtime_asset_node_surface_route_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteValueBrief},
+        {"scene_runtime_asset_node_surface_route_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRegistryState},
+        {"scene_runtime_asset_node_surface_route_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRegistryEntryCount},
+        {"scene_runtime_asset_node_surface_route_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_surface_route_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRegistryBrief},
+        {"scene_runtime_asset_node_surface_route_registry_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRegistryNameBrief},
+        {"scene_runtime_asset_node_surface_route_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRegistryValueBrief},
+        {"scene_runtime_asset_node_surface_route_router_bus_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRouterBusState},
+        {"scene_runtime_asset_node_surface_route_router_bus_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRouterBusEntryCount},
+        {"scene_runtime_asset_node_surface_route_router_bus_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRouterBusResolvedEntryCount},
+        {"scene_runtime_asset_node_surface_route_router_bus_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRouterBusBrief},
+        {"scene_runtime_asset_node_surface_route_router_bus_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRouterBusNameBrief},
+        {"scene_runtime_asset_node_surface_route_router_bus_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteRouterBusValueBrief},
+        {"scene_runtime_asset_node_surface_route_bus_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryState},
+        {"scene_runtime_asset_node_surface_route_bus_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryEntryCount},
+        {"scene_runtime_asset_node_surface_route_bus_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_surface_route_bus_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryBrief},
+        {"scene_runtime_asset_node_surface_route_bus_registry_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryNameBrief},
+        {"scene_runtime_asset_node_surface_route_bus_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusRegistryValueBrief},
+        {"scene_runtime_asset_node_surface_route_bus_driver_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverState},
+        {"scene_runtime_asset_node_surface_route_bus_driver_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverEntryCount},
+        {"scene_runtime_asset_node_surface_route_bus_driver_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverResolvedEntryCount},
+        {"scene_runtime_asset_node_surface_route_bus_driver_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverBrief},
+        {"scene_runtime_asset_node_surface_route_bus_driver_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverNameBrief},
+        {"scene_runtime_asset_node_surface_route_bus_driver_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverValueBrief},
+        {"scene_runtime_asset_node_surface_route_bus_driver_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryState},
+        {"scene_runtime_asset_node_surface_route_bus_driver_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryEntryCount},
+        {"scene_runtime_asset_node_surface_route_bus_driver_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_surface_route_bus_driver_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryBrief},
+        {"scene_runtime_asset_node_surface_route_bus_driver_registry_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryNameBrief},
+        {"scene_runtime_asset_node_surface_route_bus_driver_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryValueBrief},
+        {"scene_runtime_asset_node_surface_route_bus_driver_registry_router_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterState},
+        {"scene_runtime_asset_node_surface_route_bus_driver_registry_router_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterEntryCount},
+        {"scene_runtime_asset_node_surface_route_bus_driver_registry_router_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterResolvedEntryCount},
+        {"scene_runtime_asset_node_surface_route_bus_driver_registry_router_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterBrief},
+        {"scene_runtime_asset_node_surface_route_bus_driver_registry_router_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterNameBrief},
+        {"scene_runtime_asset_node_surface_route_bus_driver_registry_router_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterValueBrief},
+        {"scene_runtime_asset_node_execution_driver_table_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverTableState},
+        {"scene_runtime_asset_node_execution_driver_table_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverTableEntryCount},
+        {"scene_runtime_asset_node_execution_driver_table_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverTableResolvedEntryCount},
+        {"scene_runtime_asset_node_execution_driver_table_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverTableBrief},
+        {"scene_runtime_asset_node_execution_driver_table_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverTableNameBrief},
+        {"scene_runtime_asset_node_execution_driver_table_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverTableValueBrief},
+        {"scene_runtime_asset_node_execution_driver_router_table_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableState},
+        {"scene_runtime_asset_node_execution_driver_router_table_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableEntryCount},
+        {"scene_runtime_asset_node_execution_driver_router_table_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableResolvedEntryCount},
+        {"scene_runtime_asset_node_execution_driver_router_table_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableBrief},
+        {"scene_runtime_asset_node_execution_driver_router_table_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableNameBrief},
+        {"scene_runtime_asset_node_execution_driver_router_table_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterTableValueBrief},
+        {"scene_runtime_asset_node_execution_driver_router_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryState},
+        {"scene_runtime_asset_node_execution_driver_router_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryEntryCount},
+        {"scene_runtime_asset_node_execution_driver_router_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_execution_driver_router_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBrief},
+        {"scene_runtime_asset_node_execution_driver_router_registry_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryNameBrief},
+        {"scene_runtime_asset_node_execution_driver_router_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryValueBrief},
+        {"scene_runtime_asset_node_execution_driver_router_registry_bus_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusState},
+        {"scene_runtime_asset_node_execution_driver_router_registry_bus_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusEntryCount},
+        {"scene_runtime_asset_node_execution_driver_router_registry_bus_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusResolvedEntryCount},
+        {"scene_runtime_asset_node_execution_driver_router_registry_bus_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusBrief},
+        {"scene_runtime_asset_node_execution_driver_router_registry_bus_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusNameBrief},
+        {"scene_runtime_asset_node_execution_driver_router_registry_bus_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusValueBrief},
+        {"scene_runtime_asset_node_execution_driver_router_registry_bus_registry_state",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryState},
+        {"scene_runtime_asset_node_execution_driver_router_registry_bus_registry_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryEntryCount},
+        {"scene_runtime_asset_node_execution_driver_router_registry_bus_registry_resolved_entry_count",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryResolvedEntryCount},
+        {"scene_runtime_asset_node_execution_driver_router_registry_bus_registry_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryBrief},
+        {"scene_runtime_asset_node_execution_driver_router_registry_bus_registry_name_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryNameBrief},
+        {"scene_runtime_asset_node_execution_driver_router_registry_bus_registry_value_brief",
+         realRendererPreviewDiagnostics.sceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryValueBrief},
         {"scene_runtime_pose_adapter_influence",
          realRendererPreviewDiagnostics.sceneRuntimePoseAdapterInfluence},
         {"scene_runtime_pose_readability_bias",
@@ -437,18 +1275,208 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimePoseSampleCount;
     out["renderer_runtime_scene_runtime_bound_pose_sample_count"] =
         status.rendererRuntimeSceneRuntimeBoundPoseSampleCount;
+    out["renderer_runtime_scene_runtime_model_asset_source_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSourceState;
+    out["renderer_runtime_scene_runtime_model_asset_source_readiness"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSourceReadiness;
+    out["renderer_runtime_scene_runtime_model_asset_source_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSourceBrief;
+    out["renderer_runtime_scene_runtime_model_asset_source_path_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSourcePathBrief;
+    out["renderer_runtime_scene_runtime_model_asset_source_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSourceValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_manifest_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestState;
+    out["renderer_runtime_scene_runtime_model_asset_manifest_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_manifest_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_manifest_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestBrief;
+    out["renderer_runtime_scene_runtime_model_asset_manifest_entry_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestEntryBrief;
+    out["renderer_runtime_scene_runtime_model_asset_manifest_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetManifestValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_catalog_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetCatalogState;
+    out["renderer_runtime_scene_runtime_model_asset_catalog_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetCatalogEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_catalog_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetCatalogResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_catalog_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetCatalogBrief;
+    out["renderer_runtime_scene_runtime_model_asset_catalog_entry_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetCatalogEntryBrief;
+    out["renderer_runtime_scene_runtime_model_asset_catalog_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetCatalogValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_binding_table_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindingTableState;
+    out["renderer_runtime_scene_runtime_model_asset_binding_table_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindingTableEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_binding_table_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindingTableResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_binding_table_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindingTableBrief;
+    out["renderer_runtime_scene_runtime_model_asset_binding_table_slot_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindingTableSlotBrief;
+    out["renderer_runtime_scene_runtime_model_asset_binding_table_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindingTableValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_registry_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetRegistryState;
+    out["renderer_runtime_scene_runtime_model_asset_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetRegistryBrief;
+    out["renderer_runtime_scene_runtime_model_asset_registry_asset_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetRegistryAssetBrief;
+    out["renderer_runtime_scene_runtime_model_asset_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetRegistryValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_load_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetLoadState;
+    out["renderer_runtime_scene_runtime_model_asset_load_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetLoadEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_load_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetLoadResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_load_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetLoadBrief;
+    out["renderer_runtime_scene_runtime_model_asset_load_plan_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetLoadPlanBrief;
+    out["renderer_runtime_scene_runtime_model_asset_load_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetLoadValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_decode_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodeState;
+    out["renderer_runtime_scene_runtime_model_asset_decode_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodeEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_decode_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodeResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_decode_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodeBrief;
+    out["renderer_runtime_scene_runtime_model_asset_decode_pipeline_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodePipelineBrief;
+    out["renderer_runtime_scene_runtime_model_asset_decode_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetDecodeValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_residency_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyState;
+    out["renderer_runtime_scene_runtime_model_asset_residency_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_residency_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_residency_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyBrief;
+    out["renderer_runtime_scene_runtime_model_asset_residency_cache_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyCacheBrief;
+    out["renderer_runtime_scene_runtime_model_asset_residency_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetResidencyValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_instance_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetInstanceState;
+    out["renderer_runtime_scene_runtime_model_asset_instance_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetInstanceEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_instance_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetInstanceResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_instance_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetInstanceBrief;
+    out["renderer_runtime_scene_runtime_model_asset_instance_slot_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetInstanceSlotBrief;
+    out["renderer_runtime_scene_runtime_model_asset_instance_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetInstanceValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_activation_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetActivationState;
+    out["renderer_runtime_scene_runtime_model_asset_activation_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetActivationEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_activation_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetActivationResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_activation_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetActivationBrief;
+    out["renderer_runtime_scene_runtime_model_asset_activation_route_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetActivationRouteBrief;
+    out["renderer_runtime_scene_runtime_model_asset_activation_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetActivationValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_session_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSessionState;
+    out["renderer_runtime_scene_runtime_model_asset_session_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSessionEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_session_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSessionResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_session_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSessionBrief;
+    out["renderer_runtime_scene_runtime_model_asset_session_session_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSessionSessionBrief;
+    out["renderer_runtime_scene_runtime_model_asset_session_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSessionValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_bind_ready_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindReadyState;
+    out["renderer_runtime_scene_runtime_model_asset_bind_ready_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindReadyEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_bind_ready_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindReadyResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_bind_ready_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindReadyBrief;
+    out["renderer_runtime_scene_runtime_model_asset_bind_ready_binding_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindReadyBindingBrief;
+    out["renderer_runtime_scene_runtime_model_asset_bind_ready_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetBindReadyValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_handle_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetHandleState;
+    out["renderer_runtime_scene_runtime_model_asset_handle_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetHandleEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_handle_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetHandleResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_handle_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetHandleBrief;
+    out["renderer_runtime_scene_runtime_model_asset_handle_handle_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetHandleHandleBrief;
+    out["renderer_runtime_scene_runtime_model_asset_handle_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetHandleValueBrief;
     out["renderer_runtime_scene_runtime_model_scene_adapter_state"] =
         status.rendererRuntimeSceneRuntimeModelSceneAdapterState;
     out["renderer_runtime_scene_runtime_model_scene_seam_readiness"] =
         status.rendererRuntimeSceneRuntimeModelSceneSeamReadiness;
     out["renderer_runtime_scene_runtime_model_scene_adapter_brief"] =
         status.rendererRuntimeSceneRuntimeModelSceneAdapterBrief;
+    out["renderer_runtime_scene_runtime_model_asset_scene_hook_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneHookState;
+    out["renderer_runtime_scene_runtime_model_asset_scene_hook_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneHookEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_scene_hook_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneHookResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_scene_hook_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneHookBrief;
+    out["renderer_runtime_scene_runtime_model_asset_scene_hook_hook_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneHookHookBrief;
+    out["renderer_runtime_scene_runtime_model_asset_scene_hook_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneHookValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_scene_binding_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneBindingState;
+    out["renderer_runtime_scene_runtime_model_asset_scene_binding_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneBindingEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_scene_binding_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneBindingResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_scene_binding_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneBindingBrief;
+    out["renderer_runtime_scene_runtime_model_asset_scene_binding_binding_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneBindingBindingBrief;
+    out["renderer_runtime_scene_runtime_model_asset_scene_binding_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetSceneBindingValueBrief;
     out["renderer_runtime_scene_runtime_model_node_adapter_influence"] =
         status.rendererRuntimeSceneRuntimeModelNodeAdapterInfluence;
     out["renderer_runtime_scene_runtime_model_node_adapter_brief"] =
         status.rendererRuntimeSceneRuntimeModelNodeAdapterBrief;
     out["renderer_runtime_scene_runtime_model_node_channel_brief"] =
         status.rendererRuntimeSceneRuntimeModelNodeChannelBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_attach_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeAttachState;
+    out["renderer_runtime_scene_runtime_model_asset_node_attach_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeAttachEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_node_attach_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeAttachResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_node_attach_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeAttachBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_attach_attach_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeAttachAttachBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_attach_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeAttachValueBrief;
     out["renderer_runtime_scene_runtime_model_node_graph_state"] =
         status.rendererRuntimeSceneRuntimeModelNodeGraphState;
     out["renderer_runtime_scene_runtime_model_node_graph_node_count"] =
@@ -489,6 +1517,54 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeModelNodeRegistryAssetNodeBrief;
     out["renderer_runtime_scene_runtime_model_node_registry_weight_brief"] =
         status.rendererRuntimeSceneRuntimeModelNodeRegistryWeightBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_dispatch_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeDispatchState;
+    out["renderer_runtime_scene_runtime_model_asset_node_dispatch_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeDispatchEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_node_dispatch_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeDispatchResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_node_dispatch_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeDispatchBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_dispatch_dispatch_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeDispatchDispatchBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_dispatch_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeDispatchValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_execute_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeExecuteState;
+    out["renderer_runtime_scene_runtime_model_asset_node_execute_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeExecuteEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_node_execute_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeExecuteResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_node_execute_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeExecuteBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_execute_execute_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeExecuteExecuteBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_execute_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeExecuteValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_command_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeCommandState;
+    out["renderer_runtime_scene_runtime_model_asset_node_command_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeCommandEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_node_command_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeCommandResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_node_command_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeCommandBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_command_command_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeCommandCommandBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_command_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeCommandValueBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_controller_state"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeControllerState;
+    out["renderer_runtime_scene_runtime_model_asset_node_controller_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeControllerEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_node_controller_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeControllerResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_model_asset_node_controller_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeControllerBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_controller_controller_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeControllerControllerBrief;
+    out["renderer_runtime_scene_runtime_model_asset_node_controller_value_brief"] =
+        status.rendererRuntimeSceneRuntimeModelAssetNodeControllerValueBrief;
     out["renderer_runtime_scene_runtime_asset_node_binding_state"] =
         status.rendererRuntimeSceneRuntimeAssetNodeBindingState;
     out["renderer_runtime_scene_runtime_asset_node_binding_entry_count"] =
@@ -525,6 +1601,558 @@ json BuildMouseCompanionRuntimeState(const AppController* controller) {
         status.rendererRuntimeSceneRuntimeAssetNodeAnchorPointBrief;
     out["renderer_runtime_scene_runtime_asset_node_anchor_scale_brief"] =
         status.rendererRuntimeSceneRuntimeAssetNodeAnchorScaleBrief;
+    out["renderer_runtime_scene_runtime_asset_node_resolver_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverState;
+    out["renderer_runtime_scene_runtime_asset_node_resolver_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_resolver_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_resolver_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverBrief;
+    out["renderer_runtime_scene_runtime_asset_node_resolver_parent_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverParentBrief;
+    out["renderer_runtime_scene_runtime_asset_node_resolver_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeResolverValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_parent_space_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceState;
+    out["renderer_runtime_scene_runtime_asset_node_parent_space_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_parent_space_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_parent_space_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceBrief;
+    out["renderer_runtime_scene_runtime_asset_node_parent_space_parent_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceParentBrief;
+    out["renderer_runtime_scene_runtime_asset_node_parent_space_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeParentSpaceValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_target_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetState;
+    out["renderer_runtime_scene_runtime_asset_node_target_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_target_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_target_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetBrief;
+    out["renderer_runtime_scene_runtime_asset_node_target_kind_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetKindBrief;
+    out["renderer_runtime_scene_runtime_asset_node_target_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_target_resolver_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverState;
+    out["renderer_runtime_scene_runtime_asset_node_target_resolver_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_target_resolver_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_target_resolver_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverBrief;
+    out["renderer_runtime_scene_runtime_asset_node_target_resolver_path_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverPathBrief;
+    out["renderer_runtime_scene_runtime_asset_node_target_resolver_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeTargetResolverValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_world_space_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceState;
+    out["renderer_runtime_scene_runtime_asset_node_world_space_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_world_space_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_world_space_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceBrief;
+    out["renderer_runtime_scene_runtime_asset_node_world_space_path_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpacePathBrief;
+    out["renderer_runtime_scene_runtime_asset_node_world_space_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeWorldSpaceValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseState;
+    out["renderer_runtime_scene_runtime_asset_node_pose_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_path_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePosePathBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_resolver_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseResolverState;
+    out["renderer_runtime_scene_runtime_asset_node_pose_resolver_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseResolverEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_resolver_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseResolverResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_resolver_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseResolverBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_resolver_path_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseResolverPathBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_resolver_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseResolverValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_pose_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_registry_node_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryNodeBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_registry_weight_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseRegistryWeightBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_channel_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseChannelState;
+    out["renderer_runtime_scene_runtime_asset_node_pose_channel_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseChannelEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_channel_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseChannelResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_channel_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseChannelBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_channel_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseChannelNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_channel_weight_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseChannelWeightBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_constraint_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseConstraintState;
+    out["renderer_runtime_scene_runtime_asset_node_pose_constraint_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseConstraintEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_constraint_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseConstraintResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_constraint_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseConstraintBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_constraint_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseConstraintNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_constraint_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseConstraintValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_solve_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseSolveState;
+    out["renderer_runtime_scene_runtime_asset_node_pose_solve_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseSolveEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_solve_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseSolveResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_solve_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseSolveBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_solve_path_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseSolvePathBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_solve_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseSolveValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_joint_hint_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeJointHintState;
+    out["renderer_runtime_scene_runtime_asset_node_joint_hint_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeJointHintEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_joint_hint_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeJointHintResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_joint_hint_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeJointHintBrief;
+    out["renderer_runtime_scene_runtime_asset_node_joint_hint_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeJointHintNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_joint_hint_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeJointHintValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationState;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationBrief;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_local_joint_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_local_joint_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_local_joint_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_local_joint_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_local_joint_registry_joint_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryJointBrief;
+    out["renderer_runtime_scene_runtime_asset_node_local_joint_registry_weight_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeLocalJointRegistryWeightBrief;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_map_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationMapState;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_map_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationMapEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_map_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationMapResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_map_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationMapBrief;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_map_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationMapNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_articulation_map_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeArticulationMapValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_control_rig_hint_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControlRigHintState;
+    out["renderer_runtime_scene_runtime_asset_node_control_rig_hint_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControlRigHintEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_control_rig_hint_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControlRigHintResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_control_rig_hint_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControlRigHintBrief;
+    out["renderer_runtime_scene_runtime_asset_node_control_rig_hint_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControlRigHintNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_control_rig_hint_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControlRigHintValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_rig_channel_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeRigChannelState;
+    out["renderer_runtime_scene_runtime_asset_node_rig_channel_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeRigChannelEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_rig_channel_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeRigChannelResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_rig_channel_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeRigChannelBrief;
+    out["renderer_runtime_scene_runtime_asset_node_rig_channel_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeRigChannelNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_rig_channel_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeRigChannelValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_control_surface_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControlSurfaceState;
+    out["renderer_runtime_scene_runtime_asset_node_control_surface_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControlSurfaceEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_control_surface_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControlSurfaceResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_control_surface_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControlSurfaceBrief;
+    out["renderer_runtime_scene_runtime_asset_node_control_surface_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControlSurfaceNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_control_surface_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControlSurfaceValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_rig_driver_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeRigDriverState;
+    out["renderer_runtime_scene_runtime_asset_node_rig_driver_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeRigDriverEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_rig_driver_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeRigDriverResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_rig_driver_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeRigDriverBrief;
+    out["renderer_runtime_scene_runtime_asset_node_rig_driver_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeRigDriverNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_rig_driver_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeRigDriverValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_driver_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceDriverState;
+    out["renderer_runtime_scene_runtime_asset_node_surface_driver_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceDriverEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_driver_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceDriverResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_driver_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceDriverBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_driver_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceDriverNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_driver_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceDriverValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_bus_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseBusState;
+    out["renderer_runtime_scene_runtime_asset_node_pose_bus_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseBusEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_bus_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseBusResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_pose_bus_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseBusBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_bus_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseBusNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_pose_bus_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodePoseBusValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_table_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerTableState;
+    out["renderer_runtime_scene_runtime_asset_node_controller_table_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerTableEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_controller_table_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerTableResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_controller_table_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerTableBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_table_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerTableNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_table_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerTableValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_controller_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_controller_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_controller_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_registry_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerRegistryValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_driver_bus_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeDriverBusState;
+    out["renderer_runtime_scene_runtime_asset_node_driver_bus_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeDriverBusEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_driver_bus_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeDriverBusResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_driver_bus_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeDriverBusBrief;
+    out["renderer_runtime_scene_runtime_asset_node_driver_bus_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeDriverBusNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_driver_bus_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeDriverBusValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_driver_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_controller_driver_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_controller_driver_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_controller_driver_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_driver_registry_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_driver_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerDriverRegistryValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_lane_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneState;
+    out["renderer_runtime_scene_runtime_asset_node_execution_lane_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_lane_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_lane_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_lane_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_lane_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionLaneValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_phase_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseState;
+    out["renderer_runtime_scene_runtime_asset_node_controller_phase_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_controller_phase_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_controller_phase_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_phase_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_phase_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_surface_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceState;
+    out["renderer_runtime_scene_runtime_asset_node_execution_surface_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_surface_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_surface_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_surface_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_surface_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionSurfaceValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_phase_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_controller_phase_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_controller_phase_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_controller_phase_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_phase_registry_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseRegistryNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_controller_phase_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeControllerPhaseRegistryValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_composition_bus_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceCompositionBusState;
+    out["renderer_runtime_scene_runtime_asset_node_surface_composition_bus_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceCompositionBusEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_composition_bus_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceCompositionBusResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_composition_bus_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceCompositionBusBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_composition_bus_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceCompositionBusNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_composition_bus_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceCompositionBusValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackState;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_router_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackRouterState;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_router_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackRouterEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_router_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackRouterResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_router_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackRouterBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_router_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackRouterNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_router_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackRouterValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_router_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackRouterRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_router_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackRouterRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_router_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackRouterRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_router_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackRouterRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_router_registry_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackRouterRegistryNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_stack_router_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionStackRouterRegistryValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_composition_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeCompositionRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_composition_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeCompositionRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_composition_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeCompositionRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_composition_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeCompositionRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_composition_registry_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeCompositionRegistryNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_composition_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeCompositionRegistryValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteState;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_registry_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRegistryNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRegistryValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_router_bus_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRouterBusState;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_router_bus_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRouterBusEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_router_bus_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRouterBusResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_router_bus_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRouterBusBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_router_bus_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRouterBusNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_router_bus_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteRouterBusValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_registry_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusRegistryValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverState;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_router_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterState;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_router_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_router_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_router_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_router_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_surface_route_bus_driver_registry_router_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeSurfaceRouteBusDriverRegistryRouterValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_table_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableState;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_table_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_table_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_table_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_table_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_table_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverTableValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_table_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableState;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_table_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_table_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_table_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_table_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_table_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterTableValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBusState;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBusEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBusResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBusBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBusNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBusValueBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_registry_state"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryState;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_registry_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_registry_resolved_entry_count"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryResolvedEntryCount;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_registry_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_registry_name_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryNameBrief;
+    out["renderer_runtime_scene_runtime_asset_node_execution_driver_router_registry_bus_registry_value_brief"] =
+        status.rendererRuntimeSceneRuntimeAssetNodeExecutionDriverRouterRegistryBusRegistryValueBrief;
     out["renderer_runtime_scene_runtime_pose_adapter_influence"] =
         status.rendererRuntimeSceneRuntimePoseAdapterInfluence;
     out["renderer_runtime_scene_runtime_pose_readability_bias"] =

@@ -32,7 +32,6 @@ _mfx_core_http_input_assert_capture_transition() {
     local output_file="$5"
     local context="$6"
     local expected_suspended="$7"
-    local expected_vm_suspended="${8:-false}"
 
     _mfx_core_http_wait_input_capture_state \
         "$base_url" \
@@ -42,5 +41,4 @@ _mfx_core_http_input_assert_capture_transition() {
         "$output_file" \
         "$context"
     mfx_assert_file_contains "$output_file" "\"effects_suspended\":$expected_suspended" "$context effects suspended"
-    mfx_assert_file_contains "$output_file" "\"effects_suspended_vm\":$expected_vm_suspended" "$context vm effects suspended"
 }

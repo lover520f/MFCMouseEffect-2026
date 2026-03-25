@@ -17,6 +17,10 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Shipping|x64">
+      <Configuration>Shipping</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
@@ -24,6 +28,11 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MFCMouseEffect</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <MfxEnableWindowsGpuEffects Condition="'$(MfxEnableWindowsGpuEffects)'==''">false</MfxEnableWindowsGpuEffects>
+    <MfxEnableWindowsGpuEffectsDefine Condition="'$(MfxEnableWindowsGpuEffects)'=='true'">1</MfxEnableWindowsGpuEffectsDefine>
+    <MfxEnableWindowsGpuEffectsDefine Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">0</MfxEnableWindowsGpuEffectsDefine>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -56,6 +65,14 @@
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -71,6 +88,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -94,12 +114,17 @@
     <OutDir>$(ProjectDir)..\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)..\$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)..\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)..\$(Platform)\$(Configuration)\obj\$(ProjectName)\</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;_DEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -110,7 +135,7 @@
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <ValidateAllParameters>true</ValidateAllParameters>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </Midl>
     <ResourceCompile>
       <Culture>0x0804</Culture>
@@ -120,7 +145,8 @@
     <PostBuildEvent>
       <Command>if exist "$(OutDir)webui" rmdir /S /Q "$(OutDir)webui"
 if exist "$(ProjectDir)WebUI" xcopy /E /Y /I "$(ProjectDir)WebUI" "$(OutDir)webui\\"
-if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
+if /I "$(MfxEnableWindowsGpuEffects)"=="true" if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
+if /I not "$(MfxEnableWindowsGpuEffects)"=="true" if exist "$(OutDir)webgpu_dawn.dll" del /Q "$(OutDir)webgpu_dawn.dll"
 if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -129,7 +155,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -140,7 +166,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <ValidateAllParameters>true</ValidateAllParameters>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </Midl>
     <ResourceCompile>
       <Culture>0x0804</Culture>
@@ -155,7 +181,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -168,7 +194,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <ValidateAllParameters>true</ValidateAllParameters>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </Midl>
     <ResourceCompile>
       <Culture>0x0804</Culture>
@@ -183,7 +209,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;NDEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -196,7 +222,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <ValidateAllParameters>true</ValidateAllParameters>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </Midl>
     <ResourceCompile>
       <Culture>0x0804</Culture>
@@ -206,7 +232,47 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <PostBuildEvent>
       <Command>if exist "$(OutDir)webui" rmdir /S /Q "$(OutDir)webui"
 if exist "$(ProjectDir)WebUI" xcopy /E /Y /I "$(ProjectDir)WebUI" "$(OutDir)webui\\"
-if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
+if /I "$(MfxEnableWindowsGpuEffects)"=="true" if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
+if /I not "$(MfxEnableWindowsGpuEffects)"=="true" if exist "$(OutDir)webgpu_dawn.dll" del /Q "$(OutDir)webgpu_dawn.dll"
+if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <AdditionalOptions>/Gw %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>_WINDOWS;NDEBUG;MFX_SHIPPING_BUILD=1;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0804</Culture>
+      <PreprocessorDefinitions>NDEBUG;MFX_SHIPPING_BUILD=1;MFX_ENABLE_WINDOWS_GPU_EFFECTS=$(MfxEnableWindowsGpuEffectsDefine);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PostBuildEvent>
+      <Command>if exist "$(OutDir)webui" rmdir /S /Q "$(OutDir)webui"
+if exist "$(ProjectDir)WebUI" xcopy /E /Y /I "$(ProjectDir)WebUI" "$(OutDir)webui\\"
+if /I "$(MfxEnableWindowsGpuEffects)"=="true" if exist "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" copy /Y "$(ProjectDir)Runtime\Dawn\webgpu_dawn.dll" "$(OutDir)webgpu_dawn.dll"
+if /I not "$(MfxEnableWindowsGpuEffects)"=="true" if exist "$(OutDir)webgpu_dawn.dll" del /Q "$(OutDir)webgpu_dawn.dll"
 if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -299,10 +365,82 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererLayoutMetrics.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererMotionProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelSceneAdapterProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSourceProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetManifestProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetCatalogProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetBindingTableProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetLoadProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetDecodeProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetResidencyProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetInstanceProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetActivationProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSessionProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetBindReadyProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetHandleProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSceneHookProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSceneBindingProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeAttachProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeLiftProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeBindProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeResolveProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeDriveProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeMountProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeRouteProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeDispatchProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeExecuteProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeCommandProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeControllerProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeAdapterProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeBindingProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeBindingProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeAnchorProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeParentSpaceProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeResolverProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTargetProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTargetResolverProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseResolverProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseChannelProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseConstraintProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseSolveProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeJointHintProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeArticulationProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeLocalJointRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeArticulationMapProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControlRigHintProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControlSurfaceProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerDriverRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerPhaseProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerPhaseRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerTableProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeDriverBusProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionLaneProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionSurfaceProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionStackProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionStackRouterProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionStackRouterRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeCompositionRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteRouterBusProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusDriverProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusDriverRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusDriverRegistryRouterProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverTableProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterTableProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryBusProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryBusRegistryProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceCompositionBusProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseBusProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeRigDriverProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeRigChannelProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceDriverProfile.h" />
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeWorldSpaceProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTransformProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeSlotProfile.h" />
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeRegistryProfile.h" />
@@ -363,6 +501,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClInclude Include="Platform\windows\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.h" />
     <ClInclude Include="Platform\windows\Renderers\Hold\HoldQuantumHaloGpuV2D2DBackend.h" />
     <ClInclude Include="MouseFx\Renderers\Indicator\IndicatorRenderer.h" />
+    <ClInclude Include="MouseFx\Renderers\Indicator\CursorDecorationRenderer.h" />
     <ClInclude Include="MouseFx\Core\System\GdiPlusSession.h" />
     <ClInclude Include="MouseFx\Core\System\CursorPositionProvider.h" />
     <ClInclude Include="MouseFx\Core\System\ICursorPositionService.h" />
@@ -612,18 +751,34 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="MouseFx\Renderers\RendererLinkage.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\HoldRendererLinkage.cpp" />
     <ClCompile Include="Platform\windows\Renderers\Hold\Win32HoldRendererLinkage.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ShaderPipeline.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2Presenter.cpp" />
+    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ShaderPipeline.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2Presenter.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterBackendRegistry.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterHost.cpp" />
     <ClCompile Include="MouseFx\Renderers\Hold\Presentation\QuantumHaloPresenterSelection.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ComputeEngine.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\HoldQuantumHaloGpuV2D2DBackend.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.cpp" />
-    <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldGpuV2ComputeEngine.cpp" />
+    <ClCompile Include="Platform\windows\Renderers\Hold\Presentation\QuantumHaloDCompPresenterBackend.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\QuantumHaloGpuV2ComputeEngine.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\HoldQuantumHaloGpuV2D2DBackend.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldHudGpuV2D2DBackend.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Renderers\Hold\FluxFieldGpuV2ComputeEngine.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="MouseFx\Effects\HoldRouteCatalog.cpp" />
-    <ClCompile Include="Platform\windows\Effects\Win32HoldQuantumHaloGpuV2DirectRuntime.cpp" />
+    <ClCompile Include="Platform\windows\Effects\Win32HoldQuantumHaloGpuV2DirectRuntime.cpp">
+      <ExcludedFromBuild Condition="'$(MfxEnableWindowsGpuEffects)'!='true'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="MouseFx\Renderers\Hold\Neon3D\Neon3DFx.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.cpp" />
     <ClCompile Include="MouseFx\Core\Control\CommandHandler.ApplySettings.cpp" />
@@ -652,10 +807,82 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererFrameBuilder.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererMotionProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelSceneAdapterProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSourceProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetManifestProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetCatalogProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetBindingTableProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetLoadProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetDecodeProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetResidencyProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetInstanceProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetActivationProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSessionProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetBindReadyProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetHandleProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSceneHookProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSceneBindingProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeAttachProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeLiftProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeBindProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeResolveProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeDriveProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeMountProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeRouteProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeDispatchProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeExecuteProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeCommandProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeControllerProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeAdapterProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeBindingProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeBindingProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeAnchorProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeParentSpaceProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeResolverProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTargetProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTargetResolverProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseResolverProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseChannelProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseConstraintProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseSolveProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeJointHintProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeArticulationProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeLocalJointRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeArticulationMapProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControlRigHintProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControlSurfaceProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerDriverRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerPhaseProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerPhaseRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerTableProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeDriverBusProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionLaneProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionSurfaceProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionStackProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionStackRouterProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionStackRouterRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeCompositionRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteRouterBusProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusDriverProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusDriverRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusDriverRegistryRouterProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverTableProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterTableProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryBusProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryBusRegistryProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceCompositionBusProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseBusProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeRigDriverProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeRigChannelProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceDriverProfile.cpp" />
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeWorldSpaceProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTransformProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeSlotProfile.cpp" />
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeRegistryProfile.cpp" />
@@ -692,6 +919,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="MouseFx\Core\Control\DispatchRouter.Pointer.cpp" />
     <ClCompile Include="MouseFx\Effects\RippleBasedHoldRuntime.cpp" />
     <ClCompile Include="MouseFx\Renderers\Indicator\IndicatorRenderer.cpp" />
+    <ClCompile Include="MouseFx\Renderers\Indicator\CursorDecorationRenderer.cpp" />
     <ClCompile Include="MouseFx\Styles\ThemeCatalogLoader.cpp" />
     <ClCompile Include="MouseFx\Styles\ThemeStyle.cpp" />
     <ClCompile Include="MouseFx\Effects\TextEffect.cpp" />
@@ -833,29 +1061,57 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
     <ClCompile Include="MouseFx\Server\core\WebSettingsServer.cpp" />
     <ClCompile Include="MouseFx\Server\core\WebSettingsServer.Routing.cpp" />
     <ClCompile Include="MouseFx\Server\core\WebSettingsServer.TokenMonitor.cpp" />
-    <ClCompile Include="MouseFx\Server\diagnostics\MouseCompanionRendererBackendDiagnostics.cpp" />
-    <ClCompile Include="MouseFx\Server\diagnostics\SettingsStateMapper.Diagnostics.cpp" />
+    <ClCompile Include="MouseFx\Server\diagnostics\MouseCompanionRendererBackendDiagnostics.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\diagnostics\SettingsStateMapper.Diagnostics.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="MouseFx\Server\diagnostics\SettingsStateMapper.InputCaptureDiagnostics.cpp" />
     <ClCompile Include="MouseFx\Server\diagnostics\SettingsStateMapper.WasmDiagnostics.cpp" />
     <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.AutomationCatalogRoutes.cpp" />
     <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.AutomationRoutes.cpp" />
     <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.AutomationRouteUtils.cpp" />
     <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.AutomationShortcutCaptureRoutes.cpp" />
-    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationApiRoutes.cpp" />
-    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationInjectionApiRoutes.cpp" />
-    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationRouteUtils.cpp" />
-    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationScopeApiRoutes.cpp" />
-    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationShortcutApiRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationApiRoutes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationInjectionApiRoutes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationRouteUtils.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationScopeApiRoutes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\automation\WebSettingsServer.TestAutomationShortcutApiRoutes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="MouseFx\Server\routes\core\WebSettingsServer.CoreApiRoutes.cpp" />
     <ClCompile Include="MouseFx\Server\routes\core\WebSettingsServer.RequestGateway.cpp" />
-    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.MouseCompanionRenderProof.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.MouseCompanionRenderProof.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestApiRoutes.cpp" />
-    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsApiRoutes.cpp" />
-    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsOverlayApiRoute.cpp" />
-    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsProfileApiRoute.cpp" />
-    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestMouseCompanionApiRoutes.cpp" />
-    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestRouteCommon.cpp" />
-    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestWasmInputApiRoutes.cpp" />
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsApiRoutes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsOverlayApiRoute.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestEffectsProfileApiRoute.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestMouseCompanionApiRoutes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestRouteCommon.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="MouseFx\Server\routes\testing\WebSettingsServer.TestWasmInputApiRoutes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmCatalogQueryRoutes.cpp" />
     <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmCatalogRoutes.cpp" />
     <ClCompile Include="MouseFx\Server\routes\wasm\WebSettingsServer.WasmExportRoutes.cpp" />
@@ -889,6 +1145,7 @@ if exist "$(OutDir)d3dcompiler_47.dll" del /Q "$(OutDir)d3dcompiler_47.dll"</Com
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Shipping|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Platform\windows\Shell\Tray\Win32TrayMenuBuilder.cpp" />
     <ClCompile Include="Platform\windows\Shell\Tray\Win32TrayHostWindow.cpp" />

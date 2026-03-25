@@ -10,10 +10,15 @@
 
 namespace mousefx::trail_effect_adapter {
 
-inline TrailEffectThrottleProfile ResolveTrailThrottleProfile() {
+inline TrailEffectThrottleProfile ResolveTrailThrottleProfile(const std::string& normalizedType) {
     TrailEffectThrottleProfile throttle{};
-    throttle.minIntervalMs = 18;
-    throttle.minDistancePx = 8.0;
+    if (normalizedType == "particle") {
+        throttle.minIntervalMs = 0;
+        throttle.minDistancePx = 1.0;
+        return throttle;
+    }
+    throttle.minIntervalMs = 8;
+    throttle.minDistancePx = 2.0;
     return throttle;
 }
 

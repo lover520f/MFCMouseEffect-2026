@@ -5,7 +5,18 @@
 #define MyAppPublisher "ksun22515@gmail.com"
 #define MyAppURL "https://github.com/sqmw/MFCMouseEffect"
 #define MyAppExeName "MFCMouseEffect.exe"
-#define ReleaseDir "..\\x64\\Release\\"
+#ifndef BuildConfiguration
+  #define BuildConfiguration "Release"
+#endif
+#ifndef MfxEnableWindowsGpuEffects
+  #define MfxEnableWindowsGpuEffects "false"
+#endif
+#if MfxEnableWindowsGpuEffects == "true"
+  #define EnableWindowsGpuEffects 1
+#else
+  #define EnableWindowsGpuEffects 0
+#endif
+#define ReleaseDir "..\\x64\\" + BuildConfiguration + "\\"
 #define ReleaseWebUiDir ReleaseDir + "webui\\"
 
 ; Optional Chinese language file detection (avoid build failure if not installed)
@@ -25,6 +36,9 @@
 #endif
 #if !FileExists(ReleaseDir + "mfx_wasm_runtime.dll")
   #error "Missing mfx_wasm_runtime.dll in x64 Release output. Build WasmRuntimeBridge first."
+#endif
+#if EnableWindowsGpuEffects && !FileExists(ReleaseDir + "webgpu_dawn.dll")
+  #error "Missing webgpu_dawn.dll in selected Windows output. Build with GPU enabled first."
 #endif
 #if !FileExists(ReleaseWebUiDir + "index.html")
   #error "Missing webui/index.html in x64 Release output."
@@ -114,13 +128,15 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 ; Binaries + config
-Source: "..\x64\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\x64\Release\config.json"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist skipifsourcedoesntexist
+Source: "{#ReleaseDir}{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#ReleaseDir}config.json"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist skipifsourcedoesntexist
 ; Web UI (local server assets)
-Source: "..\x64\Release\webui\*"; DestDir: "{app}\webui"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#ReleaseWebUiDir}*"; DestDir: "{app}\webui"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Runtime DLLs
-Source: "..\x64\Release\webgpu_dawn.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
-Source: "..\x64\Release\mfx_wasm_runtime.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+#if EnableWindowsGpuEffects
+Source: "{#ReleaseDir}webgpu_dawn.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+#endif
+Source: "{#ReleaseDir}mfx_wasm_runtime.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

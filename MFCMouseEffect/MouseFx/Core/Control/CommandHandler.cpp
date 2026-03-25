@@ -125,6 +125,7 @@ void CommandHandler::HandleWasmReloadCommand(const std::string&) {
         "scroll",
         "hold",
         "hover",
+        "cursor_decoration",
     };
     for (const char* channel : kEffectsChannels) {
         if (auto* host = controller_->WasmEffectsHostForChannel(channel)) {
@@ -134,6 +135,7 @@ void CommandHandler::HandleWasmReloadCommand(const std::string&) {
     if (auto* indicatorHost = controller_->WasmIndicatorHost()) {
         indicatorHost->ReloadPlugin();
     }
+    controller_->SyncCursorDecorationOverlaySuppression();
 }
 
 void CommandHandler::HandleWasmLoadManifestCommand(const std::string& jsonCmd) {
@@ -190,6 +192,11 @@ void CommandHandler::HandleWasmSetPolicyCommand(const std::string& jsonCmd) {
     }
     if (root.contains("manifest_path_hover") && root["manifest_path_hover"].is_string()) {
         controller_->SetWasmManifestPathForChannel("hover", root["manifest_path_hover"].get<std::string>());
+    }
+    if (root.contains("manifest_path_cursor_decoration") && root["manifest_path_cursor_decoration"].is_string()) {
+        controller_->SetWasmManifestPathForChannel(
+            "cursor_decoration",
+            root["manifest_path_cursor_decoration"].get<std::string>());
     }
     if (root.contains("catalog_root_path") && root["catalog_root_path"].is_string()) {
         controller_->SetWasmCatalogRootPath(root["catalog_root_path"].get<std::string>());

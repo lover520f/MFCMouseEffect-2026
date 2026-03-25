@@ -192,6 +192,35 @@ MouseCompanionConfig SanitizeMouseCompanionConfig(MouseCompanionConfig config) {
 }
 
 InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig config) {
+    config.cursorDecoration.pluginId = ToLowerAscii(TrimAscii(config.cursorDecoration.pluginId));
+    if (config.cursorDecoration.pluginId == "ring") {
+        config.cursorDecoration.pluginId = "focus_ring";
+    } else if (config.cursorDecoration.pluginId == "orb") {
+        config.cursorDecoration.pluginId = "soft_orb";
+    }
+    if (config.cursorDecoration.pluginId != "focus_ring" &&
+        config.cursorDecoration.pluginId != "signal_ring" &&
+        config.cursorDecoration.pluginId != "soft_orb" &&
+        config.cursorDecoration.pluginId != "halo_orb") {
+        config.cursorDecoration.pluginId = "focus_ring";
+    }
+    config.cursorDecoration.colorHex = TrimAscii(config.cursorDecoration.colorHex);
+    if (config.cursorDecoration.colorHex.size() != 7 ||
+        config.cursorDecoration.colorHex[0] != '#' ||
+        !std::all_of(config.cursorDecoration.colorHex.begin() + 1,
+                     config.cursorDecoration.colorHex.end(),
+                     [](unsigned char ch) { return std::isxdigit(ch) != 0; })) {
+        config.cursorDecoration.colorHex = "#ff5a5a";
+    } else {
+        std::transform(
+            config.cursorDecoration.colorHex.begin(),
+            config.cursorDecoration.colorHex.end(),
+            config.cursorDecoration.colorHex.begin(),
+            [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
+    }
+    config.cursorDecoration.sizePx = ClampInt(config.cursorDecoration.sizePx, 12, 72);
+    config.cursorDecoration.alphaPercent = ClampInt(config.cursorDecoration.alphaPercent, 15, 100);
+
     config.positionMode = (config.positionMode == "absolute") ? "absolute" : "relative";
     config.renderMode = ToLowerAscii(TrimAscii(config.renderMode));
     if (config.renderMode != "native" && config.renderMode != "wasm") {
@@ -409,6 +438,7 @@ WasmConfig SanitizeWasmConfig(WasmConfig config) {
     config.manifestPathScroll = TrimAscii(config.manifestPathScroll);
     config.manifestPathHold = TrimAscii(config.manifestPathHold);
     config.manifestPathHover = TrimAscii(config.manifestPathHover);
+    config.manifestPathCursorDecoration = TrimAscii(config.manifestPathCursorDecoration);
     config.catalogRootPath = TrimAscii(config.catalogRootPath);
     config.outputBufferBytes = static_cast<uint32_t>(ClampInt(
         static_cast<int>(config.outputBufferBytes),

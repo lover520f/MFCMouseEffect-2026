@@ -395,12 +395,25 @@
   }
 
   async function refreshStateSnapshot(useCachedSchema) {
-    const st = await apiGet('/api/state');
-    const uiLang = st.ui_language || 'en-US';
-    const canReuseSchema = !!cachedSchema && cachedSchemaLang === uiLang;
-    const schema = (useCachedSchema && canReuseSchema)
-      ? cachedSchema
-      : await apiGet('/api/schema');
+    let st = null;
+    let schema = null;
+
+    if (!cachedSchema) {
+      const results = await Promise.all([
+        apiGet('/api/state'),
+        apiGet('/api/schema'),
+      ]);
+      st = results[0];
+      schema = results[1];
+    } else {
+      st = await apiGet('/api/state');
+      const uiLang = st.ui_language || 'en-US';
+      const canReuseSchema = !!cachedSchema && cachedSchemaLang === uiLang;
+      schema = (useCachedSchema && canReuseSchema)
+        ? cachedSchema
+        : await apiGet('/api/schema');
+    }
+
     renderSettingsSnapshot(schema, st);
     return st;
   }

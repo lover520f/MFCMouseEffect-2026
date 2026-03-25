@@ -17,6 +17,7 @@ nlohmann::json BuildWasmJson(const WasmConfig& source) {
         {keys::wasm::kManifestPathScroll, config.manifestPathScroll},
         {keys::wasm::kManifestPathHold, config.manifestPathHold},
         {keys::wasm::kManifestPathHover, config.manifestPathHover},
+        {keys::wasm::kManifestPathCursorDecoration, config.manifestPathCursorDecoration},
         {keys::wasm::kCatalogRootPath, config.catalogRootPath},
         {keys::wasm::kOutputBufferBytes, config.outputBufferBytes},
         {keys::wasm::kMaxCommands, config.maxCommands},

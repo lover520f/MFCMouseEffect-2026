@@ -12,6 +12,8 @@ const state = {
   runtimeState: {},
   component: null,
   contextComponent: null,
+  recoverTimer: 0,
+  recoverAttempts: 0,
 };
 
 const WORKSPACE_STATE_STORAGE_NS = 'workspace.v1';
@@ -82,6 +84,42 @@ function collectSections() {
   }
 
   state.sections = out;
+}
+
+function clearRecoverTimer() {
+  if (!state.recoverTimer) {
+    return;
+  }
+  window.clearTimeout(state.recoverTimer);
+  state.recoverTimer = 0;
+}
+
+function revealCardsFallback() {
+  const cards = Array.from(document.querySelectorAll('#settings_grid > .card[id]'));
+  for (const card of cards) {
+    card.hidden = false;
+    card.classList.remove('is-active');
+  }
+}
+
+function scheduleRecoverRefresh() {
+  if (state.recoverTimer) {
+    return;
+  }
+  if (state.recoverAttempts >= 40) {
+    return;
+  }
+  state.recoverTimer = window.setTimeout(() => {
+    state.recoverTimer = 0;
+    state.recoverAttempts += 1;
+    collectSections();
+    if (state.sections.length <= 0) {
+      scheduleRecoverRefresh();
+      return;
+    }
+    state.recoverAttempts = 0;
+    refresh();
+  }, 50);
 }
 
 function sectionById(id) {
@@ -224,8 +262,15 @@ function render(options) {
   const opts = options || {};
   state.activeId = pickAvailableSectionId(state.activeId);
   if (!state.activeId) {
+    revealCardsFallback();
+    updateSidebarView();
+    updateContextView();
+    scheduleRecoverRefresh();
     return;
   }
+
+  clearRecoverTimer();
+  state.recoverAttempts = 0;
 
   writeWorkspaceStorage({
     activeSectionId: state.activeId,

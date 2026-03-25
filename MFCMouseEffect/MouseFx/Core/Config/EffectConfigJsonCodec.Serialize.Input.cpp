@@ -34,7 +34,14 @@ nlohmann::json BuildInputIndicatorJson(const InputIndicatorConfig& source) {
         {keys::input::kKeyLabelLayoutMode, input.keyLabelLayoutMode},
         {keys::input::kSizePx, input.sizePx},
         {keys::input::kDurationMs, input.durationMs},
-        {keys::input::kPerMonitorOverrides, perMonitorOverrides}
+        {keys::input::kPerMonitorOverrides, perMonitorOverrides},
+        {keys::input::kCursorDecoration, {
+            {keys::input::cursor_decoration::kEnabled, input.cursorDecoration.enabled},
+            {keys::input::cursor_decoration::kPluginId, input.cursorDecoration.pluginId},
+            {keys::input::cursor_decoration::kColorHex, input.cursorDecoration.colorHex},
+            {keys::input::cursor_decoration::kSizePx, input.cursorDecoration.sizePx},
+            {keys::input::cursor_decoration::kAlphaPercent, input.cursorDecoration.alphaPercent},
+        }}
     };
 }
 

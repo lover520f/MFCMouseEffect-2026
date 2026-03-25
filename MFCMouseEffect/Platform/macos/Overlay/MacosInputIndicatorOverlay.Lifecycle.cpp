@@ -18,9 +18,10 @@ bool MacosInputIndicatorOverlay::Initialize() {
 
     macos_input_indicator::RunOnMainThreadSync(^{
       panel_ = macos_input_indicator_style::CreatePanel(72);
+      decorationPanel_ = macos_input_indicator_style::CreateDecorationPanel();
     });
 
-    initialized_ = (panel_ != nullptr);
+    initialized_ = (panel_ != nullptr && decorationPanel_ != nullptr);
     return initialized_;
 #endif
 }
@@ -38,9 +39,12 @@ void MacosInputIndicatorOverlay::Shutdown() {
     macos_input_indicator::RunOnMainThreadSync(^{
       macos_input_indicator_style::ReleasePanel(panel_);
       panel_ = nullptr;
+      macos_input_indicator_style::ReleaseDecorationPanel(decorationPanel_);
+      decorationPanel_ = nullptr;
     });
 
     initialized_ = false;
+    hasCursorPoint_ = false;
 #endif
 }
 

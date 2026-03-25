@@ -11,15 +11,16 @@ namespace {
 
 std::string ResolveAssetBindingState(
     const Win32MouseCompanionRealRendererSceneRuntime& runtime) {
-    const std::string& registryState = runtime.modelNodeRegistryProfile.registryState;
-    if (registryState == "registry_binding_ready" && runtime.assets &&
+    const std::string& controllerState = runtime.modelAssetNodeControllerProfile.controllerState;
+    if (controllerState == "model_asset_node_controller_bound" && runtime.assets &&
         runtime.assets->assetNodeBindingsReady) {
         return "asset_binding_ready";
     }
-    if (registryState == "registry_stub_ready") {
+    if (controllerState == "model_asset_node_controller_pose_ready") {
         return "asset_binding_stub_ready";
     }
-    if (registryState == "registry_scaffold") {
+    if (controllerState == "model_asset_node_controller_ready" ||
+        controllerState == "model_asset_node_controller_partial") {
         return "asset_binding_scaffold";
     }
     return "preview_only";
@@ -144,11 +145,22 @@ BuildWin32MouseCompanionRealRendererAssetNodeBindingProfile(
 
     const bool assetBindingsReady = runtime.assets && runtime.assets->assetNodeBindingsReady;
     const auto& registry = runtime.modelNodeRegistryProfile;
+    const float executeWeight = runtime.modelAssetNodeControllerProfile.controllerWeight;
     profile.bodyEntry = BuildAssetBindingEntry(registry.bodyEntry, assetBindingsReady);
+    profile.bodyEntry.bindingWeight *= executeWeight;
+    profile.bodyEntry.resolved = profile.bodyEntry.resolved && profile.bodyEntry.bindingWeight > 0.0f;
     profile.headEntry = BuildAssetBindingEntry(registry.headEntry, assetBindingsReady);
+    profile.headEntry.bindingWeight *= executeWeight;
+    profile.headEntry.resolved = profile.headEntry.resolved && profile.headEntry.bindingWeight > 0.0f;
     profile.appendageEntry = BuildAssetBindingEntry(registry.appendageEntry, assetBindingsReady);
+    profile.appendageEntry.bindingWeight *= executeWeight;
+    profile.appendageEntry.resolved = profile.appendageEntry.resolved && profile.appendageEntry.bindingWeight > 0.0f;
     profile.overlayEntry = BuildAssetBindingEntry(registry.overlayEntry, assetBindingsReady);
+    profile.overlayEntry.bindingWeight *= executeWeight;
+    profile.overlayEntry.resolved = profile.overlayEntry.resolved && profile.overlayEntry.bindingWeight > 0.0f;
     profile.groundingEntry = BuildAssetBindingEntry(registry.groundingEntry, assetBindingsReady);
+    profile.groundingEntry.bindingWeight *= executeWeight;
+    profile.groundingEntry.resolved = profile.groundingEntry.resolved && profile.groundingEntry.bindingWeight > 0.0f;
 
     profile.resolvedEntryCount = CountResolvedEntries(profile);
     profile.brief = BuildBrief(profile.bindingState, profile.entryCount, profile.resolvedEntryCount);

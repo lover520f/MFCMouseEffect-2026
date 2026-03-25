@@ -36,17 +36,20 @@ void BuildWin32MouseCompanionRealRendererFace(
     const auto& skinTuning = appearanceSemantics.face;
     const auto& nodeAdapter = runtime.modelNodeAdapterProfile;
     const auto& nodeBinding = runtime.modelNodeBindingProfile;
-    const auto& assetTransform = runtime.assetNodeTransformProfile;
+    const auto& assetTargetResolver = runtime.assetNodeTargetResolverProfile;
     const float poseFaceYOffset = nodeBinding.headEntry.worldOffsetY * scene.headRect.Height;
     const float poseFaceXOffset = nodeBinding.headEntry.worldOffsetX * scene.headRect.Width;
     const float poseWhiskerBias = nodeAdapter.whiskerBias;
     const float poseBlushLift = nodeAdapter.blushLift;
-    const float transformFaceYOffset =
-        assetTransform.headEntry.resolved ? assetTransform.headEntry.offsetY * scene.headRect.Height : 0.0f;
-    const float transformFaceXOffset =
-        assetTransform.headEntry.resolved ? assetTransform.headEntry.offsetX * scene.headRect.Width : 0.0f;
-    const float transformFaceScale =
-        assetTransform.headEntry.resolved ? assetTransform.headEntry.anchorScale : 1.0f;
+    const float transformFaceYOffset = assetTargetResolver.headEntry.resolved
+        ? assetTargetResolver.headEntry.resolvedOffsetY * scene.headRect.Height
+        : 0.0f;
+    const float transformFaceXOffset = assetTargetResolver.headEntry.resolved
+        ? assetTargetResolver.headEntry.resolvedOffsetX * scene.headRect.Width
+        : 0.0f;
+    const float transformFaceScale = assetTargetResolver.headEntry.resolved
+        ? assetTargetResolver.headEntry.resolvedScale
+        : 1.0f;
     const float faceAnchorX = scene.headAnchor.X + poseFaceXOffset + transformFaceXOffset;
     const float faceAnchorY = scene.headAnchor.Y + poseFaceYOffset + transformFaceYOffset;
     const float eyeH = std::max(3.0f, scene.headRect.Height * style.eyeHeightRatio * profile.eyeOpen);

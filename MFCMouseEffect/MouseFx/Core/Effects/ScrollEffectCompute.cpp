@@ -87,6 +87,62 @@ ScrollEffectInputShaperProfile ResolveScrollInputShaperProfile(const std::string
     return profile;
 }
 
+ScrollEffectProfile BuildScrollEffectProfileFromStyle(const RippleStyle& style, int sizeScalePercent) {
+    ScrollEffectProfile profile{};
+    const double sizeScale = std::clamp(static_cast<double>(sizeScalePercent) / 100.0, 0.5, 2.0);
+    const int windowSize = std::clamp(
+        static_cast<int>(std::lround(static_cast<double>(std::clamp(style.windowSize, 64, 640)) * sizeScale)),
+        64,
+        640);
+    profile.verticalSizePx = windowSize;
+    profile.horizontalSizePx = windowSize;
+    profile.geometryReferenceSizePx = windowSize;
+    profile.baseStartRadiusPx = std::clamp(static_cast<double>(style.startRadius), 0.0, 640.0);
+    profile.baseEndRadiusPx = std::clamp(static_cast<double>(style.endRadius), 1.0, 800.0);
+    profile.baseStrokeWidthPx = std::clamp(static_cast<double>(style.strokeWidth), 0.1, 64.0);
+    profile.baseDurationSec = std::clamp(static_cast<double>(style.durationMs) / 1000.0, 0.05, 5.0);
+    profile.perStrengthStepSec = 0.0;
+    profile.closePaddingMs = 0;
+    profile.baseOpacity = 1.0;
+    profile.defaultDurationScale = 1.0;
+    profile.helixDurationScale = 1.0;
+    profile.twinkleDurationScale = 1.0;
+    profile.defaultSizeScale = 1.0;
+    profile.helixSizeScale = 1.0;
+    profile.twinkleSizeScale = 1.0;
+
+    const ScrollEffectDirectionColorProfile color{style.fill.value, style.stroke.value};
+    profile.horizontalPositive = color;
+    profile.horizontalNegative = color;
+    profile.verticalPositive = color;
+    profile.verticalNegative = color;
+    return profile;
+}
+
+ScrollEffectDirectionVector ResolveScrollDirectionVector(bool horizontal, int delta) {
+    ScrollEffectDirectionVector direction{};
+    if (delta == 0) {
+        return direction;
+    }
+
+    if (horizontal) {
+        direction.dx = (delta >= 0) ? 1.0 : -1.0;
+        return direction;
+    }
+
+    // Screen-space Y grows downward, so "scroll up" maps to negative Y.
+    direction.dy = (delta >= 0) ? -1.0 : 1.0;
+    return direction;
+}
+
+float ResolveScrollDirectionRadians(bool horizontal, int delta) {
+    const ScrollEffectDirectionVector direction = ResolveScrollDirectionVector(horizontal, delta);
+    if (direction.dx == 0.0 && direction.dy == 0.0) {
+        return 0.0f;
+    }
+    return static_cast<float>(std::atan2(direction.dy, direction.dx));
+}
+
 ScrollEffectRenderCommand ComputeScrollEffectRenderCommand(
     const ScreenPoint& overlayPoint,
     bool horizontal,

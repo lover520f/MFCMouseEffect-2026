@@ -136,7 +136,7 @@ inline const EffectOption* ScrollMetadata(size_t& n) {
 }
 
 inline const EffectOption* HoldMetadata(size_t& n) {
-    static const EffectOption opts[] = {
+    static const EffectOption gpuOpts[] = {
         {"charge",    kCmdHoldCharge,   L"\u84C4\u529B (\u80FD\u91CF\u73AF)", L"Energy Charge"},
         {"lightning", kCmdHoldLightning,L"\u95EA\u7535 (\u5947\u70B9)",        L"Lightning"},
         {"hex",       kCmdHoldHex,      L"\u516D\u8FB9\u5F62 (\u62A4\u76FE)", L"Hex Shield"},
@@ -148,8 +148,22 @@ inline const EffectOption* HoldMetadata(size_t& n) {
         {mousefx::hold_route::kTypeFluxFieldGpuV2, kCmdHoldFluxFieldGpuV2, L"\u78C1\u901A\u573A HUD GPU", L"FluxField HUD GPU"},
         {"none",      kCmdHoldNone,     L"\u65E0",                    L"None"},
     };
-    n = std::size(opts);
-    return opts;
+    static const EffectOption noGpuOpts[] = {
+        {"charge",    kCmdHoldCharge,   L"\u84C4\u529B (\u80FD\u91CF\u73AF)", L"Energy Charge"},
+        {"lightning", kCmdHoldLightning,L"\u95EA\u7535 (\u5947\u70B9)",        L"Lightning"},
+        {"hex",       kCmdHoldHex,      L"\u516D\u8FB9\u5F62 (\u62A4\u76FE)", L"Hex Shield"},
+        {"tech_ring", kCmdHoldTechRing, L"\u79D1\u6280\u5708 (3D)",        L"Tech Ring (3D)"},
+        {"hologram",  kCmdHoldHologram, L"\u516E\u606F\u6295\u5F71 (3D)", L"Hologram (3D)", "scifi3d"},
+        {"hold_neon3d", kCmdHoldNeon3D, L"\u9713\u8679 HUD (3D)",        L"Neon HUD (3D)", "neon3d"},
+        {mousefx::hold_route::kTypeFluxFieldCpu, kCmdHoldFluxFieldCpu, L"\u78C1\u901A\u573A HUD CPU", L"FluxField HUD CPU"},
+        {"none",      kCmdHoldNone,     L"\u65E0",                    L"None"},
+    };
+    if (mousefx::hold_route::IsGpuHoldRouteEnabledForCurrentBuild()) {
+        n = std::size(gpuOpts);
+        return gpuOpts;
+    }
+    n = std::size(noGpuOpts);
+    return noGpuOpts;
 }
 
 inline const EffectOption* HoverMetadata(size_t& n) {

@@ -26,7 +26,7 @@ TrailEffect::TrailEffect(const std::string& themeName, const std::string& type, 
     params_ = config.trailParams;
     lineWidth_ = config.trail.lineWidth;
     computeProfile_ = trail_effect_adapter::BuildTrailProfileFromConfig(config, type_, durationMs_);
-    throttleProfile_ = trail_effect_adapter::ResolveTrailThrottleProfile();
+    throttleProfile_ = trail_effect_adapter::ResolveTrailThrottleProfile(type_);
 }
 
 TrailEffect::~TrailEffect() {
@@ -70,7 +70,6 @@ void TrailEffect::OnMouseMove(const ScreenPoint& pt) {
         lastEmitTickMs_,
         throttleProfile_);
     if (!emission.shouldEmit) {
-        lastPoint_ = pt;
         return;
     }
 
@@ -80,6 +79,8 @@ void TrailEffect::OnMouseMove(const ScreenPoint& pt) {
         emission.deltaY,
         type_,
         computeProfile_);
+    // Keep the anchor at the last emitted point so small moves can
+    // accumulate into visible segments instead of being discarded.
     lastPoint_ = pt;
     lastEmitTickMs_ = nowMs;
     if (!command.emit) {

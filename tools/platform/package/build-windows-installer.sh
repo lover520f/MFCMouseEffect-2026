@@ -13,8 +13,13 @@ Usage:
 Options:
   --output-dir <path>     Output directory for installer (default: Install/windows)
   --package-name <name>   Installer base filename without .exe (default: script default)
-  --skip-build            Skip rebuilding Windows Release|x64 project
+  --configuration <Release|Shipping>  Windows build/package configuration (default: Release)
+  --release               Alias for --configuration Release
+  --shipping              Alias for --configuration Shipping
+  --skip-build            Skip rebuilding the selected Windows x64 project
   --skip-webui-build      Accepted for CLI parity; currently no-op on Windows
+  --gpu                   Build/package the Windows GPU runtime
+  --no-gpu                Exclude Windows GPU runtime and do not package webgpu_dawn.dll
   -h, --help              Show this help
 EOF
 }
@@ -35,24 +40,6 @@ require_windows_host() {
         echo "this packaging script is Windows-only" >&2
         exit 1
     fi
-}
-
-find_msbuild() {
-    local candidates=(
-        "/c/Program Files/Microsoft Visual Studio/18/Professional/MSBuild/Current/Bin/amd64/MSBuild.exe"
-        "/c/Program Files/Microsoft Visual Studio/18/Professional/MSBuild/Current/Bin/MSBuild.exe"
-        "/c/Program Files/Microsoft Visual Studio/18/Insiders/MSBuild/Current/Bin/amd64/MSBuild.exe"
-        "/c/Program Files/Microsoft Visual Studio/18/Insiders/MSBuild/Current/Bin/MSBuild.exe"
-    )
-    local candidate
-    for candidate in "${candidates[@]}"; do
-        if [[ -x "$candidate" ]]; then
-            printf '%s\n' "$candidate"
-            return 0
-        fi
-    done
-    echo "MSBuild.exe not found in expected VS2026 locations" >&2
-    exit 1
 }
 
 find_iscc() {
@@ -81,8 +68,10 @@ find_iscc() {
 
 output_dir="$repo_root/Install/windows"
 package_name=""
+configuration="Release"
 skip_build=0
 skip_webui_build=0
+enable_windows_gpu_effects=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -96,12 +85,33 @@ while [[ $# -gt 0 ]]; do
         package_name="$2"
         shift 2
         ;;
+    --configuration)
+        [[ $# -ge 2 ]] || { echo "missing value for --configuration" >&2; exit 1; }
+        configuration="$2"
+        shift 2
+        ;;
+    --release)
+        configuration="Release"
+        shift
+        ;;
+    --shipping)
+        configuration="Shipping"
+        shift
+        ;;
     --skip-build)
         skip_build=1
         shift
         ;;
     --skip-webui-build)
         skip_webui_build=1
+        shift
+        ;;
+    --gpu)
+        enable_windows_gpu_effects=true
+        shift
+        ;;
+    --no-gpu)
+        enable_windows_gpu_effects=false
         shift
         ;;
     -h|--help)
@@ -115,7 +125,26 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+case "$configuration" in
+Release|Shipping)
+    ;;
+*)
+    echo "unsupported Windows packaging configuration: $configuration" >&2
+    exit 1
+    ;;
+esac
+
 require_windows_host
+
+if [[ -z "$package_name" && "$enable_windows_gpu_effects" == "true" ]]; then
+    if [[ "$configuration" == "Shipping" ]]; then
+        package_name="MFCMouseEffect-windows-x64-gpu-shipping-setup-1.3.1"
+    else
+        package_name="MFCMouseEffect-windows-x64-gpu-setup-1.3.1"
+    fi
+elif [[ -z "$package_name" && "$configuration" == "Shipping" ]]; then
+    package_name="MFCMouseEffect-windows-x64-shipping-setup-1.3.1"
+fi
 
 if [[ "$skip_webui_build" == "1" ]]; then
     echo "[info] --skip-webui-build is currently a no-op on Windows packaging; using existing generated WebUI assets" >&2
@@ -123,6 +152,7 @@ fi
 
 project_path="$repo_root/MFCMouseEffect/MFCMouseEffect.vcxproj"
 iss_script_path="$repo_root/Install/MFCMouseEffect.iss"
+build_script_path="$repo_root/tools/platform/build/build-windows-project.sh"
 
 if [[ ! -f "$project_path" ]]; then
     echo "missing project file: $project_path" >&2
@@ -132,24 +162,25 @@ if [[ ! -f "$iss_script_path" ]]; then
     echo "missing installer script: $iss_script_path" >&2
     exit 1
 fi
+if [[ ! -f "$build_script_path" ]]; then
+    echo "missing build script: $build_script_path" >&2
+    exit 1
+fi
 
 mkdir -p "$output_dir"
 
 if [[ "$skip_build" != "1" ]]; then
-    msbuild_exe="$(find_msbuild)"
-    MSYS2_ARG_CONV_EXCL='*' "$msbuild_exe" \
-        "$(cygpath -w "$project_path")" \
-        /t:Build \
-        /p:Configuration=Release \
-        /p:Platform=x64 \
-        /nologo \
-        /v:minimal
+    "$build_script_path" \
+        --configuration "$configuration" \
+        "--$([[ "$enable_windows_gpu_effects" == "true" ]] && echo gpu || echo no-gpu)"
 fi
 
 iscc_exe="$(find_iscc)"
 
 iscc_args=(
     "/O$(cygpath -w "$output_dir")"
+    "/DBuildConfiguration=$configuration"
+    "/DMfxEnableWindowsGpuEffects=$enable_windows_gpu_effects"
 )
 if [[ -n "$package_name" ]]; then
     iscc_args+=("/F$package_name")

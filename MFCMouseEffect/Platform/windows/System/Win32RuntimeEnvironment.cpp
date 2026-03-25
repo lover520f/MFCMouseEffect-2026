@@ -36,6 +36,12 @@ std::wstring GetPreferredConfigDirectoryW() {
 }
 
 RuntimeProbeResult ProbeDawnRuntimeOnce() {
+#if !defined(MFX_ENABLE_WINDOWS_GPU_EFFECTS) || !MFX_ENABLE_WINDOWS_GPU_EFFECTS
+    RuntimeProbeResult r{};
+    r.available = false;
+    r.reason = "dawn_runtime_disabled_by_build";
+    return r;
+#else
     const std::wstring exeDir = GetExecutableDirectoryW();
     const std::filesystem::path primary = std::filesystem::path(exeDir) / L"webgpu_dawn.dll";
     const std::filesystem::path fallback = std::filesystem::path(exeDir) / L"Runtime" / L"Dawn" / L"webgpu_dawn.dll";
@@ -70,6 +76,7 @@ RuntimeProbeResult ProbeDawnRuntimeOnce() {
     r.available = false;
     r.reason = "dawn_runtime_binary_missing_or_load_failed";
     return r;
+#endif
 }
 
 } // namespace mousefx::platform::windows

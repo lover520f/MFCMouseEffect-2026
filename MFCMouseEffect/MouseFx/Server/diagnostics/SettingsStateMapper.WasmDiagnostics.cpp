@@ -33,6 +33,7 @@ json BuildWasmState(const EffectConfig& cfg, const AppController* controller) {
             "scroll",
             "hold",
             "hover",
+            "cursor_decoration",
         };
         for (const char* channel : kEffectsChannels) {
             const wasm::WasmEffectHost* laneHost = controller->WasmEffectsHostForChannel(channel);
@@ -67,6 +68,7 @@ json BuildWasmState(const EffectConfig& cfg, const AppController* controller) {
     out["configured_manifest_path_scroll"] = cfg.wasm.manifestPathScroll;
     out["configured_manifest_path_hold"] = cfg.wasm.manifestPathHold;
     out["configured_manifest_path_hover"] = cfg.wasm.manifestPathHover;
+    out["configured_manifest_path_cursor_decoration"] = cfg.wasm.manifestPathCursorDecoration;
     out["configured_indicator_manifest_path"] = cfg.inputIndicator.wasmManifestPath;
     out["configured_catalog_root_path"] = cfg.wasm.catalogRootPath;
     out["configured_output_buffer_bytes"] = cfg.wasm.outputBufferBytes;
@@ -179,6 +181,7 @@ json BuildWasmState(const EffectConfig& cfg, const AppController* controller) {
         {"scroll", "plugin_loaded_scroll", "active_plugin_id_scroll", "active_plugin_name_scroll", "active_manifest_path_scroll", "active_wasm_path_scroll", "last_load_failure_stage_scroll", "last_load_failure_code_scroll", "last_error_scroll", "last_render_error_scroll"},
         {"hold", "plugin_loaded_hold", "active_plugin_id_hold", "active_plugin_name_hold", "active_manifest_path_hold", "active_wasm_path_hold", "last_load_failure_stage_hold", "last_load_failure_code_hold", "last_error_hold", "last_render_error_hold"},
         {"hover", "plugin_loaded_hover", "active_plugin_id_hover", "active_plugin_name_hover", "active_manifest_path_hover", "active_wasm_path_hover", "last_load_failure_stage_hover", "last_load_failure_code_hover", "last_error_hover", "last_render_error_hover"},
+        {"cursor_decoration", "plugin_loaded_cursor_decoration", "active_plugin_id_cursor_decoration", "active_plugin_name_cursor_decoration", "active_manifest_path_cursor_decoration", "active_wasm_path_cursor_decoration", "last_load_failure_stage_cursor_decoration", "last_load_failure_code_cursor_decoration", "last_error_cursor_decoration", "last_render_error_cursor_decoration"},
     };
     for (const auto& lane : kLaneMappings) {
         const wasm::WasmEffectHost* laneHost = controller->WasmEffectsHostForChannel(lane.channel);

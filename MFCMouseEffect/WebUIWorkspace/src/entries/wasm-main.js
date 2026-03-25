@@ -15,7 +15,6 @@ let currentState = normalizeWasmState({});
 let currentSchema = normalizeWasmSchema({});
 let currentI18n = {};
 let currentActionHandler = null;
-
 const bridge = createLazyMountBridge({
   mountId: 'wasm_settings_mount',
   initialProps: {

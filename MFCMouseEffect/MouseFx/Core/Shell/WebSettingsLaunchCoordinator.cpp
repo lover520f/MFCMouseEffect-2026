@@ -11,6 +11,8 @@ WebSettingsLaunchCoordinator::WebSettingsLaunchCoordinator(AppController* contro
     : controller_(controller) {
 }
 
+WebSettingsLaunchCoordinator::~WebSettingsLaunchCoordinator() = default;
+
 void WebSettingsLaunchCoordinator::ResetController(AppController* controller) {
     if (controller_ == controller) {
         return;

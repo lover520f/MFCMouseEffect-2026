@@ -230,8 +230,6 @@ void AppendSettingsSchemaCapabilitiesSections(const EffectConfig& /*config*/, js
             "reason",
             "degraded",
             "effects_suspended",
-            "effects_suspended_vm",
-            "effects_suspended_vm_check_interval_ms",
             "required_permissions",
             "notice"
         })}

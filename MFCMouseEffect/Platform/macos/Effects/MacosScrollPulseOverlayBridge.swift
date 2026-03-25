@@ -82,11 +82,12 @@ private func mfxCreateScaleFadeAnimationGroup(
     return group
 }
 
-private func mfxDirectionVector(horizontal: Bool, delta: Int32) -> CGVector {
-    if horizontal {
-        return delta >= 0 ? CGVector(dx: 1.0, dy: 0.0) : CGVector(dx: -1.0, dy: 0.0)
+private func mfxNormalizedDirection(dx: Double, dy: Double) -> CGVector {
+    let length = sqrt(dx * dx + dy * dy)
+    if length <= 0.0001 {
+        return CGVector(dx: 0.0, dy: -1.0)
     }
-    return delta >= 0 ? CGVector(dx: 0.0, dy: 1.0) : CGVector(dx: 0.0, dy: -1.0)
+    return CGVector(dx: dx / length, dy: dy / length)
 }
 
 private func mfxOffsetPoint(_ origin: CGPoint, direction: CGVector, distance: CGFloat) -> CGPoint {
@@ -494,8 +495,8 @@ private func mfxCreateScrollPulseOverlayOnMainThread(
     bodyHeight: Double,
     overlayX: Int32,
     overlayY: Int32,
-    horizontal: Bool,
-    delta: Int32,
+    directionDx: Double,
+    directionDy: Double,
     strengthLevel: Int32,
     intensity: Double,
     startRadiusPx: Double,
@@ -545,7 +546,7 @@ private func mfxCreateScrollPulseOverlayOnMainThread(
     } else {
         center = CGPoint(x: bodyRect.midX, y: bodyRect.midY)
     }
-    let direction = mfxDirectionVector(horizontal: horizontal, delta: delta)
+    let direction = mfxNormalizedDirection(dx: directionDx, dy: directionDy)
 
     let renderRoot = CALayer()
     renderRoot.frame = contentBounds
@@ -626,8 +627,8 @@ public func mfx_macos_scroll_pulse_overlay_create_v1(
     _ bodyHeight: Double,
     _ overlayX: Int32,
     _ overlayY: Int32,
-    _ horizontal: Int32,
-    _ delta: Int32,
+    _ directionDx: Double,
+    _ directionDy: Double,
     _ strengthLevel: Int32,
     _ intensity: Double,
     _ startRadiusPx: Double,
@@ -640,7 +641,6 @@ public func mfx_macos_scroll_pulse_overlay_create_v1(
     _ baseOpacity: Double,
     _ durationSec: Double
 ) -> UnsafeMutableRawPointer? {
-    let horizontalEnabled = (horizontal != 0)
     let helixEnabled = (helixMode != 0)
     let twinkleEnabled = (twinkleMode != 0)
 
@@ -657,8 +657,8 @@ public func mfx_macos_scroll_pulse_overlay_create_v1(
                     bodyHeight: bodyHeight,
                     overlayX: overlayX,
                     overlayY: overlayY,
-                    horizontal: horizontalEnabled,
-                    delta: delta,
+                    directionDx: directionDx,
+                    directionDy: directionDy,
                     strengthLevel: strengthLevel,
                     intensity: intensity,
                     startRadiusPx: startRadiusPx,
@@ -690,8 +690,8 @@ public func mfx_macos_scroll_pulse_overlay_create_v1(
                     bodyHeight: bodyHeight,
                     overlayX: overlayX,
                     overlayY: overlayY,
-                    horizontal: horizontalEnabled,
-                    delta: delta,
+                    directionDx: directionDx,
+                    directionDy: directionDy,
                     strengthLevel: strengthLevel,
                     intensity: intensity,
                     startRadiusPx: startRadiusPx,

@@ -80,6 +80,12 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/autom
 # skips core/WebUI rebuild
 ./mfx run-no-build
 ./mfx run-no-build --seconds 30
+# Windows default build entrypoint
+./mfx build
+# Windows shipping build
+./mfx build --shipping
+# Windows full GPU build
+./mfx build --gpu
 # full build + native package for current host
 # macOS: .app/zip/dmg
 # Windows: installer exe
@@ -106,6 +112,9 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/autom
 
 Windows terminal wrapper:
 ```powershell
+.\mfx.cmd build
+.\mfx.cmd build --shipping
+.\mfx.cmd build --gpu
 .\mfx.cmd package
 .\mfx.cmd package-no-build
 ```

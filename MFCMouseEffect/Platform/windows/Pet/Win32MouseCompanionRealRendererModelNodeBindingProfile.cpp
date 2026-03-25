@@ -12,30 +12,29 @@ namespace {
 
 std::string ResolveBindingState(
     const Win32MouseCompanionRealRendererSceneRuntime& runtime) {
-    const std::string& graphState = runtime.modelNodeGraphProfile.graphState;
-    if (graphState == "channel_bound_preview") {
+    const std::string& bindState = runtime.modelAssetNodeBindProfile.bindState;
+    if (bindState == "model_asset_node_bind_bound") {
         return "binding_ready";
     }
-    if (graphState == "channel_stub_ready") {
+    if (bindState == "model_asset_node_bind_pose_ready") {
         return "binding_stub_ready";
     }
-    if (graphState == "scaffold_ready") {
+    if (bindState == "model_asset_node_bind_ready" ||
+        bindState == "model_asset_node_bind_partial") {
         return "binding_scaffold";
     }
     return "preview_only";
 }
 
 float ResolveBindingWeight(
+    float assetBindWeight,
     const std::string& adapterMode,
     float poseUnboundScale,
     float poseBoundScale) {
-    if (adapterMode == "pose_bound") {
-        return poseBoundScale;
-    }
-    if (adapterMode == "pose_unbound") {
-        return poseUnboundScale;
-    }
-    return 0.0f;
+    const float modeWeight =
+        adapterMode == "pose_bound" ? poseBoundScale :
+        (adapterMode == "pose_unbound" ? poseUnboundScale : 0.0f);
+    return assetBindWeight * modeWeight;
 }
 
 Win32MouseCompanionRealRendererModelNodeBindingEntry BuildBindingEntry(
@@ -103,21 +102,22 @@ BuildWin32MouseCompanionRealRendererModelNodeBindingProfile(
     profile.entryCount = 5;
 
     const std::string& adapterMode = runtime.sceneRuntimeAdapterMode;
+    const float assetBindWeight = runtime.modelAssetNodeBindProfile.bindWeight;
     profile.bodyEntry = BuildBindingEntry(
         runtime.modelNodeGraphProfile.bodyNode,
-        ResolveBindingWeight(adapterMode, 0.72f, 1.00f));
+        ResolveBindingWeight(assetBindWeight, adapterMode, 0.72f, 1.00f));
     profile.headEntry = BuildBindingEntry(
         runtime.modelNodeGraphProfile.headNode,
-        ResolveBindingWeight(adapterMode, 0.78f, 1.04f));
+        ResolveBindingWeight(assetBindWeight, adapterMode, 0.78f, 1.04f));
     profile.appendageEntry = BuildBindingEntry(
         runtime.modelNodeGraphProfile.appendageNode,
-        ResolveBindingWeight(adapterMode, 0.84f, 1.08f));
+        ResolveBindingWeight(assetBindWeight, adapterMode, 0.84f, 1.08f));
     profile.overlayEntry = BuildBindingEntry(
         runtime.modelNodeGraphProfile.overlayNode,
-        ResolveBindingWeight(adapterMode, 0.68f, 0.96f));
+        ResolveBindingWeight(assetBindWeight, adapterMode, 0.68f, 0.96f));
     profile.groundingEntry = BuildBindingEntry(
         runtime.modelNodeGraphProfile.groundingNode,
-        ResolveBindingWeight(adapterMode, 0.70f, 0.92f));
+        ResolveBindingWeight(assetBindWeight, adapterMode, 0.70f, 0.92f));
 
     profile.boundEntryCount = CountBoundEntries(profile);
     profile.brief = BuildBindingBrief(
@@ -127,5 +127,4 @@ BuildWin32MouseCompanionRealRendererModelNodeBindingProfile(
     profile.weightBrief = BuildBindingWeightBrief(profile);
     return profile;
 }
-
 } // namespace mousefx::windows

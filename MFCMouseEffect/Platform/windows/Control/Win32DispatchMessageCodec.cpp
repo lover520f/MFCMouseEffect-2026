@@ -32,7 +32,8 @@ DispatchMessage Win32DispatchMessageCodec::Decode(
         break;
     case WM_MFX_SCROLL:
         out.kind = DispatchMessageKind::Scroll;
-        out.delta = static_cast<int16_t>(wParam);
+        out.delta = UnpackScrollDispatchDelta(wParam);
+        out.scrollHorizontal = (UnpackScrollDispatchFlags(wParam) & kScrollDispatchFlagHorizontal) != 0;
         out.x = GET_X_LPARAM(static_cast<LPARAM>(lParam));
         out.y = GET_Y_LPARAM(static_cast<LPARAM>(lParam));
         break;

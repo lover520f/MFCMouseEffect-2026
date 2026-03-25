@@ -28,6 +28,15 @@ public:
     virtual void OnClick(const ClickEvent& ev) = 0;
     virtual void OnScroll(const ScrollEvent& ev) = 0;
     virtual void OnKey(const KeyEvent& ev) = 0;
+    virtual void OnMove(const ScreenPoint& pt) {
+        (void)pt;
+    }
+    virtual void SetCursorDecorationNativeSuppressed(bool suppressed) {
+        (void)suppressed;
+    }
+    virtual void SetCursorDecorationBlockedByAppBlacklist(bool blocked) {
+        (void)blocked;
+    }
 
     virtual bool ReadDebugState(InputIndicatorDebugState* outState) const {
         (void)outState;

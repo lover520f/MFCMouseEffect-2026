@@ -42,6 +42,8 @@
 
   let selectedTab = normalizeTab(activeTab);
   let lastActiveTabProp = activeTab;
+  let localCursorDecoration = {};
+  let lastCursorDecorationProp = null;
 
   // Sync local UI state only when parent prop actually changes.
   $: if (activeTab !== lastActiveTabProp) {
@@ -65,11 +67,23 @@
   $: isPluginTab = selectedTab === TAB_PLUGIN;
 
   function handleActiveEffectChange(event) {
-    dispatch("activeChange", event?.detail || {});
+    const detail = event?.detail || {};
+    if (detail.cursor_decoration) {
+      localCursorDecoration = detail.cursor_decoration;
+    }
+    dispatch("activeChange", {
+      ...detail,
+      cursor_decoration: localCursorDecoration,
+    });
   }
 
   function handleSizeScaleChange(event) {
     dispatch("sizeChange", event?.detail || {});
+  }
+
+  function handleCursorDecorationConfigChange(event) {
+    localCursorDecoration = event?.detail || {};
+    dispatch("cursorDecorationChange", localCursorDecoration);
   }
 
   function handleConflictPolicyChange(event) {
@@ -88,6 +102,8 @@
       scrollOptions: value.scrollOptions || [],
       holdOptions: value.holdOptions || [],
       hoverOptions: value.hoverOptions || [],
+      cursorDecorationOptions: value.cursorDecorationOptions || [],
+      cursorDecoration: value.cursorDecoration || {},
       effectCapabilities: value.effectCapabilities || {},
       active: value.active || {},
       effectsProfile: value.effectsProfile || {},
@@ -101,6 +117,10 @@
   }
 
   $: normalizedEffectProps = normalizeEffectProps(effectProps);
+  $: if (normalizedEffectProps.cursorDecoration !== lastCursorDecorationProp) {
+    lastCursorDecorationProp = normalizedEffectProps.cursorDecoration;
+    localCursorDecoration = normalizedEffectProps.cursorDecoration || {};
+  }
 </script>
 
 <div class="effects-subtabs">
@@ -151,7 +171,7 @@
       data-i18n="tab_effect_size"
       on:click={() => selectTab(TAB_SIZE)}
     >
-      Effect Size
+      Effect Config
     </button>
     <button
       type="button"
@@ -200,6 +220,8 @@
       scrollOptions={normalizedEffectProps.scrollOptions}
       holdOptions={normalizedEffectProps.holdOptions}
       hoverOptions={normalizedEffectProps.hoverOptions}
+      cursorDecorationOptions={normalizedEffectProps.cursorDecorationOptions}
+      cursorDecoration={localCursorDecoration}
       effectCapabilities={normalizedEffectProps.effectCapabilities}
       active={normalizedEffectProps.active}
       effectsProfile={normalizedEffectProps.effectsProfile}
@@ -234,7 +256,9 @@
   >
     <EffectSizeFields
       scales={normalizedEffectProps.effectSizeScales}
+      cursorDecoration={localCursorDecoration}
       on:change={handleSizeScaleChange}
+      on:cursorDecorationChange={handleCursorDecorationConfigChange}
     />
   </div>
 
@@ -270,7 +294,11 @@
     style:display={isPluginTab ? "" : "none"}
     aria-label="effect-plugin"
   >
-    <div id="wasm_settings_mount"></div>
+    <div class="effects-plugin-stack">
+      <section class="effects-plugin-card">
+        <div id="wasm_settings_mount"></div>
+      </section>
+    </div>
   </div>
 </div>
 
@@ -278,6 +306,20 @@
   .effects-subtabs {
     display: grid;
     gap: 14px;
+  }
+
+  .effects-plugin-stack {
+    display: grid;
+    gap: 16px;
+  }
+
+  .effects-plugin-card {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid rgba(160, 185, 215, 0.3);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.58);
   }
 
   .effects-subtabs-bar {

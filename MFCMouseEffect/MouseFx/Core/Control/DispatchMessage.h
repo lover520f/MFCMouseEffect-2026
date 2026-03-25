@@ -29,6 +29,7 @@ struct DispatchMessage {
     int32_t x = 0;
     int32_t y = 0;
     int32_t delta = 0;
+    bool scrollHorizontal = false;
     uint32_t button = 0;
     uint32_t timerId = 0;
 

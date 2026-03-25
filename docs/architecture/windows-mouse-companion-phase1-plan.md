@@ -211,9 +211,9 @@
   - preview core frame geometry now has its own `Win32MouseCompanionRealRendererFrameBuilder` seam, so the remaining body/head/shadow/pedestal layout no longer keeps the top-level scene builder as a catch-all
   - preview builders now share `Win32MouseCompanionRealRendererLayoutMetrics`, so body/head sizing rules are centralized instead of being re-passed as loose float parameters between builder seams
   - preview builders now also share `Win32MouseCompanionRealRendererStyleProfile`, and the active frame/palette/appendage/face/adornment/overlay seams now consume it for ratio/scale defaults, face-expression anchors, accessory geometry offsets, and frame/palette tuning values so visual tuning no longer requires editing the same constants in multiple files
-  - default diagnostics should now show `real` as `unavailable(rollout_disabled)` instead of `requirements_unmet`
-  - current `real_renderer_unmet_requirements` should be empty; rollout is now controlled by the hidden test gate `MFX_WIN32_MOUSE_COMPANION_REAL_RENDERER_ENABLE=1`
-  - `real_renderer_preview` now acts as the current bring-up truth view for rollout gate state, preview-active state, current action lane, pose lane, and asset-lane readiness
+  - historical note only: the native Windows real-renderer bring-up described below was rolled back from mainline on 2026-03-24, so these rollout-gate diagnostics should not be treated as current delivery targets
+  - if that experimental seam is ever revisited on a separate branch, `real_renderer_unmet_requirements` should still be expected to stay empty and rollout would again be gated by `MFX_WIN32_MOUSE_COMPANION_REAL_RENDERER_ENABLE=1`
+  - `real_renderer_preview` is now an archived experimental truth view rather than an active product requirement
   - backend-owned runtime diagnostics now travel through `renderer -> window -> visual host -> AppController -> settings/test diagnostics`, so future renderer swaps do not need a second controller-side inference path
   - those runtime diagnostics now also include render-proof counters/timestamps/surface-size fields, making it possible to verify that a dispatched test event caused a fresh frame instead of only changing logical state
   - the test mouse-companion route now returns explicit `renderer_runtime_before / after / delta` payloads, so renderer proof no longer requires two manual snapshot requests and client-side diffing

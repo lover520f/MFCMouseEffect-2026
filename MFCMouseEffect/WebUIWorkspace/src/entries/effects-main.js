@@ -1,4 +1,8 @@
 import EffectsSectionTabs from '../effects/EffectsSectionTabs.svelte';
+import {
+  emitCursorDecorationState,
+  subscribeCursorDecorationChange,
+} from '../effects/cursor-decoration-bridge.js';
 import { normalizeEffectsProfile } from '../effects/profile-model.js';
 import { normalizeRuntimePlatform } from '../automation/platform.js';
 import { createLazyMountBridge } from './lazy-mount.js';
@@ -12,6 +16,13 @@ let currentActiveState = {
   scroll: '',
   hold: '',
   hover: '',
+};
+let currentCursorDecoration = {
+  enabled: false,
+  plugin_id: 'focus_ring',
+  color_hex: '#ff5a5a',
+  size_px: 22,
+  alpha_percent: 82,
 };
 let currentSizeScales = {
   click: 100,
@@ -36,6 +47,7 @@ let currentTrailOptions = [];
 let currentScrollOptions = [];
 let currentHoldOptions = [];
 let currentHoverOptions = [];
+let currentCursorDecorationOptions = [];
 let currentEffectConflictPolicy = {
   hold_move_policy: 'hold_only',
 };
@@ -111,6 +123,21 @@ function normalizeActive(input) {
     scroll: value.scroll || '',
     hold: value.hold || '',
     hover: value.hover || '',
+  };
+}
+
+function normalizeCursorDecoration(input) {
+  const value = input || {};
+  const toSafeNumber = (candidate, fallback) => {
+    const parsed = Number(candidate);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+  return {
+    enabled: value.enabled === true,
+    plugin_id: `${value.plugin_id || 'focus_ring'}`.trim() || 'focus_ring',
+    color_hex: `${value.color_hex || '#ff5a5a'}`.trim() || '#ff5a5a',
+    size_px: toSafeNumber(value.size_px, 22),
+    alpha_percent: toSafeNumber(value.alpha_percent, 82),
   };
 }
 
@@ -196,6 +223,8 @@ const bridge = createLazyMountBridge({
       scrollOptions: [],
       holdOptions: [],
       hoverOptions: [],
+      cursorDecorationOptions: [],
+      cursorDecoration: currentCursorDecoration,
       effectCapabilities: currentCapabilities,
       active: currentActiveState,
       effectSizeScales: currentSizeScales,
@@ -214,7 +243,14 @@ const bridge = createLazyMountBridge({
     });
     instance.$on('activeChange', (event) => {
       const detail = event?.detail || {};
-      currentActiveState = normalizeActive(detail);
+      currentActiveState = normalizeActive(detail.active || detail);
+      currentCursorDecoration = normalizeCursorDecoration(
+        detail.cursor_decoration || currentCursorDecoration,
+      );
+    });
+    instance.$on('cursorDecorationChange', (event) => {
+      currentCursorDecoration = normalizeCursorDecoration(event?.detail || {});
+      syncBridgeProps();
     });
     instance.$on('sizeChange', (event) => {
       const detail = event?.detail || {};
@@ -233,29 +269,44 @@ const bridge = createLazyMountBridge({
       const localBlacklistApps = normalizeEffectsBlacklistApps(detail.effects_blacklist_apps);
       currentEffectsBlacklistApps = localBlacklistApps;
       pendingEffectsBlacklistApps = localBlacklistApps;
-      bridge.updateProps({
-        activeTab: currentActiveTab,
-        effectProps: {
-          clickOptions: currentClickOptions,
-          trailOptions: currentTrailOptions,
-          scrollOptions: currentScrollOptions,
-          holdOptions: currentHoldOptions,
-          hoverOptions: currentHoverOptions,
-          effectCapabilities: currentCapabilities,
-          active: currentActiveState,
-          effectSizeScales: currentSizeScales,
-          effectConflictPolicy: currentEffectConflictPolicy,
-          effectConflictPolicyOptions: currentEffectConflictPolicyOptions,
-          effectsBlacklistApps: currentEffectsBlacklistApps,
-          platform: currentRuntimePlatform,
-          effectsProfile: currentEffectsProfile,
-          showEffectsProfile,
-        },
-      });
+      syncBridgeProps();
     });
     return instance;
   },
 });
+
+subscribeCursorDecorationChange((detail) => {
+  currentCursorDecoration = normalizeCursorDecoration(detail || {});
+  syncBridgeProps();
+});
+
+function syncBridgeProps() {
+  emitCursorDecorationState({
+    decoration: currentCursorDecoration,
+    pluginOptions: currentCursorDecorationOptions,
+  });
+  bridge.updateProps({
+    activeTab: currentActiveTab,
+    effectProps: {
+      clickOptions: currentClickOptions,
+      trailOptions: currentTrailOptions,
+      scrollOptions: currentScrollOptions,
+      holdOptions: currentHoldOptions,
+      hoverOptions: currentHoverOptions,
+      cursorDecorationOptions: currentCursorDecorationOptions,
+      cursorDecoration: currentCursorDecoration,
+      effectCapabilities: currentCapabilities,
+      active: currentActiveState,
+      effectSizeScales: currentSizeScales,
+      effectConflictPolicy: currentEffectConflictPolicy,
+      effectConflictPolicyOptions: currentEffectConflictPolicyOptions,
+      effectsBlacklistApps: currentEffectsBlacklistApps,
+      platform: currentRuntimePlatform,
+      effectsProfile: currentEffectsProfile,
+      showEffectsProfile,
+    },
+  });
+}
 
 function render(payload) {
   const schema = payload?.schema || {};
@@ -288,30 +339,15 @@ function render(payload) {
   currentScrollOptions = schema.effects?.scroll || [];
   currentHoldOptions = schema.effects?.hold || [];
   currentHoverOptions = schema.effects?.hover || [];
-  bridge.updateProps({
-    activeTab: currentActiveTab,
-    effectProps: {
-      clickOptions: currentClickOptions,
-      trailOptions: currentTrailOptions,
-      scrollOptions: currentScrollOptions,
-      holdOptions: currentHoldOptions,
-      hoverOptions: currentHoverOptions,
-      effectCapabilities,
-      active,
-      effectSizeScales,
-      effectConflictPolicy,
-      effectConflictPolicyOptions,
-      effectsBlacklistApps: effectiveBlacklistApps,
-      platform: runtimePlatform,
-      effectsProfile,
-      showEffectsProfile,
-    },
-  });
+  currentCursorDecorationOptions = schema.cursor_decoration?.plugins || [];
+  currentCursorDecoration = normalizeCursorDecoration(appState.cursor_decoration || {});
+  syncBridgeProps();
 }
 
 function read() {
   return {
     active: normalizeActive(currentActiveState),
+    cursor_decoration: normalizeCursorDecoration(currentCursorDecoration),
     effect_size_scales: normalizeEffectSizeScales(currentSizeScales),
     effect_conflict_policy: normalizeEffectConflictPolicy(currentEffectConflictPolicy),
     effects_blacklist_apps: normalizeEffectsBlacklistApps(currentEffectsBlacklistApps),
@@ -321,25 +357,7 @@ function read() {
 function setActiveTab(tabId) {
   currentActiveTab = normalizeActiveTab(tabId);
   writeEffectsUiState({ activeTab: currentActiveTab });
-  bridge.updateProps({
-    activeTab: currentActiveTab,
-    effectProps: {
-      clickOptions: currentClickOptions,
-      trailOptions: currentTrailOptions,
-      scrollOptions: currentScrollOptions,
-      holdOptions: currentHoldOptions,
-      hoverOptions: currentHoverOptions,
-      effectCapabilities: currentCapabilities,
-      active: currentActiveState,
-      effectSizeScales: currentSizeScales,
-      effectConflictPolicy: currentEffectConflictPolicy,
-      effectConflictPolicyOptions: currentEffectConflictPolicyOptions,
-      effectsBlacklistApps: currentEffectsBlacklistApps,
-      platform: currentRuntimePlatform,
-      effectsProfile: currentEffectsProfile,
-      showEffectsProfile,
-    },
-  });
+  syncBridgeProps();
 }
 
 window.MfxEffectsSection = {

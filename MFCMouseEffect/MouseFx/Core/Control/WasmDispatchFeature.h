@@ -36,6 +36,12 @@ private:
     bool IsRouteActive(const AppController& controller, const char* channel) const;
     bool TryInvokeAndRender(
         AppController& controller,
+        const char* channel,
+        const wasm::EventInvokeInput& input,
+        bool* outRenderedByWasm,
+        bool* outInvokeOk);
+    bool TryInvokeAndRender(
+        AppController& controller,
         const wasm::EventInvokeInput& input,
         bool* outRenderedByWasm,
         bool* outInvokeOk);

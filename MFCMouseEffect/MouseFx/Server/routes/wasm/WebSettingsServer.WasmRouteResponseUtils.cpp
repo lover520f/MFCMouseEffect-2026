@@ -34,6 +34,7 @@ json BuildWasmResponse(AppController* controller, bool ok) {
     body["configured_manifest_path_scroll"] = cfg.wasm.manifestPathScroll;
     body["configured_manifest_path_hold"] = cfg.wasm.manifestPathHold;
     body["configured_manifest_path_hover"] = cfg.wasm.manifestPathHover;
+    body["configured_manifest_path_cursor_decoration"] = cfg.wasm.manifestPathCursorDecoration;
     body["configured_catalog_root_path"] = cfg.wasm.catalogRootPath;
     body["configured_output_buffer_bytes"] = cfg.wasm.outputBufferBytes;
     body["configured_max_commands"] = cfg.wasm.maxCommands;

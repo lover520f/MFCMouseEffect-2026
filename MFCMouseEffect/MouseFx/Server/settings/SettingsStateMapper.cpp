@@ -21,6 +21,7 @@ std::string BuildSettingsStateJson(const EffectConfig& cfg, const AppController*
     json out = json::object();
     AppendBaseSettingsState(cfg, &out);
 
+#if !defined(MFX_SHIPPING_BUILD)
     const json routeStatus = ReadGpuRouteStatusSnapshot();
     if (routeStatus.is_object()) {
         out["gpu_route_status"] = routeStatus;
@@ -42,6 +43,7 @@ std::string BuildSettingsStateJson(const EffectConfig& cfg, const AppController*
     if (mouseCompanionRuntimeState.is_object() && !mouseCompanionRuntimeState.empty()) {
         out["mouse_companion_runtime"] = mouseCompanionRuntimeState;
     }
+#endif
 
     const json wasmState = BuildWasmState(cfg, controller);
     if (wasmState.is_object() && !wasmState.empty()) {

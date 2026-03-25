@@ -15,6 +15,7 @@ void MacosInputIndicatorOverlay::Hide() {
     displayGeneration_.fetch_add(1, std::memory_order_acq_rel);
     macos_input_indicator::RunOnMainThreadAsync(^{
       macos_input_indicator_style::HidePanel(panel_);
+      macos_input_indicator_style::HideDecorationPanel(decorationPanel_);
     });
 #endif
 }

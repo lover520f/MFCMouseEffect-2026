@@ -19,6 +19,7 @@ struct WebSettingsLaunchResult {
 class WebSettingsLaunchCoordinator final {
 public:
     explicit WebSettingsLaunchCoordinator(AppController* controller = nullptr);
+    ~WebSettingsLaunchCoordinator();
 
     void ResetController(AppController* controller);
     void Stop();

@@ -2,18 +2,16 @@
 
 #include "Platform/PlatformSystemServicesFactory.h"
 #include "Platform/PlatformTarget.h"
+#include "MouseFx/Core/System/NullForegroundSuppressionService.h"
 
 #if MFX_PLATFORM_WINDOWS
 #include "Platform/windows/System/Win32ForegroundProcessService.h"
 #include "Platform/windows/System/Win32MonotonicClockService.h"
-#include "Platform/windows/System/Win32VmForegroundSuppressionService.h"
 #elif MFX_PLATFORM_MACOS
 #include "MouseFx/Core/System/StdMonotonicClockService.h"
 #include "Platform/macos/System/MacosForegroundProcessService.h"
-#include "Platform/macos/System/MacosVmForegroundSuppressionService.h"
 #else
 #include "MouseFx/Core/System/NullForegroundProcessService.h"
-#include "MouseFx/Core/System/NullForegroundSuppressionService.h"
 #include "MouseFx/Core/System/StdMonotonicClockService.h"
 #endif
 
@@ -38,13 +36,7 @@ std::unique_ptr<IForegroundProcessService> CreateForegroundProcessService() {
 }
 
 std::unique_ptr<IForegroundSuppressionService> CreateForegroundSuppressionService() {
-#if MFX_PLATFORM_WINDOWS
-    return std::make_unique<Win32VmForegroundSuppressionService>();
-#elif MFX_PLATFORM_MACOS
-    return std::make_unique<MacosVmForegroundSuppressionService>();
-#else
     return std::make_unique<NullForegroundSuppressionService>();
-#endif
 }
 
 } // namespace mousefx::platform

@@ -44,6 +44,8 @@ void ShowScrollPulseOverlayOnMain(
     }
     (void)themeName;
     const ScrollPulseRenderPlan plan = BuildScrollPulseRenderPlan(command);
+    const ScrollEffectDirectionVector direction =
+        ResolveScrollDirectionVector(command.horizontal, command.delta);
     void* windowHandle = mfx_macos_scroll_pulse_overlay_create_v1(
         static_cast<double>(plan.frame.origin.x),
         static_cast<double>(plan.frame.origin.y),
@@ -54,8 +56,8 @@ void ShowScrollPulseOverlayOnMain(
         static_cast<double>(plan.bodyRect.size.height),
         command.overlayPoint.x,
         command.overlayPoint.y,
-        command.horizontal ? 1 : 0,
-        command.delta,
+        direction.dx,
+        direction.dy,
         command.strengthLevel,
         command.intensity,
         command.startRadiusPx,

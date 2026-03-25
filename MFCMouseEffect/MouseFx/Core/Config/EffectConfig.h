@@ -164,6 +164,18 @@ struct MouseCompanionConfig {
 
 // Configuration for input action indicator (mouse/keyboard overlay).
 struct InputIndicatorConfig {
+    struct CursorDecorationConfig {
+        bool enabled = false;
+        // Built-in plugin id:
+        // "focus_ring" | "signal_ring" | "soft_orb" | "halo_orb"
+        // legacy aliases "ring" and "orb" remain accepted during config migration.
+        std::string pluginId = "focus_ring";
+        // Hex RGB color such as "#ff5a5a".
+        std::string colorHex = "#ff5a5a";
+        int sizePx = 22;
+        int alphaPercent = 82;
+    };
+
     bool enabled = true;
     bool keyboardEnabled = true;
     // Renderer backend: "native" | "wasm".
@@ -196,6 +208,7 @@ struct InputIndicatorConfig {
 
     // Per-monitor overrides (monitorId -> {enabled, x, y})
     std::map<std::string, PerMonitorPosOverride> perMonitorOverrides;
+    CursorDecorationConfig cursorDecoration;
 };
 
 struct AutomationKeyBinding {
@@ -269,6 +282,7 @@ struct WasmConfig {
     std::string manifestPathScroll;
     std::string manifestPathHold;
     std::string manifestPathHover;
+    std::string manifestPathCursorDecoration;
     // Optional extra catalog root path (UTF-8 path string) for plugin discovery.
     std::string catalogRootPath;
     // WASM execution budget policy.

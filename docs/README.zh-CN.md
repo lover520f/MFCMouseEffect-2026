@@ -81,6 +81,12 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/autom
 # 跳过 core/WebUI 编译
 ./mfx run-no-build
 ./mfx run-no-build --seconds 30
+# Windows 默认编译入口
+./mfx build
+# Windows 最小发行编译
+./mfx build --shipping
+# Windows 完整 GPU 编译
+./mfx build --gpu
 # 完整编译后打包当前宿主平台原生产物
 # macOS: .app + zip + dmg
 # Windows: installer exe
@@ -107,6 +113,9 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/autom
 
 Windows 终端包装器：
 ```powershell
+.\mfx.cmd build
+.\mfx.cmd build --shipping
+.\mfx.cmd build --gpu
 .\mfx.cmd package
 .\mfx.cmd package-no-build
 ```

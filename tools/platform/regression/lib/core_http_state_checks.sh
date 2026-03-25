@@ -249,8 +249,6 @@ _mfx_core_http_run_state_checks() {
     mfx_assert_file_contains "$tmp_dir/state.out" "\"runtime_theme_count\":" "core state theme catalog runtime count"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"external_theme_count\":" "core state theme catalog external count"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"rejected_external_theme_files\":" "core state theme catalog rejected count"
-    mfx_assert_file_contains "$tmp_dir/state.out" "\"effects_suspended_vm\":" "core state input_capture vm suppression field"
-    mfx_assert_file_contains "$tmp_dir/state.out" "\"effects_suspended_vm_check_interval_ms\":" "core state input_capture vm suppression interval field"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"wasm\":" "core state wasm section"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"effects_runtime\":" "core state effects_runtime section"
     mfx_assert_file_contains "$tmp_dir/state.out" "\"effects_profile\":" "core state effects_profile section"
@@ -384,8 +382,6 @@ _mfx_core_http_run_state_checks() {
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"runtime_theme_count\":" "core schema theme catalog runtime count"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"folder_picker_supported\":" "core schema theme catalog folder picker support"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"input_capture\":" "core schema input_capture section"
-    mfx_assert_file_contains "$tmp_dir/schema.out" "\"effects_suspended_vm\"" "core schema input_capture vm suppression key"
-    mfx_assert_file_contains "$tmp_dir/schema.out" "\"effects_suspended_vm_check_interval_ms\"" "core schema input_capture vm suppression interval key"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"lifetime_invoke_calls\"" "core schema wasm lifetime invoke key"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"lifetime_render_dispatches\"" "core schema wasm lifetime render key"
     mfx_assert_file_contains "$tmp_dir/schema.out" "\"lifetime_throttled_render_commands\"" "core schema wasm lifetime throttled key"
@@ -482,7 +478,6 @@ _mfx_core_http_run_state_checks() {
     local schema_wasm_retained_sprite_emitter
     local schema_wasm_retained_particle_emitter
     local schema_wasm_retained_ribbon_trail
-    _mfx_core_http_read_json_bool "$tmp_dir/state.out" "input_capture.effects_suspended_vm" >/dev/null
     state_wasm_invoke_supported="$(_mfx_core_http_read_json_bool "$tmp_dir/state.out" "wasm.invoke_supported")"
     state_wasm_render_supported="$(_mfx_core_http_read_json_bool "$tmp_dir/state.out" "wasm.render_supported")"
     schema_wasm_invoke="$(_mfx_core_http_read_json_bool "$tmp_dir/schema.out" "capabilities.wasm.invoke")"

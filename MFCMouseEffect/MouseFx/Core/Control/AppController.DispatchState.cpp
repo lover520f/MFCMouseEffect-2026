@@ -1215,8 +1215,10 @@ void AppController::ResetPetDispatchRuntimeState() {
         mouseCompanionRuntimeStatus_.rendererRuntimeActionIntensity = 0.0f;
         mouseCompanionRuntimeStatus_.rendererRuntimeReactiveActionIntensity = 0.0f;
         mouseCompanionRuntimeStatus_.rendererRuntimePoseFrameAvailable = false;
+        #if !defined(MFX_SHIPPING_BUILD)
         mouseCompanionRuntimeStatus_.rendererRuntimeSurfaceWidth = 0;
         mouseCompanionRuntimeStatus_.rendererRuntimeSurfaceHeight = 0;
+        #endif
         mouseCompanionRuntimeStatus_.clickStreak = 0;
         mouseCompanionRuntimeStatus_.clickStreakTintAmount = 0.0f;
     }

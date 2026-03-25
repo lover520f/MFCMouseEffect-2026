@@ -24,7 +24,7 @@ enum class EffectCategory : uint8_t {
 // Scroll event data
 struct ScrollEvent {
     ScreenPoint pt;  // Mouse position
-    int delta;      // Scroll amount (positive = up, negative = down)
+    int delta;      // Scroll amount (vertical: positive = up, horizontal: positive = right)
     bool horizontal;// True if horizontal scroll
 };
 

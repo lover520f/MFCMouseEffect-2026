@@ -407,8 +407,9 @@ void BuildWin32MouseCompanionRealRendererAppendages(
     scene.appendageAnchor = Gdiplus::PointF(
         (appendageMinX + appendageMaxX) * 0.5f,
         (appendageMinY + appendageMaxY) * 0.5f);
-    scene.appendageAnchorScale =
-        assetTransform.appendageEntry.resolved ? assetTransform.appendageEntry.anchorScale : 1.0f;
+    scene.appendageAnchorScale = runtime.assetNodeTargetResolverProfile.appendageEntry.resolved
+        ? runtime.assetNodeTargetResolverProfile.appendageEntry.resolvedScale
+        : 1.0f;
 }
 
 } // namespace mousefx::windows

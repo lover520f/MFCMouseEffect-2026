@@ -10,6 +10,7 @@ inline constexpr const char kManifestPathTrail[] = "manifest_path_trail";
 inline constexpr const char kManifestPathScroll[] = "manifest_path_scroll";
 inline constexpr const char kManifestPathHold[] = "manifest_path_hold";
 inline constexpr const char kManifestPathHover[] = "manifest_path_hover";
+inline constexpr const char kManifestPathCursorDecoration[] = "manifest_path_cursor_decoration";
 inline constexpr const char kCatalogRootPath[] = "catalog_root_path";
 inline constexpr const char kOutputBufferBytes[] = "output_buffer_bytes";
 inline constexpr const char kMaxCommands[] = "max_commands";

@@ -549,6 +549,84 @@
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelSceneAdapterProfile.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSourceProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetManifestProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetCatalogProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetBindingTableProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetLoadProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetDecodeProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetResidencyProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetInstanceProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetActivationProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSessionProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetBindReadyProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetHandleProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSceneHookProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSceneBindingProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeAttachProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeLiftProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeBindProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeResolveProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeDriveProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeMountProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeRouteProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeDispatchProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeExecuteProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeCommandProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeControllerProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeAdapterProfile.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
@@ -559,6 +637,144 @@
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeAnchorProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeParentSpaceProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeResolverProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTargetProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTargetResolverProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseResolverProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseChannelProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseConstraintProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseSolveProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeJointHintProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeArticulationProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeLocalJointRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeArticulationMapProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControlRigHintProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControlSurfaceProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerDriverRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerPhaseProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerPhaseRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerTableProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeDriverBusProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionLaneProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionSurfaceProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionStackProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionStackRouterProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionStackRouterRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeCompositionRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteRouterBusProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusDriverProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusDriverRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusDriverRegistryRouterProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverTableProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterTableProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryBusProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryBusRegistryProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceCompositionBusProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseBusProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeRigDriverProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeRigChannelProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceDriverProfile.h">
+      <Filter>头文件\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeWorldSpaceProfile.h">
       <Filter>头文件\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTransformProfile.h">
@@ -1298,6 +1514,84 @@
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelSceneAdapterProfile.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSourceProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetManifestProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetCatalogProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetBindingTableProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetLoadProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetDecodeProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetResidencyProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetInstanceProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetActivationProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSessionProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetBindReadyProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetHandleProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSceneHookProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetSceneBindingProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeAttachProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeLiftProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeBindProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeResolveProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeDriveProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeMountProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeRouteProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeDispatchProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeExecuteProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeCommandProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelAssetNodeControllerProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererModelNodeAdapterProfile.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
@@ -1308,6 +1602,144 @@
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeAnchorProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeParentSpaceProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeResolverProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTargetProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTargetResolverProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseResolverProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseChannelProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseConstraintProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseSolveProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeJointHintProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeArticulationProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeLocalJointRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeArticulationMapProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControlRigHintProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControlSurfaceProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerDriverRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerPhaseProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerPhaseRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeControllerTableProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeDriverBusProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionLaneProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionSurfaceProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionStackProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionStackRouterProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionStackRouterRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeCompositionRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteRouterBusProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusDriverProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusDriverRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceRouteBusDriverRegistryRouterProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverTableProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterTableProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryBusProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeExecutionDriverRouterRegistryBusRegistryProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceCompositionBusProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodePoseBusProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeRigDriverProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeRigChannelProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeSurfaceDriverProfile.cpp">
+      <Filter>源文件\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeWorldSpaceProfile.cpp">
       <Filter>源文件\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Platform\windows\Pet\Win32MouseCompanionRealRendererAssetNodeTransformProfile.cpp">
