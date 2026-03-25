@@ -193,9 +193,16 @@ MouseCompanionConfig SanitizeMouseCompanionConfig(MouseCompanionConfig config) {
 
 InputIndicatorConfig SanitizeInputIndicatorConfig(InputIndicatorConfig config) {
     config.cursorDecoration.pluginId = ToLowerAscii(TrimAscii(config.cursorDecoration.pluginId));
-    if (config.cursorDecoration.pluginId != "ring" &&
-        config.cursorDecoration.pluginId != "orb") {
-        config.cursorDecoration.pluginId = "ring";
+    if (config.cursorDecoration.pluginId == "ring") {
+        config.cursorDecoration.pluginId = "focus_ring";
+    } else if (config.cursorDecoration.pluginId == "orb") {
+        config.cursorDecoration.pluginId = "soft_orb";
+    }
+    if (config.cursorDecoration.pluginId != "focus_ring" &&
+        config.cursorDecoration.pluginId != "signal_ring" &&
+        config.cursorDecoration.pluginId != "soft_orb" &&
+        config.cursorDecoration.pluginId != "halo_orb") {
+        config.cursorDecoration.pluginId = "focus_ring";
     }
     config.cursorDecoration.colorHex = TrimAscii(config.cursorDecoration.colorHex);
     if (config.cursorDecoration.colorHex.size() != 7 ||

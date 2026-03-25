@@ -9,8 +9,10 @@
 - `cursor_decoration` is an optional plugin lane, not a mutually exclusive main effect.
 - It can coexist with `click / trail / scroll / hold / hover`.
 - First built-in plugin ids:
-  - `ring`
-  - `orb`
+  - `focus_ring`
+  - `signal_ring`
+  - `soft_orb`
+  - `halo_orb`
 
 ## Runtime Contract
 - Stored under `input_indicator.cursor_decoration` in config JSON.
@@ -36,7 +38,7 @@
   - `Cursor Effects -> Effect Channel` now exposes `cursor_decoration` as the sixth built-in lane
   - `Cursor Effects -> Effect Config` now owns `color_hex / size_px / alpha_percent`
   - inside `Effect Config`, cursor-decoration tuning must render as its own compact subpanel below the five main effect scale rows; do not append its title/description/fields directly into the same size-slider grid
-  - `Cursor Effects -> Effect Plugins` keeps a sixth `Cursor Decoration` row so the lane stays visually aligned with the original five effect bindings, but only mirrors `plugin_id + enabled` instead of hosting the full parameter form
+  - `Cursor Effects -> Effect Plugins` keeps a sixth `Cursor Decoration` row with real built-in decoration plugin presets; switching that row updates `plugin_id` and also loads the matching default `color_hex / size_px / alpha_percent`, while detailed tuning still belongs to `Effect Config`
   - read/write path still merges back into `input_indicator.cursor_decoration`
   - there is no standalone `cursor-decoration` settings page bundle anymore; the earlier detached bundle path was removed after it left an orphan `lazy-mount` observer on pages that never contained a dedicated cursor-decoration mount
 

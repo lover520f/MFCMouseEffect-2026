@@ -46,7 +46,7 @@ void ApplyDecorationPanelPresentation(
     const std::string& colorHex,
     int sizePx,
     int alphaPercent) {
-    const char* pluginIdUtf8 = pluginId.empty() ? "ring" : pluginId.c_str();
+    const char* pluginIdUtf8 = pluginId.empty() ? "focus_ring" : pluginId.c_str();
     const char* colorUtf8 = colorHex.empty() ? "#ff5a5a" : colorHex.c_str();
     mfx_macos_cursor_decoration_panel_present_v1(
         panelHandle,

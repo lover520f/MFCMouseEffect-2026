@@ -45,8 +45,16 @@ void CursorDecorationRenderer::Render(
     const InputIndicatorConfig::CursorDecorationConfig& config) const {
     const CursorDecorationLayout layout = ResolveLayout(config);
     const Gdiplus::Color accent = ParseHexColor(config.colorHex, config.alphaPercent);
-    if (config.pluginId == "orb") {
+    if (config.pluginId == "halo_orb") {
+        RenderHaloOrb(graphics, config, layout, accent);
+        return;
+    }
+    if (config.pluginId == "soft_orb") {
         RenderOrb(graphics, config, layout, accent);
+        return;
+    }
+    if (config.pluginId == "signal_ring") {
+        RenderSignalRing(graphics, config, layout, accent);
         return;
     }
     RenderRing(graphics, config, layout, accent);
@@ -132,6 +140,52 @@ void CursorDecorationRenderer::RenderRing(
         innerRadius * 1.16f);
 }
 
+void CursorDecorationRenderer::RenderSignalRing(
+    Gdiplus::Graphics& graphics,
+    const InputIndicatorConfig::CursorDecorationConfig& config,
+    const CursorDecorationLayout& layout,
+    const Gdiplus::Color& accent) const {
+    const float centerX = static_cast<float>(layout.anchorOffsetXPx);
+    const float centerY = static_cast<float>(layout.anchorOffsetYPx);
+    const float outerRadius = static_cast<float>(std::clamp(config.sizePx, 12, 72));
+    const float midRadius = outerRadius * 0.72f;
+    const float coreRadius = outerRadius * 0.26f;
+
+    FillSoftEllipse(
+        graphics,
+        Gdiplus::RectF(centerX - outerRadius * 1.72f, centerY - outerRadius * 1.72f, outerRadius * 3.44f, outerRadius * 3.44f),
+        WithScaledAlpha(accent, 0.22f),
+        Gdiplus::Color(0, accent.GetR(), accent.GetG(), accent.GetB()));
+
+    Gdiplus::Pen outerRing(WithScaledAlpha(accent, 0.94f), std::max(2.2f, outerRadius * 0.18f));
+    graphics.DrawEllipse(
+        &outerRing,
+        centerX - outerRadius,
+        centerY - outerRadius,
+        outerRadius * 2.0f,
+        outerRadius * 2.0f);
+
+    Gdiplus::Pen middleRing(WithScaledAlpha(accent, 0.58f), std::max(1.3f, outerRadius * 0.09f));
+    graphics.DrawEllipse(
+        &middleRing,
+        centerX - midRadius,
+        centerY - midRadius,
+        midRadius * 2.0f,
+        midRadius * 2.0f);
+
+    Gdiplus::SolidBrush coreBrush(Gdiplus::Color(
+        static_cast<BYTE>(std::min<int>(255, accent.GetA() + 36)),
+        255,
+        255,
+        255));
+    graphics.FillEllipse(
+        &coreBrush,
+        centerX - coreRadius,
+        centerY - coreRadius,
+        coreRadius * 2.0f,
+        coreRadius * 2.0f);
+}
+
 void CursorDecorationRenderer::RenderOrb(
     Gdiplus::Graphics& graphics,
     const InputIndicatorConfig::CursorDecorationConfig& config,
@@ -164,6 +218,48 @@ void CursorDecorationRenderer::RenderOrb(
         centerY - radius * 0.34f,
         radius * 0.68f,
         radius * 0.68f);
+}
+
+void CursorDecorationRenderer::RenderHaloOrb(
+    Gdiplus::Graphics& graphics,
+    const InputIndicatorConfig::CursorDecorationConfig& config,
+    const CursorDecorationLayout& layout,
+    const Gdiplus::Color& accent) const {
+    const float centerX = static_cast<float>(layout.anchorOffsetXPx);
+    const float centerY = static_cast<float>(layout.anchorOffsetYPx);
+    const float radius = static_cast<float>(std::clamp(config.sizePx, 12, 72));
+
+    FillSoftEllipse(
+        graphics,
+        Gdiplus::RectF(centerX - radius * 2.2f, centerY - radius * 2.2f, radius * 4.4f, radius * 4.4f),
+        WithScaledAlpha(accent, 0.14f),
+        Gdiplus::Color(0, accent.GetR(), accent.GetG(), accent.GetB()));
+
+    FillSoftEllipse(
+        graphics,
+        Gdiplus::RectF(centerX - radius * 1.12f, centerY - radius * 1.12f, radius * 2.24f, radius * 2.24f),
+        WithScaledAlpha(accent, 0.58f),
+        WithScaledAlpha(accent, 0.12f));
+
+    Gdiplus::Pen haloRing(WithScaledAlpha(accent, 0.52f), std::max(1.2f, radius * 0.08f));
+    graphics.DrawEllipse(
+        &haloRing,
+        centerX - radius * 0.92f,
+        centerY - radius * 0.92f,
+        radius * 1.84f,
+        radius * 1.84f);
+
+    Gdiplus::SolidBrush coreBrush(Gdiplus::Color(
+        static_cast<BYTE>(std::min<int>(255, accent.GetA() + 20)),
+        255,
+        255,
+        255));
+    graphics.FillEllipse(
+        &coreBrush,
+        centerX - radius * 0.22f,
+        centerY - radius * 0.22f,
+        radius * 0.44f,
+        radius * 0.44f);
 }
 
 } // namespace mousefx

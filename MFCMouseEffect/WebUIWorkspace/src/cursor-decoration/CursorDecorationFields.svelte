@@ -1,5 +1,6 @@
 <script>
   import { createEventDispatcher } from 'svelte';
+  import { normalizeCursorDecorationPluginId } from '../effects/cursor-decoration-presets.js';
 
   export let pluginOptions = [];
   export let decoration = {};
@@ -15,7 +16,7 @@
     const value = input || {};
     return {
       enabled: value.enabled === true,
-      plugin_id: `${value.plugin_id || 'ring'}`.trim() || 'ring',
+      plugin_id: normalizeCursorDecorationPluginId(value.plugin_id || 'focus_ring'),
       color_hex: `${value.color_hex || '#ff5a5a'}`.trim() || '#ff5a5a',
       size_px: toNumber(value.size_px, 22),
       alpha_percent: toNumber(value.alpha_percent, 82),

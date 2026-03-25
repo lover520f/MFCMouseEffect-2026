@@ -19,7 +19,7 @@ let currentActiveState = {
 };
 let currentCursorDecoration = {
   enabled: false,
-  plugin_id: 'ring',
+  plugin_id: 'focus_ring',
   color_hex: '#ff5a5a',
   size_px: 22,
   alpha_percent: 82,
@@ -134,7 +134,7 @@ function normalizeCursorDecoration(input) {
   };
   return {
     enabled: value.enabled === true,
-    plugin_id: `${value.plugin_id || 'ring'}`.trim() || 'ring',
+    plugin_id: `${value.plugin_id || 'focus_ring'}`.trim() || 'focus_ring',
     color_hex: `${value.color_hex || '#ff5a5a'}`.trim() || '#ff5a5a',
     size_px: toSafeNumber(value.size_px, 22),
     alpha_percent: toSafeNumber(value.alpha_percent, 82),

@@ -21,7 +21,7 @@ let currentI18n = {};
 let currentActionHandler = null;
 let currentCursorDecoration = {
   enabled: false,
-  plugin_id: 'ring',
+  plugin_id: 'focus_ring',
   color_hex: '#ff5a5a',
   size_px: 22,
   alpha_percent: 82,

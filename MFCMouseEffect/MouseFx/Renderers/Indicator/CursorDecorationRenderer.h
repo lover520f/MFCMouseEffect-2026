@@ -35,7 +35,17 @@ private:
         const InputIndicatorConfig::CursorDecorationConfig& config,
         const CursorDecorationLayout& layout,
         const Gdiplus::Color& accent) const;
+    void RenderSignalRing(
+        Gdiplus::Graphics& graphics,
+        const InputIndicatorConfig::CursorDecorationConfig& config,
+        const CursorDecorationLayout& layout,
+        const Gdiplus::Color& accent) const;
     void RenderOrb(
+        Gdiplus::Graphics& graphics,
+        const InputIndicatorConfig::CursorDecorationConfig& config,
+        const CursorDecorationLayout& layout,
+        const Gdiplus::Color& accent) const;
+    void RenderHaloOrb(
         Gdiplus::Graphics& graphics,
         const InputIndicatorConfig::CursorDecorationConfig& config,
         const CursorDecorationLayout& layout,

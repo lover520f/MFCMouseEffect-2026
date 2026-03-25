@@ -166,8 +166,10 @@ struct MouseCompanionConfig {
 struct InputIndicatorConfig {
     struct CursorDecorationConfig {
         bool enabled = false;
-        // Built-in plugin id: "ring" | "orb"
-        std::string pluginId = "ring";
+        // Built-in plugin id:
+        // "focus_ring" | "signal_ring" | "soft_orb" | "halo_orb"
+        // legacy aliases "ring" and "orb" remain accepted during config migration.
+        std::string pluginId = "focus_ring";
         // Hex RGB color such as "#ff5a5a".
         std::string colorHex = "#ff5a5a";
         int sizePx = 22;

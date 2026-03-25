@@ -1,5 +1,9 @@
 <script>
   import { createEventDispatcher } from 'svelte';
+  import {
+    buildCursorDecorationFromPreset,
+    normalizeCursorDecorationPluginId,
+  } from './cursor-decoration-presets.js';
 
   export let clickOptions = [];
   export let trailOptions = [];
@@ -51,7 +55,7 @@
     const value = input || {};
     return {
       enabled: value.enabled === true,
-      plugin_id: `${value.plugin_id || 'ring'}`.trim() || 'ring',
+      plugin_id: normalizeCursorDecorationPluginId(value.plugin_id || 'focus_ring'),
       color_hex: `${value.color_hex || '#ff5a5a'}`.trim() || '#ff5a5a',
       size_px: Number.isFinite(Number(value.size_px)) ? Number(value.size_px) : 22,
       alpha_percent: Number.isFinite(Number(value.alpha_percent)) ? Number(value.alpha_percent) : 82,
@@ -147,11 +151,10 @@
     const normalizedValue = `${nextValue || ''}`.trim();
     const nextDecoration =
       normalizedValue && normalizedValue !== '__disabled__'
-        ? {
+        ? buildCursorDecorationFromPreset(normalizedValue, {
             ...normalizedCursorDecoration,
             enabled: true,
-            plugin_id: normalizedValue,
-          }
+          })
         : {
             ...normalizedCursorDecoration,
             enabled: false,

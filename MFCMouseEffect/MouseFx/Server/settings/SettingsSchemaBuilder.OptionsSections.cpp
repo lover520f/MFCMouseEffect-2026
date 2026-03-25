@@ -140,8 +140,10 @@ void AppendSettingsSchemaOptionsSections(const EffectConfig& config, json* out) 
     });
     (*out)["cursor_decoration"] = {
         {"plugins", json::array({
-            MakeOpt("ring", L"\u6307\u793a\u5708", L"Indicator Ring", lang),
-            MakeOpt("orb", L"\u5149\u7403", L"Glow Orb", lang),
+            MakeOpt("focus_ring", L"\u4e13\u6ce8\u6307\u793a\u5708", L"Focus Ring", lang),
+            MakeOpt("signal_ring", L"\u5f3a\u8c03\u7ea2\u5708", L"Signal Ring", lang),
+            MakeOpt("soft_orb", L"\u67d4\u5149\u7403", L"Soft Orb", lang),
+            MakeOpt("halo_orb", L"\u5149\u6655\u7403", L"Halo Orb", lang),
         })},
         {"size_px_range", {{"min", 12}, {"max", 72}, {"step", 1}}},
         {"alpha_percent_range", {{"min", 15}, {"max", 100}, {"step", 1}}},
