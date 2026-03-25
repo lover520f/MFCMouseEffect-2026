@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MouseFx/Core/Protocol/InputTypes.h"
+#include "MouseFx/Styles/RippleStyle.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -64,9 +65,17 @@ struct ScrollEffectInputShaperProfile {
     uint32_t maxDurationMs = 320;
 };
 
+struct ScrollEffectDirectionVector {
+    double dx = 0.0;
+    double dy = 0.0;
+};
+
 std::string NormalizeScrollEffectType(const std::string& effectType);
 int ResolveScrollStrengthLevel(int delta);
 ScrollEffectInputShaperProfile ResolveScrollInputShaperProfile(const std::string& effectType);
+ScrollEffectProfile BuildScrollEffectProfileFromStyle(const RippleStyle& style, int sizeScalePercent = 100);
+ScrollEffectDirectionVector ResolveScrollDirectionVector(bool horizontal, int delta);
+float ResolveScrollDirectionRadians(bool horizontal, int delta);
 ScrollEffectRenderCommand ComputeScrollEffectRenderCommand(
     const ScreenPoint& overlayPoint,
     bool horizontal,

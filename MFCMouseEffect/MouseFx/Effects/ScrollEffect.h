@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MouseFx/Core/Config/EffectConfig.h"
 #include "MouseFx/Core/Effects/ScrollEffectCompute.h"
 #include "MouseFx/Interfaces/IMouseEffect.h"
 #include "MouseFx/Styles/RippleStyle.h"
@@ -13,7 +14,7 @@ namespace mousefx {
 // Scroll effect: emits renderer-driven directional one-shot visuals on mouse wheel.
 class ScrollEffect final : public IMouseEffect {
 public:
-    explicit ScrollEffect(const std::string& themeName, const std::string& rendererName = "arrow");
+    explicit ScrollEffect(const EffectConfig& config, const std::string& rendererName = "arrow");
     ~ScrollEffect() override;
 
     EffectCategory Category() const override { return EffectCategory::Scroll; }
@@ -30,6 +31,7 @@ private:
     RippleStyle style_{};
     ScrollEffectProfile computeProfile_{};
     bool isChromatic_ = false;
+    int sizeScalePercent_ = 100;
     std::string currentRendererName_ = "arrow";
     uint64_t lastEmitTickMs_ = 0;
     int pendingDelta_ = 0;

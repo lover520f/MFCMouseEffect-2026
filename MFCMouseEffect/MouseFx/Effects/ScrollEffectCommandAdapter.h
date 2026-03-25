@@ -37,34 +37,6 @@ inline uint32_t ResolveGlowColor(uint32_t strokeArgb, uint32_t templateGlowArgb)
 
 } // namespace
 
-inline ScrollEffectProfile BuildScrollProfileFromStyle(const RippleStyle& style) {
-    ScrollEffectProfile profile{};
-    const int windowSize = std::clamp(style.windowSize, 64, 640);
-    profile.verticalSizePx = windowSize;
-    profile.horizontalSizePx = windowSize;
-    profile.geometryReferenceSizePx = windowSize;
-    profile.baseStartRadiusPx = std::clamp(static_cast<double>(style.startRadius), 0.0, 640.0);
-    profile.baseEndRadiusPx = std::clamp(static_cast<double>(style.endRadius), 1.0, 800.0);
-    profile.baseStrokeWidthPx = std::clamp(static_cast<double>(style.strokeWidth), 0.1, 64.0);
-    profile.baseDurationSec = std::clamp(static_cast<double>(style.durationMs) / 1000.0, 0.05, 5.0);
-    profile.perStrengthStepSec = 0.0;
-    profile.closePaddingMs = 0;
-    profile.baseOpacity = 1.0;
-    profile.defaultDurationScale = 1.0;
-    profile.helixDurationScale = 1.0;
-    profile.twinkleDurationScale = 1.0;
-    profile.defaultSizeScale = 1.0;
-    profile.helixSizeScale = 1.0;
-    profile.twinkleSizeScale = 1.0;
-
-    const ScrollEffectDirectionColorProfile color{style.fill.value, style.stroke.value};
-    profile.horizontalPositive = color;
-    profile.horizontalNegative = color;
-    profile.verticalPositive = color;
-    profile.verticalNegative = color;
-    return profile;
-}
-
 inline RippleStyle BuildRippleStyleFromCommand(
     const RippleStyle& styleTemplate,
     const ScrollEffectRenderCommand& command) {
@@ -115,12 +87,7 @@ inline ClickEvent BuildClickEventFromCommand(
 
 inline RenderParams BuildRenderParamsFromCommand(const ScrollEffectRenderCommand& command) {
     RenderParams params{};
-    constexpr float kPi = 3.14159265358979323846f;
-    if (command.horizontal) {
-        params.directionRad = (command.delta >= 0) ? 0.0f : kPi;
-    } else {
-        params.directionRad = (command.delta >= 0) ? (kPi * 0.5f) : (-kPi * 0.5f);
-    }
+    params.directionRad = ResolveScrollDirectionRadians(command.horizontal, command.delta);
     params.intensity = static_cast<float>(std::clamp(command.intensity, 0.0, 1.0));
     params.loop = false;
     return params;

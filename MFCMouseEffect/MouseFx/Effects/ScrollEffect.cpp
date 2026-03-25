@@ -14,11 +14,14 @@
 
 namespace mousefx {
 
-ScrollEffect::ScrollEffect(const std::string& themeName, const std::string& rendererName) 
+ScrollEffect::ScrollEffect(const EffectConfig& config, const std::string& rendererName)
     : currentRendererName_(NormalizeScrollEffectType(rendererName)) {
-    style_ = GetThemePalette(themeName).scroll;
-    computeProfile_ = scroll_effect_adapter::BuildScrollProfileFromStyle(style_);
-    isChromatic_ = (ToLowerAscii(themeName) == "chromatic");
+    style_ = GetThemePalette(config.theme).scroll;
+    sizeScalePercent_ = std::clamp(config.effectSizeScales.scroll, 50, 200);
+    computeProfile_ = BuildScrollEffectProfileFromStyle(
+        style_,
+        sizeScalePercent_);
+    isChromatic_ = (ToLowerAscii(config.theme) == "chromatic");
 }
 
 ScrollEffect::~ScrollEffect() {
@@ -74,7 +77,7 @@ void ScrollEffect::OnScroll(const ScrollEvent& event) {
 
     const RippleStyle runtimeStyle = isChromatic_ ? MakeRandomStyle(style_) : style_;
     const ScrollEffectProfile runtimeProfile = isChromatic_
-        ? scroll_effect_adapter::BuildScrollProfileFromStyle(runtimeStyle)
+        ? BuildScrollEffectProfileFromStyle(runtimeStyle, sizeScalePercent_)
         : computeProfile_;
     const ScrollEffectRenderCommand command = ComputeScrollEffectRenderCommand(
         event.pt,

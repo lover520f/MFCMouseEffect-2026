@@ -181,7 +181,7 @@ intptr_t DispatchRouter::OnScroll(const DispatchMessage& message) {
     ScrollEvent ev{};
     ev.pt = pt;
     ev.delta = delta;
-    ev.horizontal = false;
+    ev.horizontal = message.scrollHorizontal;
 
     petFeature_.OnScroll(*ctrl_, pt, static_cast<int>(delta));
     automationFeature_.OnScroll(*ctrl_, delta);

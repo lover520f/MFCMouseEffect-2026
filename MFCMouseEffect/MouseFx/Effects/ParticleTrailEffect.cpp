@@ -17,7 +17,7 @@ ParticleTrailEffect::ParticleTrailEffect(const EffectConfig& config)
     isChromatic_ = (ToLowerAscii(config.theme) == "chromatic");
     const TrailHistoryProfile history = config.GetTrailHistoryProfile(type_);
     computeProfile_ = trail_effect_adapter::BuildTrailProfileFromConfig(config, type_, history.durationMs);
-    throttleProfile_ = trail_effect_adapter::ResolveTrailThrottleProfile();
+    throttleProfile_ = trail_effect_adapter::ResolveTrailThrottleProfile(type_);
 }
 
 ParticleTrailEffect::~ParticleTrailEffect() {
@@ -60,7 +60,6 @@ void ParticleTrailEffect::OnMouseMove(const ScreenPoint& pt) {
         lastEmitTickMs_,
         throttleProfile_);
     if (!emission.shouldEmit) {
-        lastPoint_ = pt;
         return;
     }
 
@@ -70,6 +69,8 @@ void ParticleTrailEffect::OnMouseMove(const ScreenPoint& pt) {
         emission.deltaY,
         type_,
         computeProfile_);
+    // Keep the anchor at the last emitted point so small moves can
+    // accumulate into visible segments instead of being discarded.
     lastPoint_ = pt;
     lastEmitTickMs_ = nowMs;
     if (!command.emit) {

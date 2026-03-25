@@ -22,6 +22,9 @@
 - Shared command tail (`blend_mode / sort_key / group_id`) is active.
 - Group-retained model is active; transform/material/pass remain host-owned.
 - Windows blacklist routing root fix is active: pointer suppression resolves the process at the current screen point first, and trail synthetic-follow is limited to a short post-input smoothing window.
+- Trail slow-move continuity is reinforced: trail/particle now keep the last emitted anchor (so sub-threshold moves accumulate instead of resetting), and the throttle baseline is lighter (`minDistancePx≈2`, `minIntervalMs≈8`; particle is even lighter) to avoid broken segments during slow cursor motion.
+- Scroll direction/render contract is now shared across Windows/macOS: scroll dispatch preserves horizontal-axis metadata, vertical `delta>0` always means visual up, horizontal `delta>0` means visual right, and both platforms reuse the same scroll profile builder so arrow/helix/twinkle size/style stay aligned.
+- VM foreground auto-suppression is retired on Windows/macOS: VMware/VirtualBox foreground windows no longer hard-stop effects outside the user blacklist, so virtualization tools now follow the same `effects_blacklist_apps` policy as every other app.
 - Cross-platform click ripple baseline is active: Windows now honors `EffectConfig.ripple`; default click is shorter, smaller, center-clear, softer-glow, and single-ring.
 
 ### Input Indicator

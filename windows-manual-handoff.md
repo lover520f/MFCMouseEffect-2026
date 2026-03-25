@@ -6,19 +6,36 @@
 
 ## Current Task
 ### Goal
-- Confirm whether the synced Windows workspace can see the expected `tools/platform/package` and `tools/platform/build` contents after the current sync-rule cleanup.
+- Build the latest synced Windows workspace and verify:
+  - activating or hovering VMware no longer disables `trail` and `cursor decoration`
+  - slow cursor movement keeps the trail continuous (no broken segments)
+  - scroll effects use the correct direction and stay visually aligned with macOS
 
 ### Windows Working Path
 - `F:\language\cpp\code\MFCMouseEffect`
 
 ### Step
-1. Refresh the synced workspace view on Windows.
-2. Check whether these paths now exist and contain files:
-   - `F:\language\cpp\code\MFCMouseEffect\tools\platform\package`
-   - `F:\language\cpp\code\MFCMouseEffect\tools\platform\build`
+1. Open `cmd` or PowerShell in `F:\language\cpp\code\MFCMouseEffect`.
+2. Run `.\mfx.cmd build`.
+3. Start the freshly built app: `.\x64\Release\MFCMouseEffect.exe`
+4. Make sure `Effect Blacklist` does not contain `vmware.exe` or your VMware executable name.
+5. Reproduce VMware path:
+   - wake or activate the VMware window
+   - move the cursor onto the VMware window and observe whether `trail` and `cursor decoration` already disappear
+   - click once inside VMware
+   - move the cursor back out of VMware
+   - keep moving on the desktop and watch whether both `trail` and `cursor decoration` resume normally
+6. Reproduce slow-move trail path:
+   - on the desktop, move the mouse very slowly in a small circle
+   - confirm the trail stays continuous (no broken segments even at slow speed)
+7. Reproduce scroll direction path:
+   - vertical wheel up: confirm the scroll effect points/moves upward
+   - vertical wheel down: confirm the scroll effect points/moves downward
+   - if your device supports horizontal wheel/tilt, test left and right once each
+   - compare the overall scroll style with macOS and note only if you still see an obvious mismatch
 
 ### Send Back
 - Reply with:
-  - `都看到了`
-  - or `package 有 / build 没有`
-  - or `两个都没有`
+  - `已测，没问题`
+  - or `已测，老问题`
+  - if build fails, paste the last screenful of build output

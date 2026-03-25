@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-25T05:04:53.855Z",
+  "generated_at": "2026-03-25T13:29:31.219Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -85,14 +85,14 @@
       ],
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 223,
-      "size_bytes": 25085,
-      "estimated_tokens": 6272,
+      "line_count": 226,
+      "size_bytes": 25956,
+      "estimated_tokens": 6489,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": true,
-      "hash_sha1": "9fe82d5c38318752bb134cf8148109985c50f45f",
-      "updated_at": "2026-03-25T05:02:31.383Z"
+      "hash_sha1": "61d161f5b0f225770cf32e562e03d201002a7db6",
+      "updated_at": "2026-03-25T13:21:17.179Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -685,14 +685,14 @@
       ],
       "summary": "Run this as the default POSIX regression entry:",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 91,
-      "size_bytes": 4425,
-      "estimated_tokens": 1107,
+      "line_count": 88,
+      "size_bytes": 4169,
+      "estimated_tokens": 1043,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "6742d3dd18560665a90ce263305d8f8ff7f0f19e",
-      "updated_at": "2026-03-17T02:46:13.741Z"
+      "hash_sha1": "0800d6be6fa891578a6a0f156fad38a49e384c94",
+      "updated_at": "2026-03-25T12:10:38.766Z"
     },
     {
       "id": "docs/architecture/posix-scaffold-regression-workflow.md",

@@ -247,9 +247,13 @@ LRESULT CALLBACK Win32GlobalMouseHook::HookProc(int nCode, WPARAM wParam, LPARAM
 
         if (fireScroll && s) {
             const POINT pt = NormalizeScreenPoint(s->pt);
+            uint32_t scrollFlags = 0;
+            if (wParam == WM_MOUSEHWHEEL) {
+                scrollFlags |= kScrollDispatchFlagHorizontal;
+            }
             instance_->dispatchHost_->PostAsync(
                 WM_MFX_SCROLL,
-                static_cast<WPARAM>(scrollDelta),
+                static_cast<WPARAM>(PackScrollDispatchPayload(static_cast<int32_t>(scrollDelta), scrollFlags)),
                 MAKELPARAM(pt.x, pt.y));
         }
 

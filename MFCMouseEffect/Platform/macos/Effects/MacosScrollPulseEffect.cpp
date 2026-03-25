@@ -14,42 +14,6 @@
 #include <utility>
 
 namespace mousefx {
-namespace {
-
-int ResolveScaledWindowSize(int baseWindowSize, int sizeScalePercent) {
-    const double sizeScale = std::clamp(static_cast<double>(sizeScalePercent) / 100.0, 0.5, 2.0);
-    return std::clamp(static_cast<int>(std::lround(static_cast<double>(baseWindowSize) * sizeScale)), 64, 720);
-}
-
-ScrollEffectProfile BuildScrollProfileFromThemeStyle(const RippleStyle& style, int sizeScalePercent) {
-    ScrollEffectProfile profile{};
-    const int windowSize = ResolveScaledWindowSize(std::clamp(style.windowSize, 64, 640), sizeScalePercent);
-    profile.verticalSizePx = windowSize;
-    profile.horizontalSizePx = windowSize;
-    profile.geometryReferenceSizePx = windowSize;
-    profile.baseStartRadiusPx = std::clamp(static_cast<double>(style.startRadius), 0.0, 640.0);
-    profile.baseEndRadiusPx = std::clamp(static_cast<double>(style.endRadius), 1.0, 800.0);
-    profile.baseStrokeWidthPx = std::clamp(static_cast<double>(style.strokeWidth), 0.1, 64.0);
-    profile.baseDurationSec = std::clamp(static_cast<double>(style.durationMs) / 1000.0, 0.05, 5.0);
-    profile.perStrengthStepSec = 0.0;
-    profile.closePaddingMs = 0;
-    profile.baseOpacity = 1.0;
-    profile.defaultDurationScale = 1.0;
-    profile.helixDurationScale = 1.0;
-    profile.twinkleDurationScale = 1.0;
-    profile.defaultSizeScale = 1.0;
-    profile.helixSizeScale = 1.0;
-    profile.twinkleSizeScale = 1.0;
-    const ScrollEffectDirectionColorProfile color{style.fill.value, style.stroke.value};
-    profile.horizontalPositive = color;
-    profile.horizontalNegative = color;
-    profile.verticalPositive = color;
-    profile.verticalNegative = color;
-    return profile;
-}
-
-} // namespace
-
 MacosScrollPulseEffect::MacosScrollPulseEffect(
     std::string effectType,
     std::string themeName,
@@ -59,7 +23,7 @@ MacosScrollPulseEffect::MacosScrollPulseEffect(
       sizeScalePercent_(std::clamp(sizeScalePercent, 50, 200)) {
     effectType_ = NormalizeScrollEffectType(effectType_);
     style_ = GetThemePalette(themeName_).scroll;
-    computeProfile_ = BuildScrollProfileFromThemeStyle(style_, sizeScalePercent_);
+    computeProfile_ = BuildScrollEffectProfileFromStyle(style_, sizeScalePercent_);
     isChromatic_ = (ToLowerAscii(themeName_) == "chromatic");
 }
 
@@ -101,7 +65,7 @@ void MacosScrollPulseEffect::OnScroll(const ScrollEvent& event) {
 
     const RippleStyle runtimeStyle = isChromatic_ ? MakeRandomStyle(style_) : style_;
     const ScrollEffectProfile runtimeProfile = isChromatic_
-        ? BuildScrollProfileFromThemeStyle(runtimeStyle, sizeScalePercent_)
+        ? BuildScrollEffectProfileFromStyle(runtimeStyle, sizeScalePercent_)
         : computeProfile_;
     const ScrollEffectRenderCommand command = ComputeScrollEffectRenderCommand(
         ScreenToOverlayPoint(event.pt),

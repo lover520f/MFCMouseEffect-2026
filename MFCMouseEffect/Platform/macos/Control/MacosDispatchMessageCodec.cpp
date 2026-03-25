@@ -39,7 +39,8 @@ DispatchMessage MacosDispatchMessageCodec::Decode(
         break;
     case WM_MFX_SCROLL:
         out.kind = DispatchMessageKind::Scroll;
-        out.delta = static_cast<int32_t>(wParam);
+        out.delta = UnpackScrollDispatchDelta(wParam);
+        out.scrollHorizontal = (UnpackScrollDispatchFlags(wParam) & kScrollDispatchFlagHorizontal) != 0;
         out.x = UnpackPointX(lParam);
         out.y = UnpackPointY(lParam);
         break;
