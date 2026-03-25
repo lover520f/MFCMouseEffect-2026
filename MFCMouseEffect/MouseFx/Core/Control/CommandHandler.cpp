@@ -135,6 +135,7 @@ void CommandHandler::HandleWasmReloadCommand(const std::string&) {
     if (auto* indicatorHost = controller_->WasmIndicatorHost()) {
         indicatorHost->ReloadPlugin();
     }
+    controller_->SyncCursorDecorationOverlaySuppression();
 }
 
 void CommandHandler::HandleWasmLoadManifestCommand(const std::string& jsonCmd) {

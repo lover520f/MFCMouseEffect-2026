@@ -34,6 +34,8 @@ public:
     void OnScroll(const ScrollEvent& ev) override;
     void OnKey(const KeyEvent& ev) override;
     void OnMove(const ScreenPoint& pt) override;
+    void SetCursorDecorationNativeSuppressed(bool suppressed) override;
+    void SetCursorDecorationBlockedByAppBlacklist(bool blocked) override;
 
 private:
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -71,6 +73,8 @@ private:
     bool windowClassRegistered_ = false;
     bool active_ = false;
     bool hasCursorPoint_ = false;
+    bool cursorDecorationNativeSuppressed_ = false;
+    bool cursorDecorationBlockedByAppBlacklist_ = false;
     IndicatorEventKind eventKind_ = IndicatorEventKind::None;
     uint64_t eventStartMs_ = 0;
     POINT anchorPt_{};

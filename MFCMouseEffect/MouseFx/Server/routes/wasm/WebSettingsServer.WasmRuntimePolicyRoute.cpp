@@ -73,6 +73,11 @@ bool HandleWebSettingsWasmRuntimePolicyApiRoute(
         if (payload.contains("manifest_path_hover") && payload["manifest_path_hover"].is_string()) {
             cmd["manifest_path_hover"] = payload["manifest_path_hover"].get<std::string>();
         }
+        if (payload.contains("manifest_path_cursor_decoration") &&
+            payload["manifest_path_cursor_decoration"].is_string()) {
+            cmd["manifest_path_cursor_decoration"] =
+                payload["manifest_path_cursor_decoration"].get<std::string>();
+        }
         if (payload.contains("catalog_root_path") && payload["catalog_root_path"].is_string()) {
             cmd["catalog_root_path"] = payload["catalog_root_path"].get<std::string>();
         }

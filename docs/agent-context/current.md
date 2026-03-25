@@ -31,6 +31,9 @@
 ### Plugin Management / WebUI
 - Unified top-level `Plugin Management` section is active, and sidebar order is now: `General -> Mouse Companion -> Cursor Effects -> Input Indicator -> Automation Mapping -> Plugin Management`
 - WebUI apply flow is backend-state-driven (`post-apply reconcile + refresh`).
+- `/api/wasm/policy` must forward `manifest_path_cursor_decoration` alongside the other five effect-lane keys; otherwise the `Effect Plugins -> Cursor Decoration` toggle will look disabled briefly but snap back on after Apply/refresh because the binding never actually clears.
+- When the `cursor_decoration` WASM lane is loaded and enabled, native cursor-decoration fallback must stay suppressed on both Windows and macOS overlays; only one of the two renderers may own that lane at a time.
+- Built-in native cursor decoration must also obey the app blacklist at the current pointer point. `DispatchRouter::OnMove(...)` must sync blacklist state into `IInputIndicatorOverlay` before any native cursor-decoration `OnMove(...)` render path runs; otherwise the persistent overlay can leak into blocked apps even while the five main effect lanes are correctly suppressed.
 - `cursor_decoration` no longer ships a standalone WebUI entry bundle, and its channel dropdown now derives the trailing disabled label from the same localized option set as the built-in plugins, so Chinese pages show `无` and English pages show `None` without relying on `document.lang`.
 - `section-workspace` is now mount-order tolerant with bounded retry: if `settings_grid` cards are not yet collectable on first pass, it performs short timed retries and temporarily reveals cards instead of binding a long-lived subtree observer.
 - Settings launch lifecycle is shared through `WebSettingsLaunchCoordinator`; platform shells still keep their own `OpenUrlUtf8(...)`.

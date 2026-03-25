@@ -67,6 +67,61 @@ _mfx_core_http_wasm_contract_dispatch_checks() {
         "$tmp_dir/state-before-wasm-dispatch.out" \
         "$platform"
 
+    local cursor_decoration_policy_manifest_path="$tmp_dir/cursor-decoration-policy-test/plugin.json"
+    local cursor_decoration_policy_manifest_path_escaped
+    cursor_decoration_policy_manifest_path_escaped="$(_mfx_core_http_wasm_json_escape "$cursor_decoration_policy_manifest_path")"
+    local code_cursor_decoration_policy_set
+    code_cursor_decoration_policy_set="$(mfx_http_code \
+        "$tmp_dir/wasm-policy-cursor-decoration-set.out" \
+        "$base_url/api/wasm/policy" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d "{\"manifest_path_cursor_decoration\":\"$cursor_decoration_policy_manifest_path_escaped\"}")"
+    mfx_assert_eq "$code_cursor_decoration_policy_set" "200" "core wasm cursor-decoration policy set status"
+    mfx_assert_file_contains "$tmp_dir/wasm-policy-cursor-decoration-set.out" "\"ok\":true" "core wasm cursor-decoration policy set ok"
+    mfx_assert_eq \
+        "$(_mfx_core_http_wasm_parse_string_field "$tmp_dir/wasm-policy-cursor-decoration-set.out" "configured_manifest_path_cursor_decoration")" \
+        "$cursor_decoration_policy_manifest_path" \
+        "core wasm cursor-decoration policy set response configured manifest path"
+
+    local code_state_after_cursor_decoration_policy_set
+    code_state_after_cursor_decoration_policy_set="$(mfx_http_code \
+        "$tmp_dir/state-after-wasm-policy-cursor-decoration-set.out" \
+        "$base_url/api/state" \
+        -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_state_after_cursor_decoration_policy_set" "200" "core wasm cursor-decoration policy set state status"
+    mfx_assert_eq \
+        "$(_mfx_core_http_read_json_string "$tmp_dir/state-after-wasm-policy-cursor-decoration-set.out" "wasm.configured_manifest_path_cursor_decoration")" \
+        "$cursor_decoration_policy_manifest_path" \
+        "core wasm cursor-decoration policy set state configured manifest path"
+
+    local code_cursor_decoration_policy_clear
+    code_cursor_decoration_policy_clear="$(mfx_http_code \
+        "$tmp_dir/wasm-policy-cursor-decoration-clear.out" \
+        "$base_url/api/wasm/policy" \
+        -X POST \
+        -H "x-mfcmouseeffect-token: $token" \
+        -H "Content-Type: application/json" \
+        -d '{"manifest_path_cursor_decoration":""}')"
+    mfx_assert_eq "$code_cursor_decoration_policy_clear" "200" "core wasm cursor-decoration policy clear status"
+    mfx_assert_file_contains "$tmp_dir/wasm-policy-cursor-decoration-clear.out" "\"ok\":true" "core wasm cursor-decoration policy clear ok"
+    mfx_assert_eq \
+        "$(_mfx_core_http_wasm_parse_string_field "$tmp_dir/wasm-policy-cursor-decoration-clear.out" "configured_manifest_path_cursor_decoration")" \
+        "" \
+        "core wasm cursor-decoration policy clear response configured manifest path"
+
+    local code_state_after_cursor_decoration_policy_clear
+    code_state_after_cursor_decoration_policy_clear="$(mfx_http_code \
+        "$tmp_dir/state-after-wasm-policy-cursor-decoration-clear.out" \
+        "$base_url/api/state" \
+        -H "x-mfcmouseeffect-token: $token")"
+    mfx_assert_eq "$code_state_after_cursor_decoration_policy_clear" "200" "core wasm cursor-decoration policy clear state status"
+    mfx_assert_eq \
+        "$(_mfx_core_http_read_json_string "$tmp_dir/state-after-wasm-policy-cursor-decoration-clear.out" "wasm.configured_manifest_path_cursor_decoration")" \
+        "" \
+        "core wasm cursor-decoration policy clear state configured manifest path"
+
     if [[ -n "$repo_root" ]]; then
         local latest_state_snapshot_file="$tmp_dir/state-after-wasm-dispatch.out"
         local indicator_manifest_path="$repo_root/examples/wasm-plugin-template/dist/samples/indicator-basic/plugin.json"

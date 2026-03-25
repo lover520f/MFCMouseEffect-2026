@@ -13,8 +13,13 @@
 namespace mousefx {
 namespace {
 
-bool HasCursorDecorationEnabled(const InputIndicatorConfig& config) {
-    return config.cursorDecoration.enabled;
+bool HasCursorDecorationEnabled(
+    const InputIndicatorConfig& config,
+    bool cursorDecorationNativeSuppressed,
+    bool cursorDecorationBlockedByAppBlacklist) {
+    return config.cursorDecoration.enabled &&
+           !cursorDecorationNativeSuppressed &&
+           !cursorDecorationBlockedByAppBlacklist;
 }
 
 struct CursorDecorationFrame final {
@@ -59,13 +64,18 @@ void MacosInputIndicatorOverlay::UpdateConfig(const InputIndicatorConfig& cfg) {
     {
         std::lock_guard<std::mutex> lock(mutex_);
         config_ = cfg;
-        shouldShowDecoration = initialized_ && HasCursorDecorationEnabled(config_) && hasCursorPoint_;
+        shouldShowDecoration =
+            initialized_ &&
+            HasCursorDecorationEnabled(
+                config_, cursorDecorationNativeSuppressed_, cursorDecorationBlockedByAppBlacklist_) &&
+            hasCursorPoint_;
         if (shouldShowDecoration) {
             decorationPoint = cursorPoint_;
             decorationConfig = config_.cursorDecoration;
         }
     }
-    if (!HasCursorDecorationEnabled(cfg)) {
+    if (!HasCursorDecorationEnabled(
+            cfg, cursorDecorationNativeSuppressed_, cursorDecorationBlockedByAppBlacklist_)) {
         macos_input_indicator::RunOnMainThreadAsync(^{
           macos_input_indicator_style::HideDecorationPanel(decorationPanel_);
         });
@@ -91,6 +101,32 @@ void MacosInputIndicatorOverlay::UpdateConfig(const InputIndicatorConfig& cfg) {
     });
 }
 
+void MacosInputIndicatorOverlay::SetCursorDecorationNativeSuppressed(bool suppressed) {
+    InputIndicatorConfig config{};
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (cursorDecorationNativeSuppressed_ == suppressed) {
+            return;
+        }
+        cursorDecorationNativeSuppressed_ = suppressed;
+        config = config_;
+    }
+    UpdateConfig(config);
+}
+
+void MacosInputIndicatorOverlay::SetCursorDecorationBlockedByAppBlacklist(bool blocked) {
+    InputIndicatorConfig config{};
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (cursorDecorationBlockedByAppBlacklist_ == blocked) {
+            return;
+        }
+        cursorDecorationBlockedByAppBlacklist_ = blocked;
+        config = config_;
+    }
+    UpdateConfig(config);
+}
+
 bool MacosInputIndicatorOverlay::ShouldShowKeyboard() const {
     std::lock_guard<std::mutex> lock(mutex_);
     return initialized_ && config_.enabled && config_.keyboardEnabled;
@@ -102,7 +138,8 @@ void MacosInputIndicatorOverlay::OnMove(const ScreenPoint& pt) {
         std::lock_guard<std::mutex> lock(mutex_);
         cursorPoint_ = pt;
         hasCursorPoint_ = true;
-        if (!HasCursorDecorationEnabled(config_)) {
+        if (!HasCursorDecorationEnabled(
+                config_, cursorDecorationNativeSuppressed_, cursorDecorationBlockedByAppBlacklist_)) {
             return;
         }
         decorationConfig = config_.cursorDecoration;

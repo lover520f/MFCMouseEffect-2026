@@ -953,6 +953,7 @@ public:
     void SetWasmCatalogRootPath(const std::string& catalogRootPath);
     void SetThemeCatalogRootPath(const std::string& rootPath);
     void SetWasmExecutionBudget(uint32_t outputBufferBytes, uint32_t maxCommands, double maxExecutionMs);
+    void SyncCursorDecorationOverlaySuppression();
     bool LoadWasmPluginFromManifestPath(
         const std::string& manifestPath,
         const std::string& surface = {},

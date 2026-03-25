@@ -21,6 +21,8 @@
   - `alpha_percent`
 - Sixth WASM effect lane is stored under `wasm.manifest_path_cursor_decoration`.
 - The lane is dispatched through the same host-owned `effects` WASM runtime as the five main effect categories.
+- When the `cursor_decoration` WASM lane is actually loaded and enabled at runtime, native built-in cursor decoration fallback must be suppressed; the built-in renderer may resume only when that WASM lane is absent, unloaded, or disabled.
+- Even without a WASM plugin, the built-in native cursor-decoration renderer is still part of the cursor-effects family and must obey the same per-app blacklist. Runtime routing must push the blacklist state into `IInputIndicatorOverlay` before native cursor-decoration move updates, so blocked apps never show the retained native decoration panel/window.
 - The current official sample bundles are:
   - `demo.cursor-decoration.focus-ring.v2`
   - `demo.cursor-decoration.soft-orb.v2`
@@ -45,6 +47,7 @@
   - read/write path is split on purpose:
     - built-in lane state: `input_indicator.cursor_decoration`
     - plugin binding: `wasm.manifest_path_cursor_decoration`
+  - plugin-row disable must clear `wasm.manifest_path_cursor_decoration` through `/api/wasm/policy`; if that route stops forwarding the field, WebUI will appear to switch off temporarily but refresh back to enabled on the next state sync
   - there is no standalone `cursor-decoration` settings page bundle anymore; the earlier detached bundle path was removed after it left an orphan `lazy-mount` observer on pages that never contained a dedicated cursor-decoration mount
 
 ## Guardrails

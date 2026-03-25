@@ -13,6 +13,7 @@ public:
     void OnClick(const ClickEvent& /*ev*/) override {}
     void OnScroll(const ScrollEvent& /*ev*/) override {}
     void OnKey(const KeyEvent& /*ev*/) override {}
+    void SetCursorDecorationBlockedByAppBlacklist(bool /*blocked*/) override {}
 };
 
 } // namespace mousefx

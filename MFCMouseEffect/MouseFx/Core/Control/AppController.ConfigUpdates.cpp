@@ -279,6 +279,7 @@ void AppController::SetInputIndicatorConfig(const InputIndicatorConfig& cfg) {
             inputIndicatorOverlay_->OnMove(cursorPt);
         }
     }
+    SyncCursorDecorationOverlaySuppression();
     PersistConfig();
     SyncInputIndicatorWasmHostToConfig();
 }

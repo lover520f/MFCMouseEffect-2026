@@ -26,8 +26,13 @@ static uint64_t TickNow() {
     return GetTickCount64();
 }
 
-bool HasCursorDecorationEnabled(const InputIndicatorConfig& config) {
-    return config.cursorDecoration.enabled;
+bool HasCursorDecorationEnabled(
+    const InputIndicatorConfig& config,
+    bool cursorDecorationNativeSuppressed,
+    bool cursorDecorationBlockedByAppBlacklist) {
+    return config.cursorDecoration.enabled &&
+           !cursorDecorationNativeSuppressed &&
+           !cursorDecorationBlockedByAppBlacklist;
 }
 
 // RAII wrapper for GDI DC + DIBSection used by Render().
@@ -129,7 +134,9 @@ void Win32InputIndicatorOverlay::UpdateConfig(const InputIndicatorConfig& cfg) {
     config_.absoluteY = ClampInt(config_.absoluteY, -20000, 20000);
     UpdateRenderSize(eventKind_, eventLabel_);
 
-    if (!config_.enabled && !HasCursorDecorationEnabled(config_)) {
+    if (!config_.enabled &&
+        !HasCursorDecorationEnabled(
+            config_, cursorDecorationNativeSuppressed_, cursorDecorationBlockedByAppBlacklist_)) {
         Hide();
         return;
     }
@@ -146,15 +153,34 @@ void Win32InputIndicatorOverlay::UpdateConfig(const InputIndicatorConfig& cfg) {
         SetWindowPos(clone, nullptr, 0, 0, renderWidthPx_, renderHeightPx_,
             SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
     }
-    if (HasCursorDecorationEnabled(config_) && hasCursorPoint_) {
+    if (HasCursorDecorationEnabled(
+            config_, cursorDecorationNativeSuppressed_, cursorDecorationBlockedByAppBlacklist_) &&
+        hasCursorPoint_) {
         if (EnsureDecorationWindow()) {
             UpdateDecorationPlacement(cursorPt_);
             ShowWindow(decorationHwnd_, SW_SHOWNOACTIVATE);
             RenderDecoration();
         }
-    } else if (!HasCursorDecorationEnabled(config_)) {
+    } else if (!HasCursorDecorationEnabled(
+                   config_, cursorDecorationNativeSuppressed_, cursorDecorationBlockedByAppBlacklist_)) {
         HideDecorationWindow();
     }
+}
+
+void Win32InputIndicatorOverlay::SetCursorDecorationNativeSuppressed(bool suppressed) {
+    if (cursorDecorationNativeSuppressed_ == suppressed) {
+        return;
+    }
+    cursorDecorationNativeSuppressed_ = suppressed;
+    UpdateConfig(config_);
+}
+
+void Win32InputIndicatorOverlay::SetCursorDecorationBlockedByAppBlacklist(bool blocked) {
+    if (cursorDecorationBlockedByAppBlacklist_ == blocked) {
+        return;
+    }
+    cursorDecorationBlockedByAppBlacklist_ = blocked;
+    UpdateConfig(config_);
 }
 
 // ============================================================================
@@ -227,7 +253,8 @@ void Win32InputIndicatorOverlay::OnKey(const KeyEvent& ev) {
 void Win32InputIndicatorOverlay::OnMove(const ScreenPoint& pt) {
     cursorPt_ = ToNativePoint(pt);
     hasCursorPoint_ = true;
-    if (!HasCursorDecorationEnabled(config_)) {
+    if (!HasCursorDecorationEnabled(
+            config_, cursorDecorationNativeSuppressed_, cursorDecorationBlockedByAppBlacklist_)) {
         return;
     }
     if (!initialized_ && !Initialize()) {
@@ -281,7 +308,11 @@ LRESULT Win32InputIndicatorOverlay::OnWndProc(HWND hwnd, UINT msg, WPARAM wParam
                 eventLabel_.clear();
                 KillTimer(hwnd_, kIndicatorTimerId);
                 frameTimerArmed_ = false;
-                if (HasCursorDecorationEnabled(config_) && hasCursorPoint_) {
+                if (HasCursorDecorationEnabled(
+                        config_,
+                        cursorDecorationNativeSuppressed_,
+                        cursorDecorationBlockedByAppBlacklist_) &&
+                    hasCursorPoint_) {
                     RenderDecoration();
                 } else {
                     ShowWindow(hwnd_, SW_HIDE);
@@ -406,7 +437,9 @@ void Win32InputIndicatorOverlay::Render() {
 }
 
 void Win32InputIndicatorOverlay::RenderDecoration() {
-    if (!decorationHwnd_ || !HasCursorDecorationEnabled(config_)) {
+    if (!decorationHwnd_ ||
+        !HasCursorDecorationEnabled(
+            config_, cursorDecorationNativeSuppressed_, cursorDecorationBlockedByAppBlacklist_)) {
         return;
     }
     RenderDecorationToWindow(decorationHwnd_);
@@ -458,7 +491,9 @@ void Win32InputIndicatorOverlay::RenderToWindow(HWND targetHwnd) {
 }
 
 void Win32InputIndicatorOverlay::RenderDecorationToWindow(HWND targetHwnd) {
-    if (!targetHwnd || !HasCursorDecorationEnabled(config_)) {
+    if (!targetHwnd ||
+        !HasCursorDecorationEnabled(
+            config_, cursorDecorationNativeSuppressed_, cursorDecorationBlockedByAppBlacklist_)) {
         return;
     }
 

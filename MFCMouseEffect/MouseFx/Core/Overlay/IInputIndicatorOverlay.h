@@ -31,6 +31,12 @@ public:
     virtual void OnMove(const ScreenPoint& pt) {
         (void)pt;
     }
+    virtual void SetCursorDecorationNativeSuppressed(bool suppressed) {
+        (void)suppressed;
+    }
+    virtual void SetCursorDecorationBlockedByAppBlacklist(bool blocked) {
+        (void)blocked;
+    }
 
     virtual bool ReadDebugState(InputIndicatorDebugState* outState) const {
         (void)outState;

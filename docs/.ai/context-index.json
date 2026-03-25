@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-03-25T02:43:15.657Z",
+  "generated_at": "2026-03-25T05:04:53.855Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -85,14 +85,14 @@
       ],
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 220,
-      "size_bytes": 24217,
-      "estimated_tokens": 6055,
+      "line_count": 223,
+      "size_bytes": 25085,
+      "estimated_tokens": 6272,
       "max_read_tokens": 1100,
       "line_limit": 220,
-      "line_limit_exceeded": false,
-      "hash_sha1": "46ba23aacd61e6cec1a2cfdc300008ba72d59a90",
-      "updated_at": "2026-03-25T02:40:56.183Z"
+      "line_limit_exceeded": true,
+      "hash_sha1": "9fe82d5c38318752bb134cf8148109985c50f45f",
+      "updated_at": "2026-03-25T05:02:31.383Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -211,18 +211,19 @@
         "swift",
         "macos",
         "windows",
-        "abi"
+        "abi",
+        "routing"
       ],
       "summary": "cursor-decoration-plugin-contract",
       "when_to_read": "Read when task touches wasm runtime, plugin ABI, or sample behavior.",
-      "line_count": 59,
-      "size_bytes": 3380,
-      "estimated_tokens": 845,
+      "line_count": 62,
+      "size_bytes": 4213,
+      "estimated_tokens": 1054,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "48a260f75a8682f4c6658c0534ef907c4e12d89f",
-      "updated_at": "2026-03-25T02:40:56.183Z"
+      "hash_sha1": "af8863a69ce57cfbaf2e04245f80f6d4c1a9916d",
+      "updated_at": "2026-03-25T05:02:31.383Z"
     },
     {
       "id": "docs/architecture/custom-effects-wasm-route.md",
