@@ -7,7 +7,7 @@
 - Primary host: macOS.
 - Delivery order: macOS first, Windows regression-free, Linux compile/contract-level.
 - macOS stack rule: new capability modules are Swift-first; avoid expanding `.mm` for large new modules.
-- Cross-machine workflow: macOS is the development source, Windows is the synced validation workspace via `Syncthing`, and Windows handoff should default to `F:\language\cpp\code\MFCMouseEffect`.
+- Cross-machine workflow: macOS is the development source, Windows is the synced validation workspace via `Syncthing`, and Windows-side command execution should default to direct SSH against `F:\language\cpp\code\MFCMouseEffect`.
 
 ## Active Product Goals
 - Keep wasm runtime bounded-but-expressive with host-owned render boundaries.
@@ -212,7 +212,7 @@
 - Current package policy: minimal pet runtime assets only, wasm demo plugin ships runtime files only, packaged host binary is stripped in-bundle, `Install/macos/` is git-ignored, and Gatekeeper/notarization is still deferred.
 ### Local Dev Sync
 - Repository root carries a Syncthing-focused `.stignore`; root build/cache ignores should stay root-anchored (`/x64`, `/Win32`, `/Debug`, `/Release`, `/build`, `/out`, etc.) so similarly named source paths under `tools/` are not suppressed.
-- Windows-side manual command handoff should use the synced root file `windows-manual-handoff.md`; `windows-manual-handoff.tmp` stays local scratch only.
+- Windows-side build/package/log commands should be handled through direct SSH from macOS by default; no synced manual handoff file is maintained for normal command steps.
 - Build outputs, IDE caches, package outputs, dependency caches, and generated `docs/.ai` maps should stay local.
 ## Contracts That Must Not Drift
 - Keep stdin JSON command compatibility.

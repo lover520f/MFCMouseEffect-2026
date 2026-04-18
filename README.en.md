@@ -17,11 +17,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/sqmw/MFCMouseEffect/releases">📦 Download</a> ·
-  <a href="./docs/README.md">📖 Docs</a> ·
-  <a href="https://github.com/sqmw/MFCMouseEffect/issues">🐛 Issues</a> ·
-  <a href="#-contributing">🤝 Contributing</a> ·
-  <a href="https://github.com/sqmw/MFCMouseEffect">⭐ Star</a>
+  <a href="https://github.com/sqmw/MFCMouseEffect/releases">Download</a> ·
+  <a href="./docs/README.md">Docs</a> ·
+  <a href="https://github.com/sqmw/MFCMouseEffect/issues">Issues</a> ·
+  <a href="#-contributing">Contributing</a> ·
+  <a href="https://github.com/sqmw/MFCMouseEffect">Star</a>
 </p>
 
 <p align="center">
@@ -31,21 +31,21 @@
 ---
 
 <p align="center">
-  <img src="./docs/images/placeholder_mouse_companion.webp" width="720" alt="MFCMouseEffect Mouse Companion Showcase">
+  <img src="./docs/images/placeholder_mouse_companion.webp" width="720" alt="MFCMouseEffect Mouse Companion showcase">
 </p>
 
 <p align="center"><i>Mouse Companion — more than an effect demo, also an important long-term capability direction for the project</i></p>
 
 ## ✨ Why Choose MFCMouseEffect
 
-- 🎯 **Five Independent Effect Lanes** — Click, trail, scroll, hold, hover — each is a separate capability surface, not a skin swap
-- 🔌 **WASM Plugin Runtime** — Write your own effects and indicators in WASM; the host controls rendering boundaries, plugins handle logic only
-- ⌨️ **Input Indicator** — Visualize mouse clicks, wheel direction, keyboard combos like `Cmd+Tab` and `W+ x3` at a glance
-- 🤖 **Automation Mapping** — Map mouse actions, wheel inputs, and gestures to shortcut injection — not just eye candy, real productivity
-- 🐾 **Mouse Companion** — Plugin-first Mouse Companion route: a cross-platform desktop pet that follows your cursor
-- 🌐 **Unified Settings** — Shared Web settings UI across platforms — single config path, synchronized state, tunable and recoverable
+- 🎯 **Five independent effect lanes** — click, trail, scroll, hold, and hover are separate capability surfaces, not one animation reskinned five times
+- 🔌 **WASM plugin runtime** — write your own effects and indicators in WASM while the host keeps rendering boundaries under control
+- ⌨️ **Input indicator** — visualize mouse clicks, wheel direction, and keyboard combos like `Cmd+Tab` and `W+ x3`
+- 🤖 **Automation mapping** — map mouse actions, wheel input, and gestures to shortcut injection, turning visual feedback into workflow power
+- 🐾 **Mouse Companion** — a plugin-first route for a cross-platform desktop companion that follows your cursor
+- 🌐 **Unified settings UI** — shared Web settings across platforms, with one config flow, synchronized state, and recoverable behavior
 
-> Great for screen recording, tutorials, and live demos. Also great for developers who want bounded WASM extensibility inside a C++ host.
+> Great for screen recording, tutorials, live demos, and developers who want bounded WASM extensibility inside a C++ host.
 
 ## 🖼️ Effect Preview
 
@@ -76,36 +76,36 @@
   </tr>
 </table>
 
-- **Input Indicator** — Show mouse clicks, wheel direction, and keyboard combos together, so signals like `L x2`, `W+ x3`, and `Cmd+Tab` stay obvious in recordings and demos
-- **Automation Mapping** — Map mouse actions, wheel input, and gestures to shortcut injection, so the feature goes beyond visual feedback into real workflow automation
+- **Input Indicator** — show mouse clicks, wheel direction, and keyboard combos together, so signals like `L x2`, `W+ x3`, and `Cmd+Tab` stay obvious in recordings and demos
+- **Automation Mapping** — map mouse actions, wheel input, and gestures to shortcut injection, so input feedback can participate in real productivity flows
 
 <details>
-<summary><b>Expand for the best-fit scenarios</b></summary>
+<summary><b>Expand for best-fit scenarios</b></summary>
 
 - **Screen recording / tutorials / live demos**: viewers can see not only where the cursor is, but also what you clicked, switched, or triggered
-- **Productivity tools / desktop enhancement**: gestures and input mapping are not just decorative layers, they can participate in real interaction flows
+- **Productivity tools / desktop enhancement**: gestures and input mapping are not just decorative layers; they can participate in real interaction flows
 
 </details>
 
 ## 🤝 Contributing
 
-**The project is actively growing — there are many directions waiting for you!**
+**The project is actively growing, and many directions are ready for contributors.**
 
 | Area | Description | Entry Point |
 |:---|:---|:---|
-| 🎨 **New Visual Effects** | Design new click, trail, hover styles | [Effect Docs](./docs/README.md) |
-| 🔌 **WASM Plugins** | Write new plugins or improve tooling | [Plugin Template](./examples/wasm-plugin-template/README.md) |
-| 🖥️ **Cross-Platform Parity** | Windows / macOS behavior alignment | [Issue Tracker](https://github.com/sqmw/MFCMouseEffect/issues) |
-| 🌐 **WebSettings** | Settings UI/UX improvements | [WebUI Source](./MFCMouseEffect/WebUIWorkspace/) |
-| 🐾 **Mouse Companion** | Companion animations, interactions & plugins | [Companion Roadmap (Chinese)](./docs/architecture/mouse-companion-plugin-landing-roadmap.zh-CN.md) |
-| 📝 **Docs & Testing** | Documentation, self-checks, regression tooling | [Docs](./docs/) |
+| 🎨 **New visual effects** | Design new click, trail, hover styles | [Effect docs](./docs/README.md) |
+| 🔌 **WASM plugins** | Write new plugins or improve tooling | [Plugin template](./examples/wasm-plugin-template/README.md) |
+| 🖥️ **Cross-platform parity** | Align Windows / macOS behavior | [Issue Tracker](https://github.com/sqmw/MFCMouseEffect/issues) |
+| 🌐 **WebSettings** | Improve settings UI and UX | [WebUI source](./MFCMouseEffect/WebUIWorkspace/) |
+| 🐾 **Mouse Companion** | Companion animations, interactions, and plugins | [Companion roadmap](./docs/architecture/mouse-companion-plugin-landing-roadmap.zh-CN.md) |
+| 📝 **Docs & testing** | Documentation, self-checks, and regression tooling | [Docs](./docs/) |
 
 **Recommended flow:**
 
 1. Open an [Issue](https://github.com/sqmw/MFCMouseEffect/issues) describing your idea
-2. Brief discussion to align on direction
+2. Have a brief discussion to align on direction
 3. Submit a PR
-4. For larger architecture changes, email first
+4. For larger features or architecture changes, email first
 
 📮 **Contact:** `ksun22515@gmail.com`
 
@@ -114,12 +114,12 @@
 ### Windows
 
 ```powershell
-# Recommended: Open MFCMouseEffect.slnx in Visual Studio 2026, build Release | x64
+# Recommended: open MFCMouseEffect.slnx in Visual Studio 2026 and build Release | x64
 
 # Or use the wrapper commands
 .\mfx.cmd build            # Default Release | x64
-.\mfx.cmd build --shipping  # Lean delivery build
-.\mfx.cmd package           # Generate installer
+.\mfx.cmd build --shipping # Lean delivery build
+.\mfx.cmd package          # Generate installer
 ```
 
 ### macOS
@@ -130,18 +130,18 @@
 ./mfx run                         # Build and run
 ./mfx run-no-build                # Run without rebuilding
 ./mfx run-no-build --seconds 30   # Auto-stop for quick validation
-./mfx package                      # Package
+./mfx package                     # Package
 ```
 
-> ⚠️ macOS requires **Accessibility** and **Input Monitoring** permissions for global input capture.
+> macOS requires **Accessibility** and **Input Monitoring** permissions for global input capture.
 
 ## 📊 Platform Status
 
 | Platform | Status | Notes |
 |:---|:---:|:---|
-| **Windows 10+** | ✅ Stable mainline | Most complete capability set, regression compatibility preserved |
-| **macOS** | 🔥 Active mainline | Current priority development lane |
-| **Linux** | 🔄 Follow lane | Compile gate and contract coverage |
+| **Windows 10+** | Stable mainline | Most complete capability set, regression compatibility preserved |
+| **macOS** | Active mainline | Current priority development lane |
+| **Linux** | Follow lane | Compile gate and contract coverage |
 
 > Current priority: `macOS mainline first`, while keeping Windows behavior regression-free.
 
@@ -150,10 +150,10 @@
 
 ### Architecture Design
 
-- **Host-owned rendering boundary** — Plugins compute logic; the host owns rendering execution, budget checks, fallback, and resources
+- **Host-owned rendering boundary** — plugins compute logic; the host owns rendering execution, budget checks, fallback, and resources
 - **Clear module layering** — Core / Platform / Server / WebUI / Tools / Docs each have well-defined responsibilities
-- **Progressive extensibility** — Built-in effects work, WASM plugins can layer on top, native fallback catches the rest
-- **Cross-platform semantic alignment** — Windows and macOS share core semantics and settings surface
+- **Progressive extensibility** — built-in effects work, WASM plugins can layer on top, and native fallback catches the rest
+- **Cross-platform semantic alignment** — Windows and macOS share core semantics and settings surfaces
 - **Built-in observability** — WebSettings, diagnostics, regression scripts, and self-checks were designed together
 
 ### WASM Plugin Capabilities
@@ -177,12 +177,12 @@
 ```text
 MFCMouseEffect/
 ├── MFCMouseEffect/
-│   ├── MouseFx/                 # Core engine: effects, automation, wasm, diagnostics, server
-│   ├── Platform/                # Windows / macOS / Linux implementations
+│   ├── MouseFx/                 # Core: effects, automation, WASM, diagnostics, server
+│   ├── Platform/                # Windows / macOS / Linux platform implementations
 │   ├── WebUIWorkspace/          # Svelte settings UI source
 │   ├── Runtime/                 # Runtime resources and dependencies
 │   ├── Assets/                  # Companion and visual assets
-│   └── WasmRuntimeBridge/       # WASM runtime bridge layer
+│   └── WasmRuntimeBridge/       # WASM runtime bridge
 ├── tools/
 │   ├── platform/regression/     # Regression scripts
 │   ├── platform/manual/         # Manual and self-check helpers
@@ -199,23 +199,23 @@ MFCMouseEffect/
 
 ### Effects not showing on macOS?
 
-Check system permissions: `Accessibility` + `Input Monitoring`. The runtime degrades gracefully when missing and recovers once permissions are granted.
+Check system permissions: `Accessibility` + `Input Monitoring`. The runtime degrades gracefully when permissions are missing and recovers once they are restored.
 
 ### Why is GPU not enabled by default on Windows?
 
-Stability — the default is `--no-gpu`. Use `./mfx build --gpu` when you explicitly want the GPU path.
+Stability and payload size. The default is `--no-gpu`. Use `./mfx.cmd build --gpu` when you explicitly want the GPU route.
 
-### What's the difference between Shipping and Release?
+### What is the difference between Shipping and Release?
 
-Shipping keeps the main runtime and WebUI but trims heavy diagnostics and deep test surfaces. Better for delivery.
+Shipping keeps the main runtime and WebUI but trims heavy diagnostics and deep test surfaces. It is better for delivery.
 
 ### Settings revert after Apply?
 
-Many settings are backend-state-driven. If the backend binding didn't succeed, the UI reconciles to the real state. Check manifest paths and lane status first.
+Many settings are backend-state-driven. If the backend binding did not succeed, the UI reconciles to the real state. Check manifest paths and lane status first.
 
 ### macOS package blocked on first launch?
 
-Current macOS builds are unsigned. Gatekeeper may block first launch — right-click `Open` in Finder to allow it.
+Current macOS builds are unsigned. Gatekeeper may block first launch; right-click `Open` in Finder to allow it.
 
 </details>
 
@@ -226,13 +226,13 @@ Current macOS builds are unsigned. Gatekeeper may block first launch — right-c
 # Full POSIX suite
 ./tools/platform/regression/run-posix-regression-suite.sh --platform auto
 
-# Effects-focused suite
+# Effects-focused regression
 ./tools/platform/regression/run-posix-effects-regression-suite.sh --platform auto
 
-# Automation contract suite
+# Automation contract regression
 ./tools/platform/regression/run-posix-core-automation-contract-regression.sh --platform auto
 
-# WASM-focused suite
+# WASM-focused regression
 ./tools/platform/regression/run-posix-wasm-regression-suite.sh --platform auto
 ```
 
@@ -250,7 +250,7 @@ Current macOS builds are unsigned. Gatekeeper may block first launch — right-c
 
 ## 📄 License
 
-This project is released under the [MIT License](./LICENSE). Free to use, modify, and distribute.
+This project is released under the [MIT License](./LICENSE). Free to use, modify, and distribute under the license terms.
 
 ---
 

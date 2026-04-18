@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-03T12:59:46.724Z",
+  "generated_at": "2026-04-18T14:37:06.830Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -46,14 +46,14 @@
       ],
       "summary": "Repository-level collaboration and engineering rules for AI agents and developers.",
       "when_to_read": "Always read first.",
-      "line_count": 162,
-      "size_bytes": 9517,
-      "estimated_tokens": 2380,
+      "line_count": 159,
+      "size_bytes": 9418,
+      "estimated_tokens": 2355,
       "max_read_tokens": 1500,
       "line_limit": 260,
       "line_limit_exceeded": false,
-      "hash_sha1": "8bdc9fef4e1096de5f7ebd9aafadb348d7f2b3ad",
-      "updated_at": "2026-03-25T15:13:05.677Z"
+      "hash_sha1": "c12c19e052a0bae12a93f1f74f1f8ee027ddb8da",
+      "updated_at": "2026-04-18T14:35:20.878Z"
     },
     {
       "id": "docs/agent-context/current.md",
@@ -86,13 +86,13 @@
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
       "line_count": 227,
-      "size_bytes": 26318,
-      "estimated_tokens": 6580,
+      "size_bytes": 26370,
+      "estimated_tokens": 6593,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": true,
-      "hash_sha1": "cd00ea70c3706605657478c710b07aa745a70377",
-      "updated_at": "2026-04-01T01:46:24.241Z"
+      "hash_sha1": "5f9580699508bbdd046311f672d36d1b87fcf11f",
+      "updated_at": "2026-04-18T14:35:30.500Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -1373,14 +1373,14 @@
       ],
       "summary": "1. Build Windows release:",
       "when_to_read": "Read when executing manual/regression workflows.",
-      "line_count": 76,
-      "size_bytes": 3454,
-      "estimated_tokens": 864,
+      "line_count": 87,
+      "size_bytes": 3883,
+      "estimated_tokens": 971,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "e76d78c0b1a0978cda678bcdf53f4a901451dd7a",
-      "updated_at": "2026-03-25T15:13:05.764Z"
+      "hash_sha1": "359bb6fb7ff4474ccdd66e94ed18699cc5befb7b",
+      "updated_at": "2026-04-18T14:20:54.027Z"
     },
     {
       "id": "docs/ops/windows-mouse-companion-manual-checklist.md",

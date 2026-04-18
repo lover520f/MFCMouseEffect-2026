@@ -100,7 +100,11 @@ VersionInfoProductName={#MyAppName}
 
 OutputDir=windows
 OutputBaseFilename=MFCMouseEffect-windows-x64-setup-{#MyAppVersion}
-Compression=lzma
+; Prefer smallest setup artifact size over compile time.
+; Inno Setup 6 supports lzma2 which typically compresses better for large binary payloads.
+; NOTE: Inno Setup does not support a standalone `CompressionLevel` directive.
+; Put the compression level in the `Compression` value instead.
+Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 SetupIconFile=..\MFCMouseEffect\res\MFCMouseEffect.ico

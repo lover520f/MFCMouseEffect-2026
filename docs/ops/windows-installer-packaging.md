@@ -69,6 +69,17 @@
    - use Web settings `launch_at_startup`
    - confirm native platform registration is applied/removed correctly
 
+## Size Notes
+- The installer currently uses Inno Setup with `Compression=lzma2/ultra64` (size-first; slower to compile).
+- Biggest size drivers are typically:
+  - `webui/` bundle size
+  - optional GPU lane payload (`webgpu_dawn.dll`)
+- Quick size comparison workflow:
+  1. Build two installers back-to-back:
+     - `./mfx package --no-gpu`
+     - `./mfx package --gpu`
+  2. Compare the generated `Install/windows/*.exe` sizes.
+
 ## Known Boundary
 - `--gpu` package size is still dominated by:
   - `webgpu_dawn.dll`

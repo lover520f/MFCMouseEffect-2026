@@ -55,18 +55,15 @@ Include short evidence (code path/config/runtime behavior). If user-visible beha
   - macOS workspace is the primary development source
   - Windows workspace is used for build / run / visual validation
   - do not tell the user to manually copy the latest code to Windows when the task is part of the normal sync workflow
-- Default Windows path assumption for commands and handoff:
+- Default Windows path assumption for commands:
   - `F:\language\cpp\code\MFCMouseEffect`
 - When giving Windows manual commands, prefer the synced Windows workspace path directly instead of a generic placeholder path unless the user asks otherwise.
 - Treat sync-specific issues as workflow issues first:
   - if Windows sees unexpected local changes, conflict files, or failed items, consider Syncthing state / ignore rules / receive-only behavior before blaming code changes
   - do not ask the user to manually re-copy files as the first fallback when the synced workspace should already contain the latest sources
-- Windows command handoff:
-  - The synced user-facing handoff file is:
-    - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/windows-manual-handoff.md`
-  - The local-only scratch file remains:
-    - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/windows-manual-handoff.tmp`
-  - If I need the user to do any Windows-side manual step, I must write the final short step into the synced `.md` file instead of leaving it only in the local `.tmp`.
+- Windows command execution:
+  - Prefer direct SSH execution from macOS for Windows-side build, packaging, log collection, and environment checks.
+  - Do not maintain a synced manual handoff file for normal Windows steps; use direct SSH first, and only ask the user for manual action when remote execution is unavailable or the task genuinely requires UI interaction.
 
 ### macOS native stack evolution (Decision: 2026-02-27)
 - Do not expand `.mm` surface area for new feature modules by default.
