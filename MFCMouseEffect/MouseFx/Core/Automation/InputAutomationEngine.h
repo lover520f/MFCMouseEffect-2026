@@ -50,6 +50,23 @@ public:
         InputModifierState modifiers{};
     };
 
+    struct ActionStepEvent final {
+        uint32_t index = 0;
+        std::string type{};
+        std::string status{};
+        std::string target{};
+        std::string detail{};
+    };
+
+    struct ActionRunEvent final {
+        uint64_t seq = 0;
+        uint64_t timestampMs = 0;
+        std::string status{};
+        std::string stopReason{};
+        bool executed = false;
+        std::vector<ActionStepEvent> steps{};
+    };
+
     struct Diagnostics final {
         bool automationEnabled = false;
         bool gestureEnabled = false;
@@ -77,6 +94,9 @@ public:
         InputModifierState lastModifiers{};
         uint64_t lastEventSeq = 0;
         std::vector<GestureRouteEvent> recentEvents{};
+        ActionRunEvent lastActionRun{};
+        uint64_t lastActionRunSeq = 0;
+        std::vector<ActionRunEvent> recentActionRuns{};
     };
 
     InputAutomationEngine();
@@ -112,6 +132,7 @@ private:
     struct QueuedActionChain final {
         std::vector<AutomationAction> actions{};
         uint64_t generation = 0;
+        uint64_t runSeq = 0;
     };
 
     using ActionHistoryItem = automation_match::ActionHistoryEntry;
@@ -166,9 +187,13 @@ private:
         const GestureMatchWindow* bestWindow = nullptr,
         double runnerUpScore = -1.0,
         const std::vector<ScreenPoint>* previewPoints = nullptr);
+    void UpdateActionDiagnostics(const ActionRunEvent& event);
     bool ShouldAppendGestureRouteEventLocked(const GestureRouteEvent& event) const;
     bool QueueBindingActions(const AutomationKeyBinding& binding);
-    bool ExecuteQueuedActions(const std::vector<AutomationAction>& actions, uint64_t generation);
+    ActionRunEvent ExecuteQueuedActions(
+        const std::vector<AutomationAction>& actions,
+        uint64_t generation,
+        uint64_t runSeq);
     bool WaitForActionDelay(uint32_t delayMs, uint64_t generation);
     bool IsActionGenerationCurrent(uint64_t generation) const;
     void ActionWorkerLoop();
@@ -211,6 +236,7 @@ private:
     std::deque<QueuedActionChain> pendingActionChains_{};
     std::thread actionWorker_{};
     uint64_t actionQueueGeneration_ = 0;
+    uint64_t actionRunSeq_ = 0;
     bool actionWorkerStop_ = false;
 };
 

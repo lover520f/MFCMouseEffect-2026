@@ -133,6 +133,27 @@ json BuildInputAutomationGestureRouteStatusState(const AppController* controller
         return out;
     };
 
+    auto buildActionRun = [](const InputAutomationEngine::ActionRunEvent& run) {
+        json steps = json::array();
+        for (const auto& step : run.steps) {
+            steps.push_back({
+                {"index", step.index},
+                {"type", step.type},
+                {"status", step.status},
+                {"target", step.target},
+                {"detail", step.detail},
+            });
+        }
+        return json({
+            {"seq", run.seq},
+            {"timestamp_ms", run.timestampMs},
+            {"status", run.status},
+            {"stop_reason", run.stopReason},
+            {"executed", run.executed},
+            {"steps", std::move(steps)},
+        });
+    };
+
     json out = json::object();
     out["automation_enabled"] = diag.automationEnabled;
     out["gesture_enabled"] = diag.gestureEnabled;
@@ -158,11 +179,13 @@ json BuildInputAutomationGestureRouteStatusState(const AppController* controller
     out["last_preview_path_hash"] = diag.lastPreviewPathHash;
     out["last_preview_points"] = buildPreviewPoints(diag.lastPreviewPoints);
     out["last_event_seq"] = diag.lastEventSeq;
+    out["last_action_run_seq"] = diag.lastActionRunSeq;
     out["last_modifiers"] = {
         {"primary", diag.lastModifiers.primary},
         {"shift", diag.lastModifiers.shift},
         {"alt", diag.lastModifiers.alt},
     };
+    out["last_action_run"] = buildActionRun(diag.lastActionRun);
     json recentEvents = json::array();
     for (const InputAutomationEngine::GestureRouteEvent& event : diag.recentEvents) {
         recentEvents.push_back({
@@ -193,6 +216,11 @@ json BuildInputAutomationGestureRouteStatusState(const AppController* controller
         });
     }
     out["recent_events"] = std::move(recentEvents);
+    json recentActionRuns = json::array();
+    for (const auto& run : diag.recentActionRuns) {
+        recentActionRuns.push_back(buildActionRun(run));
+    }
+    out["recent_action_runs"] = std::move(recentActionRuns);
     return out;
 }
 

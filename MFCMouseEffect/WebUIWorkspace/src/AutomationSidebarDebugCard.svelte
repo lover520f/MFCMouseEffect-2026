@@ -4,6 +4,7 @@
     formatGestureRouteModifiers,
     gestureRouteSourceLabel,
     normalizeGestureRouteStatus,
+    recentActionRuns,
     recentGestureRouteEvents,
     selectLatestGestureEvent,
     selectLatestMatchedGestureEvent,
@@ -30,6 +31,7 @@
   let recognizedGesturePreviewDisplay = null;
   let lastRecognizedPreviewPoints = [];
   let lastMatchedPreviewPoints = [];
+  let recentActionRunItems = [];
   let recognizedGestureHint = '';
   let matchedGestureHint = '';
   let shouldResetRecognizedPreview = false;
@@ -73,6 +75,7 @@
   $: latestGestureEvent = selectLatestGestureEvent(routeStatus);
   $: latestRecognizedGestureEvent = selectLatestRecognizedGestureEvent(routeStatus);
   $: latestMatchedGestureEvent = selectLatestMatchedGestureEvent(routeStatus);
+  $: recentActionRunItems = recentActionRuns(routeStatus, 4);
   $: shouldResetRecognizedPreview = shouldResetPreviewByRouteStatus(routeStatus);
   $: recognizedGestureId = `${routeStatus?.lastRecognizedGestureId || latestRecognizedGestureEvent?.recognizedGestureId || latestGestureEvent?.gestureId || ''}`.trim();
   $: matchedGestureId = `${routeStatus?.lastMatchedGestureId || latestMatchedGestureEvent?.matchedGestureId || ''}`.trim();
@@ -135,6 +138,25 @@
     const stage = event.stage || '-';
     const reason = event.reason || '-';
     return `${stage} · ${reason}`;
+  }
+
+  function actionRunLine(run) {
+    if (!run) {
+      return '-';
+    }
+    const status = run.status || '-';
+    const reason = run.stopReason || '-';
+    return `${status} · ${reason}`;
+  }
+
+  function actionStepLine(step) {
+    if (!step) {
+      return '-';
+    }
+    const type = step.type || '-';
+    const target = step.target || '-';
+    const status = step.status || '-';
+    return `${type} · ${target} · ${status}`;
   }
 </script>
 
@@ -273,6 +295,10 @@
         <strong>{boolLabel(routeStatus.lastInjected, i18n)}</strong>
       </div>
       <div class="workspace-debug-item">
+        <span>{t('label_auto_gesture_debug_last_action_run', '最近执行动作')}</span>
+        <strong>{routeStatus.lastActionRun ? actionRunLine(routeStatus.lastActionRun) : '-'}</strong>
+      </div>
+      <div class="workspace-debug-item">
         <span>{t('label_auto_gesture_debug_source', '匹配来源')}</span>
         <strong>{gestureRouteSourceLabel(routeStatus, i18n)}</strong>
       </div>
@@ -309,6 +335,33 @@
                 {boolLabel(event.matched, i18n)}/{boolLabel(event.injected, i18n)}
               </span>
             </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+    {#if recentActionRunItems.length > 0}
+      <div class="workspace-debug-events">
+        <div class="workspace-debug-events__title">
+          {t('label_auto_gesture_debug_recent_action_runs', '最近动作执行')}
+        </div>
+        <div class="workspace-debug-events__list">
+          {#each recentActionRunItems as run (`run_${run.seq}_${run.timestampMs}`)}
+            <div class="workspace-debug-event-row">
+              <span class="workspace-debug-event-row__seq">#{run.seq}</span>
+              <span class="workspace-debug-event-row__line">{actionRunLine(run)}</span>
+              <span class="workspace-debug-event-row__tag">{boolLabel(run.executed, i18n)}</span>
+            </div>
+            {#if run.steps.length > 0}
+              <div class="workspace-debug-action-steps">
+                {#each run.steps as step (`step_${run.seq}_${step.index}`)}
+                  <div class="workspace-debug-action-step">
+                    <span class="workspace-debug-action-step__index">{step.index + 1}.</span>
+                    <span class="workspace-debug-action-step__line">{actionStepLine(step)}</span>
+                    <span class="workspace-debug-action-step__detail">{step.detail || '-'}</span>
+                  </div>
+                {/each}
+              </div>
+            {/if}
           {/each}
         </div>
       </div>
@@ -481,6 +534,35 @@
     border-radius: 999px;
     padding: 2px 6px;
     background: rgba(238, 246, 255, 0.9);
+    white-space: nowrap;
+  }
+
+  .workspace-debug-action-steps {
+    display: grid;
+    gap: 4px;
+    margin: -2px 0 4px 22px;
+  }
+
+  .workspace-debug-action-step {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 6px;
+    align-items: center;
+    font-size: 11px;
+    color: #35506c;
+  }
+
+  .workspace-debug-action-step__index {
+    color: #6a86a5;
+    font-weight: 700;
+  }
+
+  .workspace-debug-action-step__line {
+    min-width: 0;
+  }
+
+  .workspace-debug-action-step__detail {
+    color: #6a86a5;
     white-space: nowrap;
   }
 </style>

@@ -37,6 +37,43 @@ function asPreviewPoints(value) {
   return out;
 }
 
+function normalizeActionStep(value) {
+  const source = asObject(value);
+  if (!source) {
+    return null;
+  }
+  return {
+    index: asNumber(source.index, 0),
+    type: asText(source.type),
+    status: asText(source.status),
+    target: asText(source.target),
+    detail: asText(source.detail),
+  };
+}
+
+function normalizeActionRun(value) {
+  const source = asObject(value);
+  if (!source) {
+    return null;
+  }
+  const seq = asNumber(source.seq, 0);
+  const status = asText(source.status);
+  const stopReason = asText(source.stop_reason);
+  if (seq <= 0 && !status && !stopReason) {
+    return null;
+  }
+  return {
+    seq,
+    timestampMs: asNumber(source.timestamp_ms, 0),
+    status,
+    stopReason,
+    executed: asBool(source.executed),
+    steps: (Array.isArray(source.steps) ? source.steps : [])
+      .map(normalizeActionStep)
+      .filter((step) => !!step),
+  };
+}
+
 function normalizeGestureRouteEvent(value) {
   const source = asObject(value);
   if (!source) {
@@ -109,6 +146,8 @@ export function normalizeGestureRouteStatus(state) {
     lastPreviewPathHash: asNumber(source.last_preview_path_hash, 0),
     lastPreviewPoints: asPreviewPoints(source.last_preview_points),
     lastEventSeq: asNumber(source.last_event_seq, 0),
+    lastActionRunSeq: asNumber(source.last_action_run_seq, 0),
+    lastActionRun: normalizeActionRun(source.last_action_run),
     modifiers: {
       primary: modifiers.primary === true,
       shift: modifiers.shift === true,
@@ -117,6 +156,9 @@ export function normalizeGestureRouteStatus(state) {
     recentEvents: (Array.isArray(source.recent_events) ? source.recent_events : [])
       .map(normalizeGestureRouteEvent)
       .filter((event) => !!event),
+    recentActionRuns: (Array.isArray(source.recent_action_runs) ? source.recent_action_runs : [])
+      .map(normalizeActionRun)
+      .filter((run) => !!run),
   };
 }
 
@@ -193,4 +235,12 @@ export function selectLatestRecognizedGestureEvent(routeStatus) {
 
 export function selectLatestMatchedGestureEvent(routeStatus) {
   return selectLatestEventByGestureField(routeStatus, 'matchedGestureId');
+}
+
+export function recentActionRuns(routeStatus, maxCount = 4) {
+  const source = Array.isArray(routeStatus?.recentActionRuns) ? routeStatus.recentActionRuns : [];
+  if (source.length <= 0) {
+    return [];
+  }
+  return source.slice(-Math.max(1, maxCount)).reverse();
 }

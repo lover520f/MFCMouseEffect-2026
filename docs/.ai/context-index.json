@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-04-20T13:28:45.581Z",
+  "generated_at": "2026-04-20T15:12:41.908Z",
   "repo_root": "/Users/sunqin/study/language/cpp/code/MFCMouseEffect",
   "budgets": {
     "priority": {
@@ -85,14 +85,14 @@
       ],
       "summary": "current",
       "when_to_read": "Read after P0 for current decisions and active constraints.",
-      "line_count": 218,
-      "size_bytes": 26346,
-      "estimated_tokens": 6587,
+      "line_count": 220,
+      "size_bytes": 27457,
+      "estimated_tokens": 6865,
       "max_read_tokens": 1100,
       "line_limit": 220,
       "line_limit_exceeded": false,
-      "hash_sha1": "b0c0562f04a440686aa4a7dc272b0c992dbac5fa",
-      "updated_at": "2026-04-20T11:45:23.839Z"
+      "hash_sha1": "32a9824f91c4679795e50de93642d8f8d3fd017d",
+      "updated_at": "2026-04-20T15:08:33.444Z"
     },
     {
       "id": "docs/agent-context/p2-capability-index.md",
@@ -1100,14 +1100,14 @@
       ],
       "summary": "把当前“鼠标动作 / 手势 -> 快捷键注入”的自动化映射，逐步升级为可被普通用户理解、可被高级用户扩展、可和 BetterTouchTool / X-Mouse Button Control / SteerMouse 做正面对比的桌面输入自动化能力。",
       "when_to_read": "Read when task touches automation mapping or gesture recognition.",
-      "line_count": 212,
-      "size_bytes": 9873,
-      "estimated_tokens": 2469,
+      "line_count": 214,
+      "size_bytes": 10165,
+      "estimated_tokens": 2542,
       "max_read_tokens": 750,
       "line_limit": 0,
       "line_limit_exceeded": false,
-      "hash_sha1": "e4857fc54e01152c8aba5fd227fdf08bb0fb9382",
-      "updated_at": "2026-04-20T11:45:09.052Z"
+      "hash_sha1": "ea7ca59b663649bb2cc7704a714f02f96c9b0d7c",
+      "updated_at": "2026-04-20T13:36:49.720Z"
     },
     {
       "id": "docs/automation/gesture-calibration-baseline.md",

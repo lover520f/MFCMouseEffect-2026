@@ -44,6 +44,7 @@ constexpr double kPressedNoisyMaxStartEndRatio = 0.12;
 constexpr double kPressedNoisyHighTurnDensity = 3.8;
 constexpr double kPressedNoisyFastPxPerMs = 3.4;
 constexpr size_t kDiagnosticsGestureEventCap = 30;
+constexpr size_t kDiagnosticsActionRunCap = 12;
 constexpr int kDefaultDebugPreviewMaxPoints = 180;
 constexpr size_t kButtonlessPreviewTrailCap = 96;
 constexpr double kDefaultCustomMinEffectiveStrokeLengthPx = 18.0;
@@ -119,6 +120,33 @@ int EnvIntClamped(const char* key, int fallback, int minValue, int maxValue) {
     } catch (...) {
         return fallback;
     }
+}
+
+uint64_t NowDiagnosticsTimestampMs() {
+    return static_cast<uint64_t>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch())
+            .count());
+}
+
+std::string NormalizeActionTypeForDiagnostics(const AutomationAction& action) {
+    return ToLowerAscii(TrimAscii(action.type));
+}
+
+std::string ActionTargetForDiagnostics(const AutomationAction& action, const std::string& type) {
+    if (type == "send_shortcut") {
+        return TrimAscii(action.shortcut);
+    }
+    if (type == "open_url") {
+        return TrimAscii(action.url);
+    }
+    if (type == "launch_app") {
+        return TrimAscii(action.appPath);
+    }
+    if (type == "delay") {
+        return std::to_string(action.delayMs) + "ms";
+    }
+    return {};
 }
 
 int DebugPreviewPointCap() {
@@ -596,17 +624,47 @@ void InputAutomationEngine::ClearPendingActionsLocked() {
 
 bool InputAutomationEngine::QueueBindingActions(const AutomationKeyBinding& binding) {
     if (!automation_match::HasExecutableActions(binding)) {
+        UpdateActionDiagnostics(ActionRunEvent{
+            0,
+            NowDiagnosticsTimestampMs(),
+            "queue_rejected",
+            "no_executable_actions",
+            false,
+            {},
+        });
         return false;
     }
 
+    uint64_t runSeq = 0;
     {
         std::lock_guard<std::mutex> lock(actionQueueMutex_);
-        if (actionWorkerStop_ || pendingActionChains_.size() >= kMaxPendingActionChains) {
+        if (actionWorkerStop_) {
+            UpdateActionDiagnostics(ActionRunEvent{
+                0,
+                NowDiagnosticsTimestampMs(),
+                "queue_rejected",
+                "worker_stopped",
+                false,
+                {},
+            });
             return false;
         }
+        if (pendingActionChains_.size() >= kMaxPendingActionChains) {
+            UpdateActionDiagnostics(ActionRunEvent{
+                0,
+                NowDiagnosticsTimestampMs(),
+                "queue_rejected",
+                "queue_full",
+                false,
+                {},
+            });
+            return false;
+        }
+        runSeq = ++actionRunSeq_;
         pendingActionChains_.push_back(QueuedActionChain{
             binding.actions,
             actionQueueGeneration_,
+            runSeq,
         });
     }
     actionQueueCv_.notify_one();
@@ -628,49 +686,140 @@ bool InputAutomationEngine::WaitForActionDelay(uint32_t delayMs, uint64_t genera
         });
 }
 
-bool InputAutomationEngine::ExecuteQueuedActions(const std::vector<AutomationAction>& actions, uint64_t generation) {
-    bool executed = false;
-    for (const AutomationAction& action : actions) {
+InputAutomationEngine::ActionRunEvent InputAutomationEngine::ExecuteQueuedActions(
+    const std::vector<AutomationAction>& actions,
+    uint64_t generation,
+    uint64_t runSeq) {
+    ActionRunEvent run{};
+    run.seq = runSeq;
+    run.timestampMs = NowDiagnosticsTimestampMs();
+    run.status = "success";
+    run.stopReason.clear();
+    run.executed = false;
+
+    for (size_t index = 0; index < actions.size(); ++index) {
+        const AutomationAction& action = actions[index];
+        const std::string type = NormalizeActionTypeForDiagnostics(action);
+        ActionStepEvent step{};
+        step.index = static_cast<uint32_t>(index);
+        step.type = type;
+        step.target = ActionTargetForDiagnostics(action, type);
+
         if (!IsActionGenerationCurrent(generation)) {
-            return false;
+            run.status = "cancelled";
+            run.stopReason = "generation_stale";
+            step.status = "cancelled";
+            step.detail = "generation_stale";
+            run.steps.push_back(std::move(step));
+            return run;
         }
 
-        const std::string type = ToLowerAscii(TrimAscii(action.type));
         if (type == "delay") {
-            if (action.delayMs == 0 || !WaitForActionDelay(action.delayMs, generation)) {
-                return false;
+            if (action.delayMs == 0) {
+                run.status = "failed";
+                run.stopReason = "invalid_delay";
+                step.status = "failed";
+                step.detail = "delay_ms_zero";
+                run.steps.push_back(std::move(step));
+                return run;
             }
+            if (!WaitForActionDelay(action.delayMs, generation)) {
+                run.status = "cancelled";
+                run.stopReason = "delay_interrupted";
+                step.status = "cancelled";
+                step.detail = "delay_interrupted";
+                run.steps.push_back(std::move(step));
+                return run;
+            }
+            step.status = "ok";
+            step.detail = "delay_elapsed";
+            run.steps.push_back(std::move(step));
+            continue;
+        }
+
+        if (type == "open_url") {
+            std::function<bool(const std::string&)> openUrlHandler;
+            {
+                std::lock_guard<std::mutex> lock(actionQueueMutex_);
+                openUrlHandler = openUrlHandler_;
+            }
+            const std::string url = TrimAscii(action.url);
+            if (!openUrlHandler) {
+                run.status = "failed";
+                run.stopReason = "open_url_handler_unavailable";
+                step.status = "failed";
+                step.detail = "handler_unavailable";
+                run.steps.push_back(std::move(step));
+                return run;
+            }
+            if (url.empty()) {
+                run.status = "failed";
+                run.stopReason = "empty_url";
+                step.status = "failed";
+                step.detail = "empty_url";
+                run.steps.push_back(std::move(step));
+                return run;
+            }
+            if (!openUrlHandler(url)) {
+                run.status = "failed";
+                run.stopReason = "open_url_failed";
+                step.status = "failed";
+                step.detail = "handler_rejected";
+                run.steps.push_back(std::move(step));
+                return run;
+            }
+            step.status = "ok";
+            step.detail = "opened";
+            run.executed = true;
+            run.steps.push_back(std::move(step));
+            continue;
+        }
+
+        if (type == "launch_app") {
+            std::function<bool(const std::string&)> launchAppHandler;
+            {
+                std::lock_guard<std::mutex> lock(actionQueueMutex_);
+                launchAppHandler = launchAppHandler_;
+            }
+            const std::string appPath = TrimAscii(action.appPath);
+            if (!launchAppHandler) {
+                run.status = "failed";
+                run.stopReason = "launch_app_handler_unavailable";
+                step.status = "failed";
+                step.detail = "handler_unavailable";
+                run.steps.push_back(std::move(step));
+                return run;
+            }
+            if (appPath.empty()) {
+                run.status = "failed";
+                run.stopReason = "empty_app_path";
+                step.status = "failed";
+                step.detail = "empty_app_path";
+                run.steps.push_back(std::move(step));
+                return run;
+            }
+            if (!launchAppHandler(appPath)) {
+                run.status = "failed";
+                run.stopReason = "launch_app_failed";
+                step.status = "failed";
+                step.detail = "handler_rejected";
+                run.steps.push_back(std::move(step));
+                return run;
+            }
+            step.status = "ok";
+            step.detail = "launched";
+            run.executed = true;
+            run.steps.push_back(std::move(step));
             continue;
         }
 
         if (type != "send_shortcut") {
-            if (type == "open_url") {
-                std::function<bool(const std::string&)> openUrlHandler;
-                {
-                    std::lock_guard<std::mutex> lock(actionQueueMutex_);
-                    openUrlHandler = openUrlHandler_;
-                }
-                const std::string url = TrimAscii(action.url);
-                if (!openUrlHandler || url.empty() || !openUrlHandler(url)) {
-                    return false;
-                }
-                executed = true;
-                continue;
-            }
-            if (type == "launch_app") {
-                std::function<bool(const std::string&)> launchAppHandler;
-                {
-                    std::lock_guard<std::mutex> lock(actionQueueMutex_);
-                    launchAppHandler = launchAppHandler_;
-                }
-                const std::string appPath = TrimAscii(action.appPath);
-                if (!launchAppHandler || appPath.empty() || !launchAppHandler(appPath)) {
-                    return false;
-                }
-                executed = true;
-                continue;
-            }
-            return false;
+            run.status = "failed";
+            run.stopReason = "unsupported_action_type";
+            step.status = "failed";
+            step.detail = "unsupported_action_type";
+            run.steps.push_back(std::move(step));
+            return run;
         }
 
         IKeyboardInjector* injector = nullptr;
@@ -679,12 +828,41 @@ bool InputAutomationEngine::ExecuteQueuedActions(const std::vector<AutomationAct
             injector = keyboardInjector_;
         }
         const std::string shortcut = TrimAscii(action.shortcut);
-        if (!injector || shortcut.empty() || !injector->SendChord(shortcut)) {
-            return false;
+        if (!injector) {
+            run.status = "failed";
+            run.stopReason = "keyboard_injector_unavailable";
+            step.status = "failed";
+            step.detail = "injector_unavailable";
+            run.steps.push_back(std::move(step));
+            return run;
         }
-        executed = true;
+        if (shortcut.empty()) {
+            run.status = "failed";
+            run.stopReason = "empty_shortcut";
+            step.status = "failed";
+            step.detail = "empty_shortcut";
+            run.steps.push_back(std::move(step));
+            return run;
+        }
+        if (!injector->SendChord(shortcut)) {
+            run.status = "failed";
+            run.stopReason = "send_shortcut_failed";
+            step.status = "failed";
+            step.detail = "inject_failed";
+            run.steps.push_back(std::move(step));
+            return run;
+        }
+        step.status = "ok";
+        step.detail = "shortcut_sent";
+        run.executed = true;
+        run.steps.push_back(std::move(step));
     }
-    return executed;
+
+    if (!run.executed) {
+        run.status = "noop";
+        run.stopReason = "no_effectful_action";
+    }
+    return run;
 }
 
 void InputAutomationEngine::ActionWorkerLoop() {
@@ -701,7 +879,7 @@ void InputAutomationEngine::ActionWorkerLoop() {
             item = std::move(pendingActionChains_.front());
             pendingActionChains_.pop_front();
         }
-        (void)ExecuteQueuedActions(item.actions, item.generation);
+        UpdateActionDiagnostics(ExecuteQueuedActions(item.actions, item.generation, item.runSeq));
     }
 }
 
@@ -957,6 +1135,19 @@ void InputAutomationEngine::UpdateGestureDiagnostics(
         diagnostics_.lastEventSeq = event.seq;
     } else if (!diagnostics_.recentEvents.empty()) {
         diagnostics_.lastEventSeq = diagnostics_.recentEvents.back().seq;
+    }
+}
+
+void InputAutomationEngine::UpdateActionDiagnostics(const ActionRunEvent& event) {
+    if (!DiagnosticsEnabled()) {
+        return;
+    }
+    std::lock_guard<std::mutex> lock(diagnosticsMutex_);
+    diagnostics_.lastActionRun = event;
+    diagnostics_.lastActionRunSeq = event.seq;
+    diagnostics_.recentActionRuns.push_back(event);
+    while (diagnostics_.recentActionRuns.size() > kDiagnosticsActionRunCap) {
+        diagnostics_.recentActionRuns.erase(diagnostics_.recentActionRuns.begin());
     }
 }
 
