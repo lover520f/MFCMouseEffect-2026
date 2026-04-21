@@ -886,7 +886,7 @@
               scopeApps={scopeAppsForRow(row)}
               scopeDraft={scopeDraftForRow(row)}
               {texts}
-              catalogEntries={catalogEntriesForRow(row)}
+              catalogEntries={filterCatalogEntries(appCatalogEntries, scopeDraftForRow(row), scopeAppsForRow(row), 120, normalizedPlatform())}
               appCatalogLoading={appCatalogLoading}
               appCatalogError={appCatalogError}
               onScopeModeChange={(event) => onScopeModeChange(row, event)}

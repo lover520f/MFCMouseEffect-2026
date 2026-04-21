@@ -158,9 +158,9 @@
 - Shared placement contract is active: `relative`, `absolute`, legacy aliases, `strict / soft / free`.
 - Runtime `size_px` resize path is active and no longer create-time-only.
 - Idle/follow/click/scroll parity direction is active; remaining known boundary is `.usdz` framing on some paths.
-
 ### Automation Mapping
 - App-scope normalization/parser contracts are stable.
+- Automation scope candidate props must reference `appCatalogEntries` directly in template expressions when passed into child panels; otherwise Svelte may miss the async catalog dependency and the right-side app list can stay on the initial empty snapshot until some row-local state changes.
 - Mapping output config now uses `actions[]`; current executable actions are `send_shortcut`, `delay`, `open_url`, and `launch_app`, WebUI exposes a first-round action list editor for those four action types, and the current visual refresh now aligns both mouse and gesture mapping on the same card-based language with de-bordered section panels, keycap-like shortcut inputs, hover-revealed action tool icons, stronger recording-state emphasis, and header-integrated ghost delete actions while keeping mouse `blue` and gesture `teal` as separate recognition accents.
 - Preset/custom gesture mapping with thresholding and ambiguity rejection is active.
 - Trigger button supports `none`.
