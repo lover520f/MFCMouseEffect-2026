@@ -109,6 +109,7 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/autom
 ./mfx verify-full
 # backward-compatible aliases
 ./mfx start
+# same as run
 # same as run-no-build
 ./mfx fast
 # same as package

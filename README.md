@@ -133,7 +133,11 @@
 ./mfx run                         # 编译并启动
 ./mfx run-no-build                # 跳过编译直接运行
 ./mfx run-no-build --seconds 30   # 自动退出，快速验证
-./mfx package                      # 打包
+./mfx package                     # 打包
+
+# 兼容旧命令别名
+./mfx start                       # 等价于 ./mfx run
+./mfx fast                        # 等价于 ./mfx run-no-build
 ```
 
 > ⚠️ macOS 需要授予 **Accessibility** 和 **Input Monitoring** 权限才能捕获全局输入。

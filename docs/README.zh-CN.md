@@ -110,6 +110,7 @@ rg -n "permission|automation|app_scope|effects|wasm" docs/refactoring docs/autom
 ./mfx verify-full
 # 兼容旧命令
 ./mfx start
+# 等价于 run
 # 等价于 run-no-build
 ./mfx fast
 # 等价于 package

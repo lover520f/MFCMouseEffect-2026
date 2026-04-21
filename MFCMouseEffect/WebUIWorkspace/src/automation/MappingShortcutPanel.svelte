@@ -79,6 +79,7 @@
     {rowId}
     {row}
     {rowEnabled}
+    {kind}
     {texts}
     {captureTargetKeys}
     {isCapturing}

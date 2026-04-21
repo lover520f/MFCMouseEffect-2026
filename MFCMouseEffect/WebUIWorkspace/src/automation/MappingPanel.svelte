@@ -774,7 +774,11 @@
   }
 </script>
 
-<div class="automation-panel">
+<div
+  class="automation-panel"
+  class:automation-panel--mouse={kind === 'mouse'}
+  class:automation-panel--gesture={kind === 'gesture'}
+>
   <div class="automation-list">
     {#if rows.length === 0}
       <div class="automation-empty">{texts.empty}</div>
@@ -782,18 +786,11 @@
     {#each rows as row (row.id)}
       <div
         class="automation-row"
+        class:automation-row--mouse={kind === 'mouse'}
+        class:automation-row--gesture={kind === 'gesture'}
         class:is-disabled={!row.enabled}
         class:is-conflict={row.hasConflict}
       >
-        <button
-          class="btn-soft automation-remove-corner"
-          type="button"
-          on:click={() => emitRemove(row.id)}
-          title={texts.remove}
-          aria-label={texts.remove}
-        >
-          x
-        </button>
         <input
           class="automation-toggle"
           type="checkbox"
@@ -802,22 +799,47 @@
           on:change={(event) => emitRowChange(row.id, 'enabled', event.currentTarget.checked)}
         />
         <details class="automation-collapse" on:toggle={(event) => onRowToggle(row.id, event)}>
-          <summary
-            class="automation-row-head"
-            title={texts.expand || 'Expand'}
-            aria-label={texts.expand || 'Expand'}
+          <div class="automation-row-headbar">
+            <summary
+              class="automation-row-head"
+              title={texts.expand || 'Expand'}
+              aria-label={texts.expand || 'Expand'}
+            >
+              <span class="automation-row-head-icon" aria-hidden="true"></span>
+              <span class="automation-row-head-main">{gestureSummaryForRow(row)}</span>
+              <span class="automation-row-head-badges">
+                <span class="automation-row-head-meta">{scopeSummaryForRow(row)}</span>
+                {#if kind === 'gesture'}
+                  <span class="automation-row-head-meta">{modifierShortcutTextForRow(row)}</span>
+                {/if}
+                <span class="automation-row-head-meta">{shortcutSummaryForRow(row)}</span>
+              </span>
+            </summary>
+            <button
+              class="automation-row-remove"
+              type="button"
+              on:click|stopPropagation={() => emitRemove(row.id)}
+              title={texts.remove}
+              aria-label={texts.remove}
+            >
+              <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path
+                  d="M6 2.5h4m-6 2h8m-7 0v7m3-7v7m3-7v7M5.5 2.5l.4-1h4.2l.4 1m-6.1 0h7.2l-.5 9.2a1 1 0 0 1-1 .8H5.9a1 1 0 0 1-1-.8L4.4 2.5Z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.3"
+                />
+              </svg>
+            </button>
+          </div>
+          <div
+            class="automation-row-body"
+            class:automation-row-body--mouse={kind === 'mouse'}
+            class:automation-row-body--gesture={kind === 'gesture'}
+            class:is-scope-all={scopeModeForRow(row) !== 'selected'}
           >
-            <span class="automation-row-head-icon" aria-hidden="true"></span>
-            <span class="automation-row-head-main">{gestureSummaryForRow(row)}</span>
-            <span class="automation-row-head-badges">
-              <span class="automation-row-head-meta">{scopeSummaryForRow(row)}</span>
-              {#if kind === 'gesture'}
-                <span class="automation-row-head-meta">{modifierShortcutTextForRow(row)}</span>
-              {/if}
-              <span class="automation-row-head-meta">{shortcutSummaryForRow(row)}</span>
-            </span>
-          </summary>
-          <div class="automation-row-body" class:is-scope-all={scopeModeForRow(row) !== 'selected'}>
             <MappingShortcutPanel
               rowId={row.id}
               {row}

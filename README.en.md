@@ -134,6 +134,10 @@
 ./mfx run-no-build                # Run without rebuilding
 ./mfx run-no-build --seconds 30   # Auto-stop for quick validation
 ./mfx package                     # Package
+
+# Backward-compatible aliases
+./mfx start                       # Same as ./mfx run
+./mfx fast                        # Same as ./mfx run-no-build
 ```
 
 > macOS requires **Accessibility** and **Input Monitoring** permissions for global input capture.

@@ -49,7 +49,7 @@
                 disabled={!rowEnabled}
                 on:click={() => callHandler(onRemoveScopeApp, app)}
               >
-                x
+                &times;
               </button>
             </span>
           {/each}
@@ -142,7 +142,7 @@
               disabled={!rowEnabled}
               on:click={() => callHandler(onRemoveScopeApp, app)}
             >
-              x
+              &times;
             </button>
           </span>
         {/each}
