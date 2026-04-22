@@ -239,37 +239,35 @@ const bridge = createLazyMountBridge({
   createComponent: (mountNode, props) => {
     const instance = new EffectsSectionTabs({
       target: mountNode,
-      props,
-    });
-    instance.$on('activeChange', (event) => {
-      const detail = event?.detail || {};
-      currentActiveState = normalizeActive(detail.active || detail);
-      currentCursorDecoration = normalizeCursorDecoration(
-        detail.cursor_decoration || currentCursorDecoration,
-      );
-    });
-    instance.$on('cursorDecorationChange', (event) => {
-      currentCursorDecoration = normalizeCursorDecoration(event?.detail || {});
-      syncBridgeProps();
-    });
-    instance.$on('sizeChange', (event) => {
-      const detail = event?.detail || {};
-      currentSizeScales = normalizeEffectSizeScales(detail);
-    });
-    instance.$on('tabChange', (event) => {
-      currentActiveTab = normalizeActiveTab(event?.detail?.tabId);
-      writeEffectsUiState({ activeTab: currentActiveTab });
-    });
-    instance.$on('conflictPolicyChange', (event) => {
-      const detail = event?.detail || {};
-      currentEffectConflictPolicy = normalizeEffectConflictPolicy(detail);
-    });
-    instance.$on('blacklistChange', (event) => {
-      const detail = event?.detail || {};
-      const localBlacklistApps = normalizeEffectsBlacklistApps(detail.effects_blacklist_apps);
-      currentEffectsBlacklistApps = localBlacklistApps;
-      pendingEffectsBlacklistApps = localBlacklistApps;
-      syncBridgeProps();
+      props: {
+        ...props,
+        onActiveChange: (detail) => {
+          currentActiveState = normalizeActive(detail.active || detail);
+          currentCursorDecoration = normalizeCursorDecoration(
+            detail.cursor_decoration || currentCursorDecoration,
+          );
+        },
+        onCursorDecorationChange: (detail) => {
+          currentCursorDecoration = normalizeCursorDecoration(detail || {});
+          syncBridgeProps();
+        },
+        onSizeChange: (detail) => {
+          currentSizeScales = normalizeEffectSizeScales(detail);
+        },
+        onTabChange: (detail) => {
+          currentActiveTab = normalizeActiveTab(detail?.tabId);
+          writeEffectsUiState({ activeTab: currentActiveTab });
+        },
+        onConflictPolicyChange: (detail) => {
+          currentEffectConflictPolicy = normalizeEffectConflictPolicy(detail);
+        },
+        onBlacklistChange: (detail) => {
+          const localBlacklistApps = normalizeEffectsBlacklistApps(detail.effects_blacklist_apps);
+          currentEffectsBlacklistApps = localBlacklistApps;
+          pendingEffectsBlacklistApps = localBlacklistApps;
+          syncBridgeProps();
+        },
+      },
     });
     return instance;
   },

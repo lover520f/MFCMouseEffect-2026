@@ -5,12 +5,25 @@ Common manual commands for local iteration and debugging.
 Keep P1 concise; add details here when needed.
 
 ## Core Runtime
-- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/mfx run`
-- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/mfx start --debug`
+- `./mfx run`
+- `./mfx start --debug`
+- preferred source-mode frontend debug:
+  - `./mfx fast --debug --web`
+  - when native/backend code changed and a rebuild is required: `./mfx start --debug --web`
 
 ## WebSettings Manual
-- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-core-websettings-manual.sh --auto-stop-seconds 60`
-- `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-core-websettings-manual.sh --auto-stop-seconds 60 --no-open`
+- `tools/platform/manual/run-macos-core-websettings-manual.sh --auto-stop-seconds 60`
+- `tools/platform/manual/run-macos-core-websettings-manual.sh --auto-stop-seconds 60 --no-open`
+- unified WebUI source-mode debug:
+  - `./mfx fast --debug --web`
+  - host build policy stays attached to `start` vs `fast`
+  - `--web` switches browser startup to the Vite dev UI and automatically carries the current token into the opened URL
+  - the helper reuses an existing dev server when possible; otherwise it starts `pnpm run dev` inside `MFCMouseEffect/WebUIWorkspace`
+  - Vite still reads `base_url/token` from `/tmp/mfx-core-websettings.probe` by default, and `MFX_WEBUI_DEV_PROBE_FILE`, `MFX_WEBUI_DEV_BASE_URL`, and `MFX_WEBUI_DEV_TOKEN` remain available as lower-level overrides
+  - raw fallback when debugging the dev server itself:
+    - terminal 1: `./mfx fast --debug --no-open`
+    - terminal 2: `cd MFCMouseEffect/WebUIWorkspace && pnpm run dev`
+    - then open the Vite URL manually if you need to isolate `mfx --web` from Vite startup
 - `./mfx start --debug`:
   - keeps automation gesture debug visible only for debug startup
   - the panel now starts collapsed and shows a compact `title + stage + reason` summary row

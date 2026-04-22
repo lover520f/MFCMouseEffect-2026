@@ -1,4 +1,5 @@
 import { createDefaultAutomationState } from './defaults.js';
+import { syncMountedComponent } from '../entries/component-instance.js';
 
 function emptyValidationResult() {
   return { ok: true };
@@ -99,7 +100,11 @@ export function createAutomationApi(Component, mountId) {
       if (!target) {
         return;
       }
-      target.$set(nextProps);
+      const mount = document.getElementById(mountId);
+      component = syncMountedComponent(target, mount, (mountNode, props) => new Component({
+        target: mountNode,
+        props,
+      }), nextProps);
     },
 
     read() {
@@ -116,7 +121,11 @@ export function createAutomationApi(Component, mountId) {
       if (!target) {
         return;
       }
-      target.$set(nextProps);
+      const mount = document.getElementById(mountId);
+      component = syncMountedComponent(target, mount, (mountNode, props) => new Component({
+        target: mountNode,
+        props,
+      }), nextProps);
     },
   };
 }

@@ -7,6 +7,9 @@
   export let message = '';
   export let okText = 'OK';
   export let cancelText = 'Cancel';
+  export let onConfirmAction = null;
+  export let onCancelAction = null;
+  export let onMaskAction = null;
 
   const dispatch = createEventDispatcher();
   let okButtonEl;
@@ -26,15 +29,24 @@
 
   function onMaskMouseDown(event) {
     if (event.target === event.currentTarget) {
+      if (typeof onMaskAction === 'function') {
+        onMaskAction();
+      }
       dispatch('mask');
     }
   }
 
   function onCancel() {
+    if (typeof onCancelAction === 'function') {
+      onCancelAction();
+    }
     dispatch('cancel');
   }
 
   function onConfirm() {
+    if (typeof onConfirmAction === 'function') {
+      onConfirmAction();
+    }
     dispatch('confirm');
   }
 </script>

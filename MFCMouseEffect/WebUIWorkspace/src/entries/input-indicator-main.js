@@ -91,15 +91,16 @@ const bridge = createLazyMountBridge({
   createComponent: (mountNode, props) => {
     const instance = new InputIndicatorFields({
       target: mountNode,
-      props,
-    });
-    instance.$on('change', (event) => {
-      const detail = event?.detail || {};
-      currentState = normalizeIndicator(detail);
-    });
-    instance.$on('tabChange', (event) => {
-      currentActiveTab = normalizeActiveTab(event?.detail?.tabId);
-      writeInputIndicatorUiState({ activeTab: currentActiveTab });
+      props: {
+        ...props,
+        onChangeState: (detail) => {
+          currentState = normalizeIndicator(detail);
+        },
+        onTabChange: (detail) => {
+          currentActiveTab = normalizeActiveTab(detail?.tabId);
+          writeInputIndicatorUiState({ activeTab: currentActiveTab });
+        },
+      },
     });
     return instance;
   },

@@ -14,6 +14,8 @@
   export let onWasmAction = null;
   export let texts = {};
   export let activeTab = 'basic';
+  export let onChangeState = null;
+  export let onTabChange = null;
 
   const dispatch = createEventDispatcher();
 
@@ -101,7 +103,11 @@
   }
 
   function handleTabChange(event) {
-    dispatch('tabChange', event?.detail || {});
+    const detail = event?.detail || {};
+    if (typeof onTabChange === 'function') {
+      onTabChange(detail);
+    }
+    dispatch('tabChange', detail);
   }
 
   let form = normalizeIndicator(indicator);
@@ -114,7 +120,13 @@
     form = normalizeIndicator(indicator);
   }
 
-  $: dispatch('change', toStateSnapshot(form, monitorRows));
+  $: {
+    const snapshot = toStateSnapshot(form, monitorRows);
+    if (typeof onChangeState === 'function') {
+      onChangeState(snapshot);
+    }
+    dispatch('change', snapshot);
+  }
 </script>
 
 <div class="input-indicator-fields">

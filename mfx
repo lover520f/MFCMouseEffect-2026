@@ -10,11 +10,11 @@ Usage:
   ./mfx <command> [options]
 
 Commands:
-  run [--minutes N | --seconds N] [--debug]
+  run [--minutes N | --seconds N] [--debug] [--web] [--no-open]
       Build + run macOS core host and print settings URL.
       Default auto stop: 30 minutes.
 
-  run-no-build [--minutes N | --seconds N] [--debug]
+  run-no-build [--minutes N | --seconds N] [--debug] [--web] [--no-open]
       Run macOS core host without rebuilding core/WebUI.
       Default auto stop: 30 minutes.
 
@@ -73,6 +73,8 @@ run_start() {
     local minutes=30
     local seconds=""
     local debug_mode=0
+    local web_mode=0
+    local open_browser=1
     while [[ $# -gt 0 ]]; do
         case "$1" in
         --minutes)
@@ -91,6 +93,14 @@ run_start() {
             ;;
         --no-debug)
             debug_mode=0
+            shift
+            ;;
+        --web)
+            web_mode=1
+            shift
+            ;;
+        --no-open)
+            open_browser=0
             shift
             ;;
         *)
@@ -122,8 +132,19 @@ run_start() {
     if [[ "$debug_mode" == "1" ]]; then
         args+=(--debug)
     fi
+    if [[ "$web_mode" == "1" || "$open_browser" == "0" ]]; then
+        args+=(--no-open)
+    fi
 
-    exec "$repo_root/tools/platform/manual/run-macos-core-websettings-manual.sh" "${args[@]}"
+    "$repo_root/tools/platform/manual/run-macos-core-websettings-manual.sh" "${args[@]}"
+
+    if [[ "$web_mode" == "1" ]]; then
+        local -a web_args=()
+        if [[ "$open_browser" == "0" ]]; then
+            web_args+=(--no-open)
+        fi
+        "$repo_root/tools/platform/manual/run-webui-dev-manual.sh" "${web_args[@]}"
+    fi
 }
 
 run_package() {

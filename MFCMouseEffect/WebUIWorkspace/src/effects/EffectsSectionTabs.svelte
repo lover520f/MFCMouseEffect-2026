@@ -7,6 +7,12 @@
 
   export let effectProps = {};
   export let activeTab = "active";
+  export let onActiveChange = null;
+  export let onCursorDecorationChange = null;
+  export let onSizeChange = null;
+  export let onTabChange = null;
+  export let onConflictPolicyChange = null;
+  export let onBlacklistChange = null;
 
   const dispatch = createEventDispatcher();
 
@@ -54,6 +60,9 @@
   function selectTab(tabId) {
     const normalized = normalizeTab(tabId);
     selectedTab = normalized;
+    if (typeof onTabChange === "function") {
+      onTabChange({ tabId: normalized });
+    }
     dispatch("tabChange", { tabId: normalized });
   }
 
@@ -71,27 +80,46 @@
     if (detail.cursor_decoration) {
       localCursorDecoration = detail.cursor_decoration;
     }
-    dispatch("activeChange", {
+    const nextDetail = {
       ...detail,
       cursor_decoration: localCursorDecoration,
-    });
+    };
+    if (typeof onActiveChange === "function") {
+      onActiveChange(nextDetail);
+    }
+    dispatch("activeChange", nextDetail);
   }
 
   function handleSizeScaleChange(event) {
-    dispatch("sizeChange", event?.detail || {});
+    const detail = event?.detail || {};
+    if (typeof onSizeChange === "function") {
+      onSizeChange(detail);
+    }
+    dispatch("sizeChange", detail);
   }
 
   function handleCursorDecorationConfigChange(event) {
     localCursorDecoration = event?.detail || {};
+    if (typeof onCursorDecorationChange === "function") {
+      onCursorDecorationChange(localCursorDecoration);
+    }
     dispatch("cursorDecorationChange", localCursorDecoration);
   }
 
   function handleConflictPolicyChange(event) {
-    dispatch("conflictPolicyChange", event?.detail || {});
+    const detail = event?.detail || {};
+    if (typeof onConflictPolicyChange === "function") {
+      onConflictPolicyChange(detail);
+    }
+    dispatch("conflictPolicyChange", detail);
   }
 
   function handleBlacklistChange(event) {
-    dispatch("blacklistChange", event?.detail || {});
+    const detail = event?.detail || {};
+    if (typeof onBlacklistChange === "function") {
+      onBlacklistChange(detail);
+    }
+    dispatch("blacklistChange", detail);
   }
 
   function normalizeEffectProps(input) {

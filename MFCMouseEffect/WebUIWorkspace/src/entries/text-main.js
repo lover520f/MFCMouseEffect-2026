@@ -28,11 +28,12 @@ const bridge = createLazyMountBridge({
   createComponent: (mountNode, props) => {
     const instance = new TextContentFields({
       target: mountNode,
-      props,
-    });
-    instance.$on('change', (event) => {
-      const detail = event?.detail || {};
-      currentState = normalizeText(detail);
+      props: {
+        ...props,
+        onChangeState: (detail) => {
+          currentState = normalizeText(detail);
+        },
+      },
     });
     return instance;
   },

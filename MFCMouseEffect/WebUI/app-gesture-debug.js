@@ -1,6 +1,8 @@
 (() => {
   const GESTURE_DEBUG_POLL_MS_IDLE = 180;
   const GESTURE_DEBUG_POLL_MS_ACTIVE = 66;
+  const GESTURE_DEBUG_POLL_MS_IDLE_DEV = 1200;
+  const GESTURE_DEBUG_POLL_MS_ACTIVE_DEV = 800;
 
   let core = null;
   let gestureDebugPollTimer = 0;
@@ -16,6 +18,10 @@
       throw new Error('app-core unavailable');
     }
     return core;
+  }
+
+  function isSourceDevMode() {
+    return !!(typeof window !== 'undefined' && window.__MFX_DEV_RUNTIME__);
   }
 
   function syncWorkspaceGestureRouteStatus(routeStatus) {
@@ -99,9 +105,11 @@
       stage === 'buttonless_snapshot' ||
       stage === 'gesture_trigger' ||
       stage === 'custom_trigger';
+    const idleDelay = isSourceDevMode() ? GESTURE_DEBUG_POLL_MS_IDLE_DEV : GESTURE_DEBUG_POLL_MS_IDLE;
+    const activeDelay = isSourceDevMode() ? GESTURE_DEBUG_POLL_MS_ACTIVE_DEV : GESTURE_DEBUG_POLL_MS_ACTIVE;
     gestureDebugPollTimer = window.setTimeout(
       runGestureDebugPollLoop,
-      activeStage ? GESTURE_DEBUG_POLL_MS_ACTIVE : GESTURE_DEBUG_POLL_MS_IDLE,
+      activeStage ? activeDelay : idleDelay,
     );
   }
 
@@ -113,7 +121,8 @@
     if (gestureDebugPollTimer) {
       return;
     }
-    gestureDebugPollTimer = window.setTimeout(runGestureDebugPollLoop, GESTURE_DEBUG_POLL_MS_IDLE);
+    const initialDelay = isSourceDevMode() ? GESTURE_DEBUG_POLL_MS_IDLE_DEV : GESTURE_DEBUG_POLL_MS_IDLE;
+    gestureDebugPollTimer = window.setTimeout(runGestureDebugPollLoop, initialDelay);
   }
 
   function onStateRendered(stateSnapshot) {
