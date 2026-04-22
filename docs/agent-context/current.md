@@ -7,7 +7,6 @@
 - Delivery order: macOS first, Windows regression-free, Linux compile/contract-level.
 - macOS stack rule: new capability modules are Swift-first; avoid expanding `.mm` for large new modules.
 - Cross-machine workflow: macOS is the development source, Windows is the synced validation workspace via `Syncthing`, and Windows-side command execution should default to direct SSH against `F:\language\cpp\code\MFCMouseEffect`.
-
 ## Active Product Goals
 - Keep wasm runtime bounded-but-expressive with host-owned render boundaries.
 - Keep plugin lanes decoupled (`effects` vs `indicator`) with explicit diagnostics.
