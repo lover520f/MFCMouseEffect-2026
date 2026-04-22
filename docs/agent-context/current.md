@@ -161,9 +161,9 @@
 ### Automation Mapping
 - App-scope normalization/parser contracts are stable.
 - Automation scope candidate props must reference `appCatalogEntries` directly in template expressions when passed into child panels; otherwise Svelte may miss the async catalog dependency and the right-side app list can stay on the initial empty snapshot until some row-local state changes.
+- Mouse action mapping now separates `执行动作 / Next trigger` as two explicit UI sections inside each rule, uses eyebrow text as `流程角色` instead of repeating titles, adds a visible connector between sections, and renames the chain-adder copy to `添加下一步鼠标动作` so trigger nodes no longer read like peer action cards.
 - Mapping output config now uses `actions[]`; current executable actions are `send_shortcut`, `delay`, `open_url`, and `launch_app`, WebUI exposes a first-round action list editor for those four action types, and the current visual refresh now aligns both mouse and gesture mapping on the same card-based language with de-bordered section panels, keycap-like shortcut inputs, hover-revealed action tool icons, stronger recording-state emphasis, and header-integrated ghost delete actions while keeping mouse `blue` and gesture `teal` as separate recognition accents.
 - Preset/custom gesture mapping with thresholding and ambiguity rejection is active.
-- Trigger button supports `none`.
 - `Draw -> Save` custom gesture flow is active.
 - macOS shortcut capture/injection punctuation path is aligned.
 

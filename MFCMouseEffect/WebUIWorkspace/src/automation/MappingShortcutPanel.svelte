@@ -75,30 +75,32 @@
     </div>
   {/if}
 
-  <MappingActionListEditor
-    {rowId}
-    {row}
-    {rowEnabled}
-    {kind}
-    {texts}
-    {captureTargetKeys}
-    {isCapturing}
-    {actionShortcutInputId}
-    onActionShortcutKeydown={onActionShortcutKeydown}
-    onActionShortcutInput={onActionShortcutInput}
-    onToggleActionRecord={onToggleActionRecord}
-    onActionTypeChange={onActionTypeChange}
-    onActionDelayInput={onActionDelayInput}
-    onActionUrlInput={onActionUrlInput}
-    onActionAppPathInput={onActionAppPathInput}
-    onActionMoveUp={onActionMoveUp}
-    onActionMoveDown={onActionMoveDown}
-    onActionRemove={onActionRemove}
-    onAddShortcutAction={onAddShortcutAction}
-    onAddDelayAction={onAddDelayAction}
-    onAddOpenUrlAction={onAddOpenUrlAction}
-    onAddLaunchAppAction={onAddLaunchAppAction}
-  />
+  {#if kind !== 'mouse'}
+    <MappingActionListEditor
+      {rowId}
+      {row}
+      {rowEnabled}
+      {kind}
+      {texts}
+      {captureTargetKeys}
+      {isCapturing}
+      {actionShortcutInputId}
+      onActionShortcutKeydown={onActionShortcutKeydown}
+      onActionShortcutInput={onActionShortcutInput}
+      onToggleActionRecord={onToggleActionRecord}
+      onActionTypeChange={onActionTypeChange}
+      onActionDelayInput={onActionDelayInput}
+      onActionUrlInput={onActionUrlInput}
+      onActionAppPathInput={onActionAppPathInput}
+      onActionMoveUp={onActionMoveUp}
+      onActionMoveDown={onActionMoveDown}
+      onActionRemove={onActionRemove}
+      onAddShortcutAction={onAddShortcutAction}
+      onAddDelayAction={onAddDelayAction}
+      onAddOpenUrlAction={onAddOpenUrlAction}
+      onAddLaunchAppAction={onAddLaunchAppAction}
+    />
+  {/if}
 
   {#if kind === 'gesture'}
     <div class="automation-gesture-trigger-group">
@@ -143,16 +145,54 @@
       on:change={(event) => callHandler(onGesturePatternChange, event)}
     />
   {:else}
-    <TriggerChainEditor
-      value={chainValue}
-      options={triggerOptions}
-      disabled={!rowEnabled}
-      texts={{
-        addNode: texts.addChainNode,
-        removeNode: texts.removeChainNode,
-        chainJoiner: texts.chainJoiner,
-      }}
-      on:chainchange={(event) => callHandler(onChainChange, event)}
-    />
+    <section class="automation-flow-section automation-flow-section--trigger">
+      <div class="automation-flow-section__head">
+        <div class="automation-flow-section__eyebrow">{texts.triggerSectionEyebrow}</div>
+        <div class="automation-flow-section__title">{texts.triggerSectionTitle}</div>
+        <div class="automation-flow-section__hint">{texts.triggerSectionHint}</div>
+      </div>
+      <TriggerChainEditor
+        value={chainValue}
+        options={triggerOptions}
+        disabled={!rowEnabled}
+        texts={{
+          addNode: texts.addNextTriggerNode,
+          removeNode: texts.removeChainNode,
+          chainJoiner: texts.chainJoiner,
+        }}
+        on:chainchange={(event) => callHandler(onChainChange, event)}
+      />
+    </section>
+    <section class="automation-flow-section automation-flow-section--actions automation-flow-section--actions-after-trigger">
+      <div class="automation-flow-section__head">
+        <div class="automation-flow-section__eyebrow">{texts.executeSectionEyebrow}</div>
+        <div class="automation-flow-section__title">{texts.executeSectionTitle}</div>
+        <div class="automation-flow-section__hint">{texts.executeSectionHint}</div>
+      </div>
+      <MappingActionListEditor
+        {rowId}
+        {row}
+        {rowEnabled}
+        {kind}
+        {texts}
+        {captureTargetKeys}
+        {isCapturing}
+        {actionShortcutInputId}
+        onActionShortcutKeydown={onActionShortcutKeydown}
+        onActionShortcutInput={onActionShortcutInput}
+        onToggleActionRecord={onToggleActionRecord}
+        onActionTypeChange={onActionTypeChange}
+        onActionDelayInput={onActionDelayInput}
+        onActionUrlInput={onActionUrlInput}
+        onActionAppPathInput={onActionAppPathInput}
+        onActionMoveUp={onActionMoveUp}
+        onActionMoveDown={onActionMoveDown}
+        onActionRemove={onActionRemove}
+        onAddShortcutAction={onAddShortcutAction}
+        onAddDelayAction={onAddDelayAction}
+        onAddOpenUrlAction={onAddOpenUrlAction}
+        onAddLaunchAppAction={onAddLaunchAppAction}
+      />
+    </section>
   {/if}
 </div>

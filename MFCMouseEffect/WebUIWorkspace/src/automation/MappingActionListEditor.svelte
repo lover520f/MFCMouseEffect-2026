@@ -218,7 +218,34 @@
   }
 
   .automation-action-tool {
-    min-width: 54px;
+    min-width: 34px;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #6e87a2;
+    box-shadow: none;
+    opacity: 0.64;
+  }
+
+  .automation-action-card:hover .automation-action-tool,
+  .automation-action-card:focus-within .automation-action-tool {
+    opacity: 1;
+  }
+
+  .automation-action-tool:hover:enabled,
+  .automation-action-tool:focus-visible {
+    background: rgba(226, 236, 247, 0.95);
+    color: #476684;
+    box-shadow: none;
+  }
+
+  .automation-action-tool:last-child:hover:enabled,
+  .automation-action-tool:last-child:focus-visible {
+    background: rgba(253, 236, 236, 0.96);
+    color: #b14b4b;
   }
 
   .automation-action-index {
