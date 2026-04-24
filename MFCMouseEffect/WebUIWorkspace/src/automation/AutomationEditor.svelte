@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { flushSync, onMount } from 'svelte';
   import MappingPanel from './MappingPanel.svelte';
   import {
     DEFAULT_GESTURE_MAX_DIRECTIONS,
@@ -388,9 +388,9 @@
     };
   }
 
-  function runValidation(kind) {
+  function runValidation(kind, rows = rowCollection(kind)) {
     const result = evaluateRows(
-      rowCollection(kind),
+      rows,
       optionsForKind(kind),
       defaultTriggerForKind(kind),
       validationMessages(),
@@ -473,7 +473,7 @@
       return normalizeRowPatch(row, key, value, options, fallback);
     });
     setRowCollection(kind, nextRows);
-    runValidation(kind);
+    runValidation(kind, nextRows);
   }
 
   function addMapping(kind, binding) {
@@ -481,13 +481,13 @@
     const fallback = defaultTriggerForKind(kind);
     const nextRows = rowCollection(kind).concat(createRow(binding, fallback, options, kind));
     setRowCollection(kind, nextRows);
-    runValidation(kind);
+    runValidation(kind, nextRows);
   }
 
   function removeMapping(kind, rowId) {
     const nextRows = rowCollection(kind).filter((row) => row.id !== rowId);
     setRowCollection(kind, nextRows);
-    runValidation(kind);
+    runValidation(kind, nextRows);
   }
 
   function syncTemplateOptions() {
@@ -535,7 +535,7 @@
       runtimePlatform);
 
     setRowCollection(kind, nextRows);
-    runValidation(kind);
+    runValidation(kind, nextRows);
   }
 
   function buildIncomingSignature(normalized) {
@@ -587,8 +587,8 @@
       createRow(item, defaultGestureTrigger, gestureOptions, 'gesture'));
 
     tryRestoreDraftSnapshot(signature);
-    runValidation('mouse');
-    runValidation('gesture');
+    runValidation('mouse', mouseRows);
+    runValidation('gesture', gestureRows);
     syncTemplateOptions();
     lastIncomingSignature = signature;
     skipDraftPersist = false;
@@ -746,33 +746,55 @@
     gesturePanelTexts = panelTextsForKind('gesture');
   }
 
+  function panelDetailOf(eventOrDetail) {
+    if (eventOrDetail && typeof eventOrDetail === 'object' && eventOrDetail.detail && typeof eventOrDetail.detail === 'object') {
+      return eventOrDetail.detail;
+    }
+    if (eventOrDetail && typeof eventOrDetail === 'object') {
+      return eventOrDetail;
+    }
+    return {};
+  }
+
   function onPanelRowChange(event) {
-    const detail = event?.detail || {};
-    updateRow(detail.kind, detail.rowId, detail.key, detail.value);
+    const detail = panelDetailOf(event);
+    flushSync(() => {
+      updateRow(detail.kind, detail.rowId, detail.key, detail.value);
+    });
   }
 
   function onPanelRemove(event) {
-    const detail = event?.detail || {};
-    removeMapping(detail.kind, detail.rowId);
+    const detail = panelDetailOf(event);
+    flushSync(() => {
+      removeMapping(detail.kind, detail.rowId);
+    });
   }
 
   function onPanelAdd(event) {
-    const detail = event?.detail || {};
-    addMapping(detail.kind, {});
+    const detail = panelDetailOf(event);
+    flushSync(() => {
+      addMapping(detail.kind, {});
+    });
   }
 
   function onPanelTemplateChange(event) {
-    const detail = event?.detail || {};
+    const detail = panelDetailOf(event);
     if (detail.kind === 'gesture') {
-      gestureTemplate = detail.value || '';
+      flushSync(() => {
+        gestureTemplate = detail.value || '';
+      });
       return;
     }
-    mouseTemplate = detail.value || '';
+    flushSync(() => {
+      mouseTemplate = detail.value || '';
+    });
   }
 
   function onPanelApplyTemplate(event) {
-    const detail = event?.detail || {};
-    applyTemplate(detail.kind);
+    const detail = panelDetailOf(event);
+    flushSync(() => {
+      applyTemplate(detail.kind);
+    });
   }
 
   export function read() {
@@ -904,11 +926,11 @@
           templateValue={mouseTemplate}
           templateOptions={mouseTemplateOptions}
           texts={mousePanelTexts}
-          onRowChange={onPanelRowChange}
-          onRemove={onPanelRemove}
-          onAdd={onPanelAdd}
-          onTemplateChange={onPanelTemplateChange}
-          onApplyTemplate={onPanelApplyTemplate}
+          on:rowchange={onPanelRowChange}
+          on:remove={onPanelRemove}
+          on:add={onPanelAdd}
+          on:templatechange={onPanelTemplateChange}
+          on:applytemplate={onPanelApplyTemplate}
         />
       </div>
     </div>
@@ -948,11 +970,11 @@
           templateValue={gestureTemplate}
           templateOptions={gestureTemplateOptions}
           texts={gesturePanelTexts}
-          onRowChange={onPanelRowChange}
-          onRemove={onPanelRemove}
-          onAdd={onPanelAdd}
-          onTemplateChange={onPanelTemplateChange}
-          onApplyTemplate={onPanelApplyTemplate}
+          on:rowchange={onPanelRowChange}
+          on:remove={onPanelRemove}
+          on:add={onPanelAdd}
+          on:templatechange={onPanelTemplateChange}
+          on:applytemplate={onPanelApplyTemplate}
         />
       </div>
     </div>

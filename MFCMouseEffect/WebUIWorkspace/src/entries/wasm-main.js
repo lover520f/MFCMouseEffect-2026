@@ -3,6 +3,7 @@ import PluginManagerFields from '../wasm/PluginManagerFields.svelte';
 import { createLazyMountBridge } from './lazy-mount.js';
 import { normalizeWasmState } from '../wasm/state-model.js';
 import { normalizePolicyRanges } from '../wasm/policy-model.js';
+import { mountLegacyComponent } from './legacy-component.js';
 
 function normalizeWasmSchema(input) {
   const value = input || {};
@@ -22,10 +23,7 @@ const bridge = createLazyMountBridge({
     i18n: currentI18n,
     onAction: currentActionHandler,
   },
-  createComponent: (mountNode, props) => new WasmPluginFields({
-    target: mountNode,
-    props,
-  }),
+  createComponent: (mountNode, props) => mountLegacyComponent(WasmPluginFields, mountNode, props),
 });
 
 const pluginManagerBridge = createLazyMountBridge({
@@ -36,10 +34,7 @@ const pluginManagerBridge = createLazyMountBridge({
     i18n: currentI18n,
     onAction: currentActionHandler,
   },
-  createComponent: (mountNode, props) => new PluginManagerFields({
-    target: mountNode,
-    props,
-  }),
+  createComponent: (mountNode, props) => mountLegacyComponent(PluginManagerFields, mountNode, props),
 });
 
 function refreshView() {

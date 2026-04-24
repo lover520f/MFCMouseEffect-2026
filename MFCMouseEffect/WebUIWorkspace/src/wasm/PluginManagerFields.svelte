@@ -1,5 +1,7 @@
-<script>
+  <script>
+  import { onMount } from 'svelte';
   import { normalizeActionErrorCode, resolveWasmActionErrorMessage } from './action-error-model.js';
+  import { runRemoteWasmAction } from './remote-action.js';
   import { normalizeWasmState } from './state-model.js';
 
   export let payloadState = {};
@@ -120,18 +122,14 @@
     if (busy) {
       return null;
     }
-    if (typeof onAction !== 'function') {
-      statusTone = 'error';
-      statusMessage = text('wasm_action_not_ready', 'WASM action handler is not ready yet.');
-      statusErrorCode = '';
-      return { ok: false, error: statusMessage };
-    }
     busy = true;
     statusTone = '';
     statusMessage = '';
     statusErrorCode = '';
     try {
-      const response = await onAction(action, payload || {});
+      const response = typeof onAction === 'function'
+        ? await onAction(action, payload || {})
+        : await runRemoteWasmAction(action, payload || {});
       if (action === 'catalog') {
         catalog = normalizeCatalogItems(response?.plugins);
         catalogErrors = normalizeCatalogErrors(response?.errors);
@@ -223,7 +221,6 @@
 
   let current = normalizeWasmState(payloadState);
   let lastPayloadRef = payloadState;
-  let initialCatalogRequested = false;
   let policyCatalogRootPath = current.configured_catalog_root_path || '';
   let surfaceFilter = 'all';
   let catalog = [];
@@ -248,10 +245,9 @@
   $: showCatalogRoots = catalogSearchRoots.length > 1
     || (catalogSearchRoots.length === 1 && firstCatalogRootNormalized !== configuredCatalogRootNormalized);
 
-  $: if (!initialCatalogRequested && typeof onAction === 'function') {
-    initialCatalogRequested = true;
-    requestCatalog(false);
-  }
+  onMount(() => {
+    void requestCatalog(false);
+  });
 </script>
 
 <div class="wasm-panel plugin-manager-panel">

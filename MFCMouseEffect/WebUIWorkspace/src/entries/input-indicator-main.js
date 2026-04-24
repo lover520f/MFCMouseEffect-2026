@@ -1,6 +1,7 @@
 import InputIndicatorFields from '../input-indicator/InputIndicatorFields.svelte';
 import { createLazyMountBridge } from './lazy-mount.js';
 import { readUiState, writeUiState } from './ui-state-storage.js';
+import { mountLegacyComponent } from './legacy-component.js';
 
 const INPUT_INDICATOR_UI_STATE_STORAGE_NS = 'input-indicator.v1';
 
@@ -89,19 +90,16 @@ const bridge = createLazyMountBridge({
     texts: {},
   },
   createComponent: (mountNode, props) => {
-    const instance = new InputIndicatorFields({
-      target: mountNode,
-      props,
+    return mountLegacyComponent(InputIndicatorFields, mountNode, {
+      ...props,
+      onChangeState: (detail) => {
+        currentState = normalizeIndicator(detail);
+      },
+      onTabChange: (detail) => {
+        currentActiveTab = normalizeActiveTab(detail?.tabId);
+        writeInputIndicatorUiState({ activeTab: currentActiveTab });
+      },
     });
-    instance.$on('change', (event) => {
-      const detail = event?.detail || {};
-      currentState = normalizeIndicator(detail);
-    });
-    instance.$on('tabChange', (event) => {
-      currentActiveTab = normalizeActiveTab(event?.detail?.tabId);
-      writeInputIndicatorUiState({ activeTab: currentActiveTab });
-    });
-    return instance;
   },
 });
 

@@ -1,5 +1,6 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { runRemoteWasmAction } from '../wasm/remote-action.js';
   import {
     findCatalogItemByManifestPath,
     findCatalogItemByPluginId,
@@ -35,16 +36,14 @@
     if (busy) {
       return null;
     }
-    if (typeof onAction !== 'function') {
-      statusTone = 'error';
-      statusMessage = text('wasm_action_not_ready', 'WASM action handler is not ready yet.');
-      return { ok: false, error: statusMessage };
-    }
     busy = true;
     statusTone = '';
     statusMessage = '';
     try {
-      return await onAction(action, payload || {});
+      if (typeof onAction === 'function') {
+        return await onAction(action, payload || {});
+      }
+      return await runRemoteWasmAction(action, payload || {});
     } catch (error) {
       const message = error instanceof Error ? error.message : `${error || ''}`.trim();
       statusTone = 'error';
@@ -208,12 +207,9 @@
   let busy = false;
   let statusTone = '';
   let statusMessage = '';
-  let initialCatalogRequested = false;
-
-  $: if (!initialCatalogRequested && typeof onAction === 'function') {
-    initialCatalogRequested = true;
-    refreshCatalog(false);
-  }
+  onMount(() => {
+    void refreshCatalog(false);
+  });
 
   $: selectBestManifest(catalog);
 

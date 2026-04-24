@@ -5,10 +5,21 @@
   export let texts = {
     section_nav_aria: 'Settings sections',
   };
+  export let onSelect = null;
 
   const dispatch = createEventDispatcher();
 
+  export function syncView(nextSections, nextTexts) {
+    sections = Array.isArray(nextSections) ? nextSections : [];
+    texts = (nextTexts && typeof nextTexts === 'object') ? nextTexts : {
+      section_nav_aria: 'Settings sections',
+    };
+  }
+
   function selectSection(id) {
+    if (typeof onSelect === 'function') {
+      onSelect({ id });
+    }
     dispatch('select', { id });
   }
 

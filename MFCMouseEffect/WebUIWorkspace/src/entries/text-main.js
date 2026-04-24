@@ -1,5 +1,6 @@
 import TextContentFields from '../text/TextContentFields.svelte';
 import { createLazyMountBridge } from './lazy-mount.js';
+import { mountLegacyComponent } from './legacy-component.js';
 
 let currentState = {
   text_content: '',
@@ -26,15 +27,12 @@ const bridge = createLazyMountBridge({
     text: currentState,
   },
   createComponent: (mountNode, props) => {
-    const instance = new TextContentFields({
-      target: mountNode,
-      props,
+    return mountLegacyComponent(TextContentFields, mountNode, {
+      ...props,
+      onChangeState: (detail) => {
+        currentState = normalizeText(detail);
+      },
     });
-    instance.$on('change', (event) => {
-      const detail = event?.detail || {};
-      currentState = normalizeText(detail);
-    });
-    return instance;
   },
 });
 

@@ -1,5 +1,6 @@
 import { createDefaultAutomationState } from './defaults.js';
 import { syncMountedComponent } from '../entries/component-instance.js';
+import { mountLegacyComponent } from '../entries/legacy-component.js';
 
 function emptyValidationResult() {
   return { ok: true };
@@ -101,10 +102,7 @@ export function createAutomationApi(Component, mountId) {
       observeMount();
       return null;
     }
-    component = new Component({
-      target: mount,
-      props: buildComponentProps(),
-    });
+    component = mountLegacyComponent(Component, mount, buildComponentProps());
     stopMountObserver();
     return component;
   }
@@ -124,7 +122,7 @@ export function createAutomationApi(Component, mountId) {
       component = syncMountedComponent(
         target,
         mount,
-        (mountNode, props) => new Component({ target: mountNode, props: buildComponentProps(props) }),
+        (mountNode, props) => mountLegacyComponent(Component, mountNode, buildComponentProps(props)),
         nextProps,
       );
     },
@@ -153,7 +151,7 @@ export function createAutomationApi(Component, mountId) {
       component = syncMountedComponent(
         target,
         mount,
-        (mountNode, props) => new Component({ target: mountNode, props: buildComponentProps(props) }),
+        (mountNode, props) => mountLegacyComponent(Component, mountNode, buildComponentProps(props)),
         nextProps,
       );
     },

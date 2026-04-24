@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte';
 
   export let text = {};
+  export let onChangeState = null;
 
   const dispatch = createEventDispatcher();
 
@@ -35,7 +36,13 @@
     form = normalizeText(text);
   }
 
-  $: dispatch('change', toSnapshot(form));
+  $: {
+    const snapshot = toSnapshot(form);
+    if (typeof onChangeState === 'function') {
+      onChangeState(snapshot);
+    }
+    dispatch('change', snapshot);
+  }
 </script>
 
 <div class="grid">

@@ -1,5 +1,6 @@
 import TrailTuningFields from '../trail/TrailTuningFields.svelte';
 import { createLazyMountBridge } from './lazy-mount.js';
+import { mountLegacyComponent } from './legacy-component.js';
 
 let currentState = {
   trail_style: 'default',
@@ -81,15 +82,12 @@ const bridge = createLazyMountBridge({
     trail: currentState,
   },
   createComponent: (mountNode, props) => {
-    const instance = new TrailTuningFields({
-      target: mountNode,
-      props,
+    return mountLegacyComponent(TrailTuningFields, mountNode, {
+      ...props,
+      onChangeState: (detail) => {
+        currentState = normalizeTrail(detail);
+      },
     });
-    instance.$on('change', (event) => {
-      const detail = event?.detail || {};
-      currentState = normalizeTrail(detail);
-    });
-    return instance;
   },
 });
 

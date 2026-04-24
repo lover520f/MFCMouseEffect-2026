@@ -1,7 +1,13 @@
 import WebSettingsShell from '../shell/WebSettingsShell.svelte';
+import { mountLegacyComponent } from './legacy-component.js';
 
 const mountNode = document.getElementById('web_settings_shell_mount');
 const actionListeners = [];
+const shellState = {
+  statusMessage: '',
+  statusTone: '',
+  actionsDisabled: false,
+};
 
 function notifyAction(type) {
   if (!type) return;
@@ -24,31 +30,60 @@ function addActionListener(listener) {
 }
 
 let component = null;
+function createShellComponent(target, props) {
+  return mountLegacyComponent(WebSettingsShell, target, props);
+}
+
+function syncShellDom() {
+  const statusNode = document.getElementById('status');
+  const statusTextNode = statusNode?.querySelector('.top-status__text') || null;
+  if (statusNode) {
+    const show = !!shellState.statusMessage;
+    statusNode.className = `top-status${show ? ' show' : ''}${shellState.statusTone ? ` ${shellState.statusTone}` : ''}`;
+  }
+  if (statusTextNode) {
+    statusTextNode.textContent = shellState.statusMessage || '';
+  }
+  for (const id of ['btnReset', 'btnStop', 'btnReload', 'btnSave']) {
+    const node = document.getElementById(id);
+    if (node) {
+      node.disabled = !!shellState.actionsDisabled;
+    }
+  }
+}
 if (mountNode) {
-  component = new WebSettingsShell({
-    target: mountNode,
-    props: {
-      statusMessage: '',
-      statusTone: '',
-      actionsDisabled: false,
-      onAction: notifyAction,
-    },
+  component = createShellComponent(mountNode, {
+    statusMessage: '',
+    statusTone: '',
+    actionsDisabled: false,
+    onAction: notifyAction,
   });
 }
 
 function setStatus(message, tone) {
   if (!component) return;
-  component.$set({
-    statusMessage: message || '',
-    statusTone: tone || '',
-  });
+  shellState.statusMessage = message || '';
+  shellState.statusTone = tone || '';
+  if (typeof component.$set === 'function') {
+    component.$set({
+      statusMessage: shellState.statusMessage,
+      statusTone: shellState.statusTone,
+    });
+    return;
+  }
+  syncShellDom();
 }
 
 function setActionsEnabled(enabled) {
   if (!component) return;
-  component.$set({
-    actionsDisabled: !enabled,
-  });
+  shellState.actionsDisabled = !enabled;
+  if (typeof component.$set === 'function') {
+    component.$set({
+      actionsDisabled: shellState.actionsDisabled,
+    });
+    return;
+  }
+  syncShellDom();
 }
 
 window.MfxWebShell = {

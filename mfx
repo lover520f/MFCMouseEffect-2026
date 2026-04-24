@@ -13,12 +13,12 @@ Commands:
   run [--minutes N | --seconds N] [--debug] [--no-open]
       Build + run macOS core host and print settings URL.
       --debug starts the Vite source-mode WebUI after the host is ready.
-      Default auto stop: 30 minutes.
+      Default auto stop: 30 minutes (disabled by default in --debug).
 
   run-no-build [--minutes N | --seconds N] [--debug] [--no-open]
       Run macOS core host without rebuilding core/WebUI.
       --debug starts the Vite source-mode WebUI after the host is ready.
-      Default auto stop: 30 minutes.
+      Default auto stop: 30 minutes (disabled by default in --debug).
 
   build [platform options...]
       Build native project for current host platform.
@@ -74,6 +74,7 @@ run_start() {
     shift
     local minutes=30
     local seconds=""
+    local duration_overridden=0
     local debug_mode=0
     local open_browser=1
     while [[ $# -gt 0 ]]; do
@@ -81,11 +82,13 @@ run_start() {
         --minutes)
             [[ $# -ge 2 ]] || { echo "missing value for --minutes" >&2; exit 2; }
             minutes="$2"
+            duration_overridden=1
             shift 2
             ;;
         --seconds)
             [[ $# -ge 2 ]] || { echo "missing value for --seconds" >&2; exit 2; }
             seconds="$2"
+            duration_overridden=1
             shift 2
             ;;
         --debug)
@@ -117,6 +120,9 @@ run_start() {
     else
         minutes="$(to_positive_int "$minutes" "minutes")"
         stop_seconds="$((minutes * 60))"
+    fi
+    if [[ "$debug_mode" == "1" && "$duration_overridden" == "0" ]]; then
+        stop_seconds=0
     fi
     local -a args
     args=(--auto-stop-seconds "$stop_seconds")

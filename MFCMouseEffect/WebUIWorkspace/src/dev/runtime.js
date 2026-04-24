@@ -46,7 +46,7 @@ export function renderDevRuntimeError(error, runtime) {
         <div style="font-size: 13px; font-weight: 700; color: #2f6fb8; letter-spacing: 0.04em; text-transform: uppercase;">WebUI Dev</div>
         <h1 style="margin: 10px 0 0; font-size: 28px; line-height: 1.2;">Runtime unavailable</h1>
         <p style="margin: 12px 0 0; font-size: 15px; line-height: 1.7; color: #3e5c79;">
-          Start the host with <code>./mfx fast --debug --web</code> or <code>./mfx start --debug --web</code>,
+          Start the host with <code>./mfx fast --debug</code> or <code>./mfx start --debug</code>,
           or provide
           <code>MFX_WEBUI_DEV_BASE_URL</code> and <code>MFX_WEBUI_DEV_TOKEN</code> before <code>pnpm run dev</code>.
         </p>

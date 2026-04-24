@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte';
   import {
     clampFloatByRange,
     clampIntByRange,
@@ -16,6 +17,7 @@
     normalizeActionErrorCode,
     resolveWasmActionErrorMessage,
   } from './action-error-model.js';
+  import { runRemoteWasmAction } from './remote-action.js';
   import { normalizeWasmState } from './state-model.js';
 
   export let schemaState = {};
@@ -423,7 +425,6 @@
   let statusTone = '';
   let statusMessage = '';
   let statusErrorCode = '';
-  let initialCatalogRequested = false;
   let policyFallbackToBuiltin = current.fallback_to_builtin_click !== false;
   let policyOutputBufferBytes = resolvePolicyInputValue(
     current.configured_output_buffer_bytes,
@@ -536,18 +537,14 @@
     if (busy) {
       return null;
     }
-    if (typeof onAction !== 'function') {
-      statusTone = 'error';
-      statusMessage = text('wasm_action_not_ready', 'WASM action handler is not ready yet.');
-      statusErrorCode = '';
-      return { ok: false, error: statusMessage };
-    }
     busy = true;
     statusTone = '';
     statusMessage = '';
     statusErrorCode = '';
     try {
-      const response = await onAction(action, payload || {});
+      const response = typeof onAction === 'function'
+        ? await onAction(action, payload || {})
+        : await runRemoteWasmAction(action, payload || {});
       if (action === 'catalog') {
         setCatalogFromResponse(response || {});
       }
@@ -737,10 +734,9 @@
     && (current.configured_manifest_path_click || current.configured_manifest_path)
       !== (current.active_manifest_path_click || current.active_manifest_path);
 
-  $: if (!initialCatalogRequested && typeof onAction === 'function') {
-    initialCatalogRequested = true;
-    requestCatalog(false);
-  }
+  onMount(() => {
+    void requestCatalog(false);
+  });
 </script>
 
 <div class="wasm-panel">

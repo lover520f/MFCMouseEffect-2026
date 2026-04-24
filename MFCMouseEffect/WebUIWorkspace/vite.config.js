@@ -154,6 +154,19 @@ function resolveDevRuntime() {
   };
 }
 
+function readRequestBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', (chunk) => {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    });
+    req.on('end', () => {
+      resolve(chunks.length > 0 ? Buffer.concat(chunks) : Buffer.alloc(0));
+    });
+    req.on('error', reject);
+  });
+}
+
 function createDevRuntimePlugin() {
   return {
     name: 'mfx-dev-runtime',
@@ -208,12 +221,21 @@ function createDevRuntimePlugin() {
             }
             headers.set(key, value);
           }
+          // In dev mode, prefer the probe token if the client didn't supply one.
+          // Some helper scripts still rely on query-string token, while the backend
+          // authorization expects the header.
+          if (runtime.token && !headers.has('x-mfcmouseeffect-token')) {
+            headers.set('x-mfcmouseeffect-token', runtime.token);
+          }
 
+          const method = req.method || 'GET';
+          const requestBody = method === 'GET' || method === 'HEAD'
+            ? undefined
+            : await readRequestBody(req);
           const response = await fetch(target, {
-            method: req.method || 'GET',
+            method,
             headers,
-            body: req.method === 'GET' || req.method === 'HEAD' ? undefined : req,
-            duplex: req.method === 'GET' || req.method === 'HEAD' ? undefined : 'half',
+            body: requestBody,
           });
 
           res.statusCode = response.status;
@@ -223,8 +245,8 @@ function createDevRuntimePlugin() {
             }
             res.setHeader(key, value);
           }
-          const body = Buffer.from(await response.arrayBuffer());
-          res.end(body);
+          const responseBody = Buffer.from(await response.arrayBuffer());
+          res.end(responseBody);
         } catch (error) {
           res.statusCode = 502;
           res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -254,13 +276,7 @@ export default defineConfig(({ mode }) => {
       legalComments: 'none',
     },
     plugins: [
-      svelte({
-        compilerOptions: {
-          compatibility: {
-            componentApi: 4,
-          },
-        },
-      }),
+      svelte(),
       createDevRuntimePlugin(),
     ],
     build: {

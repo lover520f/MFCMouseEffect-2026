@@ -1,6 +1,7 @@
 import GeneralSettingsFields from '../general/GeneralSettingsFields.svelte';
 import { normalizeGeneralState } from '../general/general-state-model.js';
 import { createLazyMountBridge } from './lazy-mount.js';
+import { mountLegacyComponent } from './legacy-component.js';
 
 let currentState = normalizeGeneralState({});
 
@@ -15,15 +16,12 @@ const bridge = createLazyMountBridge({
     general: currentState,
   },
   createComponent: (mountNode, props) => {
-    const instance = new GeneralSettingsFields({
-      target: mountNode,
-      props,
+    return mountLegacyComponent(GeneralSettingsFields, mountNode, {
+      ...props,
+      onChangeState: (detail) => {
+        currentState = normalizeGeneralState(detail);
+      },
     });
-    instance.$on('change', (event) => {
-      const detail = event?.detail || {};
-      currentState = normalizeGeneralState(detail);
-    });
-    return instance;
   },
 });
 
