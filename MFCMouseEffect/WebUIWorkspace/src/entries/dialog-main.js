@@ -1,38 +1,18 @@
 import DialogHost from '../dialog/DialogHost.svelte';
-import { syncMountedComponent } from './component-instance.js';
 
 const mountNode = document.createElement('div');
 document.body.appendChild(mountNode);
 
-function createDialogComponent(target, props) {
-  return new DialogHost({
-    target,
-    props: {
-      ...props,
-      onConfirmAction: () => {
-        closeWithResult(true);
-      },
-      onCancelAction: () => {
-        closeWithResult(false);
-      },
-      onMaskAction: () => {
-        if (dialogMode === 'confirm') {
-          closeWithResult(false);
-          return;
-        }
-        removeDialog({ settlePending: false });
-      },
-    },
-  });
-}
-
-let component = createDialogComponent(mountNode, {
-  open: false,
-  mode: 'notice',
-  title: '',
-  message: '',
-  okText: 'OK',
-  cancelText: 'Cancel',
+const component = new DialogHost({
+  target: mountNode,
+  props: {
+    open: false,
+    mode: 'notice',
+    title: '',
+    message: '',
+    okText: 'OK',
+    cancelText: 'Cancel',
+  },
 });
 
 let dialogMode = 'notice';
@@ -57,7 +37,7 @@ function attachEsc() {
 }
 
 function setDialogState(next) {
-  component = syncMountedComponent(component, mountNode, createDialogComponent, next);
+  component.$set(next);
 }
 
 function removeDialog(options) {
@@ -98,6 +78,22 @@ function handleEsc(event) {
   if (event.key !== 'Escape') return;
   closeWithResult(false);
 }
+
+component.$on('confirm', () => {
+  closeWithResult(true);
+});
+
+component.$on('cancel', () => {
+  closeWithResult(false);
+});
+
+component.$on('mask', () => {
+  if (dialogMode === 'confirm') {
+    closeWithResult(false);
+    return;
+  }
+  removeDialog({ settlePending: false });
+});
 
 function showNotice(opts) {
   const options = opts || {};

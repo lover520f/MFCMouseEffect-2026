@@ -1,10 +1,6 @@
 <script>
   export let description = '';
 
-  export function syncDescription(nextDescription) {
-    description = `${nextDescription || ''}`;
-  }
-
   $: text = `${description || ''}`.trim();
 </script>
 

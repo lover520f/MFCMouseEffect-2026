@@ -83,12 +83,11 @@ const bridge = createLazyMountBridge({
   createComponent: (mountNode, props) => {
     const instance = new TrailTuningFields({
       target: mountNode,
-      props: {
-        ...props,
-        onChangeState: (detail) => {
-          currentState = normalizeTrail(detail);
-        },
-      },
+      props,
+    });
+    instance.$on('change', (event) => {
+      const detail = event?.detail || {};
+      currentState = normalizeTrail(detail);
     });
     return instance;
   },

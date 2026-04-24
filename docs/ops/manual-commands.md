@@ -18,10 +18,9 @@ Keep P1 concise; add details here when needed.
   - `./mfx fast --debug`
   - host build policy stays attached to `start` vs `fast`
   - `--debug` starts the Vite dev UI and automatically carries the current token into the opened URL
-  - `./mfx start` opens the rebuilt static WebUI for release-near validation, and the static build copies and loads the generated `*.svelte.css` files
+  - `./mfx start` opens the rebuilt static WebUI for release-near validation
   - the helper reuses an existing dev server when possible; otherwise it starts `pnpm run dev` inside `MFCMouseEffect/WebUIWorkspace`
   - Vite still reads `base_url/token` from `/tmp/mfx-core-websettings.probe` by default, and `MFX_WEBUI_DEV_PROBE_FILE`, `MFX_WEBUI_DEV_BASE_URL`, and `MFX_WEBUI_DEV_TOKEN` remain available as lower-level overrides
-  - Vite dev proxy forwards `/api/*` including POST bodies; if Apply/Reload returns `{"ok":false,"error":"terminated"}`, restart the dev server so the latest `vite.config.js` is loaded
   - raw fallback when debugging the dev server itself:
     - terminal 1: `tools/platform/manual/run-macos-core-websettings-manual.sh --skip-build --skip-webui-build --debug --no-open`
     - terminal 2: `cd MFCMouseEffect/WebUIWorkspace && pnpm run dev`

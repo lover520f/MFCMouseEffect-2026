@@ -17,12 +17,11 @@ const bridge = createLazyMountBridge({
   createComponent: (mountNode, props) => {
     const instance = new GeneralSettingsFields({
       target: mountNode,
-      props: {
-        ...props,
-        onChangeState: (detail) => {
-          currentState = normalizeGeneralState(detail);
-        },
-      },
+      props,
+    });
+    instance.$on('change', (event) => {
+      const detail = event?.detail || {};
+      currentState = normalizeGeneralState(detail);
     });
     return instance;
   },

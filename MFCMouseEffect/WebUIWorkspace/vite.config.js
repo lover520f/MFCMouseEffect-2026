@@ -67,12 +67,10 @@ const TARGETS = {
 
 function pickBuildTarget(mode) {
   const target = TARGETS[mode] || TARGETS.workspace;
-  const fileName = target.fileName;
   return {
     entry: path.resolve(__dirname, ENTRY_ROOT, target.entry),
     name: target.name,
-    fileName,
-    cssFileName: fileName.replace(/\.js$/, '.css'),
+    fileName: target.fileName,
   };
 }
 
@@ -157,15 +155,6 @@ function resolveDevRuntime() {
 }
 
 function createDevRuntimePlugin() {
-  async function readRequestBody(req) {
-    const chunks = [];
-    for await (const chunk of req) {
-      if (chunk == null) continue;
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-    }
-    return chunks.length > 0 ? Buffer.concat(chunks) : undefined;
-  }
-
   return {
     name: 'mfx-dev-runtime',
     configureServer(server) {
@@ -220,15 +209,11 @@ function createDevRuntimePlugin() {
             headers.set(key, value);
           }
 
-          const method = trimText(req.method || 'GET').toUpperCase() || 'GET';
-          const requestBody = method === 'GET' || method === 'HEAD'
-            ? undefined
-            : await readRequestBody(req);
-
           const response = await fetch(target, {
-            method,
+            method: req.method || 'GET',
             headers,
-            body: requestBody,
+            body: req.method === 'GET' || req.method === 'HEAD' ? undefined : req,
+            duplex: req.method === 'GET' || req.method === 'HEAD' ? undefined : 'half',
           });
 
           res.statusCode = response.status;
@@ -238,8 +223,8 @@ function createDevRuntimePlugin() {
             }
             res.setHeader(key, value);
           }
-          const responseBody = Buffer.from(await response.arrayBuffer());
-          res.end(responseBody);
+          const body = Buffer.from(await response.arrayBuffer());
+          res.end(body);
         } catch (error) {
           res.statusCode = 502;
           res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -292,12 +277,6 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           extend: true,
-          assetFileNames: (assetInfo) => {
-            if (assetInfo.name === 'style.css') {
-              return target.cssFileName;
-            }
-            return '[name][extname]';
-          },
         },
       },
     },

@@ -1,7 +1,6 @@
 import WorkspaceSidebar from '../WorkspaceSidebar.svelte';
 import WorkspaceSectionHint from '../WorkspaceSectionHint.svelte';
 import WorkspaceAutomationAssist from '../WorkspaceAutomationAssist.svelte';
-import { syncMountedComponent } from './component-instance.js';
 import { readUiState, writeUiState } from './ui-state-storage.js';
 
 const state = {
@@ -15,7 +14,6 @@ const state = {
   component: null,
   hintComponent: null,
   auxComponent: null,
-  auxRefreshTimer: 0,
   recoverTimer: 0,
   recoverAttempts: 0,
 };
@@ -96,14 +94,6 @@ function clearRecoverTimer() {
   }
   window.clearTimeout(state.recoverTimer);
   state.recoverTimer = 0;
-}
-
-function clearAuxRefreshTimer() {
-  if (!state.auxRefreshTimer) {
-    return;
-  }
-  window.clearTimeout(state.auxRefreshTimer);
-  state.auxRefreshTimer = 0;
 }
 
 function revealCardsFallback() {
@@ -243,8 +233,7 @@ function updateSidebarView() {
   if (!state.component) {
     return;
   }
-  const mountNode = el('workspace_sidebar_mount');
-  state.component = syncMountedComponent(state.component, mountNode, createSidebarComponent, {
+  state.component.$set({
     sections: sectionsViewModel(),
     texts: workspaceTexts(),
   });
@@ -254,8 +243,7 @@ function updateHintView() {
   if (!state.hintComponent) {
     return;
   }
-  const mountNode = el('workspace_hint_mount');
-  state.hintComponent = syncMountedComponent(state.hintComponent, mountNode, createHintComponent, {
+  state.hintComponent.$set({
     description: activeSectionDescription(),
   });
 }
@@ -264,52 +252,11 @@ function updateAuxView() {
   if (!state.auxComponent) {
     return;
   }
-  const nextI18n = state.i18n || {};
-  const mountNode = el('workspace_aux_mount');
-  state.auxComponent = syncMountedComponent(state.auxComponent, mountNode, createAuxComponent, {
+  state.auxComponent.$set({
     activeSectionId: state.activeId,
     runtimePlatform: state.runtimePlatform,
     runtimeState: state.runtimeState,
-    i18n: nextI18n,
-  });
-}
-
-function scheduleAuxViewRefresh() {
-  clearAuxRefreshTimer();
-  const delayMs = window.__MFX_DEV_RUNTIME__ ? 900 : 0;
-  if (delayMs <= 0) {
-    updateAuxView();
-    return;
-  }
-  state.auxRefreshTimer = window.setTimeout(() => {
-    state.auxRefreshTimer = 0;
-    updateAuxView();
-  }, delayMs);
-}
-
-function createSidebarComponent(mountNode, props) {
-  return new WorkspaceSidebar({
-    target: mountNode,
-    props: {
-      ...props,
-      onSelect: ({ id }) => {
-        setActive(id, { updateHash: true });
-      },
-    },
-  });
-}
-
-function createAuxComponent(mountNode, props) {
-  return new WorkspaceAutomationAssist({
-    target: mountNode,
-    props,
-  });
-}
-
-function createHintComponent(mountNode, props) {
-  return new WorkspaceSectionHint({
-    target: mountNode,
-    props,
+    i18n: state.i18n || {},
   });
 }
 
@@ -382,9 +329,17 @@ function ensureSidebarComponent() {
     return;
   }
 
-  const component = createSidebarComponent(mountNode, {
-    sections: [],
-    texts: workspaceTexts(),
+  const component = new WorkspaceSidebar({
+    target: mountNode,
+    props: {
+      sections: [],
+      texts: workspaceTexts(),
+    },
+  });
+
+  component.$on('select', (event) => {
+    const id = event?.detail?.id;
+    setActive(id, { updateHash: true });
   });
 
   state.component = component;
@@ -399,11 +354,14 @@ function ensureAuxComponent() {
     return;
   }
 
-  state.auxComponent = createAuxComponent(mountNode, {
-    activeSectionId: state.activeId,
-    runtimePlatform: state.runtimePlatform,
-    runtimeState: state.runtimeState,
-    i18n: state.i18n || {},
+  state.auxComponent = new WorkspaceAutomationAssist({
+    target: mountNode,
+    props: {
+      activeSectionId: state.activeId,
+      runtimePlatform: state.runtimePlatform,
+      runtimeState: state.runtimeState,
+      i18n: state.i18n || {},
+    },
   });
 }
 
@@ -416,8 +374,11 @@ function ensureHintComponent() {
     return;
   }
 
-  state.hintComponent = createHintComponent(mountNode, {
-    description: activeSectionDescription(),
+  state.hintComponent = new WorkspaceSectionHint({
+    target: mountNode,
+    props: {
+      description: activeSectionDescription(),
+    },
   });
 }
 
@@ -455,7 +416,7 @@ function syncI18n(i18n) {
   ensureSectionTexts();
   updateSidebarView();
   updateHintView();
-  scheduleAuxViewRefresh();
+  updateAuxView();
 }
 
 function normalizePlatform(value) {
@@ -472,7 +433,8 @@ function syncRuntimeState(runtimeState) {
   state.runtimeState = {
     input_automation_gesture_route_status: source.input_automation_gesture_route_status || null,
   };
-  scheduleAuxViewRefresh();
+  updateSidebarView();
+  updateAuxView();
 }
 
 function getActiveSectionId() {

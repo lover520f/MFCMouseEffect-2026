@@ -8,7 +8,6 @@
   export let holdFollowModes = [];
   export let holdPresenterBackends = [];
   export let general = {};
-  export let onChangeState = null;
 
   const dispatch = createEventDispatcher();
 
@@ -33,13 +32,7 @@
     form = normalizeGeneralState(general);
   }
 
-  $: {
-    const snapshot = toSnapshot(form);
-    if (typeof onChangeState === 'function') {
-      onChangeState(snapshot);
-    }
-    dispatch('change', snapshot);
-  }
+  $: dispatch('change', toSnapshot(form));
 </script>
 
 <div class="grid">

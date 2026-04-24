@@ -10,13 +10,6 @@
   let routeStatus = null;
   let panelOpen = false;
 
-  export function syncRuntime(nextActiveSectionId, nextRuntimePlatform, nextRuntimeState, nextI18n) {
-    activeSectionId = `${nextActiveSectionId || ''}`;
-    runtimePlatform = `${nextRuntimePlatform || 'windows'}`;
-    runtimeState = (nextRuntimeState && typeof nextRuntimeState === 'object') ? nextRuntimeState : {};
-    i18n = (nextI18n && typeof nextI18n === 'object') ? nextI18n : {};
-  }
-
   function t(key, fallback) {
     const value = `${i18n?.[key] || ''}`.trim();
     return value || fallback;

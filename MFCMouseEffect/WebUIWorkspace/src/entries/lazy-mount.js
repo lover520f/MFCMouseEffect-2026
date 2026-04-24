@@ -1,5 +1,3 @@
-import { syncMountedComponent } from './component-instance.js';
-
 export function createLazyMountBridge(options) {
   const opts = options || {};
   const mountId = typeof opts.mountId === 'string' ? opts.mountId : '';
@@ -38,8 +36,6 @@ export function createLazyMountBridge(options) {
     try {
       component = createComponent(mountNode, latestProps);
     } catch (_error) {
-      mountNode.dataset.mfxMountError = _error instanceof Error ? _error.message : String(_error);
-      console.error(`[mfx lazy mount] ${mountId} failed`, _error);
       component = null;
       return null;
     }
@@ -78,8 +74,10 @@ export function createLazyMountBridge(options) {
       observeMount();
       return null;
     }
-    component = syncMountedComponent(target, document.getElementById(mountId), createComponent, latestProps);
-    return component;
+    if (typeof target.$set === 'function') {
+      target.$set(latestProps);
+    }
+    return target;
   }
 
   mountIfNeeded();

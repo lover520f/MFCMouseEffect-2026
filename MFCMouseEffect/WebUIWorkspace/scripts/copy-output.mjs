@@ -22,8 +22,6 @@ const generatedFiles = [
   'wasm-settings.svelte.js',
 ];
 
-const generatedCssFiles = generatedFiles.map((fileName) => fileName.replace(/\.js$/, '.css'));
-
 const staticWebUiFiles = [
   'index.html',
   'app.js',
@@ -67,24 +65,10 @@ function copyGeneratedBundleOrThrow(source, target) {
   fs.writeFileSync(target, wrapped, 'utf8');
 }
 
-function copyGeneratedCssOrCreateEmpty(source, target) {
-  if (fs.existsSync(source)) {
-    copyOrThrow(source, target);
-    return;
-  }
-  fs.writeFileSync(target, '', 'utf8');
-}
-
 for (const fileName of generatedFiles) {
   const source = path.join(workspaceDir, 'dist', fileName);
   const target = path.join(webUiDir, fileName);
   copyGeneratedBundleOrThrow(source, target);
-}
-
-for (const fileName of generatedCssFiles) {
-  const source = path.join(workspaceDir, 'dist', fileName);
-  const target = path.join(webUiDir, fileName);
-  copyGeneratedCssOrCreateEmpty(source, target);
 }
 
 const runtimeWebUiDirs = [
@@ -98,12 +82,6 @@ for (const runtimeDir of runtimeWebUiDirs) {
   }
 
   for (const fileName of generatedFiles) {
-    const source = path.join(webUiDir, fileName);
-    const target = path.join(runtimeDir, fileName);
-    copyOrThrow(source, target);
-  }
-
-  for (const fileName of generatedCssFiles) {
     const source = path.join(webUiDir, fileName);
     const target = path.join(runtimeDir, fileName);
     copyOrThrow(source, target);
