@@ -92,6 +92,7 @@ require_cmd pgrep
 
 state_file="/tmp/mfx-webui-dev.state"
 log_file="/tmp/mfx-webui-dev.log"
+pnpm_bin="$(command -v pnpm)"
 
 extract_url_from_log() {
     local file_path="$1"
@@ -104,11 +105,25 @@ extract_url_from_log() {
 url_alive() {
     local url="$1"
     [[ -n "$url" ]] || return 1
-    curl -fsS --max-time 1 "${url}__mfx/dev-runtime" >/dev/null 2>&1
+    local runtime_payload=""
+    runtime_payload="$(curl -fsS --max-time 2 "${url}__mfx/dev-runtime" 2>/dev/null || true)"
+    [[ "$runtime_payload" == *'"available":true'* ]]
 }
 
 list_workspace_vite_pids() {
     pgrep -f "$workspace_dir/node_modules/.*/vite/bin/vite\\.js" 2>/dev/null || true
+}
+
+remove_webui_launchctl_jobs() {
+    if ! command -v launchctl >/dev/null 2>&1; then
+        return 0
+    fi
+    launchctl list 2>/dev/null \
+        | awk '$3 ~ /^com[.]mfcmouseeffect[.]webui-dev[.]/ { print $3 }' \
+        | while IFS= read -r label; do
+            [[ -n "$label" ]] || continue
+            launchctl remove "$label" >/dev/null 2>&1 || true
+        done
 }
 
 latest_workspace_vite_pid() {
@@ -123,6 +138,8 @@ latest_workspace_vite_pid() {
 }
 
 stop_workspace_vite_servers() {
+    remove_webui_launchctl_jobs
+
     local -a vite_pids=()
     local -a all_pids=()
     local pid=""
@@ -201,32 +218,55 @@ fi
 if [[ "$reuse_existing" != "1" ]]; then
     stop_workspace_vite_servers
     : >"$log_file"
-    (
-        cd "$workspace_dir"
-        if command -v setsid >/dev/null 2>&1; then
+    if command -v launchctl >/dev/null 2>&1; then
+        launch_label="com.mfcmouseeffect.webui-dev.$$"
+        launchctl remove "$launch_label" >/dev/null 2>&1 || true
+        launchctl submit \
+            -l "$launch_label" \
+            -o "$log_file" \
+            -e "$log_file" \
+            -- /usr/bin/env \
+                "PATH=$PATH" \
+                "MFX_WEBUI_DEV_LAUNCH_PID_FILE=$state_file.pid" \
+                "MFX_WEBUI_DEV_WORKSPACE_DIR=$workspace_dir" \
+                "MFX_WEBUI_DEV_PNPM_BIN=$pnpm_bin" \
+                "MFX_WEBUI_DEV_HOST=$preferred_host" \
+                /bin/sh -c 'echo "$$" > "$MFX_WEBUI_DEV_LAUNCH_PID_FILE"; cd "$MFX_WEBUI_DEV_WORKSPACE_DIR"; exec "$MFX_WEBUI_DEV_PNPM_BIN" run dev -- --host "$MFX_WEBUI_DEV_HOST"'
+    elif command -v setsid >/dev/null 2>&1; then
+        (
+            cd "$workspace_dir"
             nohup setsid pnpm run dev -- --host "$preferred_host" >"$log_file" 2>&1 < /dev/null &
-        else
+            echo "$!" > "$state_file.pid"
+        )
+    else
+        (
+            cd "$workspace_dir"
             nohup pnpm run dev -- --host "$preferred_host" >"$log_file" 2>&1 < /dev/null &
-        fi
-        echo "$!" > "$state_file.pid"
-    )
-    current_pid="$(trim_text "$(cat "$state_file.pid")")"
+            echo "$!" > "$state_file.pid"
+        )
+    fi
+    current_pid="$(trim_text "$(cat "$state_file.pid" 2>/dev/null || true)")"
     rm -f "$state_file.pid"
 
     current_url=""
     vite_pid=""
+    dev_runtime_ready=0
     for _attempt in $(seq 1 120); do
         current_url="$(trim_text "$(extract_url_from_log "$log_file")")"
         vite_pid="$(latest_workspace_vite_pid)"
         if [[ -n "$current_url" ]] && [[ -n "$vite_pid" ]] && url_alive "$current_url"; then
             current_pid="$vite_pid"
+            dev_runtime_ready=1
             break
         fi
         sleep 0.25
     done
 
-    if [[ -z "$current_url" ]]; then
+    if [[ -z "$current_url" || "$dev_runtime_ready" != "1" ]]; then
         echo "failed to discover Vite dev URL; see $log_file" >&2
+        if [[ -n "$current_url" ]]; then
+            echo "discovered URL was not runtime-ready: $current_url" >&2
+        fi
         exit 1
     fi
 
@@ -234,6 +274,7 @@ if [[ "$reuse_existing" != "1" ]]; then
 pid=$current_pid
 url=$current_url
 config_hash=$expected_config_hash
+launch_label=${launch_label:-}
 log_file=$log_file
 workspace_dir=$workspace_dir
 EOF

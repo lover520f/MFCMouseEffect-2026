@@ -5,7 +5,7 @@ import { loadDevRuntime, renderDevRuntimeError } from './runtime.js';
 async function bootDevUi() {
   const runtime = await loadDevRuntime();
   if (!runtime.available) {
-    throw new Error('backend runtime not discovered');
+    throw new Error(runtime.reason || 'backend runtime not discovered');
   }
 
   await import('../entries/dialog-main.js');

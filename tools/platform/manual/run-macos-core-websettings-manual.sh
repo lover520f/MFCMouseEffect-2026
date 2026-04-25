@@ -104,6 +104,7 @@ mfx_manual_validate_non_negative_integer "$auto_stop_seconds" "--auto-stop-secon
 mfx_manual_apply_build_jobs_env "$build_jobs" "--jobs"
 
 mfx_require_cmd sed
+mfx_require_cmd awk
 
 mfx_manual_acquire_entry_host_lock
 cleanup_lock() {

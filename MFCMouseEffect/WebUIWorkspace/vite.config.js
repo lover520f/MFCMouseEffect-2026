@@ -151,7 +151,49 @@ function resolveDevRuntime() {
     token,
     settingsUrl,
     probeFile,
+    reason: baseUrl ? '' : 'backend runtime not discovered',
   };
+}
+
+async function checkDevRuntimeBackend(runtime) {
+  if (!runtime?.baseUrl) {
+    return runtime;
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 800);
+  try {
+    const target = new URL('/api/state', runtime.baseUrl);
+    const headers = new Headers();
+    if (runtime.token) {
+      headers.set('x-mfcmouseeffect-token', runtime.token);
+    }
+    const response = await fetch(target, {
+      method: 'GET',
+      headers,
+      signal: controller.signal,
+    });
+    if (response.ok) {
+      return {
+        ...runtime,
+        available: true,
+        reason: '',
+      };
+    }
+    return {
+      ...runtime,
+      available: false,
+      reason: `backend state probe failed: HTTP ${response.status}`,
+    };
+  } catch (error) {
+    return {
+      ...runtime,
+      available: false,
+      reason: error instanceof Error ? error.message : String(error),
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function readRequestBody(req) {
@@ -179,7 +221,7 @@ function createDevRuntimePlugin() {
         }
 
         if (requestUrl === DEV_RUNTIME_ROUTE) {
-          const runtime = resolveDevRuntime();
+          const runtime = await checkDevRuntimeBackend(resolveDevRuntime());
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json; charset=utf-8');
           res.end(JSON.stringify(runtime));

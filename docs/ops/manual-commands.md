@@ -19,9 +19,11 @@ Keep P1 concise; add details here when needed.
   - host build policy stays attached to `start` vs `fast`
   - `--debug` starts the Vite dev UI and automatically carries the current token into the opened URL
   - when no explicit `--minutes/--seconds` is provided, `--debug` keeps the core host alive instead of auto-stopping after 30 minutes
+  - the macOS core host is submitted through `launchctl` before the URL is printed, so closing or finishing the wrapper command does not silently drop the backend
   - `./mfx start` opens the rebuilt static WebUI for release-near validation
   - source-mode contract smoke: `pnpm --dir MFCMouseEffect/WebUIWorkspace run test:webui-dev-contract`
-  - the helper reuses an existing dev server when possible (and restarts automatically when `vite.config.js` changes); otherwise it stops stale workspace Vite servers first, relaunches Vite, and records the actual Vite Node pid instead of the transient wrapper pid
+  - the helper reuses an existing dev server when possible (and restarts automatically when `vite.config.js` changes); otherwise it stops stale workspace Vite servers first, relaunches Vite through `launchctl`, and records the actual Vite Node pid instead of the transient wrapper pid
+  - `web_browser_url` is printed only after `/__mfx/dev-runtime` confirms the backend via `/api/state`; stale probe files should surface as runtime-unavailable instead of a half-loaded UI
   - Vite still reads `base_url/token` from `/tmp/mfx-core-websettings.probe` by default, and `MFX_WEBUI_DEV_PROBE_FILE`, `MFX_WEBUI_DEV_BASE_URL`, and `MFX_WEBUI_DEV_TOKEN` remain available as lower-level overrides
   - raw fallback when debugging the dev server itself:
     - terminal 1: `tools/platform/manual/run-macos-core-websettings-manual.sh --skip-build --skip-webui-build --debug --no-open`

@@ -106,6 +106,21 @@ mfx_manual_trim_trailing_slash() {
     printf '%s' "$value"
 }
 
+mfx_manual_remove_launchctl_jobs() {
+    local label_pattern="$1"
+    if [[ -z "$label_pattern" ]] \
+        || ! command -v launchctl >/dev/null 2>&1 \
+        || ! command -v awk >/dev/null 2>&1; then
+        return 0
+    fi
+    launchctl list 2>/dev/null \
+        | awk -v pattern="$label_pattern" '$3 ~ pattern { print $3 }' \
+        | while IFS= read -r label; do
+            [[ -n "$label" ]] || continue
+            launchctl remove "$label" >/dev/null 2>&1 || true
+        done
+}
+
 mfx_manual_try_stop_via_http() {
     local base_url="${1:-$MFX_MANUAL_BASE_URL}"
     local token="${2:-$MFX_MANUAL_SETTINGS_TOKEN}"
@@ -210,6 +225,7 @@ mfx_manual_start_core_host() {
     local start_probe_file="${probe_file}.run-${MFX_MANUAL_START_SEQ}"
     local diagnostics_file="${probe_file}.diagnostics"
     local start_diagnostics_file="${start_probe_file}.diagnostics"
+    local start_pid_file="${start_probe_file}.pid"
     local single_instance_key=""
     single_instance_key="$(_mfx_manual_resolve_single_instance_key)"
     local -a host_args=(--mode=tray)
@@ -221,9 +237,10 @@ mfx_manual_start_core_host() {
         mfx_fail "host binary missing or not executable: $host_bin"
     fi
 
+    mfx_manual_remove_launchctl_jobs '^com[.]mfcmouseeffect[.]manual-core-host[.]'
     mfx_terminate_stale_entry_host "before manual host start"
 
-    rm -f "$probe_file" "$diagnostics_file" "$start_probe_file" "$start_diagnostics_file"
+    rm -f "$probe_file" "$diagnostics_file" "$start_probe_file" "$start_diagnostics_file" "$start_pid_file"
     MFX_MANUAL_STARTUP_SKIP_REASON=""
     MFX_MANUAL_STARTUP_DIAGNOSTICS_FILE="$diagnostics_file"
 
@@ -231,11 +248,37 @@ mfx_manual_start_core_host() {
     if [[ -n "$single_instance_key" ]]; then
         mfx_info "manual host single-instance key: $single_instance_key"
     fi
-    nohup env MFX_CORE_WEB_SETTINGS_PROBE_FILE="$start_probe_file" \
-        MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE="$start_diagnostics_file" \
-        "${extra_env[@]}" \
-        "$host_bin" "${host_args[@]}" >"$log_file" 2>&1 &
-    local pid="$!"
+    local pid=""
+    if command -v launchctl >/dev/null 2>&1; then
+        local launch_label="com.mfcmouseeffect.manual-core-host.$$.$MFX_MANUAL_START_SEQ"
+        launchctl remove "$launch_label" >/dev/null 2>&1 || true
+        launchctl submit \
+            -l "$launch_label" \
+            -o "$log_file" \
+            -e "$log_file" \
+            -- /usr/bin/env \
+                "PATH=$PATH" \
+                "MFX_MANUAL_LAUNCH_PID_FILE=$start_pid_file" \
+                "MFX_MANUAL_HOST_BIN=$host_bin" \
+                "MFX_CORE_WEB_SETTINGS_PROBE_FILE=$start_probe_file" \
+                "MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE=$start_diagnostics_file" \
+                "${extra_env[@]}" \
+                /bin/sh -c 'echo "$$" > "$MFX_MANUAL_LAUNCH_PID_FILE"; exec "$MFX_MANUAL_HOST_BIN" "$@"' \
+                mfx-manual-host \
+                "${host_args[@]}"
+    elif command -v setsid >/dev/null 2>&1; then
+        nohup setsid env MFX_CORE_WEB_SETTINGS_PROBE_FILE="$start_probe_file" \
+            MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE="$start_diagnostics_file" \
+            "${extra_env[@]}" \
+            "$host_bin" "${host_args[@]}" >"$log_file" 2>&1 < /dev/null &
+        pid="$!"
+    else
+        nohup env MFX_CORE_WEB_SETTINGS_PROBE_FILE="$start_probe_file" \
+            MFX_CORE_WEB_SETTINGS_PROBE_DIAGNOSTICS_FILE="$start_diagnostics_file" \
+            "${extra_env[@]}" \
+            "$host_bin" "${host_args[@]}" >"$log_file" 2>&1 < /dev/null &
+        pid="$!"
+    fi
 
     local probe_wait_attempts="${MFX_MANUAL_PROBE_WAIT_ATTEMPTS:-120}"
     if ! [[ "$probe_wait_attempts" =~ ^[0-9]+$ ]] || [[ "$probe_wait_attempts" -le 0 ]]; then
@@ -246,12 +289,15 @@ mfx_manual_start_core_host() {
     fi
 
     for attempt in $(seq 1 "$probe_wait_attempts"); do
+        if [[ -z "$pid" && -s "$start_pid_file" ]]; then
+            pid="$(tr -dc '0-9' < "$start_pid_file")"
+        fi
         if [[ -s "$start_probe_file" ]] && \
             [[ -n "$(mfx_manual_probe_value "url" "$start_probe_file")" ]] && \
             [[ -n "$(mfx_manual_probe_value "token" "$start_probe_file")" ]]; then
             break
         fi
-        if ! kill -0 "$pid" 2>/dev/null; then
+        if [[ -n "$pid" ]] && ! kill -0 "$pid" 2>/dev/null; then
             break
         fi
         if (( attempt == 1 || attempt % 20 == 0 )); then
@@ -260,7 +306,11 @@ mfx_manual_start_core_host() {
         sleep 0.1
     done
 
-    if ! kill -0 "$pid" 2>/dev/null; then
+    if [[ -z "$pid" && -s "$start_pid_file" ]]; then
+        pid="$(tr -dc '0-9' < "$start_pid_file")"
+    fi
+
+    if [[ -z "$pid" ]] || ! kill -0 "$pid" 2>/dev/null; then
         if _mfx_manual_allow_bind_eacces_skip && _mfx_manual_bind_permission_denied "$log_file" "$start_diagnostics_file"; then
             _mfx_manual_mark_bind_eacces_skip
             return 2
