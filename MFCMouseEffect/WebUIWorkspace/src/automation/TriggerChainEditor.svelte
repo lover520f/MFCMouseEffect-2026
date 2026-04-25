@@ -56,6 +56,7 @@
   <div class="automation-chain-editor" class:is-disabled={disabled}>
     {#each chain as node, index (index)}
       <div class="automation-chain-node">
+        <span class="automation-chain-step" aria-hidden="true">{index + 1}</span>
         <select
           class="automation-chain-select"
           value={node}
@@ -83,14 +84,15 @@
           title={texts.chainJoiner}
           aria-label={texts.chainJoiner}
         >
-          &#8595;
+          &#8594;
         </span>
       {/if}
     {/each}
 
     {#if !disabled && chain.length < maxNodes}
       <button type="button" class="btn-soft automation-chain-add" on:click={addNode}>
-        + {texts.addNode}
+        <span aria-hidden="true">+</span>
+        <span>{texts.addNode}</span>
       </button>
     {/if}
   </div>

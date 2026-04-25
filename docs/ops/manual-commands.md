@@ -36,6 +36,8 @@ Keep P1 concise; add details here when needed.
   - the panel now starts collapsed and shows a compact `title + stage + reason` summary row
   - click the summary row to expand a `left canvas + right diagnostics panel` view, with recent events / recent action runs kept inside collapsible sections
   - mouse-action mapping keeps only the circular down-arrow connector between trigger chain and execute-actions blocks; the extra vertical connector line was removed to avoid a stray shadow-tail look
+  - mouse-action mapping trigger chains render as a horizontal step flow (`1 -> 2 -> add`) instead of stacked selects, and execute-action adders sit in a compact queue toolbar so the edit card reads as trigger sequence first, action queue second
+  - mouse-action mapping now avoids inner trigger/action card frames: the left edit area uses spacing, compact headings, and a light divider instead of nested bordered panels
 
 ## Automation Manual
 - `/Users/sunqin/study/language/cpp/code/MFCMouseEffect/tools/platform/manual/run-macos-automation-injection-selfcheck.sh --skip-build`

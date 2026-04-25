@@ -170,17 +170,40 @@
   {/each}
 
   <div class="automation-action-adders">
-    <button class="btn-soft" type="button" disabled={!rowEnabled} on:click={() => callHandler(onAddShortcutAction)}>
-      {texts.addShortcutAction}
+    <button class="btn-soft automation-action-add automation-action-add--shortcut" type="button" disabled={!rowEnabled} on:click={() => callHandler(onAddShortcutAction)}>
+      <span class="automation-action-add-icon" aria-hidden="true">
+        <svg viewBox="0 0 16 16" focusable="false">
+          <rect x="2.25" y="4" width="11.5" height="8" rx="2" />
+          <path d="M4.5 6.5h.01M7 6.5h.01M9.5 6.5h.01M11.5 6.5h.01M4.5 9.25h7" />
+        </svg>
+      </span>
+      <span>{texts.addShortcutAction}</span>
     </button>
-    <button class="btn-soft" type="button" disabled={!rowEnabled} on:click={() => callHandler(onAddDelayAction)}>
-      {texts.addDelayAction}
+    <button class="btn-soft automation-action-add automation-action-add--delay" type="button" disabled={!rowEnabled} on:click={() => callHandler(onAddDelayAction)}>
+      <span class="automation-action-add-icon" aria-hidden="true">
+        <svg viewBox="0 0 16 16" focusable="false">
+          <circle cx="8" cy="8.5" r="4.75" />
+          <path d="M8 5.75v3l2 1.2M5.75 2.5h4.5" />
+        </svg>
+      </span>
+      <span>{texts.addDelayAction}</span>
     </button>
-    <button class="btn-soft" type="button" disabled={!rowEnabled} on:click={() => callHandler(onAddOpenUrlAction)}>
-      {texts.addOpenUrlAction}
+    <button class="btn-soft automation-action-add automation-action-add--url" type="button" disabled={!rowEnabled} on:click={() => callHandler(onAddOpenUrlAction)}>
+      <span class="automation-action-add-icon" aria-hidden="true">
+        <svg viewBox="0 0 16 16" focusable="false">
+          <path d="M6.6 5.1l.9-.9a3 3 0 0 1 4.25 4.25l-.9.9M9.4 10.9l-.9.9a3 3 0 0 1-4.25-4.25l.9-.9M6.5 9.5l3-3" />
+        </svg>
+      </span>
+      <span>{texts.addOpenUrlAction}</span>
     </button>
-    <button class="btn-soft" type="button" disabled={!rowEnabled} on:click={() => callHandler(onAddLaunchAppAction)}>
-      {texts.addLaunchAppAction}
+    <button class="btn-soft automation-action-add automation-action-add--app" type="button" disabled={!rowEnabled} on:click={() => callHandler(onAddLaunchAppAction)}>
+      <span class="automation-action-add-icon" aria-hidden="true">
+        <svg viewBox="0 0 16 16" focusable="false">
+          <rect x="3" y="3.25" width="10" height="9.5" rx="2" />
+          <path d="M3 6h10M5.25 4.75h.01M7 4.75h.01" />
+        </svg>
+      </span>
+      <span>{texts.addLaunchAppAction}</span>
     </button>
   </div>
 </div>
@@ -269,6 +292,35 @@
     flex-wrap: wrap;
   }
 
+  .automation-action-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .automation-action-add-icon {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: rgba(67, 102, 139, 0.1);
+    color: currentColor;
+    line-height: 1;
+  }
+
+  .automation-action-add-icon svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.45;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
   .automation-action-list--mouse {
     gap: 12px;
     padding: 0;
@@ -284,19 +336,29 @@
   }
 
   .automation-action-list--mouse .automation-action-empty {
-    border: 1px dashed #d8e4f0;
-    border-radius: 12px;
-    background: linear-gradient(180deg, rgba(250, 253, 255, 0.98), rgba(244, 249, 255, 0.96));
+    border: 1px dashed rgba(190, 211, 235, 0.68);
+    border-radius: 10px;
+    background: rgba(247, 251, 255, 0.52);
     color: #607896;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 12px 14px;
+    text-align: center;
   }
 
   .automation-action-list--gesture .automation-action-empty {
-    border: 1px dashed #d8ebe6;
-    border-radius: 12px;
-    background: linear-gradient(180deg, rgba(250, 254, 253, 0.98), rgba(243, 249, 247, 0.96));
+    border: 1px dashed rgba(190, 221, 214, 0.72);
+    border-radius: 10px;
+    background: rgba(246, 252, 250, 0.52);
     color: #5d7b77;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 12px 14px;
+    text-align: center;
   }
 
   .automation-action-list--mouse .automation-action-card {
@@ -570,25 +632,33 @@
   }
 
   .automation-action-list--mouse .automation-action-adders {
-    gap: 10px;
+    gap: 8px;
     padding: 2px 0 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
   }
 
   .automation-action-list--gesture .automation-action-adders {
-    gap: 10px;
+    gap: 8px;
     padding: 2px 0 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
   }
 
   .automation-action-list--mouse .automation-action-adders :global(button) {
     border-color: #cfdae7;
     background: linear-gradient(180deg, rgba(251, 253, 255, 0.98), rgba(242, 247, 253, 0.96));
     color: #385675;
+    padding: 7px 10px;
   }
 
   .automation-action-list--gesture .automation-action-adders :global(button) {
     border-color: #d0e4de;
     background: linear-gradient(180deg, rgba(250, 254, 253, 0.98), rgba(242, 248, 246, 0.96));
     color: #2f6059;
+    padding: 7px 10px;
   }
 
   .automation-action-list--mouse .automation-action-adders :global(button:hover:enabled) {
