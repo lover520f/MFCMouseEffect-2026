@@ -1874,17 +1874,6 @@ textarea {
   padding-top: 18px;
 }
 
-.automation-flow-section--actions-after-trigger::before {
-  content: "";
-  position: absolute;
-  left: 26px;
-  top: -18px;
-  width: 2px;
-  height: 20px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(164, 190, 219, 0.12), rgba(164, 190, 219, 0.82));
-}
-
 .automation-flow-section--actions-after-trigger::after {
   content: "\2193";
   position: absolute;
